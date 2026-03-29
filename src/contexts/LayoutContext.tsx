@@ -5,8 +5,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-    createContext,
-    useContext,
+  createContext,
+  useContext,
 } from "react";
 
 export interface OpenConfirmationDialogProps {
@@ -94,10 +94,6 @@ export interface OpenContractSetupDialogProps {
     onSuccess?: (usarContratos?: boolean) => void;
 }
 
-export interface OpenReceiptDialogProps {
-  url?: string | null;
-}
-
 export interface OpenUpdateContractDialogProps {
   passageiro: Passageiro;
 }
@@ -125,7 +121,6 @@ export interface LayoutContextType {
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
-  openReceiptDialog: (props: OpenReceiptDialogProps) => void;
   openUpdateContractDialog: (props: OpenUpdateContractDialogProps) => void;
   openGenerateContractDialog: (props: OpenGenerateContractDialogProps) => void;
   isFirstChargeDialogOpen: boolean;

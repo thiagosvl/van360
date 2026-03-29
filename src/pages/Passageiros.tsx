@@ -51,10 +51,10 @@ export default function Passageiros() {
 
   const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
 
-  if (isProfileLoading || !profile) {
+  if (!profile) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-600">
-        <p>Carregando informações...</p>
+      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
+        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
       </div>
     );
   }

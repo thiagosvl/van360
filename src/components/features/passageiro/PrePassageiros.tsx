@@ -3,9 +3,7 @@ import {
   MobileActionItem,
 } from "@/components/common/MobileActionItem";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
 import { PrePassengerListSkeleton } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
   Table,
@@ -25,15 +22,14 @@ import {
 } from "@/components/ui/table";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
+  safeCloseDialog,
   useCreatePrePassageiro,
   useDeletePrePassageiro,
   usePrePassageiros,
-  safeCloseDialog,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
   formatarTelefone,
   formatFirstName,
@@ -46,13 +42,11 @@ import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-  Clock,
-  Copy,
+  ChevronRight,
   Eye,
   MoreVertical,
-  Search,
   Trash2,
-  Users2,
+  Users2
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -273,7 +267,7 @@ export default function PrePassageiros({
                         </div>
                         <div className="flex flex-col">
                           <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                            {formatShortName(prePassageiro.nome)}
+                            {formatShortName(prePassageiro.nome, true)}
                           </p>
                           <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                             {formatFirstName(prePassageiro.nome_responsavel)}
@@ -321,81 +315,42 @@ export default function PrePassageiros({
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
             {prePassageiros.map((prePassageiro, index) => {
-              const actions: MobileAction[] = [
-                {
-                  label: "Revisar",
-                  icon: <Eye className="w-4 h-4" />,
-                  onClick: () => handleFinalizeClick(prePassageiro),
-                  swipeColor: "bg-blue-600",
-                },
-                {
-                  label: "Excluir",
-                  icon: <Trash2 className="w-4 h-4" />,
-                  onClick: () => {
-                    openConfirmationDialog({
-                      title: "Excluir solicitação?",
-                      description:
-                        "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
-                      variant: "destructive",
-                      confirmText: "Excluir",
-                      cancelText: "Cancelar",
-                      onConfirm: async () => {
-                        if (prePassageiro.id) {
-                          try {
-                            await deletePrePassageiro.mutateAsync(
-                              prePassageiro.id,
-                            );
-                            safeCloseDialog(closeConfirmationDialog);
-                          } catch (error) {
-                            safeCloseDialog(closeConfirmationDialog);
-                            console.error(error);
-                          }
-                        }
-                      },
-                    });
-                  },
-                  isDestructive: true,
-                  swipeColor: "bg-red-600",
-                },
-              ];
-
               return (
-                <MobileActionItem
+                <div
                   key={prePassageiro.id}
-                  actions={actions}
-                  showHint={index === 0}
-                  className="bg-transparent"
+                  onClick={() => handleFinalizeClick(prePassageiro)}
+                  className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4"
                 >
-                  <div
-                    className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-                  >
-                    <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                      <span className="text-white font-headline font-bold text-sm leading-none">
-                        {getInitials(prePassageiro.nome)}
-                      </span>
-                    </div>
+                  <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                    <span className="text-white font-headline font-bold text-sm leading-none">
+                      {getInitials(prePassageiro.nome)}
+                    </span>
+                  </div>
 
-                    <div className="flex-grow min-w-0 pr-10">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                        {formatShortName(prePassageiro.nome)}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                          {formatFirstName(prePassageiro.nome_responsavel)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-                      <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
-                        Pendente
-                      </span>
-                      <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
-                        {formatRelativeTime(prePassageiro.created_at)}
+                  <div className="flex-grow min-w-0 pr-10">
+                    <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                      {formatShortName(prePassageiro.nome, true)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                        {formatFirstName(prePassageiro.nome_responsavel)}
                       </p>
                     </div>
                   </div>
-                </MobileActionItem>
+
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                    <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
+                      Pendente
+                    </span>
+                    <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
+                      {formatRelativeTime(prePassageiro.created_at)}
+                    </p>
+                  </div>
+
+                  <div className="flex-shrink-0 text-slate-300 ml-auto">
+                    <ChevronRight className="h-5 w-5" />
+                  </div>
+                </div>
               );
             })}
           </div>

@@ -32,7 +32,8 @@ export function useGastosViewModel() {
     setSelectedCategoria,
     selectedVeiculo: veiculoFilter = "todos",
     setSelectedVeiculo,
-    setFilters
+    setFilters,
+    hasActiveFilters,
   } = useFilters({
     mesParam: "mes",
     anoParam: "ano",
@@ -161,5 +162,6 @@ export function useGastosViewModel() {
     handleOpenForm,
     veiculos: veiculosDropdown,
     clearFilters,
+    hasActiveFilters,
   };
 }

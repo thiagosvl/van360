@@ -11,6 +11,7 @@ import { useVeiculosViewModel } from "@/hooks";
 
 export default function Veiculos() {
   const {
+    profile,
     isLoading,
     isVeiculosLoading,
     isActionLoading,
@@ -31,20 +32,20 @@ export default function Veiculos() {
     navigate,
   } = useVeiculosViewModel();
 
+  if (!profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
+        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
+      </div>
+    );
+  }
+
   const handleRefresh = async () => {
     await refetch();
   };
 
   const sectionCount = veiculos.length;
   const countLabel = searchTerm || hasActiveFilters ? "ENCONTRADOS" : "VEÍCULOS";
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
-        <p className="font-medium animate-pulse">Carregando informações...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

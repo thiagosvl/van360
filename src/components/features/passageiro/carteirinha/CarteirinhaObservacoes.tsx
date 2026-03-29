@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Check, Pencil, StickyNote, X } from "lucide-react";
+import { Pencil, StickyNote } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 interface CarteirinhaObservacoesProps {
@@ -78,25 +77,22 @@ export const CarteirinhaObservacoes = ({
               className="w-full resize-none rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1a3a5c]/30 focus:ring-1 focus:ring-[#1a3a5c]/20 px-4 py-3 text-xs font-medium text-slate-700 placeholder:text-slate-400 outline-none transition-all"
               style={{ minHeight: 80 }}
             />
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center gap-3 pt-1">
               <Button
-                variant="ghost"
-                size="sm"
                 onClick={onCancelEdit}
                 disabled={isSaving}
-                className="h-8 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 px-3"
+                className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-white border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100 shadow-none active:scale-95"
               >
-                <X className="h-3.5 w-3.5 mr-1" />
                 Cancelar
               </Button>
               <Button
-                size="sm"
                 onClick={onSave}
                 disabled={isSaving}
-                className="h-8 rounded-xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white text-[10px] font-black uppercase tracking-wider px-4"
+                className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 active:scale-95"
               >
-                <Check className="h-3.5 w-3.5 mr-1" />
-                {isSaving ? "Salvando..." : "Salvar"}
+                {isSaving ? (
+                  <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : "Salvar"}
               </Button>
             </div>
           </div>

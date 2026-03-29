@@ -10,15 +10,15 @@ import {
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { phoneMask } from "@/utils/masks";
 import {
-  calcularIdade,
-  formatModalidade,
-  formatGenero,
-  formatParentesco,
   formatDateToBR,
+  formatGenero,
+  formatModalidade,
+  formatParentesco,
   formatPeriodo,
 } from "@/utils/formatters";
+import { formatContratoStatus } from "@/utils/formatters/contrato";
+import { phoneMask } from "@/utils/masks";
 import {
   Bus,
   Calendar,
@@ -29,20 +29,19 @@ import {
   FileSignature,
   GraduationCap,
   MapPin,
-  MoreHorizontal,
+  MoreVertical,
   Pencil,
   Plus,
-  PowerOff,
   Power,
+  PowerOff,
   Route,
   ShieldCheck,
   ShieldQuestion,
   Trash2,
   User,
-  Users,
+  Users
 } from "lucide-react";
 import { toast } from "sonner";
-
 
 export interface CarteirinhaInfoProps {
   passageiro: Passageiro;
@@ -66,24 +65,36 @@ const ProfileActions = ({
   onToggleClick,
   onEditClick,
   onDeleteClick,
-}: Pick<CarteirinhaInfoProps, "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick">) => (
+}: Pick<
+  CarteirinhaInfoProps,
+  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick"
+>) => (
   <div className="flex items-center justify-center gap-3">
     <Button
       size="icon"
       onClick={() => onToggleClick(!!passageiro.ativo)}
       className={cn(
         "h-11 w-11 rounded-2xl transition-all shadow-sm hover:shadow-md",
-        passageiro.ativo 
+        passageiro.ativo
           ? "bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
-          : "bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white" // Inativo -> Ação Ativar (Verde)
+          : "bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white", // Inativo -> Ação Ativar (Verde)
       )}
       title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
     >
-      {passageiro.ativo ? <PowerOff className="h-4.5 w-4.5" /> : <Power className="h-4.5 w-4.5" />}
+      {passageiro.ativo ? (
+        <PowerOff className="h-4.5 w-4.5" />
+      ) : (
+        <Power className="h-4.5 w-4.5" />
+      )}
     </Button>
     <Button
       size="icon"
-      onClick={() => window.open(`https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`, "_blank")}
+      onClick={() =>
+        window.open(
+          `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`,
+          "_blank",
+        )
+      }
       className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
     >
       <WhatsAppIcon className="h-4.5 w-4.5" />
@@ -104,20 +115,17 @@ const ProfileActions = ({
           size="icon"
           className="h-11 w-11 rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
         >
-          <MoreHorizontal className="h-4.5 w-4.5" />
+          <MoreVertical className="h-4.5 w-4.5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="w-56 rounded-2xl p-2 shadow-xl border-slate-100">
-        <DropdownMenuItem onClick={onEditClick} className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase tracking-wider text-[#1a3a5c] cursor-pointer">
-          <Pencil className="h-3.5 w-3.5 mr-2 opacity-60" />
-          Editar Cadastro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onToggleClick(!!passageiro.ativo)} className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase tracking-wider text-[#1a3a5c] cursor-pointer">
-          {passageiro.ativo ? <PowerOff className="h-3.5 w-3.5 mr-2 opacity-60 text-rose-500" /> : <Power className="h-3.5 w-3.5 mr-2 opacity-60 text-emerald-500" />}
-          {passageiro.ativo ? "Desativar Passageiro" : "Reativar Passageiro"}
-        </DropdownMenuItem>
-        <div className="h-px bg-slate-50 my-1" />
-        <DropdownMenuItem onClick={onDeleteClick} className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase tracking-wider text-rose-500 cursor-pointer">
+      <DropdownMenuContent
+        align="center"
+        className="w-56 rounded-2xl p-2 shadow-xl border-slate-100"
+      >
+        <DropdownMenuItem
+          onClick={onDeleteClick}
+          className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase text-rose-500 cursor-pointer"
+        >
           <Trash2 className="h-3.5 w-3.5 mr-2 opacity-60" />
           Excluir cadastro
         </DropdownMenuItem>
@@ -135,10 +143,12 @@ const ProfileSummary = ({
 }: Pick<CarteirinhaInfoProps, "passageiro" | "temCobrancasVencidas">) => (
   <div className="flex flex-col items-center -mt-12 mb-4">
     <div className="h-24 w-24 rounded-[2rem] bg-white p-1.5 shadow-xl">
-      <div className={cn(
-        "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] relative border-2",
-        passageiro.ativo ? "border-emerald-500/20" : "border-rose-500/20"
-      )}>
+      <div
+        className={cn(
+          "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] relative border-2",
+          passageiro.ativo ? "border-emerald-500/20" : "border-rose-500/20",
+        )}
+      >
         <User className="h-10 w-10 opacity-20" />
       </div>
     </div>
@@ -152,19 +162,24 @@ const ProfileSummary = ({
           {passageiro.nome_responsavel}
         </p>
       )}
-    <div className="flex items-center justify-center gap-2 mt-2">
-      <Badge variant="outline" className={cn(
-        "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
-        passageiro.ativo ? "text-emerald-500 bg-emerald-50" : "text-rose-500 bg-rose-50"
-      )}>
-        {passageiro.ativo ? "Ativo" : "Inativo"}
-      </Badge>
-      {temCobrancasVencidas && (
-        <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
-          Possui Débitos
+      <div className="flex items-center justify-center gap-2 mt-2">
+        <Badge
+          variant="outline"
+          className={cn(
+            "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
+            passageiro.ativo
+              ? "text-emerald-500 bg-emerald-50"
+              : "text-rose-500 bg-rose-50",
+          )}
+        >
+          {passageiro.ativo ? "Ativo" : "Inativo"}
         </Badge>
-      )}
-    </div>
+        {temCobrancasVencidas && (
+          <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
+            Possui Débitos
+          </Badge>
+        )}
+      </div>
     </div>
   </div>
 );
@@ -181,18 +196,23 @@ const CarteirinhaCard = ({
   headerHeight?: "h-16" | "h-24";
   className?: string;
 }) => (
-  <div className={cn(
-    "bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden transition-all relative",
-    className
-  )}>
+  <div
+    className={cn(
+      "bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden transition-all relative",
+      className,
+    )}
+  >
     {/* Header gradient */}
-    <div className={cn("bg-gradient-to-br from-[#1a3a5c] to-[#002444] relative overflow-hidden", headerHeight)}>
+    <div
+      className={cn(
+        "bg-gradient-to-br from-[#1a3a5c] to-[#002444] relative overflow-hidden",
+        headerHeight,
+      )}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent)]" />
       <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
     </div>
-    <div className="px-6 pb-5 relative">
-      {children}
-    </div>
+    <div className="px-6 pb-5 relative">{children}</div>
   </div>
 );
 
@@ -200,7 +220,16 @@ const CarteirinhaCard = ({
  * Header da carteirinha: avatar, nome, responsável, badges, botões de ação.
  * Fica sempre visível no topo (mobile e desktop).
  */
-export const CarteirinhaHeader = (props: Pick<CarteirinhaInfoProps, "passageiro" | "temCobrancasVencidas" | "onToggleClick" | "onEditClick" | "onDeleteClick">) => {
+export const CarteirinhaHeader = (
+  props: Pick<
+    CarteirinhaInfoProps,
+    | "passageiro"
+    | "temCobrancasVencidas"
+    | "onToggleClick"
+    | "onEditClick"
+    | "onDeleteClick"
+  >,
+) => {
   return (
     <CarteirinhaCard headerHeight="h-16">
       <ProfileSummary
@@ -253,20 +282,41 @@ export const CarteirinhaDadosPessoais = ({
   onCopyToClipboard,
   onContractAction,
   contratosAtivos = true,
-}: Pick<CarteirinhaInfoProps, "passageiro" | "isCopiedEndereco" | "isCopiedTelefone" | "onCopyToClipboard" | "onContractAction" | "contratosAtivos">) => {
+}: Pick<
+  CarteirinhaInfoProps,
+  | "passageiro"
+  | "isCopiedEndereco"
+  | "isCopiedTelefone"
+  | "onCopyToClipboard"
+  | "onContractAction"
+  | "contratosAtivos"
+>) => {
   const getContratoStatusStyles = (status?: ContratoStatus) => {
     if (status === ContratoStatus.ASSINADO)
-      return { label: "Assinado", color: "text-emerald-500 bg-emerald-50", icon: ShieldCheck };
+      return {
+        label: formatContratoStatus(passageiro.status_contrato),
+        color: "text-emerald-500 bg-emerald-50",
+        icon: ShieldCheck,
+      };
     if (status === ContratoStatus.PENDENTE)
-      return { label: "Pendente", color: "text-amber-500 bg-amber-50", icon: ShieldQuestion };
-    return { label: "Sem Contrato", color: "text-slate-400 bg-slate-50", icon: FileSignature };
+      return {
+        label: formatContratoStatus(passageiro.status_contrato),
+        color: "text-amber-500 bg-amber-50",
+        icon: ShieldQuestion,
+      };
+    return {
+      label: formatContratoStatus(passageiro.status_contrato),
+      color: "text-slate-400 bg-slate-100",
+      icon: FileSignature,
+    };
   };
 
   const contratoStyle = getContratoStatusStyles(passageiro.status_contrato);
 
-  const isContractActionDisabled = !contratosAtivos &&
-    (passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO);
-
+  const isContractActionDisabled =
+    !contratosAtivos &&
+    passageiro.status_contrato !== ContratoStatus.PENDENTE &&
+    passageiro.status_contrato !== ContratoStatus.ASSINADO;
 
   const getEnderecoFormatado = () => {
     if (!passageiro.logradouro) return "Endereço não informado";
@@ -277,16 +327,19 @@ export const CarteirinhaDadosPessoais = ({
   const handleContratoClick = () => {
     if (isContractActionDisabled) {
       toast.warning("Ative o uso de Contratos", {
-        description: "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos' no menu inferior."
+        description:
+          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos' no menu inferior.",
       });
       return;
     }
     onContractAction();
   };
 
-  const RightIcon = (passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO)
-    ? ExternalLink
-    : Plus;
+  const RightIcon =
+    passageiro.status_contrato === ContratoStatus.PENDENTE ||
+    passageiro.status_contrato === ContratoStatus.ASSINADO
+      ? ExternalLink
+      : Plus;
 
   return (
     <div className="space-y-3">
@@ -298,18 +351,50 @@ export const CarteirinhaDadosPessoais = ({
           icon={<Clock className="h-3.5 w-3.5" />}
         />
         <InfoTile
-          label="Modalidade"
-          value={passageiro.modalidade ? formatModalidade(passageiro.modalidade) : "-"}
-          icon={<Route className="h-3.5 w-3.5" />}
+          label="Escola"
+          value={passageiro.escola?.nome || "-"}
+          icon={<GraduationCap className="h-3.5 w-3.5" />}
         />
+      </div>
+
+      {/* Contrato */}
+      <div
+        onClick={handleContratoClick}
+        className={cn(
+          "rounded-2xl border border-slate-200 p-3.5 transition-all cursor-pointer group/tile flex items-center justify-between",
+          contratoStyle.color,
+        )}
+      >
+        <div className="flex items-center gap-2.5">
+          <contratoStyle.icon className="h-4 w-4" />
+          <div>
+            <span className="block text-[8px] font-bold uppercase tracking-widest opacity-60">
+              Contrato
+            </span>
+            <span className="text-sm font-bold">{contratoStyle.label}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 group-hover/tile:opacity-100 transition-opacity bg-black/5 px-2.5 py-1.5 rounded-xl border border-black/5">
+          <RightIcon className="h-3 w-3" />
+          <span className="text-[9px] font-bold uppercase tracking-widest leading-none pt-0.5">
+            {passageiro.status_contrato === ContratoStatus.PENDENTE ||
+            passageiro.status_contrato === ContratoStatus.ASSINADO
+              ? "Ver"
+              : "Gerar"}
+          </span>
+        </div>
       </div>
 
       {/* Linha: Escola + Veículo */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
-          label="Escola"
-          value={passageiro.escola?.nome || "-"}
-          icon={<GraduationCap className="h-3.5 w-3.5" />}
+          label="Modalidade"
+          value={
+            passageiro.modalidade
+              ? formatModalidade(passageiro.modalidade)
+              : "-"
+          }
+          icon={<Route className="h-3.5 w-3.5" />}
         />
         <InfoTile
           label="Veículo"
@@ -322,7 +407,11 @@ export const CarteirinhaDadosPessoais = ({
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Nascimento"
-          value={passageiro.data_nascimento ? `${formatDateToBR(passageiro.data_nascimento)}` : "-"}
+          value={
+            passageiro.data_nascimento
+              ? `${formatDateToBR(passageiro.data_nascimento)}`
+              : "-"
+          }
           icon={<Calendar className="h-3.5 w-3.5" />}
         />
         <InfoTile
@@ -330,36 +419,6 @@ export const CarteirinhaDadosPessoais = ({
           value={passageiro.genero ? formatGenero(passageiro.genero) : "-"}
           icon={<Users className="h-3.5 w-3.5" />}
         />
-      </div>
-
-      {/* Contrato */}
-      <div
-        onClick={handleContratoClick}
-        className={cn(
-          "rounded-2xl border border-slate-200 p-3.5 transition-all cursor-pointer group/tile flex items-center justify-between",
-          contratoStyle.color
-        )}
-      >
-        <div className="flex items-center gap-2.5">
-          <contratoStyle.icon className="h-4 w-4" />
-          <div>
-            <span className="block text-[8px] font-bold uppercase tracking-widest opacity-60">
-              Contrato
-            </span>
-            <span className="text-sm font-bold">
-              {contratoStyle.label}
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 group-hover/tile:opacity-100 transition-opacity bg-black/5 px-2.5 py-1.5 rounded-xl border border-black/5">
-          <RightIcon className="h-3 w-3" />
-          <span className="text-[9px] font-bold uppercase tracking-widest leading-none pt-0.5">
-            {passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO
-              ? "Ver"
-              : "Gerar"
-            }
-          </span>
-        </div>
       </div>
 
       {/* Início do Transporte */}
@@ -395,13 +454,19 @@ export const CarteirinhaDadosPessoais = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onCopyToClipboard(passageiro.telefone_responsavel || "", "Telefone")}
+            onClick={() =>
+              onCopyToClipboard(
+                passageiro.telefone_responsavel || "",
+                "Telefone",
+              )
+            }
             className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
           >
-            {isCopiedTelefone
-              ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-              : <Copy className="h-3.5 w-3.5 text-slate-400" />
-            }
+            {isCopiedTelefone ? (
+              <Check className="h-3.5 w-3.5 text-emerald-500" />
+            ) : (
+              <Copy className="h-3.5 w-3.5 text-slate-400" />
+            )}
           </Button>
         </div>
       </div>
@@ -424,14 +489,14 @@ export const CarteirinhaDadosPessoais = ({
             onClick={() => onCopyToClipboard(enderecoFormatado, "Endereço")}
             className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
           >
-            {isCopiedEndereco
-              ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-              : <Copy className="h-3.5 w-3.5 text-slate-400" />
-            }
+            {isCopiedEndereco ? (
+              <Check className="h-3.5 w-3.5 text-emerald-500" />
+            ) : (
+              <Copy className="h-3.5 w-3.5 text-slate-400" />
+            )}
           </Button>
         </div>
       </div>
-
     </div>
   );
 };
@@ -448,10 +513,12 @@ const InfoTile = ({
   icon: React.ReactNode;
   fullWidth?: boolean;
 }) => (
-  <div className={cn(
-    "bg-slate-50/80 rounded-2xl p-3.5 transition-colors hover:bg-slate-100/80",
-    fullWidth && "col-span-2"
-  )}>
+  <div
+    className={cn(
+      "bg-slate-50/80 rounded-2xl p-3.5 transition-colors hover:bg-slate-100/80",
+      fullWidth && "col-span-2",
+    )}
+  >
     <div className="flex items-center gap-1.5 mb-1.5">
       <span className="text-slate-400">{icon}</span>
       <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400">

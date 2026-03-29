@@ -63,7 +63,7 @@ export const FORMAS_PAGAMENTO_LABELS: Record<
 
 interface UseRelatoriosCalculationsProps {
   cobrancasData: any;
-  gastosData: any[];
+  gastosData: any;
   passageirosData: any;
   escolasData: any;
   veiculosData: any;
@@ -101,7 +101,7 @@ export const useRelatoriosCalculations = ({
     const cobrancas = cobrancasData?.all || [];
     const cobrancasPagas = cobrancasData?.recebidos || [];
     const cobrancasAbertas = cobrancasData?.areceber || [];
-    const gastos = gastosData || [];
+    const gastos = gastosData?.list || [];
     const passageirosList = passageirosData?.list || [];
     const escolasList = (escolasData as any)?.list || [];
     const veiculosListFull = (veiculosData as any)?.list || [];

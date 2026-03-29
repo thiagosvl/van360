@@ -1,16 +1,8 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
-import {
-  CheckCircle2,
-  Clock,
-  History,
-  Plus,
-  AlertCircle,
-} from "lucide-react";
-import { useState, forwardRef } from "react";
-import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { Button } from "@/components/ui/button";
+import { getPaymentMethodLabel } from "@/constants/paymentMethods";
+import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
@@ -21,8 +13,15 @@ import {
   getMesNome,
 } from "@/utils/formatters";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
-import { getPaymentMethodLabel } from "@/constants/paymentMethods";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  History,
+  Plus,
+} from "lucide-react";
+import { forwardRef, useState } from "react";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -77,7 +76,7 @@ export const CarteirinhaCobrancas = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100/80 px-2 py-1 rounded-lg">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
             {cobrancas.length} {cobrancas.length === 1 ? "Registro" : "Registros"}
           </span>
         </div>
@@ -93,33 +92,6 @@ export const CarteirinhaCobrancas = ({
           </Button>
         </div>
       </div>
-
-      {/* Mini KPIs */}
-      {cobrancas.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          <MiniKPI
-            label="Pago"
-            value={resumo.pago}
-            count={resumo.qtdPago}
-            colorClass="text-emerald-500 bg-emerald-50/60"
-            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-          />
-          <MiniKPI
-            label="Pendente"
-            value={resumo.pendente}
-            count={resumo.qtdPendente}
-            colorClass="text-amber-500 bg-amber-50/60"
-            icon={<Clock className="h-3.5 w-3.5" />}
-          />
-          <MiniKPI
-            label="Atrasado"
-            value={resumo.atrasado}
-            count={resumo.qtdAtrasado}
-            colorClass="text-rose-500 bg-rose-50/60"
-            icon={<AlertCircle className="h-3.5 w-3.5" />}
-          />
-        </div>
-      )}
 
       {/* Lista */}
       <div className="space-y-3">
@@ -149,11 +121,32 @@ export const CarteirinhaCobrancas = ({
         )}
       </div>
 
-      <ReceiptDialog
-        open={!!receiptUrl}
-        onOpenChange={(open) => !open && setReceiptUrl(null)}
-        url={receiptUrl || ""}
-      />
+      {/* Mini KPIs */}
+      {cobrancas.length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          <MiniKPI
+            label="Pago"
+            value={resumo.pago}
+            count={resumo.qtdPago}
+            colorClass="text-emerald-500 bg-emerald-50/60"
+            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+          />
+          <MiniKPI
+            label="Pendente"
+            value={resumo.pendente}
+            count={resumo.qtdPendente}
+            colorClass="text-amber-500 bg-amber-50/60"
+            icon={<Clock className="h-3.5 w-3.5" />}
+          />
+          <MiniKPI
+            label="Atrasado"
+            value={resumo.atrasado}
+            count={resumo.qtdAtrasado}
+            colorClass="text-rose-500 bg-rose-50/60"
+            icon={<AlertCircle className="h-3.5 w-3.5" />}
+          />
+        </div>
+      )}
     </div>
   );
 };

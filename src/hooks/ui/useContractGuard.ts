@@ -26,7 +26,8 @@ export function useContractGuard({
     if (disabled || isLoading || !profile) return;
 
     // 1. Verifica se o contrato está configurado
-    const isContractConfigured = profile.flags?.contrato_configurado ?? profile.config_contrato?.configurado === true;
+    // Priorizamos a configuração do banco de dados (config_contrato) sobre a flag
+    const isContractConfigured = profile.config_contrato?.configurado === true || profile.flags?.contrato_configurado === true;
 
     // 2. Determina se deve bloquear
     const shouldBlock = !isContractConfigured;
@@ -37,8 +38,8 @@ export function useContractGuard({
 
     // 3. Dispara o modal se estiver em um novo path
     if (triggeredPath !== location.pathname) {
-        onShouldOpen();
         setTriggeredPath(location.pathname);
+        onShouldOpen();
     }
   }, [profile, isLoading, onShouldOpen, location.pathname, triggeredPath, disabled]);
 }

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
-import { useCobrancas, useDeleteCobranca } from "@/hooks";
+import { useCobrancas, useDeleteCobranca, useFilters } from "@/hooks";
 import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
@@ -26,24 +26,6 @@ export function useCobrancasViewModel() {
   const deleteCobranca = useDeleteCobranca();
   const isActionLoading = deleteCobranca.isPending;
 
-  // Tabs Management
-  const activeTab = useMemo(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam === CobrancaTab.ARECEBER || tabParam === CobrancaTab.RECEBIDOS) {
-      return tabParam as CobrancaTab;
-    }
-    return CobrancaTab.ARECEBER;
-  }, [searchParams]);
-
-  useEffect(() => {
-    const currentTab = searchParams.get("tab");
-    if (!currentTab || !Object.values(CobrancaTab).includes(currentTab as CobrancaTab)) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("tab", CobrancaTab.ARECEBER);
-      setSearchParams(newParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
-
   const handleTabChange = useCallback(
     (value: string) => {
       const newParams = new URLSearchParams(searchParams);
@@ -53,17 +35,39 @@ export function useCobrancasViewModel() {
     [searchParams, setSearchParams]
   );
 
-  // Filters
-  const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
-  const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const [buscaAReceber, setBuscaAReceber] = useState("");
-  const [buscaRecebidos, setBuscaRecebidos] = useState("");
+  // Tabs Management
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === CobrancaTab.ARECEBER || tabParam === CobrancaTab.RECEBIDOS) {
+      return tabParam as CobrancaTab;
+    }
+    return CobrancaTab.ARECEBER;
+  }, [searchParams]);
+
+  const {
+    selectedMes: mesFilter = new Date().getMonth() + 1,
+    setSelectedMes: setMesFilter,
+    selectedAno: anoFilter = new Date().getFullYear(),
+    setSelectedAno: setAnoFilter,
+    searchTerm: commonSearch,
+    setSearchTerm: setCommonSearch,
+    setFilters
+  } = useFilters({
+    mesParam: "mes",
+    anoParam: "ano",
+    searchParam: "search",
+  });
+
+  const buscaAReceber = commonSearch;
+  const setBuscaAReceber = setCommonSearch;
+  const buscaRecebidos = commonSearch;
+  const setBuscaRecebidos = setCommonSearch;
+
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const handleNavigation = useCallback((newMes: number, newAno: number) => {
-    setMesFilter(newMes);
-    setAnoFilter(newAno);
-  }, []);
+    setFilters({ mes: newMes, ano: newAno });
+  }, [setFilters]);
 
   // Search Debounce
   useEffect(() => {

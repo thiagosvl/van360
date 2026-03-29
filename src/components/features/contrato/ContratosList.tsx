@@ -16,12 +16,12 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
-import { formatShortName, formatFirstName } from "@/utils/formatters";
-import { formatRelativeTime } from "@/utils/formatters";
 import { ContratoStatus, ContratoTab } from "@/types/enums";
-import { ChevronsLeft, Clock, Eye, FileText, Send } from "lucide-react";
+import { formatFirstName, formatRelativeTime, formatShortName } from "@/utils/formatters";
+import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
+import { ContratoSummary } from "./ContratoSummary";
 
 interface ContratosListProps {
   data: any[];
@@ -83,10 +83,17 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onVisualizarFinal,
   });
 
-  const isPassageiro = item.tipo === "passageiro";
-  const status = item.status;
+  const isSemContrato = item.tipo === "passageiro";
+  const status = item.status as ContratoStatus | null;
+  const isAssinado = status === ContratoStatus.ASSINADO;
   const nomeExibicao = item.passageiro?.nome || item.nome || "Não informado";
   const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "Responsável não inf.";
+
+  const iconConfig = isAssinado
+    ? { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" }
+    : isSemContrato
+      ? { icon: FileX2, className: "bg-slate-50 border-slate-100 text-slate-400" }
+      : { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
 
   const swipeActions = actions.map((action) => ({
     label: action.label,
@@ -98,16 +105,18 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     isDestructive: action.isDestructive,
   }));
 
+  const renderHeader = () => <ContratoSummary item={item} />;
+
   return (
-    <MobileActionItem actions={swipeActions} showHint={index === 0} className="bg-transparent">
+    <MobileActionItem actions={swipeActions} showHint={index === 0} className="bg-transparent" renderHeader={renderHeader}>
       <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50">
-        <div className="flex-shrink-0 w-9 h-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center">
-          <FileText className="w-5 h-5 text-[#1a3a5c]" />
+        <div className={cn("flex-shrink-0 w-9 h-9 border rounded-lg flex items-center justify-center", iconConfig.className)}>
+          <iconConfig.icon className="w-5 h-5" />
         </div>
 
         <div className="flex-grow min-w-0 pr-10">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-            {formatShortName(nomeExibicao)}
+            {formatShortName(nomeExibicao, true)}
           </p>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
@@ -118,7 +127,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
           <div className="flex items-center gap-1.5">
-            {(status === ContratoStatus.PENDENTE || isPassageiro) ? (
+            {(status === ContratoStatus.PENDENTE || isSemContrato) ? (
               item.created_at && (
                 <div className="flex items-center gap-1 text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
                   <Clock className="w-2.5 h-2.5" />
@@ -257,7 +266,7 @@ export const ContratosList = memo(function ContratosList({
                       </div>
                       <div className="flex flex-col">
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                          {formatShortName(nomePassageiro)}
+                          {formatShortName(nomePassageiro, true)}
                         </p>
                         <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                           {formatFirstName(nomeResponsavel)}

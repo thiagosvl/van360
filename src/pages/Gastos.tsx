@@ -1,20 +1,18 @@
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
-import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
-import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useGastosViewModel } from "@/hooks";
-import { CATEGORIAS_GASTOS } from "@/types/gasto";
 import { KPICardVariant } from "@/types/enums";
+import { CATEGORIAS_GASTOS } from "@/types/gasto";
 import { formatCurrency } from "@/utils/formatters/currency";
 import {
-  CalendarIcon,
   TrendingDown,
-  TrendingUp,
-  Wallet,
+  Wallet
 } from "lucide-react";
 
 export default function Gastos() {
@@ -34,17 +32,25 @@ export default function Gastos() {
     totalGasto,
     mediaDiaria,
     principalCategoriaData,
-    isLoading,
+    profile,
+    isProfileLoading,
+    isLoading: loading,
     isActionLoading,
     handleRefresh,
     handleDelete,
     handleOpenForm,
     veiculos,
-    isProfileLoading,
+    hasActiveFilters,
+    clearFilters,
   } = useGastosViewModel();
 
-  const loading = isLoading;
-  const loadingActions = isProfileLoading;
+  if (!profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
+        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,6 +90,8 @@ export default function Gastos() {
             veiculos={veiculos}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
           />
 
           {/* 2. KPIs */}
@@ -108,7 +116,7 @@ export default function Gastos() {
           </div>
 
           {loading ? (
-            <ListSkeleton />
+            <ListSkeleton count={5} />
           ) : (
             <div className="relative">
               <GastosList

@@ -3,8 +3,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
-  useState,
+  useState
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -14,12 +13,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CarteirinhaSkeleton } from "@/components/skeletons";
 
 import {
-  CarteirinhaInfo,
+  CarteirinhaCobrancas,
+  CarteirinhaDadosPessoais,
   CarteirinhaHeader,
-  CarteirinhaDadosPessoais
+  CarteirinhaInfo,
+  CarteirinhaObservacoes
 } from "@/components/features/passageiro/carteirinha";
-import { CarteirinhaCobrancas } from "@/components/features/passageiro/carteirinha";
-import { CarteirinhaObservacoes } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
@@ -27,20 +26,17 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { useIsMobile } from "@/hooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobrancasByPassageiro,
+  safeCloseDialog, useCobrancasByPassageiro,
   useDeleteCobranca,
   useDeletePassageiro,
   useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
+  useEnviarNotificacaoCobranca, useIsMobile, usePassageiro,
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
-  useUpdatePassageiro,
-  safeCloseDialog,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -70,7 +66,6 @@ export default function PassageiroCarteirinha() {
     openCobrancaEditDialog,
     openCobrancaFormDialog,
     openManualPaymentDialog,
-    openReceiptDialog,
     openUpdateContractDialog,
     openGenerateContractDialog,
   } = useLayout();
@@ -290,8 +285,8 @@ export default function PassageiroCarteirinha() {
         action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
       description:
         action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens ativas e a geração de mensalidades será retomada."
-          : "O passageiro ficará inativo e a geração de mensalidades será pausada. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listagens de passageiros ativos e as mensalidades dele voltarão a ser geradas automaticamente."
+          : "O passageiro ficará inativo e as mensalidades dele não serão mais geradas automaticamente. Você poderá reativá-lo depois.",
       confirmText: action === "ativar" ? "Reativar" : "Desativar",
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {

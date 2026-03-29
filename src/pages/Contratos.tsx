@@ -1,9 +1,5 @@
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
-import { Button } from "@/components/ui/button";
-import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { AlertCircle, CheckCircle2, FileText, Send, UserX } from "lucide-react";
 
-import { KPICard } from "@/components/common/KPICard";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -38,10 +34,10 @@ const Contratos = () => {
     actions,
   } = useContratosViewModel();
 
-  if (isProfileLoading || !profile) {
+  if (!profile) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-600">
-        <p>Carregando informações...</p>
+      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
+        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
       </div>
     );
   }
@@ -55,7 +51,7 @@ const Contratos = () => {
             <DashboardStatusCard
               type="pending"
               title="Contratos Desativados"
-              description="Para gerar, editar ou substituir contratos, você precisa ativar o módulo. Por enquanto, as ações de alteração estão bloqueadas, mas seus dados continuam disponíveis para consulta."
+              description="Para gerar, editar ou substituir contratos, você precisa ativar essa funcionalidade. Por enquanto, as ações de alteração estão bloqueadas, mas seus dados continuam disponíveis para consulta."
               actionLabel="Ativar Agora"
               onAction={handleOpenContractSetup}
             />

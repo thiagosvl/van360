@@ -5,19 +5,19 @@ interface ListSkeletonProps {
   className?: string;
 }
 
-export function ListSkeleton({ count = 3, className }: ListSkeletonProps) {
+export function ListSkeleton({ count = 5, className }: ListSkeletonProps) {
   return (
     <div className={`space-y-3 ${className || ""}`}>
       {[...Array(count)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center justify-between p-4 border rounded-lg"
+          className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 border border-gray-100/50"
         >
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="flex-shrink-0 w-9 h-9 rounded-lg" />
+          <div className="flex-grow space-y-2">
             <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-3 w-1/3 opacity-60" />
           </div>
-          <Skeleton className="h-8 w-8 rounded-full" />
         </div>
       ))}
     </div>

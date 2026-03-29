@@ -44,6 +44,6 @@ export const getStatusColor = (status: string, dataVencimento: string) => {
     return "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-800 border-orange-200 shadow-sm";
   }
 
-  return "bg-slate-100 text-slate-700 hover:bg-slate-200 border-transparent shadow-sm";
+  return "bg-amber-50 text-amber-600 hover:bg-amber-100 border-transparent shadow-sm";
 };
 

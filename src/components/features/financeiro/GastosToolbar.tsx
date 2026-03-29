@@ -38,6 +38,8 @@ interface GastosToolbarProps {
   disabled?: boolean;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
 }
 
 export const GastosToolbar = memo(function GastosToolbar({
@@ -52,6 +54,8 @@ export const GastosToolbar = memo(function GastosToolbar({
   disabled,
   searchTerm,
   onSearchChange,
+  hasActiveFilters: hasActiveFiltersProp,
+  onClearFilters,
 }: GastosToolbarProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -91,7 +95,9 @@ export const GastosToolbar = memo(function GastosToolbar({
     });
   };
 
-  const hasActiveFilters = categoriaFilter !== "todas" || veiculoFilter !== "todos";
+  const hasActiveFilters = 
+    hasActiveFiltersProp ?? 
+    (categoriaFilter !== "todas" || veiculoFilter !== "todos" || !!searchTerm);
 
   return (
     <div className="flex flex-col gap-5">
@@ -99,7 +105,10 @@ export const GastosToolbar = memo(function GastosToolbar({
         {/* Search Bar */}
         <div className="relative group flex-grow">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1a3a5c] transition-colors" />
+            <Search className={cn(
+              "h-4 w-4 transition-colors",
+              searchTerm ? "text-amber-500" : "text-gray-400 group-focus-within:text-[#1a3a5c]"
+            )} />
           </div>
           <Input
             placeholder="Buscar por descrição..."
@@ -116,17 +125,11 @@ export const GastosToolbar = memo(function GastosToolbar({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={cn(
-                  "bg-white border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest gap-2 h-12 rounded-xl px-5 shadow-diff-shadow hover:bg-gray-50",
-                  hasActiveFilters && "border-amber-500/50 bg-amber-50/10"
-                )}
+                className="bg-white border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest gap-2 h-12 rounded-xl px-5 shadow-diff-shadow hover:bg-gray-50"
                 disabled={disabled}
               >
-                <ListFilter className="h-4 w-4" />
+                <ListFilter className={cn("h-4 w-4", hasActiveFilters && "text-amber-500")} />
                 Filtros
-                {hasActiveFilters && (
-                  <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent 
@@ -139,10 +142,7 @@ export const GastosToolbar = memo(function GastosToolbar({
                    <h4 className="font-headline font-black text-[#1a3a5c] text-sm uppercase tracking-wider">Filtragem Avançada</h4>
                     {hasActiveFilters && (
                         <button 
-                          onClick={() => {
-                            onCategoriaChange("todas");
-                            onVeiculoChange("todos");
-                          }} 
+                          onClick={onClearFilters} 
                           className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline"
                         >
                           Limpar
@@ -206,17 +206,11 @@ export const GastosToolbar = memo(function GastosToolbar({
             <DrawerTrigger asChild>
               <Button
                 variant="outline"
-                className={cn(
-                  "flex-1 bg-white border border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-diff-shadow",
-                   hasActiveFilters && "border-amber-500/50 bg-amber-50/5"
-                )}
+                className="flex-1 bg-white border border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-diff-shadow"
                 disabled={disabled}
               >
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className={cn("h-4 w-4 mr-2", hasActiveFilters && "text-amber-500")} />
                 Filtros
-                {hasActiveFilters && (
-                    <span className="ml-1.5 flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                )}
               </Button>
             </DrawerTrigger>
             <DrawerContent

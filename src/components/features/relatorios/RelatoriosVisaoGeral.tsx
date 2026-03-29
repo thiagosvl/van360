@@ -83,9 +83,6 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
             <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
               Fluxo do Mês
             </h3>
-            <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
-              Resumo Financeiro
-            </span>
           </div>
         </div>
 

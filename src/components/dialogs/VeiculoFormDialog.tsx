@@ -346,18 +346,18 @@ export default function VeiculoFormDialog({
               />
             )}
             {allowBatchCreation && !editingVeiculo && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-3xl bg-blue-50/30 border border-blue-100/50 mt-2">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <Checkbox
                   id="keepOpen"
                   checked={keepOpen}
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-5 w-5 rounded-md border-blue-200 text-blue-600 focus:ring-blue-500"
+                  className="h-5 w-5 rounded-md border-slate-300"
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="text-[10px] font-black uppercase tracking-wider text-blue-700 cursor-pointer select-none"
+                  className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none"
                 >
                   Cadastrar outro em seguida
                 </label>

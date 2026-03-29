@@ -36,7 +36,7 @@ export const passageiroApi = {
     if (data.endereco !== undefined) payload.endereco = cleanString(data.endereco);
     if (data.bairro !== undefined) payload.bairro = cleanString(data.bairro);
     if (data.complemento !== undefined) payload.complemento = cleanString(data.complemento);
-    if (data.observacoes !== undefined) payload.observacoes = cleanString(data.observacoes);
+    if (data.observacoes !== undefined) payload.observacoes = cleanString(data.observacoes) || null;
 
     return apiClient
       .put(`${endpointBase}/${passageiroId}`, payload)

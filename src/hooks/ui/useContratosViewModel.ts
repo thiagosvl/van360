@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useContratos,
@@ -9,16 +10,19 @@ import {
   useSubstituirContrato,
 } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useFilters } from "@/hooks/ui/useFilters";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { toast } from "sonner";
 
 export function useContratosViewModel() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
-  const { profile, isLoading: isProfileLoading } = useProfile();
+  const { user } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -40,8 +44,16 @@ export function useContratosViewModel() {
   }, [setPageTitle]);
 
   // Filtros e Abas
+  const {
+    searchTerm: busca,
+    setSearchTerm: setBusca,
+    hasActiveFilters,
+    setFilters
+  } = useFilters({
+    searchParam: "search",
+  });
+
   const activeTab = (searchParams.get("tab") as ContratoTab) || ContratoTab.PENDENTES;
-  const [busca, setBusca] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
@@ -50,7 +62,11 @@ export function useContratosViewModel() {
   }, [busca]);
 
   const handleTabChange = useCallback((val: string) => {
-    setSearchParams({ tab: val });
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("tab", val);
+      return newParams;
+    });
   }, [setSearchParams]);
 
   // Queries e Mutations
@@ -70,7 +86,14 @@ export function useContratosViewModel() {
     await Promise.all([refetchKPIs(), refetchContratos()]);
   };
 
+  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
+
   const handleOpenContractSetup = useCallback(() => {
+    if (!isContratoAtivo) {
+      toast.error("Contratos desativados");
+      return;
+    }
+
     openContractSetupDialog({
         forceOpen: true,
         onSuccess: (usarContratos) => {
@@ -80,7 +103,7 @@ export function useContratosViewModel() {
             }
         }
     });
-  }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
+  }, [isContratoAtivo, openContractSetupDialog, refetchKPIs, refetchContratos]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
@@ -137,20 +160,27 @@ export function useContratosViewModel() {
   }, [openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
   const handleOpenPreview = useCallback(async () => {
-    try {
-        const result = await previewMutation.mutateAsync({});
-        
-        if (pdfUrlRef.current) {
-            window.URL.revokeObjectURL(pdfUrlRef.current);
-        }
-        
-        pdfUrlRef.current = result.url;
-        setPdfUrl(result.url);
-        setIsPreviewPdfOpen(true);
-    } catch (err) {
-        // Handled by mutation
+    if (!isContratoAtivo) {
+      toast.error("Contratos desativados", {
+        description: "Ative o uso de contratos para visualizar o modelo."
+      });
+      return;
     }
-  }, [previewMutation]);
+
+    try {
+      const result = await previewMutation.mutateAsync({});
+
+      if (pdfUrlRef.current) {
+        window.URL.revokeObjectURL(pdfUrlRef.current);
+      }
+
+      pdfUrlRef.current = result.url;
+      setPdfUrl(result.url);
+      setIsPreviewPdfOpen(true);
+    } catch (err) {
+      // Handled by mutation
+    }
+  }, [isContratoAtivo, previewMutation]);
 
   const isActionLoading = 
     deleteMutation.isPending || 
@@ -158,8 +188,6 @@ export function useContratosViewModel() {
     substituirMutation.isPending ||
     createMutation.isPending ||
     previewMutation.isPending;
-
-  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
 
   return {
     profile,
@@ -180,6 +208,8 @@ export function useContratosViewModel() {
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,
+    hasActiveFilters,
+    setFilters,
     actions: {
       onVerPassageiro: handleVerPassageiro,
       onCopiarLink: handleCopiarLink,

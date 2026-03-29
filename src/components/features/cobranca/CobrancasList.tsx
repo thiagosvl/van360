@@ -3,6 +3,7 @@ import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
+import { ListSkeleton } from "@/components/skeletons";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 import {
   Table,
@@ -18,13 +19,12 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import {
   formatDateToBR,
+  formatDiasAtraso,
   formatFirstName,
   formatPaymentType,
   formatShortName,
 } from "@/utils/formatters";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { DollarSign, Wallet } from "lucide-react";
 import { memo, useState } from "react";
 import { CobrancaSummary } from "./CobrancaSummary";
@@ -82,7 +82,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
-  const shortName = formatShortName(cobranca?.passageiro?.nome);
+  const shortName = formatShortName(cobranca?.passageiro?.nome, true);
   const firstNomeResponsavel = formatFirstName(cobranca?.passageiro?.nome_responsavel);
 
   const statusColor = isPaid
@@ -99,7 +99,10 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
       <div
         className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+        <div className={cn(
+          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
+          isPaid ? "bg-emerald-500" : isAtrasado ? "bg-red-500" : "bg-amber-500"
+        )}>
           <span className="text-white font-headline font-bold text-sm leading-none">
             {vencDia}
           </span>
@@ -109,10 +112,15 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {shortName}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex flex-col min-w-0">
             <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
               {firstNomeResponsavel}
             </p>
+            {isAtrasado && (
+              <p className="text-[9px] font-bold text-red-500 uppercase tracking-tight mt-0.5">
+                {formatDiasAtraso(cobranca.data_vencimento)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -172,6 +180,7 @@ export function CobrancasList({
     <ResponsiveDataList
       data={cobrancas}
       isLoading={isLoading}
+      loadingSkeleton={<ListSkeleton count={5} />}
       emptyState={getEmptyState()}
       mobileContainerClassName="space-y-3"
       mobileItemRenderer={(cobranca, index) => (
@@ -223,7 +232,7 @@ export function CobrancasList({
                   <TableCell className="px-8 py-5">
                     <div className="flex flex-col">
                       <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                        {formatShortName(cobranca?.passageiro?.nome)}
+                        {formatShortName(cobranca?.passageiro?.nome, true)}
                       </p>
                       <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                         {firstName}

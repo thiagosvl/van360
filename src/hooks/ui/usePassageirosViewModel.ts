@@ -1,6 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
+  safeCloseDialog,
   useCreateContrato,
   useCreateEscola,
   useCreatePassageiro,
@@ -12,7 +13,6 @@ import {
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useVeiculos,
-  safeCloseDialog,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -89,6 +89,7 @@ export function usePassageirosViewModel() {
     setSelectedPeriodo,
     clearFilters,
     setFilters,
+    hasActiveFilters,
   } = useFilters({
     escolaParam: "escola",
     veiculoParam: "veiculo",
@@ -220,8 +221,8 @@ export function usePassageirosViewModel() {
       openConfirmationDialog({
         title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
         description: action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens ativas e a geração de mensalidades será retomada."
-          : "O passageiro ficará inativo e a geração de mensalidades será pausada. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listagens de passageiros ativos e as mensalidades dele voltarão a ser geradas automaticamente."
+          : "O passageiro ficará inativo e as mensalidades dele não serão mais geradas automaticamente. Você poderá reativá-lo depois.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
@@ -376,12 +377,6 @@ export function usePassageirosViewModel() {
       refreshProfile(),
     ]);
   }, [refetchPassageiros, refetchEscolas, refetchVeiculos, refreshProfile]);
-
-  const hasActiveFilters =
-    selectedStatus !== FilterDefaults.TODOS ||
-    selectedEscola !== FilterDefaults.TODAS ||
-    selectedVeiculo !== FilterDefaults.TODOS ||
-    selectedPeriodo !== FilterDefaults.TODOS;
 
   return {
     profile,

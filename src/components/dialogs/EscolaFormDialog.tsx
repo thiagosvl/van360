@@ -559,18 +559,18 @@ export default function EscolaFormDialog({
             </div>
 
             {allowBatchCreation && (
-              <div className="flex items-center gap-2 px-1 pt-4">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <Checkbox
                   id="keepOpen"
                   checked={keepOpen}
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                  className="h-5 w-5 rounded-md border-slate-300"
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer select-none italic"
+                  className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none"
                 >
                   Cadastrar outra em seguida
                 </label>

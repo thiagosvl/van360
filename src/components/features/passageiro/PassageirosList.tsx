@@ -11,19 +11,18 @@ import {
 } from "@/components/ui/table";
 import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { cn } from "@/lib/utils";
-import { Passageiro } from "@/types/passageiro";
-import {
-  formatarPlacaExibicao,
-} from "@/utils/domain/veiculo/placaUtils";
 import { PassageiroPeriodo } from "@/types/enums";
+import { Passageiro } from "@/types/passageiro";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatFirstName,
   formatShortName,
   getInitials,
 } from "@/utils/formatters";
+import { formatPeriodo } from "@/utils/formatters/periodo";
+import { ChevronRight } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
-import { formatPeriodo } from "@/utils/formatters/periodo";
 
 const getPeriodoSuffix = (periodo?: PassageiroPeriodo) => {
   const labels: Record<string, string> = {
@@ -76,41 +75,38 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   const schoolName = passageiro.escola?.nome || "Não informada";
 
   return (
-    <MobileActionItem actions={actions as any} className="bg-transparent">
-      <div
-        onClick={() => onHistorico(passageiro)}
-        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-      >
-        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-          <span className="text-white font-headline font-bold text-sm leading-none">
-            {initial}
-          </span>
-        </div>
+    <div
+      onClick={() => onHistorico(passageiro)}
+      className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4"
+    >
+      <div className={cn(
+        "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
+        passageiro.ativo ? "bg-[#1a3a5c]" : "bg-slate-400"
+      )}>
+        <span className="text-white font-headline font-bold text-sm leading-none">
+          {initial}
+        </span>
+      </div>
 
-        <div className="flex-grow min-w-0 pr-10">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-            {shortName}
-            <span
-              className={cn(
-                "text-[8px] ml-2 font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border",
-                "bg-gray-50/50 text-gray-400 border-gray-100/80"
-              )}
-            >
-              {getPeriodoSuffix(passageiro.periodo)}
-            </span>
+      <div className="flex-grow min-w-0 pr-6">
+        <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight">
+          {shortName}
+        </p>
+        <div className="flex items-center gap-1 mt-0.5 min-w-0">
+          <p className="text-[10px] text-gray-500 font-medium opacity-60 flex-shrink-0">
+            {respName}
           </p>
-          <div className="flex items-center gap-1 mt-0.5 min-w-0">
-            <p className="text-[10px] text-gray-500 font-medium opacity-60 flex-shrink-0">
-              {respName}
-            </p>
-            <span className="text-[8px] text-gray-400 opacity-40">•</span>
-            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-              {schoolName}
-            </p>
-          </div>
+          <span className="text-[8px] text-gray-400 opacity-40">•</span>
+          <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+            {schoolName}
+          </p>
         </div>
       </div>
-    </MobileActionItem>
+
+      <div className="flex-shrink-0 text-slate-300">
+        <ChevronRight className="h-5 w-5" />
+      </div>
+    </div>
   );
 });
 
