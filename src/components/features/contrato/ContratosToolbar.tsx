@@ -101,10 +101,11 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               busca ? "text-amber-500" : "text-slate-400 group-focus-within:text-[#1a3a5c]"
             )} />
             <Input
+              type="search"
               placeholder="Buscar por passageiro ou responsável..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="pl-11 pr-4 bg-white border-none shadow-diff-shadow h-12 rounded-xl text-sm font-medium text-slate-600 placeholder:text-slate-400 transition-all focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/10"
+              className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
             />
           </div>
 

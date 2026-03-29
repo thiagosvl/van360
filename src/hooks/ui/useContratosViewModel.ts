@@ -89,19 +89,14 @@ export function useContratosViewModel() {
   const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
 
   const handleOpenContractSetup = useCallback(() => {
-    if (!isContratoAtivo) {
-      toast.error("Contratos desativados");
-      return;
-    }
-
     openContractSetupDialog({
-        forceOpen: true,
-        onSuccess: (usarContratos) => {
-            if (usarContratos) {
-                refetchKPIs();
-                refetchContratos();
-            }
+      forceOpen: true,
+      onSuccess: (usarContratos) => {
+        if (usarContratos) {
+          refetchKPIs();
+          refetchContratos();
         }
+      }
     });
   }, [isContratoAtivo, openContractSetupDialog, refetchKPIs, refetchContratos]);
 
@@ -182,9 +177,9 @@ export function useContratosViewModel() {
     }
   }, [isContratoAtivo, previewMutation]);
 
-  const isActionLoading = 
-    deleteMutation.isPending || 
-    reenviarMutation.isPending || 
+  const isActionLoading =
+    deleteMutation.isPending ||
+    reenviarMutation.isPending ||
     substituirMutation.isPending ||
     createMutation.isPending ||
     previewMutation.isPending;

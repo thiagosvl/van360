@@ -25,6 +25,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 // Services
 import { apiClient } from "@/services/api/client";
@@ -133,6 +135,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const formMotoristaSchema = z.object({
     cpfcnpj: cpfSchema,
@@ -173,7 +176,14 @@ export default function Login() {
 
   useEffect(() => {
     sessionManager.signOut();
-  }, []);
+    
+    // Carregar CPF salvo se existir
+    const savedCpf = localStorage.getItem("van360_saved_cpf");
+    if (savedCpf) {
+      formMotorista.setValue("cpfcnpj", savedCpf);
+      setRememberMe(true);
+    }
+  }, [formMotorista]);
 
   const handleLoginMotorista = async (data: any) => {
     setLoading(true);
@@ -217,6 +227,13 @@ export default function Login() {
 
       if (!session) {
         throw new Error("Sessão não foi estabelecida corretamente.");
+      }
+
+      // Lógica de Lembrar CPF
+      if (rememberMe) {
+        localStorage.setItem("van360_saved_cpf", data.cpfcnpj);
+      } else {
+        localStorage.removeItem("van360_saved_cpf");
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -412,6 +429,21 @@ export default function Login() {
                       {formMotorista.formState.errors.root.message}
                     </div>
                   )}
+
+                  <div className="flex items-center gap-2 pt-1 pb-2">
+                    <Checkbox 
+                      id="rememberMe" 
+                      checked={rememberMe} 
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      className="border-gray-200 rounded-md data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                    />
+                    <Label 
+                      htmlFor="rememberMe" 
+                      className="text-xs font-medium text-slate-500 cursor-pointer select-none"
+                    >
+                      Lembrar meu CPF
+                    </Label>
+                  </div>
 
                   <div className="pt-2">
                     <Button

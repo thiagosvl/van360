@@ -53,13 +53,13 @@ export function AppNavbar({ role }: { role: "motorista" }) {
 
       // 2. Limpamos a sessão local (Storage e Supabase Client)
       await sessionManager.signOut();
-      clearAppSession(true);
+      clearAppSession();
 
       // 3. Redirecionamento total e limpo
       window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err) {
       // Em caso de erro crítico, forçamos a saída local
-      clearAppSession(true);
+      clearAppSession();
       window.location.href = ROUTES.PUBLIC.LOGIN;
     }
   };

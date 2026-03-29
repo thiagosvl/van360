@@ -22,16 +22,13 @@ export default function Splash() {
           alt="Van360"
           className="w-[120px] h-[120px] object-contain drop-shadow-2xl mb-6"
         />
-        <h1 className="text-2xl font-black text-white tracking-tight mb-2">
-          Van<span className="text-[#f59e0b]">360</span>
-        </h1>
         <p className="text-white/70 text-base font-medium max-w-[260px]">
           Gestão completa da sua van escolar
         </p>
       </div>
 
       {/* Bottom: Buttons */}
-      <div className="w-full max-w-[320px] space-y-3">
+      <div className="w-full max-w-[320px] space-y-3 mb-8">
         <button
           onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
           className="w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base py-4 rounded-xl shadow-[0_4px_16px_rgba(245,158,11,.35)] transition-all active:scale-[0.98]"

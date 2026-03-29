@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BottomNavbar } from "@/components/navigation/BottomNavbar";
@@ -11,9 +12,61 @@ import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";
 import { Outlet, useNavigate } from "react-router-dom";
 
+const SWIPE_CLOSE_THRESHOLD = 100;
+
 function AppLayoutContent({ role }: { role: "motorista" }) {
   const navigate = useNavigate();
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
+
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const isHorizontalSwipe = useRef<boolean | null>(null);
+  const currentTranslate = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isHorizontalSwipe.current = null;
+    currentTranslate.current = 0;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+
+    if (isHorizontalSwipe.current === null) {
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        isHorizontalSwipe.current = Math.abs(dx) > Math.abs(dy);
+      }
+      return;
+    }
+
+    if (!isHorizontalSwipe.current || dx <= 0 || !sheetRef.current) return;
+
+    currentTranslate.current = dx;
+    sheetRef.current.style.transform = `translateX(${dx}px)`;
+    sheetRef.current.style.transition = "none";
+  };
+
+  const handleTouchEnd = () => {
+    if (!sheetRef.current) return;
+
+    if (currentTranslate.current > SWIPE_CLOSE_THRESHOLD) {
+      const el = sheetRef.current;
+      el.style.transition = "transform 0.1s ease-out";
+      el.style.transform = "translateX(100%)";
+      setTimeout(() => {
+        el.style.animationDuration = "0s";
+        setIsMobileMenuOpen(false);
+      }, 200);
+    } else {
+      sheetRef.current.style.transition = "transform 0.1s ease-out";
+      sheetRef.current.style.transform = "";
+    }
+
+    currentTranslate.current = 0;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -45,7 +98,14 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
 
       {/* Menu Lateral Mobile (Gatilhado pelo botão "Mais") */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side="right" className="w-[85%] sm:w-80 px-0 border-l border-gray-100 bg-white">
+        <SheetContent
+          ref={sheetRef}
+          side="right"
+          className="w-[85%] sm:w-80 px-0 border-l border-gray-100 bg-white"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="px-6 pb-4 pt-6 border-b border-gray-50 bg-slate-50/50">
             <SheetTitle className="text-left">
               <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Menu</span>

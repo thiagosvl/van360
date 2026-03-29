@@ -145,9 +145,7 @@ const Index = () => {
       {/* ══════════ NAVBAR ══════════ */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <div className="max-w-[1120px] mx-auto px-5 flex items-center justify-between h-14 md:h-16">
-          <span className="text-2xl font-black text-[#1a3a5c] tracking-tight">
-            Van<span className="text-[#f59e0b]">360</span>
-          </span>
+          <img src="/assets/logo-van360.png" alt="Van360" className="h-8 w-auto" />
           <div className="hidden md:flex items-center gap-6">
             <Link
               to={LOGIN}
