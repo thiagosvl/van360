@@ -5,7 +5,7 @@ import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
-import { getStatusColor, getStatusText } from "@/utils/formatters";
+import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Pencil, User } from "lucide-react";
@@ -59,8 +59,8 @@ export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobran
               <User className="w-5 h-5 text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900 leading-tight">{cobranca?.passageiro?.nome}</p>
-              <p className="text-xs text-gray-500 leading-tight mt-0.5">{cobranca?.passageiro?.nome_responsavel}</p>
+              <p className="text-sm font-bold text-gray-900 leading-tight">{formatShortName(cobranca?.passageiro?.nome, true)}</p>
+              <p className="text-xs text-gray-500 leading-tight mt-0.5">{formatFirstName(cobranca?.passageiro?.nome_responsavel)}</p>
             </div>
           </div>
         </div>

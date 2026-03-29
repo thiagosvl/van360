@@ -2,6 +2,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
 import { Gasto } from "@/types/gasto";
 import { memo } from "react";
+import { GastoSummary } from "./GastoSummary";
 
 interface GastoActionsMenuProps {
   gasto: Gasto;
@@ -15,5 +16,11 @@ export const GastoActionsMenu = memo(function GastoActionsMenu({
   onDelete,
 }: GastoActionsMenuProps) {
   const actions = useGastoActions({ gasto, onEdit, onDelete });
-  return <ActionsDropdown actions={actions} />;
+  
+  return (
+    <ActionsDropdown 
+      actions={actions} 
+      header={<GastoSummary gasto={gasto} />}
+    />
+  );
 });

@@ -10,6 +10,9 @@ interface PassageiroActionsMenuProps {
   onToggleStatus: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
+  onSubstituirContrato?: (passageiro: Passageiro) => void;
+  onExcluirContrato?: (passageiro: Passageiro) => void;
+  onReenviarNotificacaoContrato?: (passageiro: Passageiro) => void;
   usarContratos?: boolean;
 }
 
@@ -24,5 +27,7 @@ export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
     usarContratos,
   });
 
-  return <ActionsDropdown actions={actions} />;
+  return (
+    <ActionsDropdown actions={actions} />
+  );
 });

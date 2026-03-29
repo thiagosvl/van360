@@ -7,6 +7,7 @@ interface ContratoActionsMenuProps {
   tipo: 'contrato' | 'passageiro';
   status?: string;
   isDesativado?: boolean;
+  usarContratos?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
   onReenviarNotificacao?: (id: string) => void;
@@ -17,8 +18,15 @@ interface ContratoActionsMenuProps {
   onVisualizarFinal?: (url: string) => void;
 }
 
+import { ContratoSummary } from "./ContratoSummary";
+
 export const ContratoActionsMenu = memo(function ContratoActionsMenu(props: ContratoActionsMenuProps) {
   const actions = useContratoActions(props);
 
-  return <ActionsDropdown actions={actions} />;
+  return (
+    <ActionsDropdown 
+      actions={actions} 
+      header={<ContratoSummary item={props.item} />}
+    />
+  );
 });

@@ -96,13 +96,8 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
       : { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
 
   const swipeActions = actions.map((action) => ({
-    label: action.label,
-    icon: action.icon,
-    onClick: action.onClick,
-    isLink: action.isLink,
-    href: action.href,
+    ...action,
     swipeColor: action.swipeColor || "bg-gray-500",
-    isDestructive: action.isDestructive,
   }));
 
   const renderHeader = () => <ContratoSummary item={item} />;
@@ -125,7 +120,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-7 top-8 -translate-y-1/2">
           <div className="flex items-center gap-1.5">
             {(status === ContratoStatus.PENDENTE || isSemContrato) ? (
               item.created_at && (

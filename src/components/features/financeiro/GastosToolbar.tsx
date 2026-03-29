@@ -226,7 +226,7 @@ export const GastosToolbar = memo(function GastosToolbar({
 
                 <div className="flex-1 overflow-y-auto px-8">
                 <div className="grid grid-cols-2 gap-5 mt-4">
-                    <div className="space-y-2 col-span-2">
+                    <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Categoria</Label>
                     <Select
                         value={tempFilters.categoria}
@@ -248,7 +248,7 @@ export const GastosToolbar = memo(function GastosToolbar({
                     </Select>
                     </div>
 
-                    <div className="space-y-2 col-span-2">
+                    <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Veículo</Label>
                     <Select
                         value={tempFilters.veiculo}
@@ -272,19 +272,19 @@ export const GastosToolbar = memo(function GastosToolbar({
                     </div>
                 </div>
 
-                <div className="pt-10 flex flex-col gap-3">
-                    <Button 
-                    className="w-full h-14 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase tracking-widest text-xs shadow-lg" 
-                    onClick={handleApplyFilters}
-                    >
-                    Aplicar Filtros
-                    </Button>
+                <div className="pt-10 flex flex-row gap-3">
                     <Button
                     variant="ghost"
-                    className="w-full h-12 rounded-xl text-gray-400 font-bold uppercase tracking-widest text-[10px]"
+                    className="flex-1 h-12 rounded-2xl text-slate-400 font-black uppercase tracking-wider text-[10px] hover:bg-slate-50 transition-all active:scale-95"
                     onClick={handleClearMobileFilters}
                     >
-                    Limpar Filtros
+                    Limpar
+                    </Button>
+                    <Button 
+                    className="flex-1 h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white font-black uppercase tracking-wider text-[10px] shadow-lg shadow-[#1a3a5c]/20 transition-all active:scale-95" 
+                    onClick={handleApplyFilters}
+                    >
+                    Aplicar
                     </Button>
                 </div>
                 </div>

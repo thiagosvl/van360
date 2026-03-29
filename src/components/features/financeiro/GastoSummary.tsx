@@ -1,9 +1,13 @@
 import { Gasto } from "@/types/gasto";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import { formatarPlacaExibicao } from "@/utils/domain";
+import { cn } from "@/lib/utils";
 import {
+  Calendar,
+  Wallet,
+  Tag,
   Bus,
-  Calendar
+  TrendingDown
 } from "lucide-react";
 
 interface GastoSummaryProps {
@@ -12,55 +16,49 @@ interface GastoSummaryProps {
 }
 
 export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
-  const diaGasto = new Date(gasto.data).getUTCDate().toString().padStart(2, "0");
-
+  // Se o gasto tem veículo, mostramos a placa no contexto superior
+  const veiculoInfo = veiculoPlaca ? ` • ${formatarPlacaExibicao(veiculoPlaca)}` : (gasto.veiculo?.placa ? ` • ${formatarPlacaExibicao(gasto.veiculo.placa)}` : "");
+  
   return (
-    <div className="flex flex-col gap-3 p-5 bg-white dark:bg-zinc-800/40 rounded-[28px] border border-slate-100 dark:border-zinc-800 shadow-sm transition-all text-left">
-      {/* Cabeçalho com Dia e Categoria */}
-      <div className="flex justify-between items-start mb-0.5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center h-10 w-10 bg-[#1a3a5c] text-white rounded-xl shrink-0 font-headline font-black text-sm">
-            {diaGasto}
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
-              Categoria
-            </p>
-            <h1 className="text-lg font-bold text-slate-800 dark:text-zinc-200 leading-tight">
-              {gasto.categoria}
-            </h1>
-          </div>
-        </div>
-        <div className="flex flex-col items-end">
-          <p className={`${gasto.valor > 9999 ? 'text-[13px]' : 'text-base'} font-headline font-bold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none pt-2`}>
-            {formatCurrency(gasto.valor)}
-          </p>
+    <div className="flex flex-col p-4 bg-gradient-to-br from-white to-slate-50/50 dark:from-zinc-900 dark:to-zinc-950 rounded-[28px] border border-slate-100 dark:border-zinc-800 shadow-sm transition-all text-left">
+      
+      {/* LINHA 1: Overline Categoria + Contexto Veículo */}
+      <div className="flex justify-between items-center mb-1.5">
+        <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest leading-none truncate pr-2">
+          {gasto.categoria}{veiculoInfo}
+        </p>
+        
+        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-50 text-red-500 dark:bg-red-950/30">
+          <TrendingDown className="h-3 w-3" />
         </div>
       </div>
 
-      {/* Descrição */}
+      {/* LINHA 2: Título (Descrição ou Categoria) */}
+      <h1 className="text-[19px] font-black text-[#1a3a5c] dark:text-zinc-100 leading-tight tracking-tight truncate">
+        {gasto.descricao || gasto.categoria}
+      </h1>
+      
+      {/* Subtítulo: Badge de Categoria se estiver usando Descrição no título */}
       {gasto.descricao && (
-        <div className="p-3 bg-slate-50/50 dark:bg-zinc-900/20 rounded-2xl border border-slate-100/50 dark:border-zinc-800/50">
-          <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium leading-relaxed">
-            {gasto.descricao}
-          </p>
-        </div>
+        <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase mt-0.5 leading-none">
+          {gasto.categoria}
+        </p>
       )}
 
-      {/* Rodapé com Datas e Veículo */}
-      <div className="flex items-center justify-between pt-2 mt-1 border-t border-slate-50 dark:border-zinc-800/50">
-        <div className="flex items-center gap-1.5 opacity-70">
-          <Calendar className="h-3 w-3 text-slate-400" />
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+      {/* LINHA 3: Footer com Valor e Data */}
+      <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
+        <div className="flex items-center gap-1.5 grayscale-0 opacity-80">
+          <Calendar className="h-3 w-3 text-amber-500" />
+          <span className="text-[10px] font-black text-slate-600 dark:text-zinc-400 uppercase tracking-tighter">
             {formatDateToBR(gasto.data)}
-          </p>
+          </span>
         </div>
 
-        <div className={`flex items-center gap-1.5 ${veiculoPlaca ? 'opacity-70' : 'opacity-40'}`}>
-          <Bus className="h-3 w-3 text-slate-400" />
-          <p className={`${veiculoPlaca ? 'text-[10px] font-black text-[#1a3a5c]' : 'text-[8.5px] font-bold text-slate-600'} dark:text-zinc-400 uppercase tracking-tighter`}>
-            {veiculoPlaca ? formatarPlacaExibicao(veiculoPlaca) : "Veículo não especificado"}
-          </p>
+        <div className="flex items-center gap-1.5">
+          <Wallet className="h-3.5 w-3.5 text-red-500 opacity-60" />
+          <span className="text-[14px] font-black text-red-600 dark:text-red-400 tracking-tight leading-none">
+            - {formatCurrency(gasto.valor)}
+          </span>
         </div>
       </div>
     </div>

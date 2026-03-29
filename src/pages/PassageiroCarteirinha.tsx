@@ -50,6 +50,7 @@ import { toast } from "@/utils/notifications/toast";
 import { Cobranca } from "@/types/cobranca";
 
 import { Passageiro } from "@/types/passageiro";
+import { formatFirstName, formatShortName } from "@/utils/formatters/name";
 
 const currentYear = new Date().getFullYear().toString();
 
@@ -436,8 +437,8 @@ export default function PassageiroCarteirinha() {
       if (!passageiro_id) return;
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
-        passageiroNome: passageiro?.nome,
-        passageiroResponsavelNome: passageiro?.nome_responsavel,
+        passageiroNome: formatShortName(passageiro?.nome, true),
+        passageiroResponsavelNome: formatFirstName(passageiro?.nome_responsavel),
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),
         onSuccess: refetchCobrancas,

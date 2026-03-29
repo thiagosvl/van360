@@ -10,6 +10,9 @@ import {
   useEscolas,
   useFilters,
   usePassageiros,
+  useDeleteContrato,
+  useReenviarContrato,
+  useSubstituirContrato,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useVeiculos,
@@ -104,14 +107,19 @@ export function usePassageirosViewModel() {
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
-  const createContrato = useCreateContrato();
+  const createContratoMutation = useCreateContrato();
+  const deleteContratoMutation = useDeleteContrato();
+  const reenviarContratoMutation = useReenviarContrato();
+  const substituirContratoMutation = useSubstituirContrato();
 
   const isActionLoading =
-    createPassageiro.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
-    createContrato.isPending ||
-    toggleAtivoPassageiro.isPending;
+    toggleAtivoPassageiro.isPending ||
+    createContratoMutation.isPending ||
+    deleteContratoMutation.isPending ||
+    reenviarContratoMutation.isPending ||
+    substituirContratoMutation.isPending;
 
   const passageiroFilters = {
     usuarioId: profile?.id,
@@ -369,6 +377,40 @@ export function usePassageirosViewModel() {
     [profile?.config_contrato?.usar_contratos, openUpdateContractDialog, openGenerateContractDialog],
   );
 
+  const handleSubstituirContrato = useCallback((passageiro: Passageiro) => {
+    if (!passageiro.contrato_id) return;
+    openConfirmationDialog({
+      title: "Substituir Contrato?",
+      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?",
+      confirmText: "Continuar",
+      onConfirm: async () => {
+        await substituirContratoMutation.mutateAsync(passageiro.contrato_id!);
+        refetchPassageiros();
+        safeCloseDialog(closeConfirmationDialog);
+      }
+    });
+  }, [openConfirmationDialog, substituirContratoMutation, closeConfirmationDialog, refetchPassageiros]);
+
+  const handleExcluirContrato = useCallback((passageiro: Passageiro) => {
+    if (!passageiro.contrato_id) return;
+    openConfirmationDialog({
+      title: "Excluir Contrato?",
+      description: "Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        await deleteContratoMutation.mutateAsync(passageiro.contrato_id!);
+        refetchPassageiros();
+        safeCloseDialog(closeConfirmationDialog);
+      }
+    });
+  }, [openConfirmationDialog, deleteContratoMutation, closeConfirmationDialog, refetchPassageiros]);
+
+  const handleReenviarNotificacaoContrato = useCallback((passageiro: Passageiro) => {
+    if (!passageiro.contrato_id) return;
+    reenviarContratoMutation.mutate(passageiro.contrato_id);
+  }, [reenviarContratoMutation]);
+
   const pullToRefreshReload = useCallback(async () => {
     await Promise.all([
       refetchPassageiros(),
@@ -409,6 +451,9 @@ export function usePassageirosViewModel() {
     handleToggleClick,
     handleDeleteClick,
     handleGenerateContract,
+    handleSubstituirContrato,
+    handleExcluirContrato,
+    handleReenviarNotificacaoContrato,
     pullToRefreshReload,
     hasActiveFilters,
   };

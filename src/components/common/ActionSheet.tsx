@@ -1,16 +1,17 @@
-import { Button } from "@/components/ui/button";
 import {
     Drawer,
     DrawerContent,
+    DrawerDescription,
     DrawerHeader,
     DrawerTitle,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, MoreVertical } from "lucide-react";
 import React, { ReactNode } from "react";
 
 export interface ActionSheetItem {
   label: string;
+  title?: string; // Subtítulo ou dica
   description?: string;
   icon?: ReactNode;
   onClick: () => void;
@@ -26,6 +27,7 @@ interface ActionSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  description?: string;
   actions: ActionSheetItem[];
   children?: ReactNode;
 }
@@ -34,115 +36,76 @@ export function ActionSheet({
   open,
   onOpenChange,
   title,
+  description,
   actions,
   children,
 }: ActionSheetProps) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent
-        className="h-auto max-h-[92vh] rounded-t-[32px] flex flex-col px-0 pb-8 bg-[#F9F9F9] dark:bg-zinc-950 border-0 outline-none shadow-2xl overflow-hidden"
+        className="h-auto max-h-[85vh] rounded-t-[32px] bg-white dark:bg-zinc-950 border-none p-0 flex flex-col outline-none shadow-2xl"
       >
-        {/* Header - Apenas se tiver título */}
-        {title && (
-          <DrawerHeader className="text-center px-6 pt-6 mb-2">
-            <DrawerTitle className="text-lg font-black text-zinc-900 dark:text-zinc-100">
-              {title}
-            </DrawerTitle>
+        {/* Header - Resumo ou Título */}
+        {(title || description || children) && (
+          <DrawerHeader className="text-left px-6 pt-6 pb-2 shrink-0">
+            {title && <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">{title}</DrawerTitle>}
+            {description && <DrawerDescription className="text-xs font-medium text-gray-400">{description}</DrawerDescription>}
+            {children && <div className="mt-4">{children}</div>}
           </DrawerHeader>
         )}
 
-        <div className={cn(
-          "px-4 pt-4 flex flex-col gap-2 overflow-y-auto",
-           !title && "pt-6" // Compensação se não houver título
-        )}>
-          {/* Conteúdo customizado (Header/Resumo) */}
-          {children && (
-            <div className="mb-2">
-              {children}
-            </div>
-          )}
-
-          {/* Agrupamento tipo Threads/Instagram */}
-          <div className="bg-white dark:bg-zinc-900 rounded-[24px] overflow-hidden border border-zinc-100/50 dark:border-zinc-800/30">
-            {actions.map((action, idx) => {
-              // Determinamos a cor de fundo com base no estado e tipo
-              const bgHoverClass = action.isDestructive 
-                ? "active:bg-rose-50 dark:active:bg-rose-900/10" 
-                : "active:bg-zinc-100 dark:active:bg-zinc-800/50";
-
-              const commonClasses = cn(
-                "w-full flex items-center justify-between text-[15px] font-semibold transition-all active:scale-[0.99] rounded-none border-b last:border-0 h-auto py-4 px-6 gap-x-4",
-                "border-zinc-50 dark:border-zinc-800/20 text-left relative",
-                bgHoverClass,
-                // Estilo Destrutivo
-                action.isDestructive 
-                    ? "text-[#FF3B30]" 
-                    : "text-zinc-900 dark:text-zinc-100",
-                // Loading/Disabled
-                (action.disabled || action.isLoading) && "opacity-50 grayscale cursor-not-allowed",
-                action.className
-              );
-
-              const content = (
-                <>
-                  {/* Container de Texto */}
-                  <div className="flex-1 flex flex-col min-w-0 pointer-events-none">
-                    <span className="text-[16px] font-bold tracking-tight leading-normal">
-                      {action.label}
-                    </span>
-                    {action.description && (
-                      <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5 leading-tight lg:leading-normal">
-                        {action.description}
-                      </span>
+        <div className="flex-1 overflow-y-auto px-4 pb-10 mt-2">
+            <div className="flex flex-col gap-1">
+              {actions.map((action, idx) => (
+                <div key={`${action.label}-${idx}`}>
+                  <button
+                    disabled={action.disabled || action.isLoading}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (action.disabled || action.isLoading) return;
+                      onOpenChange(false);
+                      action.onClick();
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
+                      action.isDestructive 
+                        ? "text-red-600 bg-red-50/10 active:bg-red-50/50" 
+                        : "text-[#1a3a5c] active:bg-slate-50",
+                      action.disabled && "opacity-40 grayscale pointer-events-none",
+                      action.className
                     )}
-                  </div>
-                  
-                  {/* Container de Ícone */}
-                  <div className={cn(
-                    "flex-shrink-0 flex items-center justify-center p-2 rounded-xl transition-colors pointer-events-none",
-                    action.isDestructive ? "bg-rose-50/50 dark:bg-rose-900/10 text-[#FF3B30]" : "text-zinc-400 dark:text-zinc-500"
-                  )}>
-                    {action.isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      action.icon && <IconRenderer icon={action.icon} className="h-5 w-5" />
-                    )}
-                  </div>
-                </>
-              );
-
-              if (action.isLink && action.href) {
-                return (
-                  <a
-                    key={`${action.label}-${idx}`}
-                    href={action.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={commonClasses}
-                    onClick={() => onOpenChange(false)}
                   >
-                    {content}
-                  </a>
-                );
-              }
+                    {/* Container de Ícone - Agora na esquerda e com fundo */}
+                    <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                         action.isDestructive 
+                            ? "bg-red-50 text-red-600" 
+                            : "bg-slate-50 text-slate-500"
+                    )}>
+                        {action.isLoading ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : action.icon ? (
+                            <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
+                                <IconRenderer icon={action.icon} className="h-5 w-5" />
+                            </div>
+                        ) : (
+                            <MoreVertical className="h-5 w-5" />
+                        )}
+                    </div>
 
-              return (
-                <button
-                  key={`${action.label}-${idx}`}
-                  disabled={action.disabled || action.isLoading}
-                  className={commonClasses}
-                  onClick={() => {
-                    if (action.disabled || action.isLoading) return;
-                    onOpenChange(false);
-                    action.onClick();
-                  }}
-                >
-                  {content}
-                </button>
-              );
-            })}
+                    <div className="flex flex-col items-start gap-0.5 overflow-hidden">
+                        <span className="font-bold text-sm tracking-tight truncate">{action.label}</span>
+                        {(action.title || action.description) && (
+                            <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider truncate">
+                                {action.title || action.description}
+                            </span>
+                        )}
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
       </DrawerContent>
     </Drawer>
   );
@@ -151,15 +114,12 @@ export function ActionSheet({
 function IconRenderer({ icon, className }: { icon: any; className?: string }) {
   if (!icon) return null;
 
-  // Se é uma função de componente Lucide ou similar (ex: Users)
   if (typeof icon === "function" || (typeof icon === "object" && icon.render)) {
     const IconComponent = icon;
     return <IconComponent className={className} />;
   }
   
-  // Se é um elemento React já instanciado (ex: <Users className="h-5 w-5" />)
   if (typeof icon === "object") {
-      // Tenta clonar e injetar a className para consistência
       try {
         return React.cloneElement(icon as any, { 
           className: cn((icon as any).props?.className, className) 
@@ -171,4 +131,3 @@ function IconRenderer({ icon, className }: { icon: any; className?: string }) {
 
   return icon;
 }
-

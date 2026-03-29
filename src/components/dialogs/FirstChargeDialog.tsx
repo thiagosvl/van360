@@ -15,6 +15,7 @@ import {
   FirstChargeStep as Step,
   useFirstChargeViewModel,
 } from "@/hooks/ui/useFirstChargeViewModel";
+import { formatFirstName, formatShortName } from "@/utils/formatters";
 
 export interface FirstChargeDialogProps {
   isOpen: boolean;
@@ -48,8 +49,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
   const currentMonthName = new Date().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
-  const firstNamePassageiro = passageiro.nome?.split(" ")[0];
-  const firstNameResponsavel = passageiro.nome_responsavel?.split(" ")[0];
+  const firstNamePassageiro = formatShortName(passageiro.nome);
+  const firstNameResponsavel = formatFirstName(passageiro.nome_responsavel);
 
   const totalSteps = showContractStep ? 4 : 3;
   const stepIndex = showContractStep ? STEP_INDEX[step] : STEP_INDEX[step] - 1;
@@ -72,7 +73,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
     (!showContractStep && step === "REGISTER_CHECK");
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={() => {}} lockClose>
+    <BaseDialog open={isOpen} onOpenChange={() => { }} lockClose>
       <BaseDialog.Header
         title={showContractStep ? "Contrato e Mensalidade" : "Registrar Mensalidade"}
         icon={<Wallet className="w-5 h-5 opacity-80" />}

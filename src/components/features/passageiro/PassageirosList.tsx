@@ -41,6 +41,9 @@ interface PassageirosListProps {
   onToggleClick: (passageiro: Passageiro) => void;
   onDeleteClick: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
+  onSubstituirContrato?: (passageiro: Passageiro) => void;
+  onExcluirContrato?: (passageiro: Passageiro) => void;
+  onReenviarNotificacaoContrato?: (passageiro: Passageiro) => void;
   usarContratos?: boolean;
 }
 
@@ -53,6 +56,9 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   onToggleClick,
   onDeleteClick,
   onGenerateContract,
+  onSubstituirContrato,
+  onExcluirContrato,
+  onReenviarNotificacaoContrato,
   usarContratos,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
@@ -65,6 +71,9 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     onToggleStatus: onToggleClick,
     onDelete: onDeleteClick as any,
     onGenerateContract,
+    onSubstituirContrato,
+    onExcluirContrato,
+    onReenviarNotificacaoContrato,
     usarContratos,
   });
 
@@ -223,9 +232,14 @@ export function PassageirosList({
                   <TableCell className="px-6 py-4 text-right">
                     <PassageiroActionsMenu
                       passageiro={passageiro}
-                      {...props}
+                      onHistorico={props.onHistorico}
+                      onEdit={props.onEdit}
                       onToggleStatus={props.onToggleClick}
                       onDelete={props.onDeleteClick}
+                      onGenerateContract={props.onGenerateContract}
+                      onSubstituirContrato={props.onSubstituirContrato}
+                      onExcluirContrato={props.onExcluirContrato}
+                      onReenviarNotificacaoContrato={props.onReenviarNotificacaoContrato}
                       usarContratos={props.usarContratos}
                     />
                   </TableCell>

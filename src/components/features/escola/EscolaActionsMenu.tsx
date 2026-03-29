@@ -3,6 +3,7 @@ import { useEscolaActions } from "@/hooks/ui/useEscolaActions";
 import { Escola } from "@/types/escola";
 import { memo } from "react";
 import { NavigateFunction } from "react-router-dom";
+import { EscolaSummary } from "./EscolaSummary";
 
 interface EscolaActionsMenuProps {
   escola: Escola;
@@ -27,5 +28,10 @@ export const EscolaActionsMenu = memo(function EscolaActionsMenu({
     onDelete,
   });
 
-  return <ActionsDropdown actions={actions} />;
+  return (
+    <ActionsDropdown 
+      actions={actions} 
+      header={<EscolaSummary escola={escola} />}
+    />
+  );
 });

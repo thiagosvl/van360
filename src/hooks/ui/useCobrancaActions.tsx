@@ -16,6 +16,7 @@ import {
   disableRegistrarPagamento,
   seForPago
 } from "@/utils/domain/cobranca/disableActions";
+import { formatShortName } from "@/utils/formatters";
 import {
   Bell,
   BellOff,
@@ -149,7 +150,7 @@ export function useCobrancaOperations({
   const handleShowHistory = useCallback(() => {
     openCobrancaHistoryDialog({
       cobrancaId: cobranca.id,
-      passageiroNome: cobranca.passageiro?.nome || "Passageiro",
+      passageiroNome: formatShortName(cobranca.passageiro?.nome, true) || "Passageiro",
     });
   }, [openCobrancaHistoryDialog, cobranca]);
 
@@ -210,17 +211,20 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
 
-    if (canViewReceipt(cobranca) && props.onVerRecibo) {
+    // 1. Ver Recibo
+    if (props.onVerRecibo) {
       actions.push({
         label: "Ver Recibo",
         icon: <Receipt className="h-4 w-4" />,
         onClick: props.onVerRecibo,
+        disabled: !canViewReceipt(cobranca) || isActionLoading,
         swipeColor: "bg-blue-600",
+        hasSeparatorAfter: true,
       });
     }
 
-    // 0.1 Desfazer Pagamento (Se pago e manual)
-    if (isPago && cobranca.pagamento_manual) {
+    // 2. Desfazer Pagamento (Sempre visível se manual)
+    if (cobranca.pagamento_manual) {
       actions.push({
         label: "Desfazer Pagamento",
         icon: <RotateCcw className="h-4 w-4" />,
@@ -231,84 +235,100 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
             handleDesfazerPagamento();
           }
         },
+        disabled: !isPago || isActionLoading,
         swipeColor: "bg-amber-500",
         isLoading: isDesfazendoPagamento,
-        disabled: isActionLoading
+        hasSeparatorAfter: true,
       });
     }
 
+    // 3. Editar
     if (onEditarCobranca) {
       actions.push({
         label: "Editar",
         icon: <FilePen className="h-4 w-4" />,
         onClick: () => {
-          document.body.click(); // Close menus/swipes
+          document.body.click();
           setTimeout(() => onEditarCobranca(), 10);
         },
         disabled: disableEditarCobranca(cobranca) || isActionLoading,
         swipeColor: "bg-blue-600",
+        hasSeparatorAfter: true,
       });
     }
 
-    if (!disableExcluirCobranca(cobranca)) {
+    // 4. Registrar Pagamento
+    if (onRegistrarPagamento) {
       actions.push({
-        label: "Excluir",
-        icon: <Trash2 className="h-4 w-4" />,
-        onClick: props.onExcluirCobranca || handleDeleteCobranca,
-        isDestructive: true,
-        swipeColor: "bg-red-600",
-        className: "text-red-600 font-bold",
-        isLoading: isDeleting,
-        disabled: isActionLoading
+        label: "Registrar Pagamento",
+        icon: <CheckCircle2 className="h-4 w-4" />,
+        onClick: () => {
+          document.body.click();
+          setTimeout(() => onRegistrarPagamento(), 10);
+        },
+        disabled: disableRegistrarPagamento(cobranca) || isActionLoading,
+        swipeColor: "bg-emerald-500",
+        hasSeparatorAfter: true,
       });
     }
 
+    // 5. Pagar via PIX (Se disponível)
+    if (onPagarPix) {
+      actions.push({
+        label: "Pagar via PIX",
+        icon: <QrCode className="h-4 w-4" />,
+        onClick: () => {
+          document.body.click();
+          setTimeout(() => onPagarPix(), 10);
+        },
+        disabled: isPago || isActionLoading,
+        swipeColor: "bg-emerald-600",
+        hasSeparatorAfter: true,
+      });
+    }
+
+    // 6. Cobrar via WhatsApp
+    actions.push({
+      label: "Cobrar via WhatsApp",
+      icon: <Send className="h-4 w-4" />,
+      onClick: handleEnviarNotificacao,
+      disabled: !canSendNotification(cobranca) || isActionLoading,
+      swipeColor: "bg-emerald-500",
+      isLoading: isSendingNotification,
+      hasSeparatorAfter: true,
+    });
+
+    // 7. Ver Carteirinha
     if (onVerCarteirinha) {
       actions.push({
         label: "Ver Carteirinha",
         icon: <User className="h-4 w-4" />,
         onClick: onVerCarteirinha,
         swipeColor: "bg-indigo-600",
+        hasSeparatorAfter: true,
       });
     }
 
-    if (!disableRegistrarPagamento(cobranca) && onRegistrarPagamento) {
-      actions.push({
-        label: "Registrar Pagamento",
-        icon: <CheckCircle2 className="h-4 w-4" />,
-        onClick: () => {
-          document.body.click(); 
-          setTimeout(() => onRegistrarPagamento(), 10);
-        },
-        swipeColor: "bg-emerald-500",
-        disabled: isActionLoading
-      });
-    }
-
+    // 8. Histórico de Alterações
     actions.push({
       label: "Histórico de Alterações",
       icon: <History className="h-4 w-4" />,
       onClick: handleShowHistory,
       swipeColor: "bg-slate-600",
+      hasSeparatorAfter: true,
     });
 
-    const canSend = canSendNotification(cobranca);
-    if (canSend) {
-      actions.push({
-        label: "Cobrar via WhatsApp",
-        icon: <Send className="h-4 w-4" />,
-        onClick: handleEnviarNotificacao,
-        swipeColor: "bg-emerald-500",
-        isLoading: isSendingNotification,
-        disabled: isActionLoading
-      });
-    }
-
-    if (actions.length > 1) {
-      for (let i = 0; i < actions.length - 1; i++) {
-        actions[i].hasSeparatorAfter = true;
-      }
-    }
+    // 9. Excluir
+    actions.push({
+      label: "Excluir",
+      icon: <Trash2 className="h-4 w-4" />,
+      onClick: props.onExcluirCobranca || handleDeleteCobranca,
+      disabled: disableExcluirCobranca(cobranca) || isActionLoading,
+      isDestructive: true,
+      swipeColor: "bg-red-600",
+      className: "text-red-600 font-bold",
+      isLoading: isDeleting,
+    });
 
     return actions;
   }, [

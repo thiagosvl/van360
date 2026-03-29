@@ -28,9 +28,10 @@ import { Cobranca } from "@/types/cobranca";
 import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
     anos,
+    meses as mesesConstants,
     tiposPagamento,
 } from "@/utils/formatters";
-import { endOfMonth, format, startOfDay, startOfMonth } from "date-fns";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     AlertTriangle,
@@ -43,18 +44,18 @@ import { UseFormReturn } from "react-hook-form";
 
 // --- Constants ---
 const meses = [
-    { value: "1", label: "Janeiro" },
-    { value: "2", label: "Fevereiro" },
-    { value: "3", label: "Março" },
-    { value: "4", label: "Abril" },
-    { value: "5", label: "Maio" },
-    { value: "6", label: "Junho" },
-    { value: "7", label: "Julho" },
-    { value: "8", label: "Agosto" },
-    { value: "9", label: "Setembro" },
-    { value: "10", label: "Outubro" },
-    { value: "11", label: "Novembro" },
-    { value: "12", label: "Dezembro" },
+    { value: "1", label: mesesConstants[0] },
+    { value: "2", label: mesesConstants[1] },
+    { value: "3", label: mesesConstants[2] },
+    { value: "4", label: mesesConstants[3] },
+    { value: "5", label: mesesConstants[4] },
+    { value: "6", label: mesesConstants[5] },
+    { value: "7", label: mesesConstants[6] },
+    { value: "8", label: mesesConstants[7] },
+    { value: "9", label: mesesConstants[8] },
+    { value: "10", label: mesesConstants[9] },
+    { value: "11", label: mesesConstants[10] },
+    { value: "12", label: mesesConstants[11] },
 ];
 
 export interface CobrancaFormContentProps {

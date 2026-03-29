@@ -3,6 +3,7 @@ import { useVeiculoActions } from "@/hooks/ui/useVeiculoActions";
 import { Veiculo } from "@/types/veiculo";
 import { memo } from "react";
 import { NavigateFunction } from "react-router-dom";
+import { VeiculoSummary } from "./VeiculoSummary";
 
 interface VeiculoActionsMenuProps {
   veiculo: Veiculo;
@@ -27,5 +28,10 @@ export const VeiculoActionsMenu = memo(function VeiculoActionsMenu({
     onDelete,
   });
 
-  return <ActionsDropdown actions={actions} />;
+  return (
+    <ActionsDropdown 
+      actions={actions} 
+      header={<VeiculoSummary veiculo={veiculo} />}
+    />
+  );
 });

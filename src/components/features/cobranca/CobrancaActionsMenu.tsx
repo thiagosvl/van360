@@ -1,6 +1,7 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { Cobranca } from "@/types/cobranca";
+import { CobrancaSummary } from "./CobrancaSummary";
 
 interface CobrancaActionsMenuProps {
   cobranca: Cobranca;
@@ -47,6 +48,7 @@ export const CobrancaActionsMenu = ({
       actions={actions}
       triggerClassName={triggerClassName}
       triggerSize={variant === "mobile" ? "icon" : "sm"}
+      header={<CobrancaSummary cobranca={cobranca} />}
     />
   );
 };

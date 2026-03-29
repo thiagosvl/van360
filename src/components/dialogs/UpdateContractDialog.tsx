@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { useUpdateContractViewModel } from "@/hooks/ui/useUpdateContractViewModel";
 import { Passageiro } from "@/types/passageiro";
 import { AlertCircle, CheckCircle2, FileText, Loader2, RefreshCw } from "lucide-react";
+import { formatShortName } from "@/utils/formatters";
 
 export interface UpdateContractDialogProps {
   isOpen: boolean;
@@ -16,13 +17,13 @@ const UpdateContractDialog = ({ isOpen, onClose, passageiro }: UpdateContractDia
     onClose,
   });
 
-  const firstNamePassageiro = passageiro.nome?.split(" ")[0];
+  const firstNamePassageiro = formatShortName(passageiro.nome);
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <BaseDialog.Header
         title="Atualizar contrato"
-        subtitle={`Passageiro: ${passageiro.nome}`}
+        subtitle={`Passageiro: ${firstNamePassageiro}`}
         icon={<RefreshCw className="w-5 h-5" />}
         onClose={onClose}
       />

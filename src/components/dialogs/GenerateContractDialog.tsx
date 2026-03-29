@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useUpdateContractViewModel } from "@/hooks/ui/useUpdateContractViewModel";
 import { Passageiro } from "@/types/passageiro";
+import { formatShortName } from "@/utils/formatters";
 
 export interface GenerateContractDialogProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ const GenerateContractDialog = ({
     onClose
   });
 
-  const firstNamePassageiro = passageiro.nome?.split(" ")[0];
+  const firstNamePassageiro = formatShortName(passageiro.nome);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -50,7 +51,7 @@ const GenerateContractDialog = ({
             </DialogTitle>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider uppercase tracking-widest leading-none">
-                Passageiro: {passageiro.nome}
+                Passageiro: {formatShortName(passageiro.nome, true)}
               </span>
             </div>
           </div>
