@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cpfMask } from "@/utils/masks";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Phone } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
@@ -28,17 +28,21 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         <FormField
           control={form.control}
           name="nome"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem className="sm:col-span-2">
-              <FormLabel className="text-gray-700 font-medium">
-                Nome completo <span className="text-red-600">*</span>
+              <FormLabel className="text-slate-700 font-medium ml-1">
+                Nome completo <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Digite seu nome completo"
-                  {...field}
-                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
-                />
+                <div className="relative">
+                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                  <Input
+                    placeholder="Digite seu nome completo"
+                    {...field}
+                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                    aria-invalid={!!fieldState.error}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -48,16 +52,20 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         <FormField
           control={form.control}
           name="cpfcnpj"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 font-medium">CPF <span className="text-red-600">*</span></FormLabel>
+              <FormLabel className="text-slate-700 font-medium ml-1">CPF <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                  placeholder="000.000.000-00"
-                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
-                />
+                <div className="relative">
+                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                    placeholder="000.000.000-00"
+                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                    aria-invalid={!!fieldState.error}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -69,17 +77,21 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         <FormField
           control={form.control}
           name="email"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 font-medium">
-                E-mail <span className="text-red-600">*</span>
+              <FormLabel className="text-slate-700 font-medium ml-1">
+                E-mail <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  placeholder="seu@email.com"
-                  {...field}
-                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
-                />
+                <div className="relative">
+                  <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                  <Input
+                    placeholder="seu@email.com"
+                    {...field}
+                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                    aria-invalid={!!fieldState.error}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -95,7 +107,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
               label="WhatsApp"
               required
               placeholder="(11) 99999-9999"
-              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
+              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
             />
           )}
         />
@@ -106,28 +118,29 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         name="senha"
         render={({ field, fieldState }) => (
           <FormItem>
-            <FormLabel className="text-gray-700 font-medium">
-              Crie uma senha segura <span className="text-red-600">*</span>
+            <FormLabel className="text-slate-700 font-medium ml-1">
+              Crie uma senha segura <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
               <div className="relative">
+                <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Mínimo 6 caracteres"
                   {...field}
                   aria-invalid={!!fieldState.error}
-                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all pr-10"
+                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all pr-12 text-base"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
                   tabIndex={-1}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-5 w-5 opacity-60" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-5 w-5 opacity-60" />
                   )}
                 </button>
               </div>

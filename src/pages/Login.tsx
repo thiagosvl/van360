@@ -21,6 +21,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -46,28 +47,6 @@ import { toast } from "@/utils/notifications/toast";
 import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaDialog";
 
 // Internal Components
-const CustomInput = forwardRef<HTMLInputElement, any>(
-  ({ icon: Icon, label, ...props }, ref) => {
-    return (
-      <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
-        <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="flex flex-col w-full h-full justify-center">
-          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
-            {label}
-          </label>
-          <Input
-            ref={ref}
-            {...props}
-            className="h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900"
-          />
-        </div>
-      </div>
-    );
-  }
-);
-CustomInput.displayName = "CustomInput";
 
 function LoginPlatformSuggestion() {
   const platform = detectPlatform();
@@ -125,8 +104,8 @@ function LoginPlatformSuggestion() {
 export default function Login() {
   // Permitir indexação da página de login
   useSEO({
-    title: "Login | Van360",
-    description: "Acesse sua conta para gerenciar seu transporte escolar.",
+    title: "Login | Van360 - Gestão de Transporte Escolar",
+    description: "Acesse sua conta para gerenciar seu transporte escolar com total controle e organização.",
   });
   const [tab, setTab] = useState("motorista");
   const [showPassword, setShowPassword] = useState(false);
@@ -312,13 +291,13 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
         {tab === "motorista" && (
-          <Card className="w-full max-w-[400px] shadow-2xl shadow-blue-900/10 border-0 rounded-[32px] overflow-hidden bg-white animate-in zoom-in-95 duration-500">
+          <Card className="w-full max-w-[400px] shadow-xl border border-slate-200 rounded-2xl bg-white animate-in zoom-in-95 duration-500 relative">
             <CardContent className="p-6">
               <Form {...formMotorista}>
                 {/* Logo Section */}
-                <div className="mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="mb-10 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="flex items-center gap-3 mb-1">
                     <img
                       src="/assets/logo-van360.png"
@@ -326,31 +305,19 @@ export default function Login() {
                       className="h-16 w-auto select-none drop-shadow-sm"
                     />
                   </div>
-
-                  <p className="text-slate-600 text-[10px] font-medium">
-                    Gestão inteligente para transporte escolar
-                  </p>
                 </div>
 
-                <div className="text-center mb-8 relative">
-                  <div className="absolute -right-4 top-9">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
-                      onClick={handleFillMagic}
-                      title="Preencher com dados de teste"
-                    >
-                      <Wand2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <h1 className="text-2xl font-bold text-slate-900 mb-0">
-                    Bem-vindo de volta!
-                  </h1>
-                  <p className="text-slate-500 text-xs sm:text-sm">
-                    Insira seus dados para continuar
-                  </p>
+                <div className="absolute right-2 top-2 z-10">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                    onClick={handleFillMagic}
+                    title="Preencher com dados de teste"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                  </Button>
                 </div>
 
                 <form
@@ -360,19 +327,23 @@ export default function Login() {
                   <FormField
                     control={formMotorista.control}
                     name="cpfcnpj"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
+                        <FormLabel className="text-slate-700 font-medium ml-1">
+                          CPF/CNPJ
+                        </FormLabel>
                         <FormControl>
-                          <CustomInput
-                            icon={User}
-                            label="CPF"
-                            placeholder="000.000.000-00"
-                            autoComplete="username"
-                            {...field}
-                            onChange={(e: any) =>
-                              field.onChange(cpfMask(e.target.value))
-                            }
-                          />
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
+                              placeholder="000.000.000-00"
+                              autoComplete="username"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -382,39 +353,34 @@ export default function Login() {
                   <FormField
                     control={formMotorista.control}
                     name="senha"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
+                        <FormLabel className="text-slate-700 font-medium ml-1">
+                          Senha
+                        </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
-                              <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                                <Lock className="h-5 w-5" />
-                              </div>
-                              <div className="flex flex-col w-full h-full justify-center">
-                                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
-                                  Senha
-                                </label>
-                                <Input
-                                  {...field}
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="••••••••"
-                                  autoComplete="current-password"
-                                  className="h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900 pr-8"
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-1"
-                                tabIndex={-1}
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </button>
-                            </div>
+                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              autoComplete="current-password"
+                              className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-5 w-5 opacity-60" />
+                              ) : (
+                                <Eye className="h-5 w-5 opacity-60" />
+                              )}
+                            </button>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -434,7 +400,7 @@ export default function Login() {
                       id="rememberMe"
                       checked={rememberMe}
                       onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                      className="border-gray-200 rounded-md data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                      className="border-gray-200 rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
                     />
                     <Label
                       htmlFor="rememberMe"
@@ -447,7 +413,7 @@ export default function Login() {
                   <div className="pt-2">
                     <Button
                       type="submit"
-                      className="w-full h-12 rounded-full text-[15px] font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 transition-all"
+                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
                       disabled={loading}
                     >
                       {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
@@ -458,7 +424,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-sm text-blue-500 hover:text-blue-600 transition-colors font-medium mt-6"
+                      className="text-sm text-[#1a3a5c] hover:underline transition-colors font-medium mt-6"
                     >
                       Esqueci minha senha
                     </button>
@@ -468,7 +434,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
-                        className="text-blue-500 font-semibold hover:text-blue-600 hover:underline transition-all"
+                        className="text-[#1a3a5c] font-semibold hover:underline transition-all"
                       >
                         Cadastre-se
                       </button>
@@ -484,7 +450,7 @@ export default function Login() {
         )}
 
         {tab === "responsavel" && (
-          <Card className="w-full max-w-[400px] shadow-2xl shadow-blue-900/10 border-0 rounded-[32px] overflow-hidden bg-white animate-in zoom-in-95 duration-500">
+          <Card className="w-full max-w-[400px] shadow-xl border border-slate-200 rounded-2xl bg-white animate-in zoom-in-95 duration-500">
             <CardContent className="p-8">
               <Form {...formResponsavel}>
                 <div className="text-center mb-8">
@@ -505,20 +471,24 @@ export default function Login() {
                   <FormField
                     control={formResponsavel.control}
                     name="cpf_responsavel"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
+                        <FormLabel className="text-slate-700 font-medium ml-1">
+                          CPF
+                        </FormLabel>
                         <FormControl>
-                          <CustomInput
-                            icon={User}
-                            label="CPF"
-                            placeholder="000.000.000-00"
-                            maxLength={14}
-                            {...field}
-                            value={cpfMask(field.value || "")}
-                            onChange={(e: any) =>
-                              field.onChange(cpfMask(e.target.value))
-                            }
-                          />
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              maxLength={14}
+                              value={cpfMask(field.value || "")}
+                              onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
+                              placeholder="000.000.000-00"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -528,16 +498,22 @@ export default function Login() {
                   <FormField
                     control={formResponsavel.control}
                     name="email_responsavel"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
+                        <FormLabel className="text-slate-700 font-medium ml-1">
+                          E-mail
+                        </FormLabel>
                         <FormControl>
-                          <CustomInput
-                            icon={Mail}
-                            label="Email"
-                            placeholder="seu@email.com"
-                            type="email"
-                            {...field}
-                          />
+                          <div className="relative">
+                            <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="seu@email.com"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -548,7 +524,7 @@ export default function Login() {
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12 rounded-full text-[15px] font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 transition-all"
+                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
                     >
                       {loading ? getMessage("auth.labels.acessando") : getMessage("auth.labels.acessar")}
                     </Button>

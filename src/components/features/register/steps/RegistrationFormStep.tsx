@@ -1,5 +1,4 @@
 import { DuplicateErrorBanner } from "@/components/features/register/DuplicateErrorBanner";
-import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { DuplicateError } from "@/hooks/register/useRegisterController";
@@ -7,6 +6,9 @@ import { RegisterFormData } from "@/schemas/registerSchema";
 import { CadastroForm } from "@/components/features/register";
 import { Loader2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
+import { useState } from "react";
+import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoDialog";
+import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 
 interface RegistrationFormStepProps {
   form: UseFormReturn<RegisterFormData>;
@@ -23,6 +25,9 @@ export function RegistrationFormStep({
   duplicateError,
   onDismissDuplicateError,
 }: RegistrationFormStepProps) {
+  const [openTermos, setOpenTermos] = useState(false);
+  const [openPolitica, setOpenPolitica] = useState(false);
+
   return (
     <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Form {...form}>
@@ -45,7 +50,7 @@ export function RegistrationFormStep({
             <Button
               type="submit" 
               disabled={loading}
-              className="w-full h-14 text-lg font-bold rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5"
+              className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
             >
               {loading ? (
                 <>
@@ -57,7 +62,27 @@ export function RegistrationFormStep({
               )}
             </Button>
             <div className="mt-4 text-center">
-              <TermosUsoDialog />
+              <div className="px-4 pt-2 pb-0 text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
+                <span>Ao criar sua conta, você concorda com nossos </span>
+                <button 
+                  type="button" 
+                  onClick={() => setOpenTermos(true)}
+                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center"
+                >
+                  Termos de Uso
+                </button>
+                <span> e </span>
+                <button 
+                  type="button" 
+                  onClick={() => setOpenPolitica(true)}
+                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center"
+                >
+                  Política de Privacidade
+                </button>
+
+                <TermosDialog open={openTermos} onOpenChange={setOpenTermos} />
+                <PoliticaPrivacidadeDialog open={openPolitica} onOpenChange={setOpenPolitica} />
+              </div>
             </div>
           </div>
         </form>

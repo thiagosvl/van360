@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog,
@@ -184,8 +185,8 @@ export default function PrePassageiros({
           onClick={(e) => {
             e.stopPropagation();
             openConfirmationDialog({
-              title: "prePassageiro.info.confirmarExclusao",
-              description: "prePassageiro.info.confirmarExclusaoDescricao",
+              title: getMessage("prePassageiro.info.confirmarExclusao"),
+              description: getMessage("prePassageiro.info.confirmarExclusaoDescricao"),
               variant: "destructive",
               confirmText: "Excluir",
               cancelText: "Cancelar",
@@ -323,8 +324,8 @@ export default function PrePassageiros({
                   isDestructive: true,
                   onClick: () =>
                     openConfirmationDialog({
-                      title: "prePassageiro.info.confirmarExclusao",
-                      description: "prePassageiro.info.confirmarExclusaoDescricao",
+                      title: getMessage("prePassageiro.info.confirmarExclusao"),
+                      description: getMessage("prePassageiro.info.confirmarExclusaoDescricao"),
                       variant: "destructive",
                       confirmText: "Excluir",
                       cancelText: "Cancelar",

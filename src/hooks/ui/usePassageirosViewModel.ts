@@ -255,37 +255,37 @@ export function usePassageirosViewModel() {
 
           const hasChanges = meta?.hasCriticalContractChanges;
           const usarContratos = profile?.config_contrato?.usar_contratos;
-          
+
           if (hasChanges === true && usarContratos) {
-             const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
-             
-             setTimeout(() => {
-                const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO || 
-                                          updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
+            const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
 
-                const firstName = updatedPassageiro.nome?.split(' ')[0] || '';
+            setTimeout(() => {
+              const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
+                updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
-                openConfirmationDialog({
-                  title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
-                  description: hasActiveContract
-                    ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
-                    : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
-                  confirmText: hasActiveContract ? "Substituir" : "Gerar",
-                  onConfirm: async () => {
-                    try {
-                      if (updatedPassageiro.contrato_id) {
-                        await substituirContratoMutation.mutateAsync(updatedPassageiro.contrato_id);
-                      } else {
-                        await createContratoMutation.mutateAsync({ passageiroId: updatedPassageiro.id! });
-                      }
-                      refetchPassageiros();
-                      safeCloseDialog(closeConfirmationDialog);
-                    } catch {
-                      safeCloseDialog(closeConfirmationDialog);
+              const firstName = updatedPassageiro.nome?.split(' ')[0] || '';
+
+              openConfirmationDialog({
+                title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
+                description: hasActiveContract
+                  ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
+                  : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
+                confirmText: hasActiveContract ? "Substituir" : "Gerar",
+                onConfirm: async () => {
+                  try {
+                    if (updatedPassageiro.contrato_id) {
+                      await substituirContratoMutation.mutateAsync(updatedPassageiro.contrato_id);
+                    } else {
+                      await createContratoMutation.mutateAsync({ passageiroId: updatedPassageiro.id! });
                     }
-                  },
-                });
-             }, 400);
+                    refetchPassageiros();
+                    safeCloseDialog(closeConfirmationDialog);
+                  } catch {
+                    safeCloseDialog(closeConfirmationDialog);
+                  }
+                },
+              });
+            }, 400);
           }
         },
       });
@@ -380,8 +380,8 @@ export function usePassageirosViewModel() {
       const usarContratos = profile?.config_contrato?.usar_contratos;
       if (!usarContratos) return;
 
-      const hasActiveContract = passageiro.status_contrato === ContratoStatus.ASSINADO || 
-                               passageiro.status_contrato === ContratoStatus.PENDENTE;
+      const hasActiveContract = passageiro.status_contrato === ContratoStatus.ASSINADO ||
+        passageiro.status_contrato === ContratoStatus.PENDENTE;
 
       const firstName = passageiro.nome?.split(' ')[0] || '';
 

@@ -5,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
 import { Wand2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 export default function Register() {
+  const navigate = useNavigate();
   useSEO({
-    title: "Cadastro | Van360",
-    description: "Crie sua conta no Van360 e comece a gerenciar seu transporte escolar.",
+    title: "Cadastro | Van360 - Gestão de Transporte Escolar",
+    description: "Crie sua conta no Van360 e transforme a gestão do seu transporte escolar hoje mesmo.",
   });
 
   const {
@@ -42,49 +45,48 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
       <div className="max-w-3xl w-full mx-auto space-y-8">
 
         {/* Main Card */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
 
           {/* Progress Bar */}
-          <div className="relative h-1.5 bg-gray-100 w-full">
+          <div className="relative h-1.5 bg-gray-100 w-full font-bold">
             <div
-              className="absolute top-0 left-0 h-full bg-blue-600 transition-all duration-500 ease-out rounded-r-full"
+              className="absolute top-0 left-0 h-full bg-[#1a3a5c] transition-all duration-500 ease-out rounded-r-full"
               style={{ width: `100%` }}
             />
           </div>
 
-        {/* Header */}
-        <div className="text-center space-y-2 p-6 pb-0 relative">
-          <div className="absolute right-0 sm:right-6 top-10 z-20">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all"
-              onClick={handleFillMagic}
-              title="Preencher com dados de teste"
-            >
-              <WandIcon className="h-5 w-5" />
-            </Button>
-          </div>
+          {/* Header */}
+          <div className="text-center p-6 pb-0 relative">
+            <div className="absolute right-2 top-2 z-10">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                onClick={handleFillMagic}
+                title="Preencher com dados de teste"
+              >
+                <WandIcon className="h-5 w-5" />
+              </Button>
+            </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl drop-shadow-sm">
-            Crie sua conta
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mx-auto">
-            Preencha seus dados para acessar o sistema completo.
-          </p>
-        </div>
+            <div className="pt-4">
+              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-[#1a3a5c] drop-shadow-sm">
+                Comece agora mesmo
+              </h1>
+            </div>
+          </div>
 
           <div className="p-6 sm:p-10 lg:p-12">
             <RegistrationFormStep
               form={form}
               loading={loading}
               onNext={async () => {
-                  await handleNextStep();
+                await handleNextStep();
               }}
               duplicateError={duplicateError}
               onDismissDuplicateError={clearDuplicateError}

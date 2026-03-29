@@ -1,3 +1,4 @@
+import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -125,8 +126,8 @@ export function useEscolasViewModel() {
       }
 
       openConfirmationDialog({
-        title: "escola.confirmar.excluir",
-        description: "escola.confirmar.excluirDescricao",
+        title: getMessage('escola.confirmar.excluir'),
+        description: getMessage('escola.confirmar.excluirDescricao'),
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {

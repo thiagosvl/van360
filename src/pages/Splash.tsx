@@ -23,7 +23,7 @@ export default function Splash() {
           className="w-[120px] h-[120px] object-contain drop-shadow-2xl mb-6"
         />
         <p className="text-white/70 text-base font-medium max-w-[260px]">
-          Gestão completa da sua van escolar
+          A gestão completa para seu transporte escolar
         </p>
       </div>
 

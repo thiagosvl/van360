@@ -1,13 +1,7 @@
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
+import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 import { getWhatsAppUrl } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useSEO } from "@/hooks/useSEO";
@@ -676,74 +670,10 @@ const Index = () => {
       </a>
 
       {/* ══════════ DIALOG — TERMOS DE USO ══════════ */}
-      <Dialog open={termosOpen} onOpenChange={setTermosOpen}>
-        <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0 gap-0 sm:rounded-2xl overflow-hidden border-0 shadow-2xl">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 pb-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <FileText className="h-32 w-32 transform rotate-12" />
-            </div>
-            <DialogHeader className="relative z-10">
-              <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-white">
-                <FileText className="h-6 w-6" />
-                Termos de Uso
-              </DialogTitle>
-              <DialogDescription className="text-blue-100 mt-1">
-                Van360 — Plataforma de Gestão de Transporte Escolar
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-          <ScrollArea className="flex-1 bg-white">
-            <div className="p-6 sm:p-8 space-y-4">
-              <p className="text-gray-600 leading-relaxed text-base">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-              <p className="text-gray-600 leading-relaxed text-base">
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-              </p>
-            </div>
-          </ScrollArea>
-          <div className="p-4 border-t bg-gray-50 flex justify-end">
-            <Button onClick={() => setTermosOpen(false)} className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-              Fechar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TermosUsoDialog open={termosOpen} onOpenChange={setTermosOpen} />
 
       {/* ══════════ DIALOG — PRIVACIDADE ══════════ */}
-      <Dialog open={privacidadeOpen} onOpenChange={setPrivacidadeOpen}>
-        <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0 gap-0 sm:rounded-2xl overflow-hidden border-0 shadow-2xl">
-          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 pb-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <ShieldCheck className="h-32 w-32 transform -rotate-12" />
-            </div>
-            <DialogHeader className="relative z-10">
-              <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-white">
-                <ShieldCheck className="h-6 w-6" />
-                Política de Privacidade
-              </DialogTitle>
-              <DialogDescription className="text-emerald-100 mt-1">
-                Van360 — Em conformidade com a LGPD
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-          <ScrollArea className="flex-1 bg-white">
-            <div className="p-6 sm:p-8 space-y-4">
-              <p className="text-gray-600 leading-relaxed text-base">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-              <p className="text-gray-600 leading-relaxed text-base">
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-              </p>
-            </div>
-          </ScrollArea>
-          <div className="p-4 border-t bg-gray-50 flex justify-end">
-            <Button onClick={() => setPrivacidadeOpen(false)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">
-              Fechar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PoliticaPrivacidadeDialog open={privacidadeOpen} onOpenChange={setPrivacidadeOpen} />
     </div>
   );
 };
