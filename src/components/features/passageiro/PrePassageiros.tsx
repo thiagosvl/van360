@@ -1,7 +1,4 @@
-import {
-  MobileAction,
-  MobileActionItem,
-} from "@/components/common/MobileActionItem";
+import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -42,7 +39,6 @@ import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-  ChevronRight,
   Eye,
   MoreVertical,
   Trash2,
@@ -315,39 +311,87 @@ export default function PrePassageiros({
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
             {prePassageiros.map((prePassageiro, index) => {
-              return (
-                <div
-                  key={prePassageiro.id}
-                  onClick={() => handleFinalizeClick(prePassageiro)}
-                  className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4"
-                >
-                  <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                    <span className="text-white font-headline font-bold text-sm leading-none">
-                      {getInitials(prePassageiro.nome)}
-                    </span>
-                  </div>
+              const mobileActions = [
+                {
+                  label: "Revisar cadastro",
+                  icon: <Eye className="h-5 w-5" />,
+                  onClick: () => handleFinalizeClick(prePassageiro),
+                },
+                {
+                  label: "Excluir solicitação",
+                  icon: <Trash2 className="h-5 w-5" />,
+                  isDestructive: true,
+                  onClick: () =>
+                    openConfirmationDialog({
+                      title: "prePassageiro.info.confirmarExclusao",
+                      description: "prePassageiro.info.confirmarExclusaoDescricao",
+                      variant: "destructive",
+                      confirmText: "Excluir",
+                      cancelText: "Cancelar",
+                      onConfirm: async () => {
+                        if (prePassageiro.id) {
+                          try {
+                            await deletePrePassageiro.mutateAsync(prePassageiro.id);
+                            safeCloseDialog(closeConfirmationDialog);
+                          } catch (error) {
+                            safeCloseDialog(closeConfirmationDialog);
+                            console.error(error);
+                          }
+                        }
+                      },
+                    }),
+                },
+              ];
 
-                  <div className="flex-grow min-w-0 pr-10">
-                    <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                      {formatShortName(prePassageiro.nome, true)}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                        {formatFirstName(prePassageiro.nome_responsavel)}
+              return (
+                <MobileActionItem
+                  key={prePassageiro.id}
+                  actions={mobileActions}
+                  showHint={index === 0}
+                  className="bg-transparent"
+                  renderHeader={() => (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                        <span className="text-white font-headline font-bold text-sm leading-none">
+                          {getInitials(prePassageiro.nome)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                          {formatShortName(prePassageiro.nome, true)}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                          {formatFirstName(prePassageiro.nome_responsavel)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                >
+                  <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4">
+                    <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                      <span className="text-white font-headline font-bold text-sm leading-none">
+                        {getInitials(prePassageiro.nome)}
+                      </span>
+                    </div>
+
+                    <div className="flex-grow min-w-0 pr-10">
+                      <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                        {formatShortName(prePassageiro.nome, true)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                          {formatFirstName(prePassageiro.nome_responsavel)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
+                      <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
+                        {formatRelativeTime(prePassageiro.created_at)}
                       </p>
                     </div>
                   </div>
-
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-                    <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
-                      {formatRelativeTime(prePassageiro.created_at)}
-                    </p>
-                  </div>
-
-                  <div className="flex-shrink-0 text-slate-300 ml-auto">
-                    <ChevronRight className="h-5 w-5" />
-                  </div>
-                </div>
+                </MobileActionItem>
               );
             })}
           </div>
