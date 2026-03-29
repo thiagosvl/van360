@@ -6,7 +6,6 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { PassengerOnboardingDrawer } from "@/components/features/quickstart/PassengerOnboardingDrawer";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
@@ -180,8 +179,6 @@ export default function Passageiros() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
 
       <PassengerOnboardingDrawer
         open={isPassengerDrawerOpen}

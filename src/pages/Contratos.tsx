@@ -2,7 +2,6 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 import { ContratosList } from "@/components/features/contrato/ContratosList";
@@ -115,7 +114,6 @@ const Contratos = () => {
         </div>
       </PullToRefreshWrapper>
 
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
       <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
         onClose={() => setIsPreviewPdfOpen(false)}

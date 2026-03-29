@@ -1,7 +1,6 @@
 import { GraduationCap } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
@@ -76,11 +75,11 @@ export default function Escolas() {
               action={
                 !searchTerm && !hasActiveFilters
                   ? {
-                      label: "Cadastrar Escola",
-                      onClick: () => {
-                        openEscolaFormDialog();
-                      },
-                    }
+                    label: "Cadastrar Escola",
+                    onClick: () => {
+                      openEscolaFormDialog();
+                    },
+                  }
                   : undefined
               }
             />
@@ -95,7 +94,6 @@ export default function Escolas() {
           )}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
     </div>
   );
 }

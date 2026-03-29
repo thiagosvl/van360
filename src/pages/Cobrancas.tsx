@@ -5,7 +5,6 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel } from "@/hooks";
@@ -163,7 +162,6 @@ export default function Cobrancas() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="sistema.sucesso.processando" />
     </div>
   );
 }

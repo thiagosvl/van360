@@ -1,7 +1,6 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
   usePassageiroFormViewModel,
 } from "@/hooks";
@@ -64,8 +63,7 @@ export default function PassengerFormDialog({
       : "Novo Passageiro";
 
   return (
-    <>
-      <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <BaseDialog.Header
           title={title}
           icon={<User className="w-5 h-5" />}
@@ -123,8 +121,6 @@ export default function PassengerFormDialog({
             isLoading={isSubmitting}
           />
         </BaseDialog.Footer>
-      </BaseDialog>
-      <LoadingOverlay active={isSubmitting} text="Salvando..." />
-    </>
+    </BaseDialog>
   );
 }

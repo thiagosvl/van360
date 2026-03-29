@@ -5,7 +5,6 @@ import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useGastosViewModel } from "@/hooks";
 import { KPICardVariant } from "@/types/enums";
 import { CATEGORIAS_GASTOS } from "@/types/gasto";
@@ -140,7 +139,6 @@ export default function Gastos() {
           )}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </div>
   );
 }

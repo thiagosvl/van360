@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
   Table,
   TableBody,
@@ -398,7 +397,6 @@ export default function PrePassageiros({
           </div>
         </>
       )}
-      <LoadingOverlay active={isActionLoading} text="sistema.sucesso.processando" />
     </div>
   );
 }

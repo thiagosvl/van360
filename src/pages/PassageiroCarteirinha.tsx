@@ -22,7 +22,6 @@ import {
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -653,7 +652,6 @@ export default function PassageiroCarteirinha() {
           </div>
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </>
   );
 }

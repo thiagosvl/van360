@@ -14,7 +14,6 @@ import { Eye, EyeOff, Lock, Mail, User, Wand2 } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -560,8 +559,6 @@ export default function Login() {
           </Card>
         )}
       </div>
-
-      <LoadingOverlay active={refreshing} text={getMessage("comum.aguarde.aguarde")} />
 
       <RecuperarSenhaDialog
         open={forgotPasswordOpen}

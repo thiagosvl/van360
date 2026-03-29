@@ -21,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -293,8 +292,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-
-      <LoadingOverlay active={isGlobalLoading} text={globalLoadingText} />
 
       {confirmationDialogState.open && confirmationDialogState.props && (
         <ConfirmationDialog

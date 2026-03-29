@@ -2,7 +2,6 @@ import { Car } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
@@ -78,11 +77,11 @@ export default function Veiculos() {
               action={
                 !searchTerm && !hasActiveFilters
                   ? {
-                      label: "Cadastrar Veículo",
-                      onClick: () => {
-                        handleRegister();
-                      },
-                    }
+                    label: "Cadastrar Veículo",
+                    onClick: () => {
+                      handleRegister();
+                    },
+                  }
                   : undefined
               }
             />
@@ -97,7 +96,6 @@ export default function Veiculos() {
           )}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
     </div>
   );
 }
