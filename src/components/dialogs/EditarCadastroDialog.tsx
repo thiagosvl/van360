@@ -6,7 +6,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -46,7 +45,6 @@ const basicSchema = z.object({
 type FormData = z.infer<typeof basicSchema>;
 
 export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastroDialogProps) {
-  const { openDeleteAccountDialog } = useLayout();
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
 
@@ -227,21 +225,6 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
           </Form>
         )}
 
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-            <p className="text-sm text-red-700 mb-3">
-              Deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={openDeleteAccountDialog}
-              className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
-            >
-              Excluir minha conta
-            </Button>
-          </div>
-        </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
         <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting} />

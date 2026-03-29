@@ -13,8 +13,6 @@ import { ContratoTab } from "@/types/enums";
 
 const Contratos = () => {
   const {
-    profile,
-    isProfileLoading,
     activeTab,
     busca,
     setBusca,
@@ -28,20 +26,14 @@ const Contratos = () => {
     handleRefresh,
     handleOpenContractSetup,
     handleActivateContracts,
+    handleToggleContracts,
+    isToggling,
     handleOpenPreview,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,
     actions,
   } = useContratosViewModel();
-
-  if (!profile) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
-        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -73,6 +65,8 @@ const Contratos = () => {
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
               isDesativado={!isContratoAtivo}
+              onToggleContratos={handleToggleContracts}
+              isToggling={isToggling}
             />
 
             <div className="flex items-center justify-between px-1">

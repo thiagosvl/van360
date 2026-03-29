@@ -5,15 +5,14 @@ import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
-import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
-import GenerateContractDialog from "@/components/dialogs/GenerateContractDialog";
+
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import UpdateContractDialog from "@/components/dialogs/UpdateContractDialog";
+
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import {
   Dialog,
@@ -44,10 +43,8 @@ import {
   OpenEscolaFormProps,
   OpenFirstChargeDialogProps,
   OpenGastoFormProps,
-  OpenGenerateContractDialogProps,
   OpenManualPaymentDialogProps,
   OpenPassageiroFormProps,
-  OpenUpdateContractDialogProps,
   OpenVeiculoFormProps,
 } from "./LayoutContext";
 
@@ -157,23 +154,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  const [updateContractDialogState, setUpdateContractDialogState] = useState<{
-    open: boolean;
-    props?: OpenUpdateContractDialogProps;
-  }>({
-    open: false,
-  });
 
-  const [generateContractDialogState, setGenerateContractDialogState] = useState<{
-    open: boolean;
-    props?: OpenGenerateContractDialogProps;
-  }>({
-    open: false,
-  });
 
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
-  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
@@ -292,13 +276,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openCobrancaFormDialog,
         openFirstChargeDialog,
         openCobrancaHistoryDialog,
-        openUpdateContractDialog: (props: OpenUpdateContractDialogProps) => setUpdateContractDialogState({ open: true, props }),
-        openGenerateContractDialog: (props: OpenGenerateContractDialogProps) => setGenerateContractDialogState({ open: true, props }),
+
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
-        openDeleteAccountDialog: () => setDeleteAccountDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isHelpOpen,
@@ -328,11 +310,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }}
           title={confirmationDialogState.props.title}
           description={confirmationDialogState.props.description}
-          onConfirm={() =>
-            safeCloseDialog(() => {
-              confirmationDialogState.props!.onConfirm();
-            })
-          }
+          onConfirm={() => {
+            if (confirmationDialogState.props?.onConfirm) {
+              return confirmationDialogState.props.onConfirm();
+            }
+          }}
           confirmText={confirmationDialogState.props.confirmText}
           cancelText={confirmationDialogState.props.cancelText}
           variant={confirmationDialogState.props.variant}
@@ -589,28 +571,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      {deleteAccountDialogOpen && (
-        <DeleteAccountDialog
-          isOpen={deleteAccountDialogOpen}
-          onClose={() => safeCloseDialog(() => setDeleteAccountDialogOpen(false))}
-        />
-      )}
 
-      {updateContractDialogState.open && updateContractDialogState.props && (
-        <UpdateContractDialog
-          isOpen={true}
-          onClose={() => setUpdateContractDialogState({ open: false })}
-          passageiro={updateContractDialogState.props.passageiro}
-        />
-      )}
 
-      {generateContractDialogState.open && generateContractDialogState.props && (
-        <GenerateContractDialog
-          isOpen={true}
-          onClose={() => setGenerateContractDialogState({ open: false })}
-          passageiro={generateContractDialogState.props.passageiro}
-        />
-      )}
     </LayoutContext.Provider>
   );
 };

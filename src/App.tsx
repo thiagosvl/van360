@@ -1,4 +1,5 @@
 import { AppGate } from "@/components/auth/AppGate";
+import { InitialLoading } from "@/components/auth/InitialLoading";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import {
   AlertDialog,
@@ -177,16 +178,6 @@ const App = () => {
     notifyReady();
   }, []);
 
-  // Componente de loading para Suspense
-  const LoadingFallback = () => (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">{getMessage("sistema.sucesso.processando")}</p>
-      </div>
-    </div>
-  );
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -195,7 +186,7 @@ const App = () => {
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <BackButtonController />
             <ScrollToTop />
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={<InitialLoading />}>
               <Routes>
                 {/* Rotas Públicas */}
                 <Route

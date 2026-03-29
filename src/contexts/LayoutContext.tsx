@@ -95,13 +95,7 @@ export interface OpenContractSetupDialogProps {
     onSuccess?: (usarContratos?: boolean) => void;
 }
 
-export interface OpenUpdateContractDialogProps {
-  passageiro: Passageiro;
-}
 
-export interface OpenGenerateContractDialogProps {
-  passageiro: Passageiro;
-}
 
 export interface LayoutContextType {
   pageTitle: string;
@@ -122,8 +116,7 @@ export interface LayoutContextType {
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
-  openUpdateContractDialog: (props: OpenUpdateContractDialogProps) => void;
-  openGenerateContractDialog: (props: OpenGenerateContractDialogProps) => void;
+
   isFirstChargeDialogOpen: boolean;
   
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
@@ -131,7 +124,6 @@ export interface LayoutContextType {
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
   openEditarCadastroDialog: () => void;
-  openDeleteAccountDialog: () => void;
   
   // Mobile Menu
   isMobileMenuOpen: boolean;

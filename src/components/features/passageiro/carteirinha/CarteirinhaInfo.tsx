@@ -120,13 +120,13 @@ const ProfileActions = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="center"
-        className="w-56 rounded-2xl p-2 shadow-xl border-slate-100"
+        className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
       >
         <DropdownMenuItem
           onClick={onDeleteClick}
-          className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase text-rose-500 cursor-pointer"
+          className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
         >
-          <Trash2 className="h-3.5 w-3.5 mr-2 opacity-60" />
+          <Trash2 className="h-3.5 w-3.5 opacity-60" />
           Excluir cadastro
         </DropdownMenuItem>
       </DropdownMenuContent>

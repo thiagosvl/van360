@@ -167,20 +167,21 @@ export default function PrePassageiros({
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
         {showReviewOption && (
           <DropdownMenuItem
+            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium"
             onClick={(e) => {
               e.stopPropagation();
               handleFinalizeClick(prePassageiro);
             }}
           >
-            <Eye className="w-4 h-4 mr-2" />
+            <Eye className="w-4 h-4" />
             Revisar
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          className="text-red-600 focus:text-red-600"
+          className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
           onClick={(e) => {
             e.stopPropagation();
             openConfirmationDialog({
@@ -204,7 +205,7 @@ export default function PrePassageiros({
             });
           }}
         >
-          <Trash2 className="w-4 h-4 mr-2" />
+          <Trash2 className="w-4 h-4" />
           Excluir
         </DropdownMenuItem>
       </DropdownMenuContent>

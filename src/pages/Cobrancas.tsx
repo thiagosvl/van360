@@ -14,8 +14,6 @@ import { formatCurrency, meses } from "@/utils/formatters";
 
 export default function Cobrancas() {
   const {
-    profile,
-    isProfileLoading,
     mesFilter,
     anoFilter,
     handleNavigation,
@@ -43,14 +41,6 @@ export default function Cobrancas() {
   const isPending = activeTab === CobrancaTab.ARECEBER;
   const busca = isPending ? buscaAReceber : buscaRecebidos;
   const setBusca = isPending ? setBuscaAReceber : setBuscaRecebidos;
-
-  if (!profile) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
-        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
-      </div>
-    );
-  }
 
   const actionProps = {
     onVerCarteirinha: navigateToPassageiro,

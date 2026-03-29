@@ -16,18 +16,21 @@ import { useFilters } from "@/hooks/ui/useFilters";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usuarioApi } from "@/services/api/usuario.api";
+import { queryClient } from "@/services/queryClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function useContratosViewModel() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
   const { user } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [isToggling, setIsToggling] = useState(false);
   const pdfUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -89,23 +92,6 @@ export function useContratosViewModel() {
   const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
 
   const handleOpenContractSetup = useCallback(() => {
-    if (!isContratoAtivo) {
-      toast.error("Ative a funcionalidade de contratos para acessar as configurações");
-      return;
-    }
-    openContractSetupDialog({
-      forceOpen: true,
-      skipWelcome: true,
-      onSuccess: (usarContratos) => {
-        if (usarContratos) {
-          refetchKPIs();
-          refetchContratos();
-        }
-      }
-    });
-  }, [isContratoAtivo, openContractSetupDialog, refetchKPIs, refetchContratos]);
-
-  const handleActivateContracts = useCallback(() => {
     openContractSetupDialog({
       forceOpen: true,
       skipWelcome: true,
@@ -117,6 +103,43 @@ export function useContratosViewModel() {
       }
     });
   }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
+
+  const handleToggleContracts = useCallback(async (active: boolean) => {
+    if (!profile?.id) return;
+    
+    openConfirmationDialog({
+      title: active ? "Ativar Contratos?" : "Desativar Contratos?",
+      description: active 
+        ? "Tem certeza que deseja ativar a geração de contratos para sua van? Você poderá configurar as regras e modelos."
+        : "Tem certeza que deseja desativar a geração de contratos? Os contratos existentes continuarão valendo, mas novos contratos não serão gerados automaticamente.",
+      confirmText: active ? "Ativar" : "Desativar",
+      variant: active ? "default" : "destructive",
+      onConfirm: async () => {
+        setIsToggling(true);
+        try {
+          await usuarioApi.atualizarUsuario(profile.id!, {
+            config_contrato: {
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               ...(profile.config_contrato as any || {}),
+               usar_contratos: active,
+            }
+          });
+          refreshProfile();
+          await Promise.all([refetchKPIs(), refetchContratos()]);
+          toast.success(active ? "Contratos ativados com sucesso!" : "Geração automática desativada.");
+        } catch (err) {
+          toast.error("Erro ao alterar o status do contrato.");
+        } finally {
+          setIsToggling(false);
+          safeCloseDialog(closeConfirmationDialog);
+        }
+      }
+    });
+  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile]);
+
+  const handleActivateContracts = useCallback(() => {
+    handleToggleContracts(true);
+  }, [handleToggleContracts]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
@@ -216,6 +239,8 @@ export function useContratosViewModel() {
     handleRefresh,
     handleOpenContractSetup,
     handleActivateContracts,
+    handleToggleContracts,
+    isToggling,
     handleOpenPreview,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,

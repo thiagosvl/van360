@@ -32,8 +32,6 @@ export default function Gastos() {
     totalGasto,
     mediaDiaria,
     principalCategoriaData,
-    profile,
-    isProfileLoading,
     isLoading: loading,
     isActionLoading,
     handleRefresh,
@@ -43,14 +41,6 @@ export default function Gastos() {
     hasActiveFilters,
     clearFilters,
   } = useGastosViewModel();
-
-  if (!profile) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
-        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

@@ -11,7 +11,6 @@ import { useEscolasViewModel } from "@/hooks";
 
 export default function Escolas() {
   const {
-    profile,
     isLoading,
     isEscolasLoading,
     isActionLoading,
@@ -38,14 +37,6 @@ export default function Escolas() {
 
   const sectionCount = escolas.length;
   const countLabel = searchTerm || hasActiveFilters ? "ENCONTRADAS" : "ESCOLAS";
-
-  if (!profile) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
-        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

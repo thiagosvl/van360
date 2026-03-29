@@ -104,7 +104,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
 
   return (
     <MobileActionItem actions={swipeActions} showHint={index === 0} className="bg-transparent" renderHeader={renderHeader}>
-      <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50">
+      <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4">
         <div className={cn("flex-shrink-0 w-9 h-9 border rounded-lg flex items-center justify-center", iconConfig.className)}>
           <iconConfig.icon className="w-5 h-5" />
         </div>
@@ -217,7 +217,7 @@ export const ContratosList = memo(function ContratosList({
       isLoading={isLoading}
       loadingSkeleton={<ListSkeleton count={5} />}
       emptyState={getEmptyState()}
-      mobileContainerClassName="space-y-4"
+      mobileContainerClassName="space-y-3"
       mobileItemRenderer={(item, index) => (
         <ContratoMobileCard
           key={item.id}
@@ -232,15 +232,15 @@ export const ContratosList = memo(function ContratosList({
     >
       <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
         <Table>
-          <TableHeader className="bg-slate-50/50">
-            <TableRow className="hover:bg-transparent border-b border-slate-100">
-              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          <TableHeader className="bg-gray-50/50">
+            <TableRow className="hover:bg-transparent border-b border-gray-100/80">
+              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Passageiro
               </TableHead>
-              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Valor Mensal
               </TableHead>
-              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">
+              <TableHead className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-right">
                 Ações
               </TableHead>
             </TableRow>
@@ -250,9 +250,9 @@ export const ContratosList = memo(function ContratosList({
               const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
               const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
               return (
-                <TableRow
+                  <TableRow
                   key={item.id}
-                  className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0"
+                  className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors"
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex items-center gap-4">
@@ -263,15 +263,15 @@ export const ContratosList = memo(function ContratosList({
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                           {formatShortName(nomePassageiro, true)}
                         </p>
-                        <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                        <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
                           {formatFirstName(nomeResponsavel)}
                         </p>
                       </div>
                     </div>
                   </TableCell>
 
-                  <TableCell className="px-8 py-5">
-                    <span className="text-sm font-black text-[#1a3a5c]">
+                  <TableCell className="px-8 py-5 text-right">
+                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
                       {(
                         Number(
                           item.dados_contrato?.valorMensal ||

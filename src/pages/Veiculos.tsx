@@ -11,7 +11,6 @@ import { useVeiculosViewModel } from "@/hooks";
 
 export default function Veiculos() {
   const {
-    profile,
     isLoading,
     isVeiculosLoading,
     isActionLoading,
@@ -31,14 +30,6 @@ export default function Veiculos() {
     refetch,
     navigate,
   } = useVeiculosViewModel();
-
-  if (!profile) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-gray-600 bg-white">
-        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">Carregando...</p>
-      </div>
-    );
-  }
 
   const handleRefresh = async () => {
     await refetch();

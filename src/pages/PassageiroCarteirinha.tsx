@@ -38,7 +38,7 @@ import {
   useUpdateCobranca,
   useUpdatePassageiro
 } from "@/hooks";
-import { useCreateContrato } from "@/hooks/api/useContratos";
+import { useCreateContrato, useSubstituirContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { CobrancaStatus, ContratoStatus, PassageiroFormModes } from "@/types/enums";
@@ -67,8 +67,6 @@ export default function PassageiroCarteirinha() {
     openCobrancaEditDialog,
     openCobrancaFormDialog,
     openManualPaymentDialog,
-    openUpdateContractDialog,
-    openGenerateContractDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -84,9 +82,11 @@ export default function PassageiroCarteirinha() {
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const createContrato = useCreateContrato();
+  const substituirContrato = useSubstituirContrato();
 
   const isActionLoading =
     createContrato.isPending ||
+    substituirContrato.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending ||
@@ -210,14 +210,30 @@ export default function PassageiroCarteirinha() {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
           updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
-        if (hasActiveContract) {
-          openUpdateContractDialog({ passageiro: updatedPassageiro });
-        } else {
-          openGenerateContractDialog({ passageiro: updatedPassageiro });
-        }
+        const firstName = formatFirstName(updatedPassageiro.nome);
+
+        openConfirmationDialog({
+          title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
+          description: hasActiveContract
+            ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
+            : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
+          confirmText: hasActiveContract ? "Substituir" : "Gerar",
+          onConfirm: async () => {
+            try {
+              if (updatedPassageiro.contrato_id) {
+                await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
+              } else {
+                await createContrato.mutateAsync({ passageiroId: updatedPassageiro.id! });
+              }
+              safeCloseDialog(closeConfirmationDialog);
+            } catch {
+              safeCloseDialog(closeConfirmationDialog);
+            }
+          },
+        });
       }, 400);
     }
-  }, [refetchPassageiro, passageiro, openUpdateContractDialog, openGenerateContractDialog, profile?.config_contrato?.usar_contratos]);
+  }, [refetchPassageiro, passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -512,11 +528,28 @@ export default function PassageiroCarteirinha() {
         return;
       }
 
-      if (passageiro.contrato_id) {
-        openUpdateContractDialog({ passageiro });
-      } else {
-        openGenerateContractDialog({ passageiro });
-      }
+      const hasExistingContract = !!passageiro.contrato_id;
+      const firstName = formatFirstName(passageiro.nome);
+
+      openConfirmationDialog({
+        title: hasExistingContract ? "Substituir contrato?" : "Gerar contrato?",
+        description: hasExistingContract
+          ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
+          : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
+        confirmText: hasExistingContract ? "Substituir" : "Gerar",
+        onConfirm: async () => {
+          try {
+            if (passageiro.contrato_id) {
+              await substituirContrato.mutateAsync(passageiro.contrato_id);
+            } else {
+              await createContrato.mutateAsync({ passageiroId: passageiro.id! });
+            }
+            safeCloseDialog(closeConfirmationDialog);
+          } catch {
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        },
+      });
     },
   };
 

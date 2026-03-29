@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BottomNavbar } from "@/components/navigation/BottomNavbar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { HelpSheet } from "@/components/features/HelpSheet";
+import { InitialLoading } from "@/components/auth/InitialLoading";
 import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -128,7 +129,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
-  const { profile, isLoading, isError, error } = useProfile(user?.id);
+  const { isLoading } = useProfile(user?.id);
 
 
   // Bloquear indexação de todas as páginas protegidas (área logada)
@@ -136,19 +137,8 @@ export default function AppLayout() {
     noindex: true,
   });
 
-  // Enquanto carrega a sessão (auth), mostramos o loader sutil.
-  if (loadingSession) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <img src="/assets/logo-van360.png" alt="Carregando..." className="h-12 opacity-80" />
-        </div>
-      </div>
-    );
-  }
+  if (loadingSession || isLoading) return <InitialLoading />;
 
-  // Se não tem usuário após carregar sessão, o middleware deve redirecionar, 
-  // mas garantimos que não renderiza o layout aqui.
   if (!user) return null;
 
   return (

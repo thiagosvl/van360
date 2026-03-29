@@ -37,8 +37,6 @@ export function usePassageirosViewModel() {
     closeConfirmationDialog,
     openPassageiroFormDialog,
     openFirstChargeDialog,
-    openUpdateContractDialog,
-    openGenerateContractDialog,
   } = useLayout();
 
   const { user } = useSession();
@@ -265,17 +263,34 @@ export function usePassageirosViewModel() {
                 const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO || 
                                           updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
-                if (hasActiveContract) {
-                  openUpdateContractDialog({ passageiro: updatedPassageiro });
-                } else {
-                  openGenerateContractDialog({ passageiro: updatedPassageiro });
-                }
+                const firstName = updatedPassageiro.nome?.split(' ')[0] || '';
+
+                openConfirmationDialog({
+                  title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
+                  description: hasActiveContract
+                    ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
+                    : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
+                  confirmText: hasActiveContract ? "Substituir" : "Gerar",
+                  onConfirm: async () => {
+                    try {
+                      if (updatedPassageiro.contrato_id) {
+                        await substituirContratoMutation.mutateAsync(updatedPassageiro.contrato_id);
+                      } else {
+                        await createContratoMutation.mutateAsync({ passageiroId: updatedPassageiro.id! });
+                      }
+                      refetchPassageiros();
+                      safeCloseDialog(closeConfirmationDialog);
+                    } catch {
+                      safeCloseDialog(closeConfirmationDialog);
+                    }
+                  },
+                });
              }, 400);
           }
         },
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros, openUpdateContractDialog, openGenerateContractDialog, profile?.config_contrato?.usar_contratos],
+    [openPassageiroFormDialog, refetchPassageiros, openConfirmationDialog, closeConfirmationDialog, createContratoMutation, substituirContratoMutation, profile?.config_contrato?.usar_contratos],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -368,13 +383,30 @@ export function usePassageirosViewModel() {
       const hasActiveContract = passageiro.status_contrato === ContratoStatus.ASSINADO || 
                                passageiro.status_contrato === ContratoStatus.PENDENTE;
 
-      if (hasActiveContract) {
-        openUpdateContractDialog({ passageiro });
-      } else {
-        openGenerateContractDialog({ passageiro });
-      }
+      const firstName = passageiro.nome?.split(' ')[0] || '';
+
+      openConfirmationDialog({
+        title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
+        description: hasActiveContract
+          ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
+          : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
+        confirmText: hasActiveContract ? "Substituir" : "Gerar",
+        onConfirm: async () => {
+          try {
+            if (passageiro.contrato_id) {
+              await substituirContratoMutation.mutateAsync(passageiro.contrato_id);
+            } else {
+              await createContratoMutation.mutateAsync({ passageiroId: passageiro.id! });
+            }
+            refetchPassageiros();
+            safeCloseDialog(closeConfirmationDialog);
+          } catch {
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        },
+      });
     },
-    [profile?.config_contrato?.usar_contratos, openUpdateContractDialog, openGenerateContractDialog],
+    [profile?.config_contrato?.usar_contratos, openConfirmationDialog, closeConfirmationDialog, createContratoMutation, substituirContratoMutation, refetchPassageiros],
   );
 
   const handleSubstituirContrato = useCallback((passageiro: Passageiro) => {
