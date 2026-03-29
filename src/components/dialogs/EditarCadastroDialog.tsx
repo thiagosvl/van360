@@ -5,13 +5,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
-} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -21,16 +16,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useLayout } from "@/contexts/LayoutContext";
 import { emailSchema, phoneSchema } from "@/schemas/common";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Mail, User, X } from "lucide-react";
+import { Loader2, Mail, User } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -43,42 +38,25 @@ interface EditarCadastroDialogProps {
 const basicSchema = z.object({
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   apelido: z.string().optional(),
-  cpfcnpj: z.string(), // Apenas leitura/exibição
+  cpfcnpj: z.string(),
   telefone: phoneSchema,
   email: emailSchema,
 });
 
 type FormData = z.infer<typeof basicSchema>;
 
-export default function EditarCadastroDialog({
-  isOpen,
-  onClose,
-}: EditarCadastroDialogProps) {
-  const {
-    pageTitle,
-    openAlterarSenhaDialog,
-    openEditarCadastroDialog,
-    openDeleteAccountDialog
-  } = useLayout();
+export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastroDialogProps) {
+  const { openDeleteAccountDialog } = useLayout();
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
 
-  const [openAccordionItems, setOpenAccordionItems] = useState([
-    "dados-pessoais",
-  ]);
+  const [openAccordionItems, setOpenAccordionItems] = useState(["dados-pessoais"]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(basicSchema),
-    defaultValues: {
-      nome: "",
-      apelido: "",
-      cpfcnpj: "",
-      telefone: "",
-      email: "",
-    },
+    defaultValues: { nome: "", apelido: "", cpfcnpj: "", telefone: "", email: "" },
   });
 
-  // Carrega dados do perfil no form
   React.useEffect(() => {
     if (profile) {
       form.reset({
@@ -95,28 +73,18 @@ export default function EditarCadastroDialog({
   const handleSubmit = async (data: FormData) => {
     try {
       if (!profile?.id) return;
-
       const nome = cleanString(data.nome, true);
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");
-
-      await usuarioApi.atualizarUsuario(profile.id, {
-        nome,
-        apelido,
-        telefone,
-      });
-
+      await usuarioApi.atualizarUsuario(profile.id, { nome, apelido, telefone });
       toast.success("cadastro.sucesso.perfilAtualizado", {
         description: "cadastro.sucesso.perfilAtualizadoDescricao",
       });
-
       await refreshProfile();
       onClose();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar as alterações.";
-      toast.error("cadastro.erro.atualizar", {
-        description: errorMessage,
-      });
+      toast.error("cadastro.erro.atualizar", { description: errorMessage });
       setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
     }
   };
@@ -124,203 +92,165 @@ export default function EditarCadastroDialog({
   const onFormError = () => {
     toast.error("validacao.formularioComErros");
     setOpenAccordionItems(["dados-pessoais"]);
-  }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-        hideCloseButton
-      >
-        <div className="bg-blue-600 pt-[calc(1rem+var(--safe-area-top))] pb-4 sm:p-4 text-center relative shrink-0">
-          <DialogClose className="absolute right-4 top-[calc(1rem+var(--safe-area-top))] text-white/70 hover:text-white transition-colors">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
-
-          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-            <User className="w-5 h-5 text-white" />
+    <BaseDialog open={isOpen} onOpenChange={onClose}>
+      <BaseDialog.Header title="Editar Cadastro" icon={<User className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Body>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
           </div>
-          <DialogTitle className="text-xl font-bold text-white">
-            Editar Cadastro
-          </DialogTitle>
-        </div>
-
-        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-            </div>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-6"
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6">
+              <Accordion
+                type="multiple"
+                value={openAccordionItems}
+                onValueChange={setOpenAccordionItems}
+                className="w-full space-y-4"
               >
-                <Accordion
-                  type="multiple"
-                  value={openAccordionItems}
-                  onValueChange={setOpenAccordionItems}
-                  className="w-full space-y-4"
-                >
-                  <AccordionItem value="dados-pessoais" className="border-b-0">
-                    <AccordionTrigger className="hover:no-underline py-2">
-                      <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                        <User className="w-5 h-5 text-blue-600" />
-                        Dados Pessoais
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
+                <AccordionItem value="dados-pessoais" className="border-b-0">
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                      <User className="w-5 h-5 text-blue-600" />
+                      Dados Pessoais
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium ml-1">
+                            Nome completo <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                              <Input
+                                placeholder="Digite seu nome completo"
+                                {...field}
+                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="apelido"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                              <Input
+                                placeholder="Ex: Tio Fulano"
+                                {...field}
+                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="telefone"
+                      render={({ field }) => (
+                        <PhoneInput
+                          field={field}
+                          label="WhatsApp"
+                          placeholder="(00) 00000-0000"
+                          required
+                          inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                        />
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 gap-4">
                       <FormField
                         control={form.control}
-                        name="nome"
+                        name="cpfcnpj"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-700 font-medium ml-1">Nome completo <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
+                              CPF <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <div className="relative">
-                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                <Input
-                                  placeholder="Digite seu nome completo"
-                                  {...field}
-                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                                />
-                              </div>
+                              <Input
+                                {...field}
+                                readOnly
+                                className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
-                        name="apelido"
+                        name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
+                              E-mail <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                <Input
-                                  placeholder="Ex: Tio Fulano"
-                                  {...field}
-                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="telefone"
-                        render={({ field }) => (
-                          <PhoneInput
-                            field={field}
-                            label="WhatsApp"
-                            placeholder="(00) 00000-0000"
-                            required
-                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                          />
-                        )}
-                      />
-
-                      <div className="grid grid-cols-1 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="cpfcnpj"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-gray-700 font-medium ml-1">CPF <span className="text-red-500">*</span></FormLabel>
-                              <FormControl>
+                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                 <Input
                                   {...field}
                                   readOnly
-                                  className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                                  className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
                                 />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-gray-700 font-medium ml-1">E-mail <span className="text-red-500">*</span></FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                  <Input
-                                    {...field}
-                                    readOnly
-                                    className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </form>
+          </Form>
+        )}
 
-
-                </Accordion>
-              </form>
-            </Form>
-          )}
-
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-              <p className="text-sm text-red-700 mb-3">
-                Deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={openDeleteAccountDialog}
-                className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
-              >
-                Excluir minha conta
-              </Button>
-            </div>
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+            <p className="text-sm text-red-700 mb-3">
+              Deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openDeleteAccountDialog}
+              className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
+            >
+              Excluir minha conta
+            </Button>
           </div>
         </div>
-
-
-        <div className="p-4 pb-[calc(1rem+var(--safe-area-bottom))] border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={form.formState.isSubmitting}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            onClick={form.handleSubmit(handleSubmit, onFormError)}
-            disabled={form.formState.isSubmitting}
-            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
-          >
-            {form.formState.isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Salvando...
-              </>
-            ) : (
-              "Salvar"
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </BaseDialog.Body>
+      <BaseDialog.Footer>
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting} />
+        <BaseDialog.Action
+          label="Salvar"
+          onClick={form.handleSubmit(handleSubmit, onFormError)}
+          isLoading={form.formState.isSubmitting}
+        />
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }
