@@ -130,6 +130,8 @@ export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
   const { profile, isLoading, isError, error } = useProfile(user?.id);
 
+  console.log("[AppLayout] Sessão/Perfil:", { loadingSession, isLoadingProfile: isLoading, hasUser: !!user, hasProfile: !!profile });
+
   // Bloquear indexação de todas as páginas protegidas (área logada)
   useSEO({
     noindex: true,

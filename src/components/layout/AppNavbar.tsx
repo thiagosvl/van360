@@ -47,15 +47,16 @@ export function AppNavbar({ role }: { role: "motorista" }) {
     setIsGlobalLoading(true, "Encerrando sessão...");
 
     try {
-      // 1. Avisamos o backend (Log e Auditoria)
-      // Usamos .catch(() => null) para garantir que a rede lenta ou erro não trave o usuário no sistema
-      await apiClient.post("/auth/logout").catch(() => null);
+      // 1. Chamamos a SUA API de logout (Centralizador do Logout)
+      // Se der erro, prosseguimos limpando a casa localmente de qualquer forma.
+      try {
+        await apiClient.post("/auth/logout");
+      } catch (err) {
+        // Ignoramos erros do backend no logout para não travar o usuário
+      }
 
-      // 2. Limpamos a sessão local (Storage e Supabase Client)
+      // 2. Limpa o Storage e redireciona (SessionManager agora faz logout LOCAL)
       await sessionManager.signOut();
-      clearAppSession();
-
-      // 3. Redirecionamento total e limpo
       window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err) {
       // Em caso de erro crítico, forçamos a saída local

@@ -77,12 +77,25 @@ class SessionManager {
 
   async signOut() {
     try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      // Ignoramos erro de sessão inexistente no logout manual
-    } finally {
-      clearAppSession();
+      // Para garantir que APENAS sua API seja chamada, limpamos o Supabase manualmente.
+      // O SDK do Supabase gera requisição de rede mesmo com scope local, então removemos a chamada dele.
+      
+      // 1. Limpa todas as chaves do Supabase no LocalStorage e SessionStorage
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('sb-') && key.includes('-auth-token')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // 2. Limpa o cache do React Query e o estado interno da aplicação
       queryClient.clear();
+      clearAppSession();
+      
+      // 3. Forçamos o reload suave ou apenas avisamos o listener do evento
+      // O AppLayout enviará o usuário para o login ao detectar session null.
+    } catch (err) {
+      console.error("Erro no logout local:", err);
     }
   }
 

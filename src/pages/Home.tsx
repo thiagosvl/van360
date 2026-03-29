@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
+import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
 
 const Home = () => {
   const {
@@ -38,12 +39,10 @@ const Home = () => {
     navigateTo,
   } = useDashboardViewModel();
 
+  console.log("[HOME] Status carregamento dashboard:", { isLoading, hasFinanceiro: !!financeiro });
+
   if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1a3a5c]"></div>
-      </div>
-    );
+    return <HomeSkeleton />;
   }
 
   return (

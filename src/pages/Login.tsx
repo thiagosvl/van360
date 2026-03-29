@@ -239,8 +239,10 @@ export default function Login() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (role === UserType.ADMIN) {
+        console.log("[LOGIN] Sucesso. Navegando para ADMIN...");
         navigate(ROUTES.PRIVATE.ADMIN.DASHBOARD, { replace: true });
       } else {
+        console.log("[LOGIN] Sucesso. Navegando para HOME...");
         navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
       }
     } catch (error: any) {
