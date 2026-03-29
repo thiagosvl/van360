@@ -339,9 +339,6 @@ export default function PrePassageiros({
                   </div>
 
                   <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-                    <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
-                      Pendente
-                    </span>
                     <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
                       {formatRelativeTime(prePassageiro.created_at)}
                     </p>

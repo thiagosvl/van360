@@ -91,6 +91,7 @@ export interface OpenCobrancaHistoryProps {
 
 export interface OpenContractSetupDialogProps {
     forceOpen?: boolean;
+    skipWelcome?: boolean;
     onSuccess?: (usarContratos?: boolean) => void;
 }
 

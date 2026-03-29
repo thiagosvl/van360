@@ -35,6 +35,7 @@ interface ContractSetupDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (usarContratos?: boolean) => void;
+  skipWelcome?: boolean;
 }
 
 enum SetupStep {
@@ -45,7 +46,7 @@ enum SetupStep {
   PREVIEW = 4,
 }
 
-export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: ContractSetupDialogProps) {
+export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWelcome }: ContractSetupDialogProps) {
   const { profile, refreshProfile } = useProfile();
   const [step, setStep] = useState<SetupStep>(SetupStep.WELCOME);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,8 +87,18 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       if (profile.config_contrato?.multa_atraso) setMultaAtraso(profile.config_contrato.multa_atraso);
       if (profile.config_contrato?.multa_rescisao) setMultaRescisao(profile.config_contrato.multa_rescisao);
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
-      setUsarContratos(profile.config_contrato?.usar_contratos ?? true);
-      setStep(SetupStep.WELCOME);
+      
+      const isContratoConfigurado = !!profile.config_contrato?.configurado;
+      const isContratoAtivo = profile.config_contrato?.usar_contratos ?? true;
+      
+      setUsarContratos(skipWelcome ? true : isContratoAtivo);
+
+      if (skipWelcome) {
+        setStep(SetupStep.FEES); // Pula para a segunda etapa
+      } else {
+        setStep(SetupStep.WELCOME);
+      }
+      
       initializedRef.current = true;
     }
   }, [isOpen, profile, signatureTemp]);
@@ -199,23 +210,23 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           className={cn(
             "w-full p-4 sm:p-5 rounded-[2rem] border transition-all flex items-center gap-4 active:scale-[0.98] group shadow-sm",
             usarContratos
-              ? "border-[#1a3a5c] bg-[#1a3a5c]/5 ring-1 ring-[#1a3a5c]/20 shadow-lg shadow-[#1a3a5c]/5"
+              ? "border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-200 shadow-lg shadow-emerald-500/5"
               : "border-slate-100 bg-white hover:border-slate-200"
           )}
         >
           <div className={cn(
             "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-            usarContratos ? "bg-[#1a3a5c] text-white shadow-lg shadow-[#1a3a5c]/20" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
+            usarContratos ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
           )}>
             <FileText className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <h4 className={cn("text-[13px] font-black uppercase tracking-tight", usarContratos ? "text-[#1a3a5c]" : "text-slate-600")}>
+            <h4 className={cn("text-[13px] font-black uppercase tracking-tight", usarContratos ? "text-emerald-900" : "text-slate-600")}>
               Usar Contratos
             </h4>
             <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">PDF automático e digital</p>
           </div>
-          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", usarContratos ? "border-[#1a3a5c] bg-[#1a3a5c]" : "border-slate-300")}>
+          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", usarContratos ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
             {usarContratos && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
           </div>
         </button>
@@ -226,13 +237,13 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           className={cn(
             "w-full p-4 sm:p-5 rounded-[2rem] border transition-all flex items-center gap-4 active:scale-[0.98] group shadow-sm",
             !usarContratos
-              ? "border-slate-800 bg-slate-50 ring-1 ring-slate-200 shadow-lg shadow-slate-200/5"
+              ? "border-slate-400 bg-slate-50 ring-1 ring-slate-200 shadow-lg shadow-slate-200/5"
               : "border-slate-100 bg-white hover:border-slate-200"
           )}
         >
           <div className={cn(
             "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-            !usarContratos ? "bg-slate-800 text-white shadow-lg shadow-slate-800/20" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
+            !usarContratos ? "bg-slate-400 text-white shadow-lg shadow-slate-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
           )}>
             <FileText className="w-6 h-6 opacity-30" />
           </div>
@@ -242,7 +253,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             </h4>
             <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">Você poderá ativar depois</p>
           </div>
-          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", !usarContratos ? "border-slate-800 bg-slate-800" : "border-slate-300")}>
+          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", !usarContratos ? "border-slate-400 bg-slate-400" : "border-slate-300")}>
             {!usarContratos && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
           </div>
         </button>

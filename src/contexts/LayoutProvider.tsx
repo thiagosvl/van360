@@ -571,6 +571,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={() => setContractSetupDialogState({ open: false })}
           onSuccess={contractSetupDialogState.props?.onSuccess}
+          skipWelcome={contractSetupDialogState.props?.skipWelcome}
         />
       )}
 

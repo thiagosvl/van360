@@ -27,6 +27,7 @@ const Contratos = () => {
     isContratoAtivo,
     handleRefresh,
     handleOpenContractSetup,
+    handleActivateContracts,
     handleOpenPreview,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
@@ -53,7 +54,7 @@ const Contratos = () => {
               title="Contratos Desativados"
               description="Para gerar, editar ou substituir contratos, você precisa ativar essa funcionalidade. Por enquanto, as ações de alteração estão bloqueadas, mas seus dados continuam disponíveis para consulta."
               actionLabel="Ativar Agora"
-              onAction={handleOpenContractSetup}
+              onAction={handleActivateContracts}
             />
           )}
 

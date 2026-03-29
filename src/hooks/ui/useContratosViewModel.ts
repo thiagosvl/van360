@@ -89,8 +89,13 @@ export function useContratosViewModel() {
   const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
 
   const handleOpenContractSetup = useCallback(() => {
+    if (!isContratoAtivo) {
+      toast.error("Ative a funcionalidade de contratos para acessar as configurações");
+      return;
+    }
     openContractSetupDialog({
       forceOpen: true,
+      skipWelcome: true,
       onSuccess: (usarContratos) => {
         if (usarContratos) {
           refetchKPIs();
@@ -99,6 +104,19 @@ export function useContratosViewModel() {
       }
     });
   }, [isContratoAtivo, openContractSetupDialog, refetchKPIs, refetchContratos]);
+
+  const handleActivateContracts = useCallback(() => {
+    openContractSetupDialog({
+      forceOpen: true,
+      skipWelcome: true,
+      onSuccess: (usarContratos) => {
+        if (usarContratos) {
+          refetchKPIs();
+          refetchContratos();
+        }
+      }
+    });
+  }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
@@ -156,9 +174,7 @@ export function useContratosViewModel() {
 
   const handleOpenPreview = useCallback(async () => {
     if (!isContratoAtivo) {
-      toast.error("Contratos desativados", {
-        description: "Ative o uso de contratos para visualizar o modelo."
-      });
+      toast.error("Ative a funcionalidade de contratos para visualizar o modelo");
       return;
     }
 
@@ -199,6 +215,7 @@ export function useContratosViewModel() {
     isContratoAtivo,
     handleRefresh,
     handleOpenContractSetup,
+    handleActivateContracts,
     handleOpenPreview,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,

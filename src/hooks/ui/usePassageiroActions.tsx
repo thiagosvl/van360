@@ -1,9 +1,7 @@
 import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { openBrowserLink } from "@/utils/browser";
 import {
-  CreditCard,
   ExternalLink,
   Eye,
   FileText,
@@ -48,14 +46,11 @@ export function usePassageiroActions({
 }: UsePassageiroActionsProps): ActionItem[] {
 
   return useMemo(() => {
-    // Normalização robusta de status do contrato
     const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
     const isPendente = statusContrato === ContratoStatus.PENDENTE || statusContrato === 'pendente' || statusContrato === '1';
     const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
-    // Consideramos que tem contrato se o status for pendente/assinado OU se houver um id de contrato
     const hasContract = isPendente || isAssinado || !!(passageiro.contrato_id);
 
-    // Lógica de desativação global da funcionalidade
     const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
 
     const actions: ActionItem[] = [
@@ -86,9 +81,6 @@ export function usePassageiroActions({
       },
     ];
 
-    // --- AÇÕES DE CONTRATO ---
-
-    // 1. Gerar Contrato - Só aparece se NÃO tem contrato
     if (onGenerateContract && !hasContract) {
       actions.push({
         label: "Gerar Contrato",
@@ -100,7 +92,6 @@ export function usePassageiroActions({
       });
     }
 
-    // 2. Ver Contrato - Só aparece se tem contrato
     const urlContrato = isPendente
       ? (passageiro.minuta_url || passageiro.contrato_url)
       : (passageiro.contrato_final_url || passageiro.contrato_url);
@@ -110,7 +101,7 @@ export function usePassageiroActions({
         label: isAssinado ? "Ver Contrato Assinado" : "Ver Contrato Pendente",
         icon: isAssinado ? <Eye className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />,
         onClick: () => urlContrato && onVisualizarFinal?.(urlContrato),
-        disabled: !!(!urlContrato || isFeatureDisabled),
+        disabled: !urlContrato,
         isLink: !!urlContrato,
         href: urlContrato || undefined,
         swipeColor: "bg-green-600",
@@ -118,7 +109,6 @@ export function usePassageiroActions({
       });
     }
 
-    // 3. Reenviar Notificação - Só aparece se pendente
     if (isPendente && onReenviarNotificacaoContrato && passageiro.contrato_id) {
       actions.push({
         label: "Reenviar Contrato",
@@ -130,7 +120,6 @@ export function usePassageiroActions({
       });
     }
 
-    // 4. Substituir Contrato - Só aparece se tem contrato
     if (hasContract && onSubstituirContrato && passageiro.contrato_id) {
       actions.push({
         label: "Substituir Contrato",
@@ -142,7 +131,6 @@ export function usePassageiroActions({
       });
     }
 
-    // 5. Excluir Contrato - Só aparece se tem contrato
     if (hasContract && onExcluirContrato && passageiro.contrato_id) {
       actions.push({
         label: "Excluir Contrato",
@@ -156,7 +144,6 @@ export function usePassageiroActions({
       });
     }
 
-    // 6. Excluir Passageiro - Sempre visível
     actions.push({
       label: "Excluir",
       icon: <Trash2 className="h-4 w-4" />,
@@ -169,4 +156,3 @@ export function usePassageiroActions({
     return actions;
   }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onGenerateContract, onReenviarNotificacaoContrato, onSubstituirContrato, onExcluirContrato, onVisualizarFinal, usarContratos, isDesativado]);
 }
-

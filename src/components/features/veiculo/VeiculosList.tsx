@@ -49,8 +49,11 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
       <div
         className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex-shrink-0 w-9 h-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center">
-          <Car className="h-5 w-5 text-[#1a3a5c]" />
+        <div className={cn(
+          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
+          veiculo.ativo ? "bg-[#1a3a5c]" : "bg-slate-400"
+        )}>
+          <Car className="h-5 w-5 text-white" />
         </div>
 
         <div className="flex-grow min-w-0 pr-10">
