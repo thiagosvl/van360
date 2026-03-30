@@ -235,16 +235,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    actions.push({
-      label: cobranca.desativar_lembretes ? "Ativar Lembretes" : "Pausar Lembretes",
-      icon: cobranca.desativar_lembretes ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
-      onClick: handleToggleLembretes,
-      disabled: isPago || isActionLoading,
-      swipeColor: "bg-amber-600",
-      isLoading: isTogglingNotificacoes,
-      hasSeparatorAfter: true,
-    });
-
     if (onVerCarteirinha) {
       actions.push({
         label: "Ver Carteirinha",
