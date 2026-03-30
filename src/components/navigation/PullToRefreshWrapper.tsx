@@ -50,29 +50,38 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
       
       
       const startY = e.touches[0].clientY;
-
-      // Proteção de Navbar: Ignora toques nos primeiros 80px (header fixo)
-      if (startY < 80) return;
-
-      let isPulling = false;
+      const startX = e.touches[0].clientX;
+      let isScrollingHorizontal = false;
+      let isInitialMove = true;
 
       const handleTouchMove = (e: TouchEvent) => {
         // Re-check lock status inside move to handle race conditions (e.g. swipe starting after touch)
         if (document.body.hasAttribute("data-scroll-locked") || document.body.hasAttribute("data-swipe-active")) {
-           isPulling = false;
-           y.set(0); // Reset visual position if locked mid-gesture
+           y.set(0); 
            return;
         }
 
         const currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
+        const currentX = e.touches[0].clientX;
+        const diffY = currentY - startY;
+        const diffX = Math.abs(currentX - startX);
 
-        if (diff > 0 && window.scrollY <= 0) {
+        // No primeiro movimento, detectamos a intenção do usuário
+        if (isInitialMove) {
+          // Se o movimento horizontal for maior que o vertical, ignoramos este gesto de refresh
+          if (diffX > Math.abs(diffY)) {
+            isScrollingHorizontal = true;
+          }
+          isInitialMove = false;
+        }
+
+        if (isScrollingHorizontal) return;
+
+        if (diffY > 0 && window.scrollY <= 0) {
           // Fator 0.8: Mais leve de puxar
-          const resistance = Math.min(diff * 0.8, MAX_PULL);
+          const resistance = Math.min(diffY * 0.8, MAX_PULL);
           
           if (resistance > 0) {
-            isPulling = true;
             if (e.cancelable) {
                e.preventDefault(); 
             }
@@ -85,9 +94,8 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         const currentY = y.get();
         cleanupListeners();
 
-        if (currentY >= PULL_THRESHOLD) {
+        if (!isScrollingHorizontal && currentY >= PULL_THRESHOLD) {
           setIsRefreshing(true);
-          // Mantém o loader visível durante o refresh
           animate(y, PULL_THRESHOLD, { type: "spring", stiffness: 300, damping: 30 });
           
           try {

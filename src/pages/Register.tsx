@@ -42,7 +42,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+    <div className="min-h-screen bg-slate-50 py-4 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
       <div className="max-w-3xl w-full mx-auto space-y-8">
 
         {/* Main Card */}

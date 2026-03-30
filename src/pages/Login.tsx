@@ -107,11 +107,9 @@ export default function Login() {
     title: "Login | Van360 - Gestão de Transporte Escolar",
     description: "Acesse sua conta para gerenciar seu transporte escolar com total controle e organização.",
   });
-  const [tab, setTab] = useState("motorista");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [refreshing, setRefreshing] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -292,248 +290,168 @@ export default function Login() {
   return (
     <>
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
-        {tab === "motorista" && (
-          <Card className="w-full max-w-[400px] shadow-xl border border-slate-200 rounded-2xl bg-white animate-in zoom-in-95 duration-500 relative">
-            <CardContent className="p-6">
-              <Form {...formMotorista}>
-                {/* Logo Section */}
-                <div className="mb-10 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  <div className="flex items-center gap-3 mb-1">
-                    <img
-                      src="/assets/logo-van360.png"
-                      alt="Van360"
-                      className="h-16 w-auto select-none drop-shadow-sm"
-                    />
+        <Card className="w-full max-w-[400px] overflow-hidden shadow-xl border border-slate-200 rounded-2xl bg-white relative">
+
+          {/* Progress Bar */}
+          <div className="relative h-1.5 bg-gray-100 w-full font-bold">
+            <div
+              className="absolute top-0 left-0 h-full bg-[#1a3a5c] transition-all duration-500 ease-out rounded-r-full"
+              style={{ width: `100%` }}
+            />
+          </div>
+          <CardContent className="p-6">
+            <Form {...formMotorista}>
+              {/* Logo Section */}
+              <div className="mb-10 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex items-center gap-3 mb-1">
+                  <img
+                    src="/assets/logo-van360.png"
+                    alt="Van360"
+                    className="h-16 w-auto select-none drop-shadow-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="absolute right-2 top-2 z-10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                  onClick={handleFillMagic}
+                  title="Preencher com dados de teste"
+                >
+                  <Wand2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <form
+                onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={formMotorista.control}
+                  name="cpfcnpj"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium ml-1">
+                        Seu CPF
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
+                            placeholder="000.000.000-00"
+                            autoComplete="username"
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={formMotorista.control}
+                  name="senha"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium ml-1">
+                        Senha
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                            className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                            aria-invalid={!!fieldState.error}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5 opacity-60" />
+                            ) : (
+                              <Eye className="h-5 w-5 opacity-60" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {formMotorista.formState.errors.root && (
+                  <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600 animate-in slide-in-from-top-2">
+                    <span className="mt-0.5">⚠️</span>
+                    {formMotorista.formState.errors.root.message}
                   </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1 pb-2">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    className="border-gray-200 rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                  />
+                  <Label
+                    htmlFor="rememberMe"
+                    className="text-xs font-medium text-slate-500 cursor-pointer select-none"
+                  >
+                    Lembrar meu CPF
+                  </Label>
                 </div>
 
-                <div className="absolute right-2 top-2 z-10">
+                <div className="pt-2">
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
-                    onClick={handleFillMagic}
-                    title="Preencher com dados de teste"
+                    type="submit"
+                    className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
+                    disabled={loading}
                   >
-                    <Wand2 className="h-4 w-4" />
+                    {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
                   </Button>
                 </div>
 
-                <form
-                  onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={formMotorista.control}
-                    name="cpfcnpj"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
-                          Seu CPF
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <Input
-                              {...field}
-                              onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
-                              placeholder="000.000.000-00"
-                              autoComplete="username"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                              aria-invalid={!!fieldState.error}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="flex flex-col items-center gap-6 mt-6">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-sm text-[#1a3a5c] hover:underline transition-colors font-medium mt-6"
+                  >
+                    Esqueci minha senha
+                  </button>
 
-                  <FormField
-                    control={formMotorista.control}
-                    name="senha"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
-                          Senha
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <Input
-                              {...field}
-                              type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              autoComplete="current-password"
-                              className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                              aria-invalid={!!fieldState.error}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
-                              tabIndex={-1}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-5 w-5 opacity-60" />
-                              ) : (
-                                <Eye className="h-5 w-5 opacity-60" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {formMotorista.formState.errors.root && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600 animate-in slide-in-from-top-2">
-                      <span className="mt-0.5">⚠️</span>
-                      {formMotorista.formState.errors.root.message}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 pt-1 pb-2">
-                    <Checkbox
-                      id="rememberMe"
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                      className="border-gray-200 rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
-                    />
-                    <Label
-                      htmlFor="rememberMe"
-                      className="text-xs font-medium text-slate-500 cursor-pointer select-none"
-                    >
-                      Lembrar meu CPF
-                    </Label>
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      type="submit"
-                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
-                      disabled={loading}
-                    >
-                      {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
-                    </Button>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-6 mt-6">
+                  <p className="text-sm text-slate-500">
+                    Não tem uma conta?{" "}
                     <button
                       type="button"
-                      onClick={handleForgotPassword}
-                      className="text-sm text-[#1a3a5c] hover:underline transition-colors font-medium mt-6"
+                      onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
+                      className="text-[#1a3a5c] font-semibold hover:underline transition-all"
                     >
-                      Esqueci minha senha
+                      Cadastre-se
                     </button>
-
-                    <p className="text-sm text-slate-500">
-                      Não tem uma conta?{" "}
-                      <button
-                        type="button"
-                        onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
-                        className="text-[#1a3a5c] font-semibold hover:underline transition-all"
-                      >
-                        Cadastre-se
-                      </button>
-                    </p>
-                  </div>
-
-                  {/* Sugestão de app por dispositivo (somente web) */}
-                  {!isNativeApp() && <LoginPlatformSuggestion />}
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        )}
-
-        {tab === "responsavel" && (
-          <Card className="w-full max-w-[400px] shadow-xl border border-slate-200 rounded-2xl bg-white animate-in zoom-in-95 duration-500">
-            <CardContent className="p-8">
-              <Form {...formResponsavel}>
-                <div className="text-center mb-8">
-                  <h1 className="text-xl font-bold text-slate-900 mb-2">
-                    Área do Responsável
-                  </h1>
-                  <p className="text-slate-500 text-sm">
-                    Acompanhe o transporte do seu filho
                   </p>
                 </div>
 
-                <form
-                  onSubmit={formResponsavel.handleSubmit(
-                    handleLoginResponsavel
-                  )}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={formResponsavel.control}
-                    name="cpf_responsavel"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
-                          CPF
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <Input
-                              {...field}
-                              maxLength={14}
-                              value={cpfMask(field.value || "")}
-                              onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
-                              placeholder="000.000.000-00"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                              aria-invalid={!!fieldState.error}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={formResponsavel.control}
-                    name="email_responsavel"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
-                          E-mail
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <Input
-                              {...field}
-                              type="email"
-                              placeholder="seu@email.com"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                              aria-invalid={!!fieldState.error}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="pt-2">
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
-                    >
-                      {loading ? getMessage("auth.labels.acessando") : getMessage("auth.labels.acessar")}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        )}
+                {/* Sugestão de app por dispositivo (somente web) */}
+                {!isNativeApp() && <LoginPlatformSuggestion />}
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
 
       <RecuperarSenhaDialog

@@ -21,10 +21,6 @@ const step2Schema = z.object({
 
 const step3Schema = z.object({
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-  confirmPassword: z.string().min(6, "Confirmação de senha obrigatória"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
-  path: ["confirmPassword"],
 });
 
 export type Step1Data = z.infer<typeof step1Schema>;
@@ -59,7 +55,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
 
   const formStep3 = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
-    defaultValues: { password: "", confirmPassword: "" }
+    defaultValues: { password: "" }
   });
 
   const handleSolicitar = async (data: Step1Data) => {

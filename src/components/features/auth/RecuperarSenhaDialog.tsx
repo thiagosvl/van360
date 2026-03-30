@@ -10,7 +10,10 @@ import {
   Fingerprint,
   Trash2,
   User,
-  Smartphone
+  Smartphone,
+  Eye,
+  EyeOff,
+  Lock
 } from "lucide-react"
 import {
   Form,
@@ -28,7 +31,7 @@ import {
 } from "@/components/ui/input-otp"
 import { Button } from "@/components/ui/button"
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { cpfMask } from "@/utils/masks"
 
 interface RecuperarSenhaDialogProps {
@@ -50,6 +53,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
     handleResetar,
     telefoneMascarado,
   } = useRecuperacaoSenhaForm(() => onOpenChange(false))
+  const [showPassword, setShowPassword] = useState(false)
 
   // Pré-preencher CPF caso venha da tela de login
   useEffect(() => {
@@ -193,36 +197,30 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                   name="password"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel className="text-slate-700 font-medium ml-1">
+                        Sua Nova Senha
+                      </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                           <Input
                             {...field}
-                            type="password"
-                            placeholder="CRIAR NOVA SENHA"
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
                           />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={formStep3.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <CheckCircle2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <Input
-                            {...field}
-                            type="password"
-                            placeholder="CONFIRME A NOVA SENHA"
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5 opacity-60" />
+                            ) : (
+                              <Eye className="h-5 w-5 opacity-60" />
+                            )}
+                          </button>
                         </div>
                       </FormControl>
                       <FormMessage />
