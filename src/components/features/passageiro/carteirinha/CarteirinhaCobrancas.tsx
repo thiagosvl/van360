@@ -124,21 +124,21 @@ export const CarteirinhaCobrancas = ({
       {cobrancas.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
           <MiniKPI
-            label="Pago"
+            label="Pagas"
             value={resumo.pago}
             count={resumo.qtdPago}
             colorClass="text-emerald-500 bg-emerald-50/60"
             icon={<CheckCircle2 className="h-3.5 w-3.5" />}
           />
           <MiniKPI
-            label="Pendente"
+            label="Pendentes"
             value={resumo.pendente}
             count={resumo.qtdPendente}
             colorClass="text-amber-500 bg-amber-50/60"
             icon={<Clock className="h-3.5 w-3.5" />}
           />
           <MiniKPI
-            label="Atrasado"
+            label="Atrasadas"
             value={resumo.atrasado}
             count={resumo.qtdAtrasado}
             colorClass="text-rose-500 bg-rose-50/60"
