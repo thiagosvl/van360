@@ -124,26 +124,6 @@ export function useRegistrarPagamentoManual() {
   });
 }
 
-export function useEnviarNotificacaoCobranca() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (cobrancaId: string) => cobrancaApi.enviarNotificacaoByCobrancaId(cobrancaId),
-    onSuccess: (_, cobrancaId) => {
-      queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
-      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
-      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
-      queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", cobrancaId], refetchType: "active" });
-      toast.success("cobranca.sucesso.notificacaoEnviada");
-    },
-    onError: (error: any) => {
-      toast.error("cobranca.erro.notificacao", {
-        description: getErrorMessage(error, "cobranca.erro.notificacaoDetalhe"),
-      });
-    },
-  });
-}
-
 export function useToggleNotificacoesCobranca() {
   const queryClient = useQueryClient();
 

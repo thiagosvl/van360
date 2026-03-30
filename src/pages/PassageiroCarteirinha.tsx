@@ -31,7 +31,7 @@ import {
   useDeleteCobranca,
   useDeletePassageiro,
   useDesfazerPagamento,
-  useEnviarNotificacaoCobranca, useIsMobile, usePassageiro,
+  useIsMobile, usePassageiro,
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
@@ -77,7 +77,6 @@ export default function PassageiroCarteirinha() {
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
   const updateCobranca = useUpdateCobranca();
   const deleteCobranca = useDeleteCobranca();
-  const enviarNotificacao = useEnviarNotificacaoCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const createContrato = useCreateContrato();
@@ -91,7 +90,6 @@ export default function PassageiroCarteirinha() {
     toggleAtivoPassageiro.isPending ||
     updateCobranca.isPending ||
     deleteCobranca.isPending ||
-    enviarNotificacao.isPending ||
     desfazerPagamento.isPending ||
     toggleNotificacoes.isPending ||
     isDeleting;
@@ -332,25 +330,6 @@ export default function PassageiroCarteirinha() {
   );
 
 
-  const handleEnviarNotificacaoClick = useCallback(
-    (cobrancaId: string) => {
-      openConfirmationDialog({
-        title: "Cobrar via WhatsApp",
-        description:
-          "A cobrança será enviada para o responsável (WhatsApp ou Email). Confirmar?",
-        confirmText: "Confirmar",
-        onConfirm: async () => {
-          try {
-            await enviarNotificacao.mutateAsync(cobrancaId);
-            safeCloseDialog(closeConfirmationDialog);
-          } catch (error) {
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        },
-      });
-    },
-    [enviarNotificacao, closeConfirmationDialog],
-  );
 
   const handleDesfazerClick = useCallback(
     (cobrancaId: string) => {
@@ -468,7 +447,6 @@ export default function PassageiroCarteirinha() {
     onRegistrarPagamento: (cobranca: Cobranca) => {
       openPaymentDialog(cobranca);
     },
-    onEnviarNotificacao: handleEnviarNotificacaoClick,
     onToggleLembretes: handleToggleLembretes,
     onDesfazerPagamento: handleDesfazerClick,
     onExcluirCobranca: handleExcluirCobranca,

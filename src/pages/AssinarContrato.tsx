@@ -1,12 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useAssinarContratoViewModel } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
@@ -22,7 +16,7 @@ import {
 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
-import { SignaturePad, SignaturePadRef } from "@/components/common/SignaturePad";
+import { SignaturePad } from "@/components/common/SignaturePad";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 
@@ -282,63 +276,30 @@ export default function AssinarContrato() {
         </div>
       </div>
 
-      <Dialog open={modalAberto} onOpenChange={setModalAberto}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-0 shadow-soft-2xl rounded-[2.5rem]">
-          <DialogHeader className="px-6 pt-7 pb-5 border-b border-gray-100/50 bg-white/70 backdrop-blur-md flex-row items-center justify-between space-y-0 text-left">
-            <DialogTitle className="text-lg font-black flex items-center gap-3 font-headline text-foreground/80 text-left">
-              <div className="p-2 rounded-2xl bg-primary/10 text-primary">
-                <PenTool className="w-5 h-5" />
-              </div>
-              Assinatura Digital
-            </DialogTitle>
-          </DialogHeader>
+      <BaseDialog open={modalAberto} onOpenChange={setModalAberto}>
+        <BaseDialog.Header
+          title="Assinatura Digital"
+          icon={<PenTool className="w-5 h-5" />}
+          onClose={() => setModalAberto(false)}
+        />
 
-          <div className="p-6 space-y-6">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground/60 leading-normal text-left">
-                Use seu dedo ou mouse para assinar no quadro abaixo.
-              </p>
-            </div>
+        <BaseDialog.Body className="space-y-6">
+          <p className="text-sm font-medium text-foreground/60 leading-normal">
+            Use seu dedo ou mouse para assinar no quadro abaixo.
+          </p>
 
-            <SignaturePad
-              ref={sigCanvas as any}
-            />
+          <SignaturePad ref={sigCanvas as any} />
 
-            <p className="text-[11px] text-center text-muted-foreground/60 font-medium leading-relaxed">
-              Ao assinar, você concorda com os termos e condições deste contrato eletrônico.
-            </p>
-          </div>
+          <p className="text-[11px] text-center text-muted-foreground/60 font-medium leading-relaxed">
+            Ao assinar, você concorda com os termos e condições deste contrato eletrônico.
+          </p>
+        </BaseDialog.Body>
 
-          <DialogFooter className="p-6 pt-0 flex flex-row gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setModalAberto(false)}
-              disabled={isSigning}
-              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider border border-slate-100 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
-            >
-              Cancelar
-            </Button>
-
-            <Button
-              onClick={handleAssinar}
-              disabled={isSigning}
-              className={cn(
-                "flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider transition-all active:scale-95 shadow-lg",
-                "bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-[#1a3a5c]/20"
-              )}
-            >
-              {isSigning ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Assinando...
-                </>
-              ) : (
-                "Finalizar"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <BaseDialog.Footer>
+          <BaseDialog.Action label="Cancelar" variant="secondary" onClick={() => setModalAberto(false)} disabled={isSigning} />
+          <BaseDialog.Action label="Finalizar" onClick={handleAssinar} isLoading={isSigning} />
+        </BaseDialog.Footer>
+      </BaseDialog>
     </div>
   );
 }

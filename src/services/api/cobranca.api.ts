@@ -61,19 +61,6 @@ export const cobrancaApi = {
             .get(`${endpointBase}/${cobrancaId}/notificacoes`)
             .then(res => res.data),
 
-    enviarNotificacaoByCobrancaId: (cobrancaId: string) => {
-        const payload = {
-            cobranca_id: cobrancaId,
-            tipo_origem: 'manual',
-            tipo_evento: 'COBRANCA_MANUAL',
-            canal: 'whatsapp',
-        };
-
-        return apiClient
-            .post(`${endpointBase}/${cobrancaId}/notificacoes`, payload)
-            .then(res => res.data);
-    },
-
     toggleNotificacoes: (passageiroId: string, novoStatus: boolean) =>
         apiClient
             .patch(`${endpointBase}/${passageiroId}/toggle-notificacoes`, { novoStatus })

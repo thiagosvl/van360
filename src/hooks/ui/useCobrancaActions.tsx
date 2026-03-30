@@ -2,14 +2,12 @@ import { useLayout } from "@/contexts/LayoutContext";
 import {
   useDeleteCobranca,
   useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
   useToggleNotificacoesCobranca,
   safeCloseDialog,
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-  canSendNotification,
   canViewReceipt,
   disableEditarCobranca,
   disableExcluirCobranca,
@@ -27,7 +25,6 @@ import {
   QrCode,
   Receipt,
   RotateCcw,
-  Send,
   Trash2,
   User
 } from "lucide-react";
@@ -52,9 +49,7 @@ export function useCobrancaOperations({
     openCobrancaHistoryDialog,
   } = useLayout();
 
-  // Mutations
   const toggleNotificacoes = useToggleNotificacoesCobranca();
-  const enviarNotificacao = useEnviarNotificacaoCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const deleteCobranca = useDeleteCobranca();
 
@@ -70,36 +65,10 @@ export function useCobrancaOperations({
     }
   }, [toggleNotificacoes, onActionSuccess, cobranca]);
 
-  const handleEnviarNotificacao = useCallback(async () => {
-    openConfirmationDialog({
-      title: "Cobrar via WhatsApp",
-      description:
-        "A cobrança será enviada para o responsável via WhatsApp. Confirmar?",
-      confirmText: "Confirmar",
-      onConfirm: async () => {
-        try {
-          await enviarNotificacao.mutateAsync(cobranca.id);
-          safeCloseDialog(closeConfirmationDialog);
-          if (onActionSuccess) onActionSuccess();
-        } catch (error) {
-          safeCloseDialog(closeConfirmationDialog);
-          console.error(error);
-        }
-      },
-    });
-  }, [
-    enviarNotificacao,
-    openConfirmationDialog,
-    closeConfirmationDialog,
-    onActionSuccess,
-    cobranca,
-  ]);
-
   const handleDesfazerPagamento = useCallback(async () => {
     openConfirmationDialog({
       title: "Desfazer pagamento?",
-      description:
-        "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
+      description: "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
       variant: "warning",
       confirmText: "Desfazer",
       onConfirm: async () => {
@@ -113,13 +82,7 @@ export function useCobrancaOperations({
         }
       },
     });
-  }, [
-    desfazerPagamento,
-    openConfirmationDialog,
-    closeConfirmationDialog,
-    onActionSuccess,
-    cobranca,
-  ]);
+  }, [desfazerPagamento, openConfirmationDialog, closeConfirmationDialog, onActionSuccess, cobranca]);
 
   const handleDeleteCobranca = useCallback(async () => {
     openCobrancaDeleteDialog({
@@ -139,36 +102,27 @@ export function useCobrancaOperations({
         });
       }
     });
-  }, [
-    deleteCobranca,
-    openCobrancaDeleteDialog,
-    openCobrancaEditDialog,
-    onActionSuccess,
-    cobranca,
-  ]);
+  }, [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, onActionSuccess, cobranca]);
 
-  const handleShowHistory = useCallback(() => {
+  const handleShowHistory = useCallback((cobranca: Cobranca) => {
     openCobrancaHistoryDialog({
       cobrancaId: cobranca.id,
       passageiroNome: formatShortName(cobranca.passageiro?.nome, true) || "Passageiro",
     });
-  }, [openCobrancaHistoryDialog, cobranca]);
+  }, [openCobrancaHistoryDialog]);
 
   const isActionLoading =
     toggleNotificacoes.isPending ||
-    enviarNotificacao.isPending ||
     desfazerPagamento.isPending ||
     deleteCobranca.isPending;
 
   return {
     handleToggleLembretes,
-    handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
     handleShowHistory,
     isActionLoading,
     isTogglingNotificacoes: toggleNotificacoes.isPending,
-    isSendingNotification: enviarNotificacao.isPending,
     isDesfazendoPagamento: desfazerPagamento.isPending,
     isDeleting: deleteCobranca.isPending
   };
@@ -182,27 +136,26 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
   onRegistrarPagamento?: () => void;
   onPagarPix?: () => void;
   onDesfazerPagamento?: (cobranca: Cobranca) => void;
+  showHistory?: boolean;
 }
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
   const {
     cobranca,
-    onVerCobranca,
     onVerCarteirinha,
     onEditarCobranca,
     onRegistrarPagamento,
     onPagarPix,
+    showHistory = false,
   } = props;
 
   const {
     handleToggleLembretes,
-    handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
     handleShowHistory,
     isActionLoading,
     isTogglingNotificacoes,
-    isSendingNotification,
     isDesfazendoPagamento,
     isDeleting
   } = useCobrancaOperations(props);
@@ -211,7 +164,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
 
-    // 1. Ver Recibo
     if (props.onVerRecibo) {
       actions.push({
         label: "Ver Recibo",
@@ -223,7 +175,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 2. Desfazer Pagamento (Sempre visível se manual)
     if (cobranca.pagamento_manual) {
       actions.push({
         label: "Desfazer Pagamento",
@@ -242,7 +193,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 3. Editar
     if (onEditarCobranca) {
       actions.push({
         label: "Editar",
@@ -257,7 +207,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 4. Registrar Pagamento
     if (onRegistrarPagamento) {
       actions.push({
         label: "Registrar Pagamento",
@@ -272,7 +221,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 5. Pagar via PIX (Se disponível)
     if (onPagarPix) {
       actions.push({
         label: "Pagar via PIX",
@@ -287,18 +235,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 6. Cobrar via WhatsApp
     actions.push({
-      label: "Cobrar via WhatsApp",
-      icon: <Send className="h-4 w-4" />,
-      onClick: handleEnviarNotificacao,
-      disabled: !canSendNotification(cobranca) || isActionLoading,
-      swipeColor: "bg-emerald-500",
-      isLoading: isSendingNotification,
+      label: cobranca.desativar_lembretes ? "Ativar Lembretes" : "Pausar Lembretes",
+      icon: cobranca.desativar_lembretes ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
+      onClick: handleToggleLembretes,
+      disabled: isPago || isActionLoading,
+      swipeColor: "bg-amber-600",
+      isLoading: isTogglingNotificacoes,
       hasSeparatorAfter: true,
     });
 
-    // 7. Ver Carteirinha
     if (onVerCarteirinha) {
       actions.push({
         label: "Ver Carteirinha",
@@ -309,16 +255,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 8. Histórico de Alterações
-    actions.push({
-      label: "Histórico de Alterações",
-      icon: <History className="h-4 w-4" />,
-      onClick: handleShowHistory,
-      swipeColor: "bg-slate-600",
-      hasSeparatorAfter: true,
-    });
+    if (showHistory) {
+      actions.push({
+        label: "Histórico de Alterações",
+        icon: <History className="h-4 w-4" />,
+        onClick: () => handleShowHistory(cobranca),
+        swipeColor: "bg-slate-600",
+        hasSeparatorAfter: true,
+      });
+    }
 
-    // 9. Excluir
     actions.push({
       label: "Excluir",
       icon: <Trash2 className="h-4 w-4" />,
@@ -335,20 +281,19 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     cobranca,
     onVerCarteirinha,
     onRegistrarPagamento,
-    onVerCobranca,
     onEditarCobranca,
-    handleEnviarNotificacao,
     handleToggleLembretes,
     handleDesfazerPagamento,
     handleDeleteCobranca,
+    handleShowHistory,
+    isActionLoading,
+    isTogglingNotificacoes,
+    isDesfazendoPagamento,
+    isDeleting,
+    onPagarPix,
+    showHistory,
     props.onVerRecibo,
     props.onExcluirCobranca,
     props.onDesfazerPagamento,
-    isActionLoading,
-    isTogglingNotificacoes,
-    isSendingNotification,
-    isDesfazendoPagamento,
-    isDeleting,
-    onPagarPix
   ]);
 }

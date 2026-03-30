@@ -9,7 +9,6 @@ interface CobrancaActionsMenuProps {
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
   onPagarPix?: () => void;
-  onEnviarNotificacao?: () => void;
   onToggleLembretes?: () => void;
   onDesfazerPagamento?: () => void;
   onExcluirCobranca?: () => void;
