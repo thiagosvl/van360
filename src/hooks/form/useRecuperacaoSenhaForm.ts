@@ -21,6 +21,10 @@ const step2Schema = z.object({
 
 const step3Schema = z.object({
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+  confirmPassword: z.string().min(6, "Confirmação de senha obrigatória"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
 });
 
 export type Step1Data = z.infer<typeof step1Schema>;
@@ -55,7 +59,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
 
   const formStep3 = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
-    defaultValues: { password: "" }
+    defaultValues: { password: "", confirmPassword: "" }
   });
 
   const handleSolicitar = async (data: Step1Data) => {
@@ -66,7 +70,8 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
       setTelefoneMascarado(response.data.telefoneMascarado || null);
       setStep(2);
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "auth.erro.cpfNaoEncontrado");
+      const errorMsg = err.response?.data?.error || "CPF não encontrado ou inválido.";
+      formStep1.setError("cpf", { type: "manual", message: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -74,10 +79,19 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
 
   const handleValidar = async (data: Step2Data) => {
     if (data.codigo.length < 6) return;
+    
+    // Garantir que temos o CPF, pegando do formStep1 se necessário
+    const currentCpf = cpf || formStep1.getValues("cpf");
+    
+    if (!currentCpf) {
+      toast.error("CPF é obrigatório para validar o código.");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await apiClient.post('/auth/recuperacao/validar', {
-        cpf,
+        cpf: currentCpf,
         codigo: data.codigo
       });
       setRecoveryId(response.data.recoveryId);

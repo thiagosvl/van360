@@ -29,7 +29,6 @@ const BaseDialogRoot = ({
       }}
     >
       <DialogContent 
-        aria-describedby={undefined}
         className={cn(
           "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[92vh] gap-0",
           className

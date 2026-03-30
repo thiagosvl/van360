@@ -1,66 +1,43 @@
-import { forwardRef, useState, useEffect } from "react";
-import { useRecuperacaoSenhaForm } from "@/hooks/form/useRecuperacaoSenhaForm";
-import { getMessage } from "@/constants/messages";
+import { useRecuperacaoSenhaForm } from "@/hooks/form/useRecuperacaoSenhaForm"
+import { BaseDialog } from "@/components/ui/BaseDialog"
 import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  KeyRound,
+  Mail,
+  CheckCircle2,
+  ArrowLeft,
+  RefreshCw,
+  ArrowRight,
+  Fingerprint,
+  Trash2,
+  User,
+  Smartphone
+} from "lucide-react"
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Smartphone, User, ChevronLeft, MessageSquare, ShieldCheck, Eye, EyeOff } from "lucide-react";
-import { cpfMask } from "@/utils/masks";
+  InputOTPSlot
+} from "@/components/ui/input-otp"
+import { Button } from "@/components/ui/button"
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { useEffect } from "react"
+import { cpfMask } from "@/utils/masks"
 
 interface RecuperarSenhaDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialCpf?: string;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialCpf?: string
 }
 
-const variants = {
-  initial: { opacity: 0, scale: 0.95 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.95 },
-};
-
-const CustomInput = forwardRef<HTMLInputElement, any>(
-  ({ icon: Icon, label, className, ...props }, ref) => {
-    return (
-      <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all shadow-sm">
-        <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="flex flex-col w-full h-full justify-center">
-          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
-            {label}
-          </label>
-          <Input
-            ref={ref}
-            {...props}
-            className={`h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900 ${className}`}
-          />
-        </div>
-      </div>
-    );
-  }
-);
-CustomInput.displayName = "CustomInput";
-
 export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: RecuperarSenhaDialogProps) {
-  const [showPassword, setShowPassword] = useState(false);
   const {
     step,
     setStep,
@@ -71,237 +48,273 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
     handleSolicitar,
     handleValidar,
     handleResetar,
-    handleVoltarStep1,
     telefoneMascarado,
-    reset
-  } = useRecuperacaoSenhaForm(() => onOpenChange(false), initialCpf);
+  } = useRecuperacaoSenhaForm(() => onOpenChange(false))
 
+  // Pré-preencher CPF caso venha da tela de login
   useEffect(() => {
-    if (!open) {
-      reset();
-      setShowPassword(false);
+    if (open && initialCpf && !formStep1.getValues("cpf")) {
+      formStep1.setValue("cpf", cpfMask(initialCpf))
     }
-  }, [open]);
+  }, [open, initialCpf, formStep1])
+
+  const renderContent = () => {
+    switch (step) {
+      case 1:
+        return (
+          <Form {...formStep1}>
+            <form id="form-recuperar-step1" onSubmit={formStep1.handleSubmit(handleSolicitar)} className="space-y-4">
+              <div className="space-y-4 py-4">
+                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
+                  <Fingerprint className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    Informe seu CPF para iniciarmos o processo de recuperação da sua conta.
+                  </p>
+                </div>
+
+                <FormField
+                  control={formStep1.control}
+                  name="cpf"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium ml-1">
+                        Seu CPF
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            placeholder="000.000.000-00"
+                            onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        )
+
+      case 2:
+        return (
+          <Form {...formStep2}>
+            <form id="form-recuperar-step2" onSubmit={formStep2.handleSubmit(handleValidar)} className="space-y-6">
+              <div className="space-y-6 py-4">
+                <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 flex gap-3">
+                  <Smartphone className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      O código foi enviado para o número:
+                    </p>
+                    <p className="font-headline font-black text-[#1a3a5c] text-sm">
+                      {telefoneMascarado || "(**) *****-****"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="sr-only">
+                  <DialogTitle>Validar código</DialogTitle>
+                  <DialogDescription>
+                    Insira o código de 6 dígitos enviado para o seu dispositivo.
+                  </DialogDescription>
+                </div>
+
+                <FormField
+                  control={formStep2.control}
+                  name="codigo"
+                  render={({ field: { ref, ...field } }) => (
+                    <FormItem className="flex flex-col items-center">
+                      <FormControl>
+                        <div className="space-y-4 w-full">
+                          <InputOTP
+                            maxLength={6}
+                            {...field}
+                            onChange={(val) => {
+                              field.onChange(val);
+                              // Apenas submete se tiver 6 caracteres reais (sem espaços)
+                              const realValue = val.replace(/\s/g, "");
+                              if (realValue.length === 6) {
+                                formStep2.handleSubmit(handleValidar)()
+                              }
+                            }}
+                            containerClassName="justify-center flex-1"
+                          >
+                              <InputOTPGroup className="gap-1.5 sm:gap-3">
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                  <InputOTPSlot
+                                    key={index}
+                                    index={index}
+                                    className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-headline font-black rounded-xl border-gray-200 bg-gray-50 text-[#1a3a5c] shadow-sm transition-all focus-within:ring-4 focus-within:ring-[#1a3a5c]/10"
+                                  />
+                                ))}
+                              </InputOTPGroup>
+                          </InputOTP>
+                          <FormMessage className="text-center" />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-10 text-[10px] font-black uppercase text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl gap-2 tracking-wider"
+                            onClick={() => field.onChange("")}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Limpar Código
+                          </Button>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        )
+
+      case 3:
+        return (
+          <Form {...formStep3}>
+            <form id="form-recuperar-step3" onSubmit={formStep3.handleSubmit(handleResetar)} className="space-y-4">
+              <div className="space-y-4 py-4">
+                <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50 flex gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    Tudo certo! Agora crie uma nova senha segura para acessar sua conta.
+                  </p>
+                </div>
+
+                <FormField
+                  control={formStep3.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="relative">
+                          <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="CRIAR NOVA SENHA"
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={formStep3.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="relative">
+                          <CheckCircle2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="CONFIRME A NOVA SENHA"
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  const getHeaderProps = () => {
+    switch (step) {
+      case 1:
+        return {
+          title: "RECUPERAR SENHA",
+          subtitle: "Passo 1: Identificação",
+          icon: <Mail className="w-6 h-6" />
+        }
+      case 2:
+        return {
+          title: "VALIDAR CÓDIGO",
+          subtitle: "Passo 2: Verificação",
+          icon: <RefreshCw className="w-6 h-6" />,
+          leftAction: (
+            <button
+              onClick={() => setStep(1)}
+              className="h-11 w-11 rounded-2xl flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] border border-slate-100 transition-all"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )
+        }
+      case 3:
+        return {
+          title: "NOVA SENHA",
+          subtitle: "Passo 3: Conclusão",
+          icon: <KeyRound className="w-6 h-6" />
+        }
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-[92vw] sm:max-w-[400px] p-0 overflow-hidden border-none bg-white rounded-[2.5rem] shadow-soft-2xl animate-in zoom-in-95 duration-300 pointer-events-auto"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <div className="relative p-5 sm:p-8">
-          <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                variants={variants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
-              >
-                <div className="flex flex-col items-center text-center space-y-3 px-2">
-                  <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] mb-2">
-                    <User className="w-8 h-8 opacity-80" />
-                  </div>
-                  <h2 className="text-2xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-                    {getMessage("auth.recuperacao.titulo")}
-                  </h2>
-                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                    {getMessage("auth.recuperacao.descricao")}
-                  </p>
-                </div>
+    <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={loading}>
+      <BaseDialog.Header
+        {...getHeaderProps()}
+        showSteps
+        currentStep={step}
+        totalSteps={3}
+        onClose={() => onOpenChange(false)}
+      />
 
-                <Form {...formStep1}>
-                  <form onSubmit={formStep1.handleSubmit(handleSolicitar)} className="space-y-4">
-                    <FormField
-                      control={formStep1.control}
-                      name="cpf"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <CustomInput
-                              {...field}
-                              icon={User}
-                              label="CPF"
-                              placeholder="000.000.000-00"
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => field.onChange(cpfMask(e.target.value))}
-                              disabled={loading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="pt-4">
-                      <Button
-                        type="submit"
-                        className="w-full h-14 rounded-2xl font-headline font-black text-[11px] shadow-lg transition-all active:scale-95 uppercase tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-[#1a3a5c]/20"
-                        disabled={loading}
-                      >
-                        {loading ? getMessage("comum.aguarde.aguarde").toUpperCase() : getMessage("auth.recuperacao.botaoSolicitar").toUpperCase()}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </motion.div>
-            )}
+      <BaseDialog.Body animate animationKey={step}>
+        {renderContent()}
+      </BaseDialog.Body>
 
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                variants={variants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
-              >
-                <div className="flex flex-col items-center text-center space-y-3 px-2">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-2">
-                    <Smartphone className="w-8 h-8" />
-                  </div>
-                  <h2 className="text-2xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase leading-tight">
-                    {getMessage("auth.recuperacao.validacaoTitulo")}
-                  </h2>
-                  <div className="text-sm text-slate-500 leading-relaxed font-medium">
-                    <p>Enviamos um código para o WhatsApp</p>
-                    <span className="block font-bold text-[#1a3a5c] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
-                      {telefoneMascarado}
-                    </span>
-                    <p className="mt-4 text-[13px]">Insira o código recebido:</p>
-                  </div>
-                </div>
-
-                <Form {...formStep2}>
-                  <form onSubmit={formStep2.handleSubmit(handleValidar)} className="space-y-6">
-                    <FormField
-                      control={formStep2.control}
-                      name="codigo"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-center w-full overflow-hidden">
-                          <FormControl>
-                            <InputOTP
-                              maxLength={6}
-                              value={field.value}
-                              onChange={field.onChange}
-                              onComplete={() => formStep2.handleSubmit(handleValidar)()}
-                              disabled={loading}
-                              className="flex justify-center"
-                            >
-                              <InputOTPGroup className="gap-1">
-                                <InputOTPSlot index={0} className="w-8 sm:w-11 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-gray-200 bg-white text-base sm:text-lg font-black text-[#1a3a5c] shadow-sm" />
-                                <InputOTPSlot index={1} className="w-8 sm:w-11 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-gray-200 bg-white text-base sm:text-lg font-black text-[#1a3a5c] shadow-sm" />
-                                <InputOTPSlot index={2} className="w-8 sm:w-11 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-gray-200 bg-white text-base sm:text-lg font-black text-[#1a3a5c] shadow-sm" />
-                              </InputOTPGroup>
-                              <InputOTPSeparator className="text-slate-200 mx-0.5 opacity-50" />
-                              <InputOTPGroup className="gap-1">
-                                <InputOTPSlot index={3} className="w-8 sm:w-11 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-gray-200 bg-white text-base sm:text-lg font-black text-[#1a3a5c] shadow-sm" />
-                                <InputOTPSlot index={4} className="w-8 sm:w-11 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-gray-200 bg-white text-base sm:text-lg font-black text-[#1a3a5c] shadow-sm" />
-                                <InputOTPSlot index={5} className="w-8 sm:w-11 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-gray-200 bg-white text-base sm:text-lg font-black text-[#1a3a5c] shadow-sm" />
-                              </InputOTPGroup>
-                            </InputOTP>
-                          </FormControl>
-                          <FormMessage className="text-[11px] font-bold text-red-500 mt-2 text-center animate-in fade-in slide-in-from-top-1 px-4 py-1 bg-red-50 rounded-lg w-full max-w-[280px]" />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="space-y-3 pt-4">
-                      <Button
-                        type="submit"
-                        className="w-full h-14 rounded-2xl font-headline font-black text-[11px] shadow-lg transition-all active:scale-95 uppercase tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-[#1a3a5c]/20"
-                        disabled={loading || formStep2.watch("codigo").length < 6}
-                      >
-                        {loading ? getMessage("comum.aguarde.aguarde").toUpperCase() : getMessage("auth.recuperacao.botaoValidar").toUpperCase()}
-                      </Button>
-
-                      <button
-                        type="button"
-                        onClick={handleVoltarStep1}
-                        className="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#1a3a5c]/40 hover:text-[#1a3a5c] transition-colors py-2"
-                        disabled={loading}
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        {getMessage("auth.recuperacao.alterarCpf")}
-                      </button>
-                    </div>
-                  </form>
-                </Form>
-              </motion.div>
-            )}
-
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                variants={variants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
-              >
-                <div className="flex flex-col items-center text-center space-y-3 px-2">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-2">
-                    <ShieldCheck className="w-8 h-8" />
-                  </div>
-                  <h2 className="text-2xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-                    {getMessage("auth.recuperacao.novaSenhaTitulo")}
-                  </h2>
-                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                    {getMessage("auth.recuperacao.novaSenhaDescricao")}
-                  </p>
-                </div>
-
-                <Form {...formStep3}>
-                  <form onSubmit={formStep3.handleSubmit(handleResetar)} className="space-y-4">
-                    <FormField
-                      control={formStep3.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="relative">
-                              <CustomInput
-                                {...field}
-                                type={showPassword ? "text" : "password"}
-                                icon={Lock}
-                                label="Nova Senha"
-                                placeholder="••••••••"
-                                disabled={loading}
-                                className="pr-10"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a3a5c] transition-colors p-1"
-                                disabled={loading}
-                              >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="pt-4">
-                      <Button
-                        type="submit"
-                        className="w-full h-14 rounded-2xl font-headline font-black text-[11px] shadow-lg transition-all active:scale-95 uppercase tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-[#1a3a5c]/20"
-                        disabled={loading}
-                      >
-                        {loading ? getMessage("comum.aguarde.aguarde").toUpperCase() : "Redefinir Senha"}
-                      </Button></div>
-                  </form>
-                </Form>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <BaseDialog.Footer>
+        <div className="flex w-full gap-3">
+          {step === 1 ? (
+            <BaseDialog.Action
+              label="SOLICITAR CÓDIGO"
+              variant="primary"
+              form="form-recuperar-step1"
+              type="submit"
+              isLoading={loading}
+              className="w-full"
+            />
+          ) : step === 2 ? (
+            <BaseDialog.Action
+              label="VALIDAR CÓDIGO"
+              variant="primary"
+              form="form-recuperar-step2"
+              type="submit"
+              isLoading={loading}
+              disabled={formStep2.watch("codigo")?.length < 6}
+            />
+          ) : (
+            <BaseDialog.Action
+              label="ALTERAR SENHA"
+              variant="primary"
+              form="form-recuperar-step3"
+              type="submit"
+              isLoading={loading}
+            />
+          )}
         </div>
-      </DialogContent>
-    </Dialog>
-  );
+      </BaseDialog.Footer>
+    </BaseDialog>
+  )
 }
