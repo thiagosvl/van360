@@ -5,6 +5,8 @@ import {
   QR_CODE_PLACEHOLDER,
 } from "@/utils/detectPlatform";
 import { CheckCircle2, Globe, Smartphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PostRegisterScreenProps {
   data: PostRegisterData;
@@ -24,106 +26,127 @@ export function PostRegisterScreen({
   const platform = detectPlatform();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] py-8 px-4 flex flex-col justify-center">
-      <div className="max-w-md w-full mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 p-8 text-center">
-          <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-
-          <h1 className="text-2xl font-extrabold text-slate-900 mb-2">
-            Cadastro concluído!
-          </h1>
-
-          <div className="bg-slate-50 rounded-xl p-4 mb-6">
-            <p className="text-sm text-slate-500 mb-1">Seu login é:</p>
-            <p className="text-lg font-bold text-[#1a3a5c]">{maskCpf(data.cpf)}</p>
-            <p className="text-sm text-slate-400">+ sua senha</p>
-          </div>
-
-          {/* Android no browser */}
-          {platform === "android-web" && (
-            <>
-              <p className="text-sm text-slate-500 mb-4">
-                Para a melhor experiência, use o app:
-              </p>
-              <div className="space-y-3">
-                <a
-                  href={PLAY_STORE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-xl transition-colors"
-                >
-                  <Smartphone className="w-5 h-5" />
-                  Baixar o App (recomendado)
-                </a>
-                <button
-                  onClick={onContinueInBrowser}
-                  className="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-colors"
-                >
-                  <Globe className="w-5 h-5" />
-                  Continuar pelo navegador
-                </button>
+    <div className="min-h-screen bg-slate-50 py-8 px-4 flex flex-col justify-center items-center">
+      <div className="max-w-[400px] w-full animate-in zoom-in-95 duration-500">
+        <Card className="shadow-xl border-slate-200 rounded-2xl bg-white overflow-hidden">
+          <CardContent className="p-8 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-3 bg-green-50 rounded-full">
+                <CheckCircle2 className="w-12 h-12 text-green-500" />
               </div>
-              <p className="text-xs text-slate-400 mt-4">
-                Após instalar o app, use "Já tenho conta" com seu CPF.
-              </p>
-            </>
-          )}
+            </div>
 
-          {/* Desktop */}
-          {platform === "desktop" && (
-            <>
-              <div className="space-y-3 mb-6">
-                <button
-                  onClick={onContinueInBrowser}
-                  className="flex items-center justify-center gap-2 w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-xl transition-colors"
-                >
-                  <Globe className="w-5 h-5" />
-                  Continuar pelo navegador
-                </button>
-              </div>
+            <h1 className="text-2xl font-extrabold text-[#1a3a5c] mb-2">
+              Cadastro concluído!
+            </h1>
+            
+            <p className="text-slate-500 text-sm mb-6">
+              Sua conta foi criada com sucesso.
+            </p>
 
-              <div className="border-t border-slate-200 pt-6">
-                <p className="text-sm text-slate-500 mb-3">
-                  Baixe o app no seu celular Android:
+            <div className="bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Seu login é:</p>
+              <p className="text-xl font-bold text-[#1a3a5c] tracking-tight">{maskCpf(data.cpf)}</p>
+              <p className="text-[11px] text-slate-400 mt-1">Use seu CPF + senha para entrar</p>
+            </div>
+
+            {/* Android no browser */}
+            {platform === "android-web" && (
+              <div className="space-y-4">
+                <p className="text-sm font-medium text-slate-600 mb-2">
+                  Para a melhor experiência, use o app:
                 </p>
-                <img
-                  src={QR_CODE_PLACEHOLDER}
-                  alt="QR Code para baixar Van360 na Play Store"
-                  className="w-[160px] h-[160px] mx-auto rounded-lg shadow-md mb-3"
-                  loading="lazy"
-                />
-                <p className="text-xs text-slate-400">
-                  Disponível para Android. App iOS em breve.
+                <div className="space-y-3">
+                  <Button
+                    asChild
+                    className="w-full h-12 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white rounded-xl font-bold gap-2 shadow-md transition-all"
+                  >
+                    <a
+                      href={PLAY_STORE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Smartphone className="w-5 h-5" />
+                      Baixar o App (Recomendado)
+                    </a>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={onContinueInBrowser}
+                    className="w-full h-12 text-slate-600 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl font-semibold gap-2 border border-slate-100"
+                  >
+                    <Globe className="w-5 h-5" />
+                    Continuar pelo navegador
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+                  Após instalar o app, use a opção <span className="font-semibold">"Já tenho conta"</span>.
                 </p>
               </div>
-            </>
-          )}
+            )}
 
-          {/* iOS no browser */}
-          {platform === "ios-web" && (
-            <>
-              <div className="space-y-3 mb-6">
-                <button
-                  onClick={onContinueInBrowser}
-                  className="flex items-center justify-center gap-2 w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-xl transition-colors"
-                >
-                  <Globe className="w-5 h-5" />
-                  Continuar pelo navegador
-                </button>
-              </div>
+            {/* Desktop */}
+            {platform === "desktop" && (
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <Button
+                    onClick={onContinueInBrowser}
+                    className="w-full h-12 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white rounded-xl font-bold gap-2 shadow-md transition-all"
+                  >
+                    <Globe className="w-5 h-5" />
+                    Acessar pela Web
+                  </Button>
+                </div>
 
-              <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-blue-700 font-medium">
-                  App iOS em desenvolvimento.
-                </p>
-                <p className="text-xs text-blue-500 mt-1">
-                  Acesse pelo navegador do celular ou computador. Quando o app
-                  estiver disponível, avisaremos pelo seu WhatsApp!
-                </p>
+                <div className="pt-6 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-500 mb-4 uppercase tracking-wider">
+                    Ou use no seu Android:
+                  </p>
+                  <div className="bg-white p-2 rounded-xl border border-slate-100 inline-block shadow-sm mb-3">
+                    <img
+                      src={QR_CODE_PLACEHOLDER}
+                      alt="QR Code Play Store"
+                      className="w-[140px] h-[140px]"
+                      loading="lazy"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    Escaneie para baixar na Play Store.<br />
+                    Disponível para Android. App iOS em breve.
+                  </p>
+                </div>
               </div>
-            </>
-          )}
-        </div>
+            )}
+
+            {/* iOS no browser */}
+            {platform === "ios-web" && (
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <Button
+                    onClick={onContinueInBrowser}
+                    className="w-full h-12 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white rounded-xl font-bold gap-2 shadow-md transition-all"
+                  >
+                    <Globe className="w-5 h-5" />
+                    Continuar pelo navegador
+                  </Button>
+                </div>
+
+                <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100/50 text-left">
+                  <p className="text-[13px] text-[#1a3a5c] font-bold mb-1">
+                    App iOS em desenvolvimento
+                  </p>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    A versão web funciona perfeitamente no iPhone. Quando o app nativo estiver pronto, você será avisado por WhatsApp!
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        <p className="text-center text-xs text-slate-400 mt-8 font-medium">
+          © {new Date().getFullYear()} Van360. Todos os direitos reservados.
+        </p>
       </div>
     </div>
   );

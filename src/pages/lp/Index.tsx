@@ -8,11 +8,7 @@ import { useSEO } from "@/hooks/useSEO";
 import {
   CheckCircle2,
   ChevronDown,
-  FileText,
-  Menu,
-  ShieldCheck,
   Star,
-  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -113,7 +109,6 @@ const Index = () => {
     description:
       "O Van360 organiza passageiros, mensalidades, contratos e recibos para motoristas de van escolar. Tudo digital, tudo pelo celular.",
   });
-  const [menuOpen, setMenuOpen] = useState(false);
   const [termosOpen, setTermosOpen] = useState(false);
   const [privacidadeOpen, setPrivacidadeOpen] = useState(false);
   const CTA = ROUTES.PUBLIC.REGISTER;
@@ -137,53 +132,31 @@ const Index = () => {
       `}</style>
 
       {/* ══════════ NAVBAR ══════════ */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div className="max-w-[1120px] mx-auto px-5 flex items-center justify-between h-14 md:h-16">
-          <img src="/assets/logo-van360.png" alt="Van360" className="h-8 w-auto" />
-          <div className="hidden md:flex items-center gap-6">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all duration-300">
+        <div className="max-w-[1120px] mx-auto px-4 sm:px-6 flex items-center justify-between h-14 md:h-16">
+          <div className="flex items-center shrink-0">
+            <img
+              src="/assets/logo-van360.png"
+              alt="Van360"
+              className="h-7 sm:h-8 w-auto select-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
             <Link
               to={LOGIN}
-              className="text-sm font-bold text-[#1a3a5c] hover:text-[#f59e0b] transition-colors"
+              className="text-xs sm:text-sm font-bold text-[#1a3a5c] hover:text-[#f59e0b] px-2 py-1 transition-colors"
             >
               Login
             </Link>
             <Link
               to={CTA}
-              className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-sm px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+              className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-[11px] sm:text-[13px] px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all"
             >
-              Começar grátis — 15 dias sem cartão
+              Começar grátis
             </Link>
           </div>
-          <button
-            className="md:hidden p-2 text-slate-600"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Menu"
-          >
-            {menuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
         </div>
-        {menuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 p-5 space-y-3 shadow-xl">
-            <Link
-              to={LOGIN}
-              onClick={() => setMenuOpen(false)}
-              className="block py-2 text-center font-bold text-[#1a3a5c] border-2 border-slate-200 rounded-lg"
-            >
-              Login
-            </Link>
-            <Link
-              to={CTA}
-              onClick={() => setMenuOpen(false)}
-              className="block py-3 text-center font-bold bg-[#f59e0b] text-[#1a1a1a] rounded-lg shadow-md"
-            >
-              Começar grátis — 15 dias sem cartão
-            </Link>
-          </div>
-        )}
       </nav>
 
       {/* Spacer para compensar navbar fixed */}
