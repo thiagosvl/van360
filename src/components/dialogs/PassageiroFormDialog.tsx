@@ -68,7 +68,7 @@ export default function PassengerFormDialog({
           title={title}
           icon={<User className="w-5 h-5" />}
           onClose={onClose}
-          leftAction={
+          leftAction={import.meta.env.DEV && (
             <Button
               type="button"
               variant="ghost"
@@ -79,7 +79,7 @@ export default function PassengerFormDialog({
             >
               <Wand2 className="h-5 w-5" />
             </Button>
-          }
+          )}
         />
 
         <BaseDialog.Body>

@@ -163,7 +163,7 @@ export default function GastoFormDialog({
         title={gastoToEdit ? "Editar Gasto" : "Registrar Gasto"}
         icon={<TrendingDown className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={
+        leftAction={import.meta.env.DEV && (
           <Button
             type="button"
             variant="ghost"
@@ -174,7 +174,7 @@ export default function GastoFormDialog({
           >
             <Wand2 className="h-5 w-5" />
           </Button>
-        }
+        )}
       />
 
       <BaseDialog.Body>

@@ -13,22 +13,22 @@ interface BaseDialogProps {
   lockClose?: boolean
 }
 
-const BaseDialogRoot = ({ 
-  children, 
-  open, 
-  onOpenChange, 
+const BaseDialogRoot = ({
+  children,
+  open,
+  onOpenChange,
   className,
-  lockClose = false 
+  lockClose = false
 }: BaseDialogProps) => {
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onOpenChange={(val) => {
         if (!val && lockClose) return;
         onOpenChange(val);
       }}
     >
-      <DialogContent 
+      <DialogContent
         className={cn(
           "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100svh-2rem)] gap-0",
           className
@@ -70,7 +70,7 @@ const BaseDialogHeader = ({
     <div className="p-5 sm:p-6 flex items-center justify-between bg-white border-b border-slate-100/60 shrink-0">
       <div className="flex items-center gap-4 min-w-0 flex-1">
         {leftAction ? (
-           <div className="shrink-0">{leftAction}</div>
+          <div className="shrink-0">{leftAction}</div>
         ) : icon ? (
           <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 bg-slate-50/50 text-[#1a3a5c] border border-slate-100 shadow-sm transition-all duration-500">
             {icon}
@@ -80,7 +80,7 @@ const BaseDialogHeader = ({
           <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight truncate">
             {title}
           </DialogTitle>
-          
+
           {(showSteps && currentStep !== undefined && totalSteps !== undefined) ? (
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">
@@ -128,8 +128,8 @@ interface BaseDialogBodyProps {
   animationKey?: any
 }
 
-const BaseDialogBody = ({ 
-  children, 
+const BaseDialogBody = ({
+  children,
   className,
   animate = false,
   animationKey
@@ -144,14 +144,14 @@ const BaseDialogBody = ({
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-       <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait">
         <motion.div
-           key={animationKey}
-           initial={{ opacity: 0, y: 10 }}
-           animate={{ opacity: 1, y: 0 }}
-           exit={{ opacity: 0, y: -10 }}
-           transition={{ duration: 0.3, ease: "easeOut" }}
-           className="flex-1 overflow-y-auto"
+          key={animationKey}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="flex-1 overflow-y-auto"
         >
           {content}
         </motion.div>
@@ -212,7 +212,7 @@ const BaseDialogAction = ({
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cn(
-        "flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider transition-all active:scale-95",
+        "flex-1 h-12 rounded-2xl font-black uppercase text-[10.5px] tracking-wider transition-all active:scale-95",
         styles[variant],
         className
       )}

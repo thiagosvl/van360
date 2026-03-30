@@ -58,18 +58,20 @@ export default function Register() {
 
           {/* Header */}
           <div className="text-center p-6 pb-0 relative">
-            <div className="absolute right-2 top-2 z-10">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
-                onClick={handleFillMagic}
-                title="Preencher com dados de teste"
-              >
-                <WandIcon className="h-5 w-5" />
-              </Button>
-            </div>
+            {import.meta.env.DEV && (
+              <div className="absolute right-2 top-2 z-10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                  onClick={handleFillMagic}
+                  title="Preencher com dados de teste"
+                >
+                  <WandIcon className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
 
             <div>
               {/* Logo Section */}
@@ -78,7 +80,7 @@ export default function Register() {
                   <img
                     src="/assets/logo-van360.png"
                     alt="Van360"
-                    className="h-16 w-auto select-none drop-shadow-sm"
+                    className="h-12 w-auto select-none drop-shadow-sm"
                   />
                 </div>
               </div>

@@ -31,7 +31,6 @@ import { lazyLoad } from "@/utils/lazyLoad";
 // Lazy loading de rotas principais
 const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
-const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 const Index = lazyLoad(() => import("./pages/lp/Index"));
 const Splash = lazyLoad(() => import("./pages/Splash"));
 const Home = lazyLoad(() => import("./pages/Home"));
@@ -203,15 +202,6 @@ const App = () => {
                   element={
                     <AppGate>
                       <Register />
-                    </AppGate>
-                  }
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.NEW_PASSWORD}
-                  element={
-                    <AppGate>
-                      <NovaSenha />
                     </AppGate>
                   }
                 />

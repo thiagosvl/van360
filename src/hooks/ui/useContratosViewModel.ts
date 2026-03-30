@@ -106,10 +106,10 @@ export function useContratosViewModel() {
 
   const handleToggleContracts = useCallback(async (active: boolean) => {
     if (!profile?.id) return;
-    
+
     openConfirmationDialog({
       title: active ? "Ativar Contratos?" : "Desativar Contratos?",
-      description: active 
+      description: active
         ? "Tem certeza que deseja ativar a geração de contratos para sua van? Você poderá configurar as regras e modelos."
         : "Tem certeza que deseja desativar a geração de contratos? Os contratos existentes continuarão valendo, mas novos contratos não serão gerados automaticamente.",
       confirmText: active ? "Ativar" : "Desativar",
@@ -119,9 +119,9 @@ export function useContratosViewModel() {
         try {
           await usuarioApi.atualizarUsuario(profile.id!, {
             config_contrato: {
-               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-               ...(profile.config_contrato as any || {}),
-               usar_contratos: active,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ...(profile.config_contrato as any || {}),
+              usar_contratos: active,
             }
           });
           refreshProfile();
@@ -195,7 +195,7 @@ export function useContratosViewModel() {
   const handleGerarContrato = useCallback((passageiroId: string) => {
     openConfirmationDialog({
       title: "Gerar Contrato?",
-      description: "Deseja gerar um novo contrato para este passageiro agora?",
+      description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
       confirmText: "Gerar",
       onConfirm: async () => {
         await createMutation.mutateAsync({ passageiroId });

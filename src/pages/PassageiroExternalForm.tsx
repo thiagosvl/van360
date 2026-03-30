@@ -2,6 +2,7 @@ import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalFor
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
+import { InitialLoading } from "@/components/auth/InitialLoading";
 import { CheckCircle2, Loader2, Wand2 } from "lucide-react";
 import { PassageiroFormDadosCadastrais } from "@/components/features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
@@ -23,11 +24,7 @@ export default function PassageiroExternalForm() {
   } = usePassageiroExternalForm();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-10 w-10 animate-spin text-[#1a3a5c]" />
-      </div>
-    );
+    return <InitialLoading />;
   }
 
   if (success) {
@@ -73,17 +70,19 @@ export default function PassageiroExternalForm() {
 
           <div className="p-6 md:p-12 relative">
             {/* Botão de Mock discreto */}
-            <div className="absolute right-6 top-6 z-20">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-slate-200 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
-                onClick={handleFillMock}
-              >
-                <Wand2 className="h-5 w-5" />
-              </Button>
-            </div>
+            {import.meta.env.DEV && (
+              <div className="absolute right-2 top-2 z-10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                  onClick={handleFillMock}
+                >
+                  <Wand2 className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
 
             {/* Logo integrated into the card */}
             <div className="flex flex-col items-center justify-center border-b border-slate-50">

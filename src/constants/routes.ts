@@ -2,20 +2,19 @@ export const ROUTES = {
   PUBLIC: {
     LOGIN: "/login",
     REGISTER: "/cadastro",
-    NEW_PASSWORD: "/nova-senha",
     EXTERNAL_PASSENGER_FORM: "/cadastro-passageiro/:motoristaId",
     SPLASH: "/splash",
     ROOT: "/",
   },
   PRIVATE: {
     RESPONSAVEL: {
-        ROOT: "/responsavel/*",
-        HOME: "/responsavel/carteirinha",
-        SELECT: "/responsavel/selecionar",
-    }, 
+      ROOT: "/responsavel/*",
+      HOME: "/responsavel/carteirinha",
+      SELECT: "/responsavel/selecionar",
+    },
     ADMIN: {
-        DASHBOARD: "/admin/dashboard",
-    }, 
+      DASHBOARD: "/admin/dashboard",
+    },
     MOTORISTA: {
       HOME: "/inicio",
       PASSENGERS: "/passageiros",

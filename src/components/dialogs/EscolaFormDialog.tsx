@@ -294,7 +294,7 @@ export default function EscolaFormDialog({
         title={editingEscola ? "Editar Escola" : "Nova Escola"}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={isSaving}
-        leftAction={
+        leftAction={import.meta.env.DEV && (
           <Button
             type="button"
             variant="ghost"
@@ -305,7 +305,7 @@ export default function EscolaFormDialog({
           >
             <Wand2 className="h-5 w-5" />
           </Button>
-        }
+        )}
       />
 
       <BaseDialog.Body>

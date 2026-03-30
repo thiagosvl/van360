@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InitialLoading } from "@/components/auth/InitialLoading";
 import { useAssinarContratoViewModel } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
@@ -72,17 +73,7 @@ export default function AssinarContrato() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50/50">
-        <div className="relative">
-          <Loader2 className="h-12 w-12 animate-spin text-primary/40" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-          </div>
-        </div>
-        <p className="mt-4 text-sm font-headline font-bold text-foreground/40 uppercase tracking-widest">Carregando Contrato</p>
-      </div>
-    );
+    return <InitialLoading />;
   }
 
   if (isError || !contrato) {

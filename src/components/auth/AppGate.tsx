@@ -11,7 +11,6 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     ROUTES.PUBLIC.ROOT,
     ROUTES.PUBLIC.LOGIN,
     ROUTES.PUBLIC.REGISTER,
-    ROUTES.PUBLIC.NEW_PASSWORD,
     ROUTES.PUBLIC.SPLASH,
   ];
 

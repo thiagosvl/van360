@@ -236,12 +236,6 @@ export const messages = {
     recuperacao: {
       titulo: "Recuperar Senha",
       descricao: "Informe seu CPF para receber um código de validação no WhatsApp.",
-      validacaoTitulo: "Verificação",
-      novaSenhaTitulo: "Nova Senha",
-      novaSenhaDescricao: "Defina uma nova senha segura para sua conta.",
-      botaoSolicitar: "Receber Código no WhatsApp",
-      botaoValidar: "Validar Código",
-      alterarCpf: "Alterar CPF ou reenviar",
     },
     info: {
       informeCpf: "Informe seu CPF.",

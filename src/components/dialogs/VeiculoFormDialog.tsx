@@ -30,6 +30,7 @@ import { Car, Hash, Tag, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { safeCloseDialog } from "@/hooks";
 
 const veiculoSchema = z.object({
   placa: z
@@ -213,9 +214,9 @@ export default function VeiculoFormDialog({
     <BaseDialog open={isOpen} onOpenChange={onClose} lockClose={isSaving}>
       <BaseDialog.Header
         title={editingVeiculo ? "Editar Veículo" : "Novo Veículo"}
-        icon={<Car className="w-5 h-5" />}
-        onClose={onClose}
-        leftAction={
+        onClose={() => safeCloseDialog(onClose)}
+        hideCloseButton={isSaving}
+        leftAction={import.meta.env.DEV && (
           <Button
             type="button"
             variant="ghost"
@@ -226,7 +227,7 @@ export default function VeiculoFormDialog({
           >
             <Wand2 className="h-5 w-5" />
           </Button>
-        }
+        )}
       />
 
       <BaseDialog.Body>

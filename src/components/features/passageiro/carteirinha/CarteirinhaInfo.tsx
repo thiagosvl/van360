@@ -76,8 +76,8 @@ const ProfileActions = ({
       className={cn(
         "h-11 w-11 rounded-2xl transition-all shadow-sm hover:shadow-md",
         passageiro.ativo
-          ? "bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
-          : "bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white", // Inativo -> Ação Ativar (Verde)
+          ? "bg-rose-50/50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
+          : "bg-emerald-100/80 text-emerald-600 hover:bg-emerald-500 hover:text-white", // Inativo -> Ação Ativar (Verde)
       )}
       title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
     >
@@ -104,7 +104,7 @@ const ProfileActions = ({
     <Button
       size="icon"
       onClick={onEditClick}
-      className="h-11 w-11 rounded-2xl bg-blue-50 text-blue-600 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
+      className="h-11 w-11 rounded-2xl bg-blue-50/50 text-blue-500 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
     >
       <Pencil className="h-4.5 w-4.5" />
     </Button>
@@ -113,7 +113,7 @@ const ProfileActions = ({
       <DropdownMenuTrigger asChild>
         <Button
           size="icon"
-          className="h-11 w-11 rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
+          className="h-11 w-11 rounded-2xl bg-white text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
         >
           <MoreVertical className="h-4.5 w-4.5" />
         </Button>
@@ -337,7 +337,7 @@ export const CarteirinhaDadosPessoais = ({
 
   const RightIcon =
     passageiro.status_contrato === ContratoStatus.PENDENTE ||
-    passageiro.status_contrato === ContratoStatus.ASSINADO
+      passageiro.status_contrato === ContratoStatus.ASSINADO
       ? ExternalLink
       : Plus;
 
@@ -378,7 +378,7 @@ export const CarteirinhaDadosPessoais = ({
           <RightIcon className="h-3 w-3" />
           <span className="text-[9px] font-bold uppercase tracking-widest leading-none pt-0.5">
             {passageiro.status_contrato === ContratoStatus.PENDENTE ||
-            passageiro.status_contrato === ContratoStatus.ASSINADO
+              passageiro.status_contrato === ContratoStatus.ASSINADO
               ? "Ver"
               : "Gerar"}
           </span>

@@ -307,23 +307,25 @@ export default function Login() {
                   <img
                     src="/assets/logo-van360.png"
                     alt="Van360"
-                    className="h-16 w-auto select-none drop-shadow-sm"
+                    className="h-12 w-auto select-none drop-shadow-sm"
                   />
                 </div>
               </div>
 
-              <div className="absolute right-2 top-2 z-10">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
-                  onClick={handleFillMagic}
-                  title="Preencher com dados de teste"
-                >
-                  <Wand2 className="h-4 w-4" />
-                </Button>
-              </div>
+              {import.meta.env.DEV && (
+                 <div className="absolute right-2 top-2 z-10">
+                   <Button
+                     type="button"
+                     variant="ghost"
+                     size="icon"
+                     className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                     onClick={handleFillMagic}
+                     title="Preencher com dados de teste"
+                   >
+                     <Wand2 className="h-4 w-4" />
+                   </Button>
+                 </div>
+               )}
 
               <form
                 onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}

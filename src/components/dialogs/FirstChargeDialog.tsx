@@ -222,7 +222,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
               </div>
               <div className="space-y-1 flex-1">
-                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">O responsável já pagou?</h3>
+                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">O responsável já pagou {currentMonthNameCapitalized}?</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
                   {firstNamePassageiro} <span className="text-slate-300">({firstNameResponsavel})</span>
                 </p>
