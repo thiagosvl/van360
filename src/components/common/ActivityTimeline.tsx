@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHistoricoByEntidade } from "@/hooks/api/useHistorico";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/formatters/currency";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -211,7 +212,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                           {atividade.meta.valor && (
                             <div className="flex items-center gap-1.5">
                               <span className="text-[10px] font-semibold text-foreground/60 uppercase tracking-tighter">Valor</span>
-                              <span className="text-[11px] font-semibold text-foreground/60 leading-none">R$ {atividade.meta.valor.toFixed(2)}</span>
+                              <span className="text-[11px] font-semibold text-foreground/60 leading-none">{formatCurrency(atividade.meta.valor)}</span>
                             </div>
                           )}
                           {atividade.meta.campos && (

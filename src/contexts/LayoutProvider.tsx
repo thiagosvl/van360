@@ -1,5 +1,5 @@
-import { ActivityTimeline } from "@/components/common/ActivityTimeline";
 import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
+import HistoricoDialog from "@/components/dialogs/HistoricoDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
@@ -14,22 +14,11 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useContractGuard } from "@/hooks/ui/useContractGuard";
-import { AtividadeEntidadeTipo, PassageiroFormModes } from "@/types/enums";
-import { History } from "lucide-react";
-
-import { X } from "lucide-react";
+import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
   LayoutContext,
@@ -498,40 +487,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       )}
 
       {cobrancaHistoryDialogState.open && cobrancaHistoryDialogState.props && (
-        <Dialog
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) closeCobrancaHistoryDialog();
-          }}
-        >
-          <DialogContent
-            className="w-[calc(100%-2rem)] max-w-sm rounded-[2.5rem] p-0 overflow-hidden border-0 shadow-soft-2xl"
-            hideCloseButton
-          >
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100/50 bg-white/70 backdrop-blur-md sticky top-0 z-20 flex-row items-center justify-between space-y-0">
-              <DialogTitle className="text-lg font-black flex items-center gap-3 font-headline text-foreground/80">
-                <div className="p-2 rounded-2xl bg-primary/10 text-primary">
-                  <History className="w-5 h-5" />
-                </div>
-                Histórico
-              </DialogTitle>
-              <DialogClose className="p-2 rounded-full hover:bg-gray-100 transition-colors text-foreground/30 hover:text-foreground/60">
-                <X className="w-5 h-5" />
-              </DialogClose>
-            </DialogHeader>
-            <ScrollArea className="max-h-[75vh]">
-              <div className="px-6 py-4 bg-gray-50/20">
-                {cobrancaHistoryDialogState.props && (
-                  <ActivityTimeline
-                    entidadeTipo={AtividadeEntidadeTipo.COBRANCA}
-                    entidadeId={cobrancaHistoryDialogState.props.cobrancaId}
-                    limit={15}
-                  />
-                )}
-              </div>
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
+        <HistoricoDialog
+          isOpen={true}
+          onClose={closeCobrancaHistoryDialog}
+          cobrancaId={cobrancaHistoryDialogState.props.cobrancaId}
+        />
       )}
 
       {firstChargeDialogState.open && firstChargeDialogState.props && (
