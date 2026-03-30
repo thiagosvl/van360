@@ -10,6 +10,7 @@ interface MoneyInputProps<T extends FieldValues> {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  labelClassName?: string;
   inputClassName?: string;
   disabled?: boolean;
 }
@@ -20,6 +21,7 @@ export function MoneyInput<T extends FieldValues>({
   required = false,
   placeholder = "R$ 0,00",
   className,
+  labelClassName,
   inputClassName,
   disabled = false,
 }: MoneyInputProps<T>) {
@@ -27,12 +29,12 @@ export function MoneyInput<T extends FieldValues>({
 
   return (
     <FormItem className={className}>
-      <FormLabel>
+      <FormLabel className={labelClassName}>
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">
-          <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+          <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
           <Input
             {...field}
             placeholder={placeholder}

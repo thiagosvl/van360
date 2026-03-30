@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
 import { Wand2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
 
 export default function Register() {
-  const navigate = useNavigate();
   useSEO({
     title: "Cadastro | Van360 - Gestão de Transporte Escolar",
     description: "Crie sua conta no Van360 e transforme a gestão do seu transporte escolar hoje mesmo.",
@@ -74,9 +71,19 @@ export default function Register() {
               </Button>
             </div>
 
-            <div className="pt-4">
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-[#1a3a5c] drop-shadow-sm">
-                Comece agora mesmo
+            <div>
+              {/* Logo Section */}
+              <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src="/assets/logo-van360.png"
+                    alt="Van360"
+                    className="h-16 w-auto select-none drop-shadow-sm"
+                  />
+                </div>
+              </div>
+              <h1 className="text-xl font-extrabold tracking-tight sm:text-4xl text-[#1a3a5c] drop-shadow-sm">
+                Faça seu Cadastro
               </h1>
             </div>
           </div>

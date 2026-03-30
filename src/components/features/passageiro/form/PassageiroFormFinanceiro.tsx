@@ -24,20 +24,22 @@ import { useFormContext } from "react-hook-form";
 
 interface PassageiroFormFinanceiroProps {
   editingPassageiro: Passageiro | null;
+  isExternal?: boolean;
 }
 
 export function PassageiroFormFinanceiro({
   editingPassageiro,
+  isExternal = false,
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
-        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+      <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
           <CreditCard className="w-5 h-5" />
         </div>
-        Informações da Mensalidade
+        Mensalidade
       </div>
 
       <div className="space-y-6">
@@ -49,8 +51,8 @@ export function PassageiroFormFinanceiro({
               <MoneyInput
                 field={field}
                 label="Valor"
-                required
-                inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                labelClassName="text-slate-700 font-semibold ml-1"
+                inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
               />
             )}
           />
@@ -59,8 +61,8 @@ export function PassageiroFormFinanceiro({
             name="dia_vencimento"
             render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel className="text-gray-700 font-medium ml-1">
-                  Dia do Vencimento <span className="text-red-600">*</span>
+                <FormLabel className="text-slate-700 font-semibold ml-1">
+                  Dia do Vencimento <span className={cn("text-red-600", isExternal && "hidden")}>*</span>
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
@@ -68,7 +70,7 @@ export function PassageiroFormFinanceiro({
                       <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                       <SelectTrigger
                         className={cn(
-                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5",
                           fieldState.error && "border-red-500",
                         )}
                         aria-invalid={!!fieldState.error}
@@ -95,7 +97,7 @@ export function PassageiroFormFinanceiro({
             name="data_inicio_transporte"
             render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel className="text-gray-700 font-medium ml-1">
+                <FormLabel className="text-slate-700 font-semibold ml-1">
                   Início do Transporte <span className="text-red-600">*</span>
                 </FormLabel>
                 <FormControl>
@@ -106,7 +108,7 @@ export function PassageiroFormFinanceiro({
                     onChange={(e) => {
                       field.onChange(dateMask(e.target.value));
                     }}
-                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                    className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
                   />
                 </FormControl>
                 <FormMessage />

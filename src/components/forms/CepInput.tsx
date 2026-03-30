@@ -20,6 +20,7 @@ interface CepInputProps<T extends FieldValues> {
     estado: string;
   }) => void;
   className?: string;
+  labelClassName?: string;
   inputClassName?: string;
   nextField?: FieldPath<T>;
   onLoadingChange?: (loading: boolean) => void;
@@ -31,6 +32,7 @@ export function CepInput<T extends FieldValues>({
   required = false,
   onAddressFetched,
   className,
+  labelClassName,
   inputClassName,
   nextField = "numero" as FieldPath<T>,
   onLoadingChange,
@@ -45,98 +47,47 @@ export function CepInput<T extends FieldValues>({
   const { error } = useFormField();
 
   const handleCepChange = async (value: string) => {
-    const masked = cepMask(value);
-    field.onChange(masked);
+    const maskedValue = cepMask(value);
+    field.onChange(maskedValue);
 
-    const cleanCep = value.replace(/\D/g, "");
-    if (cleanCep.length === 8) {
+    const cleanValue = value.replace(/\D/g, "");
+    if (cleanValue.length === 8) {
+      updateLoading(true);
       try {
-        updateLoading(true);
-        const endereco = await cepService.buscarEndereco(cleanCep);
-        if (endereco) {
-          try {
-            if (form.getValues("logradouro" as FieldPath<T>) !== undefined) {
-              form.setValue("logradouro" as FieldPath<T>, endereco.logradouro);
-            }
-            if (form.getValues("bairro" as FieldPath<T>) !== undefined) {
-              form.setValue("bairro" as FieldPath<T>, endereco.bairro);
-            }
-            if (form.getValues("cidade" as FieldPath<T>) !== undefined) {
-              form.setValue("cidade" as FieldPath<T>, endereco.cidade);
-            }
-            if (form.getValues("estado" as FieldPath<T>) !== undefined) {
-              form.setValue("estado" as FieldPath<T>, endereco.estado);
-            }
+        const address = await cepService.buscarEndereco(cleanValue);
+        if (address) {
+          // @ts-ignore - Dynamic path update
+          form.setValue("logradouro", address.logradouro, { shouldValidate: true });
+          // @ts-ignore
+          form.setValue("bairro", address.bairro, { shouldValidate: true });
+          // @ts-ignore
+          form.setValue("cidade", address.cidade, { shouldValidate: true });
+          // @ts-ignore
+          form.setValue("estado", address.estado, { shouldValidate: true });
 
-            // @ts-ignore - Tipagem dinâmica do react-hook-form
-            form.clearErrors(["logradouro", "bairro", "cidade", "estado"]);
-
-            if (form.getValues("numero" as FieldPath<T>) !== undefined) {
-              form.setValue("numero" as FieldPath<T>, "" as any);
-            }
-            if (form.getValues("referencia" as FieldPath<T>) !== undefined) {
-              form.setValue("referencia" as FieldPath<T>, "" as any);
-            }
-          } catch {
-          }
-
-          if (onAddressFetched) {
-            onAddressFetched(endereco);
-          }
+          onAddressFetched?.(address);
 
           if (nextField) {
-            setTimeout(() => {
-              form.setFocus(nextField);
-              
-              const element = document.querySelector(`[name="${nextField}"]`) as HTMLElement;
-              if (element) {
-                let parent = element.parentElement;
-                while (parent) {
-                  const style = window.getComputedStyle(parent);
-                  if (
-                    (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
-                    parent.scrollHeight > parent.clientHeight
-                  ) {
-                    const parentRect = parent.getBoundingClientRect();
-                    const elementRect = element.getBoundingClientRect();
-                    
-                    const relativeTop = elementRect.top - parentRect.top;
-                    const targetScrollTop = parent.scrollTop + relativeTop - (parent.clientHeight / 2) + (element.clientHeight / 2);
-                    
-                    parent.scrollTo({
-                      top: targetScrollTop,
-                      behavior: 'smooth'
-                    });
-                    break;
-                  }
-                  parent = parent.parentElement;
-                }
-              }
-            }, 100);
+            setTimeout(() => form.setFocus(nextField), 100);
           }
-        } else {
-          toast.info("sistema.info.cepNaoEncontrado", {
-            description: "sistema.info.cepNaoEncontradoDescricao",
-          });
         }
-      } catch (error: any) {
-        toast.error("sistema.erro.consultarCep", {
-          description: error.message || "Não foi possível concluir a operação.",
-        });
+      } catch (error) {
+        toast.error("Erro ao buscar CEP");
       } finally {
         updateLoading(false);
       }
     }
   };
 
+
   return (
     <FormItem className={className}>
-      <FormLabel className="text-gray-700 font-medium ml-1">
+      <FormLabel className={labelClassName}>
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">
-          <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+          <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
           <Input
             {...field}
             placeholder="00000-000"
@@ -148,7 +99,7 @@ export function CepInput<T extends FieldValues>({
           />
           {loadingCep && (
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <Loader2 className="h-4 w-4 animate-spin text-[#1a3a5c]" />
             </div>
           )}
         </div>

@@ -242,7 +242,7 @@ export default function VeiculoFormDialog({
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-black uppercase text-[10px] tracking-wider ml-1">
-                    Placa <span className="text-red-500">*</span>
+                    Placa <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -275,7 +275,7 @@ export default function VeiculoFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel className="text-slate-700 font-black uppercase text-[10px] tracking-wider ml-1">
-                      Marca <span className="text-red-500">*</span>
+                      Marca <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -301,7 +301,7 @@ export default function VeiculoFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel className="text-slate-700 font-black uppercase text-[10px] tracking-wider ml-1">
-                      Modelo <span className="text-red-500">*</span>
+                      Modelo <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">

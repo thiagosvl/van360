@@ -39,7 +39,7 @@ export function PostRegisterScreen({
             <h1 className="text-2xl font-extrabold text-[#1a3a5c] mb-2">
               Cadastro concluído!
             </h1>
-            
+
             <p className="text-slate-500 text-sm mb-6">
               Sua conta foi criada com sucesso.
             </p>
@@ -54,7 +54,7 @@ export function PostRegisterScreen({
             {platform === "android-web" && (
               <div className="space-y-4">
                 <p className="text-sm font-medium text-slate-600 mb-2">
-                  Para a melhor experiência, use o app:
+                  Para uma melhor experiência, use o app:
                 </p>
                 <div className="space-y-3">
                   <Button
@@ -67,7 +67,7 @@ export function PostRegisterScreen({
                       rel="noopener noreferrer"
                     >
                       <Smartphone className="w-5 h-5" />
-                      Baixar o App (Recomendado)
+                      Baixar App (Recomendado)
                     </a>
                   </Button>
                   <Button
@@ -143,7 +143,7 @@ export function PostRegisterScreen({
             )}
           </CardContent>
         </Card>
-        
+
         <p className="text-center text-xs text-slate-400 mt-8 font-medium">
           © {new Date().getFullYear()} Van360. Todos os direitos reservados.
         </p>

@@ -91,18 +91,35 @@ export default function PassengerFormDialog({
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-10 pb-6"
+                className="space-y-12 pb-6"
               >
-                <PassageiroFormDadosCadastrais
-                  profile={profile}
-                  escolas={escolas}
-                  veiculos={veiculos}
-                />
-                <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
-                <PassageiroFormFinanceiro
-                  editingPassageiro={editingPassageiro}
-                />
-                <PassageiroFormEndereco />
+                <section>
+                  <PassageiroFormDadosCadastrais
+                    profile={profile}
+                    escolas={escolas}
+                    veiculos={veiculos}
+                  />
+                </section>
+
+                <hr className="border-slate-100" />
+
+                <section>
+                  <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
+                </section>
+
+                <hr className="border-slate-100" />
+
+                <section>
+                  <PassageiroFormFinanceiro
+                    editingPassageiro={editingPassageiro}
+                  />
+                </section>
+
+                <hr className="border-slate-100" />
+
+                <section>
+                  <PassageiroFormEndereco />
+                </section>
               </form>
             </Form>
           )}

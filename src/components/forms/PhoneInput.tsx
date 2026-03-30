@@ -10,6 +10,7 @@ interface PhoneInputProps<T extends FieldValues> {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  labelClassName?: string;
   inputClassName?: string;
   disabled?: boolean;
 }
@@ -20,6 +21,7 @@ export function PhoneInput<T extends FieldValues>({
   required = false,
   placeholder = "(00) 00000-0000",
   className,
+  labelClassName,
   inputClassName,
   disabled,
 }: PhoneInputProps<T>) {
@@ -27,12 +29,12 @@ export function PhoneInput<T extends FieldValues>({
 
   return (
     <FormItem className={className}>
-      <FormLabel className="text-gray-700 font-medium ml-1">
+      <FormLabel className={labelClassName}>
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">
-          <Phone className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+          <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
           <Input
             {...field}
             placeholder={placeholder}

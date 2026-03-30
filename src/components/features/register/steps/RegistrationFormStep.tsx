@@ -48,7 +48,7 @@ export function RegistrationFormStep({
               />
             )}
             <Button
-              type="submit" 
+              type="submit"
               disabled={loading}
               className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
             >
@@ -64,16 +64,16 @@ export function RegistrationFormStep({
             <div className="mt-4 text-center">
               <div className="px-4 pt-2 pb-0 text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
                 <span>Ao criar sua conta, você concorda com nossos </span>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setOpenTermos(true)}
                   className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center"
                 >
                   Termos de Uso
                 </button>
                 <span> e </span>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setOpenPolitica(true)}
                   className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center"
                 >

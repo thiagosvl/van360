@@ -27,12 +27,12 @@ export const passageiroSchema = z
     data_nascimento: dateSchema(true),
     genero: z.string().min(1, "Campo obrigatório"),
 
-    logradouro: z.string().optional(),
-    numero: z.string().optional(),
-    bairro: z.string().optional(),
-    cidade: z.string().optional(),
-    estado: z.string().optional(),
-    cep: cepSchema.or(z.literal("")).optional(),
+    logradouro: z.string().min(1, "Campo obrigatório"),
+    numero: z.string().min(1, "Campo obrigatório"),
+    bairro: z.string().min(1, "Campo obrigatório"),
+    cidade: z.string().min(1, "Campo obrigatório"),
+    estado: z.string().min(1, "Campo obrigatório"),
+    cep: cepSchema,
     referencia: z.string().optional(),
 
     observacoes: z.string().optional(),
@@ -58,36 +58,6 @@ export const passageiroSchema = z
 
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    const validation = validateEnderecoFields(
-      data.cep,
-      data.logradouro,
-      data.numero
-    );
-
-    // Adiciona erros para cada campo que falhou na validação
-    if (validation.errors.cep) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.cep,
-        path: ["cep"],
-      });
-    }
-    if (validation.errors.logradouro) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.logradouro,
-        path: ["logradouro"],
-      });
-    }
-    if (validation.errors.numero) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.numero,
-        path: ["numero"],
-      });
-    }
   });
 
 export type PassageiroFormData = z.infer<typeof passageiroSchema>;

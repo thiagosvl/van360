@@ -328,7 +328,7 @@ export default function EscolaFormDialog({
                   render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-medium ml-1">
-                        Nome da Escola <span className="text-red-500">*</span>
+                        Nome da Escola <span className="text-red-600">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">

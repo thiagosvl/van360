@@ -3,24 +3,24 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
@@ -33,12 +33,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-    Bus,
-    CalendarIcon,
-    Receipt,
-    Tag,
-    TrendingDown,
-    Wand2,
+  Bus,
+  CalendarIcon,
+  Receipt,
+  Tag,
+  TrendingDown,
+  Wand2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -190,7 +190,7 @@ export default function GastoFormDialog({
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700 font-medium ml-1">
-                    Categoria <span className="text-red-500">*</span>
+                    Categoria <span className="text-red-600">*</span>
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -266,7 +266,7 @@ export default function GastoFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="text-gray-700 font-medium ml-1">
-                      Data <span className="text-red-500">*</span>
+                      Data <span className="text-red-600">*</span>
                     </FormLabel>
                     <Popover
                       open={openCalendar}
@@ -283,7 +283,7 @@ export default function GastoFormDialog({
                                 "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
                                 !field.value && "text-muted-foreground",
                                 fieldState.error &&
-                                  "border-red-500 ring-red-500"
+                                "border-red-500 ring-red-500"
                               )}
                               aria-invalid={!!fieldState.error}
                             >

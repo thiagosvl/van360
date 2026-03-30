@@ -123,7 +123,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-gray-700 font-medium ml-1">
-                            Nome completo <span className="text-red-500">*</span>
+                            Nome completo <span className="text-red-600">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
@@ -182,7 +182,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-medium ml-1">
-                              CPF <span className="text-red-500">*</span>
+                              CPF <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -201,7 +201,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-medium ml-1">
-                              E-mail <span className="text-red-500">*</span>
+                              E-mail <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
                               <div className="relative">

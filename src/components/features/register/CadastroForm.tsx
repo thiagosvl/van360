@@ -29,9 +29,9 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           control={form.control}
           name="nome"
           render={({ field, fieldState }) => (
-            <FormItem className="sm:col-span-2">
+            <FormItem>
               <FormLabel className="text-slate-700 font-medium ml-1">
-                Nome completo <span className="text-red-500">*</span>
+                Nome completo <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -54,7 +54,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           name="cpfcnpj"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-slate-700 font-medium ml-1">CPF <span className="text-red-500">*</span></FormLabel>
+              <FormLabel className="text-slate-700 font-medium ml-1">CPF <span className="text-red-600">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
                   <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
@@ -80,7 +80,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-medium ml-1">
-                E-mail <span className="text-red-500">*</span>
+                E-mail <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -119,7 +119,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         render={({ field, fieldState }) => (
           <FormItem>
             <FormLabel className="text-slate-700 font-medium ml-1">
-              Crie uma senha segura <span className="text-red-500">*</span>
+              Crie uma senha segura <span className="text-red-600">*</span>
             </FormLabel>
             <FormControl>
               <div className="relative">

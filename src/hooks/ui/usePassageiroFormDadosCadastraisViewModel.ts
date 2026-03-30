@@ -1,4 +1,4 @@
-import { useLayout } from "@/contexts/LayoutContext";
+import { useLayoutSafe } from "@/contexts/LayoutContext";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -7,14 +7,18 @@ import { useFormContext } from "react-hook-form";
 interface UsePassageiroFormDadosCadastraisViewModelProps {
   escolas: Escola[];
   veiculos: Veiculo[];
+  isExternal?: boolean;
 }
 
 export function usePassageiroFormDadosCadastraisViewModel({
   escolas,
   veiculos,
+  isExternal = false,
 }: UsePassageiroFormDadosCadastraisViewModelProps) {
   const form = useFormContext();
-  const { openEscolaFormDialog, openVeiculoFormDialog } = useLayout();
+  const layout = useLayoutSafe();
+
+  const { openEscolaFormDialog, openVeiculoFormDialog } = layout || {};
 
   const [newVeiculo, setNewVeiculo] = useState<Veiculo | null>(null);
   const [newEscola, setNewEscola] = useState<Escola | null>(null);
@@ -56,6 +60,7 @@ export function usePassageiroFormDadosCadastraisViewModel({
   }, [veiculos, form]);
 
   const handleAddNewVehicle = useCallback(() => {
+    if (!openVeiculoFormDialog) return;
     openVeiculoFormDialog({
       onSuccess: (veiculo) => {
         setNewVeiculo(veiculo);
@@ -64,6 +69,7 @@ export function usePassageiroFormDadosCadastraisViewModel({
   }, [openVeiculoFormDialog]);
 
   const handleAddNewSchool = useCallback(() => {
+    if (!openEscolaFormDialog) return;
     openEscolaFormDialog({
       allowBatchCreation: false,
       onSuccess: (escola) => {
