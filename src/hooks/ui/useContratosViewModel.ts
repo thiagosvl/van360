@@ -242,6 +242,7 @@ export function useContratosViewModel() {
     handleToggleContracts,
     isToggling,
     handleOpenPreview,
+    isPreviewLoading: previewMutation.isPending,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,

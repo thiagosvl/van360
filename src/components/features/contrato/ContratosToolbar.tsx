@@ -33,6 +33,7 @@ interface ContratosToolbarProps {
   isDesativado?: boolean;
   onToggleContratos: (active: boolean) => void | Promise<void>;
   isToggling?: boolean;
+  isPreviewLoading?: boolean;
 }
 
 export const ContratosToolbar = memo(function ContratosToolbar({
@@ -47,6 +48,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   isDesativado = false,
   onToggleContratos,
   isToggling = false,
+  isPreviewLoading = false,
 }: ContratosToolbarProps) {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [openPopover, setOpenPopover] = useState(false);
@@ -140,8 +142,16 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               )}
               onClick={onOpenPreview}
               title="Visualizar Modelo"
+              disabled={isPreviewLoading}
             >
-              <Eye className="w-5 h-5 text-slate-400" />
+              {isPreviewLoading ? (
+                <Loader2 className="w-5 h-5 text-[#1a3a5c] animate-spin" />
+              ) : (
+                <Eye className={cn(
+                  "w-5 h-5 transition-colors",
+                  isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
+                )} />
+              )}
             </Button>
 
             {!isMobile ? (

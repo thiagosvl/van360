@@ -28,6 +28,7 @@ const Contratos = () => {
     handleToggleContracts,
     isToggling,
     handleOpenPreview,
+    isPreviewLoading,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,
@@ -66,6 +67,7 @@ const Contratos = () => {
               isDesativado={!isContratoAtivo}
               onToggleContratos={handleToggleContracts}
               isToggling={isToggling}
+              isPreviewLoading={isPreviewLoading}
             />
 
             <div className="flex items-center justify-between px-1">
