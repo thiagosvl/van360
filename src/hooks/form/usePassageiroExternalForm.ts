@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { get, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 
@@ -18,6 +18,7 @@ import {
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
+import { getMessage } from "@/constants/messages";
 
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
@@ -127,8 +128,8 @@ export function usePassageiroExternalForm() {
         .catch(() => ({ data: null }));
 
       if (!data) {
-        toast.error("sistema.erro.linkInvalido", {
-          description: "sistema.erro.linkInvalidoDescricao",
+        toast.error(getMessage("sistema.erro.linkInvalido"), {
+          description: getMessage("sistema.erro.linkInvalidoDescricao"),
         });
         navigate(ROUTES.PUBLIC.ROOT);
         return;

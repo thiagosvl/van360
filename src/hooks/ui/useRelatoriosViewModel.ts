@@ -61,28 +61,28 @@ export function useRelatoriosViewModel() {
   const shouldFetchSaidas = activeTab === RelatorioTab.SAIDAS;
   const shouldFetchOperacional = activeTab === RelatorioTab.OPERACIONAL;
 
-  const { data: cobrancasData, refetch: refetchCobrancas } = useCobrancas(
+  const { data: cobrancasData, refetch: refetchCobrancas, isLoading: isLoadingCobrancas } = useCobrancas(
     { usuarioId, mes, ano },
     { enabled: !!usuarioId && shouldFetchEntradas }
   );
 
-  const { data: gastosData, refetch: refetchGastos } = useGastos(
+  const { data: gastosData, refetch: refetchGastos, isLoading: isLoadingGastos } = useGastos(
     { usuarioId, mes, ano },
     { enabled: !!usuarioId && shouldFetchSaidas }
   );
 
   // Operational Data (Passageiros/Escolas/Veiculos) - Needed for 'Operacional'
-  const { data: passageirosData, refetch: refetchPassageiros } = usePassageiros(
+  const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
     { usuarioId },
     { enabled: !!usuarioId && shouldFetchOperacional }
   );
 
-  const { data: escolasData, refetch: refetchEscolas } = useEscolas(
+  const { data: escolasData, refetch: refetchEscolas, isLoading: isLoadingEscolas } = useEscolas(
     { usuarioId },
     { enabled: !!usuarioId && shouldFetchOperacional }
   );
 
-  const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(
+  const { data: veiculosData, refetch: refetchVeiculos, isLoading: isLoadingVeiculos } = useVeiculos(
     { usuarioId },
     { enabled: !!usuarioId && (shouldFetchOperacional || shouldFetchSaidas) }
   );
@@ -134,6 +134,9 @@ export function useRelatoriosViewModel() {
     dados,
     
     // Status
-    isLoading: isLoadingSummary
+    isLoading: isLoadingSummary,
+    isLoadingEntradas: shouldFetchEntradas && isLoadingCobrancas,
+    isLoadingSaidas: shouldFetchSaidas && (isLoadingGastos || isLoadingVeiculos),
+    isLoadingOperacional: shouldFetchOperacional && (isLoadingPassageiros || isLoadingEscolas || isLoadingVeiculos),
   };
 }

@@ -4,6 +4,12 @@ import { RelatoriosOperacional } from "@/components/features/relatorios/Relatori
 import { RelatoriosSaidas } from "@/components/features/relatorios/RelatoriosSaidas";
 import { RelatoriosVisaoGeral } from "@/components/features/relatorios/RelatoriosVisaoGeral";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import {
+  EntradasSkeleton,
+  OperacionalSkeleton,
+  RelatoriosSkeleton,
+  SaidasSkeleton,
+} from "@/components/skeletons/RelatoriosSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRelatoriosViewModel } from "@/hooks/ui/useRelatoriosViewModel";
 
@@ -18,7 +24,15 @@ export default function Relatorios() {
     setActiveTab,
     refreshAll,
     dados,
+    isLoading,
+    isLoadingEntradas,
+    isLoadingSaidas,
+    isLoadingOperacional,
   } = useRelatoriosViewModel();
+
+  if (isLoading) {
+    return <RelatoriosSkeleton activeTab={activeTab} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -62,23 +76,20 @@ export default function Relatorios() {
               </TabsList>
             </div>
 
-            {/* Aba 1: Visão Geral */}
             <TabsContent value={RelatorioTab.VISAO_GERAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
               <RelatoriosVisaoGeral dados={dados.visaoGeral} />
             </TabsContent>
 
-            {/* Aba 2: Entradas */}
             <TabsContent value={RelatorioTab.ENTRADAS} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-              <RelatoriosEntradas dados={dados.entradas} />
+              {isLoadingEntradas ? <EntradasSkeleton /> : <RelatoriosEntradas dados={dados.entradas} />}
             </TabsContent>
 
-            {/* Aba 3: Saídas */}
             <TabsContent value={RelatorioTab.SAIDAS} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-              <RelatoriosSaidas dados={dados.saidas} />
+              {isLoadingSaidas ? <SaidasSkeleton /> : <RelatoriosSaidas dados={dados.saidas} />}
             </TabsContent>
 
             <TabsContent value={RelatorioTab.OPERACIONAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-              <RelatoriosOperacional dados={dados.operacional} />
+              {isLoadingOperacional ? <OperacionalSkeleton /> : <RelatoriosOperacional dados={dados.operacional} />}
             </TabsContent>
           </Tabs>
         </div>
