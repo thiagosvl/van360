@@ -30,7 +30,7 @@ const BaseDialogRoot = ({
     >
       <DialogContent 
         className={cn(
-          "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[92vh] gap-0",
+          "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100svh-2rem)] gap-0",
           className
         )}
         onPointerDownOutside={(e) => lockClose && e.preventDefault()}

@@ -89,7 +89,7 @@ export function HelpSheet() {
             </div>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto px-6 space-y-8 pb-10">
+          <div className="flex-1 overflow-y-auto px-6 space-y-8 pb-[calc(2.5rem+var(--safe-area-bottom))]">
             {/* Suporte Direto */}
             <section>
               <button
