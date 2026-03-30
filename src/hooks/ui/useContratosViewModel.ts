@@ -138,8 +138,17 @@ export function useContratosViewModel() {
   }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile]);
 
   const handleActivateContracts = useCallback(() => {
-    handleToggleContracts(true);
-  }, [handleToggleContracts]);
+    openContractSetupDialog({
+      skipWelcome: true,
+      onSuccess: (usarContratos) => {
+        if (usarContratos) {
+          refreshProfile();
+          refetchKPIs();
+          refetchContratos();
+        }
+      }
+    });
+  }, [openContractSetupDialog, refreshProfile, refetchKPIs, refetchContratos]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
