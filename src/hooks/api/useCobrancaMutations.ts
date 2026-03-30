@@ -48,6 +48,7 @@ export function useUpdateCobranca() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["historico", "COBRANCA", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
@@ -91,7 +92,7 @@ export function useDesfazerPagamento() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
-      queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", cobrancaId], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["historico", "COBRANCA", cobrancaId], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoDesfeito");
     },
@@ -113,6 +114,7 @@ export function useRegistrarPagamentoManual() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["historico", "COBRANCA", cobrancaId], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoRegistrado");
     },
@@ -134,7 +136,6 @@ export function useToggleNotificacoesCobranca() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.cobrancaId], refetchType: "active" });
-      queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", variables.cobrancaId], refetchType: "active" });
       toast.success(
         variables.desativar
           ? "cobranca.sucesso.notificacoesDesativadas"
