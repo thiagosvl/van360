@@ -29,6 +29,7 @@ const BaseDialogRoot = ({
       }}
     >
       <DialogContent 
+        aria-describedby={undefined}
         className={cn(
           "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[92vh] gap-0",
           className
@@ -177,7 +178,7 @@ const BaseDialogFooter = ({ children, className }: BaseDialogFooterProps) => {
 }
 
 // Action button with standardized styles
-interface BaseDialogActionProps {
+interface BaseDialogActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string
   onClick?: () => void
   variant?: "primary" | "secondary" | "ghost" | "outline"
@@ -196,7 +197,8 @@ const BaseDialogAction = ({
   disabled = false,
   icon,
   className,
-  type = "button"
+  type = "button",
+  ...props
 }: BaseDialogActionProps) => {
   const styles = {
     primary: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20",
@@ -215,6 +217,7 @@ const BaseDialogAction = ({
         styles[variant],
         className
       )}
+      {...props}
     >
       {isLoading ? (
         <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />

@@ -353,7 +353,7 @@ export const messages = {
       criar: "Erro ao cadastrar usuário.",
       atualizar: "Erro ao atualizar usuário.",
       excluir: "Erro ao excluir usuário.",
-      cpfJaExiste: "CPF/CNPJ já existe.",
+      cpfJaExiste: "CPF já existe.",
       emailJaExiste: "Email já existe.",
       invalido: "Usuário selecionado é inválido ou não possui um ID de autenticação.",
       atualizacao: "Erro na Atualização.",

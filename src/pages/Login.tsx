@@ -330,7 +330,7 @@ export default function Login() {
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel className="text-slate-700 font-medium ml-1">
-                          CPF/CNPJ
+                          Seu CPF
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
