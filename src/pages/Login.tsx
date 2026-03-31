@@ -51,52 +51,52 @@ import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaD
 function LoginPlatformSuggestion() {
   const platform = detectPlatform();
 
-  if (platform === "android-web") {
-    return (
-      <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-        <p className="text-xs text-slate-500 mb-2">
-          Você também pode acessar pelo app!
-        </p>
-        <a
-          href={PLAY_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors"
-        >
-          Baixar na Play Store
-        </a>
-      </div>
-    );
-  }
+  // if (platform === "android-web") {
+  //   return (
+  //     <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+  //       <p className="text-xs text-slate-500 mb-2">
+  //         Você também pode acessar pelo app!
+  //       </p>
+  //       <a
+  //         href={PLAY_STORE_URL}
+  //         target="_blank"
+  //         rel="noopener noreferrer"
+  //         className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors"
+  //       >
+  //         Baixar na Play Store
+  //       </a>
+  //     </div>
+  //   );
+  // }
 
-  if (platform === "desktop") {
-    return (
-      <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-        <p className="text-xs text-slate-500 mb-3">
-          Para a melhor experiência, baixe o app:
-        </p>
-        <img
-          src={QR_CODE_PLACEHOLDER}
-          alt="QR Code para baixar Van360 na Play Store"
-          className="w-[120px] h-[120px] mx-auto rounded-lg shadow-sm mb-2"
-          loading="lazy"
-        />
-        <p className="text-[10px] text-slate-400">
-          Disponível para Android. App iOS em breve.
-        </p>
-      </div>
-    );
-  }
+  // if (platform === "desktop") {
+  //   return (
+  //     <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+  //       <p className="text-xs text-slate-500 mb-3">
+  //         Para a melhor experiência, baixe o app:
+  //       </p>
+  //       <img
+  //         src={QR_CODE_PLACEHOLDER}
+  //         alt="QR Code para baixar Van360 na Play Store"
+  //         className="w-[120px] h-[120px] mx-auto rounded-lg shadow-sm mb-2"
+  //         loading="lazy"
+  //       />
+  //       <p className="text-[10px] text-slate-400">
+  //         Disponível para Android. App iOS em breve.
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
-  if (platform === "ios-web") {
-    return (
-      <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-        <p className="text-xs text-slate-400">
-          App iOS em desenvolvimento. Use o navegador por enquanto.
-        </p>
-      </div>
-    );
-  }
+  // if (platform === "ios-web") {
+  //   return (
+  //     <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+  //       <p className="text-xs text-slate-400">
+  //         App iOS em desenvolvimento. Use o navegador por enquanto.
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   return null;
 }
@@ -289,171 +289,185 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
-        <Card className="w-full max-w-[400px] overflow-hidden shadow-xl border border-slate-200 rounded-2xl bg-white relative">
+      <div className="min-h-screen bg-slate-50 py-4 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+        <div className="max-w-3xl w-full mx-auto space-y-8">
 
-          {/* Progress Bar */}
-          <div className="relative h-1.5 bg-gray-100 w-full font-bold">
-            <div
-              className="absolute top-0 left-0 h-full bg-[#1a3a5c] transition-all duration-500 ease-out rounded-r-full"
-              style={{ width: `100%` }}
-            />
-          </div>
-          <CardContent className="p-6">
-            <Form {...formMotorista}>
-              {/* Logo Section */}
-              <div className="mb-10 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex items-center gap-3 mb-1">
-                  <img
-                    src="/assets/logo-van360.png"
-                    alt="Van360"
-                    className="h-12 w-auto select-none drop-shadow-sm"
-                  />
-                </div>
-              </div>
+          {/* Main Card */}
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
 
+            {/* Progress Bar */}
+            <div className="relative h-1.5 bg-gray-100 w-full font-bold">
+              <div
+                className="absolute top-0 left-0 h-full bg-[#1a3a5c] transition-all duration-500 ease-out rounded-r-full"
+                style={{ width: `100%` }}
+              />
+            </div>
+
+            {/* Header */}
+            <div className="text-center p-6 pb-0 relative">
               {import.meta.env.DEV && (
-                 <div className="absolute right-2 top-2 z-10">
-                   <Button
-                     type="button"
-                     variant="ghost"
-                     size="icon"
-                     className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
-                     onClick={handleFillMagic}
-                     title="Preencher com dados de teste"
-                   >
-                     <Wand2 className="h-4 w-4" />
-                   </Button>
-                 </div>
-               )}
-
-              <form
-                onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={formMotorista.control}
-                  name="cpfcnpj"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium ml-1">
-                        Seu CPF
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <Input
-                            {...field}
-                            onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
-                            placeholder="000.000.000-00"
-                            autoComplete="username"
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                            aria-invalid={!!fieldState.error}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={formMotorista.control}
-                  name="senha"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium ml-1">
-                        Senha
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <Input
-                            {...field}
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            autoComplete="current-password"
-                            className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                            aria-invalid={!!fieldState.error}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
-                            tabIndex={-1}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-5 w-5 opacity-60" />
-                            ) : (
-                              <Eye className="h-5 w-5 opacity-60" />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {formMotorista.formState.errors.root && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600 animate-in slide-in-from-top-2">
-                    <span className="mt-0.5">⚠️</span>
-                    {formMotorista.formState.errors.root.message}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 pt-1 pb-2">
-                  <Checkbox
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    className="border-gray-200 rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
-                  />
-                  <Label
-                    htmlFor="rememberMe"
-                    className="text-xs font-medium text-slate-500 cursor-pointer select-none"
-                  >
-                    Lembrar meu CPF
-                  </Label>
-                </div>
-
-                <div className="pt-2">
+                <div className="absolute right-2 top-2 z-10">
                   <Button
-                    type="submit"
-                    className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
-                    disabled={loading}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                    onClick={handleFillMagic}
+                    title="Preencher com dados de teste"
                   >
-                    {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
+                    <Wand2 className="h-5 w-5" />
                   </Button>
                 </div>
+              )}
 
-                <div className="flex flex-col items-center gap-6 mt-6">
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-sm text-[#1a3a5c] hover:underline transition-colors font-medium mt-6"
-                  >
-                    Esqueci minha senha
-                  </button>
+              <div>
+                {/* Logo Section */}
+                <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <div className="flex items-center gap-3 mb-4">
+                    <img
+                      src="/assets/logo-van360.png"
+                      alt="Van360"
+                      className="h-12 w-auto select-none drop-shadow-sm"
+                    />
+                  </div>
+                </div>
+                <h1 className="text-xl font-extrabold tracking-tight sm:text-4xl text-[#1a3a5c] drop-shadow-sm">
+                  Entrar no Van360
+                </h1>
+              </div>
+            </div>
 
-                  <p className="text-sm text-slate-500">
-                    Não tem uma conta?{" "}
+            <div className="p-6">
+              <Form {...formMotorista}>
+
+                <form
+                  onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={formMotorista.control}
+                    name="cpfcnpj"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium ml-1">
+                          Seu CPF
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
+                              placeholder="000.000.000-00"
+                              autoComplete="username"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={formMotorista.control}
+                    name="senha"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium ml-1">
+                          Senha
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              autoComplete="current-password"
+                              className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-5 w-5 opacity-60" />
+                              ) : (
+                                <Eye className="h-5 w-5 opacity-60" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {formMotorista.formState.errors.root && (
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600 animate-in slide-in-from-top-2">
+                      <span className="mt-0.5">⚠️</span>
+                      {formMotorista.formState.errors.root.message}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-1 pb-2">
+                    <Checkbox
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      className="border-gray-200 rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                    />
+                    <Label
+                      htmlFor="rememberMe"
+                      className="text-xs font-medium text-slate-500 cursor-pointer select-none"
+                    >
+                      Lembrar meu CPF
+                    </Label>
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
+                      disabled={loading}
+                    >
+                      {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-6 mt-6">
                     <button
                       type="button"
-                      onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
-                      className="text-[#1a3a5c] font-semibold hover:underline transition-all"
+                      onClick={handleForgotPassword}
+                      className="text-sm text-[#1a3a5c] hover:underline transition-colors font-medium mt-6"
                     >
-                      Cadastre-se
+                      Esqueci minha senha
                     </button>
-                  </p>
-                </div>
 
-                {/* Sugestão de app por dispositivo (somente web) */}
-                {!isNativeApp() && <LoginPlatformSuggestion />}
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                    <p className="text-sm text-slate-500">
+                      Não tem uma conta?{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
+                        className="text-[#1a3a5c] font-semibold hover:underline transition-all"
+                      >
+                        Cadastre-se
+                      </button>
+                    </p>
+                  </div>
+
+                  {/* Sugestão de app por dispositivo (somente web) */}
+                  {!isNativeApp() && <LoginPlatformSuggestion />}
+                </form>
+              </Form>
+            </div>
+          </div>
+        </div>
       </div>
 
       <RecuperarSenhaDialog

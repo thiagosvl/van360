@@ -2,7 +2,7 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
-import { isNativeApp } from "@/utils/detectPlatform";
+import { isMobilePlatform, isNativeApp } from "@/utils/detectPlatform";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -25,9 +25,16 @@ export function useRegisterController() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
+  
+  /* [TEMPORÁRIO] Usando isMobilePlatform para exibir boas-vindas no mobile browser também */
+  const [showNativeWelcome, setShowNativeWelcome] = useState(
+    () => isMobilePlatform() && sessionStorage.getItem("van360_showing_welcome") === "true"
+  );
+  /* [PADRÃO] No futuro, voltar para:
   const [showNativeWelcome, setShowNativeWelcome] = useState(
     () => isNativeApp() && sessionStorage.getItem("van360_showing_welcome") === "true"
   );
+  */
   const [duplicateError, setDuplicateError] = useState<DuplicateError | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -57,17 +64,26 @@ export function useRegisterController() {
       const result = await usuarioApi.registrar(data);
       if (result?.error) throw new Error(result.error);
 
-      // App nativo: setar sessão imediatamente + mostrar tela de boas-vindas
-      if (isNativeApp()) {
-        // Flag para AppGate não redirecionar enquanto a tela de boas-vindas está ativa
+      // --- FLUXO DE PÓS-CADASTRO ---
+      
+      const sessionUser = result.session.user || result.user;
+      const isMobile = isMobilePlatform();
+
+      /* 
+         [TEMPORÁRIO] Cenário mobile (App OU Nav Mobile) redireciona para Splash Screen.
+         Desktop faz Log-in direto.
+         Objetivo: No futuro, separar isNativeApp() de isMobilePlatform().
+      */
+
+      // Mobile (Nativo ou Browser Mobile): setar sessão + mostrar boas-vindas
+      if (isMobile) {
         sessionStorage.setItem("van360_showing_welcome", "true");
-        // Setar state ANTES do setSession para evitar race condition com remount
         setShowNativeWelcome(true);
 
         const { error } = await sessionManager.setSession(
           result.session.access_token,
           result.session.refresh_token,
-          result.session.user || result.user
+          sessionUser
         );
 
         if (error) {
@@ -81,13 +97,38 @@ export function useRegisterController() {
         return;
       }
 
-      // Web: mostrar tela pós-cadastro (NÃO faz login automático)
+      // Desktop: Login direto
+      const { error } = await sessionManager.setSession(
+        result.session.access_token,
+        result.session.refresh_token,
+        sessionUser
+      );
+
+      if (error) {
+        toast.error("auth.erro.login", {
+          description: "Cadastro realizado, mas não foi possível fazer login automático.",
+        });
+        navigate(ROUTES.PUBLIC.LOGIN);
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+      }
+
+      /* 
+      // [LEGADO/PADRÃO] Comentado para quando voltarmos a usar a PostRegisterScreen para web
+      if (isNativeApp()) {
+         ... lógica nativa igual à de cima ...
+         return;
+      }
+
+      // Web Padrão: mostra tela de download/cont em browser (NÃO faz login auto)
       setPostRegisterData({
         cpf: data.cpfcnpj,
         accessToken: result.session.access_token,
         refreshToken: result.session.refresh_token,
         user: result.session.user || result.user,
       });
+      */
     } catch (err: any) {
       const respData = err.response?.data;
       const errorMsg = (respData?.error || err.message || "").toLowerCase();

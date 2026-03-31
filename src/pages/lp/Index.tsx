@@ -119,7 +119,7 @@ const Index = () => {
     "Controle de mensalidades",
     "Geração de contratos",
     "Geração de recibos",
-    "Acesso web + app Android",
+    "Acesso web + app",
   ];
 
   return (

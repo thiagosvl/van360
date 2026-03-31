@@ -31,6 +31,10 @@ export function isNativeApp(): boolean {
   return Capacitor.getPlatform() !== "web";
 }
 
+export function isMobilePlatform(): boolean {
+  return detectPlatform() !== "desktop";
+}
+
 export const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.van360.app";
 

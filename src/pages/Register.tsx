@@ -24,8 +24,6 @@ export default function Register() {
     clearDuplicateError,
   } = useRegisterController();
 
-  const WandIcon = Wand2;
-
   // Tela de boas-vindas após primeiro cadastro no app nativo
   if (showNativeWelcome) {
     return <NativeWelcomeScreen />;
@@ -68,7 +66,7 @@ export default function Register() {
                   onClick={handleFillMagic}
                   title="Preencher com dados de teste"
                 >
-                  <WandIcon className="h-5 w-5" />
+                  <Wand2 className="h-5 w-5" />
                 </Button>
               </div>
             )}

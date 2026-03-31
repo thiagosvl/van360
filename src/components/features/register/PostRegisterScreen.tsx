@@ -13,12 +13,6 @@ interface PostRegisterScreenProps {
   onContinueInBrowser: () => void;
 }
 
-function maskCpf(cpf: string): string {
-  const digits = cpf.replace(/\D/g, "");
-  if (digits.length !== 11) return cpf;
-  return `***.${digits.slice(3, 6)}.${digits.slice(6, 9)}-**`;
-}
-
 export function PostRegisterScreen({
   data,
   onContinueInBrowser,
@@ -36,19 +30,13 @@ export function PostRegisterScreen({
               </div>
             </div>
 
-            <h1 className="text-2xl font-extrabold text-[#1a3a5c] mb-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#1a3a5c] mb-2">
               Cadastro concluído!
             </h1>
 
             <p className="text-slate-500 text-sm mb-6">
               Sua conta foi criada com sucesso.
             </p>
-
-            <div className="bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Seu login é:</p>
-              <p className="text-xl font-bold text-[#1a3a5c] tracking-tight">{maskCpf(data.cpf)}</p>
-              <p className="text-[11px] text-slate-400 mt-1">Use seu CPF + senha para entrar</p>
-            </div>
 
             {/* Android no browser */}
             {platform === "android-web" && (

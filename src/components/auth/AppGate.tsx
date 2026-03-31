@@ -36,7 +36,13 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
   // 🔹 Se já está logado e tentar acessar login/cadastro → manda pro início
   const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
-  if (session && authPaths.includes(location.pathname)) {
+
+  /* 
+     [TEMPORÁRIO] isShowingWelcome evita redirect precoce enquanto a Splash mobile está ativa.
+     O padrão anterior era apenas: if (session && authPaths.includes(location.pathname))
+  */
+  const isShowingWelcome = sessionStorage.getItem("van360_showing_welcome") === "true";
+  if (session && authPaths.includes(location.pathname) && !isShowingWelcome) {
     return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
   }
 
