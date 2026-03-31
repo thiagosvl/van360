@@ -111,7 +111,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const formMotoristaSchema = z.object({
     cpfcnpj: cpfSchema,
