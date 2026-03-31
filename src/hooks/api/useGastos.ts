@@ -1,4 +1,5 @@
 import { gastoApi } from "@/services/api/gasto.api";
+import { FilterDefaults } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -17,8 +18,8 @@ const buildQueryKey = (filters: UseGastosFilters) => [
   filters.usuarioId,
   filters.ano,
   filters.mes,
-  filters.categoria || "todas",
-  filters.veiculoId || "todos",
+  filters.categoria || FilterDefaults.TODAS,
+  filters.veiculoId || FilterDefaults.TODOS,
   filters.search || "",
 ];
 
@@ -46,11 +47,11 @@ export function useGastos(
         data_inicio: `${year}-${month}-01`,
         data_fim: `${year}-${month}-${lastDay}`,
         categoria:
-          filters.categoria && filters.categoria !== "todas"
+          filters.categoria && filters.categoria !== FilterDefaults.TODAS
             ? filters.categoria
             : undefined,
         veiculo_id:
-          filters.veiculoId && filters.veiculoId !== "todos"
+          filters.veiculoId && filters.veiculoId !== FilterDefaults.TODOS
             ? filters.veiculoId
             : undefined,
         search: filters.search?.trim() ? filters.search.trim() : undefined,

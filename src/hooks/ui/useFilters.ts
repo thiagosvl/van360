@@ -1,3 +1,4 @@
+import { FilterDefaults } from "@/types/enums";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -64,13 +65,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   });
 
   const [selectedStatus, setSelectedStatusState] = useState(() => {
-    return syncWithUrl ? searchParams.get(statusParam) ?? "todos" : "todos";
+    return syncWithUrl ? searchParams.get(statusParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
   });
 
   const [selectedEscola, setSelectedEscolaState] = useState<string | undefined>(
     () => {
       if (!escolaParam) return undefined;
-      return syncWithUrl ? searchParams.get(escolaParam) ?? "todas" : "todas";
+      return syncWithUrl ? searchParams.get(escolaParam) ?? FilterDefaults.TODAS : FilterDefaults.TODAS;
     }
   );
 
@@ -78,14 +79,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     string | undefined
   >(() => {
     if (!veiculoParam) return undefined;
-    return syncWithUrl ? searchParams.get(veiculoParam) ?? "todos" : "todos";
+    return syncWithUrl ? searchParams.get(veiculoParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
   });
 
   const [selectedPeriodo, setSelectedPeriodoState] = useState<
     string | undefined
   >(() => {
     if (!periodoParam) return undefined;
-    return syncWithUrl ? searchParams.get(periodoParam) ?? "todos" : "todos";
+    return syncWithUrl ? searchParams.get(periodoParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
   });
 
   const [selectedMes, setSelectedMesState] = useState<number | undefined>(
@@ -108,7 +109,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     string | undefined
   >(() => {
     if (!categoriaParam) return undefined;
-    return syncWithUrl ? searchParams.get(categoriaParam) ?? "todas" : "todas";
+    return syncWithUrl ? searchParams.get(categoriaParam) ?? FilterDefaults.TODAS : FilterDefaults.TODAS;
   });
 
   const setSearchTerm = useCallback(
@@ -135,7 +136,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value && value !== "todos") {
+          if (value && value !== FilterDefaults.TODOS) {
             newParams.set(statusParam, value);
           } else {
             newParams.delete(statusParam);
@@ -154,7 +155,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value && value !== "todas") {
+          if (value && value !== FilterDefaults.TODAS) {
             newParams.set(escolaParam, value);
           } else {
             newParams.delete(escolaParam);
@@ -173,7 +174,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value && value !== "todos") {
+          if (value && value !== FilterDefaults.TODOS) {
             newParams.set(veiculoParam, value);
           } else {
             newParams.delete(veiculoParam);
@@ -192,7 +193,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value && value !== "todos") {
+          if (value && value !== FilterDefaults.TODOS) {
             newParams.set(periodoParam, value);
           } else {
             newParams.delete(periodoParam);
@@ -241,7 +242,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value && value !== "todas") {
+          if (value && value !== FilterDefaults.TODAS) {
             newParams.set(categoriaParam, value);
           } else {
             newParams.delete(categoriaParam);
@@ -255,13 +256,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const clearFilters = useCallback(() => {
     setSearchTermState("");
-    setSelectedStatusState("todos");
-    if (selectedEscola !== undefined) setSelectedEscolaState("todas");
-    if (selectedVeiculo !== undefined) setSelectedVeiculoState("todos");
-    if (selectedPeriodo !== undefined) setSelectedPeriodoState("todos");
+    setSelectedStatusState(FilterDefaults.TODOS);
+    if (selectedEscola !== undefined) setSelectedEscolaState(FilterDefaults.TODAS);
+    if (selectedVeiculo !== undefined) setSelectedVeiculoState(FilterDefaults.TODOS);
+    if (selectedPeriodo !== undefined) setSelectedPeriodoState(FilterDefaults.TODOS);
     if (selectedMes !== undefined) setSelectedMesState(new Date().getMonth() + 1);
     if (selectedAno !== undefined) setSelectedAnoState(new Date().getFullYear());
-    if (selectedCategoria !== undefined) setSelectedCategoriaState("todas");
+    if (selectedCategoria !== undefined) setSelectedCategoriaState(FilterDefaults.TODAS);
 
     if (syncWithUrl) {
       setSearchParams((prev) => {
@@ -301,13 +302,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     if (!syncWithUrl) return;
 
     const urlSearch = searchParams.get(searchParam) ?? "";
-    const urlStatus = searchParams.get(statusParam) ?? "todos";
-    const urlEscola = escolaParam ? searchParams.get(escolaParam) ?? "todas" : undefined;
-    const urlVeiculo = veiculoParam ? searchParams.get(veiculoParam) ?? "todos" : undefined;
-    const urlPeriodo = periodoParam ? searchParams.get(periodoParam) ?? "todos" : undefined;
+    const urlStatus = searchParams.get(statusParam) ?? FilterDefaults.TODOS;
+    const urlEscola = escolaParam ? searchParams.get(escolaParam) ?? FilterDefaults.TODAS : undefined;
+    const urlVeiculo = veiculoParam ? searchParams.get(veiculoParam) ?? FilterDefaults.TODOS : undefined;
+    const urlPeriodo = periodoParam ? searchParams.get(periodoParam) ?? FilterDefaults.TODOS : undefined;
     const urlMes = mesParam ? searchParams.get(mesParam) : undefined;
     const urlAno = anoParam ? searchParams.get(anoParam) : undefined;
-    const urlCategoria = categoriaParam ? searchParams.get(categoriaParam) ?? "todas" : undefined;
+    const urlCategoria = categoriaParam ? searchParams.get(categoriaParam) ?? FilterDefaults.TODAS : undefined;
 
     if (urlSearch !== searchTerm) setSearchTermState(urlSearch);
     if (urlStatus !== selectedStatus) setSelectedStatusState(urlStatus);
@@ -354,29 +355,29 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          
+
           if (newFilters.search !== undefined) {
             if (newFilters.search) newParams.set(searchParam, newFilters.search);
             else newParams.delete(searchParam);
           }
 
           if (newFilters.status !== undefined) {
-            if (newFilters.status && newFilters.status !== "todos") newParams.set(statusParam, newFilters.status);
+            if (newFilters.status && newFilters.status !== FilterDefaults.TODOS) newParams.set(statusParam, newFilters.status);
             else newParams.delete(statusParam);
           }
 
           if (newFilters.escola !== undefined && escolaParam) {
-            if (newFilters.escola && newFilters.escola !== "todas") newParams.set(escolaParam, newFilters.escola);
+            if (newFilters.escola && newFilters.escola !== FilterDefaults.TODAS) newParams.set(escolaParam, newFilters.escola);
             else newParams.delete(escolaParam);
           }
 
           if (newFilters.veiculo !== undefined && veiculoParam) {
-            if (newFilters.veiculo && newFilters.veiculo !== "todos") newParams.set(veiculoParam, newFilters.veiculo);
+            if (newFilters.veiculo && newFilters.veiculo !== FilterDefaults.TODOS) newParams.set(veiculoParam, newFilters.veiculo);
             else newParams.delete(veiculoParam);
           }
 
           if (newFilters.periodo !== undefined && periodoParam) {
-            if (newFilters.periodo && newFilters.periodo !== "todos") newParams.set(periodoParam, newFilters.periodo);
+            if (newFilters.periodo && newFilters.periodo !== FilterDefaults.TODOS) newParams.set(periodoParam, newFilters.periodo);
             else newParams.delete(periodoParam);
           }
 
@@ -389,7 +390,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
 
           if (newFilters.categoria !== undefined && categoriaParam) {
-            if (newFilters.categoria && newFilters.categoria !== "todas") newParams.set(categoriaParam, newFilters.categoria);
+            if (newFilters.categoria && newFilters.categoria !== FilterDefaults.TODAS) newParams.set(categoriaParam, newFilters.categoria);
             else newParams.delete(categoriaParam);
           }
 
@@ -413,11 +414,11 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const hasActiveFilters =
     !!searchTerm ||
-    selectedStatus !== "todos" ||
-    (selectedEscola !== undefined && selectedEscola !== "todas") ||
-    (selectedVeiculo !== undefined && selectedVeiculo !== "todos") ||
-    (selectedPeriodo !== undefined && selectedPeriodo !== "todos") ||
-    (selectedCategoria !== undefined && selectedCategoria !== "todas");
+    selectedStatus !== FilterDefaults.TODOS ||
+    (selectedEscola !== undefined && selectedEscola !== FilterDefaults.TODAS) ||
+    (selectedVeiculo !== undefined && selectedVeiculo !== FilterDefaults.TODOS) ||
+    (selectedPeriodo !== undefined && selectedPeriodo !== FilterDefaults.TODOS) ||
+    (selectedCategoria !== undefined && selectedCategoria !== FilterDefaults.TODAS);
 
   return {
     searchTerm,

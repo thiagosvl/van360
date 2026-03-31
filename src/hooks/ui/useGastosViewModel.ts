@@ -2,6 +2,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteGasto, useFilters, useGastos, useVeiculos, safeCloseDialog } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
 import { useProfile } from "@/hooks/business/useProfile";
+import { FilterDefaults } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -28,9 +29,9 @@ export function useGastosViewModel() {
     setSelectedMes,
     selectedAno: anoFilter = new Date().getFullYear(),
     setSelectedAno,
-    selectedCategoria: categoriaFilter = "todas",
+    selectedCategoria: categoriaFilter = FilterDefaults.TODAS,
     setSelectedCategoria,
-    selectedVeiculo: veiculoFilter = "todos",
+    selectedVeiculo: veiculoFilter = FilterDefaults.TODOS,
     setSelectedVeiculo,
     setFilters,
     hasActiveFilters,
@@ -61,8 +62,8 @@ export function useGastosViewModel() {
       usuarioId: profile?.id,
       mes: mesFilter,
       ano: anoFilter,
-      categoria: categoriaFilter !== "todas" ? categoriaFilter : undefined,
-      veiculoId: veiculoFilter !== "todos" ? veiculoFilter : undefined,
+      categoria: categoriaFilter !== FilterDefaults.TODAS ? categoriaFilter : undefined,
+      veiculoId: veiculoFilter !== FilterDefaults.TODOS ? veiculoFilter : undefined,
       search: debouncedSearchTerm,
     },
     {
@@ -130,8 +131,8 @@ export function useGastosViewModel() {
 
   const clearFilters = useCallback(() => {
     setFilters({
-      categoria: "todas",
-      veiculo: "todos",
+      categoria: FilterDefaults.TODAS,
+      veiculo: FilterDefaults.TODOS,
       search: ""
     });
     setSearchTerm("");

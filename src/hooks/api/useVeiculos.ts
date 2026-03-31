@@ -1,4 +1,5 @@
 import { veiculoApi } from "@/services/api/veiculo.api";
+import { FilterDefaults } from "@/types/enums";
 import { Veiculo } from "@/types/veiculo";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -20,7 +21,7 @@ export function useVeiculos(
 
   const apiFilters = {
     search: search?.trim() ? search.trim() : undefined,
-    ativo: status && status !== "todos" ? status : undefined,
+    ativo: status && status !== FilterDefaults.TODOS ? status : undefined,
   };
 
   const queryKey = ["veiculos", usuarioId, JSON.stringify(apiFilters)];

@@ -10,6 +10,7 @@ import {
   safeCloseDialog,
 } from "@/hooks";
 import { useProfile, useSession } from "@/hooks";
+import { FilterDefaults } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -208,6 +209,6 @@ export function useEscolasViewModel() {
     openEscolaFormDialog,
     refetch,
     navigate,
-    hasActiveFilters: selectedStatus !== "todos" || !!searchTerm,
+    hasActiveFilters: selectedStatus !== FilterDefaults.TODOS || !!searchTerm,
   };
 }

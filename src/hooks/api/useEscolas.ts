@@ -1,4 +1,5 @@
 import { escolaApi } from "@/services/api/escola.api";
+import { FilterDefaults } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -20,7 +21,7 @@ export function useEscolas(
 
   const apiFilters = {
     search: search?.trim() ? search.trim() : undefined,
-    ativo: status && status !== "todos" ? status : undefined,
+    ativo: status && status !== FilterDefaults.TODOS ? status : undefined,
   };
 
   const queryKey = ["escolas", usuarioId, JSON.stringify(apiFilters)];

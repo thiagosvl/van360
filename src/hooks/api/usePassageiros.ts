@@ -1,4 +1,5 @@
 import { passageiroApi } from "@/services/api/passageiro.api";
+import { FilterDefaults } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -16,19 +17,19 @@ function normalizeFilters(filters: UsePassageirosFilters) {
   return {
     search: filters.search?.trim() ? filters.search.trim() : undefined,
     escola:
-      filters.escola && filters.escola !== "todas" ? filters.escola : undefined,
+      filters.escola && filters.escola !== FilterDefaults.TODAS ? filters.escola : undefined,
     veiculo:
-      filters.veiculo && filters.veiculo !== "todos" ? filters.veiculo : undefined,
+      filters.veiculo && filters.veiculo !== FilterDefaults.TODOS ? filters.veiculo : undefined,
     ativo:
-      filters.status && filters.status !== "todos"
+      filters.status && filters.status !== FilterDefaults.TODOS
         ? filters.status === "true"
           ? "true"
           : filters.status === "false"
-          ? "false"
-          : undefined
+            ? "false"
+            : undefined
         : undefined,
     periodo:
-      filters.periodo && filters.periodo !== "todos" ? filters.periodo : undefined,
+      filters.periodo && filters.periodo !== FilterDefaults.TODOS ? filters.periodo : undefined,
   };
 }
 
