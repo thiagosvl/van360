@@ -11,7 +11,7 @@ import React, { ReactNode } from "react";
 
 export interface ActionSheetItem {
   label: string;
-  title?: string; // Subtítulo ou dica
+  title?: string;
   description?: string;
   icon?: ReactNode;
   onClick: () => void;
@@ -21,6 +21,7 @@ export interface ActionSheetItem {
   isDestructive?: boolean;
   isLoading?: boolean;
   className?: string;
+  hasSeparatorAfter?: boolean;
 }
 
 interface ActionSheetProps {
@@ -42,9 +43,7 @@ export function ActionSheet({
 }: ActionSheetProps) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent
-        className="h-auto max-h-[85vh] rounded-t-[32px] bg-white dark:bg-zinc-950 border-none p-0 flex flex-col outline-none shadow-2xl"
-      >
+      <DrawerContent className="h-auto max-h-[85vh] rounded-t-[32px] bg-white border-none p-0 flex flex-col">
         {/* Header - Resumo ou Título */}
         {(title || description || children) && (
           <DrawerHeader className="text-left px-6 pt-6 pb-2 shrink-0">
@@ -102,6 +101,9 @@ export function ActionSheet({
                         )}
                     </div>
                   </button>
+                  {action.hasSeparatorAfter && ( idx < actions.length - 1 ) && (
+                    <div className="h-px bg-slate-100/50 mx-4 my-1" />
+                  )}
                 </div>
               ))}
             </div>

@@ -102,125 +102,108 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6">
-              <Accordion
-                type="multiple"
-                value={openAccordionItems}
-                onValueChange={setOpenAccordionItems}
-                className="w-full space-y-4"
-              >
-                <AccordionItem value="dados-pessoais" className="border-b-0">
-                  <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                      <User className="w-5 h-5 text-blue-600" />
-                      Dados Pessoais
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium ml-1">
-                            Nome completo <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                              <Input
-                                placeholder="Digite seu nome completo"
-                                {...field}
-                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="apelido"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                              <Input
-                                placeholder="Ex: Tio Fulano"
-                                {...field}
-                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="telefone"
-                      render={({ field }) => (
-                        <PhoneInput
-                          field={field}
-                          label="WhatsApp"
-                          placeholder="(00) 00000-0000"
-                          required
-                          inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+            <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium ml-1">
+                      Nome completo <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          placeholder="Digite seu nome completo"
+                          {...field}
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
                         />
-                      )}
-                    />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="cpfcnpj"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-medium ml-1">
-                              CPF <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                readOnly
-                                className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-medium ml-1">
-                              E-mail <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                <Input
-                                  {...field}
-                                  readOnly
-                                  className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <FormField
+                control={form.control}
+                name="apelido"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          placeholder="Ex: Tio Fulano"
+                          {...field}
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="telefone"
+                render={({ field }) => (
+                  <PhoneInput
+                    field={field}
+                    label="WhatsApp"
+                    placeholder="(00) 00000-0000"
+                    required
+                    inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                  />
+                )}
+              />
+
+              <div className="grid grid-cols-1 gap-4">
+                <FormField
+                  control={form.control}
+                  name="cpfcnpj"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium ml-1">
+                        CPF <span className="text-red-600">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          readOnly
+                          className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium ml-1">
+                        E-mail <span className="text-red-600">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                          <Input
+                            {...field}
+                            readOnly
+                            className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </form>
           </Form>
         )}

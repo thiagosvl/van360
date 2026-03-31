@@ -58,14 +58,7 @@ export function PassageiroFormDadosCadastrais({
     <div className="space-y-12">
       {/* Seção 1: Dados Pessoais */}
       <section className="space-y-6">
-        <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-            <User className="w-5 h-5" />
-          </div>
-          Passageiro
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 mt-3 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="nome"
