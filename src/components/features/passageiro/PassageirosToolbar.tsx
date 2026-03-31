@@ -7,11 +7,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, School, Car, Clock, CheckCircle2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { FilterDefaults } from "@/types/enums";
 import { periodos } from "@/utils/formatters/periodo";
 import { DataTableToolbar } from "../common/DataTableToolbar";
+import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 
 interface PassageirosToolbarProps {
   searchTerm: string;
@@ -103,108 +104,80 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
   };
 
   const filterChildren = (
-    <div className="space-y-4">
-      <div className="space-y-1.5 md:space-y-2">
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status</Label>
-        <Select
-          value={isSheetOpen ? tempFilters.status : selectedStatus}
-          onValueChange={(val) => {
-            if (isSheetOpen) {
-              setTempFilters((prev) => ({ ...prev, status: val }));
-            } else {
-              onStatusChange(val);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value={FilterDefaults.TODOS}>Todos Status</SelectItem>
-            <SelectItem value="true">Ativo</SelectItem>
-            <SelectItem value="false">Desativado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <>
+      <DataTableFilterSelect
+        label="Status"
+        placeholder="Status"
+        value={isSheetOpen ? tempFilters.status : selectedStatus}
+        onValueChange={(val) => {
+          if (isSheetOpen) {
+            setTempFilters((prev) => ({ ...prev, status: val }));
+          } else {
+            onStatusChange(val);
+          }
+        }}
+        icon={<CheckCircle2 className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todos Status", value: FilterDefaults.TODOS },
+          { label: "Ativo", value: "true" },
+          { label: "Desativado", value: "false" },
+        ]}
+      />
 
-      <div className="space-y-1.5 md:space-y-2">
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Escola</Label>
-        <Select
-          value={isSheetOpen ? tempFilters.escola : selectedEscola}
-          onValueChange={(val) => {
-            if (isSheetOpen) {
-              setTempFilters((prev) => ({ ...prev, escola: val }));
-            } else {
-              onEscolaChange(val);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-            <SelectValue placeholder="Escola" />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value={FilterDefaults.TODAS}>Todas Escolas</SelectItem>
-            {escolas.map((e) => (
-              <SelectItem key={e.id} value={e.id}>
-                {e.nome}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DataTableFilterSelect
+        label="Escola"
+        placeholder="Escola"
+        value={isSheetOpen ? tempFilters.escola : selectedEscola}
+        onValueChange={(val) => {
+          if (isSheetOpen) {
+            setTempFilters((prev) => ({ ...prev, escola: val }));
+          } else {
+            onEscolaChange(val);
+          }
+        }}
+        icon={<School className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todas Escolas", value: FilterDefaults.TODAS },
+          ...(escolas?.map((e) => ({ label: e.nome, value: e.id })) || []),
+        ]}
+      />
 
-      <div className="space-y-1.5 md:space-y-2">
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Veículo</Label>
-        <Select
-          value={isSheetOpen ? tempFilters.veiculo : selectedVeiculo}
-          onValueChange={(val) => {
-            if (isSheetOpen) {
-              setTempFilters((prev) => ({ ...prev, veiculo: val }));
-            } else {
-              onVeiculoChange(val);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-            <SelectValue placeholder="Veículo" />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value={FilterDefaults.TODOS}>Todos Veículos</SelectItem>
-            {veiculos.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.modelo} - {v.placa}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DataTableFilterSelect
+        label="Veículo"
+        placeholder="Veículo"
+        value={isSheetOpen ? tempFilters.veiculo : selectedVeiculo}
+        onValueChange={(val) => {
+          if (isSheetOpen) {
+            setTempFilters((prev) => ({ ...prev, veiculo: val }));
+          } else {
+            onVeiculoChange(val);
+          }
+        }}
+        icon={<Car className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todos Veículos", value: FilterDefaults.TODOS },
+          ...(veiculos?.map((v) => ({ label: `${v.modelo} - ${v.placa}`, value: v.id })) || []),
+        ]}
+      />
 
-      <div className="space-y-1.5 md:space-y-2">
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Período</Label>
-        <Select
-          value={isSheetOpen ? tempFilters.periodo : selectedPeriodo}
-          onValueChange={(val) => {
-            if (isSheetOpen) {
-              setTempFilters((prev) => ({ ...prev, periodo: val }));
-            } else {
-              onPeriodoChange(val);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-            <SelectValue placeholder="Período" />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value={FilterDefaults.TODOS}>Todos Períodos</SelectItem>
-            {periodos.map((p) => (
-              <SelectItem key={p.value} value={p.value}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
+      <DataTableFilterSelect
+        label="Período"
+        placeholder="Período"
+        value={isSheetOpen ? tempFilters.periodo : selectedPeriodo}
+        onValueChange={(val) => {
+          if (isSheetOpen) {
+            setTempFilters((prev) => ({ ...prev, periodo: val }));
+          } else {
+            onPeriodoChange(val);
+          }
+        }}
+        icon={<Clock className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todos Períodos", value: FilterDefaults.TODOS },
+          ...(periodos?.map((p) => ({ label: p.label, value: p.value })) || []),
+        ]}
+      />
+    </>
   );
 
   return (

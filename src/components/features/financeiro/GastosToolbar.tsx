@@ -8,10 +8,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatarPlacaExibicao } from "@/utils/domain";
-import { Plus } from "lucide-react";
+import { Plus, Layers, Car } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { FilterDefaults } from "@/types/enums";
 import { DataTableToolbar } from "../common/DataTableToolbar";
+import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 
 interface GastosToolbarProps {
   categoriaFilter: string;
@@ -85,58 +86,42 @@ export const GastosToolbar = memo(function GastosToolbar({
 
   const filterChildren = (
     <>
-      <div className="space-y-1.5 md:space-y-2">
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Categoria</Label>
-        <Select 
-          value={isSheetOpen ? tempFilters.categoria : categoriaFilter} 
-          onValueChange={(val) => {
-            if (isSheetOpen) {
-              setTempFilters(prev => ({ ...prev, categoria: val }));
-            } else {
-              onCategoriaChange(val);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-            <SelectValue placeholder="Todas" />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value={FilterDefaults.TODAS}>Todas Categorias</SelectItem>
-            {categorias.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DataTableFilterSelect
+        label="Categoria"
+        placeholder="Todas"
+        value={isSheetOpen ? tempFilters.categoria : categoriaFilter}
+        onValueChange={(val) => {
+          if (isSheetOpen) {
+            setTempFilters((prev) => ({ ...prev, categoria: val }));
+          } else {
+            onCategoriaChange(val);
+          }
+        }}
+        icon={<Layers className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todas Categorias", value: FilterDefaults.TODAS },
+          ...categorias.map((cat) => ({ label: cat, value: cat })),
+        ]}
+      />
 
-      <div className="space-y-1.5 md:space-y-2">
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Veículo</Label>
-        <Select 
-          value={isSheetOpen ? tempFilters.veiculo : veiculoFilter} 
-          onValueChange={(val) => {
-            if (isSheetOpen) {
-              setTempFilters(prev => ({ ...prev, veiculo: val }));
-            } else {
-              onVeiculoChange(val);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-            <SelectValue placeholder="Veículo" />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value={FilterDefaults.TODOS}>Todos Veículos</SelectItem>
-            <SelectItem value="unspecified">Não Especificado</SelectItem>
-            {veiculos.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {formatarPlacaExibicao(v.placa)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DataTableFilterSelect
+        label="Veículo"
+        placeholder="Veículo"
+        value={isSheetOpen ? tempFilters.veiculo : veiculoFilter}
+        onValueChange={(val) => {
+          if (isSheetOpen) {
+            setTempFilters((prev) => ({ ...prev, veiculo: val }));
+          } else {
+            onVeiculoChange(val);
+          }
+        }}
+        icon={<Car className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todos Veículos", value: FilterDefaults.TODOS },
+          { label: "Não Especificado", value: "unspecified" },
+          ...veiculos.map((v) => ({ label: formatarPlacaExibicao(v.placa), value: v.id })),
+        ]}
+      />
     </>
   );
 

@@ -7,10 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { FilterDefaults } from "@/types/enums";
 import { DataTableToolbar } from "../common/DataTableToolbar";
+import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 
 interface EscolasToolbarProps {
   searchTerm: string;
@@ -62,9 +63,10 @@ export const EscolasToolbar = memo(function EscolasToolbar({
   };
 
   const filterChildren = (
-    <div className="space-y-1.5 md:space-y-2">
-      <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status</Label>
-      <Select
+    <>
+      <DataTableFilterSelect
+        label="Status"
+        placeholder="Status"
         value={isSheetOpen ? tempFilters.status : selectedStatus}
         onValueChange={(val) => {
           if (isSheetOpen) {
@@ -73,17 +75,14 @@ export const EscolasToolbar = memo(function EscolasToolbar({
             onStatusChange(val);
           }
         }}
-      >
-        <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c]">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent className="z-[9999]">
-          <SelectItem value={FilterDefaults.TODOS}>Todos Status</SelectItem>
-          <SelectItem value="true">Ativo</SelectItem>
-          <SelectItem value="false">Desativado</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+        icon={<CheckCircle2 className="w-3.5 h-3.5 shrink-0" />}
+        options={[
+          { label: "Todos Status", value: FilterDefaults.TODOS },
+          { label: "Ativo", value: "true" },
+          { label: "Desativado", value: "false" },
+        ]}
+      />
+    </>
   );
 
   return (

@@ -135,8 +135,8 @@ export const DataTableToolbar = ({
               {isMobile ? (
                 <Drawer open={filterConfig.isOpen} onOpenChange={filterConfig.onOpenChange}>
                   <DrawerTrigger asChild>{filterTriggerElement}</DrawerTrigger>
-                  <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl pb-[calc(2rem+var(--safe-area-bottom))]">
-                    <DrawerHeader className="text-left mb-2 px-8 pt-6">
+                  <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl overflow-hidden">
+                    <DrawerHeader className="text-left px-8 pt-6 pb-2">
                       <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">
                         {filterConfig.title}
                       </DrawerTitle>
@@ -144,14 +144,16 @@ export const DataTableToolbar = ({
                         {filterConfig.description}
                       </DrawerDescription>
                     </DrawerHeader>
-
-                    <div className="flex-1 overflow-y-auto px-8">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+ 
+                    <div className="flex-1 overflow-y-auto px-8 pb-6">
+                      <div className="flex flex-col gap-4 mt-2">
                         {filterChildren}
                       </div>
-
-                      {showFilterFooter && (
-                        <div className="pt-10 flex flex-row gap-3">
+                    </div>
+ 
+                    {showFilterFooter && (
+                      <div className="px-8 pt-4 pb-4 md:pb-6 border-t border-gray-50 bg-white" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)' }}>
+                        <div className="flex items-center gap-4">
                           <Button
                             variant="ghost"
                             className="flex-1 h-12 rounded-2xl text-slate-400 font-black uppercase tracking-wider text-[10px] hover:bg-slate-50 transition-all active:scale-95"
@@ -166,14 +168,14 @@ export const DataTableToolbar = ({
                             Limpar
                           </Button>
                           <Button
-                            className="flex-1 h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white font-black uppercase tracking-wider text-[10px] shadow-lg shadow-[#1a3a5c]/20 transition-all active:scale-95"
+                            className="flex-1 h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white font-black uppercase tracking-wider text-[10px] shadow-lg shadow-[#1a3a5c]/10 transition-all active:scale-95"
                             onClick={filterConfig.onApply}
                           >
                             Aplicar
                           </Button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </DrawerContent>
                 </Drawer>
               ) : (
