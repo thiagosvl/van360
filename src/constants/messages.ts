@@ -315,7 +315,6 @@ export const messages = {
     },
     sucesso: {
       linkCopiado: "Link copiado!",
-      linkCopiadoDescricao: "Envie para os pais.",
       processando: "Processando...",
     },
     info: {
