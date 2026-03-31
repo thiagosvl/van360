@@ -26,7 +26,8 @@ import {
   Clock,
   Copy,
   ExternalLink,
-  FileSignature,
+  FileCheck2,
+  FileX2,
   GraduationCap,
   MapPin,
   MoreVertical,
@@ -35,8 +36,6 @@ import {
   Power,
   PowerOff,
   Route,
-  ShieldCheck,
-  ShieldQuestion,
   Trash2,
   User,
   Users
@@ -296,18 +295,18 @@ export const CarteirinhaDadosPessoais = ({
       return {
         label: formatContratoStatus(passageiro.status_contrato),
         color: "text-emerald-500 bg-emerald-50",
-        icon: ShieldCheck,
+        icon: FileCheck2,
       };
     if (status === ContratoStatus.PENDENTE)
       return {
         label: formatContratoStatus(passageiro.status_contrato),
         color: "text-amber-500 bg-amber-50",
-        icon: ShieldQuestion,
+        icon: Clock,
       };
     return {
       label: formatContratoStatus(passageiro.status_contrato),
       color: "text-slate-400 bg-slate-100",
-      icon: FileSignature,
+      icon: FileX2,
     };
   };
 
