@@ -5,12 +5,14 @@ import { openBrowserLink } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import {
+  Check,
   Copy,
   CopyCheck,
   LinkIcon,
   MessageCircle
 } from "lucide-react";
 import { useState } from "react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface QuickRegistrationLinkProps {
   profile: any;
@@ -88,7 +90,7 @@ export function QuickRegistrationLink({
               onClick={handleShareWhatsApp}
               className="flex-1 md:flex-none font-black border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest"
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
+              <WhatsAppIcon className="h-4 w-4 mr-2" />
               WhatsApp
             </Button>
             <Button
@@ -102,12 +104,12 @@ export function QuickRegistrationLink({
             >
               {isCopied ? (
                 <>
-                  <CopyCheck className="h-4 w-4 mr-2" />
+                  <Check className="h-3.5 w-3.5 text-emerald-500" />
                   Copiado!
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="h-3.5 w-3.5 text-slate-400" />
                   Copiar
                 </>
               )}

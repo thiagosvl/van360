@@ -314,12 +314,12 @@ export default function PrePassageiros({
             {prePassageiros.map((prePassageiro, index) => {
               const mobileActions = [
                 {
-                  label: "Revisar cadastro",
+                  label: "Revisar Cadastro",
                   icon: <Eye className="h-5 w-5" />,
                   onClick: () => handleFinalizeClick(prePassageiro),
                 },
                 {
-                  label: "Excluir solicitação",
+                  label: "Excluir",
                   icon: <Trash2 className="h-5 w-5" />,
                   isDestructive: true,
                   onClick: () =>

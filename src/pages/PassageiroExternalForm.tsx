@@ -37,7 +37,7 @@ export default function PassageiroExternalForm() {
               <CheckCircle2 className="h-12 w-12 text-green-500" />
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">
+          <h2 className="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight">
             Cadastro Enviado!
           </h2>
           <p className="text-slate-600 mb-8 leading-relaxed text-lg">
@@ -61,8 +61,8 @@ export default function PassageiroExternalForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 overflow-x-hidden selection:bg-[#1a3a5c]/10 pb-32">
-      <div className="max-w-3xl mx-auto px-4 py-8 md:py-16">
+    <div className="min-h-screen bg-slate-50 py-4 mb-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+      <div className="max-w-3xl w-full mx-auto space-y-8">
 
         <Card className="border-none shadow-2xl shadow-slate-200/60 rounded-[2rem] bg-white overflow-hidden mb-12">
           {/* Top border decorativo */}
@@ -144,7 +144,7 @@ export default function PassageiroExternalForm() {
         {/* Footer info */}
         <div className="text-center pb-12">
           <p className="text-xs text-slate-400 font-medium tracking-wide">
-            Van360 • Gestão Inteligente para Transporte Escolar
+            Van360 • Você só Dirige. A gente cuida da burocracia.
           </p>
         </div>
       </div>

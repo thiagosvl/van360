@@ -26,7 +26,6 @@ export const messages = {
     excluir: "Excluído com sucesso.",
     atualizar: "Atualizado com sucesso.",
     operacao: "Operação realizada com sucesso.",
-    copiado: "Copiado para a área de transferência.",
   },
 
   // ========== VEÍCULOS ==========
