@@ -1,18 +1,17 @@
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-  ExternalLink,
-  Eye,
-  FileText,
+  Copy,
+  MoreHorizontal,
   Pencil,
-  RefreshCcw,
-  Send,
   ToggleLeft,
   ToggleRight,
   Trash2,
-  User
+  User,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { useMemo } from "react";
 
 interface UsePassageiroActionsProps {
@@ -21,10 +20,7 @@ interface UsePassageiroActionsProps {
   onEdit: (passageiro: Passageiro) => void;
   onHistorico: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
-  onGenerateContract?: (passageiro: Passageiro) => void;
-  onSubstituirContrato?: (passageiro: Passageiro) => void;
-  onExcluirContrato?: (passageiro: Passageiro) => void;
-  onVisualizarFinal?: (url: string) => void;
+  onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   usarContratos?: boolean;
   isDesativado?: boolean;
 }
@@ -35,17 +31,20 @@ export function usePassageiroActions({
   onEdit,
   onHistorico,
   onDelete,
-  onGenerateContract,
-  onSubstituirContrato,
-  onExcluirContrato,
-  onVisualizarFinal,
+  onEnviarWhatsApp,
   usarContratos = true,
   isDesativado = false,
 }: UsePassageiroActionsProps): ActionItem[] {
+  const isMobile = useIsMobile();
 
   return useMemo(() => {
     const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
-    const isPendente = statusContrato === ContratoStatus.PENDENTE || statusContrato === 'pendente' || statusContrato === '1';
+    const isPendente = 
+      statusContrato === ContratoStatus.PENDENTE || 
+      statusContrato === 'pendente' || 
+      statusContrato === '1' ||
+      (!!passageiro.contrato_id && !passageiro.status_contrato);
+      
     const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
     const hasContract = isPendente || isAssinado || !!(passageiro.contrato_id);
 
@@ -79,56 +78,26 @@ export function usePassageiroActions({
       },
     ];
 
-    if (onGenerateContract && !hasContract) {
-      actions.push({
-        label: "Gerar Contrato",
-        icon: <FileText className="h-4 w-4" />,
-        onClick: () => onGenerateContract(passageiro),
-        disabled: isFeatureDisabled,
-        swipeColor: "bg-blue-600",
-        hasSeparatorAfter: true
-      });
-    }
-
-    const urlContrato = isPendente
-      ? (passageiro.minuta_url || passageiro.contrato_url)
-      : (passageiro.contrato_final_url || passageiro.contrato_url);
-
-    if (hasContract) {
-      actions.push({
-        label: isAssinado ? "Ver Contrato Assinado" : "Ver Contrato Pendente",
-        icon: isAssinado ? <Eye className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />,
-        onClick: () => urlContrato && onVisualizarFinal?.(urlContrato),
-        disabled: !urlContrato,
-        isLink: !!urlContrato,
-        href: urlContrato || undefined,
-        swipeColor: "bg-green-600",
-        hasSeparatorAfter: true
-      });
-    }
-
-    if (hasContract && onSubstituirContrato && passageiro.contrato_id) {
-      actions.push({
-        label: "Substituir Contrato",
-        icon: <RefreshCcw className="h-4 w-4" />,
-        onClick: () => onSubstituirContrato(passageiro),
-        disabled: isFeatureDisabled,
-        swipeColor: "bg-orange-600",
-        hasSeparatorAfter: true
-      });
-    }
-
-    if (hasContract && onExcluirContrato && passageiro.contrato_id) {
-      actions.push({
-        label: "Excluir Contrato",
-        icon: <Trash2 className="h-4 w-4" />,
-        onClick: () => onExcluirContrato(passageiro),
-        disabled: isFeatureDisabled,
-        className: "text-red-600 font-medium",
-        isDestructive: true,
-        swipeColor: "bg-red-600",
-        hasSeparatorAfter: true
-      });
+    if (isPendente && onEnviarWhatsApp) {
+      if (isMobile) {
+        actions.push({
+          label: "Reenviar Contrato",
+          icon: <WhatsAppIcon className="h-4 w-4" />,
+          onClick: () => onEnviarWhatsApp(passageiro),
+          disabled: isFeatureDisabled,
+          swipeColor: "bg-[#1a3a5c]",
+          hasSeparatorAfter: true
+        });
+      } else {
+        actions.push({
+          label: "Copiar Link para Assinatura",
+          icon: <Copy className="h-4 w-4" />,
+          onClick: () => onEnviarWhatsApp(passageiro),
+          disabled: isFeatureDisabled,
+          swipeColor: "bg-[#1a3a5c]",
+          hasSeparatorAfter: true
+        });
+      }
     }
 
     actions.push({
@@ -141,5 +110,5 @@ export function usePassageiroActions({
     });
 
     return actions;
-  }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onGenerateContract, onSubstituirContrato, onExcluirContrato, onVisualizarFinal, usarContratos, isDesativado]);
+  }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onEnviarWhatsApp, usarContratos, isDesativado, isMobile]);
 }

@@ -2,23 +2,26 @@ import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog,
-  useCreateContrato,
   useCreateEscola,
   useCreatePassageiro,
   useCreateVeiculo,
+  useCreateContrato,
   useDeletePassageiro,
+  useDeleteContrato,
+  useSubstituirContrato,
   useEscolas,
   useFilters,
   usePassageiros,
-  useDeleteContrato,
-  useSubstituirContrato,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { ContratoStatus, FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
+import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
+import { openBrowserLink } from "@/utils/browser";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
@@ -99,22 +102,18 @@ export function usePassageirosViewModel() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const createPassageiro = useCreatePassageiro();
+  const createContrato = useCreateContrato();
+  const deleteContrato = useDeleteContrato();
+  const substituirContrato = useSubstituirContrato();
   const createEscola = useCreateEscola();
   const createVeiculo = useCreateVeiculo();
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
-  const createContratoMutation = useCreateContrato();
-  const deleteContratoMutation = useDeleteContrato();
-  const substituirContratoMutation = useSubstituirContrato();
 
   const isActionLoading =
-    updatePassageiro.isPending ||
     deletePassageiro.isPending ||
-    toggleAtivoPassageiro.isPending ||
-    createContratoMutation.isPending ||
-    deleteContratoMutation.isPending ||
-    substituirContratoMutation.isPending;
+    toggleAtivoPassageiro.isPending;
 
   const passageiroFilters = {
     usuarioId: profile?.id,
@@ -247,47 +246,12 @@ export function usePassageirosViewModel() {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
-        onSuccess: (data: any, meta: any) => {
+        onSuccess: () => {
           refetchPassageiros();
-
-          const hasChanges = meta?.hasCriticalContractChanges;
-          const usarContratos = profile?.config_contrato?.usar_contratos;
-
-          if (hasChanges === true && usarContratos) {
-            const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
-
-            setTimeout(() => {
-              const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
-                updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
-
-              const firstName = updatedPassageiro.nome?.split(' ')[0] || '';
-
-              openConfirmationDialog({
-                title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
-                description: hasActiveContract
-                  ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
-                  : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
-                confirmText: hasActiveContract ? "Substituir" : "Gerar",
-                onConfirm: async () => {
-                  try {
-                    if (updatedPassageiro.contrato_id) {
-                      await substituirContratoMutation.mutateAsync(updatedPassageiro.contrato_id);
-                    } else {
-                      await createContratoMutation.mutateAsync({ passageiroId: updatedPassageiro.id! });
-                    }
-                    refetchPassageiros();
-                    safeCloseDialog(closeConfirmationDialog);
-                  } catch {
-                    safeCloseDialog(closeConfirmationDialog);
-                  }
-                },
-              });
-            }, 400);
-          }
         },
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros, openConfirmationDialog, closeConfirmationDialog, createContratoMutation, substituirContratoMutation, profile?.config_contrato?.usar_contratos],
+    [openPassageiroFormDialog, refetchPassageiros],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -372,68 +336,107 @@ export function usePassageirosViewModel() {
     [navigate],
   );
 
-  const handleGenerateContract = useCallback(
-    (passageiro: Passageiro) => {
-      const usarContratos = profile?.config_contrato?.usar_contratos;
-      if (!usarContratos) return;
 
-      const hasActiveContract = passageiro.status_contrato === ContratoStatus.ASSINADO ||
-        passageiro.status_contrato === ContratoStatus.PENDENTE;
 
-      const firstName = passageiro.nome?.split(' ')[0] || '';
+  const handleGerarContrato = useCallback(
+    async (passageiro: Passageiro) => {
+      try {
+        await createContrato.mutateAsync({
+          passageiroId: passageiro.id,
+          valorMensal: passageiro.valor_cobranca,
+          diaVencimento: passageiro.dia_vencimento
+        });
+        refetchPassageiros();
+      } catch (error) {
+        // Erro já tratado no hook
+      }
+    },
+    [createContrato, refetchPassageiros]
+  );
+
+  const handleExcluirContrato = useCallback(
+    async (passageiro: Passageiro) => {
+      if (!passageiro.contrato_id) return;
 
       openConfirmationDialog({
-        title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
-        description: hasActiveContract
-          ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
-          : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
-        confirmText: hasActiveContract ? "Substituir" : "Gerar",
+        title: "Excluir contrato?",
+        description: "Tem certeza que deseja excluir o contrato deste passageiro? O passageiro voltará para o status pendente.",
+        confirmText: "Excluir",
+        variant: "destructive",
         onConfirm: async () => {
           try {
-            if (passageiro.contrato_id) {
-              await substituirContratoMutation.mutateAsync(passageiro.contrato_id);
-            } else {
-              await createContratoMutation.mutateAsync({ passageiroId: passageiro.id! });
-            }
+            await deleteContrato.mutateAsync(passageiro.contrato_id!);
             refetchPassageiros();
             safeCloseDialog(closeConfirmationDialog);
-          } catch {
+          } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
     },
-    [profile?.config_contrato?.usar_contratos, openConfirmationDialog, closeConfirmationDialog, createContratoMutation, substituirContratoMutation, refetchPassageiros],
+    [deleteContrato, closeConfirmationDialog, openConfirmationDialog, refetchPassageiros]
   );
 
-  const handleSubstituirContrato = useCallback((passageiro: Passageiro) => {
-    if (!passageiro.contrato_id) return;
-    openConfirmationDialog({
-      title: "Substituir Contrato?",
-      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?",
-      confirmText: "Continuar",
-      onConfirm: async () => {
-        await substituirContratoMutation.mutateAsync(passageiro.contrato_id!);
-        refetchPassageiros();
-        safeCloseDialog(closeConfirmationDialog);
-      }
-    });
-  }, [openConfirmationDialog, substituirContratoMutation, closeConfirmationDialog, refetchPassageiros]);
+  const handleSubstituirContrato = useCallback(
+    (passageiro: Passageiro) => {
+      openConfirmationDialog({
+        title: "Substituir contrato?",
+        description: "Ao confirmar, o contrato atual será cancelado e um novo será gerado com os dados atuais do passageiro.",
+        confirmText: "Substituir",
+        variant: "warning",
+        onConfirm: async () => {
+          try {
+            await substituirContrato.mutateAsync(passageiro.contrato_id!);
+            refetchPassageiros();
+            safeCloseDialog(closeConfirmationDialog);
+          } catch (error) {
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        },
+      });
+    },
+    [substituirContrato, closeConfirmationDialog, openConfirmationDialog, refetchPassageiros]
+  );
 
-  const handleExcluirContrato = useCallback((passageiro: Passageiro) => {
-    if (!passageiro.contrato_id) return;
+  const isMobile = useIsMobile();
+  const handleEnviarWhatsApp = useCallback((passageiro: Passageiro) => {
+    // Para contratos pendentes, sempre usamos o link do portal de assinatura
+    const token = passageiro.token_acesso || passageiro.id;
+    const finalLink = `${window.location.origin}/assinar/${token}`;
+
+    if (!isMobile) {
+      navigator.clipboard.writeText(finalLink);
+      toast.success("Link para assinatura copiado!");
+      return;
+    }
+
+    const telefone =
+      passageiro.telefone_responsavel ||
+      (passageiro as any).dados_contrato?.telefone_responsavel;
+
+    if (!telefone) {
+      toast.error("Telefone do responsável não informado.");
+      return;
+    }
+
     openConfirmationDialog({
-      title: "Excluir Contrato?",
-      description: "Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.",
-      confirmText: "Excluir",
-      variant: "destructive",
-      onConfirm: async () => {
-        await deleteContratoMutation.mutateAsync(passageiro.contrato_id!);
-        refetchPassageiros();
+      title: "Reenviar via WhatsApp?",
+      description: `O responsável do passageiro receberá o link para assinatura diretamente no WhatsApp.`,
+      confirmText: "Enviar",
+      variant: "default",
+      onConfirm: () => {
+        const url = buildContratoWhatsAppUrl({
+          telefoneResponsavel: telefone,
+          nomeResponsavel: passageiro.nome_responsavel || "",
+          nomePassageiro: passageiro.nome || "",
+          link: finalLink,
+        });
+
+        openBrowserLink(url);
         safeCloseDialog(closeConfirmationDialog);
-      }
+      },
     });
-  }, [openConfirmationDialog, deleteContratoMutation, closeConfirmationDialog, refetchPassageiros]);
+  }, [isMobile, openConfirmationDialog, closeConfirmationDialog]);
 
   const pullToRefreshReload = useCallback(async () => {
     await Promise.all([
@@ -474,9 +477,10 @@ export function usePassageirosViewModel() {
     handleEdit,
     handleToggleClick,
     handleDeleteClick,
-    handleGenerateContract,
-    handleSubstituirContrato,
+    handleGerarContrato,
     handleExcluirContrato,
+    handleSubstituirContrato,
+    handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
   };

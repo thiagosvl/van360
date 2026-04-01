@@ -39,9 +39,7 @@ interface PassageirosListProps {
   onEdit: (passageiro: Passageiro) => void;
   onToggleClick: (passageiro: Passageiro) => void;
   onDeleteClick: (passageiro: Passageiro) => void;
-  onGenerateContract?: (passageiro: Passageiro) => void;
-  onSubstituirContrato?: (passageiro: Passageiro) => void;
-  onExcluirContrato?: (passageiro: Passageiro) => void;
+  onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   usarContratos?: boolean;
 }
 
@@ -51,9 +49,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   onEdit,
   onToggleClick,
   onDeleteClick,
-  onGenerateContract,
-  onSubstituirContrato,
-  onExcluirContrato,
+  onEnviarWhatsApp,
   usarContratos,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
@@ -65,9 +61,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     onEdit,
     onToggleStatus: onToggleClick,
     onDelete: onDeleteClick as any,
-    onGenerateContract,
-    onSubstituirContrato,
-    onExcluirContrato,
+    onEnviarWhatsApp,
     usarContratos,
   });
 
@@ -230,9 +224,7 @@ export function PassageirosList({
                       onEdit={props.onEdit}
                       onToggleStatus={props.onToggleClick}
                       onDelete={props.onDeleteClick}
-                      onGenerateContract={props.onGenerateContract}
-                      onSubstituirContrato={props.onSubstituirContrato}
-                      onExcluirContrato={props.onExcluirContrato}
+                      onEnviarWhatsApp={props.onEnviarWhatsApp}
                       usarContratos={props.usarContratos}
                     />
                   </TableCell>

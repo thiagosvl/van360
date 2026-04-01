@@ -37,14 +37,14 @@ interface ContratoWhatsAppParams {
   telefoneResponsavel: string;
   nomeResponsavel: string;
   nomePassageiro: string;
-  tokenLink: string;
+  link: string;
 }
 
 export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string {
   const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
   const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
   const primeiroNomePas = formatFirstName(params.nomePassageiro);
-  const link = `${window.location.origin}/assinar/${params.tokenLink}`;
+  const link = params.link;
 
   const mensagem = [
     `Oi ${primeiroNomeResp}! Sou o motorista da van de *${primeiroNomePas}* 🚌`,

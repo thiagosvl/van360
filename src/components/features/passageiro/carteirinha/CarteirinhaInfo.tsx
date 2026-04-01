@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
@@ -52,6 +53,7 @@ export interface CarteirinhaInfoProps {
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
   onContractAction: () => void;
+  onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   contratosAtivos?: boolean;
 }
 
@@ -64,74 +66,104 @@ const ProfileActions = ({
   onToggleClick,
   onEditClick,
   onDeleteClick,
+  onEnviarWhatsApp,
 }: Pick<
   CarteirinhaInfoProps,
-  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick"
->) => (
-  <div className="flex items-center justify-center gap-3">
-    <Button
-      size="icon"
-      onClick={() => onToggleClick(!!passageiro.ativo)}
-      className={cn(
-        "h-11 w-11 rounded-2xl transition-all shadow-sm hover:shadow-md",
-        passageiro.ativo
-          ? "bg-rose-50/50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
-          : "bg-emerald-100/80 text-emerald-600 hover:bg-emerald-500 hover:text-white", // Inativo -> Ação Ativar (Verde)
-      )}
-      title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
-    >
-      {passageiro.ativo ? (
-        <PowerOff className="h-4.5 w-4.5" />
-      ) : (
-        <Power className="h-4.5 w-4.5" />
-      )}
-    </Button>
-    <Button
-      size="icon"
-      onClick={() =>
-        window.open(
-          `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`,
-          "_blank",
-        )
-      }
-      className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
-    >
-      <WhatsAppIcon className="h-4.5 w-4.5" />
-    </Button>
+  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick" | "onEnviarWhatsApp"
+>) => {
+  const isMobile = useIsMobile();
+  const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
+  const isPendente = 
+    statusContrato === ContratoStatus.PENDENTE || 
+    statusContrato === 'pendente' || 
+    statusContrato === '1' ||
+    (!!passageiro.contrato_id && !passageiro.status_contrato);
 
-    {/* Botão de Edição Direta */}
-    <Button
-      size="icon"
-      onClick={onEditClick}
-      className="h-11 w-11 rounded-2xl bg-blue-50/50 text-blue-500 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
-    >
-      <Pencil className="h-4.5 w-4.5" />
-    </Button>
-
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          size="icon"
-          className="h-11 w-11 rounded-2xl bg-white text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
-        >
-          <MoreVertical className="h-4.5 w-4.5" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="center"
-        className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
+  return (
+    <div className="flex items-center justify-center gap-3">
+      <Button
+        size="icon"
+        onClick={() => onToggleClick(!!passageiro.ativo)}
+        className={cn(
+          "h-11 w-11 rounded-2xl transition-all shadow-sm hover:shadow-md",
+          passageiro.ativo
+            ? "bg-rose-50/50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
+            : "bg-emerald-100/80 text-emerald-600 hover:bg-emerald-500 hover:text-white", // Inativo -> Ação Ativar (Verde)
+        )}
+        title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
       >
-        <DropdownMenuItem
-          onClick={onDeleteClick}
-          className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
+        {passageiro.ativo ? (
+          <PowerOff className="h-4.5 w-4.5" />
+        ) : (
+          <Power className="h-4.5 w-4.5" />
+        )}
+      </Button>
+      <Button
+        size="icon"
+        onClick={() =>
+          window.open(
+            `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`,
+            "_blank",
+          )
+        }
+        className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
+      >
+        <WhatsAppIcon className="h-4.5 w-4.5" />
+      </Button>
+
+      {/* Botão de Edição Direta */}
+      <Button
+        size="icon"
+        onClick={onEditClick}
+        className="h-11 w-11 rounded-2xl bg-blue-50/50 text-blue-500 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
+      >
+        <Pencil className="h-4.5 w-4.5" />
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="icon"
+            className="h-11 w-11 rounded-2xl bg-white text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
+          >
+            <MoreVertical className="h-4.5 w-4.5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="center"
+          className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
         >
-          <Trash2 className="h-3.5 w-3.5 opacity-60" />
-          Excluir cadastro
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  </div>
-);
+          {isPendente && onEnviarWhatsApp && (
+            <DropdownMenuItem
+              onClick={() => onEnviarWhatsApp(passageiro)}
+              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
+            >
+              {isMobile ? (
+                <>
+                  <WhatsAppIcon className="h-4 w-4 text-slate-400" />
+                  Reenviar Contrato
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 text-slate-400" />
+                  Copiar Link para Assinatura
+                </>
+              )}
+            </DropdownMenuItem>
+          )}
+
+          <DropdownMenuItem
+            onClick={onDeleteClick}
+            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
+          >
+            <Trash2 className="h-3.5 w-3.5 opacity-60" />
+            Excluir cadastro
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
 
 /**
  * Componente interno para o resumo do perfil (Avatar, Nome, Badges).
@@ -227,6 +259,7 @@ export const CarteirinhaHeader = (
     | "onToggleClick"
     | "onEditClick"
     | "onDeleteClick"
+    | "onEnviarWhatsApp"
   >,
 ) => {
   return (
@@ -256,6 +289,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
           onToggleClick={props.onToggleClick}
           onEditClick={props.onEditClick}
           onDeleteClick={props.onDeleteClick}
+          onEnviarWhatsApp={props.onEnviarWhatsApp}
         />
       </div>
       <CarteirinhaDadosPessoais
@@ -293,18 +327,18 @@ export const CarteirinhaDadosPessoais = ({
   const getContratoStatusStyles = (status?: ContratoStatus) => {
     if (status === ContratoStatus.ASSINADO)
       return {
-        label: formatContratoStatus(passageiro.status_contrato),
+        label: formatContratoStatus(passageiro.status_contrato || ""),
         color: "text-emerald-500 bg-emerald-50",
         icon: FileCheck2,
       };
     if (status === ContratoStatus.PENDENTE)
       return {
-        label: formatContratoStatus(passageiro.status_contrato),
+        label: formatContratoStatus(passageiro.status_contrato || ""),
         color: "text-amber-500 bg-amber-50",
         icon: Clock,
       };
     return {
-      label: formatContratoStatus(passageiro.status_contrato),
+      label: formatContratoStatus(passageiro.status_contrato || ""),
       color: "text-slate-400 bg-slate-100",
       icon: FileX2,
     };
@@ -342,7 +376,7 @@ export const CarteirinhaDadosPessoais = ({
 
   return (
     <div className="space-y-3">
-      {/* Linha: Período + Modalidade */}
+      {/* Linha: Período + Escola */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Período"
@@ -384,7 +418,7 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* Linha: Escola + Veículo */}
+      {/* Linha: Modalidade + Veículo */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Modalidade"

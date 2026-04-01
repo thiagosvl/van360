@@ -43,9 +43,7 @@ export default function Passageiros() {
     handleEdit,
     handleToggleClick,
     handleDeleteClick,
-    handleGenerateContract,
-    handleSubstituirContrato,
-    handleExcluirContrato,
+    handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
   } = usePassageirosViewModel();
@@ -159,9 +157,7 @@ export default function Passageiros() {
                       onEdit={handleEdit}
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
-                      onGenerateContract={handleGenerateContract}
-                      onSubstituirContrato={handleSubstituirContrato}
-                      onExcluirContrato={handleExcluirContrato}
+                      onEnviarWhatsApp={handleEnviarWhatsApp}
                       usarContratos={profile?.config_contrato?.usar_contratos}
                     />
                   )}

@@ -12,6 +12,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
@@ -179,8 +180,24 @@ export function useContratosViewModel() {
     });
   }, [openConfirmationDialog, deleteMutation, closeConfirmationDialog]);
 
+  const isMobile = useIsMobile();
   const handleEnviarWhatsApp = useCallback((item: any) => {
-    const telefone = item.passageiro?.telefone_responsavel || item.telefone_responsavel;
+    // Para contratos pendentes, sempre usamos o link do portal de assinatura
+    const token = item.token_acesso || item.id;
+    const finalLink = `${window.location.origin}/assinar/${token}`;
+
+    if (!isMobile) {
+      navigator.clipboard.writeText(finalLink);
+      toast.success("Link para assinatura copiado!");
+      return;
+    }
+
+    const telefone = 
+      item.passageiro?.telefone_responsavel || 
+      item.telefone_responsavel || 
+      item.dados_contrato?.telefone_responsavel ||
+      item.dados_contrato?.telefoneResponsavel;
+
     if (!telefone) {
       toast.error("Telefone do responsável não informado.");
       return;
@@ -196,12 +213,12 @@ export function useContratosViewModel() {
           telefoneResponsavel: telefone,
           nomeResponsavel: item.passageiro?.nome_responsavel || item.nome_responsavel || "",
           nomePassageiro: item.passageiro?.nome || item.nome || "",
-          tokenLink: item.token_acesso,
+          link: finalLink,
         }));
         safeCloseDialog(closeConfirmationDialog);
       },
     });
-  }, [openConfirmationDialog, closeConfirmationDialog]);
+  }, [isMobile, openConfirmationDialog, closeConfirmationDialog]);
 
   const handleSubstituir = useCallback((id: string) => {
     openConfirmationDialog({

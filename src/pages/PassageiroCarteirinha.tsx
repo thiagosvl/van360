@@ -37,7 +37,7 @@ import {
   useUpdateCobranca,
   useUpdatePassageiro
 } from "@/hooks";
-import { useCreateContrato, useSubstituirContrato } from "@/hooks/api/useContratos";
+import { useCreateContrato, useSubstituirContrato, useDeleteContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { CobrancaStatus, ContratoStatus, PassageiroFormModes } from "@/types/enums";
@@ -50,6 +50,7 @@ import { Cobranca } from "@/types/cobranca";
 
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
+import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
 
 const currentYear = new Date().getFullYear().toString();
 
@@ -81,10 +82,12 @@ export default function PassageiroCarteirinha() {
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const createContrato = useCreateContrato();
   const substituirContrato = useSubstituirContrato();
+  const deleteContrato = useDeleteContrato();
 
   const isActionLoading =
     createContrato.isPending ||
     substituirContrato.isPending ||
+    deleteContrato.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending ||
@@ -319,6 +322,47 @@ export default function PassageiroCarteirinha() {
     });
   };
 
+  const handleEnviarWhatsApp = useCallback(() => {
+    if (!passageiro) return;
+
+    // Para contratos pendentes, sempre usamos o link do portal de assinatura
+    const token = passageiro.token_acesso || passageiro.id;
+    const finalLink = `${window.location.origin}/assinar/${token}`;
+
+    if (!isMobile) {
+      navigator.clipboard.writeText(finalLink);
+      toast.success("Link para assinatura copiado!");
+      return;
+    }
+
+    const telefone =
+      passageiro.telefone_responsavel ||
+      (passageiro as any).dados_contrato?.telefone_responsavel;
+
+    if (!telefone) {
+      toast.error("Telefone do responsável não informado.");
+      return;
+    }
+
+    openConfirmationDialog({
+      title: "Reenviar via WhatsApp?",
+      description: `O responsável do passageiro receberá o link para assinatura diretamente no WhatsApp.`,
+      confirmText: "Enviar",
+      variant: "default",
+      onConfirm: () => {
+        openBrowserLink(
+          buildContratoWhatsAppUrl({
+            telefoneResponsavel: telefone,
+            nomeResponsavel: passageiro.nome_responsavel,
+            nomePassageiro: passageiro.nome,
+            link: finalLink,
+          })
+        );
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  }, [passageiro, isMobile, openConfirmationDialog, closeConfirmationDialog]);
+
   const handleToggleLembretes = useCallback(
     async (cobranca: Cobranca) => {
       toggleNotificacoes.mutate({
@@ -461,6 +505,7 @@ export default function PassageiroCarteirinha() {
     onEditClick: handleEditClick,
     onCopyToClipboard: handleCopyToClipboard,
     onToggleClick: handleToggleClick,
+    onEnviarWhatsApp: handleEnviarWhatsApp,
     contratosAtivos: profile?.config_contrato?.usar_contratos !== false,
     onDeleteClick: () =>
       openConfirmationDialog({
@@ -484,49 +529,38 @@ export default function PassageiroCarteirinha() {
         },
       }),
     onContractAction: () => {
-      if (!passageiro || !passageiro_id) return;
+      const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
+      const isPendente = 
+        statusContrato === ContratoStatus.PENDENTE || 
+        statusContrato === 'pendente' || 
+        statusContrato === '1' ||
+        (!!passageiro.contrato_id && !passageiro.status_contrato);
+        
+      const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
+      const hasUrl = passageiro.contrato_url || passageiro.minuta_url;
 
-      if (
-        passageiro.status_contrato === ContratoStatus.PENDENTE ||
-        passageiro.status_contrato === ContratoStatus.ASSINADO
-      ) {
-        const url =
-          passageiro.status_contrato === ContratoStatus.ASSINADO
-            ? passageiro.contrato_final_url || passageiro.contrato_url
-            : passageiro.minuta_url || passageiro.contrato_url;
-
-        if (url) {
-          openBrowserLink(url);
-        } else {
-          toast.error("contrato.erro.semUrl", {
-            description: "Link do contrato não disponível.",
-          });
-        }
-        return;
-      }
-
-      const hasExistingContract = !!passageiro.contrato_id;
-      const firstName = formatFirstName(passageiro.nome);
-
-      openConfirmationDialog({
-        title: hasExistingContract ? "Substituir contrato?" : "Gerar contrato?",
-        description: hasExistingContract
-          ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá por WhatsApp.`
-          : `Deseja gerar o contrato oficial para ${firstName}? O responsável receberá por WhatsApp.`,
-        confirmText: hasExistingContract ? "Substituir" : "Gerar",
-        onConfirm: async () => {
-          try {
-            if (passageiro.contrato_id) {
-              await substituirContrato.mutateAsync(passageiro.contrato_id);
-            } else {
-              await createContrato.mutateAsync({ passageiroId: passageiro.id! });
+      if (isAssinado || (isPendente && hasUrl)) {
+        window.open(passageiro.contrato_url || passageiro.minuta_url, "_blank");
+      } else {
+        openConfirmationDialog({
+          title: "Gerar contrato?",
+          description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
+          confirmText: "Gerar",
+          onConfirm: async () => {
+            try {
+              await createContrato.mutateAsync({
+                passageiroId: passageiro.id!,
+                valorMensal: passageiro.valor_cobranca,
+                diaVencimento: passageiro.dia_vencimento
+              });
+              safeCloseDialog(closeConfirmationDialog);
+              refetchPassageiro();
+            } catch (error) {
+              safeCloseDialog(closeConfirmationDialog);
             }
-            safeCloseDialog(closeConfirmationDialog);
-          } catch {
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        },
-      });
+          },
+        });
+      }
     },
   };
 
@@ -557,6 +591,7 @@ export default function PassageiroCarteirinha() {
                     onToggleClick={handleToggleClick}
                     onEditClick={handleEditClick}
                     onDeleteClick={infoProps.onDeleteClick}
+                    onEnviarWhatsApp={handleEnviarWhatsApp}
                   />
                 </Suspense>
 

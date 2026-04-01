@@ -85,27 +85,26 @@ export function useContratoActions({
       });
     }
 
-    if (isPendente) {
-      list.push({
-        label: 'Copiar Link',
-        icon: <Copy className="h-4 w-4" />,
-        onClick: () => onCopiarLink?.(item.token_acesso),
-        disabled: !item.token_acesso || isFeatureDisabled,
-        swipeColor: 'bg-indigo-600',
-        hasSeparatorAfter: true
-      });
-    }
-
-    // Só permite reenvio via WhatsApp em dispositivos móveis
-    if (isPendente && isMobile) {
-      list.push({
-        label: 'Reenviar Contrato',
-        icon: <WhatsAppIcon className="h-4 w-4" />,
-        onClick: () => onEnviarWhatsApp?.(),
-        disabled: !onEnviarWhatsApp || isFeatureDisabled,
-        swipeColor: 'bg-green-600',
-        hasSeparatorAfter: true
-      });
+    if (isPendente && onEnviarWhatsApp) {
+      if (isMobile) {
+        list.push({
+          label: 'Reenviar Contrato',
+          icon: <WhatsAppIcon className="h-4 w-4" />,
+          onClick: () => onEnviarWhatsApp(),
+          disabled: isFeatureDisabled,
+          swipeColor: 'bg-green-600',
+          hasSeparatorAfter: true
+        });
+      } else {
+        list.push({
+          label: 'Copiar Link para Assinatura',
+          icon: <Copy className="h-4 w-4" />,
+          onClick: () => onEnviarWhatsApp(), // A ViewModel cuidará de copiar no Desktop
+          disabled: isFeatureDisabled,
+          swipeColor: 'bg-indigo-600',
+          hasSeparatorAfter: true
+        });
+      }
     }
 
     if (hasContract) {

@@ -9,21 +9,18 @@ interface PassageiroActionsMenuProps {
   onEdit: (passageiro: Passageiro) => void;
   onToggleStatus: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
-  onGenerateContract?: (passageiro: Passageiro) => void;
-  onSubstituirContrato?: (passageiro: Passageiro) => void;
-  onExcluirContrato?: (passageiro: Passageiro) => void;
-  onReenviarNotificacaoContrato?: (passageiro: Passageiro) => void;
+  onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   usarContratos?: boolean;
 }
 
 export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
-  onGenerateContract,
+  onEnviarWhatsApp,
   usarContratos,
   ...props
 }: PassageiroActionsMenuProps) {
   const actions = usePassageiroActions({
     ...props,
-    onGenerateContract,
+    onEnviarWhatsApp,
     usarContratos,
   });
 

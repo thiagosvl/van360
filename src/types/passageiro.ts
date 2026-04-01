@@ -39,6 +39,7 @@ export interface Passageiro {
   contrato_status?: string;
   minuta_url?: string;
   contrato_final_url?: string;
+  token_acesso?: string;
 
   // Campos Tipados com Enums
   modalidade?: PassageiroModalidade;
