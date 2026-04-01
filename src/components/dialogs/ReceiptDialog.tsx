@@ -1,6 +1,7 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Download, Share2, ReceiptText, Loader2 } from "lucide-react";
 import { isMobilePlatform } from "@/utils/detectPlatform";
+import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { useCallback, useState } from "react";
 
 interface ReceiptDialogProps {
@@ -38,26 +39,12 @@ export const ReceiptDialog = ({
   }, [receiptUrl]);
 
   const handleShare = useCallback(async () => {
-    if (!receiptUrl) return;
-
-    try {
-      const response = await fetch(receiptUrl);
-      const blob = await response.blob();
-      const file = new File([blob], "recibo.png", { type: "image/png" });
-
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "Recibo Van360",
-          text: cobrancaDescricao,
-        });
-      } else {
-        window.open(receiptUrl, "_blank");
-      }
-    } catch (error) {
-      console.error("Erro ao compartilhar recibo:", error);
-      window.open(receiptUrl, "_blank");
-    }
+    await shareReceiptFile({
+      url: receiptUrl!,
+      filename: "recibo.png",
+      title: "Recibo Van360",
+      text: cobrancaDescricao,
+    });
   }, [receiptUrl, cobrancaDescricao]);
 
   if (!receiptUrl) return null;

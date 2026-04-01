@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { isMobilePlatform } from "@/utils/detectPlatform";
+import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { useCallback, useMemo } from "react";
 
 export interface UseCobrancaOperationsProps {
@@ -169,27 +170,12 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     const actions: ActionItem[] = [];
 
     const handleShareDirect = async () => {
-      if (!cobranca.recibo_url) return;
-
-      try {
-        const response = await fetch(cobranca.recibo_url);
-        const blob = await response.blob();
-        const file = new File([blob], `recibo-${cobranca.mes}-${cobranca.ano}.png`, { type: "image/png" });
-
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "Recibo Van360",
-            text: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${(cobranca as any).passageiro?.nome || ''}`,
-          });
-        } else {
-          // Fallback se o share falhar no mobile (ex: simulador)
-          if (props.onVerRecibo) props.onVerRecibo();
-        }
-      } catch (error) {
-        console.error("Erro ao compartilhar direto:", error);
-        if (props.onVerRecibo) props.onVerRecibo();
-      }
+      await shareReceiptFile({
+        url: cobranca.recibo_url!,
+        filename: `recibo-${cobranca.mes}-${cobranca.ano}.png`.toLowerCase(),
+        title: "Recibo Van360",
+        text: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${(cobranca as any).passageiro?.nome || ""}`,
+      });
     };
 
     if (props.onVerRecibo && cobranca.recibo_url) {
