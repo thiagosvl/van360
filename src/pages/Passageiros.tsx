@@ -46,7 +46,6 @@ export default function Passageiros() {
     handleGenerateContract,
     handleSubstituirContrato,
     handleExcluirContrato,
-    handleReenviarNotificacaoContrato,
     pullToRefreshReload,
     hasActiveFilters,
   } = usePassageirosViewModel();
@@ -163,7 +162,6 @@ export default function Passageiros() {
                       onGenerateContract={handleGenerateContract}
                       onSubstituirContrato={handleSubstituirContrato}
                       onExcluirContrato={handleExcluirContrato}
-                      onReenviarNotificacaoContrato={handleReenviarNotificacaoContrato}
                       usarContratos={profile?.config_contrato?.usar_contratos}
                     />
                   )}

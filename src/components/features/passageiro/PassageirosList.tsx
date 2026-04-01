@@ -1,4 +1,3 @@
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import {
@@ -43,14 +42,11 @@ interface PassageirosListProps {
   onGenerateContract?: (passageiro: Passageiro) => void;
   onSubstituirContrato?: (passageiro: Passageiro) => void;
   onExcluirContrato?: (passageiro: Passageiro) => void;
-  onReenviarNotificacaoContrato?: (passageiro: Passageiro) => void;
   usarContratos?: boolean;
 }
 
-
 const PassageiroMobileCard = memo(function PassageiroMobileCard({
   passageiro,
-  index,
   onHistorico,
   onEdit,
   onToggleClick,
@@ -58,7 +54,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   onGenerateContract,
   onSubstituirContrato,
   onExcluirContrato,
-  onReenviarNotificacaoContrato,
   usarContratos,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
@@ -73,7 +68,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     onGenerateContract,
     onSubstituirContrato,
     onExcluirContrato,
-    onReenviarNotificacaoContrato,
     usarContratos,
   });
 
@@ -239,7 +233,6 @@ export function PassageirosList({
                       onGenerateContract={props.onGenerateContract}
                       onSubstituirContrato={props.onSubstituirContrato}
                       onExcluirContrato={props.onExcluirContrato}
-                      onReenviarNotificacaoContrato={props.onReenviarNotificacaoContrato}
                       usarContratos={props.usarContratos}
                     />
                   </TableCell>

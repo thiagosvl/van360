@@ -11,7 +11,6 @@ import {
   useFilters,
   usePassageiros,
   useDeleteContrato,
-  useReenviarContrato,
   useSubstituirContrato,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
@@ -107,7 +106,6 @@ export function usePassageirosViewModel() {
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
   const createContratoMutation = useCreateContrato();
   const deleteContratoMutation = useDeleteContrato();
-  const reenviarContratoMutation = useReenviarContrato();
   const substituirContratoMutation = useSubstituirContrato();
 
   const isActionLoading =
@@ -116,7 +114,6 @@ export function usePassageirosViewModel() {
     toggleAtivoPassageiro.isPending ||
     createContratoMutation.isPending ||
     deleteContratoMutation.isPending ||
-    reenviarContratoMutation.isPending ||
     substituirContratoMutation.isPending;
 
   const passageiroFilters = {
@@ -438,11 +435,6 @@ export function usePassageirosViewModel() {
     });
   }, [openConfirmationDialog, deleteContratoMutation, closeConfirmationDialog, refetchPassageiros]);
 
-  const handleReenviarNotificacaoContrato = useCallback((passageiro: Passageiro) => {
-    if (!passageiro.contrato_id) return;
-    reenviarContratoMutation.mutate(passageiro.contrato_id);
-  }, [reenviarContratoMutation]);
-
   const pullToRefreshReload = useCallback(async () => {
     await Promise.all([
       refetchPassageiros(),
@@ -485,7 +477,6 @@ export function usePassageirosViewModel() {
     handleGenerateContract,
     handleSubstituirContrato,
     handleExcluirContrato,
-    handleReenviarNotificacaoContrato,
     pullToRefreshReload,
     hasActiveFilters,
   };

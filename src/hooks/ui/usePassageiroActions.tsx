@@ -22,7 +22,6 @@ interface UsePassageiroActionsProps {
   onHistorico: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
-  onReenviarNotificacaoContrato?: (passageiro: Passageiro) => void;
   onSubstituirContrato?: (passageiro: Passageiro) => void;
   onExcluirContrato?: (passageiro: Passageiro) => void;
   onVisualizarFinal?: (url: string) => void;
@@ -37,7 +36,6 @@ export function usePassageiroActions({
   onHistorico,
   onDelete,
   onGenerateContract,
-  onReenviarNotificacaoContrato,
   onSubstituirContrato,
   onExcluirContrato,
   onVisualizarFinal,
@@ -109,17 +107,6 @@ export function usePassageiroActions({
       });
     }
 
-    if (isPendente && onReenviarNotificacaoContrato && passageiro.contrato_id) {
-      actions.push({
-        label: "Reenviar Contrato",
-        icon: <Send className="h-4 w-4" />,
-        onClick: () => onReenviarNotificacaoContrato(passageiro),
-        disabled: isFeatureDisabled,
-        swipeColor: "bg-blue-600",
-        hasSeparatorAfter: true
-      });
-    }
-
     if (hasContract && onSubstituirContrato && passageiro.contrato_id) {
       actions.push({
         label: "Substituir Contrato",
@@ -154,5 +141,5 @@ export function usePassageiroActions({
     });
 
     return actions;
-  }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onGenerateContract, onReenviarNotificacaoContrato, onSubstituirContrato, onExcluirContrato, onVisualizarFinal, usarContratos, isDesativado]);
+  }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onGenerateContract, onSubstituirContrato, onExcluirContrato, onVisualizarFinal, usarContratos, isDesativado]);
 }
