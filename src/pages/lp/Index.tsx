@@ -7,9 +7,7 @@ import { useSEO } from "@/hooks/useSEO";
 import {
   CheckCircle2,
   ChevronDown,
-  Headphones,
   Lightbulb,
-  MessageCircle,
   Star,
   Users,
 } from "lucide-react";

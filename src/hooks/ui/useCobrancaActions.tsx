@@ -28,6 +28,8 @@ import {
   Trash2,
   User
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { isMobilePlatform } from "@/utils/detectPlatform";
 import { useCallback, useMemo } from "react";
 
 export interface UseCobrancaOperationsProps {
@@ -136,6 +138,7 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
   onRegistrarPagamento?: () => void;
   onPagarPix?: () => void;
   onDesfazerPagamento?: (cobranca: Cobranca) => void;
+  onEnviarCobranca?: () => void;
   showHistory?: boolean;
 }
 
@@ -146,6 +149,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     onEditarCobranca,
     onRegistrarPagamento,
     onPagarPix,
+    onEnviarCobranca,
     showHistory = false,
   } = props;
 
@@ -189,6 +193,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         disabled: !isPago || isActionLoading,
         swipeColor: "bg-amber-500",
         isLoading: isDesfazendoPagamento,
+        hasSeparatorAfter: true,
+      });
+    }
+
+    if (onEnviarCobranca && isMobilePlatform() && !isPago) {
+      actions.push({
+        label: "Enviar Cobrança",
+        icon: <WhatsAppIcon className="h-4 w-4" />,
+        onClick: onEnviarCobranca,
+        swipeColor: "bg-green-600",
         hasSeparatorAfter: true,
       });
     }
@@ -281,6 +295,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     isDesfazendoPagamento,
     isDeleting,
     onPagarPix,
+    onEnviarCobranca,
     showHistory,
     props.onVerRecibo,
     props.onExcluirCobranca,

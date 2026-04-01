@@ -12,6 +12,8 @@ import {
   formatDiasAtraso,
   getMesNome,
 } from "@/utils/formatters";
+import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
+import { openBrowserLink } from "@/utils/browser";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -186,6 +188,18 @@ const CobrancaItemPassageiro = forwardRef<
       ? "bg-red-50 text-red-600"
       : "bg-amber-50 text-amber-600";
 
+  const telefoneResponsavel = passageiro.telefone_responsavel;
+  const onEnviarCobranca = telefoneResponsavel
+    ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
+        telefoneResponsavel,
+        nomeResponsavel: passageiro.nome_responsavel,
+        nomePassageiro: passageiro.nome,
+        mes: cobranca.mes,
+        valor: cobranca.valor,
+        dataVencimento: cobranca.data_vencimento,
+      }))
+    : undefined;
+
   const actions = useCobrancaActions({
     cobranca,
     onVerCobranca: () => { },
@@ -195,6 +209,7 @@ const CobrancaItemPassageiro = forwardRef<
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined,
     onVerRecibo: cobranca.recibo_url ? () => onSetReceiptUrl(cobranca.recibo_url || null) : undefined,
+    onEnviarCobranca,
     showHistory: true,
   });
 

@@ -26,6 +26,8 @@ import {
 } from "@/utils/formatters";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet } from "lucide-react";
+import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
+import { openBrowserLink } from "@/utils/browser";
 import { memo, useState } from "react";
 import { CobrancaSummary } from "./CobrancaSummary";
 interface CobrancasListProps {
@@ -60,6 +62,18 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   activeTab: CobrancaTab;
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
 
+  const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+  const onEnviarCobranca = telefoneResponsavel
+    ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
+        telefoneResponsavel,
+        nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+        nomePassageiro: cobranca.passageiro?.nome ?? "",
+        mes: cobranca.mes,
+        valor: cobranca.valor,
+        dataVencimento: cobranca.data_vencimento,
+      }))
+    : undefined;
+
   const actions = useCobrancaActions({
     cobranca,
     onVerCobranca: () => {},
@@ -68,6 +82,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
+    onEnviarCobranca,
     onActionSuccess,
   });
 
