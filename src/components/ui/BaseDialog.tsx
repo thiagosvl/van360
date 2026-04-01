@@ -1,5 +1,6 @@
 import * as React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,7 @@ interface BaseDialogProps {
   onOpenChange: (open: boolean) => void
   className?: string
   lockClose?: boolean
+  description?: string
 }
 
 const BaseDialogRoot = ({
@@ -18,7 +20,8 @@ const BaseDialogRoot = ({
   open,
   onOpenChange,
   className,
-  lockClose = false
+  lockClose = false,
+  description
 }: BaseDialogProps) => {
   return (
     <Dialog
@@ -37,6 +40,11 @@ const BaseDialogRoot = ({
         onEscapeKeyDown={(e) => lockClose && e.preventDefault()}
         hideCloseButton // We'll handle our own close button in the header
       >
+        {description && (
+          <div className="sr-only">
+            <DialogPrimitive.Description>{description}</DialogPrimitive.Description>
+          </div>
+        )}
         {children}
       </DialogContent>
     </Dialog>
@@ -236,3 +244,5 @@ export const BaseDialog = Object.assign(BaseDialogRoot, {
   Footer: BaseDialogFooter,
   Action: BaseDialogAction
 })
+
+export default BaseDialog;

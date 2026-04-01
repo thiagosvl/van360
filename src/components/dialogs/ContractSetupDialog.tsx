@@ -87,10 +87,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       if (profile.config_contrato?.multa_atraso) setMultaAtraso(profile.config_contrato.multa_atraso);
       if (profile.config_contrato?.multa_rescisao) setMultaRescisao(profile.config_contrato.multa_rescisao);
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
-      
+
       const isContratoConfigurado = !!profile.config_contrato?.configurado;
       const isContratoAtivo = profile.config_contrato?.usar_contratos ?? true;
-      
+
       setUsarContratos(skipWelcome ? true : isContratoAtivo);
 
       if (skipWelcome) {
@@ -98,7 +98,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       } else {
         setStep(SetupStep.WELCOME);
       }
-      
+
       initializedRef.current = true;
     }
   }, [isOpen, profile, signatureTemp]);
@@ -156,7 +156,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       case SetupStep.WELCOME: return "Boas-Vindas";
       case SetupStep.FEES: return "Penalidades e Multas";
       case SetupStep.CLAUSES: return "Cláusulas e Termos";
-      case SetupStep.SIGNATURE: return "Assinatura Digital";
+      case SetupStep.SIGNATURE: return "Assinatura";
       case SetupStep.PREVIEW: return "Revisão do Contrato";
       default: return "Configurar Contratos";
     }
@@ -485,7 +485,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
               pdfUrlRef.current = result.url;
               setPdfUrl(result.url);
               setIsPreviewPdfOpen(true);
-            } catch (err) {}
+            } catch (err) { }
           }}
         >
           {previewMutation.isPending ? (
