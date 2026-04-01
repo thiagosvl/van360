@@ -36,7 +36,6 @@ export function SignatureDialog({
       <BaseDialog.Body className="space-y-6">
 
         <div className="text-center space-y-2 mb-2">
-          <h3 className="font-black text-[#1a3a5c] text-lg uppercase tracking-tight">Assinatura Digital</h3>
           <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
             Sua assinatura aparecerá no final do contrato em PDF de forma automatizada.
           </p>
