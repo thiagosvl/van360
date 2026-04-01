@@ -1,3 +1,4 @@
+import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function AssinarContrato() {
+  useAnalyticsInjector({ clarity: true, force: true });
   const { token } = useParams<{ token: string }>();
 
   const {

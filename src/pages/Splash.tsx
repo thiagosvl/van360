@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useSEO } from "@/hooks/useSEO";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +9,7 @@ export default function Splash() {
     description: "Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular.",
   });
 
+  useAnalyticsInjector({ clarity: true, force: true });
   const navigate = useNavigate();
 
   return (

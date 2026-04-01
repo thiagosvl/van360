@@ -45,21 +45,16 @@ function injectClarity() {
 interface AnalyticsInjectorOptions {
   gtm?: boolean;
   clarity?: boolean;
+  force?: boolean;
 }
 
-export function useAnalyticsInjector({ gtm = false, clarity = false }: AnalyticsInjectorOptions) {
+export function useAnalyticsInjector({ gtm = false, clarity = false, force = false }: AnalyticsInjectorOptions) {
   useEffect(() => {
     const prefs = loadSavedPreferences();
     const isPending = prefs === null;
 
-    if (isPending) {
-      console.log("[Van360] Consentimento pendente — carregando analytics por padrão.");
-    } else {
-      console.log("[Van360] Preferências encontradas:", prefs);
-    }
-
     if (gtm) {
-      if (isPending || prefs.gtm) {
+      if (force || isPending || prefs.gtm) {
         injectGTM();
       } else {
         console.log("[Van360] GTM bloqueado por preferência do usuário.");
@@ -67,7 +62,7 @@ export function useAnalyticsInjector({ gtm = false, clarity = false }: Analytics
     }
 
     if (clarity) {
-      if (isPending || prefs.clarity) {
+      if (force || isPending || prefs.clarity) {
         injectClarity();
       } else {
         console.log("[Van360] Microsoft Clarity bloqueado por preferência do usuário.");

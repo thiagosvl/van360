@@ -12,7 +12,7 @@ export default function Register() {
     title: "Criar conta grátis | Van360 — Você dirige. A gente organiza.",
     description: "Crie sua conta e organize passageiros, mensalidades, contratos e recibos da sua van escolar. 15 dias grátis, sem cartão.",
   });
-  useAnalyticsInjector({ gtm: true });
+  useAnalyticsInjector({ gtm: true, clarity: true });
 
   const {
     form,

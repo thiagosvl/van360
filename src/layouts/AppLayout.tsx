@@ -18,7 +18,7 @@ const SWIPE_CLOSE_THRESHOLD = 100;
 
 function AppLayoutContent({ role }: { role: "motorista" }) {
   const navigate = useNavigate();
-  useAnalyticsInjector({ clarity: true });
+  useAnalyticsInjector({ clarity: true, force: true });
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
 
   const sheetRef = useRef<HTMLDivElement>(null);

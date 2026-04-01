@@ -107,7 +107,7 @@ export default function Login() {
     title: "Entrar | Van360 — Você dirige. A gente organiza.",
     description: "Acesse sua conta Van360 e gerencie passageiros, mensalidades, contratos e recibos da sua van escolar.",
   });
-  useAnalyticsInjector({ gtm: true });
+  useAnalyticsInjector({ gtm: true, clarity: true });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
