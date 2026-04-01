@@ -589,7 +589,7 @@ export default function EscolaFormDialog({
         />
         <BaseDialog.Action
           label={editingEscola ? "Atualizar" : "Salvar"}
-          variant="primary"
+          variant="secondary"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
           isLoading={isSaving}
         />

@@ -39,6 +39,30 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
+          name="nome_responsavel"
+          render={({ field, fieldState }) => (
+            <FormItem>
+              <FormLabel className="text-slate-700 font-semibold ml-1">
+                Nome do Responsável <span className="text-red-600">*</span>
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                  <Input
+                    {...field}
+                    placeholder="Nome completo do responsável"
+                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                    aria-invalid={!!fieldState.error}
+                    disabled={isSearching}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="cpf_responsavel"
           render={({ field, fieldState }) => (
             <FormItem>
@@ -100,26 +124,16 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
         />
         <FormField
           control={form.control}
-          name="nome_responsavel"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel className="text-slate-700 font-semibold ml-1">
-                Nome do Responsável <span className="text-red-600">*</span>
-              </FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                  <Input
-                    {...field}
-                    placeholder="Nome completo do responsável"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isSearching}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          name="telefone_responsavel"
+          render={({ field }) => (
+            <PhoneInput
+              field={field}
+              label="WhatsApp"
+              required
+              labelClassName="text-slate-700 font-semibold ml-1"
+              inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+              disabled={isSearching}
+            />
           )}
         />
         <FormField
@@ -145,20 +159,6 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
               </FormControl>
               <FormMessage />
             </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="telefone_responsavel"
-          render={({ field }) => (
-            <PhoneInput
-              field={field}
-              label="WhatsApp"
-              required
-              labelClassName="text-slate-700 font-semibold ml-1"
-              inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-              disabled={isSearching}
-            />
           )}
         />
       </div>

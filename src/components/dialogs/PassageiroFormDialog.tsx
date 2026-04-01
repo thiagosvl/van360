@@ -37,8 +37,6 @@ export default function PassengerFormDialog({
   const {
     form,
     refreshing,
-    openAccordionItems,
-    setOpenAccordionItems,
     escolas,
     veiculos,
     isSubmitting,
@@ -64,80 +62,80 @@ export default function PassengerFormDialog({
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <BaseDialog.Header
-          title={title}
-          icon={<User className="w-5 h-5" />}
-          onClose={onClose}
-          leftAction={import.meta.env.DEV && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
-              onClick={handleFillMock}
-              title="Preencher com dados fictícios"
+      <BaseDialog.Header
+        title={title}
+        icon={<User className="w-5 h-5" />}
+        onClose={onClose}
+        leftAction={import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            onClick={handleFillMock}
+            title="Preencher com dados fictícios"
+          >
+            <Wand2 className="h-5 w-5" />
+          </Button>
+        )}
+      />
+
+      <BaseDialog.Body>
+        {refreshing ? (
+          <div className="flex items-center justify-center p-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+              className="space-y-8 pb-6"
             >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-          )}
+              <section>
+                <PassageiroFormDadosCadastrais
+                  profile={profile}
+                  escolas={escolas}
+                  veiculos={veiculos}
+                />
+              </section>
+
+              <hr className="border-slate-100" />
+
+              <section>
+                <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
+              </section>
+
+              <hr className="border-slate-100" />
+
+              <section>
+                <PassageiroFormFinanceiro
+                  editingPassageiro={editingPassageiro}
+                />
+              </section>
+
+              <hr className="border-slate-100" />
+
+              <section>
+                <PassageiroFormEndereco />
+              </section>
+            </form>
+          </Form>
+        )}
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <BaseDialog.Action
+          variant="secondary"
+          label="Cancelar"
+          onClick={onClose}
+          disabled={isSubmitting}
         />
-
-        <BaseDialog.Body>
-          {refreshing ? (
-            <div className="flex items-center justify-center p-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-12 pb-6"
-              >
-                <section>
-                  <PassageiroFormDadosCadastrais
-                    profile={profile}
-                    escolas={escolas}
-                    veiculos={veiculos}
-                  />
-                </section>
-
-                <hr className="border-slate-100" />
-
-                <section>
-                  <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
-                </section>
-
-                <hr className="border-slate-100" />
-
-                <section>
-                  <PassageiroFormFinanceiro
-                    editingPassageiro={editingPassageiro}
-                  />
-                </section>
-
-                <hr className="border-slate-100" />
-
-                <section>
-                  <PassageiroFormEndereco />
-                </section>
-              </form>
-            </Form>
-          )}
-        </BaseDialog.Body>
-
-        <BaseDialog.Footer>
-          <BaseDialog.Action
-            variant="outline"
-            label="Cancelar"
-            onClick={onClose}
-            disabled={isSubmitting}
-          />
-          <BaseDialog.Action
-            label={mode === PassageiroFormModes.FINALIZE ? "Confirmar" : "Salvar"}
-            onClick={form.handleSubmit(handleSubmit, onFormError)}
-            isLoading={isSubmitting}
-          />
-        </BaseDialog.Footer>
+        <BaseDialog.Action
+          label={mode === PassageiroFormModes.FINALIZE ? "Confirmar" : "Salvar"}
+          onClick={form.handleSubmit(handleSubmit, onFormError)}
+          isLoading={isSubmitting}
+        />
+      </BaseDialog.Footer>
     </BaseDialog>
   );
 }
