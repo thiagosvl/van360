@@ -100,7 +100,7 @@ export default function ManualPaymentDialog({
                   field={field}
                   label="Valor Pago"
                   required
-                  inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                  inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
                 />
               )}
             />
@@ -122,7 +122,7 @@ export default function ManualPaymentDialog({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
+                              "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left font-normal hover:bg-gray-100 text-md justify-start",
                               !field.value && "text-muted-foreground"
                             )}
                           >

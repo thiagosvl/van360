@@ -20,8 +20,6 @@ export default function CobrancaDialog({
   isOpen,
   onClose,
   passageiroId,
-  passageiroNome,
-  passageiroResponsavelNome,
   valorCobranca,
   diaVencimento,
   onCobrancaAdded,
