@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Headphones,
+  Lightbulb,
   MessageCircle,
   Star,
   Users,
@@ -594,11 +595,11 @@ const Index = () => {
                 text: "Testado por motoristas reais antes do lançamento.",
               },
               {
-                icon: <Headphones className="w-7 h-7 text-[#f59e0b]" />,
-                text: "Desenvolvido ouvindo quem vive o transporte escolar todo dia.",
+                icon: <Lightbulb className="w-7 h-7 text-[#f59e0b]" />,
+                text: "Pensado em cada detalhe, ouvindo quem vive o transporte escolar todo dia.",
               },
               {
-                icon: <MessageCircle className="w-7 h-7 text-[#f59e0b]" />,
+                icon: <WhatsAppIcon className="w-7 h-7 text-[#f59e0b]" />,
                 text: "Suporte direto pelo WhatsApp — fala com gente, não com robô.",
               },
             ].map((card, i) => (
