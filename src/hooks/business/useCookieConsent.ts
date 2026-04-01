@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "van360_cookie_consent";
+const CONSENT_EVENT = "van360:consent-updated";
 
 export type CookiePreferences = {
   gtm: boolean;
@@ -30,6 +31,12 @@ export function useCookieConsent() {
     loadSavedPreferences()
   );
 
+  useEffect(() => {
+    const sync = () => setPreferences(loadSavedPreferences());
+    window.addEventListener(CONSENT_EVENT, sync);
+    return () => window.removeEventListener(CONSENT_EVENT, sync);
+  }, []);
+
   const saveConsent = (prefs: CookiePreferences) => {
     persistPreferences(prefs);
     const anyRejected = !prefs.gtm || !prefs.clarity;
@@ -37,6 +44,7 @@ export function useCookieConsent() {
       window.location.reload();
     } else {
       setPreferences(prefs);
+      window.dispatchEvent(new Event(CONSENT_EVENT));
     }
   };
 

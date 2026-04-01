@@ -827,7 +827,7 @@ const Index = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Fale conosco pelo WhatsApp"
-        className={`fixed right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(37,211,102,.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,.5)] hover:scale-110 transition-all duration-500 ${isPending ? "bottom-20 sm:bottom-16" : "bottom-5"}`}
+        className={`fixed right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(37,211,102,.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,.5)] hover:scale-110 transition-all duration-500 ${isPending ? "bottom-24 sm:bottom-20" : "bottom-5"}`}
       >
         <WhatsAppIcon className="w-7 h-7" />
       </a>
