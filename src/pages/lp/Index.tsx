@@ -262,20 +262,20 @@ const Index = () => {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
+              <div className="grid grid-cols-3 max-[363px]:gap-2 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
                 {[
-                  { num: "4 em 1", label: "passageiros, mensalidades, contratos e recibos" },
-                  { num: "5 min", label: "pra cadastrar tudo" },
-                  { num: "100%", label: "digital e organizado" },
+                  { num: "1 App", label: "abandone caderninho e planilhas" },
+                  { num: "5 min", label: "pra organizar e começar a usar" },
+                  { num: "100%", label: "do financeiro na palma da mão" },
                 ].map((s) => (
                   <div key={s.label} className="text-center md:text-left">
                     <div
-                      className="text-2xl font-black text-[#1a3a5c] leading-none"
+                      className="max-[363px]:text-xl text-2xl font-black text-[#1a3a5c] leading-none whitespace-nowrap"
                       style={{ animation: "lp-countUp .6s ease both" }}
                     >
                       {s.num}
                     </div>
-                    <div className="text-[0.75rem] text-slate-400 mt-1 leading-tight">
+                    <div className="text-[0.75rem] max-[363px]:text-[0.70rem] text-slate-400 mt-1 leading-tight">
                       {s.label}
                     </div>
                   </div>
