@@ -1,4 +1,5 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getPaymentMethodLabel } from "@/constants/paymentMethods";
@@ -23,7 +24,7 @@ import {
   History,
   Plus,
 } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -51,6 +52,12 @@ export const CarteirinhaCobrancas = ({
   onDesfazerPagamento,
 }: CarteirinhaCobrancasProps) => {
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+  const handleOpenReceipt = useCallback((url: string) => {
+    setReceiptUrl(url);
+    setIsReceiptOpen(true);
+  }, []);
 
   // KPIs rápidos
   const resumo = cobrancas.reduce(
@@ -115,7 +122,7 @@ export const CarteirinhaCobrancas = ({
                 onRegistrarPagamento={onRegistrarPagamento}
                 onExcluirCobranca={onExcluirCobranca}
                 onDesfazerPagamento={onDesfazerPagamento}
-                onSetReceiptUrl={setReceiptUrl}
+                onVerRecibo={handleOpenReceipt}
               />
             ))}
           </AnimatePresence>
@@ -148,6 +155,12 @@ export const CarteirinhaCobrancas = ({
           />
         </div>
       )}
+
+      <ReceiptDialog
+        isOpen={isReceiptOpen}
+        onClose={() => setIsReceiptOpen(false)}
+        receiptUrl={receiptUrl}
+      />
     </div>
   );
 };
@@ -167,7 +180,7 @@ const CobrancaItemPassageiro = forwardRef<
     onRegistrarPagamento: (c: Cobranca) => void;
     onExcluirCobranca: (c: Cobranca) => void;
     onDesfazerPagamento: (id: string) => void;
-    onSetReceiptUrl: (url: string | null) => void;
+    onVerRecibo: (url: string) => void;
   }
 >(({
   cobranca,
@@ -177,7 +190,7 @@ const CobrancaItemPassageiro = forwardRef<
   onRegistrarPagamento,
   onExcluirCobranca,
   onDesfazerPagamento,
-  onSetReceiptUrl,
+  onVerRecibo,
 }, ref) => {
   const isPaid = cobranca.status === CobrancaStatus.PAGO;
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca.data_vencimento);
@@ -208,7 +221,7 @@ const CobrancaItemPassageiro = forwardRef<
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => onSetReceiptUrl(cobranca.recibo_url || null) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!) : undefined,
     onEnviarCobranca,
     showHistory: true,
   });

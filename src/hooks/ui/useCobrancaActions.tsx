@@ -168,15 +168,50 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
 
-    if (props.onVerRecibo) {
+    const handleShareDirect = async () => {
+      if (!cobranca.recibo_url) return;
+
+      try {
+        const response = await fetch(cobranca.recibo_url);
+        const blob = await response.blob();
+        const file = new File([blob], `recibo-${cobranca.mes}-${cobranca.ano}.png`, { type: "image/png" });
+
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "Recibo Van360",
+            text: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${(cobranca as any).passageiro?.nome || ''}`,
+          });
+        } else {
+          // Fallback se o share falhar no mobile (ex: simulador)
+          if (props.onVerRecibo) props.onVerRecibo();
+        }
+      } catch (error) {
+        console.error("Erro ao compartilhar direto:", error);
+        if (props.onVerRecibo) props.onVerRecibo();
+      }
+    };
+
+    if (props.onVerRecibo && cobranca.recibo_url) {
       actions.push({
         label: "Ver Recibo",
         icon: <Receipt className="h-4 w-4" />,
         onClick: props.onVerRecibo,
-        disabled: !canViewReceipt(cobranca) || isActionLoading,
+        disabled: isActionLoading,
         swipeColor: "bg-blue-600",
         hasSeparatorAfter: true,
       });
+
+      // Só mostra "Enviar" se for mobile (browser ou app)
+      if (isMobilePlatform()) {
+        actions.push({
+          label: "Enviar",
+          icon: <WhatsAppIcon className="h-4 w-4 text-emerald-600" />,
+          onClick: handleShareDirect,
+          swipeColor: "bg-emerald-600",
+          hasSeparatorAfter: true,
+        });
+      }
     }
 
     if (cobranca.pagamento_manual) {

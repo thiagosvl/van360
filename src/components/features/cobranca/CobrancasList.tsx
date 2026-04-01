@@ -43,6 +43,7 @@ interface CobrancasListProps {
   onRegistrarPagamento: (cobranca: Cobranca) => void;
   onExcluirCobranca: (cobranca: Cobranca) => void;
   onDesfazerPagamento?: (cobranca: Cobranca) => void;
+  onVerRecibo: (url: string) => void;
   onActionSuccess: () => void;
 }
 
@@ -55,6 +56,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   onRegistrarPagamento,
   onExcluirCobranca,
   onDesfazerPagamento,
+  onVerRecibo,
   onActionSuccess,
 }: {
   cobranca: Cobranca;
@@ -82,6 +84,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!) : undefined,
     onEnviarCobranca,
     onActionSuccess,
   });
@@ -209,6 +212,7 @@ export function CobrancasList({
           onRegistrarPagamento={props.onRegistrarPagamento}
           onExcluirCobranca={props.onExcluirCobranca}
           onDesfazerPagamento={props.onDesfazerPagamento}
+          onVerRecibo={props.onVerRecibo}
           onActionSuccess={props.onActionSuccess}
         />
       )}
@@ -305,6 +309,7 @@ export function CobrancasList({
                       onActionSuccess={props.onActionSuccess}
                       onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
                       onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
+                      onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!) : undefined}
                     />
                   </TableCell>
                 </TableRow>
@@ -348,6 +353,7 @@ function ActionSheetWrapper({
     onRegistrarPagamento: () => props.onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => props.onExcluirCobranca(cobranca),
     onDesfazerPagamento: props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => props.onVerRecibo(cobranca.recibo_url!) : undefined,
     onActionSuccess: props.onActionSuccess,
   });
 
