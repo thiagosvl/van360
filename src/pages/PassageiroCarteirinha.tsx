@@ -344,24 +344,15 @@ export default function PassageiroCarteirinha() {
       return;
     }
 
-    openConfirmationDialog({
-      title: "Reenviar via WhatsApp?",
-      description: `O responsável do passageiro receberá o link para assinatura diretamente no WhatsApp.`,
-      confirmText: "Enviar",
-      variant: "default",
-      onConfirm: () => {
-        openBrowserLink(
-          buildContratoWhatsAppUrl({
-            telefoneResponsavel: telefone,
-            nomeResponsavel: passageiro.nome_responsavel,
-            nomePassageiro: passageiro.nome,
-            link: finalLink,
-          })
-        );
-        safeCloseDialog(closeConfirmationDialog);
-      },
-    });
-  }, [passageiro, isMobile, openConfirmationDialog, closeConfirmationDialog]);
+    openBrowserLink(
+      buildContratoWhatsAppUrl({
+        telefoneResponsavel: telefone,
+        nomeResponsavel: passageiro.nome_responsavel,
+        nomePassageiro: passageiro.nome,
+        link: finalLink,
+      })
+    );
+  }, [passageiro, isMobile]);
 
   const handleToggleLembretes = useCallback(
     async (cobranca: Cobranca) => {

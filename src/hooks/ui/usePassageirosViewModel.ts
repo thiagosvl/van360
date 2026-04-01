@@ -419,24 +419,15 @@ export function usePassageirosViewModel() {
       return;
     }
 
-    openConfirmationDialog({
-      title: "Reenviar via WhatsApp?",
-      description: `O responsável do passageiro receberá o link para assinatura diretamente no WhatsApp.`,
-      confirmText: "Enviar",
-      variant: "default",
-      onConfirm: () => {
-        const url = buildContratoWhatsAppUrl({
-          telefoneResponsavel: telefone,
-          nomeResponsavel: passageiro.nome_responsavel || "",
-          nomePassageiro: passageiro.nome || "",
-          link: finalLink,
-        });
-
-        openBrowserLink(url);
-        safeCloseDialog(closeConfirmationDialog);
-      },
+    const url = buildContratoWhatsAppUrl({
+      telefoneResponsavel: telefone,
+      nomeResponsavel: passageiro.nome_responsavel || "",
+      nomePassageiro: passageiro.nome || "",
+      link: finalLink,
     });
-  }, [isMobile, openConfirmationDialog, closeConfirmationDialog]);
+
+    openBrowserLink(url);
+  }, [isMobile, openBrowserLink]);
 
   const pullToRefreshReload = useCallback(async () => {
     await Promise.all([

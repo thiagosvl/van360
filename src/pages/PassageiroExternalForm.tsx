@@ -1,3 +1,4 @@
+import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { PassageiroFormResponsavel } from "@/components/features/passageiro/form
 import { PassageiroFormFinanceiro } from "@/components/features/passageiro/form/PassageiroFormFinanceiro";
 
 export default function PassageiroExternalForm() {
+  useAnalyticsInjector({ clarity: true, force: true });
   const {
     form,
     loading,
