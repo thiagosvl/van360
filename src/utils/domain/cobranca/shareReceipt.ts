@@ -1,5 +1,6 @@
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import { toast } from "sonner";
 
 export interface ShareReceiptData {
@@ -10,8 +11,24 @@ export interface ShareReceiptData {
 }
 
 /**
+ * Helper para converter Blob em Base64 (necessário para o Filesystem.writeFile)
+ */
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+/**
  * Utilitário padronizado para compartilhamento de recibos.
- * Resolve a inconsistência entre Browser e SPA Capacitor.
+ * Resolve a inconsistência entre Browser e App Nativo/Capacitor.
  */
 export async function shareReceiptFile(data: ShareReceiptData) {
   const { url, filename, title, text } = data;
@@ -22,47 +39,61 @@ export async function shareReceiptFile(data: ShareReceiptData) {
   }
 
   try {
-    // 1. Tentar baixar o arquivo e compartilhar pelo navegador (Funciona em Browsers e alguns WebViews de App)
-    // Esse método é o único que permite "ANEXAR" o arquivo real no WhatsApp.
+    // 1. Download do arquivo (Comum para todos os fluxos)
     const response = await fetch(url);
     if (!response.ok) throw new Error("Falha ao carregar arquivo do recibo");
     const blob = await response.blob();
-    const file = new File([blob], filename, { type: "image/png" });
 
+    // 2. Fluxo Nativo (Capacitor + Android/iOS)
+    // Para anexar de verdade no WhatsApp, precisamos salvar o arquivo fisicamente no cache do App
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const base64Data = await blobToBase64(blob);
+        
+        // Salva na pasta de cache temporário do app
+        const savedFile = await Filesystem.writeFile({
+          path: filename,
+          data: base64Data,
+          directory: Directory.Cache
+        });
+
+        await Share.share({
+          title,
+          text,
+          files: [savedFile.uri], // USANDO O URI DO ARQUIVO LOCAL!
+          dialogTitle: "Compartilhar Recibo",
+        });
+        return;
+      } catch (nativeError) {
+        console.error("[ShareReceipt] Erro no fluxo nativo (Filesystem), tentando fallback:", nativeError);
+        // Se falhar (ex: plugin não instalado ainda), cai para o fluxo básico abaixo
+      }
+    }
+
+    // 3. Fluxo Mobile Browser (File API)
+    // Esse método anexa o arquivo se o navegador suportar (ex: Chrome no Android)
+    const file = new File([blob], filename, { type: "image/png" });
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
         files: [file],
         title,
         text,
       });
-      return; // Se funcionou, paramos aqui
-    }
-
-    // 2. Se o navegador não suportar anexar arquivos (ex: Apps Capacitor Android sem permissão de WebView)
-    // Usamos o plugin nativo do Capacitor como plano B (enviando a URL/Texto)
-    if (Capacitor.isNativePlatform()) {
-      await Share.share({
-        title,
-        text: `${text}\n\n${url}`, // Incluímos a URL no texto para garantir que chegue algo
-        url,
-        dialogTitle: "Compartilhar Recibo",
-      });
       return;
     }
 
-    // 3. Fallback final para Desktop (onde não há share nativo com arquivos)
+    // 4. Fallback final para Desktop ou navegadores sem Share API
     window.open(url, "_blank");
 
   } catch (error) {
     console.error("[ShareReceipt] Erro técnico detalhado:", error);
     
-    // Se for um cancelamento do usuário, não mostramos erro
+    // Se for um cancelamento do usuário, ignoramos
     if ((error as any).name === "AbortError" || (error as any).message?.includes("Share canceled")) {
       return;
     }
 
-    // Mostra o erro real se for algo importante (como plugin faltando)
     const errorMessage = (error as Error).message || "Erro desconhecido";
-    toast.error(`Falha no compartilhamento: ${errorMessage === "Plugin not implemented" ? "App precisa ser atualizado (sync/build)" : errorMessage}`);
+    toast.error(`Falha no compartilhamento: ${errorMessage === "Plugin not implemented" ? "App precisa ser rebuildado (novo APK)" : errorMessage}`);
   }
 }
