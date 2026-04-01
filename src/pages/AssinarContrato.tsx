@@ -110,13 +110,13 @@ export default function AssinarContrato() {
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
       <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shadow-lg shrink-0 overflow-hidden">
         <div className="flex items-center gap-3">
-           <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
-             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
-           </div>
-           <div>
-             <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Visualizar Contrato</h3>
-             <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Documento Digital</p>
-           </div>
+          <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
+          </div>
+          <div>
+            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato</h3>
+            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinautura Digital</p>
+          </div>
         </div>
 
         <img
@@ -140,16 +140,16 @@ export default function AssinarContrato() {
             }
           >
             {Array.from(new Array(numPages), (_, index) => (
-              <div 
-                key={`page_${index + 1}`} 
+              <div
+                key={`page_${index + 1}`}
                 className="mb-8 last:mb-0 shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white border border-slate-200/50"
               >
-                  <Page
-                    pageNumber={index + 1}
-                    width={Math.min(window.innerWidth - 32, 850)}
-                    renderTextLayer={true}
-                    renderAnnotationLayer={true}
-                  />
+                <Page
+                  pageNumber={index + 1}
+                  width={Math.min(window.innerWidth - 32, 850)}
+                  renderTextLayer={true}
+                  renderAnnotationLayer={true}
+                />
               </div>
             ))}
           </Document>
@@ -161,7 +161,7 @@ export default function AssinarContrato() {
         <div className="flex items-center justify-between w-full pointer-events-auto gap-4">
           <Button
             onClick={() => openBrowserLink(contrato.minuta_url)}
-            className="bg-emerald-600/90 hover:bg-emerald-700 text-white h-11 sm:h-13 px-5 sm:px-8 rounded-full shadow-2xl flex items-center gap-2 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0"
+            className="bg-emerald-600/90 hover:bg-emerald-700 text-white h-11 sm:h-13 sm:py-8 px-5 sm:px-8 rounded-full shadow-2xl flex items-center gap-2 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0"
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">Baixar </span>PDF
@@ -171,7 +171,7 @@ export default function AssinarContrato() {
             onClick={() => setModalAberto(true)}
             disabled={contrato.status !== ContratoStatus.PENDENTE}
             className={cn(
-              "h-11 sm:h-13 px-8 sm:px-12 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0",
+              "h-11 sm:h-13 px-8 sm:px-12 sm:py-8 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0",
               contrato.status === ContratoStatus.PENDENTE
                 ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
