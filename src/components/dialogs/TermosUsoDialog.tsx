@@ -24,13 +24,11 @@ interface TermosUsoDialogProps {
 }
 
 export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
-  const currentDate = new Date().toLocaleDateString("pt-BR");
-
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange}>
-      <BaseDialog.Header 
-        title="Termos de Uso" 
-        subtitle={`Última atualização: ${currentDate}`}
+      <BaseDialog.Header
+        title="Termos de Uso"
+        subtitle="Última atualização: 01/04/2026"
         icon={<FileText className="w-5 h-5" />}
         onClose={() => onOpenChange(false)}
       />

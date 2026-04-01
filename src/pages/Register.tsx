@@ -2,6 +2,7 @@ import { NativeWelcomeScreen } from "@/components/features/register/NativeWelcom
 import { PostRegisterScreen } from "@/components/features/register/PostRegisterScreen";
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
 import { Button } from "@/components/ui/button";
+import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
 import { Wand2 } from "lucide-react";
@@ -11,6 +12,7 @@ export default function Register() {
     title: "Criar conta grátis | Van360 — Você dirige. A gente organiza.",
     description: "Crie sua conta e organize passageiros, mensalidades, contratos e recibos da sua van escolar. 15 dias grátis, sem cartão.",
   });
+  useAnalyticsInjector({ gtm: true });
 
   const {
     form,

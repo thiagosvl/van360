@@ -1,5 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Check, FileText, Lock, ShieldCheck } from "lucide-react";
+import { Check, FileText, Lock, ShieldCheck, BarChart2 } from "lucide-react";
 import React from "react";
 
 const SectionTitle = ({ icon: Icon, children }: { icon: any, children: React.ReactNode }) => (
@@ -26,9 +26,9 @@ interface PoliticaPrivacidadeDialogProps {
 export function PoliticaPrivacidadeDialog({ open, onOpenChange }: PoliticaPrivacidadeDialogProps) {
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange}>
-      <BaseDialog.Header 
-        title="Política de Privacidade" 
-        subtitle="Em conformidade com a LGPD"
+      <BaseDialog.Header
+        title="Política de Privacidade"
+        subtitle="Última atualização: 01/04/2026 · Em conformidade com a LGPD"
         icon={<ShieldCheck className="text-emerald-600 w-5 h-5" />}
         onClose={() => onOpenChange(false)}
       />
@@ -59,17 +59,27 @@ export function PoliticaPrivacidadeDialog({ open, onOpenChange }: PoliticaPrivac
           <ListItem>Não comercializamos dados com terceiros.</ListItem>
         </ul>
 
-        <SectionTitle icon={ShieldCheck}>3. Seus Direitos</SectionTitle>
+        <SectionTitle icon={BarChart2}>3. Cookies e Ferramentas de Análise</SectionTitle>
+        <p className="text-slate-500 leading-relaxed mb-3 text-[0.95rem]">
+          Utilizamos cookies de análise para entender como a plataforma é usada e melhorar continuamente a experiência dos usuários. Essas ferramentas coletam dados de navegação de forma agregada e anônima (páginas visitadas, cliques, tempo de sessão).
+        </p>
+        <ul className="space-y-2 mb-3 text-[0.95rem]">
+          <ListItem>Os cookies de análise só são ativados após seu consentimento expresso.</ListItem>
+          <ListItem>Você pode recusar ou revogar o consentimento a qualquer momento limpando os dados do navegador.</ListItem>
+          <ListItem>Não utilizamos cookies para fins publicitários ou de remarketing.</ListItem>
+        </ul>
+
+        <SectionTitle icon={ShieldCheck}>4. Seus Direitos</SectionTitle>
         <p className="text-slate-500 leading-relaxed text-[0.95rem]">
           Você tem total controle sobre seus dados conforme a LGPD. Pode solicitar a exportação, correção ou exclusão completa de sua conta a qualquer momento através do suporte oficial do <strong className="font-bold">Van360</strong>.
         </p>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-         <BaseDialog.Action 
-            label="Entendi"
-            onClick={() => onOpenChange(false)}
-            variant="primary"
-         />
+        <BaseDialog.Action
+          label="Entendi"
+          onClick={() => onOpenChange(false)}
+          variant="primary"
+        />
       </BaseDialog.Footer>
     </BaseDialog>
   );

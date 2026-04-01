@@ -1,3 +1,4 @@
+import { CookieConsentGlobal } from "@/components/features/CookieConsentGlobal";
 import { AppGate } from "@/components/auth/AppGate";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
@@ -181,6 +182,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner />
+        <CookieConsentGlobal />
         <AppErrorBoundary>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <BackButtonController />

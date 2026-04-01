@@ -45,6 +45,7 @@ import {
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaDialog";
+import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 
 // Internal Components
 
@@ -102,11 +103,11 @@ function LoginPlatformSuggestion() {
 }
 
 export default function Login() {
-  // Permitir indexação da página de login
   useSEO({
     title: "Entrar | Van360 — Você dirige. A gente organiza.",
     description: "Acesse sua conta Van360 e gerencie passageiros, mensalidades, contratos e recibos da sua van escolar.",
   });
+  useAnalyticsInjector({ gtm: true });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
