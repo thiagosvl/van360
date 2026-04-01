@@ -1,93 +1,81 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Van360 - Gestão Completa para Transporte Escolar</title>
-    <meta name="description" content="O Van360 é o sistema definitivo para motoristas de van escolar. Organize passageiros, automatize mensalidades, gere contratos e emita recibos, tudo pelo celular." />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://van360.com.br/" />
-    <meta property="og:title" content="Van360 - Gestão Completa para Transporte Escolar" />
-    <meta property="og:description" content="A ferramenta que transforma a gestão da sua van. 15 dias grátis para Testar!" />
-    <meta property="og:image" content="https://van360.com.br/assets/og-image.png" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Van360 — Você dirige. A gente organiza. | App para Van Escolar</title>
+  <meta name="description"
+    content="Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular. 15 dias grátis." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://van360.com.br" />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://van360.com.br/" />
-    <meta property="twitter:title" content="Van360 - Gestão Completa para Transporte Escolar" />
-    <meta property="twitter:description" content="A ferramenta que transforma a gestão da sua van. 15 dias grátis para Testar!" />
-    <meta property="twitter:image" content="https://van360.com.br/assets/og-image.png" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://van360.com.br" />
+  <meta property="og:title" content="Van360 — Você dirige. A gente organiza." />
+  <meta property="og:description"
+    content="Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular. 15 dias grátis." />
+  <!-- TODO: Criar og-image.png 1200x630 com logo + slogan -->
+  <meta property="og:image" content="https://van360.com.br/assets/og-image.png" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="Van360" />
 
-    <!-- Favicon padrão -->
-    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon/favicon-16x16.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon/favicon-32x32.png"
-    />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Van360 — Você dirige. A gente organiza." />
+  <meta name="twitter:description"
+    content="Organize passageiros, mensalidades, contratos e recibos da sua van escolar. 15 dias grátis." />
+  <meta name="twitter:image" content="https://van360.com.br/assets/og-image.png" />
 
-    <!-- Favicon para Apple (iOS) -->
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/favicon/apple-touch-icon.png"
-    />
+  <!-- Favicon padrão -->
+  <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
 
-    <!-- Ícones Android (PWA) -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="/favicon/android-chrome-192x192.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="512x512"
-      href="/favicon/android-chrome-512x512.png"
-    />
+  <!-- Favicon para Apple (iOS) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
 
-    <!-- Manifesto Web -->
-    <!-- <link rel="manifest" href="/favicon/site.webmanifest" />
+  <!-- Ícones Android (PWA) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon/android-chrome-512x512.png" />
+
+  <!-- Manifesto Web -->
+  <!-- <link rel="manifest" href="/favicon/site.webmanifest" />
     <meta name="theme-color" content="#0A66C2" /> -->
 
-    <!-- Microsoft Tiles -->
-    <meta name="msapplication-TileColor" content="#0A66C2" />
+  <!-- Microsoft Tiles -->
+  <meta name="msapplication-TileColor" content="#0A66C2" />
 
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-5VLZKJ66');</script>
-    <!-- End Google Tag Manager -->
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-5VLZKJ66');</script>
+  <!-- End Google Tag Manager -->
 
-    <!-- Microsoft Clarity -->
-    <script type="text/javascript">
-      (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "w4mjidk4lw");
-    </script>
-  </head>
+  <!-- Microsoft Clarity -->
+  <script type="text/javascript">
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+      t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", "w4mjidk4lw");
+  </script>
+</head>
 
-  <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5VLZKJ66"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5VLZKJ66" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
 
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

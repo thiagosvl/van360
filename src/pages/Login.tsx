@@ -104,8 +104,8 @@ function LoginPlatformSuggestion() {
 export default function Login() {
   // Permitir indexação da página de login
   useSEO({
-    title: "Login | Van360 - Gestão de Transporte Escolar",
-    description: "Acesse sua conta para gerenciar seu transporte escolar com total controle e organização.",
+    title: "Entrar | Van360 — Você dirige. A gente organiza.",
+    description: "Acesse sua conta Van360 e gerencie passageiros, mensalidades, contratos e recibos da sua van escolar.",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);

@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function Splash() {
   useSEO({
-    title: "Van360 - Gestão de Transporte Escolar",
-    description: "Organize seu transporte escolar com o Van360.",
+    title: "Van360 — Você dirige. A gente organiza.",
+    description: "Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular.",
   });
 
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export default function Splash() {
           className="w-[120px] h-[120px] object-contain drop-shadow-2xl mb-6 brightness-0 invert"
         />
         <p className="text-white/70 text-base font-medium max-w-[260px]">
-          A gestão completa para seu transporte escolar
+          Você dirige. A gente organiza.
         </p>
       </div>
 
