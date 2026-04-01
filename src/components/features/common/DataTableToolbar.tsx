@@ -152,7 +152,7 @@ export const DataTableToolbar = ({
                     </div>
  
                     {showFilterFooter && (
-                      <div className="px-8 pt-4 pb-4 md:pb-6 border-t border-gray-50 bg-white" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)' }}>
+                      <div className="px-8 pt-4 pb-4 md:pb-6 border-t border-gray-50 bg-white" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
                         <div className="flex items-center gap-4">
                           <Button
                             variant="ghost"

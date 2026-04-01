@@ -91,7 +91,10 @@ export function ActionsDropdown({
             </DrawerHeader>
           )}
           
-          <div className="flex-1 overflow-y-auto px-4 pb-10 mt-2">
+          <div 
+            className="flex-1 overflow-y-auto px-4 mt-2"
+            style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom))' }}
+          >
             <div className="flex flex-col gap-1">
               {visibleActions.map((action, idx) => (
                 <div key={`${action.label}-${idx}`}>
