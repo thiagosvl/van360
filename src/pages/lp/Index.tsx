@@ -176,6 +176,12 @@ const Index = () => {
           .hero-phone:hover {
             transform: perspective(800px) rotateY(-2deg);
           }
+          .feature-phone {
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+          }
+          .feature-phone:hover {
+            transform: translateY(-12px) scale(1.03);
+          }
         }
       `}</style>
 
@@ -398,7 +404,7 @@ const Index = () => {
                 O que o Van360 faz por você
               </h2>
               <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto">
-                Quatro funcionalidades que resolvem o dia a dia da sua van.
+                Funcionalidades que resolvem o dia a dia da sua van.
               </p>
             </div>
           </Reveal>
@@ -411,7 +417,7 @@ const Index = () => {
                     } items-center gap-8 md:gap-12`}
                 >
                   <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
-                    <div className="max-w-[240px] md:max-w-[300px] w-full">
+                    <div className="max-w-[240px] md:max-w-[300px] w-full feature-phone">
                       <img
                         src={feat.mockup}
                         alt={feat.alt}
@@ -487,7 +493,7 @@ const Index = () => {
           {/* Mockup dashboard */}
           <Reveal className="mt-8 flex justify-center">
             {/* Aumentado o max-w para acomodar o celular deitado/inclinado */}
-            <div className="max-w-[360px] md:max-w-[480px] w-full">
+            <div className="max-w-[360px] md:max-w-[480px] w-full hero-phone">
               <img
                 src="/assets/lp/mockup-dashboard.png"
                 alt="Dashboard do Van360 com primeiros passos"
