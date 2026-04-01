@@ -52,10 +52,15 @@ export async function shareReceiptFile(data: ShareReceiptData) {
       window.open(url, "_blank");
     }
   } catch (error) {
-    console.error("[ShareReceipt] Erro ao compartilhar:", error);
-    // Não abrimos dialog aqui, apenas avisamos o erro se for crítico
-    if ((error as any).name !== "AbortError") {
-      toast.error("Não foi possível compartilhar o recibo.");
+    console.error("[ShareReceipt] Erro técnico detalhado:", error);
+    
+    // Se for um cancelamento do usuário, não mostramos erro
+    if ((error as any).name === "AbortError" || (error as any).message?.includes("Share canceled")) {
+      return;
     }
+
+    // Mostra o erro real se for algo importante (como plugin faltando)
+    const errorMessage = (error as Error).message || "Erro desconhecido";
+    toast.error(`Falha no compartilhamento: ${errorMessage === "Plugin not implemented" ? "App precisa ser atualizado (sync/build)" : errorMessage}`);
   }
 }
