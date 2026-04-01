@@ -202,11 +202,10 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         hasSeparatorAfter: true,
       });
 
-      // Só mostra "Enviar" se for mobile (browser ou app)
       if (isMobilePlatform()) {
         actions.push({
-          label: "Enviar",
-          icon: <WhatsAppIcon className="h-4 w-4 text-emerald-600" />,
+          label: "Enviar Recibo",
+          icon: <WhatsAppIcon className="h-4 w-4" />,
           onClick: handleShareDirect,
           swipeColor: "bg-emerald-600",
           hasSeparatorAfter: true,
@@ -296,7 +295,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
 
     if (showHistory) {
       actions.push({
-        label: "Histórico de Alterações",
+        label: "Histórico",
         icon: <History className="h-4 w-4" />,
         onClick: () => handleShowHistory(cobranca),
         swipeColor: "bg-slate-600",

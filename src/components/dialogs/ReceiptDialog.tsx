@@ -20,7 +20,7 @@ export const ReceiptDialog = ({
 
   const handleDownload = useCallback(async () => {
     if (!receiptUrl) return;
-    
+
     try {
       const response = await fetch(receiptUrl);
       const blob = await response.blob();
@@ -66,13 +66,12 @@ export const ReceiptDialog = ({
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} className="max-w-xl">
-      <BaseDialog.Header 
-        title="Recibo" 
-        subtitle="Comprovante de Pagamento"
+      <BaseDialog.Header
+        title="Recibo"
         icon={<ReceiptText className="h-5 w-5" />}
         onClose={onClose}
       />
-      
+
       <BaseDialog.Body className="p-4 sm:p-6 bg-slate-50/30">
         <div className="relative w-full aspect-[4/5] bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center p-2">
           {isImageLoading && (
@@ -91,13 +90,6 @@ export const ReceiptDialog = ({
       </BaseDialog.Body>
 
       <BaseDialog.Footer className="gap-2 sm:gap-3">
-        <BaseDialog.Action
-          label="Fechar"
-          variant="outline"
-          onClick={onClose}
-          className="sm:flex-none sm:w-28 text-slate-500 order-first"
-        />
-
         {isMobile ? (
           <BaseDialog.Action
             label="Enviar"
