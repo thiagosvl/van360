@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { BASE_DOMAIN } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog,
@@ -402,7 +403,7 @@ export function usePassageirosViewModel() {
   const handleEnviarWhatsApp = useCallback((passageiro: Passageiro) => {
     // Para contratos pendentes, sempre usamos o link do portal de assinatura
     const token = passageiro.token_acesso || passageiro.id;
-    const finalLink = `${window.location.origin}/assinar/${token}`;
+    const finalLink = `${BASE_DOMAIN}/assinar/${token}`;
 
     if (!isMobile) {
       navigator.clipboard.writeText(finalLink);

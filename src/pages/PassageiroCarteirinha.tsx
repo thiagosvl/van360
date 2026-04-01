@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
+import { BASE_DOMAIN } from "@/constants";
 import { useNavigate, useParams } from "react-router-dom";
 
 
@@ -325,9 +326,8 @@ export default function PassageiroCarteirinha() {
   const handleEnviarWhatsApp = useCallback(() => {
     if (!passageiro) return;
 
-    // Para contratos pendentes, sempre usamos o link do portal de assinatura
     const token = passageiro.token_acesso || passageiro.id;
-    const finalLink = `${window.location.origin}/assinar/${token}`;
+    const finalLink = `${BASE_DOMAIN}/assinar/${token}`;
 
     if (!isMobile) {
       navigator.clipboard.writeText(finalLink);

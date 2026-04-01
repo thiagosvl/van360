@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { sessionManager } from "@/services/sessionManager";
 import { handleApiError } from "@/utils/errorHandler";
 import axios, { AxiosError, AxiosInstance } from "axios";
@@ -41,7 +42,7 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-    async (error) => {
+  async (error) => {
     const originalRequest = error.config;
     const responseData = error.response?.data;
     const errorCode = responseData?.code;
@@ -52,54 +53,54 @@ apiClient.interceptors.response.use(
     }
 
     // Identificação de Erros Fatais (Conta deletada, desativada ou perfil inexistente)
-    const isFatalAuthError = 
-        errorCode === "AUTH_PROFILE_NOT_FOUND" || 
-        errorCode === "AUTH_USER_NOT_FOUND" ||
-        errorCode === "AUTH_USER_INACTIVE" ||
-        (error.response.status === 404 && originalRequest.url.includes('/usuarios/resumo'));
+    const isFatalAuthError =
+      errorCode === "AUTH_PROFILE_NOT_FOUND" ||
+      errorCode === "AUTH_USER_NOT_FOUND" ||
+      errorCode === "AUTH_USER_INACTIVE" ||
+      (error.response.status === 404 && originalRequest.url.includes('/usuarios/resumo'));
 
     if (isFatalAuthError || (error.response.status === 401 && originalRequest._retry)) {
-        await sessionManager.signOut();
-        const message = handleApiError(error);
-        (error as AxiosError & { userMessage?: string }).userMessage = message;
-        
-        // Redireciona para o login caso não esteja nele
-        if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
-        }
-        
-        return Promise.reject(error);
+      await sessionManager.signOut();
+      const message = handleApiError(error);
+      (error as AxiosError & { userMessage?: string }).userMessage = message;
+
+      // Redireciona para o login caso não esteja nele
+      if (!window.location.pathname.includes(ROUTES.PUBLIC.LOGIN)) {
+        window.location.href = ROUTES.PUBLIC.LOGIN;
+      }
+
+      return Promise.reject(error);
     }
 
     // 401 Unauthorized - Fluxo de Refresh Automático
-    const isPublicAuthRoute = 
-        originalRequest.url.includes('/auth/recuperacao') || 
-        originalRequest.url.includes('/auth/login') ||
-        originalRequest.url.includes('/auth/registro');
+    const isPublicAuthRoute =
+      originalRequest.url.includes('/auth/recuperacao') ||
+      originalRequest.url.includes('/auth/login') ||
+      originalRequest.url.includes('/auth/registro');
 
     if (error.response.status === 401 && !originalRequest._retry && !isPublicAuthRoute) {
-        originalRequest._retry = true;
+      originalRequest._retry = true;
 
-        try {
-            const { success } = await sessionManager.refreshToken();
-            
-            if (success) {
-                const { data } = await sessionManager.getSession();
-                const newToken = data.session?.access_token;
+      try {
+        const { success } = await sessionManager.refreshToken();
 
-                if (newToken) {
-                    originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-                    return apiClient(originalRequest);
-                }
-            }
-            
-            // Se o refresh falhar ou não retornar token, forçamos o logout
-            await sessionManager.signOut();
-            window.location.href = '/login';
-        } catch (refreshErr) {
-            await sessionManager.signOut();
-            window.location.href = '/login';
+        if (success) {
+          const { data } = await sessionManager.getSession();
+          const newToken = data.session?.access_token;
+
+          if (newToken) {
+            originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+            return apiClient(originalRequest);
+          }
         }
+
+        // Se o refresh falhar ou não retornar token, forçamos o logout
+        await sessionManager.signOut();
+        window.location.href = ROUTES.PUBLIC.LOGIN;
+      } catch (refreshErr) {
+        await sessionManager.signOut();
+        window.location.href = ROUTES.PUBLIC.LOGIN;
+      }
     }
 
     const message = handleApiError(error);

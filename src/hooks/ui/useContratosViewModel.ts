@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { BASE_DOMAIN } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useContratos,
@@ -155,12 +156,12 @@ export function useContratosViewModel() {
   }, [navigate]);
 
   const handleCopiarLink = useCallback((token: string) => {
-    const url = `${window.location.origin}/assinar/${token}`;
+    const url = `${BASE_DOMAIN}/assinar/${token}`;
     navigator.clipboard.writeText(url);
   }, []);
 
   const handleVisualizarLink = useCallback((token: string) => {
-    openBrowserLink(`${window.location.origin}/assinar/${token}`);
+    openBrowserLink(`${BASE_DOMAIN}/assinar/${token}`);
   }, []);
 
   const handleVisualizarFinal = useCallback((url: string) => {
@@ -184,7 +185,7 @@ export function useContratosViewModel() {
   const handleEnviarWhatsApp = useCallback((item: any) => {
     // Para contratos pendentes, sempre usamos o link do portal de assinatura
     const token = item.token_acesso || item.id;
-    const finalLink = `${window.location.origin}/assinar/${token}`;
+    const finalLink = `${BASE_DOMAIN}/assinar/${token}`;
 
     if (!isMobile) {
       navigator.clipboard.writeText(finalLink);
@@ -203,22 +204,15 @@ export function useContratosViewModel() {
       return;
     }
 
-    openConfirmationDialog({
-      title: "Enviar via WhatsApp?",
-      description: "O responsável do passageiro receberá o link para assinatura diretamente no WhatsApp. Deseja continuar?",
-      confirmText: "Enviar",
-      variant: "default",
-      onConfirm: () => {
-        openBrowserLink(buildContratoWhatsAppUrl({
-          telefoneResponsavel: telefone,
-          nomeResponsavel: item.passageiro?.nome_responsavel || item.nome_responsavel || "",
-          nomePassageiro: item.passageiro?.nome || item.nome || "",
-          link: finalLink,
-        }));
-        safeCloseDialog(closeConfirmationDialog);
-      },
+    const url = buildContratoWhatsAppUrl({
+      telefoneResponsavel: telefone,
+      nomeResponsavel: item.passageiro?.nome_responsavel || item.nome_responsavel || "",
+      nomePassageiro: item.passageiro?.nome || item.nome || "",
+      link: finalLink,
     });
-  }, [isMobile, openConfirmationDialog, closeConfirmationDialog]);
+
+    openBrowserLink(url);
+  }, [isMobile, openBrowserLink]);
 
   const handleSubstituir = useCallback((id: string) => {
     openConfirmationDialog({
