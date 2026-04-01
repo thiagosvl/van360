@@ -20,8 +20,15 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
   });
   const vencimento = formatDateToBR(params.dataVencimento);
 
-  const mensagem =
-    `Oi ${primeiroNomeResp}! Passando para lembrar da mensalidade de ${primeiroNomePas} referente ao mês de ${mesNome}, no valor de ${valorFormatado}, com vencimento em ${vencimento}. Qualquer dúvida, estou à disposição!`;
+  const mensagem = [
+    `Oi ${primeiroNomeResp}! Passando para lembrar da mensalidade de *${primeiroNomePas}* 🚌`,
+    ``,
+    `📅 *Mês:* ${mesNome}`,
+    `💰 *Valor:* ${valorFormatado}`,
+    `📆 *Vencimento:* ${vencimento}`,
+    ``,
+    `Qualquer dúvida, estou à disposição! 😊`,
+  ].join("\n");
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
 }
