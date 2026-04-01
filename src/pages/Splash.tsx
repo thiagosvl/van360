@@ -20,7 +20,7 @@ export default function Splash() {
         <img
           src="/assets/logo-van360.png"
           alt="Van360"
-          className="w-[120px] h-[120px] object-contain drop-shadow-2xl mb-6"
+          className="w-[120px] h-[120px] object-contain drop-shadow-2xl mb-6 brightness-0 invert"
         />
         <p className="text-white/70 text-base font-medium max-w-[260px]">
           A gestão completa para seu transporte escolar

@@ -1,5 +1,4 @@
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { Button } from "@/components/ui/button";
 import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 import { getWhatsAppUrl } from "@/constants";
@@ -8,7 +7,10 @@ import { useSEO } from "@/hooks/useSEO";
 import {
   CheckCircle2,
   ChevronDown,
+  Headphones,
+  MessageCircle,
   Star,
+  Users,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -115,11 +117,38 @@ const Index = () => {
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
   const planFeatures = [
-    "Passageiros Ilimitados",
+    "Passageiros ilimitados",
     "Controle de mensalidades",
-    "Geração de contratos",
-    "Geração de recibos",
-    "Acesso web + app",
+    "Contratos digitais",
+    "Recibos automáticos",
+    "App Android + acesso web",
+  ];
+
+  const features = [
+    {
+      headline: "Todos os seus passageiros em um só lugar",
+      text: "Cadastre alunos e responsáveis — ou mande o link pro pai e ele cadastra o filho direto. Sem você precisar anotar nada.",
+      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Passageiros",
+      alt: "Tela de gestão de passageiros do Van360",
+    },
+    {
+      headline: "Quem pagou. Quem não pagou. Na hora.",
+      text: "Registre pagamentos e acompanhe o status de cada mensalidade. Dê baixa na hora — pix, dinheiro, transferência.",
+      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Mensalidades",
+      alt: "Tela de controle de mensalidades do Van360",
+    },
+    {
+      headline: "Contrato digital com validade jurídica",
+      text: "Gere contratos com todos os dados já preenchidos. Assinado digitalmente, com validade legal — protege você e o responsável.",
+      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Contrato",
+      alt: "Tela de contrato digital do Van360",
+    },
+    {
+      headline: "Recibo gerado na hora, a cada pagamento",
+      text: "Cada pagamento registrado gera um recibo automaticamente. Visualize e compartilhe quando o responsável pedir.",
+      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Recibo",
+      alt: "Tela de recibo do Van360",
+    },
   ];
 
   return (
@@ -127,8 +156,37 @@ const Index = () => {
       <style>{`
         .lp-reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
         .lp-visible { opacity: 1; transform: translateY(0); }
-        @keyframes lp-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-        .lp-pulse { animation: lp-pulse 1.5s infinite; }
+
+        .phone-frame {
+          background: #111;
+          border-radius: 24px;
+          padding: 8px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        .phone-frame img {
+          border-radius: 18px;
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+
+        @keyframes lp-countUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes lp-cta-glow {
+          0%, 100% { box-shadow: 0 2px 8px rgba(245,158,11,0.35); }
+          50% { box-shadow: 0 4px 20px rgba(245,158,11,0.5); }
+        }
+        .lp-cta-glow { animation: lp-cta-glow 2.5s ease-in-out infinite; }
+
+        @media (min-width: 768px) {
+          .hero-phone {
+            transform: perspective(800px) rotateY(-8deg);
+            transition: transform 0.4s ease;
+          }
+          .hero-phone:hover {
+            transform: perspective(800px) rotateY(-2deg);
+          }
+        }
       `}</style>
 
       {/* ══════════ NAVBAR ══════════ */}
@@ -159,54 +217,86 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Spacer para compensar navbar fixed */}
+      {/* Spacer navbar fixed */}
       <div className="h-14 md:h-16" />
 
       {/* ══════════ HERO ══════════ */}
       <section className="pt-12 md:pt-16 pb-14 md:pb-20 bg-gradient-to-b from-[#f0f4f8] to-white">
-        <div className="max-w-[720px] mx-auto px-5 text-center">
-          <h1 className="text-[clamp(1.75rem,5vw,2.75rem)] font-black leading-[1.15] text-[#1a3a5c] tracking-tight mb-4">
-            Chega de caderninho.
-            <br />
-            <em className="not-italic text-[#f59e0b] underline underline-offset-4 decoration-[#f59e0b]/30">
-              Organize suas vans
-            </em>{" "}
-            em um só lugar.
-          </h1>
-          <p className="text-[clamp(1.05rem,2.5vw,1.25rem)] text-slate-500 max-w-[560px] mx-auto mb-8">
-            O Van360 organiza seus passageiros, mensalidades, contratos e
-            recibos — tudo digital, tudo pelo celular.
-          </p>
+        <div className="max-w-[1120px] mx-auto px-5">
+          <div className="flex flex-col md:grid md:grid-cols-[60%_40%] items-center gap-10 md:gap-8">
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 max-w-[420px] mx-auto mb-8">
-            {[
-              ["5 min", "para cadastrar tudo"],
-              ["0", "cadernos e planilhas"],
-              ["100%", "digital e organizado"],
-            ].map(([num, label]) => (
-              <div key={label} className="text-center">
-                <div className="text-2xl font-black text-[#1a3a5c] leading-none">
-                  {num}
-                </div>
-                <div className="text-[0.8rem] text-slate-400 mt-1 leading-tight">
-                  {label}
+            {/* Texto */}
+            <div className="text-center md:text-left order-1">
+              <h1 className="text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] text-[#1a3a5c] tracking-tight mb-4">
+                Chega de caderninho.
+                <br />
+                <em className="not-italic text-[#f59e0b] underline underline-offset-4 decoration-[#f59e0b]/30">
+                  Sua van organizada
+                </em>{" "}
+                no celular.
+              </h1>
+              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-6 leading-relaxed">
+                Passageiros, mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
+              </p>
+
+              {/* Mockup — SÓ MOBILE */}
+              <div className="flex justify-center md:hidden my-6">
+                <div className="phone-frame max-w-[180px] w-full">
+                  <img
+                    src="https://placehold.co/300x600/1a3a5c/f59e0b?text=Mensalidades"
+                    alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
+                    loading="eager"
+                  />
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* CTA + preço */}
-          <div className="flex flex-col items-center gap-3">
-            <Link
-              to={CTA}
-              className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all"
-            >
-              Começar grátis — 15 dias sem cartão
-            </Link>
-            <p className="text-[0.85rem] text-slate-400">
-              Depois, a partir de <strong className="text-[#1a3a5c]">R$20,75/mês</strong>
-            </p>
+              {/* CTA */}
+              <div className="flex flex-col items-center md:items-start gap-3">
+                <Link
+                  to={CTA}
+                  className="lp-cta-glow inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all min-h-[44px]"
+                >
+                  Começar grátis — 15 dias sem cartão
+                </Link>
+                <p className="text-[0.82rem] text-slate-400">
+                  Depois, a partir de{" "}
+                  <strong className="text-[#1a3a5c]">R$20,75/mês</strong>
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
+                {[
+                  { num: "4 em 1", label: "passageiros, mensalidades, contratos e recibos" },
+                  { num: "5 min", label: "pra cadastrar tudo" },
+                  { num: "100%", label: "digital e organizado" },
+                ].map((s) => (
+                  <div key={s.label} className="text-center md:text-left">
+                    <div
+                      className="text-2xl font-black text-[#1a3a5c] leading-none"
+                      style={{ animation: "lp-countUp .6s ease both" }}
+                    >
+                      {s.num}
+                    </div>
+                    <div className="text-[0.75rem] text-slate-400 mt-1 leading-tight">
+                      {s.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Mockup — SÓ DESKTOP */}
+            <div className="order-2 hidden md:flex justify-end">
+              <div className="phone-frame max-w-[280px] w-full hero-phone">
+                <img
+                  src="https://placehold.co/300x600/1a3a5c/f59e0b?text=Mensalidades"
+                  alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
+                  loading="eager"
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -216,10 +306,10 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Você se identifica com alguma dessas?
+              Você conhece essa rotina?
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
-              Se pelo menos uma bateu, o Van360 foi feito para você.
+              Se pelo menos uma bateu, o Van360 resolve.
             </p>
           </Reveal>
 
@@ -230,10 +320,18 @@ const Index = () => {
                 text: (
                   <>
                     Controla tudo no{" "}
-                    <strong className="text-[#1a3a5c]">
-                      caderninho ou planilha
-                    </strong>{" "}
-                    e no fim do mês não sabe ao certo quanto entrou.
+                    <strong className="text-[#1a3a5c]">caderninho ou planilha</strong>{" "}
+                    e no fim do mês não sabe quanto entrou.
+                  </>
+                ),
+              },
+              {
+                icon: "⏰",
+                text: (
+                  <>
+                    Perde{" "}
+                    <strong className="text-[#1a3a5c]">horas cadastrando passageiro por passageiro</strong>{" "}
+                    — nome, endereço, escola, responsável — tudo na mão.
                   </>
                 ),
               },
@@ -241,10 +339,8 @@ const Index = () => {
                 icon: "😬",
                 text: (
                   <>
-                    Perde tempo{" "}
-                    <strong className="text-[#1a3a5c]">
-                      conferindo um por um
-                    </strong>{" "}
+                    Confere{" "}
+                    <strong className="text-[#1a3a5c]">um por um</strong>{" "}
                     quem pagou e quem não pagou — e ainda erra.
                   </>
                 ),
@@ -254,10 +350,8 @@ const Index = () => {
                 text: (
                   <>
                     Já teve{" "}
-                    <strong className="text-[#1a3a5c]">
-                      problema com responsável
-                    </strong>{" "}
-                    porque o combinado era só verbal e cada um lembrou diferente.
+                    <strong className="text-[#1a3a5c]">problema com responsável</strong>{" "}
+                    porque o combinado era de boca e cada um lembrou diferente.
                   </>
                 ),
               },
@@ -266,9 +360,8 @@ const Index = () => {
                 text: (
                   <>
                     Perde{" "}
-                    <strong className="text-[#1a3a5c]">horas por mês</strong> no
-                    WhatsApp tirando dúvida, anotando dados e conferindo
-                    pagamento.
+                    <strong className="text-[#1a3a5c]">horas no WhatsApp</strong>{" "}
+                    tirando dúvida, anotando dados e conferindo pagamento.
                   </>
                 ),
               },
@@ -277,22 +370,18 @@ const Index = () => {
                 text: (
                   <>
                     Responsável pede{" "}
-                    <strong className="text-[#1a3a5c]">
-                      recibo ou contrato
-                    </strong>{" "}
-                    e você não tem nada pronto — improvisa na hora.
+                    <strong className="text-[#1a3a5c]">recibo ou contrato</strong>{" "}
+                    e você não tem nada pronto.
                   </>
                 ),
               },
               {
-                icon: "🤷",
+                icon: "💼",
                 text: (
                   <>
-                    Sente que trabalha muito mas{" "}
-                    <strong className="text-[#1a3a5c]">
-                      ninguém leva a sério
-                    </strong>{" "}
-                    como se fosse um profissional de verdade.
+                    Trabalha muito mas{" "}
+                    <strong className="text-[#1a3a5c]">ninguém leva a sério</strong>{" "}
+                    como profissional.
                   </>
                 ),
               },
@@ -310,103 +399,47 @@ const Index = () => {
 
       {/* ══════════ FUNCIONALIDADES ══════════ */}
       <section className="py-14 md:py-20">
-        <div className="max-w-[1120px] mx-auto px-5 text-center">
+        <div className="max-w-[1120px] mx-auto px-5">
           <Reveal>
-            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Tudo o que você precisa, nada que você não precisa
-            </h2>
-            <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
-              Quatro funcionalidades que resolvem o dia a dia da sua van.
-            </p>
+            <div className="text-center mb-12">
+              <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
+                O que o Van360 faz por você
+              </h2>
+              <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto">
+                Quatro funcionalidades que resolvem o dia a dia da sua van.
+              </p>
+            </div>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Feature 1 — Gestão de Passageiros */}
-            <Reveal>
-              <div className="bg-white rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,.08)] hover:-translate-y-1 transition-transform h-full">
-                <img
-                  src="https://placehold.co/600x400/1a1a2e/ffffff?text=Mock+Gestao+Passageiros"
-                  alt="Tela de gestão de passageiros do Van360"
-                  className="w-full h-auto rounded-t-lg"
-                  loading="lazy"
-                />
-                <div className="p-6 text-left">
-                  <h3 className="text-[1.1rem] font-bold text-[#1a3a5c] mb-2">
-                    Todos os seus passageiros organizados
-                  </h3>
-                  <p className="text-[0.9rem] text-slate-500 leading-relaxed">
-                    Cadastre alunos, responsáveis e informações de cada
-                    passageiro. Consulte tudo em segundos, direto pelo celular.
-                  </p>
+          <div className="flex flex-col gap-16">
+            {features.map((feat, i) => (
+              <Reveal key={feat.headline}>
+                <div
+                  className={`flex flex-col ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                    } items-center gap-8 md:gap-12`}
+                >
+                  <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
+                    <div className="phone-frame max-w-[200px] md:max-w-[260px] w-full">
+                      <img
+                        src={feat.mockup}
+                        alt={feat.alt}
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-center md:text-left max-w-[460px] md:max-w-none">
+                    <h3 className="text-[1.3rem] md:text-[1.5rem] font-extrabold text-[#1a3a5c] mb-3 leading-tight">
+                      {feat.headline}
+                    </h3>
+                    <p className="text-[1rem] text-slate-500 leading-relaxed">
+                      {feat.text}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Reveal>
-
-            {/* Feature 2 — Controle de Mensalidades */}
-            <Reveal>
-              <div className="bg-white rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,.08)] hover:-translate-y-1 transition-transform h-full">
-                <img
-                  src="https://placehold.co/600x400/1a1a2e/ffffff?text=Mock+Controle+Mensalidades"
-                  alt="Tela de controle de mensalidades do Van360"
-                  className="w-full h-auto rounded-t-lg"
-                  loading="lazy"
-                />
-                <div className="p-6 text-left">
-                  <h3 className="text-[1.1rem] font-bold text-[#1a3a5c] mb-2">
-                    Saiba quem pagou e quem não pagou
-                  </h3>
-                  <p className="text-[0.9rem] text-slate-500 leading-relaxed">
-                    Registre pagamentos, acompanhe status de cada mensalidade e
-                    dê baixa na hora. Sem caderninho. Sem planilha.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Feature 3 — Geração de Contratos */}
-            <Reveal>
-              <div className="bg-white rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,.08)] hover:-translate-y-1 transition-transform h-full">
-                <img
-                  src="https://placehold.co/600x400/1a1a2e/ffffff?text=Mock+Geracao+Contrato"
-                  alt="Tela de geração de contrato do Van360"
-                  className="w-full h-auto rounded-t-lg"
-                  loading="lazy"
-                />
-                <div className="p-6 text-left">
-                  <h3 className="text-[1.1rem] font-bold text-[#1a3a5c] mb-2">
-                    Contrato digital pronto em minutos
-                  </h3>
-                  <p className="text-[0.9rem] text-slate-500 leading-relaxed">
-                    Gere contratos entre você e o responsável do aluno, com todos
-                    os dados preenchidos. Digital, profissional e sem burocracia.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Feature 4 — Geração de Recibos */}
-            <Reveal>
-              <div className="bg-white rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,.08)] hover:-translate-y-1 transition-transform h-full">
-                <img
-                  src="https://placehold.co/600x400/1a1a2e/ffffff?text=Mock+Geracao+Recibo"
-                  alt="Tela de geração de recibo do Van360"
-                  className="w-full h-auto rounded-t-lg"
-                  loading="lazy"
-                />
-                <div className="p-6 text-left">
-                  <h3 className="text-[1.1rem] font-bold text-[#1a3a5c] mb-2">
-                    Recibo gerado na hora, a cada pagamento
-                  </h3>
-                  <p className="text-[0.9rem] text-slate-500 leading-relaxed">
-                    Cada pagamento registrado gera um recibo automaticamente.
-                    Visualize e compartilhe quando precisar.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
+              </Reveal>
+            ))}
           </div>
 
-          {/* CTA após features */}
           <InlineCta to={CTA} />
         </div>
       </section>
@@ -419,10 +452,10 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Como funciona
+              Comece em 5 minutos
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
-              Três passos. Rápido e prático.
+              Três passos. Sem burocracia.
             </p>
           </Reveal>
 
@@ -430,18 +463,18 @@ const Index = () => {
             {[
               {
                 n: "1",
-                title: "Cadastre seus passageiros",
-                desc: "Para ser prático, você pode enviar o link da sua van para o pai cadastrar o filho.",
+                title: "Crie sua conta grátis",
+                desc: "Sem cartão, sem compromisso. Em 2 minutos você já está dentro.",
               },
               {
                 n: "2",
-                title: "Registre os pagamentos",
-                desc: "Dê baixa nas mensalidades conforme recebe. Pix, dinheiro, transferência — tudo num só sem.",
+                title: "Cadastre seus passageiros sem esforço",
+                desc: "Mande um link pro pai pelo WhatsApp. Ele preenche os dados do filho e pronto — aparece na sua lista.",
               },
               {
                 n: "3",
-                title: "Contratos e recibos prontos",
-                desc: "O sistema gera contratos e recibos automaticamente.",
+                title: "Pronto. Tudo organizado.",
+                desc: "Mensalidades, contratos e recibos — no seu celular.",
               },
             ].map((step) => (
               <Reveal key={step.n}>
@@ -458,24 +491,40 @@ const Index = () => {
             ))}
           </div>
 
-          {/* CTA após como funciona */}
+          {/* Mockup dashboard */}
+          <Reveal className="mt-10 flex justify-center">
+            <div className="phone-frame max-w-[220px] md:max-w-[280px] w-full">
+              <img
+                src="https://placehold.co/360x640/1a3a5c/ffffff?text=Dashboard"
+                alt="Dashboard do Van360 com primeiros passos"
+                loading="lazy"
+              />
+            </div>
+          </Reveal>
+
           <InlineCta to={CTA} />
         </div>
       </section>
+
+      {/* ══════════ FAIXA MULTI-DISPOSITIVO ══════════ */}
+      <div className="bg-[#1a3a5c] text-white py-4 text-center">
+        <p className="text-sm md:text-base font-medium opacity-90">
+          📱 Celular · 💻 Computador · 📲 Tablet — funciona no navegador, sem baixar nada.
+        </p>
+      </div>
 
       {/* ══════════ PREÇOS ══════════ */}
       <section id="pricing" className="py-14 md:py-20 scroll-mt-20">
         <div className="max-w-[480px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Quanto custa organizar sua van?
+              Comece grátis. Pague só se gostar.
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
-              Bem menos que uma mensalidade de um passageiro.
+              15 dias pra testar com seus dados reais. Sem cartão.
             </p>
           </Reveal>
 
-          {/* Card único — Oferta Fundador */}
           <Reveal>
             <div className="relative bg-white rounded-2xl p-8 border-2 border-[#f59e0b] shadow-[0_8px_40px_rgba(245,158,11,.15)] text-center">
               <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#f59e0b] text-[#1a1a1a] text-xs font-extrabold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap inline-flex items-center gap-1">
@@ -484,17 +533,17 @@ const Index = () => {
               </span>
 
               <p className="text-xs text-[#f59e0b] font-bold mt-2 mb-6">
-                Vagas limitadas — para os primeiros motoristas
+                Para os primeiros motoristas
               </p>
 
-              {/* Preço grátis + depois */}
               <div className="mb-2">
                 <div className="text-[2.8rem] font-black text-[#1a3a5c] leading-none">
                   15 dias grátis
                 </div>
                 <p className="text-[0.9rem] text-slate-400 mt-5">
-                  Depois, apenas{" "}
-                  <span className="text-[0.75rem] line-through">R$39,90</span>
+                  De{" "}
+                  <span className="line-through">R$39,90</span>
+                  {" "}por
                 </p>
                 <div className="mt-0">
                   <span className="text-[1.5rem] font-black text-[#f59e0b]">
@@ -515,21 +564,119 @@ const Index = () => {
                   </li>
                 ))}
                 <li className="flex items-start gap-2 text-[0.92rem] font-semibold text-[#1a3a5c]">
-                  <Check /> Preço garantido para sempre
+                  <Check /> Preço de fundador garantido para sempre
                 </li>
               </ul>
 
               <Link
                 to={CTA}
-                className="block w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all text-base"
+                className="block w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all text-base min-h-[44px] flex items-center justify-center"
               >
                 Começar grátis — 15 dias sem cartão
               </Link>
 
               <p className="text-[0.8rem] text-slate-400 mt-3">
-                Sem cartão de crédito · Cancele quando quiser
+                Sem cartão · Cancele quando quiser
               </p>
             </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ══════════ PROVA SOCIAL ══════════ */}
+      {/* TODO: Substituir por depoimentos reais quando disponíveis */}
+      <section className="py-14 md:py-20 bg-white">
+        <div className="max-w-[1120px] mx-auto px-5 text-center">
+          <Reveal>
+            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-10">
+              Feito por quem conhece a rotina da van
+            </h2>
+          </Reveal>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-[900px] mx-auto">
+            {[
+              {
+                icon: <Users className="w-7 h-7 text-[#f59e0b]" />,
+                text: "Testado por motoristas reais antes do lançamento.",
+              },
+              {
+                icon: <Headphones className="w-7 h-7 text-[#f59e0b]" />,
+                text: "Desenvolvido ouvindo quem vive o transporte escolar todo dia.",
+              },
+              {
+                icon: <MessageCircle className="w-7 h-7 text-[#f59e0b]" />,
+                text: "Suporte direto pelo WhatsApp — fala com gente, não com robô.",
+              },
+            ].map((card, i) => (
+              <Reveal key={i}>
+                <div className="bg-white rounded-xl p-7 shadow-[0_2px_16px_rgba(0,0,0,.07)] flex flex-col items-center gap-4 text-center h-full">
+                  <div className="w-14 h-14 rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0">
+                    {card.icon}
+                  </div>
+                  <p className="text-[0.97rem] text-slate-600 leading-relaxed">
+                    {card.text}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════ EM BREVE ══════════ */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="max-w-[700px] mx-auto px-5 text-center">
+          <Reveal>
+            <p className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest mb-3">
+              Em breve
+            </p>
+            <h2 className="text-[clamp(1.3rem,3vw,1.75rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-8">
+              E tem mais vindo por aí
+            </h2>
+          </Reveal>
+
+          <div className="grid gap-6 text-left max-w-[540px] mx-auto">
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">💸</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Cobrança automática por Pix</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    O responsável recebe, paga e o sistema dá baixa sozinho. Você não precisa cobrar ninguém.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">🗺️</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Rotas e itinerários</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    Monte suas rotas, organize os pontos de embarque e otimize seu trajeto diário.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">👨‍👩‍👦</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">App para os pais</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    O responsável acompanha tudo pelo celular — pagamentos, contrato, dados do filho. Menos WhatsApp pra você.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+
+          <Reveal>
+            <p className="text-[0.85rem] text-slate-400 mt-6">
+              Quem entra agora como fundador terá acesso primeiro.
+            </p>
           </Reveal>
         </div>
       </section>
@@ -557,20 +704,20 @@ const Index = () => {
               a="Não. Os 15 dias de teste são 100% grátis, sem cadastrar cartão, sem compromisso. Você usa tudo, com seus dados reais, e só decide depois."
             />
             <FaqItem
-              q="Funciona no celular?"
-              a="Sim, temos app Android e versão web que funciona em qualquer navegador. Você pode acessar de onde preferir, a qualquer hora."
-            />
-            <FaqItem
-              q="E no iPhone?"
-              a="A versão web funciona perfeitamente no iPhone pelo navegador. O app nativo para iOS está em desenvolvimento."
+              q="Onde posso usar o Van360?"
+              a="Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O app para iPhone está em desenvolvimento, mas a versão web funciona perfeitamente no Safari."
             />
             <FaqItem
               q="O que é o preço de fundador?"
               a="É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$20,75/mês para sempre, mesmo quando o preço subir."
             />
             <FaqItem
-              q="Posso usar pelo computador?"
-              a="Sim, o Van360 funciona no browser de qualquer computador. Mas recomendamos o app Android para a melhor experiência no dia a dia."
+              q="O contrato gerado tem validade jurídica?"
+              a="Sim. Os contratos são digitais e assinados eletronicamente, com validade legal conforme a legislação brasileira. Servem como documento formal entre você e o responsável do aluno."
+            />
+            <FaqItem
+              q="O app é pesado? Preciso baixar?"
+              a="Não precisa baixar nada pra começar. O Van360 funciona direto pelo navegador — no celular, tablet ou computador. Se preferir, tem o app Android que é leve e rápido. Você escolhe como quer usar."
             />
             <FaqItem
               q="Quanto vou pagar depois dos 15 dias?"
@@ -585,7 +732,7 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.5rem,4vw,2.25rem)] font-black leading-tight mb-3">
-              Comece a organizar suas vans hoje
+              Sua van merece uma gestão profissional.
             </h2>
           </Reveal>
           <Reveal>
@@ -596,12 +743,12 @@ const Index = () => {
           <Reveal>
             <Link
               to={CTA}
-              className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg transition-colors"
+              className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all min-h-[44px]"
             >
               Começar grátis — 15 dias sem cartão
             </Link>
             <p className="text-[0.85rem] opacity-60 mt-4">
-              Depois, a partir de R$20,75/mês · Preço de fundador garantido para sempre
+              Depois, a partir de R$20,75/mês · Preço de fundador
             </p>
           </Reveal>
         </div>
@@ -610,9 +757,11 @@ const Index = () => {
       {/* ══════════ FOOTER ══════════ */}
       <footer className="bg-[#111] text-white/50 py-8 text-[0.85rem] text-center">
         <div className="max-w-[1120px] mx-auto px-5 flex flex-col items-center gap-3">
-          <span className="font-extrabold text-white text-lg">
-            Van<span className="text-[#f59e0b]">360</span>
-          </span>
+          <img
+            src="/assets/logo-van360.png"
+            alt="Van360"
+            className="h-8 w-auto brightness-0 invert select-none"
+          />
           <div className="flex gap-6">
             <button
               onClick={() => setPrivacidadeOpen(true)}
