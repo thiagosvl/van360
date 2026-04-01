@@ -12,12 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
-import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
 import { ContratoStatus, ContratoTab } from "@/types/enums";
-import { formatFirstName, formatRelativeTime, formatShortName } from "@/utils/formatters";
+import { formatFirstName, formatShortName } from "@/utils/formatters";
 import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
@@ -32,7 +30,7 @@ interface ContratosListProps {
   // Ações
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onReenviarNotificacao: (id: string) => void;
+  onEnviarWhatsApp: (item: any) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
@@ -47,7 +45,7 @@ interface ContratoMobileCardProps {
   isDesativado?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onReenviarNotificacao: (id: string) => void;
+  onEnviarWhatsApp: (item: any) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
@@ -61,7 +59,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   isDesativado,
   onVerPassageiro,
   onCopiarLink,
-  onReenviarNotificacao,
+  onEnviarWhatsApp,
   onExcluir,
   onSubstituir,
   onGerarContrato,
@@ -75,7 +73,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     isDesativado,
     onVerPassageiro,
     onCopiarLink,
-    onReenviarNotificacao,
+    onEnviarWhatsApp: () => onEnviarWhatsApp(item),
     onExcluir,
     onSubstituir,
     onGerarContrato,
@@ -145,22 +143,6 @@ export const ContratosList = memo(function ContratosList({
   isDesativado,
   ...actions
 }: ContratosListProps) {
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-
-  const handleReenviarNotificacao = (id: string) => {
-    openConfirmationDialog({
-      title: "Reenviar Contrato?",
-      description:
-        "O responsável do passageiro receberá o link para assinatura no WhatsApp. Deseja continuar?",
-      confirmText: "Reenviar",
-      variant: "default",
-      onConfirm: () => {
-        actions.onReenviarNotificacao(id);
-        safeCloseDialog(closeConfirmationDialog);
-      },
-    });
-  };
-
   const getEmptyState = () => {
     if (busca) {
       return (
@@ -219,7 +201,6 @@ export const ContratosList = memo(function ContratosList({
           activeTab={activeTab}
           isDesativado={isDesativado}
           {...actions}
-          onReenviarNotificacao={handleReenviarNotificacao}
         />
       )}
     >
@@ -285,7 +266,7 @@ export const ContratosList = memo(function ContratosList({
                         status={item.status}
                         isDesativado={isDesativado}
                         {...actions}
-                        onReenviarNotificacao={handleReenviarNotificacao}
+                        onEnviarWhatsApp={() => actions.onEnviarWhatsApp(item)}
                       />
                     </div>
                   </TableCell>

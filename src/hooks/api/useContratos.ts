@@ -104,22 +104,6 @@ export function useSubstituirContrato() {
   });
 }
 
-export function useReenviarContrato() {
-  return useMutation({
-    mutationFn: async (contratoId: string) => {
-      return await contratoApi.reenviarContrato(contratoId);
-    },
-    onSuccess: () => {
-      toast.success("contrato.sucesso.reenviado");
-    },
-    onError: (error: any) => {
-      const message =
-        error.response?.data?.error || getMessage("contrato.erro.reenviar");
-      toast.error(message);
-    },
-  });
-}
-
 export function usePreviewContrato() {
   return useMutation({
     mutationFn: async (draftConfig?: any) => {

@@ -6,11 +6,12 @@ import {
   Eye,
   FileText,
   RefreshCcw,
-  Send,
   Trash2,
   User
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMemo } from "react";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 
 interface UseContratoActionsProps {
   item: any;
@@ -20,7 +21,7 @@ interface UseContratoActionsProps {
   usarContratos?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
-  onReenviarNotificacao?: (id: string) => void;
+  onEnviarWhatsApp?: () => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
@@ -36,13 +37,15 @@ export function useContratoActions({
   usarContratos = true,
   onVerPassageiro,
   onCopiarLink,
-  onReenviarNotificacao,
+  onEnviarWhatsApp,
   onExcluir,
   onSubstituir,
   onGerarContrato,
   onVisualizarLink,
   onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
+  const isMobile = useIsMobile();
+
   return useMemo(() => {
     const status = (rawStatus || item?.status_contrato || item?.contrato_status || item?.status)?.toString().toLowerCase();
 
@@ -93,13 +96,14 @@ export function useContratoActions({
       });
     }
 
-    if (isPendente) {
+    // Só permite reenvio via WhatsApp em dispositivos móveis
+    if (isPendente && isMobile) {
       list.push({
         label: 'Reenviar Contrato',
-        icon: <Send className="h-4 w-4" />,
-        onClick: () => onReenviarNotificacao?.(item.id),
-        disabled: !onReenviarNotificacao || isFeatureDisabled,
-        swipeColor: 'bg-blue-600',
+        icon: <WhatsAppIcon className="h-4 w-4" />,
+        onClick: () => onEnviarWhatsApp?.(),
+        disabled: !onEnviarWhatsApp || isFeatureDisabled,
+        swipeColor: 'bg-green-600',
         hasSeparatorAfter: true
       });
     }
@@ -136,5 +140,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarFinal]);
+  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onEnviarWhatsApp, onExcluir, onSubstituir, onGerarContrato, onVisualizarFinal, isMobile]);
 }

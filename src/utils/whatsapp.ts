@@ -32,3 +32,28 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
 }
+
+interface ContratoWhatsAppParams {
+  telefoneResponsavel: string;
+  nomeResponsavel: string;
+  nomePassageiro: string;
+  tokenLink: string;
+}
+
+export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string {
+  const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
+  const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
+  const primeiroNomePas = formatFirstName(params.nomePassageiro);
+  const link = `${window.location.origin}/assinar/${params.tokenLink}`;
+
+  const mensagem = [
+    `Oi ${primeiroNomeResp}! Sou o motorista da van de *${primeiroNomePas}* 🚌`,
+    ``,
+    `Segue o link para visualização e assinatura do contrato digital:`,
+    `${link}`,
+    ``,
+    `Qualquer dúvida, estou à disposição! 😊`,
+  ].join("\n");
+
+  return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+}

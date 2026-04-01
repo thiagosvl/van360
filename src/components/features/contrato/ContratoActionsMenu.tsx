@@ -10,7 +10,7 @@ interface ContratoActionsMenuProps {
   usarContratos?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
-  onReenviarNotificacao?: (id: string) => void;
+  onEnviarWhatsApp?: () => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;

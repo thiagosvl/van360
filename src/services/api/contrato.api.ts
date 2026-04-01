@@ -27,11 +27,6 @@ export const contratoApi = {
     return data;
   },
 
-  reenviarContrato: async (contratoId: string) => {
-    const { data } = await apiClient.post(`/contratos/${contratoId}/reenviar`);
-    return data;
-  },
-
   previewContrato: async (draftConfig?: any) => {
     const { data } = await apiClient.post('/contratos/preview', draftConfig || {}, {
       responseType: 'blob',

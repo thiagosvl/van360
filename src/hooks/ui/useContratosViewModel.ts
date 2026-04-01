@@ -6,13 +6,13 @@ import {
   useCreateContrato,
   useDeleteContrato,
   usePreviewContrato,
-  useReenviarContrato,
   useSubstituirContrato,
 } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
+import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -80,7 +80,6 @@ export function useContratosViewModel() {
   );
 
   const deleteMutation = useDeleteContrato();
-  const reenviarMutation = useReenviarContrato();
   const substituirMutation = useSubstituirContrato();
   const createMutation = useCreateContrato();
   const previewMutation = usePreviewContrato();
@@ -180,6 +179,30 @@ export function useContratosViewModel() {
     });
   }, [openConfirmationDialog, deleteMutation, closeConfirmationDialog]);
 
+  const handleEnviarWhatsApp = useCallback((item: any) => {
+    const telefone = item.passageiro?.telefone_responsavel || item.telefone_responsavel;
+    if (!telefone) {
+      toast.error("Telefone do responsável não informado.");
+      return;
+    }
+
+    openConfirmationDialog({
+      title: "Enviar via WhatsApp?",
+      description: "O responsável do passageiro receberá o link para assinatura diretamente no WhatsApp. Deseja continuar?",
+      confirmText: "Enviar",
+      variant: "default",
+      onConfirm: () => {
+        openBrowserLink(buildContratoWhatsAppUrl({
+          telefoneResponsavel: telefone,
+          nomeResponsavel: item.passageiro?.nome_responsavel || item.nome_responsavel || "",
+          nomePassageiro: item.passageiro?.nome || item.nome || "",
+          tokenLink: item.token_acesso,
+        }));
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  }, [openConfirmationDialog, closeConfirmationDialog]);
+
   const handleSubstituir = useCallback((id: string) => {
     openConfirmationDialog({
       title: "Substituir Contrato?",
@@ -227,7 +250,6 @@ export function useContratosViewModel() {
 
   const isActionLoading =
     deleteMutation.isPending ||
-    reenviarMutation.isPending ||
     substituirMutation.isPending ||
     createMutation.isPending ||
     previewMutation.isPending;
@@ -260,7 +282,7 @@ export function useContratosViewModel() {
     actions: {
       onVerPassageiro: handleVerPassageiro,
       onCopiarLink: handleCopiarLink,
-      onReenviarNotificacao: (id: string) => reenviarMutation.mutate(id),
+      onEnviarWhatsApp: handleEnviarWhatsApp,
       onExcluir: handleExcluir,
       onSubstituir: handleSubstituir,
       onGerarContrato: handleGerarContrato,
