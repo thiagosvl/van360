@@ -168,7 +168,7 @@ interface BaseDialogFooterProps {
 const BaseDialogFooter = ({ children, className }: BaseDialogFooterProps) => {
   return (
     <div className={cn(
-      "p-5 sm:p-6 bg-slate-50/40 flex gap-4 border-t border-slate-100/60 shrink-0 pb-[calc(1.25rem+var(--safe-area-bottom))]",
+      "p-5 sm:p-6 bg-slate-50/40 flex gap-4 border-t border-slate-100/60 shrink-0 pb-[max(1.25rem,var(--safe-area-bottom))]",
       className
     )}>
       {children}

@@ -40,7 +40,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-4 px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)]">
+    <div className="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-[max(1rem,var(--safe-area-top))] pb-[max(1rem,var(--safe-area-bottom))]">
       <div className="max-w-3xl w-full mx-auto space-y-8">
 
         {/* Main Card */}
