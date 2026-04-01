@@ -269,7 +269,7 @@ export default function AssinarContrato() {
 
       <BaseDialog open={modalAberto} onOpenChange={setModalAberto}>
         <BaseDialog.Header
-          title="Assinatura Digital"
+          title="Assinatura"
           icon={<PenTool className="w-5 h-5" />}
           onClose={() => setModalAberto(false)}
         />

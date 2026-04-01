@@ -122,14 +122,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-7 top-8 -translate-y-1/2">
           <div className="flex items-center gap-1.5">
-            {(status === ContratoStatus.PENDENTE || isSemContrato) ? (
-              item.created_at && (
-                <div className="flex items-center gap-1 text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
-                  <Clock className="w-2.5 h-2.5" />
-                  {formatRelativeTime(item.created_at)}
-                </div>
-              )
-            ) : (
+            {(status === ContratoStatus.ASSINADO &&
               <StatusBadge
                 status={status === ContratoStatus.ASSINADO}
                 trueLabel="ASSINADO"
@@ -250,7 +243,7 @@ export const ContratosList = memo(function ContratosList({
               const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
               const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
               return (
-                  <TableRow
+                <TableRow
                   key={item.id}
                   className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors"
                 >

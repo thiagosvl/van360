@@ -128,25 +128,25 @@ const Index = () => {
     {
       headline: "Todos os seus passageiros em um só lugar",
       text: "Cadastre alunos e responsáveis — ou mande o link pro pai e ele cadastra o filho direto. Sem você precisar anotar nada.",
-      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Passageiros",
+      mockup: "/assets/lp/mockup-passageiros.png",
       alt: "Tela de gestão de passageiros do Van360",
     },
     {
-      headline: "Quem pagou. Quem não pagou. Na hora.",
+      headline: "Veja quem já pagou e quem está devendo.",
       text: "Registre pagamentos e acompanhe o status de cada mensalidade. Dê baixa na hora — pix, dinheiro, transferência.",
-      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Mensalidades",
+      mockup: "/assets/lp/mockup-mensalidades.png",
       alt: "Tela de controle de mensalidades do Van360",
     },
     {
       headline: "Contrato digital com validade jurídica",
       text: "Gere contratos com todos os dados já preenchidos. Assinado digitalmente, com validade legal — protege você e o responsável.",
-      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Contrato",
+      mockup: "/assets/lp/mockup-contrato.png",
       alt: "Tela de contrato digital do Van360",
     },
     {
       headline: "Recibo gerado na hora, a cada pagamento",
       text: "Cada pagamento registrado gera um recibo automaticamente. Visualize e compartilhe quando o responsável pedir.",
-      mockup: "https://placehold.co/360x640/1a3a5c/ffffff?text=Recibo",
+      mockup: "/assets/lp/mockup-carteirinha.png",
       alt: "Tela de recibo do Van360",
     },
   ];
@@ -157,18 +157,7 @@ const Index = () => {
         .lp-reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
         .lp-visible { opacity: 1; transform: translateY(0); }
 
-        .phone-frame {
-          background: #111;
-          border-radius: 24px;
-          padding: 8px;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-        }
-        .phone-frame img {
-          border-radius: 18px;
-          width: 100%;
-          height: auto;
-          display: block;
-        }
+
 
         @keyframes lp-countUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -241,11 +230,12 @@ const Index = () => {
 
               {/* Mockup — SÓ MOBILE */}
               <div className="flex justify-center md:hidden my-6">
-                <div className="phone-frame max-w-[180px] w-full">
+                <div className="max-w-[360px] w-full">
                   <img
-                    src="https://placehold.co/300x600/1a3a5c/f59e0b?text=Mensalidades"
+                    src="/assets/lp/mockup-mensalidades-2.png"
                     alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
                     loading="eager"
+                    className="w-full h-auto"
                   />
                 </div>
               </div>
@@ -288,11 +278,12 @@ const Index = () => {
 
             {/* Mockup — SÓ DESKTOP */}
             <div className="order-2 hidden md:flex justify-end">
-              <div className="phone-frame max-w-[280px] w-full hero-phone">
+              <div className="max-w-[480px] w-full hero-phone">
                 <img
-                  src="https://placehold.co/300x600/1a3a5c/f59e0b?text=Mensalidades"
+                  src="/assets/lp/mockup-mensalidades-2.png"
                   alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
                   loading="eager"
+                  className="w-full h-auto"
                 />
               </div>
             </div>
@@ -419,11 +410,12 @@ const Index = () => {
                     } items-center gap-8 md:gap-12`}
                 >
                   <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
-                    <div className="phone-frame max-w-[200px] md:max-w-[260px] w-full">
+                    <div className="max-w-[240px] md:max-w-[300px] w-full">
                       <img
                         src={feat.mockup}
                         alt={feat.alt}
                         loading="lazy"
+                        className="w-full h-auto"
                       />
                     </div>
                   </div>
@@ -492,8 +484,9 @@ const Index = () => {
           </div>
 
           {/* Mockup dashboard */}
-          <Reveal className="mt-10 flex justify-center">
-            <div className="max-w-[260px] md:max-w-[320px] w-full">
+          <Reveal className="mt-8 flex justify-center">
+            {/* Aumentado o max-w para acomodar o celular deitado/inclinado */}
+            <div className="max-w-[360px] md:max-w-[480px] w-full">
               <img
                 src="/assets/lp/mockup-dashboard.png"
                 alt="Dashboard do Van360 com primeiros passos"
