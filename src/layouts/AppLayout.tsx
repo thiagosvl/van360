@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BottomNavbar } from "@/components/navigation/BottomNavbar";
@@ -17,6 +18,7 @@ const SWIPE_CLOSE_THRESHOLD = 100;
 
 function AppLayoutContent({ role }: { role: "motorista" }) {
   const navigate = useNavigate();
+  useAnalyticsInjector({ clarity: true });
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
 
   const sheetRef = useRef<HTMLDivElement>(null);

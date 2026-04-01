@@ -7,7 +7,7 @@ import { CookiePreferences, useCookieConsent } from "@/hooks/business/useCookieC
 const DEFAULT_PREFERENCES: CookiePreferences = { gtm: true, clarity: true };
 
 export function CookieConsentGlobal() {
-  useAnalyticsInjector({ clarity: true });
+  useAnalyticsInjector({ gtm: true, clarity: true });
 
   const { preferences, isPending, saveConsent } = useCookieConsent();
   const [prefsOpen, setPrefsOpen] = useState(false);

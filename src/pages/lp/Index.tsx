@@ -1,7 +1,7 @@
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
+import { CookieConsentGlobal } from "@/components/features/CookieConsentGlobal";
 import { useCookieConsent } from "@/hooks/business/useCookieConsent";
 import { getWhatsAppUrl } from "@/constants";
 import { ROUTES } from "@/constants/routes";
@@ -114,7 +114,6 @@ const Index = () => {
   const [termosOpen, setTermosOpen] = useState(false);
   const [privacidadeOpen, setPrivacidadeOpen] = useState(false);
   const { isPending } = useCookieConsent();
-  useAnalyticsInjector({ gtm: true });
   const CTA = ROUTES.PUBLIC.REGISTER;
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
@@ -828,7 +827,7 @@ const Index = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Fale conosco pelo WhatsApp"
-        className={`fixed right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(37,211,102,.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,.5)] hover:scale-110 transition-all duration-500 ${isPending ? "bottom-16 sm:bottom-14" : "bottom-5"}`}
+        className={`fixed right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(37,211,102,.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,.5)] hover:scale-110 transition-all duration-500 ${isPending ? "bottom-20 sm:bottom-16" : "bottom-5"}`}
       >
         <WhatsAppIcon className="w-7 h-7" />
       </a>
@@ -839,6 +838,7 @@ const Index = () => {
       {/* ══════════ DIALOG — PRIVACIDADE ══════════ */}
       <PoliticaPrivacidadeDialog open={privacidadeOpen} onOpenChange={setPrivacidadeOpen} />
 
+      <CookieConsentGlobal />
     </div>
   );
 };
