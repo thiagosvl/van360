@@ -666,6 +666,18 @@ const Index = () => {
                 </div>
               </div>
             </Reveal>
+
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">🚌</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Fretamentos e Viagens</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    Organize passeios e excursões. Registre suas viagens extras, controle quem já pagou e acompanhe quanto você faturou no mês.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
           </div>
 
           <Reveal>
