@@ -22,22 +22,10 @@ export async function shareReceiptFile(data: ShareReceiptData) {
   }
 
   try {
-    // 1. Cenário: App Nativo (Android/iOS via Capacitor)
-    // O plugin @capacitor/share é a forma correta de interagir com o SO nativo
-    if (Capacitor.isNativePlatform()) {
-      await Share.share({
-        title,
-        text,
-        url, // Passamos a URL; o WhatsApp no Android/iOS resolve o preview da imagem
-        dialogTitle: "Compartilhar Recibo",
-      });
-      return;
-    }
-
-    // 2. Cenário: Browser Mobile ou Desktop moderno
-    // No browser, baixamos o blob para que o 'navigator.share' anexe o arquivo REAL (imagem)
+    // 1. Tentar baixar o arquivo e compartilhar pelo navegador (Funciona em Browsers e alguns WebViews de App)
+    // Esse método é o único que permite "ANEXAR" o arquivo real no WhatsApp.
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Falha ao baixar imagem do recibo");
+    if (!response.ok) throw new Error("Falha ao carregar arquivo do recibo");
     const blob = await response.blob();
     const file = new File([blob], filename, { type: "image/png" });
 
@@ -47,10 +35,24 @@ export async function shareReceiptFile(data: ShareReceiptData) {
         title,
         text,
       });
-    } else {
-      // Fallback para Desktop (Chrome/Safari desktop não compartilham arquivos via share API)
-      window.open(url, "_blank");
+      return; // Se funcionou, paramos aqui
     }
+
+    // 2. Se o navegador não suportar anexar arquivos (ex: Apps Capacitor Android sem permissão de WebView)
+    // Usamos o plugin nativo do Capacitor como plano B (enviando a URL/Texto)
+    if (Capacitor.isNativePlatform()) {
+      await Share.share({
+        title,
+        text: `${text}\n\n${url}`, // Incluímos a URL no texto para garantir que chegue algo
+        url,
+        dialogTitle: "Compartilhar Recibo",
+      });
+      return;
+    }
+
+    // 3. Fallback final para Desktop (onde não há share nativo com arquivos)
+    window.open(url, "_blank");
+
   } catch (error) {
     console.error("[ShareReceipt] Erro técnico detalhado:", error);
     
