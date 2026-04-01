@@ -493,11 +493,12 @@ const Index = () => {
 
           {/* Mockup dashboard */}
           <Reveal className="mt-10 flex justify-center">
-            <div className="phone-frame max-w-[220px] md:max-w-[280px] w-full">
+            <div className="max-w-[260px] md:max-w-[320px] w-full">
               <img
-                src="https://placehold.co/360x640/1a3a5c/ffffff?text=Dashboard"
+                src="/assets/lp/mockup-dashboard.png"
                 alt="Dashboard do Van360 com primeiros passos"
                 loading="lazy"
+                className="w-full h-auto"
               />
             </div>
           </Reveal>
