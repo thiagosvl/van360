@@ -30,7 +30,7 @@ const BaseDialogRoot = ({
     >
       <DialogContent
         className={cn(
-          "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100svh-2rem)] gap-0",
+          "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100dvh-var(--safe-area-top)-var(--safe-area-bottom)-3rem)] gap-0",
           className
         )}
         onPointerDownOutside={(e) => lockClose && e.preventDefault()}
@@ -67,7 +67,7 @@ const BaseDialogHeader = ({
   leftAction
 }: BaseDialogHeaderProps) => {
   return (
-    <div className="p-5 sm:p-6 flex items-center justify-between bg-white border-b border-slate-100/60 shrink-0">
+    <div className="p-5 sm:p-6 flex items-center justify-between bg-white border-b border-slate-100/60 shrink-0 pt-[calc(1.25rem+var(--safe-area-top)/2)]">
       <div className="flex items-center gap-4 min-w-0 flex-1">
         {leftAction ? (
           <div className="shrink-0">{leftAction}</div>

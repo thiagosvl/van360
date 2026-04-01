@@ -36,7 +36,7 @@ export function NativeWelcomeScreen() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a3a5c] to-[#0f2640] flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-gradient-to-b from-[#1a3a5c] to-[#0f2640] flex flex-col items-center justify-center px-6 text-center pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)]">
       <div className="flex flex-col items-center max-w-[320px]">
         <div className="w-20 h-20 rounded-full bg-[#f59e0b]/20 flex items-center justify-center mb-6">
           <PartyPopper className="w-10 h-10 text-[#f59e0b]" />

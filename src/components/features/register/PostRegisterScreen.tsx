@@ -20,7 +20,7 @@ export function PostRegisterScreen({
   const platform = detectPlatform();
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 flex flex-col justify-center items-center">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 flex flex-col justify-center items-center pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)]">
       <div className="max-w-[400px] w-full animate-in zoom-in-95 duration-500">
         <Card className="shadow-xl border-slate-200 rounded-2xl bg-white overflow-hidden">
           <CardContent className="p-8 text-center">
