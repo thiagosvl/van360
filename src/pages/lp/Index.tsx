@@ -703,7 +703,7 @@ const Index = () => {
               a="Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O app para iPhone está em desenvolvimento, mas a versão web funciona perfeitamente no Safari."
             />
             <FaqItem
-              q="O que é o preço de fundador?"
+              q="O que é a oferta/preço fundador?"
               a="É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$20,75/mês para sempre, mesmo quando o preço subir."
             />
             <FaqItem
