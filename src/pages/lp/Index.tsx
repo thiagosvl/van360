@@ -223,16 +223,16 @@ const Index = () => {
 
             {/* Texto */}
             <div className="text-center md:text-left order-1">
-              <h1 className="text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] text-[#1a3a5c] tracking-tight mb-4">
-                Chega de caderninho.
+              <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] text-[#1a3a5c] tracking-tight mb-4">
+                Chega de planilha e caderninho.
                 <br />
                 <em className="not-italic text-[#f59e0b] underline underline-offset-4 decoration-[#f59e0b]/30">
                   Sua van organizada
                 </em>{" "}
                 no celular.
               </h1>
-              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-6 leading-relaxed">
-                Passageiros, mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
+              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-6 leading-relaxed hidden sm:block">
+                Mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
               </p>
 
               {/* Mockup — SÓ MOBILE */}
@@ -246,6 +246,10 @@ const Index = () => {
                   />
                 </div>
               </div>
+
+              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-6 leading-relaxed block sm:hidden">
+                Mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
+              </p>
 
               {/* CTA */}
               <div className="flex flex-col items-center md:items-start gap-3">
