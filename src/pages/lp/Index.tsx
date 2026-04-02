@@ -147,7 +147,7 @@ const Index = () => {
     {
       headline: "Recibo gerado na hora, a cada pagamento",
       text: "Cada pagamento registrado gera um recibo automaticamente. Visualize e compartilhe quando o responsável pedir.",
-      mockup: "/assets/lp/mockup-carteirinha.png",
+      mockup: "/assets/lp/mockup-recibo.png",
       alt: "Tela de recibo do Van360",
     },
   ];
