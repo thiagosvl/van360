@@ -268,7 +268,7 @@ const Index = () => {
               {/* Stats */}
               <div className="grid grid-cols-3 max-[363px]:gap-2 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
                 {[
-                  { num: "1 App", label: "abandone caderninho e planilhas" },
+                  { num: "1 App", label: "abandone planilhas e caderninho" },
                   { num: "5 min", label: "pra organizar e começar a usar" },
                   { num: "100%", label: "do financeiro na palma da mão" },
                 ].map((s) => (
@@ -322,7 +322,7 @@ const Index = () => {
                 text: (
                   <>
                     Controla tudo no{" "}
-                    <strong className="text-[#1a3a5c]">caderninho ou planilha</strong>{" "}
+                    <strong className="text-[#1a3a5c]">planilha ou caderninho</strong>{" "}
                     e no fim do mês não sabe quanto entrou.
                   </>
                 ),
