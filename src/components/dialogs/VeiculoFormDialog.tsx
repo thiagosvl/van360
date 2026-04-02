@@ -234,15 +234,14 @@ export default function VeiculoFormDialog({
         <Form {...form}>
           <form
             id="veiculo-form"
-            onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-4"
+            onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-10 pb-6"
           >
             <FormField
               name="placa"
               control={form.control}
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-black uppercase text-[10px] tracking-wider ml-1">
+                  <FormLabel className="text-slate-700 uppercase text-[10px] tracking-wider ml-1">
                     Placa <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
@@ -264,7 +263,7 @@ export default function VeiculoFormDialog({
                       />
                     </div>
                   </FormControl>
-                  <FormMessage className="text-[10px] font-bold uppercase italic ml-1" />
+                  <FormMessage className="text-[10px] uppercase italic ml-1" />
                 </FormItem>
               )}
             />
@@ -275,7 +274,7 @@ export default function VeiculoFormDialog({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-black uppercase text-[10px] tracking-wider ml-1">
+                    <FormLabel className="text-slate-700 uppercase text-[10px] tracking-wider ml-1">
                       Marca <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -301,7 +300,7 @@ export default function VeiculoFormDialog({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-black uppercase text-[10px] tracking-wider ml-1">
+                    <FormLabel className="text-slate-700 uppercase text-[10px] tracking-wider ml-1">
                       Modelo <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -338,7 +337,7 @@ export default function VeiculoFormDialog({
                     />
                     <FormLabel
                       htmlFor="ativo"
-                      className="flex-1 cursor-pointer font-black uppercase text-[10px] tracking-wider text-slate-700 m-0"
+                      className="flex-1 cursor-pointer uppercase text-[10px] tracking-wider text-slate-700 m-0"
                     >
                       Veículo Ativo
                     </FormLabel>

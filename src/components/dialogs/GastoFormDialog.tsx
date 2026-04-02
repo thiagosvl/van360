@@ -182,7 +182,7 @@ export default function GastoFormDialog({
           <form
             id="gasto-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 mt-2"
+            className="space-y-6 mt-2"
           >
             <FormField
               control={form.control}

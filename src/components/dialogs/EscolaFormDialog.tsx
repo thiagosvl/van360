@@ -552,7 +552,7 @@ export default function EscolaFormDialog({
               </div>
             </div>
 
-            {allowBatchCreation && (
+            {allowBatchCreation && !editingEscola && (
               <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <Checkbox
                   id="keepOpen"
