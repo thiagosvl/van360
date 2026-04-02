@@ -255,7 +255,7 @@ export default function VeiculoFormDialog({
                         {...field}
                         maxLength={8}
                         placeholder="ABC-1234"
-                        className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all uppercase font-bold"
+                        className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all uppercase"
                         onChange={(e) => {
                           const masked = aplicarMascaraPlaca(e.target.value);
                           field.onChange(masked);
@@ -287,12 +287,12 @@ export default function VeiculoFormDialog({
                         <Input
                           placeholder="Ex: Fiat"
                           {...field}
-                          className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all font-bold"
+                          className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[10px] font-bold uppercase italic ml-1" />
+                    <FormMessage className="text-[10px] uppercase italic ml-1" />
                   </FormItem>
                 )}
               />
@@ -313,12 +313,12 @@ export default function VeiculoFormDialog({
                         <Input
                           placeholder="Ex: Ducato"
                           {...field}
-                          className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all font-bold"
+                          className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[10px] font-bold uppercase italic ml-1" />
+                    <FormMessage className="text-[10px] uppercase italic ml-1" />
                   </FormItem>
                 )}
               />

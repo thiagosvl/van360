@@ -77,7 +77,7 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
               name="senhaAtual"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">Senha atual</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium ml-1">Senha atual <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -105,7 +105,7 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
               name="novaSenha"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">Nova senha</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium ml-1">Nova senha <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <div className="relative">
                       <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />

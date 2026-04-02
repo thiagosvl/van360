@@ -315,13 +315,7 @@ export default function EscolaFormDialog({
             className="space-y-10 pb-6"
           >
             <div className="space-y-6">
-              <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                Dados da Escola
-              </div>
-              <div className="space-y-4">
+              <div className="space-y-4 mt-2">
                 <FormField
                   control={form.control}
                   name="nome"
@@ -589,7 +583,7 @@ export default function EscolaFormDialog({
         />
         <BaseDialog.Action
           label={editingEscola ? "Atualizar" : "Salvar"}
-          variant="secondary"
+          variant="primary"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
           isLoading={isSaving}
         />
