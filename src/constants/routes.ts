@@ -13,7 +13,9 @@ export const ROUTES = {
       SELECT: "/responsavel/selecionar",
     },
     ADMIN: {
+      ROOT: "/admin",
       DASHBOARD: "/admin/dashboard",
+      SETTINGS: "/admin/configuracoes",
     },
     MOTORISTA: {
       HOME: "/inicio",

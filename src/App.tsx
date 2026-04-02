@@ -22,7 +22,7 @@ import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
@@ -48,6 +48,11 @@ const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
 import { queryClient } from "@/services/queryClient";
+import { UserType } from "@/types/enums";
+import { AdminLayout } from "@/layouts/AdminLayout";
+import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
+
+const AdminDashboard = lazyLoad(() => import("./pages/admin/AdminDashboard"));
 
 const App = () => {
   const [updating, setUpdating] = useState(false);
@@ -241,16 +246,32 @@ const App = () => {
                   }
                 />
 
-                {/* Rotas Protegidas */}
+                {/* Rotas Protegidas - Admin */}
                 <Route
                   element={
                     <AppGate>
-                      <AppLayout />
+                      <RoleProtectedRoute allowedRoles={[UserType.ADMIN]}>
+                        <AdminLayout>
+                          <Outlet />
+                        </AdminLayout>
+                      </RoleProtectedRoute>
                     </AppGate>
                   }
                 >
+                  <Route path={ROUTES.PRIVATE.ADMIN.DASHBOARD} element={<AdminDashboard />} />
+                  {/* Outras rotas admin virão aqui */}
+                </Route>
 
-                  {/* Motorista */}
+                {/* Rotas Protegidas - Motorista */}
+                <Route
+                  element={
+                    <AppGate>
+                      <RoleProtectedRoute allowedRoles={[UserType.MOTORISTA]}>
+                        <AppLayout />
+                      </RoleProtectedRoute>
+                    </AppGate>
+                  }
+                >
                   <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
                   <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
                   <Route
