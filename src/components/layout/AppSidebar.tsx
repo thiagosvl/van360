@@ -3,8 +3,7 @@ import { getWhatsAppUrl } from "@/constants";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
-import { ExternalLink, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface AppSidebarProps {
   role: "motorista";
@@ -58,27 +57,38 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
         ))}
       </nav>
 
-      {/* Suporte em vez de Upsell (Clean Slate) */}
-      <div className="hidden sm:block rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-purple-500 p-5 text-white shadow-lg">
-        <div className="flex items-center gap-2 mb-2">
-           <MessageCircle className="h-4 w-4" />
-           <p className="text-sm font-bold">Precisa de Ajuda?</p>
+      {/* Canal de Suporte (Design Integrado) */}
+      <div className="hidden sm:block mt-auto">
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-[#1a3a5c]/20 hover:shadow-md">
+          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500/5 transition-transform group-hover:scale-110" />
+          
+          <div className="relative flex flex-col gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <WhatsAppIcon className="h-5 w-5" />
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-slate-900">Canal de Suporte</h4>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                Fale com nossa equipe para dúvidas ou sugestões de melhoria.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                window.open(getWhatsAppUrl(), "_blank");
+                onLinkClick?.();
+              }}
+              className="mt-1 flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#1a3a5c]"
+            >
+              <span className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                (11) 96250-8068
+              </span>
+              <ExternalLink className="h-3 w-3 opacity-40" />
+            </button>
+          </div>
         </div>
-        <p className="text-xs text-white/90 leading-relaxed">
-           Nossa equipe de suporte está disponível para tirar suas dúvidas e receber sugestões.
-        </p>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => {
-            window.open(getWhatsAppUrl(), "_blank");
-            onLinkClick?.();
-          }}
-          className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-bold transition-all"
-        >
-          <ExternalLink className="mr-2 h-3.5 w-3.5" />
-          Falar no WhatsApp
-        </Button>
       </div>
     </div>
   );

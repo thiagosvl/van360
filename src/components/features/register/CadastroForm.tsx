@@ -7,12 +7,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { cpfMask } from "@/utils/masks";
-import { Eye, EyeOff, Lock, Mail, User, Phone } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
-
 import { RegisterFormData } from "@/schemas/registerSchema";
+import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoDialog";
+import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 
 interface CadastroFormProps {
   form: UseFormReturn<RegisterFormData>;
@@ -20,11 +23,12 @@ interface CadastroFormProps {
 
 export const CadastroForm = ({ form }: CadastroFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [openTermos, setOpenTermos] = useState(false);
+  const [openPolitica, setOpenPolitica] = useState(false);
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Linha 1: Nome */}
         <FormField
           control={form.control}
           name="nome"
@@ -150,12 +154,56 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         )}
       />
 
+      <FormField
+        control={form.control}
+        name="termos_aceitos"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <div className="flex items-start gap-2 pt-1 pb-2">
+              <FormControl>
+                <Checkbox
+                  id="termos_aceitos"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className={`rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] mt-0.5 ${fieldState.error ? "border-red-500" : "border-slate-400"}`}
+                />
+              </FormControl>
+              <Label
+                htmlFor="termos_aceitos"
+                className="text-xs sm:text-sm text-slate-500 cursor-pointer select-none leading-relaxed"
+              >
+                Li e aceito os{" "}
+                <button
+                  type="button"
+                  onClick={() => setOpenTermos(true)}
+                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none rounded-sm px-0.5"
+                >
+                  Termos de Uso
+                </button>
+                {" "}e a{" "}
+                <button
+                  type="button"
+                  onClick={() => setOpenPolitica(true)}
+                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none rounded-sm px-0.5"
+                >
+                  Política de Privacidade
+                </button>
+              </Label>
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <div className="flex items-center justify-center gap-2 text-xs text-emerald-700 opacity-80">
         <Lock className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
         <span className="font-medium">
           Dados protegidos com criptografia de ponta a ponta.
         </span>
       </div>
+
+      <TermosDialog open={openTermos} onOpenChange={setOpenTermos} />
+      <PoliticaPrivacidadeDialog open={openPolitica} onOpenChange={setOpenPolitica} />
     </div>
   );
 };

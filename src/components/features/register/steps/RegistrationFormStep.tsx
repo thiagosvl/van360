@@ -6,9 +6,6 @@ import { RegisterFormData } from "@/schemas/registerSchema";
 import { CadastroForm } from "@/components/features/register";
 import { Loader2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { useState } from "react";
-import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoDialog";
-import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 
 interface RegistrationFormStepProps {
   form: UseFormReturn<RegisterFormData>;
@@ -25,9 +22,6 @@ export function RegistrationFormStep({
   duplicateError,
   onDismissDuplicateError,
 }: RegistrationFormStepProps) {
-  const [openTermos, setOpenTermos] = useState(false);
-  const [openPolitica, setOpenPolitica] = useState(false);
-
   return (
     <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Form {...form}>
@@ -40,7 +34,7 @@ export function RegistrationFormStep({
         >
           <CadastroForm form={form} />
 
-          <div className="pt-4">
+          <div className="pt-4 space-y-4">
             {duplicateError && onDismissDuplicateError && (
               <DuplicateErrorBanner
                 error={duplicateError}
@@ -61,29 +55,6 @@ export function RegistrationFormStep({
                 <>Criar minha conta</>
               )}
             </Button>
-            <div className="mt-4 text-center">
-              <div className="px-4 pt-2 pb-0 text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
-                <span>Ao criar sua conta, você concorda com nossos </span>
-                <button
-                  type="button"
-                  onClick={() => setOpenTermos(true)}
-                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center"
-                >
-                  Termos de Uso
-                </button>
-                <span> e </span>
-                <button
-                  type="button"
-                  onClick={() => setOpenPolitica(true)}
-                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center"
-                >
-                  Política de Privacidade
-                </button>
-
-                <TermosDialog open={openTermos} onOpenChange={setOpenTermos} />
-                <PoliticaPrivacidadeDialog open={openPolitica} onOpenChange={setOpenPolitica} />
-              </div>
-            </div>
           </div>
         </form>
       </Form>

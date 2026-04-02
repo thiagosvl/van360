@@ -44,6 +44,7 @@ export function useRegisterController() {
       email: "",
       telefone: "",
       senha: "",
+      termos_aceitos: false as unknown as true,
     },
   });
 
@@ -179,7 +180,7 @@ export function useRegisterController() {
   };
 
   const handleNextStep = async () => {
-    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha"];
+    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos"];
     const ok = await form.trigger(fields as any);
     if (!ok) return false;
 
