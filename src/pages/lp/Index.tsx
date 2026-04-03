@@ -106,11 +106,10 @@ function InlineCta({ label = "Começar grátis — 15 dias sem cartão", to }: {
 }
 
 // ── Mockup image with WebP fallback ──
-function MockupImage({ src, alt, loading = "lazy", fetchPriority, width, height, className }: {
+function MockupImage({ src, alt, loading = "lazy", width, height, className }: {
   src: string;
   alt: string;
   loading?: "lazy" | "eager";
-  fetchPriority?: "high" | "auto";
   width: number;
   height: number;
   className?: string;
@@ -119,7 +118,7 @@ function MockupImage({ src, alt, loading = "lazy", fetchPriority, width, height,
   return (
     <picture>
       <source srcSet={webpSrc} type="image/webp" />
-      <img src={src} alt={alt} loading={loading} fetchPriority={fetchPriority} width={width} height={height} className={className} />
+      <img src={src} alt={alt} loading={loading} width={width} height={height} className={className} />
     </picture>
   );
 }
@@ -327,7 +326,6 @@ const Index = () => {
                     src="/assets/lp/mockup-mensalidades-2.png"
                     alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
                     loading="eager"
-                    fetchPriority="high"
                     width={1080}
                     height={1400}
                     className="w-full h-auto"
