@@ -4,9 +4,8 @@ Allow: /
 Allow: /login
 Allow: /cadastro
 
-# Bloquear indexação de páginas protegidas e administrativas
+# Bloquear indexação de páginas protegidas e utilitárias
 Disallow: /inicio
-Disallow: /assinatura
 Disallow: /passageiros
 Disallow: /mensalidades
 Disallow: /contratos
@@ -16,8 +15,10 @@ Disallow: /gastos
 Disallow: /relatorios
 Disallow: /responsavel
 Disallow: /nova-senha
-Disallow: /cadastro-passageiro
 Disallow: /admin
+Disallow: /assinar
+Disallow: /cadastro-passageiro
+Disallow: /splash
 
 # Permitir bots de redes sociais para previews
 User-agent: Twitterbot
@@ -28,3 +29,5 @@ Allow: /
 
 User-agent: LinkedInBot
 Allow: /
+
+Sitemap: https://van360.com.br/sitemap.xml
