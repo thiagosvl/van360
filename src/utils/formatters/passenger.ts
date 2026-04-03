@@ -1,17 +1,17 @@
 import {
-    ParentescoResponsavel,
-    PassageiroGenero,
-    PassageiroModalidade,
+  ParentescoResponsavel,
+  PassageiroGenero,
+  PassageiroModalidade,
 } from "@/types/enums";
 
 export const formatModalidade = (modalidade: string) => {
   switch (modalidade) {
+    case PassageiroModalidade.IDA_VOLTA:
+      return "Ida e Volta";
     case PassageiroModalidade.IDA:
       return "Ida";
     case PassageiroModalidade.VOLTA:
       return "Volta";
-    case PassageiroModalidade.IDA_VOLTA:
-      return "Ida e Volta";
     default:
       return modalidade;
   }

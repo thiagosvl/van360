@@ -68,11 +68,11 @@ export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
         </p>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-         <BaseDialog.Action 
-            label="Fechar"
-            onClick={() => onOpenChange(false)}
-            variant="primary"
-         />
+        <BaseDialog.Action
+          label="Fechar"
+          onClick={() => onOpenChange(false)}
+          variant="primary"
+        />
       </BaseDialog.Footer>
     </BaseDialog>
   );

@@ -76,7 +76,7 @@ export function PoliticaPrivacidadeDialog({ open, onOpenChange }: PoliticaPrivac
       </BaseDialog.Body>
       <BaseDialog.Footer>
         <BaseDialog.Action
-          label="Entendi"
+          label="Fechar"
           onClick={() => onOpenChange(false)}
           variant="primary"
         />

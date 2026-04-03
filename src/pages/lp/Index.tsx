@@ -105,15 +105,100 @@ function InlineCta({ label = "Começar grátis — 15 dias sem cartão", to }: {
   );
 }
 
+// ── Mockup image with WebP fallback ──
+function MockupImage({ src, alt, loading = "lazy", fetchPriority, width, height, className }: {
+  src: string;
+  alt: string;
+  loading?: "lazy" | "eager";
+  fetchPriority?: "high" | "auto";
+  width: number;
+  height: number;
+  className?: string;
+}) {
+  const webpSrc = src.replace(/\.png$/, ".webp");
+  return (
+    <picture>
+      <source srcSet={webpSrc} type="image/webp" />
+      <img src={src} alt={alt} loading={loading} fetchPriority={fetchPriority} width={width} height={height} className={className} />
+    </picture>
+  );
+}
+
 // ── Main component ──
 const Index = () => {
   useSEO({
-    title: "Van360 — Você dirige. A gente organiza. | Gestão para Van Escolar",
-    description: "Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular. 15 dias grátis.",
+    title: "Van360 — Você dirige. A gente organiza. | App para Motorista Escolar",
+    description: "Organize mensalidades, passageiros contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular. 15 dias grátis.",
   });
   const [termosOpen, setTermosOpen] = useState(false);
   const [privacidadeOpen, setPrivacidadeOpen] = useState(false);
   const { isPending } = useCookieConsent();
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "van360-schema";
+    script.textContent = JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Van360",
+        "description": "Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular.",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Android, Web",
+        "url": "https://van360.com.br",
+        "offers": {
+          "@type": "Offer",
+          "price": "20.75",
+          "priceCurrency": "BRL",
+        },
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "O que o Van360 faz?",
+            "acceptedAnswer": { "@type": "Answer", "text": "O Van360 organiza a gestão da sua van escolar: cadastro de passageiros, controle de mensalidades, geração de contratos digitais e emissão de recibos. Tudo pelo celular, em um lugar só." },
+          },
+          {
+            "@type": "Question",
+            "name": "Preciso de cartão de crédito para começar?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Não. Os 15 dias de teste são 100% grátis, sem cadastrar cartão, sem compromisso. Você usa tudo, com seus dados reais, e só decide depois." },
+          },
+          {
+            "@type": "Question",
+            "name": "Onde posso usar o Van360?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O app para iPhone está em desenvolvimento, mas a versão web funciona perfeitamente no Safari." },
+          },
+          {
+            "@type": "Question",
+            "name": "O que é a oferta/preço fundador?",
+            "acceptedAnswer": { "@type": "Answer", "text": "É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$20,75/mês para sempre, mesmo quando o preço subir." },
+          },
+          {
+            "@type": "Question",
+            "name": "O contrato gerado tem validade jurídica?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Sim. Os contratos são digitais e assinados eletronicamente, com validade legal conforme a legislação brasileira. Servem como documento formal entre você e o responsável do aluno." },
+          },
+          {
+            "@type": "Question",
+            "name": "O app é pesado? Preciso baixar?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Não precisa baixar nada pra começar. O Van360 funciona direto pelo navegador — no celular, tablet ou computador. Se preferir, tem o app Android que é leve e rápido. Você escolhe como quer usar." },
+          },
+          {
+            "@type": "Question",
+            "name": "Quanto vou pagar depois dos 15 dias?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Se você entrar agora como fundador, paga a partir de R$20,75/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia." },
+          },
+        ],
+      },
+    ]);
+    document.head.appendChild(script);
+    return () => { document.getElementById("van360-schema")?.remove(); };
+  }, []);
+
   const CTA = ROUTES.PUBLIC.REGISTER;
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
@@ -238,10 +323,13 @@ const Index = () => {
               {/* Mockup — SÓ MOBILE */}
               <div className="flex justify-center md:hidden my-6">
                 <div className="max-w-[360px] w-full">
-                  <img
+                  <MockupImage
                     src="/assets/lp/mockup-mensalidades-2.png"
                     alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
                     loading="eager"
+                    fetchPriority="high"
+                    width={1080}
+                    height={1400}
                     className="w-full h-auto"
                   />
                 </div>
@@ -422,10 +510,12 @@ const Index = () => {
                 >
                   <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
                     <div className="max-w-[240px] md:max-w-[300px] w-full feature-phone">
-                      <img
+                      <MockupImage
                         src={feat.mockup}
                         alt={feat.alt}
                         loading="lazy"
+                        width={1080}
+                        height={1920}
                         className="w-full h-auto"
                       />
                     </div>
@@ -498,10 +588,12 @@ const Index = () => {
           <Reveal className="mt-8 flex justify-center">
             {/* Aumentado o max-w para acomodar o celular deitado/inclinado */}
             <div className="max-w-[360px] md:max-w-[480px] w-full hero-phone">
-              <img
+              <MockupImage
                 src="/assets/lp/mockup-dashboard.png"
                 alt="Dashboard do Van360 com primeiros passos"
                 loading="lazy"
+                width={1080}
+                height={1400}
                 className="w-full h-auto"
               />
             </div>
