@@ -35,5 +35,5 @@ export const tiposPagamento = [
   { value: CobrancaTipoPagamento.CARTAO_DEBITO, label: "Cartão de Débito" },
   { value: CobrancaTipoPagamento.CARTAO_CREDITO, label: "Cartão de Crédito" },
   { value: CobrancaTipoPagamento.TRANSFERENCIA, label: "Transferência" },
-  { value: CobrancaTipoPagamento.BOLETO, label: "Boleto Bancário" },
+  { value: CobrancaTipoPagamento.BOLETO, label: "Boleto" },
 ];

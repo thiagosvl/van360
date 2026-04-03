@@ -92,15 +92,14 @@ export default function AssinarContrato() {
           </CardHeader>
           <CardContent className="text-center space-y-10 p-10 pt-4">
             <p className="text-slate-500 leading-relaxed font-medium">
-              Tudo pronto! O documento foi assinado digitalmente e já possui validade jurídica. Você pode baixar a versão final agora.
+              Tudo pronto! O documento foi assinado digitalmente e já possui validade jurídica.
             </p>
 
             <Button
               onClick={() => openBrowserLink(contrato.contrato_final_url || contrato.contrato_url)}
               className="w-full bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 h-16 rounded-2xl font-headline font-black text-sm shadow-xl shadow-[#1a3a5c]/20 transition-all active:scale-95 text-white uppercase tracking-widest flex items-center justify-center gap-3"
             >
-              <Download className="h-5 w-5" />
-              Baixar Cópia do Contrato
+              Ver Contrato <span className="hidden sm:inline">Assinado</span>
             </Button>
           </CardContent>
         </Card>

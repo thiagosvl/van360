@@ -1,4 +1,4 @@
-import { formatDateToBR, formatFirstName, getMesNome } from "./formatters";
+import { formatDateToBR, formatFirstName, formatShortName, getMesNome } from "./formatters";
 
 interface CobrancaWhatsAppParams {
   telefoneResponsavel: string;
@@ -12,7 +12,7 @@ interface CobrancaWhatsAppParams {
 export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string {
   const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
   const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
-  const primeiroNomePas = formatFirstName(params.nomePassageiro);
+  const nomePassageiro = formatShortName(params.nomePassageiro, true);
   const mesNome = getMesNome(params.mes);
   const valorFormatado = Number(params.valor).toLocaleString("pt-BR", {
     style: "currency",
@@ -21,13 +21,11 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
   const vencimento = formatDateToBR(params.dataVencimento);
 
   const mensagem = [
-    `Oi ${primeiroNomeResp}! Passando para lembrar da mensalidade de *${primeiroNomePas}* 🚌`,
+    `Oi ${primeiroNomeResp}! Passando para lembrar da mensalidade de *${nomePassageiro}* 🚌`,
     ``,
     `📅 *Mês:* ${mesNome}`,
     `💰 *Valor:* ${valorFormatado}`,
     `📆 *Vencimento:* ${vencimento}`,
-    ``,
-    `Qualquer dúvida, estou à disposição! 😊`,
   ].join("\n");
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
@@ -42,17 +40,12 @@ interface ContratoWhatsAppParams {
 
 export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string {
   const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
-  const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
-  const primeiroNomePas = formatFirstName(params.nomePassageiro);
   const link = params.link;
 
   const mensagem = [
-    `Oi ${primeiroNomeResp}! Sou o motorista da van de *${primeiroNomePas}* 🚌`,
-    ``,
     `Segue o link para visualização e assinatura do contrato digital:`,
-    `${link}`,
     ``,
-    `Qualquer dúvida, estou à disposição! 😊`,
+    `${link}`,
   ].join("\n");
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
