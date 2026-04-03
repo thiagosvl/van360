@@ -6,7 +6,6 @@ const CLARITY_ID = "w4mjidk4lw";
 
 function injectGTM() {
   if (window.__van360GTMLoaded) {
-    console.log("[Van360] GTM já carregado anteriormente, ignorando.");
     return;
   }
   window.__van360GTMLoaded = true;
@@ -24,13 +23,10 @@ function injectGTM() {
   const noscript = document.createElement("noscript");
   noscript.appendChild(iframe);
   document.body.prepend(noscript);
-
-  console.log("[Van360] GTM carregado com sucesso.");
 }
 
 function injectClarity() {
   if (window.__van360ClarityLoaded) {
-    console.log("[Van360] Microsoft Clarity já carregado anteriormente, ignorando.");
     return;
   }
   window.__van360ClarityLoaded = true;
@@ -38,8 +34,6 @@ function injectClarity() {
   const script = document.createElement("script");
   script.innerHTML = `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`;
   document.head.appendChild(script);
-
-  console.log("[Van360] Microsoft Clarity carregado com sucesso.");
 }
 
 interface AnalyticsInjectorOptions {
@@ -56,16 +50,12 @@ export function useAnalyticsInjector({ gtm = false, clarity = false, force = fal
     if (gtm) {
       if (force || isPending || prefs.gtm) {
         injectGTM();
-      } else {
-        console.log("[Van360] GTM bloqueado por preferência do usuário.");
       }
     }
 
     if (clarity) {
       if (force || isPending || prefs.clarity) {
         injectClarity();
-      } else {
-        console.log("[Van360] Microsoft Clarity bloqueado por preferência do usuário.");
       }
     }
   }, []);
