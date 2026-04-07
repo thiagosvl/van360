@@ -2,7 +2,7 @@ export const InitialLoading = () => (
   <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
     <div className="relative w-40 h-40 flex items-center justify-center">
       <div className="absolute inset-0 scale-125 bg-primary/5 rounded-full animate-pulse" />
-      <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping duration-[3000ms]" />
+      <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping animate-duration-[3s]" />
       <img
         src="/assets/logo-van360.png"
         alt="Van360"

@@ -40,11 +40,11 @@ const BaseDialogRoot = ({
         onEscapeKeyDown={(e) => lockClose && e.preventDefault()}
         hideCloseButton // We'll handle our own close button in the header
       >
-        {description && (
-          <div className="sr-only">
-            <DialogPrimitive.Description>{description}</DialogPrimitive.Description>
-          </div>
-        )}
+        <div className="sr-only">
+          <DialogPrimitive.Description>
+            {description || "Dialog content"}
+          </DialogPrimitive.Description>
+        </div>
         {children}
       </DialogContent>
     </Dialog>

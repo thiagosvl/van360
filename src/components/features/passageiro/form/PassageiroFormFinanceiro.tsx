@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { dateMask } from "@/utils/masks";
-import { CalendarDays, CreditCard } from "lucide-react";
+import { CalendarDays, CreditCard, Info } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
 interface PassageiroFormFinanceiroProps {
@@ -116,7 +116,6 @@ export function PassageiroFormFinanceiro({
             )}
           />
         </div>
-
       </div>
     </div>
   );

@@ -182,12 +182,6 @@ export const QuickStartCard = ({
               );
             })}
 
-            <div className="flex items-center gap-2 justify-center pt-3 opacity-60">
-              <LockIcon className="h-3 w-3 text-slate-400" />
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">
-                Complete as etapas para organizar seu painel.
-              </p>
-            </div>
           </div>
         </div>
       </div>
