@@ -194,3 +194,33 @@ export enum KPICardVariant {
   PRIMARY = "primary",
   OUTLINE = "outline"
 }
+
+export enum SubscriptionStatus {
+  TRIAL = "TRIAL",
+  ACTIVE = "ACTIVE",
+  PAST_DUE = "PAST_DUE",
+  CANCELED = "CANCELED",
+  EXPIRED = "EXPIRED"
+}
+
+export enum SubscriptionInvoiceStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+  CANCELED = "CANCELED",
+  FAILED = "FAILED"
+}
+
+export enum SubscriptionIdentifer {
+  MONTHLY = "MONTHLY",
+  YEARLY = "YEARLY"
+}
+
+export enum IndicacaoStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED"
+}
+
+export enum CheckoutPaymentMethod {
+  PIX = "pix",
+  CREDIT_CARD = "credit_card"
+}

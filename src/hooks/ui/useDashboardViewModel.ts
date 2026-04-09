@@ -1,12 +1,14 @@
-import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile, useSession } from "@/hooks";
+import { useSubscriptionStatus, useSubscriptionPlans } from "@/hooks/api/useSubscription";
 import { PassageiroFormModes } from "@/types/enums";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatFirstName } from "@/utils/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 
 export function useDashboardViewModel() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export function useDashboardViewModel() {
     openPassageiroFormDialog,
     openGastoFormDialog,
     openFirstChargeDialog,
+    openSaaSCheckoutDialog,
   } = useLayout();
 
   const { loading: isSessionLoading } = useSession();
@@ -27,9 +30,11 @@ export function useDashboardViewModel() {
     summary: systemSummary,
   } = useProfile();
 
+  const { subscription } = useSubscriptionStatus(profile?.id);
+  const { plans } = useSubscriptionPlans();
+
   const [isCopied, setIsCopied] = useState(false);
 
-  // Financial metrics from summary
   const financeiro = useMemo(() => ({
     recebido: systemSummary?.financeiro?.receita?.realizada ?? 0,
     aReceber: systemSummary?.financeiro?.receita?.pendente ?? 0,
@@ -37,7 +42,6 @@ export function useDashboardViewModel() {
     countAtrasos: systemSummary?.financeiro?.atrasos?.count ?? 0,
   }), [systemSummary]);
 
-  // Counters from summary
   const contadores = useMemo(() => ({
     escolas: systemSummary?.contadores?.escolas?.total ?? 0,
     veiculos: systemSummary?.contadores?.veiculos?.total ?? 0,
@@ -47,7 +51,6 @@ export function useDashboardViewModel() {
     passageirosSolicitacoes: systemSummary?.contadores?.passageiros?.solicitacoes_pendentes ?? 0,
   }), [systemSummary]);
 
-  // Onboarding logic
   const onboarding = useMemo(() => {
     const completedStepsCount = [
       contadores.veiculos > 0,
@@ -62,9 +65,18 @@ export function useDashboardViewModel() {
     };
   }, [contadores]);
 
-  // Date context
+  const subscriptionView = useMemo(() => {
+    if (!subscription) return undefined;
+
+    const trialDaysLeft = subscription.trial_ends_at
+      ? Math.max(0, differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()))
+      : undefined;
+
+    return { ...subscription, trialDaysLeft };
+  }, [subscription]);
+
   const dateContext = useMemo(() => {
-    const now = new Date();
+    const now = getNowBR();
     const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
       day: "numeric",
@@ -73,7 +85,6 @@ export function useDashboardViewModel() {
     return now.toLocaleDateString("pt-BR", options);
   }, []);
 
-  // Sync page title
   useEffect(() => {
     if (profile?.nome) {
       setPageTitle(`Olá, ${formatFirstName(profile.nome)}`);
@@ -82,9 +93,13 @@ export function useDashboardViewModel() {
     }
   }, [profile?.nome, setPageTitle]);
 
-  // Handlers
   const handlePullToRefresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+    if (!profile?.id) return;
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
+      queryClient.invalidateQueries({ queryKey: ["subscription", profile.id] }),
+    ]);
   };
 
   const handleCopyLink = useCallback(() => {
@@ -146,6 +161,8 @@ export function useDashboardViewModel() {
 
   return {
     profile,
+    subscription: subscriptionView,
+    plans,
     isLoading: isSessionLoading || isProfileLoading,
     financeiro,
     contadores,
@@ -158,6 +175,7 @@ export function useDashboardViewModel() {
     handleOpenGastoDialog,
     handleOpenVeiculoDialog,
     handleOpenEscolaDialog,
+    openSaaSCheckoutDialog,
     navigateTo,
   };
 }

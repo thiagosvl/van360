@@ -14,6 +14,9 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
+import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -142,6 +145,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [pixPaymentDialogState, setPixPaymentDialogState] = useState<{
+    open: boolean;
+    props?: OpenPixPaymentDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [saasCheckoutDialogState, setSaasCheckoutDialogState] = useState<{
+    open: boolean;
+    props?: OpenSaaSCheckoutDialogProps;
+  }>({
+    open: false,
+  });
+
 
 
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
@@ -244,6 +261,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setContractSetupDialogState({ open: true, props });
   };
 
+  const openPixPaymentDialog = (props: OpenPixPaymentDialogProps) => {
+    setPixPaymentDialogState({ open: true, props });
+  };
+
+  const openSaaSCheckoutDialog = (props: OpenSaaSCheckoutDialogProps) => {
+    setSaasCheckoutDialogState({ open: true, props });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -264,6 +289,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openCobrancaFormDialog,
         openFirstChargeDialog,
         openCobrancaHistoryDialog,
+        openPixPaymentDialog,
+        openSaaSCheckoutDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -525,6 +552,25 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <EditarCadastroDialog
           isOpen={editarCadastroDialogOpen}
           onClose={() => safeCloseDialog(() => setEditarCadastroDialogOpen(false))}
+        />
+      )}
+
+      {pixPaymentDialogState.open && pixPaymentDialogState.props && (
+        <PixPaymentDialog
+          isOpen={true}
+          onClose={() => setPixPaymentDialogState({ open: false })}
+          {...pixPaymentDialogState.props}
+        />
+      )}
+
+      {saasCheckoutDialogState.open && saasCheckoutDialogState.props && (
+        <SaaSCheckoutDialog
+          isOpen={true}
+          onClose={() => setSaasCheckoutDialogState({ open: false })}
+          plans={saasCheckoutDialogState.props.plans}
+          initialPlanId={saasCheckoutDialogState.props.initialPlanId}
+          onSuccess={saasCheckoutDialogState.props.onSuccess}
+          forcedPeriod={saasCheckoutDialogState.props.forcedPeriod}
         />
       )}
 

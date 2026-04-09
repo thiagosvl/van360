@@ -22,6 +22,7 @@ export interface Usuario {
   status_chave_pix?: string;
   chave_pix_validada_em?: string;
   flags?: any;
+  taxa_servico?: number;
 
   // Configurações de contrato
   assinatura_digital_url?: string;

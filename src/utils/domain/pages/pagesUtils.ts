@@ -1,4 +1,4 @@
-import { Car, ChartArea, CreditCard, FileText, GraduationCap, LayoutDashboard, Receipt, TrendingDown, Users } from "lucide-react";
+import { Car, ChartArea, CreditCard, FileText, GraduationCap, LayoutDashboard, Receipt, TrendingDown, Users, Rocket } from "lucide-react";
 
 const pagesItems = [
     {
@@ -40,6 +40,11 @@ const pagesItems = [
         title: "Relatórios",
         href: "/relatorios",
         icon: ChartArea,
+    },
+    {
+        title: "Minha Assinatura",
+        href: "/assinatura",
+        icon: Rocket,
     },
 ];
 

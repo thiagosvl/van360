@@ -37,6 +37,7 @@ export const passageiroApi = {
     if (data.bairro !== undefined) payload.bairro = cleanString(data.bairro);
     if (data.complemento !== undefined) payload.complemento = cleanString(data.complemento);
     if (data.observacoes !== undefined) payload.observacoes = cleanString(data.observacoes) || null;
+    if (data.repasse_taxa_servico !== undefined) payload.repasse_taxa_servico = data.repasse_taxa_servico;
 
     return apiClient
       .put(`${endpointBase}/${passageiroId}`, payload)
@@ -54,6 +55,7 @@ export const passageiroApi = {
       bairro: cleanString(data.bairro),
       complemento: cleanString(data.complemento),
       observacoes: cleanString(data.observacoes),
+      repasse_taxa_servico: data.repasse_taxa_servico ?? false,
     };
 
     return apiClient
@@ -72,6 +74,7 @@ export const passageiroApi = {
       bairro: cleanString(data.bairro),
       complemento: cleanString(data.complemento),
       observacoes: cleanString(data.observacoes),
+      repasse_taxa_servico: data.repasse_taxa_servico ?? false,
     };
 
     return apiClient

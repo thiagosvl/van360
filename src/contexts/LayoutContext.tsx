@@ -3,6 +3,7 @@ import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
 import {
   createContext,
@@ -95,7 +96,20 @@ export interface OpenContractSetupDialogProps {
     onSuccess?: (usarContratos?: boolean) => void;
 }
 
+export interface OpenPixPaymentDialogProps {
+  qrcode: string;
+  imagem_qrcode: string;
+  txid: string;
+  valor: number;
+  onSuccess?: () => void;
+}
 
+export interface OpenSaaSCheckoutDialogProps {
+  plans: SaaSPlan[];
+  initialPlanId?: string;
+  onSuccess?: () => void;
+  forcedPeriod?: SubscriptionIdentifer;
+}
 
 export interface LayoutContextType {
   pageTitle: string;
@@ -116,6 +130,8 @@ export interface LayoutContextType {
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
+  openPixPaymentDialog: (props: OpenPixPaymentDialogProps) => void;
+  openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
 
   isFirstChargeDialogOpen: boolean;
   

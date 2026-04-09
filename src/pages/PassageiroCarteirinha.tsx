@@ -18,7 +18,8 @@ import {
   CarteirinhaDadosPessoais,
   CarteirinhaHeader,
   CarteirinhaInfo,
-  CarteirinhaObservacoes
+  CarteirinhaObservacoes,
+  CarteirinhaAutomacaoCobranca
 } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -52,8 +53,9 @@ import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
+import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
 
-const currentYear = new Date().getFullYear().toString();
+const currentYear = getNowBR().getFullYear().toString();
 
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
@@ -421,11 +423,10 @@ export default function PassageiroCarteirinha() {
   };
 
   const temCobrancasVencidas = useMemo(() => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const hoje = getStartOfDayBR();
     return cobrancas.some(
       (c) =>
-        c.status !== CobrancaStatus.PAGO && new Date(c.data_vencimento) < hoje,
+        c.status !== CobrancaStatus.PAGO && parseLocalDate(c.data_vencimento) < hoje,
     );
   }, [cobrancas]);
 
@@ -521,12 +522,12 @@ export default function PassageiroCarteirinha() {
       }),
     onContractAction: () => {
       const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
-      const isPendente = 
-        statusContrato === ContratoStatus.PENDENTE || 
-        statusContrato === 'pendente' || 
+      const isPendente =
+        statusContrato === ContratoStatus.PENDENTE ||
+        statusContrato === 'pendente' ||
         statusContrato === '1' ||
         (!!passageiro.contrato_id && !passageiro.status_contrato);
-        
+
       const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
       const hasUrl = passageiro.contrato_url || passageiro.minuta_url;
 
@@ -624,7 +625,10 @@ export default function PassageiroCarteirinha() {
                     </Suspense>
                   </TabsContent>
 
-                  <TabsContent value="mensalidades" className="mt-5 outline-none">
+                  <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5">
+                    <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
+                      <CarteirinhaAutomacaoCobranca passageiro={passageiro} />
+                    </Suspense>
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
                     </Suspense>
@@ -646,7 +650,10 @@ export default function PassageiroCarteirinha() {
                 </div>
 
                 {/* Lado Direito: Mensalidades */}
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-8 space-y-6">
+                  <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
+                    <CarteirinhaAutomacaoCobranca passageiro={passageiro} />
+                  </Suspense>
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas {...cobrancasProps} />
                   </Suspense>

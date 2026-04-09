@@ -57,6 +57,7 @@ export const passageiroSchema = z
     data_inicio_transporte: dateSchema(true, true),
 
     ativo: z.boolean().optional(),
+    repasse_taxa_servico: z.boolean().optional(),
     usuario_id: z.string().optional(),
   });
 
@@ -113,6 +114,7 @@ export function usePassageiroForm({
       data_inicio_transporte: "",
 
       ativo: true,
+      repasse_taxa_servico: false,
     },
   });
 
@@ -131,7 +133,7 @@ export function usePassageiroForm({
             nome: editingPassageiro.nome,
             periodo: editingPassageiro.periodo,
             modalidade: editingPassageiro.modalidade || "",
-            data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(new Date(editingPassageiro.data_nascimento)) : "",
+            data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
             genero: editingPassageiro.genero || "",
             nome_responsavel: editingPassageiro.nome_responsavel,
             parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
@@ -148,7 +150,7 @@ export function usePassageiroForm({
                 )
               : "",
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
-            data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(new Date(editingPassageiro.data_inicio_transporte)) : "",
+            data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -161,6 +163,7 @@ export function usePassageiroForm({
             veiculo_id: editingPassageiro.veiculo_id || "",
 
             ativo: editingPassageiro.ativo,
+            repasse_taxa_servico: editingPassageiro.repasse_taxa_servico ?? false,
           });
         });
 
@@ -180,7 +183,7 @@ export function usePassageiroForm({
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
           periodo: prePassageiro.periodo || "",
           modalidade: prePassageiro.modalidade || "",
-          data_nascimento: formatDateToBR(prePassageiro.data_nascimento || ""),
+          data_nascimento: prePassageiro.data_nascimento ? formatDateToBR(prePassageiro.data_nascimento) : "",
           genero: prePassageiro.genero || "", 
           parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
           logradouro: prePassageiro.logradouro || "",
@@ -199,7 +202,7 @@ export function usePassageiroForm({
               )
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
-          data_inicio_transporte: formatDateToBR(prePassageiro.data_inicio_transporte || ""),
+          data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
 
           ativo: true,
         });

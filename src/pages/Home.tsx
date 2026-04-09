@@ -2,8 +2,10 @@ import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { KPICard } from "@/components/common/KPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
+import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
+import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { getMesNome } from "@/utils/formatters";
@@ -20,10 +22,13 @@ import {
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
 import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
+import { getNowBR } from "@/utils/dateUtils";
 
 const Home = () => {
   const {
     profile,
+    subscription,
+    plans,
     isLoading,
     financeiro,
     contadores,
@@ -36,6 +41,7 @@ const Home = () => {
     handleOpenGastoDialog,
     handleOpenVeiculoDialog,
     handleOpenEscolaDialog,
+    openSaaSCheckoutDialog,
     navigateTo,
   } = useDashboardViewModel();
 
@@ -58,6 +64,24 @@ const Home = () => {
                 : "Tudo em dia por aqui!"}
             </p>
           </div>
+
+          {/* Banner de Trial (SaaS) */}
+          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
+            <TrialBanner
+              daysLeft={subscription.trialDaysLeft}
+              onSubscribe={() => {
+                if (plans && plans.length > 0) {
+                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
+                  openSaaSCheckoutDialog({
+                    plans,
+                    initialPlanId: defaultPlan.id
+                  });
+                } else {
+                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+                }
+              }}
+            />
+          )}
 
           {/* Notificação de Solicitações Pendentes */}
           {contadores.passageirosSolicitacoes > 0 && (
@@ -100,7 +124,7 @@ const Home = () => {
                 description={`Você tem ${formatCurrency(
                   financeiro.totalEmAtraso,
                 )} em atraso de ${financeiro.countAtrasos} passageiro${financeiro.countAtrasos != 1 ? "s" : ""
-                  } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
+                  } referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
                 actionLabel="Ver Mensalidades"
                 onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
               />
@@ -118,13 +142,13 @@ const Home = () => {
             {!onboarding.showOnboarding && (
               <>
                 <KPICard
-                  label={`A receber em ${getMesNome(new Date().getMonth() + 1)}`}
+                  label={`A receber em ${getMesNome(getNowBR().getMonth() + 1)}`}
                   value={formatCurrency(financeiro.aReceber)}
                   variant={KPICardVariant.PRIMARY}
                   loading={isLoading}
                 />
                 <KPICard
-                  label={`Recebido em ${getMesNome(new Date().getMonth() + 1)}`}
+                  label={`Recebido em ${getMesNome(getNowBR().getMonth() + 1)}`}
                   value={formatCurrency(financeiro.recebido)}
                   variant={KPICardVariant.OUTLINE}
                   loading={isLoading}
