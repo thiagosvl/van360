@@ -5,6 +5,7 @@ import { moneyMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 
 interface ManualPaymentViewModelProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export function useManualPaymentViewModel({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       valor_pago: "",
-      data_pagamento: new Date(),
+      data_pagamento: getNowBR(),
     },
   });
 
@@ -37,7 +38,7 @@ export function useManualPaymentViewModel({
       const valorEmCentavos = Math.round(Number(valorOriginal) * 100);
       form.reset({
         valor_pago: moneyMask(String(valorEmCentavos)),
-        data_pagamento: new Date(),
+        data_pagamento: getNowBR(),
         tipo_pagamento: undefined,
       });
     }
@@ -46,7 +47,7 @@ export function useManualPaymentViewModel({
   const handleSubmit = useCallback(async (data: PaymentFormData) => {
     const pagamentoData: RegistrarPagamentoManualDTO = {
       valor_pago: data.valor_pago,
-      data_pagamento: data.data_pagamento.toISOString(),
+      data_pagamento: toISODateTimeBR(data.data_pagamento),
       tipo_pagamento: data.tipo_pagamento,
     };
 

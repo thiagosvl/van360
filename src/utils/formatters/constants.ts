@@ -13,7 +13,7 @@ export const meses = [
   "Dezembro",
 ];
 
-const currentYear = new Date().getFullYear();
+const currentYear = getNowBR().getFullYear();
 
 export const anos = [
   {
@@ -28,6 +28,7 @@ export const anos = [
 ];
 
 import { CobrancaTipoPagamento } from "@/types/enums";
+import { getNowBR } from "../dateUtils";
 
 export const tiposPagamento = [
   { value: CobrancaTipoPagamento.PIX, label: "PIX" },

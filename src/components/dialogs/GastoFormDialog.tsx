@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
+import { parseLocalDate } from "@/utils/dateUtils";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { moneyMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -35,7 +36,6 @@ import { ptBR } from "date-fns/locale";
 import {
   Bus,
   CalendarIcon,
-  Receipt,
   Tag,
   TrendingDown,
   Wand2,
@@ -99,7 +99,7 @@ export default function GastoFormDialog({
         const valorEmCentavos = Math.round(Number(gastoToEdit.valor) * 100);
         form.reset({
           valor: moneyMask(String(valorEmCentavos)),
-          data: new Date(new Date(gastoToEdit.data).valueOf() + 1000 * 3600 * 24),
+          data: parseLocalDate(gastoToEdit.data),
           categoria: gastoToEdit.categoria,
           descricao: gastoToEdit.descricao || "",
           veiculo_id: gastoToEdit.veiculo_id || "none",

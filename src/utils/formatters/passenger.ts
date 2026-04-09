@@ -3,6 +3,7 @@ import {
   PassageiroGenero,
   PassageiroModalidade,
 } from "@/types/enums";
+import { getNowBR, parseLocalDate } from "../dateUtils";
 
 export const formatModalidade = (modalidade: string) => {
   switch (modalidade) {
@@ -59,8 +60,8 @@ export const formatParentesco = (parentesco: string) => {
 
 export const calcularIdade = (dataNascimento?: string): number | null => {
   if (!dataNascimento) return null;
-  const nascimento = new Date(dataNascimento + "T00:00:00");
-  const hoje = new Date();
+  const nascimento = parseLocalDate(dataNascimento);
+  const hoje = getNowBR();
   let idade = hoje.getFullYear() - nascimento.getFullYear();
   const mesAtual = hoje.getMonth();
   const mesNascimento = nascimento.getMonth();

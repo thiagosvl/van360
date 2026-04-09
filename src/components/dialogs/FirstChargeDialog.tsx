@@ -16,6 +16,7 @@ import {
   useFirstChargeViewModel,
 } from "@/hooks/ui/useFirstChargeViewModel";
 import { formatFirstName, formatShortName } from "@/utils/formatters";
+import { getNowBR } from "@/utils/dateUtils";
 
 export interface FirstChargeDialogProps {
   isOpen: boolean;
@@ -47,7 +48,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
     isLoading,
   } = useFirstChargeViewModel({ passageiro, onClose });
 
-  const currentMonthName = new Date().toLocaleString("pt-BR", { month: "long" });
+  const currentMonthName = getNowBR().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
   const firstNamePassageiro = formatShortName(passageiro.nome);
   const firstNameResponsavel = formatFirstName(passageiro.nome_responsavel);

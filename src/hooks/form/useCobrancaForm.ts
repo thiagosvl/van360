@@ -3,7 +3,14 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
-import { calculateSafeDueDate } from "@/utils/dateUtils";
+import { 
+  calculateSafeDueDate, 
+  getNowBR, 
+  parseLocalDate, 
+  toPersistenceString, 
+  toISODateTimeBR,
+  isBeforeNowBR
+} from "@/utils/dateUtils";
 import {
   parseCurrencyToNumber
 } from "@/utils/formatters";
@@ -12,7 +19,6 @@ import {
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -59,9 +65,14 @@ export const cobrancaSchema = z
   )
   .refine(
     (data) => {
-      // Validação de data futura no pagamento
+      // Validação de data de pagamento futura
        if (data.foi_pago && data.data_pagamento) {
-           return data.data_pagamento <= new Date();
+           return !isBeforeNowBR(data.data_pagamento); // Se é ANTES do agora, é válido. Se for depois, falha.
+           // Na verdade isBeforeNowBR retorna true se target < now.
+           // Queremos: data_pagamento <= nowBR.
+           // Vou usar a lógica manual aqui para ser mais preciso na validação de formulário.
+           const now = getNowBR();
+           return data.data_pagamento.getTime() <= now.getTime();
        }
        return true;
     },
@@ -119,10 +130,10 @@ export function useCobrancaForm({
       
       return {
         valor: moneyMask(String(valorCentavos)),
-        data_vencimento: new Date(cobranca.data_vencimento + "T12:00:00"), // Compensar fuso simples ou usar lib
+        data_vencimento: parseLocalDate(cobranca.data_vencimento),
         foi_pago: isPago,
         data_pagamento: cobranca.data_pagamento
-          ? new Date(cobranca.data_pagamento)
+          ? parseLocalDate(cobranca.data_pagamento)
           : undefined,
         tipo_pagamento: cobranca.tipo_pagamento || "",
         mes: undefined, 
@@ -131,10 +142,10 @@ export function useCobrancaForm({
     }
 
     // CREATE Mode
-    const today = new Date();
+    const today = getNowBR();
     const currentMonth = (today.getMonth() + 1).toString();
     const currentYear = today.getFullYear().toString();
-    // Vencimento inicial seguro
+
     const vencimentoInicial = calculateSafeDueDate(
         diaVencimento,
         today.getMonth(),
@@ -158,7 +169,6 @@ export function useCobrancaForm({
     mode: "onBlur",
   });
 
-  // Resetar form quando defaults mudam (ex: abrir dialog com outro passageiro)
   useEffect(() => {
     form.reset(defaultValues);
   }, [defaultValues, form]);
@@ -171,19 +181,17 @@ export function useCobrancaForm({
 
     const valorNumerico = data.valor;
     
-    // Tratamento de fuso horário simples para strings yyyy-mm-dd
-    const dataVencimentoStr = format(data.data_vencimento, "yyyy-MM-dd");
-    const dataPagamentoStr = data.data_pagamento 
-        ? data.data_pagamento.toISOString() 
-        : null;
+    // Persistência segura em Brasília
+    const dataVencimentoStr = toPersistenceString(data.data_vencimento);
+    const dataPagamentoStr = toISODateTimeBR(data.data_pagamento);
 
     if (mode === "create") {
       if (!passageiroId) return;
 
       const payload = {
         passageiro_id: passageiroId,
-        mes: data.mes || format(data.data_vencimento, "M"),
-        ano: data.ano || format(data.data_vencimento, "yyyy"),
+        mes: data.mes || (data.data_vencimento.getMonth() + 1).toString(),
+        ano: data.ano || data.data_vencimento.getFullYear().toString(),
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
@@ -202,18 +210,18 @@ export function useCobrancaForm({
       });
 
     } else if (mode === "edit" && cobranca) {
-        
-        // Verificação de mudanças (Opcional, mas boa prática)
-        // ... (lógica simplificada aqui, o backend ou hook de update lida com isso)
-        
         const updatePayload: any = {
             valor: valorNumerico,
             data_vencimento: dataVencimentoStr,
             tipo_pagamento: data.foi_pago ? data.tipo_pagamento : undefined,
+            status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
+            pagamento_manual: data.foi_pago,
         };
 
-        if (cobranca.pagamento_manual && data.data_pagamento) {
+        if (data.foi_pago) {
             updatePayload.data_pagamento = dataPagamentoStr;
+        } else {
+            updatePayload.data_pagamento = null;
         }
 
         updateCobranca.mutate({
@@ -234,7 +242,7 @@ export function useCobrancaForm({
     onSubmit: form.handleSubmit(onSubmit),
     isSubmitting,
     isPaga: form.watch("foi_pago"),
-    mesSelecionado: form.watch("mes"), // Para UI de Create
-    anoSelecionado: form.watch("ano"), // Para UI de Create
+    mesSelecionado: form.watch("mes"),
+    anoSelecionado: form.watch("ano"),
   };
 }

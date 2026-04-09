@@ -3,7 +3,7 @@ import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { getMessage } from "@/constants/messages";
 import { CobrancaOrigem, CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { calculateSafeDueDate, toLocalDateString } from "@/utils/dateUtils";
+import { calculateSafeDueDate, toLocalDateString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -52,7 +52,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
   }, [step, showContractStep, setWantsMonthlyCharge, setPaymentStatus, setPaymentMethod]);
 
   const submitCobranca = useCallback(async (status: CobrancaStatus) => {
-    const today = new Date();
+    const today = getNowBR();
     const vencimentoDate = calculateSafeDueDate(
       passageiro.dia_vencimento || today.getDate(),
       today.getMonth(),
@@ -79,7 +79,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
 
       if (status === CobrancaStatus.PAGO) {
         payload.tipo_pagamento = paymentMethod as CobrancaTipoPagamento;
-        payload.data_pagamento = new Date().toISOString();
+        payload.data_pagamento = toISODateTimeBR(getNowBR());
         payload.valor_pago = valor;
         payload.pagamento_manual = true;
       }

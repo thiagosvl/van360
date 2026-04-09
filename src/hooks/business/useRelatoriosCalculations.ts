@@ -14,9 +14,10 @@ import { useMemo } from "react";
 import {
   CobrancaTipoPagamento,
   GastoCategoria,
-  PassageiroPeriodo
+
 } from "@/types/enums";
 import { formatPaymentType } from "@/utils/formatters";
+import { parseLocalDate } from "@/utils/dateUtils";
 
 // Constantes para agrupamento
 const VEICULO_OUTROS = "outros";
@@ -175,7 +176,7 @@ export const useRelatoriosCalculations = ({
 
     // Saídas
     const diasComGastos = new Set(
-      gastos.map((g: any) => new Date(g.data).getDate())
+      gastos.map((g: any) => parseLocalDate(g.data).getDate())
     ).size;
     const mediaDiaria = diasComGastos > 0 ? gasto / diasComGastos : 0;
     const margemOperacional =

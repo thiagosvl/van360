@@ -14,12 +14,12 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const y = useMotionValue(0);
-  
+
   // Transforma a distância puxada em rotação e opacidade
   const rotate = useTransform(y, [0, PULL_THRESHOLD], [0, 180]);
   const opacity = useTransform(y, [0, 20, PULL_THRESHOLD], [0, 0, 1]);
   const scale = useTransform(y, [0, PULL_THRESHOLD], [0, 1]);
-  
+
   // Centraliza o loader no espaço vazio
   // y/2 é o centro do espaço. -20px compensa metade da altura do loader (~40px)
   // Isso garante que o loader fique visualmente no meio da área branca criada
@@ -29,26 +29,26 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
     if (!isMobile) return;
 
-      const handleTouchStart = (e: TouchEvent) => {
+    const handleTouchStart = (e: TouchEvent) => {
       // Verifica se há algum dialog aberto (Radix UI adiciona data-scroll-locked ao body)
       const isScrollLocked = document.body.hasAttribute("data-scroll-locked");
       const isSwipeActive = document.body.hasAttribute("data-swipe-active");
       // Verifica se o toque foi dentro de um dialog
       const isInsideDialog = (e.target as Element)?.closest?.('[role="dialog"]');
-      
+
       if (window.scrollY > 0 || isRefreshing || isScrollLocked || isSwipeActive || isInsideDialog) return;
-      
-      
+
+
       const startY = e.touches[0].clientY;
       const startX = e.touches[0].clientX;
       let isScrollingHorizontal = false;
@@ -57,8 +57,8 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
       const handleTouchMove = (e: TouchEvent) => {
         // Re-check lock status inside move to handle race conditions (e.g. swipe starting after touch)
         if (document.body.hasAttribute("data-scroll-locked") || document.body.hasAttribute("data-swipe-active")) {
-           y.set(0); 
-           return;
+          y.set(0);
+          return;
         }
 
         const currentY = e.touches[0].clientY;
@@ -80,10 +80,10 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         if (diffY > 0 && window.scrollY <= 0) {
           // Fator 0.8: Mais leve de puxar
           const resistance = Math.min(diffY * 0.8, MAX_PULL);
-          
+
           if (resistance > 0) {
             if (e.cancelable) {
-               e.preventDefault(); 
+              e.preventDefault();
             }
             y.set(resistance);
           }
@@ -97,7 +97,7 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         if (!isScrollingHorizontal && currentY >= PULL_THRESHOLD) {
           setIsRefreshing(true);
           animate(y, PULL_THRESHOLD, { type: "spring", stiffness: 300, damping: 30 });
-          
+
           try {
             await onRefresh();
           } finally {

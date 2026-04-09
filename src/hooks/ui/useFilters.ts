@@ -1,6 +1,7 @@
 import { FilterDefaults } from "@/types/enums";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { getNowBR } from "@/utils/dateUtils";
 
 export interface UseFiltersOptions {
   searchParam?: string;
@@ -93,7 +94,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     () => {
       if (!mesParam) return undefined;
       const val = syncWithUrl ? searchParams.get(mesParam) : null;
-      return val ? parseInt(val) : new Date().getMonth() + 1;
+      return val ? parseInt(val) : getNowBR().getMonth() + 1;
     }
   );
 
@@ -101,7 +102,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     () => {
       if (!anoParam) return undefined;
       const val = syncWithUrl ? searchParams.get(anoParam) : null;
-      return val ? parseInt(val) : new Date().getFullYear();
+      return val ? parseInt(val) : getNowBR().getFullYear();
     }
   );
 
@@ -260,8 +261,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     if (selectedEscola !== undefined) setSelectedEscolaState(FilterDefaults.TODAS);
     if (selectedVeiculo !== undefined) setSelectedVeiculoState(FilterDefaults.TODOS);
     if (selectedPeriodo !== undefined) setSelectedPeriodoState(FilterDefaults.TODOS);
-    if (selectedMes !== undefined) setSelectedMesState(new Date().getMonth() + 1);
-    if (selectedAno !== undefined) setSelectedAnoState(new Date().getFullYear());
+    if (selectedMes !== undefined) setSelectedMesState(getNowBR().getMonth() + 1);
+    if (selectedAno !== undefined) setSelectedAnoState(getNowBR().getFullYear());
     if (selectedCategoria !== undefined) setSelectedCategoriaState(FilterDefaults.TODAS);
 
     if (syncWithUrl) {

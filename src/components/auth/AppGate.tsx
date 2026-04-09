@@ -21,10 +21,12 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     publicPaths.includes(location.pathname) ||
     location.pathname.startsWith("/cadastro-passageiro");
 
+  const isShowingWelcome = sessionStorage.getItem("van360_showing_welcome") === "true";
+
   // 🔹 Para não impactar o motorista, verificamos se o tipo já existe na sessão (metadados).
   // Só bloqueamos com profileLoading se não soubermos quem é o usuário ou se ele for admin (que exige validação DB).
   const isDriverInSession = (session?.user as any)?.tipo === UserType.MOTORISTA;
-  const isLoading = sessionLoading || (!!session && profileLoading && !isDriverInSession);
+  const isLoading = sessionLoading || (!!session && profileLoading && !isDriverInSession && !isShowingWelcome);
 
   if (isLoading) {
     return <InitialLoading />;
@@ -44,15 +46,13 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   // Usamos o 'tipo' vindo do perfil (banco de dados)
   const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
 
-  const isShowingWelcome = sessionStorage.getItem("van360_showing_welcome") === "true";
-  
   if (session && authPaths.includes(location.pathname) && !isShowingWelcome) {
     const userRole = profile?.tipo || UserType.MOTORISTA;
-    
-    const targetPath = userRole === UserType.ADMIN 
-      ? ROUTES.PRIVATE.ADMIN.DASHBOARD 
+
+    const targetPath = userRole === UserType.ADMIN
+      ? ROUTES.PRIVATE.ADMIN.DASHBOARD
       : ROUTES.PRIVATE.MOTORISTA.HOME;
-      
+
     return <Navigate to={targetPath} replace />;
   }
 

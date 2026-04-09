@@ -1,5 +1,6 @@
 import { Gasto } from "@/types/gasto";
 import { useMemo } from "react";
+import { getNowBR, getDaysInMonthBR } from "@/utils/dateUtils";
 
 
 
@@ -56,7 +57,7 @@ export const useGastosCalculations = ({
         : null;
 
     // Calculate Daily Average
-    const now = new Date();
+    const now = getNowBR();
     let daysPassed = 1;
 
     if (
@@ -64,7 +65,7 @@ export const useGastosCalculations = ({
       (anoFilter === now.getFullYear() && mesFilter < now.getMonth() + 1)
     ) {
       // Past month: use total days in month
-      daysPassed = new Date(anoFilter, mesFilter, 0).getDate();
+      daysPassed = getDaysInMonthBR(mesFilter, anoFilter);
     } else if (
       anoFilter === now.getFullYear() &&
       mesFilter === now.getMonth() + 1

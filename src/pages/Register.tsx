@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
+import { getNowBR } from "@/utils/dateUtils";
 import { Wand2 } from "lucide-react";
 
 export default function Register() {
@@ -106,7 +107,7 @@ export default function Register() {
         {/* Footer */}
         <div className="text-center pt-4">
           <p className="text-sm text-slate-600 font-medium">
-            © {new Date().getFullYear()} Van360. Todos os direitos reservados.
+            © {getNowBR().getFullYear()} Van360. Todos os direitos reservados.
           </p>
         </div>
       </div>

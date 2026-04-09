@@ -1,9 +1,9 @@
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHistoricoByEntidade } from "@/hooks/api/useHistorico";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
+import { parseLocalDate } from "@/utils/dateUtils";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
@@ -154,7 +154,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
         <AnimatePresence initial={false}>
           {displayAtividades?.map((atividade, index) => {
             const styles = getActionStyles(atividade.acao);
-            const showDateHeader = index === 0 || !isSameDay(new Date(atividade.created_at), new Date(displayAtividades[index - 1].created_at));
+            const showDateHeader = index === 0 || !isSameDay(parseLocalDate(atividade.created_at), parseLocalDate(displayAtividades[index - 1].created_at));
 
             return (
               <motion.div
@@ -168,7 +168,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                   <div className="relative -ml-6 mb-2 mt-2 first:mt-0">
                     <div className="inline-flex items-center gap-2 bg-transparent px-2 py-0.5 relative z-10">
                       <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 font-headline">
-                        {format(new Date(atividade.created_at), "dd 'de' MMMM", { locale: ptBR })}
+                        {format(parseLocalDate(atividade.created_at), "dd 'de' MMMM", { locale: ptBR })}
                       </span>
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                             {atividade.descricao}
                           </span>
                           <span className="text-[10px] text-foreground/40 font-medium tracking-tight">
-                            {format(new Date(atividade.created_at), "HH:mm", { locale: ptBR })}
+                            {format(parseLocalDate(atividade.created_at), "HH:mm", { locale: ptBR })}
                           </span>
                         </div>
                       </div>

@@ -25,13 +25,13 @@ import {
 import { CobrancaFormData, useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { calculateSafeDueDate } from "@/utils/dateUtils";
+import { calculateSafeDueDate, formatLocalDate, getNowBR, parseLocalDate } from "@/utils/dateUtils";
 import {
     anos,
     meses as mesesConstants,
     tiposPagamento,
 } from "@/utils/formatters";
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import { endOfMonth, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     AlertTriangle,
@@ -98,14 +98,14 @@ export function CobrancaFormContent({
     }, [isPaga]);
 
     // --- Logic for Create Mode (Mes/Ano Sync) ---
-    const currentYear = new Date().getFullYear();
+    const currentYear = getNowBR().getFullYear();
 
     const isFutureMonth = (mes?: string, ano?: string) => {
         if (!mes || !ano) return false;
         const mesNum = parseInt(mes);
         const anoNum = parseInt(ano);
         const dataSelecionada = anoNum * 100 + mesNum;
-        const dataAtual = currentYear * 100 + (new Date().getMonth() + 1);
+        const dataAtual = currentYear * 100 + (getNowBR().getMonth() + 1);
         return dataSelecionada > dataAtual;
     };
 
@@ -138,7 +138,7 @@ export function CobrancaFormContent({
     const shouldDisableValue = mode === "edit" && (isPaga && !isPagamentoManual);
     const shouldDisableDueDate = mode === "edit" && isPaga;
     // Disable calendar date logic for Edit Vencimento
-    const cobrancaMesAnoDate = cobranca ? new Date(cobranca.data_vencimento) : new Date();
+    const cobrancaMesAnoDate = cobranca ? parseLocalDate(cobranca.data_vencimento) : getNowBR();
 
     return (
         <div className="space-y-4">
@@ -196,7 +196,7 @@ export function CobrancaFormContent({
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="max-h-60">
-                                        {anos.filter(a => a.value === String(new Date().getFullYear())).map((a) => (
+                                        {anos.filter(a => a.value === String(getNowBR().getFullYear())).map((a) => (
                                             <SelectItem key={a.value} value={a.value}>
                                                 {a.label}
                                             </SelectItem>
@@ -266,7 +266,7 @@ export function CobrancaFormContent({
                                                     fieldState.error && "border-red-500"
                                                 )}
                                             >
-                                                {field.value ? format(field.value, "dd/MM/yyyy") : "Selecione"}
+                                                {field.value ? formatLocalDate(field.value) : "Selecione"}
                                             </Button>
                                         </div>
                                     </FormControl>
@@ -349,7 +349,7 @@ export function CobrancaFormContent({
                                                         fieldState.error && "border-red-500"
                                                     )}
                                                 >
-                                                    {field.value ? format(field.value, "dd/MM/yyyy") : "Selecione"}
+                                                    {field.value ? formatLocalDate(field.value) : "Selecione"}
                                                 </Button>
                                             </div>
                                         </FormControl>
@@ -362,7 +362,7 @@ export function CobrancaFormContent({
                                                 field.onChange(date);
                                                 setOpenCalendarPagamento(false);
                                             }}
-                                            disabled={(date) => date > new Date()}
+                                            disabled={(date) => date > getNowBR()}
                                             locale={ptBR}
                                         />
                                     </PopoverContent>

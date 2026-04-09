@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
 
 export function isValidCPF(cpf: string): boolean {
   const cleaned = cpf.replace(/\D/g, "");
@@ -79,7 +80,10 @@ export function isValidDateBr(dateString: string | undefined | null, allowFuture
   if (day < 1 || day > 31) return false;
   if (year < 1900) return false;
 
-  const date = new Date(year, month - 1, day);
+  // Usa parseLocalDate com o formato ISO gerado dos componentes para validação segura
+  const date = parseLocalDate(`${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`);
+  
+  // Verifica se a data é válida (ex: 31/02 vira 03/03 no construtor Date, o que parseLocalDate evita ou detectamos aqui)
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
       return false;
   }
@@ -87,8 +91,7 @@ export function isValidDateBr(dateString: string | undefined | null, allowFuture
   if (!allowFuture) {
     // Future check: date cannot be in the future (today is valid)
     // Normalize to start of day for accurate comparison vs today
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    const today = getStartOfDayBR();
     
     if (date > today) return false;
   }

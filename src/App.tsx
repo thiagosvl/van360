@@ -45,12 +45,16 @@ const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
 const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
+const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
+const PrivacyPolicy = lazyLoad(() => import("./pages/legal/PrivacyPolicyPage"));
+const TermsOfUse = lazyLoad(() => import("./pages/legal/TermsOfUsePage"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
 import { queryClient } from "@/services/queryClient";
 import { UserType } from "@/types/enums";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
+import { SubscriptionGuard } from "@/components/auth/SubscriptionGuard";
 
 const AdminDashboard = lazyLoad(() => import("./pages/admin/AdminDashboard"));
 
@@ -217,6 +221,16 @@ const App = () => {
                   element={<PassageiroExternalForm />}
                 />
 
+                <Route
+                  path={ROUTES.PUBLIC.PRIVACY_POLICY}
+                  element={<PrivacyPolicy />}
+                />
+
+                <Route
+                  path={ROUTES.PUBLIC.TERMS_OF_USE}
+                  element={<TermsOfUse />}
+                />
+
                 {/* Rota Pública de assinatura de contrato */}
                 <Route
                   path="/assinar/:token"
@@ -272,18 +286,23 @@ const App = () => {
                     </AppGate>
                   }
                 >
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
-                  <Route
-                    path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
-                    element={<PassageiroCarteirinha />}
-                  />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
+
+                  {/* Rotas que exigem assinatura ativa ou trial (Paywall) */}
+                  <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
+                    <Route
+                      path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
+                      element={<PassageiroCarteirinha />}
+                    />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
+                  </Route>
                 </Route>
 
                 <Route path="*" element={<NotFound />} />

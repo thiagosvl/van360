@@ -1,18 +1,16 @@
 import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso } from "./cobranca";
-import { formatDate } from "./date";
+import { getStartOfDayBR, getNowBR, differenceInCalendarDaysBR } from "../dateUtils";
 
 export const getStatusText = (status: string, dataVencimento: string) => {
   if (status === CobrancaStatus.PAGO) {
     return "Pago";
   }
 
-  const vencimento = formatDate(dataVencimento);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  const vencimento = getStartOfDayBR(dataVencimento);
+  const hoje = getStartOfDayBR();
 
-  const diffTime = hoje.getTime() - vencimento.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = differenceInCalendarDaysBR(hoje, vencimento);
 
   if (vencimento < hoje) {
     return "Em atraso";
@@ -32,13 +30,8 @@ export const getStatusColor = (status: string, dataVencimento: string) => {
     return "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 shadow-sm";
   }
 
-  const vencimento = formatDate(dataVencimento);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  vencimento.setHours(0, 0, 0, 0);
-
-  const diffTime = hoje.getTime() - vencimento.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // Se o vencimento é hoje (diffDays 0 quando comparado hoje com vencimento)
+  const diffDays = differenceInCalendarDaysBR(getNowBR(), dataVencimento);
 
   if (diffDays === 0) {
     return "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-800 border-orange-200 shadow-sm";

@@ -25,7 +25,7 @@ export function useRegisterController() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
-  
+
   /* [TEMPORÁRIO] Usando isMobilePlatform para exibir boas-vindas no mobile browser também */
   const [showNativeWelcome, setShowNativeWelcome] = useState(
     () => isMobilePlatform() && sessionStorage.getItem("van360_showing_welcome") === "true"
@@ -56,6 +56,7 @@ export function useRegisterController() {
       email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
       senha: "Ogaiht+1",
+      termos_aceitos: true
     });
   };
 
@@ -66,7 +67,7 @@ export function useRegisterController() {
       if (result?.error) throw new Error(result.error);
 
       // --- FLUXO DE PÓS-CADASTRO ---
-      
+
       const sessionUser = result.session.user || result.user;
       const isMobile = isMobilePlatform();
 

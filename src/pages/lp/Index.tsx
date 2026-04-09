@@ -13,8 +13,12 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { usePublicPlans } from "@/hooks/api/usePublicPlans";
+import { SubscriptionUtils } from "@/utils/subscription.utils";
+import { SubscriptionIdentifer } from "@/types/enums";
+import { getNowBR } from "@/utils/dateUtils";
 
 // ── Scroll reveal hook ──
 function useReveal() {
@@ -131,7 +135,31 @@ const Index = () => {
   });
   const [termosOpen, setTermosOpen] = useState(false);
   const [privacidadeOpen, setPrivacidadeOpen] = useState(false);
-  const { isPending } = useCookieConsent();
+  const { isPending: cookiePending } = useCookieConsent();
+
+  // ── Preços Dinâmicos ──
+  const { data: plansData } = usePublicPlans();
+
+  const pricing = useMemo(() => {
+    const plans = plansData?.plans || [];
+    const isPromoActive = plansData?.isPromotionActive ?? false;
+
+    const monthlyPlan = SubscriptionUtils.getPlanByPeriod(plans, SubscriptionIdentifer.MONTHLY);
+    const yearlyPlan = SubscriptionUtils.getPlanByPeriod(plans, SubscriptionIdentifer.YEARLY);
+
+    // Valor destaque: Mensal equivalente do plano anual (promocional se ativo)
+    const highlightPrice = SubscriptionUtils.getMonthlyEquivalent(yearlyPlan, isPromoActive);
+
+    // Valor original riscado: Plano mensal cheio
+    const originalPrice = monthlyPlan?.valor || 39.90;
+
+    return {
+      highlight: highlightPrice > 0 ? highlightPrice : 20.75,
+      original: originalPrice,
+      isPromoActive,
+      highlightFormatted: SubscriptionUtils.formatCurrency(highlightPrice > 0 ? highlightPrice : 20.75).replace("R$", "").trim()
+    };
+  }, [plansData]);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -148,7 +176,7 @@ const Index = () => {
         "url": "https://van360.com.br",
         "offers": {
           "@type": "Offer",
-          "price": "20.75",
+          "price": pricing.highlight.toFixed(2),
           "priceCurrency": "BRL",
         },
       },
@@ -174,7 +202,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "O que é a oferta/preço fundador?",
-            "acceptedAnswer": { "@type": "Answer", "text": "É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$20,75/mês para sempre, mesmo quando o preço subir." },
+            "acceptedAnswer": { "@type": "Answer", "text": `É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.highlightFormatted}/mês para sempre, mesmo quando o preço subir.` },
           },
           {
             "@type": "Question",
@@ -189,7 +217,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "Quanto vou pagar depois dos 15 dias?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Se você entrar agora como fundador, paga a partir de R$20,75/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia." },
+            "acceptedAnswer": { "@type": "Answer", "text": `Se você entrar agora como fundador, paga a partir de R$ ${pricing.highlightFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.` },
           },
         ],
       },
@@ -347,7 +375,7 @@ const Index = () => {
                 </Link>
                 <p className="text-[0.82rem] text-slate-400">
                   Depois, a partir de{" "}
-                  <strong className="text-[#1a3a5c]">R$20,75/mês</strong>
+                  <strong className="text-[#1a3a5c]">R$ {pricing.highlightFormatted}/mês</strong>
                 </p>
               </div>
 
@@ -637,12 +665,12 @@ const Index = () => {
                 </div>
                 <p className="text-[0.9rem] text-slate-400 mt-5">
                   De{" "}
-                  <span className="line-through">R$39,90</span>
+                  <span className="line-through">{SubscriptionUtils.formatCurrency(pricing.original)}</span>
                   {" "}por
                 </p>
                 <div className="mt-0">
                   <span className="text-[1.5rem] font-black text-[#f59e0b]">
-                    R$20,75
+                    R$ {pricing.highlightFormatted}
                   </span>
                   <span className="text-[0.95rem] font-medium text-[#f59e0b]/80">
                     /mês
@@ -816,7 +844,7 @@ const Index = () => {
             />
             <FaqItem
               q="O que é a oferta/preço fundador?"
-              a="É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$20,75/mês para sempre, mesmo quando o preço subir."
+              a={`É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.highlightFormatted}/mês para sempre, mesmo quando o preço subir.`}
             />
             <FaqItem
               q="O contrato gerado tem validade jurídica?"
@@ -828,7 +856,7 @@ const Index = () => {
             />
             <FaqItem
               q="Quanto vou pagar depois dos 15 dias?"
-              a="Se você entrar agora como fundador, paga a partir de R$20,75/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia."
+              a={`Se você entrar agora como fundador, paga a partir de R$ ${pricing.highlightFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.`}
             />
           </div>
         </div>
@@ -855,7 +883,7 @@ const Index = () => {
               Começar grátis — 15 dias sem cartão
             </Link>
             <p className="text-[0.85rem] opacity-60 mt-4">
-              Depois, a partir de R$20,75/mês · Preço de fundador
+              Depois, a partir de R$ {pricing.highlightFormatted}/mês · Preço de fundador
             </p>
           </Reveal>
         </div>
@@ -895,21 +923,21 @@ const Index = () => {
             </a>
           </div>
           <div className="flex gap-6">
-            <button
-              onClick={() => setPrivacidadeOpen(true)}
+            <Link
+              to={ROUTES.PUBLIC.PRIVACY_POLICY}
               className="hover:text-white transition-colors"
             >
               Privacidade
-            </button>
-            <button
-              onClick={() => setTermosOpen(true)}
+            </Link>
+            <Link
+              to={ROUTES.PUBLIC.TERMS_OF_USE}
               className="hover:text-white transition-colors"
             >
               Termos de uso
-            </button>
+            </Link>
           </div>
           <div className="text-center text-white/30 text-xs space-y-1">
-            <p>© {new Date().getFullYear()} Van360. Todos os direitos reservados.</p>
+            <p>© {getNowBR().getFullYear()} Van360. Todos os direitos reservados.</p>
             <p>CNPJ: 52.573.294/0001-44</p>
           </div>
         </div>
@@ -921,7 +949,7 @@ const Index = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Fale conosco pelo WhatsApp"
-        className={`fixed right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(37,211,102,.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,.5)] hover:scale-110 transition-all duration-500 ${isPending ? "bottom-24 sm:bottom-20" : "bottom-5"}`}
+        className={`fixed right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(37,211,102,.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,.5)] hover:scale-110 transition-all duration-500 ${cookiePending ? "bottom-24 sm:bottom-20" : "bottom-5"}`}
       >
         <WhatsAppIcon className="w-7 h-7" />
       </a>

@@ -6,6 +6,7 @@ import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalcula
 import { RelatorioTab } from "@/types/enums";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { getNowBR } from "@/utils/dateUtils";
 
 export function useRelatoriosViewModel() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,8 +38,8 @@ export function useRelatoriosViewModel() {
   }, [setPageTitle]);
 
   // 2. Local State Management (Date)
-  const [mes, setMes] = useState(new Date().getMonth() + 1);
-  const [ano, setAno] = useState(new Date().getFullYear());
+  const [mes, setMes] = useState(getNowBR().getMonth() + 1);
+  const [ano, setAno] = useState(getNowBR().getFullYear());
 
   const handleNavigate = useCallback((newMes: number, newAno: number) => {
     setMes(newMes);

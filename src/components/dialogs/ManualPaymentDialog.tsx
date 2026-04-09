@@ -22,6 +22,7 @@ import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
 import { cn } from "@/lib/utils";
 import { CobrancaStatus } from "@/types/enums";
+import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
 import { getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -67,7 +68,7 @@ export default function ManualPaymentDialog({
             <div>
               <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5">Referência</p>
               <p className="text-lg font-bold text-gray-900 capitalize leading-tight">
-                {format(new Date(dataVencimento), "MMMM", { locale: ptBR })}
+                {format(parseLocalDate(dataVencimento), "MMMM", { locale: ptBR })}
               </p>
             </div>
             <span
@@ -145,7 +146,7 @@ export default function ManualPaymentDialog({
                             setOpenCalendar(false);
                           }
                         }}
-                        disabled={(date) => date > new Date()}
+                        disabled={(date) => date > getNowBR()}
                         locale={ptBR}
                       />
                     </PopoverContent>

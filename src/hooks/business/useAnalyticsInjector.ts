@@ -44,6 +44,8 @@ interface AnalyticsInjectorOptions {
 
 export function useAnalyticsInjector({ gtm = false, clarity = false, force = false }: AnalyticsInjectorOptions) {
   useEffect(() => {
+    if (!import.meta.env.PROD) return;
+
     const prefs = loadSavedPreferences();
     const isPending = prefs === null;
 

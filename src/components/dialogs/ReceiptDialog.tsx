@@ -3,6 +3,7 @@ import { Download, Share2, ReceiptText, Loader2 } from "lucide-react";
 import { isMobilePlatform } from "@/utils/detectPlatform";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { useCallback, useState } from "react";
+import { getNowBR } from "@/utils/dateUtils";
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const ReceiptDialog = ({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `recibo-${new Date().getTime()}.png`;
+      link.download = `recibo-${getNowBR().getTime()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

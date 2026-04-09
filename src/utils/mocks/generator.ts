@@ -4,6 +4,7 @@ import {
   PassageiroModalidade,
 } from "@/types/enums";
 import { CATEGORIAS_GASTOS } from "@/types/gasto";
+import { addDays, getNowBR } from "@/utils/dateUtils";
 
 // Listas de dados para geração aleatória
 const nomes = [
@@ -257,9 +258,9 @@ export const mockGenerator = {
       "Limpeza interna",
     ];
     const valor = randomNumber(50, 500);
-    const hoje = new Date();
+    const hoje = getNowBR();
     const diasAtras = randomNumber(0, 30);
-    const data = new Date(hoje.getTime() - diasAtras * 24 * 60 * 60 * 1000);
+    const data = addDays(hoje, -diasAtras);
 
     return {
       valor: `R$ ${valor},00`,

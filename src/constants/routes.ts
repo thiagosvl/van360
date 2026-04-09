@@ -5,6 +5,8 @@ export const ROUTES = {
     EXTERNAL_PASSENGER_FORM: "/cadastro-passageiro/:motoristaId",
     SPLASH: "/splash",
     ROOT: "/",
+    PRIVACY_POLICY: "/politica-de-privacidade",
+    TERMS_OF_USE: "/termos-de-uso",
   },
   PRIVATE: {
     RESPONSAVEL: {
@@ -27,6 +29,7 @@ export const ROUTES = {
       EXPENSES: "/gastos",
       REPORTS: "/relatorios",
       CONTRACTS: "/contratos",
+      SUBSCRIPTION: "/assinatura",
     }
   }
 } as const;

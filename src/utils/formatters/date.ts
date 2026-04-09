@@ -1,84 +1,76 @@
 import { meses } from "./constants";
+import {
+  parseLocalDate,
+  formatSafeBrazilianDate,
+  formatDateTime,
+  getNowBR,
+  toPersistenceString,
+  differenceInCalendarDaysBR
+} from "../dateUtils";
 
-export const toLocalDateString = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+/**
+ * Converte para string YYYY-MM-DD (persistência).
+ */
+export const toLocalDateString = (date: Date | string): string => {
+  return toPersistenceString(date);
 };
 
-export const formatDate = (date: string | Date) => {
-  if (date instanceof Date) {
-    return date;
-  }
-
-  // Check if string already contains time info (T) or is effectively ISO
-  if (date.includes("T")) {
-    return new Date(date);
-  }
-
-  return new Date(`${date}T00:00:00`);
+/**
+ * Garante que temos um objeto Date válido no fuso de Brasília.
+ */
+export const formatDate = (date: string | Date): Date => {
+  return parseLocalDate(date);
 };
 
+/**
+ * Formata para DD/MM/YYYY.
+ */
 export const formatDateToBR = (date: string | Date): string => {
-  if (!date) return "";
-  const newDate = formatDate(date);
-  return newDate.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return formatSafeBrazilianDate(date);
 };
 
+/**
+ * Formata para data e opcionalmente hora.
+ */
 export const formatDateTimeToBR = (
   date: string | Date,
   options: { includeTime?: boolean } = {}
 ): string => {
-  try {
-    const dateObj = new Date(date);
-
-    if (isNaN(dateObj.getTime())) {
-      return "Invalid Date";
-    }
-
-    const formattedDate = dateObj.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-
-    if (options.includeTime) {
-      const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      return `${formattedDate} ${formattedTime}`;
-    }
-
-    return formattedDate;
-  } catch (error) {
-    return "Invalid Date";
+  if (!date) return "-";
+  if (options.includeTime) {
+    return formatDateTime(date);
   }
+  return formatSafeBrazilianDate(date);
 };
 
+/**
+ * Retorna o nome do mês atual.
+ */
 export const currentMonthInText = () => {
-  const date = new Date();
-  return meses[date.getMonth()];
+  const now = getNowBR();
+  return meses[now.getMonth()];
 };
 
+/**
+ * Retorna o nome do mês formatado.
+ */
 export const getMesNome = (mes: number) => {
-  const currentYear = new Date().getFullYear();
-  const nomeMes = new Date(currentYear, mes - 1).toLocaleDateString("pt-BR", {
+  const currentYear = getNowBR().getFullYear();
+  // Cria uma data no dia 15 do mês para evitar problemas de fuso/virada
+  const date = parseLocalDate(`${currentYear}-${mes.toString().padStart(2, '0')}-15`);
+  const nomeMes = date.toLocaleDateString("pt-BR", {
     month: "long",
+    timeZone: 'America/Sao_Paulo'
   });
   return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
 };
 
-
+/**
+ * Formata o tempo relativo (há X min, etc).
+ */
 export const formatRelativeTime = (date: string | Date): string => {
-  const now = new Date();
-  const past = new Date(date);
+  const now = getNowBR();
+  const past = parseLocalDate(date);
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
@@ -95,7 +87,7 @@ export const formatRelativeTime = (date: string | Date): string => {
     return `Há ${diffInHours} h`;
   }
 
-  const diffInDays = Math.round(diffInHours / 24);
+  const diffInDays = differenceInCalendarDaysBR(now, past);
   if (diffInDays === 1) {
     return "Ontem";
   }
@@ -103,23 +95,26 @@ export const formatRelativeTime = (date: string | Date): string => {
     return `Há ${diffInDays} dias`;
   }
 
-  return formatDateToBR(past);
+  return formatSafeBrazilianDate(past);
 };
 
+/**
+ * Calcula e formata dias de atraso.
+ */
 export const formatDiasAtraso = (dataVencimento: string): string => {
-  const vencimento = formatDate(dataVencimento);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  vencimento.setHours(0, 0, 0, 0);
-
-  const diffMs = hoje.getTime() - vencimento.getTime();
-  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (!dataVencimento) return "";
+  const hoje = getNowBR();
+  const dias = differenceInCalendarDaysBR(hoje, dataVencimento);
 
   if (dias === 0) return "Vence hoje";
   if (dias === 1) return "Venceu ontem";
+  if (dias < 0) return `Vence em ${Math.abs(dias)} dias`;
   return `Vencido há ${dias} dias`;
 };
 
+/**
+ * Converte DD/MM/YYYY para YYYY-MM-DD.
+ */
 export const convertDateBrToISO = (dateBr: string): string => {
   if (!dateBr || dateBr.length !== 10) return "";
   const [day, month, year] = dateBr.split("/");

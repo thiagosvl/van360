@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { AdminNavbar } from "@/components/layout/AdminNavbar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { getNowBR } from "@/utils/dateUtils";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -27,7 +28,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <AdminNavbar onMenuToggle={() => setIsMobileMenuOpen(true)} />
-        
+
         <main className="flex-1 p-6 lg:p-10 animate-in fade-in duration-700">
           <div className="mx-auto max-w-7xl">
             {children}
@@ -37,7 +38,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {/* Optional Footer */}
         <footer className="px-6 py-6 border-t border-slate-100 bg-white/50 text-center">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Van360 Ecosystem © {new Date().getFullYear()} — Plataforma de Gestão Inteligente
+            Van360 Ecosystem © {getNowBR().getFullYear()} — Plataforma de Gestão Inteligente
           </p>
         </footer>
       </div>

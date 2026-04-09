@@ -9,6 +9,8 @@ import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
+import { getNowBR } from "@/utils/dateUtils";
+
 export function useCobrancasViewModel() {
   const {
     setPageTitle,
@@ -45,9 +47,9 @@ export function useCobrancasViewModel() {
   }, [searchParams]);
 
   const {
-    selectedMes: mesFilter = new Date().getMonth() + 1,
+    selectedMes: mesFilter = getNowBR().getMonth() + 1,
     setSelectedMes: setMesFilter,
-    selectedAno: anoFilter = new Date().getFullYear(),
+    selectedAno: anoFilter = getNowBR().getFullYear(),
     setSelectedAno: setAnoFilter,
     searchTerm: commonSearch,
     setSearchTerm: setCommonSearch,

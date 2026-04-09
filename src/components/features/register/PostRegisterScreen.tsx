@@ -7,6 +7,7 @@ import {
 import { CheckCircle2, Globe, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getNowBR } from "@/utils/dateUtils";
 
 interface PostRegisterScreenProps {
   data: PostRegisterData;
@@ -133,7 +134,7 @@ export function PostRegisterScreen({
         </Card>
 
         <p className="text-center text-xs text-slate-400 mt-8 font-medium">
-          © {new Date().getFullYear()} Van360. Todos os direitos reservados.
+          © {getNowBR().getFullYear()} Van360. Todos os direitos reservados.
         </p>
       </div>
     </div>

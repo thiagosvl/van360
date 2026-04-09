@@ -8,6 +8,7 @@ export { useCobrancaActions } from "./ui/useCobrancaActions";
 export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
 export { useFilters } from "./ui/useFilters";
 export { useIsMobile } from "./ui/useIsMobile";
+export { useLayout } from "@/contexts/LayoutContext";
 export { useLoadingState } from "./ui/useLoadingState";
 export { useManualPaymentViewModel } from "./ui/useManualPaymentViewModel";
 export { useFirstChargeViewModel } from "./ui/useFirstChargeViewModel";

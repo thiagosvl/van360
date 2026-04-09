@@ -3,6 +3,7 @@ import { FilterDefaults } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { getDaysInMonthBR } from "@/utils/dateUtils";
 
 export interface UseGastosFilters {
   usuarioId?: string;
@@ -41,7 +42,7 @@ export function useGastos(
 
       const year = filters.ano;
       const month = String(filters.mes).padStart(2, "0");
-      const lastDay = new Date(year, filters.mes, 0).getDate();
+      const lastDay = getDaysInMonthBR(filters.mes, year);
 
       const data = await gastoApi.listGastos(filters.usuarioId, {
         data_inicio: `${year}-${month}-01`,

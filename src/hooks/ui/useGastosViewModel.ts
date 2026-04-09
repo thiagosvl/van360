@@ -6,6 +6,7 @@ import { FilterDefaults } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useState, useMemo } from "react";
+import { getNowBR } from "@/utils/dateUtils";
 
 export function useGastosViewModel() {
   const {
@@ -25,9 +26,9 @@ export function useGastosViewModel() {
   const {
     searchTerm,
     setSearchTerm,
-    selectedMes: mesFilter = new Date().getMonth() + 1,
+    selectedMes: mesFilter = getNowBR().getMonth() + 1,
     setSelectedMes,
-    selectedAno: anoFilter = new Date().getFullYear(),
+    selectedAno: anoFilter = getNowBR().getFullYear(),
     setSelectedAno,
     selectedCategoria: categoriaFilter = FilterDefaults.TODAS,
     setSelectedCategoria,

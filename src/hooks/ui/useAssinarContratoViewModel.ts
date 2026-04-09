@@ -5,6 +5,7 @@ import {
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useRef, useState } from "react";
 import { SignaturePadRef } from "@/components/common/SignaturePad";
+import { getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 
 interface UseAssinarContratoViewModelProps {
   token: string | undefined;
@@ -48,7 +49,7 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
       const metadados = {
         ip,
         userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
+        timestamp: toISODateTimeBR(getNowBR()),
       };
 
       await signMutation.mutateAsync({

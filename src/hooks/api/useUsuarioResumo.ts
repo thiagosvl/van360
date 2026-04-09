@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../../services/api/client";
+import { getNowBR } from "@/utils/dateUtils";
 
 export interface SystemSummary {
   usuario: {
@@ -53,8 +54,8 @@ export const useUsuarioResumo = (
   params?: { mes?: number; ano?: number },
   options?: { staleTime?: number; refetchOnMount?: boolean | "always"; enabled?: boolean }
 ) => {
-  const currentMes = new Date().getMonth() + 1;
-  const currentAno = new Date().getFullYear();
+  const currentMes = getNowBR().getMonth() + 1;
+  const currentAno = getNowBR().getFullYear();
  
   const mes = params?.mes ?? currentMes;
   const ano = params?.ano ?? currentAno;
@@ -72,7 +73,8 @@ export const useUsuarioResumo = (
       return response.data;
     },
     enabled: !!usuarioId && (options?.enabled ?? true),
-    staleTime: options?.staleTime ?? 5000, 
+    staleTime: options?.staleTime ?? 60000, // 1 minuto de cache padrão
     refetchOnMount: options?.refetchOnMount, 
+    refetchOnWindowFocus: false,
   });
 };
