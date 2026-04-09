@@ -41,11 +41,11 @@ const pagesItems = [
         href: "/relatorios",
         icon: ChartArea,
     },
-    {
-        title: "Minha Assinatura",
-        href: "/assinatura",
-        icon: Rocket,
-    },
+    // {
+    //     title: "Minha Assinatura",
+    //     href: "/assinatura",
+    //     icon: Rocket,
+    // },
 ];
 
 export { pagesItems };
