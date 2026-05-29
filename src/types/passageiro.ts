@@ -28,8 +28,7 @@ export interface Passageiro {
   veiculo_id: string;
   usuario_id?: string;
   ativo?: boolean;
-  repasse_taxa_servico?: boolean;
-  cobranca_automatica?: boolean;
+  enviar_notificacoes?: boolean;
   referencia?: string;
   observacoes?: string;
   escola?: { nome: string };

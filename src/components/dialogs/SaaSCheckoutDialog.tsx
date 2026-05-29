@@ -450,7 +450,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 onClick={prevStep}
               />
               <BaseDialog.Action
-                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pagamento" : "Confirmar"}
+                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : "Confirmar"}
                 onClick={() => handleGenerateCheckout(cardData)}
                 isLoading={isGenerating}
                 disabled={

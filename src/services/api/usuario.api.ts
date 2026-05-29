@@ -1,3 +1,4 @@
+import { TipoChavePix } from "../../types/pix";
 import { Usuario } from "../../types/usuario";
 import { apiClient } from "./client";
 
@@ -14,10 +15,13 @@ export const usuarioApi = {
     nome?: string;
     apelido?: string;
     telefone?: string;
-    chave_pix?: string;
-    tipo_chave_pix?: string;
     assinatura_digital_url?: string;
     config_contrato?: any;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),
+
+  atualizarPixUsuario: (usuarioId: string, payload: {
+    chave_pix: string | null;
+    tipo_chave_pix: TipoChavePix | null;
+  }) => apiClient.patch(`${endpointBase}/${usuarioId}/pix`, payload).then(res => res.data),
 
 };

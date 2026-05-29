@@ -12,7 +12,7 @@ interface ManualPaymentViewModelProps {
   onClose: () => void;
   cobrancaId: string;
   valorOriginal: number;
-  onPaymentRecorded: () => void;
+  onPaymentRecorded: (updatedCobranca?: any) => void;
 }
 
 export function useManualPaymentViewModel({
@@ -54,8 +54,8 @@ export function useManualPaymentViewModel({
     registrarPagamento.mutate(
       { cobrancaId, data: pagamentoData },
       {
-        onSuccess: () => {
-          onPaymentRecorded();
+        onSuccess: (updatedCobranca) => {
+          onPaymentRecorded(updatedCobranca);
           onClose();
         },
       }

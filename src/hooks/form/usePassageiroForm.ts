@@ -9,7 +9,6 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
-import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
@@ -57,7 +56,6 @@ export const passageiroSchema = z
     data_inicio_transporte: dateSchema(true, true),
 
     ativo: z.boolean().optional(),
-    repasse_taxa_servico: z.boolean().optional(),
     usuario_id: z.string().optional(),
   });
 
@@ -114,7 +112,6 @@ export function usePassageiroForm({
       data_inicio_transporte: "",
 
       ativo: true,
-      repasse_taxa_servico: false,
     },
   });
 
@@ -124,7 +121,7 @@ export function usePassageiroForm({
 
       const isFinalizeMode = mode === PassageiroFormModes.FINALIZE && prePassageiro;
 
-        if (editingPassageiro && mode === PassageiroFormModes.EDIT) {
+      if (editingPassageiro && mode === PassageiroFormModes.EDIT) {
         await new Promise((r) => setTimeout(r, 200));
         await new Promise((r) => requestAnimationFrame(r));
 
@@ -144,10 +141,10 @@ export function usePassageiroForm({
             ),
             valor_cobranca: editingPassageiro.valor_cobranca
               ? moneyMask(
-                  String(
-                    Math.round(Number(editingPassageiro.valor_cobranca) * 100)
-                  )
+                String(
+                  Math.round(Number(editingPassageiro.valor_cobranca) * 100)
                 )
+              )
               : "",
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
@@ -163,7 +160,6 @@ export function usePassageiroForm({
             veiculo_id: editingPassageiro.veiculo_id || "",
 
             ativo: editingPassageiro.ativo,
-            repasse_taxa_servico: editingPassageiro.repasse_taxa_servico ?? false,
           });
         });
 
@@ -184,7 +180,7 @@ export function usePassageiroForm({
           periodo: prePassageiro.periodo || "",
           modalidade: prePassageiro.modalidade || "",
           data_nascimento: prePassageiro.data_nascimento ? formatDateToBR(prePassageiro.data_nascimento) : "",
-          genero: prePassageiro.genero || "", 
+          genero: prePassageiro.genero || "",
           parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
           logradouro: prePassageiro.logradouro || "",
           numero: prePassageiro.numero || "",
@@ -198,8 +194,8 @@ export function usePassageiroForm({
           escola_id: prePassageiro.escola_id || "",
           valor_cobranca: prePassageiro.valor_cobranca
             ? moneyMask(
-                String(Math.round(Number(prePassageiro.valor_cobranca) * 100))
-              )
+              String(Math.round(Number(prePassageiro.valor_cobranca) * 100))
+            )
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
@@ -258,7 +254,7 @@ export function usePassageiroForm({
 
           ativo: true,
         });
-        
+
         // Reset accordion default on create (All open by default as requested)
         setOpenAccordionItems([
           "passageiro",
@@ -274,19 +270,19 @@ export function usePassageiroForm({
       setRefreshing(false);
     }
   }, [
-    editingPassageiro?.id, 
+    editingPassageiro?.id,
     mode,
-    prePassageiro?.id,     
+    prePassageiro?.id,
     form,
   ]);
-  
+
   // Load data when dialog opens
   useEffect(() => {
     if (isOpen) {
-        carregarDados();
+      carregarDados();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, editingPassageiro?.id, prePassageiro?.id]); 
+  }, [isOpen, editingPassageiro?.id, prePassageiro?.id]);
 
   return {
     form,

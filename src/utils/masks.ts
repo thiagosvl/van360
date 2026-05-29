@@ -1,15 +1,11 @@
 export const phoneMask = (value: string): string => {
   if (!value) return value;
   
-  const numericValue = value.replace(/\D/g, '');
+  const numericValue = value.replace(/\D/g, '').slice(0, 11);
   
-  if (numericValue.length <= 11) {
-    return numericValue
-      .replace(/(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{5})(\d{1,4})/, '$1-$2');
-  }
-  
-  return value;
+  return numericValue
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d{1,4})/, '$1-$2');
 };
 
 export const moneyMask = (value: string | number): string => {

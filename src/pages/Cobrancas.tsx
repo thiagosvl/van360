@@ -1,5 +1,4 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
-import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { KPICard } from "@/components/common/KPICard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { Search } from "lucide-react";
@@ -8,10 +7,9 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { useCobrancasViewModel } from "@/hooks";
+import { useCobrancasViewModel, useLayout } from "@/hooks";
 import { CobrancaTab, KPICardVariant } from "@/types/enums";
 import { formatCurrency, meses } from "@/utils/formatters";
-import { useCallback, useState } from "react";
 
 export default function Cobrancas() {
   const {
@@ -39,13 +37,8 @@ export default function Cobrancas() {
     openPaymentDialog,
   } = useCobrancasViewModel();
 
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const { openReceiptDialog } = useLayout();
 
-  const handleOpenReceipt = useCallback((url: string) => {
-    setReceiptUrl(url);
-    setIsReceiptOpen(true);
-  }, []);
   const isPending = activeTab === CobrancaTab.ARECEBER;
   const busca = isPending ? buscaAReceber : buscaRecebidos;
   const setBusca = isPending ? setBuscaAReceber : setBuscaRecebidos;
@@ -55,7 +48,7 @@ export default function Cobrancas() {
     onEditarCobranca: handleEditCobrancaClick,
     onRegistrarPagamento: openPaymentDialog,
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onVerRecibo: handleOpenReceipt,
+    onVerRecibo: (url: string) => openReceiptDialog({ receiptUrl: url }),
     onActionSuccess: () => { },
   };
 
@@ -169,15 +162,10 @@ export default function Cobrancas() {
                 {...actionProps}
               />
             </TabsContent>
+
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-
-      <ReceiptDialog
-        isOpen={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
-        receiptUrl={receiptUrl}
-      />
     </div>
   );
 }

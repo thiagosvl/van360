@@ -19,7 +19,7 @@ import {
   CarteirinhaHeader,
   CarteirinhaInfo,
   CarteirinhaObservacoes,
-  CarteirinhaAutomacaoCobranca
+  CarteirinhaNotificacoes
 } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -70,6 +70,7 @@ export default function PassageiroCarteirinha() {
     openCobrancaEditDialog,
     openCobrancaFormDialog,
     openManualPaymentDialog,
+    openReceiptDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -418,7 +419,15 @@ export default function PassageiroCarteirinha() {
       valorOriginal: Number(cobranca.valor),
       status: cobranca.status,
       dataVencimento: cobranca.data_vencimento,
-      onPaymentRecorded: refetchCobrancas,
+      onPaymentRecorded: (updatedCobranca) => {
+        refetchCobrancas();
+        if (updatedCobranca?.recibo_url) {
+          openReceiptDialog({
+            receiptUrl: updatedCobranca.recibo_url,
+            cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
+          });
+        }
+      },
     });
   };
 
@@ -487,6 +496,7 @@ export default function PassageiroCarteirinha() {
     onDesfazerPagamento: handleDesfazerClick,
     onExcluirCobranca: handleExcluirCobranca,
     onToggleClick: handleToggleClick,
+    onVerRecibo: (url: string) => openReceiptDialog({ receiptUrl: url }),
   };
 
   const infoProps = {
@@ -627,7 +637,7 @@ export default function PassageiroCarteirinha() {
 
                   <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5">
                     <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
-                      <CarteirinhaAutomacaoCobranca passageiro={passageiro} />
+                      <CarteirinhaNotificacoes passageiro={passageiro} />
                     </Suspense>
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
@@ -652,7 +662,7 @@ export default function PassageiroCarteirinha() {
                 {/* Lado Direito: Mensalidades */}
                 <div className="lg:col-span-8 space-y-6">
                   <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
-                    <CarteirinhaAutomacaoCobranca passageiro={passageiro} />
+                    <CarteirinhaNotificacoes passageiro={passageiro} />
                   </Suspense>
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas {...cobrancasProps} />

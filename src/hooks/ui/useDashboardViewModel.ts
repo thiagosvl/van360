@@ -56,14 +56,15 @@ export function useDashboardViewModel() {
       contadores.veiculos > 0,
       contadores.escolas > 0,
       contadores.passageiros > 0,
+      !!profile?.chave_pix && !!profile?.tipo_chave_pix,
     ].filter(Boolean).length;
 
     return {
       completedSteps: completedStepsCount,
-      totalSteps: 3,
-      showOnboarding: completedStepsCount < 3,
+      totalSteps: 4,
+      showOnboarding: completedStepsCount < 4,
     };
-  }, [contadores]);
+  }, [contadores, profile]);
 
   const subscriptionView = useMemo(() => {
     if (!subscription) return undefined;

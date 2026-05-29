@@ -11,7 +11,7 @@ export interface Usuario {
   tipo_chave_pix?: string;
 
   ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
-  
+
   /** @deprecated Use 'tipo' instead. */
   role?: string;
   tipo?: UserType;
@@ -19,10 +19,7 @@ export interface Usuario {
 
   created_at: string;
   updated_at: string;
-  status_chave_pix?: string;
-  chave_pix_validada_em?: string;
   flags?: any;
-  taxa_servico?: number;
 
   // Configurações de contrato
   assinatura_digital_url?: string;

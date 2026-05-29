@@ -7,10 +7,12 @@ import {
   Lock as LockIcon,
   Rocket,
   School,
-  User
+  User,
+  CreditCard
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
+import { useLayout } from "@/contexts/LayoutContext";
 
 // Hooks
 import { useProfile } from "@/hooks/business/useProfile";
@@ -27,6 +29,7 @@ export const QuickStartCard = ({
   onOpenPassageiroDialog,
 }: QuickStartCardProps) => {
   const { profile, summary: systemSummary, isLoading: isSummaryLoading } = useProfile();
+  const { openEditarPixDialog } = useLayout();
 
   const loading = isSummaryLoading;
 
@@ -65,6 +68,14 @@ export const QuickStartCard = ({
         icon: User,
         buttonText: "Cadastrar",
       },
+      {
+        id: 4,
+        done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
+        label: "Configurar Chave Pix",
+        onAction: openEditarPixDialog,
+        icon: CreditCard,
+        buttonText: "Configurar",
+      },
     ];
 
     return defaultSteps;
@@ -72,8 +83,11 @@ export const QuickStartCard = ({
     veiculosCount,
     escolasCount,
     passageirosCount,
+    profile?.chave_pix,
+    profile?.tipo_chave_pix,
     onOpenVeiculoDialog,
-    onOpenEscolaDialog
+    onOpenEscolaDialog,
+    openEditarPixDialog
   ]);
 
   const completedSteps = steps.filter((step) => step.done).length;

@@ -36,8 +36,8 @@ export const pixKeyRefinement = (data: { tipo_chave_pix?: TipoChavePix | null; c
             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "E-mail inválido", path: ["chave_pix"] });
         }
     } else if (data.tipo_chave_pix === TipoChavePix.TELEFONE) {
-         if (data.chave_pix.length < 14) { 
-             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone inválido", path: ["chave_pix"] });
+         if (data.chave_pix.length !== 15) { 
+             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone celular inválido (digite DDD + 9 dígitos)", path: ["chave_pix"] });
          }
     } else if (data.tipo_chave_pix === TipoChavePix.ALEATORIA) {
          // Remove dashes/spaces to check real length

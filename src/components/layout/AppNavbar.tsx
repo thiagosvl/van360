@@ -11,7 +11,6 @@ import { useSession } from "@/hooks/business/useSession";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import {
   ChevronDown,
   HelpCircle,
@@ -19,6 +18,7 @@ import {
   Loader2,
   LogOut,
   UserPen,
+  CreditCard,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -30,6 +30,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const {
     openAlterarSenhaDialog,
     openEditarCadastroDialog,
+    openEditarPixDialog,
     setIsHelpOpen,
     setIsGlobalLoading
   } = useLayout();
@@ -144,6 +145,10 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               <DropdownMenuItem onClick={openAlterarSenhaDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Lock className="h-4 w-4 text-slate-400" />
                 Alterar Senha
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+                <CreditCard className="h-4 w-4 text-slate-400" />
+                Editar Chave Pix
               </DropdownMenuItem>
               <div className="h-px bg-gray-50 my-1" />
               <DropdownMenuItem

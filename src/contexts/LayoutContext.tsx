@@ -1,4 +1,4 @@
-import { PassageiroFormModes } from "@/types/enums";
+import { PassageiroFormModes, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro } from "@/types/passageiro";
@@ -77,7 +77,12 @@ export interface OpenManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded: () => void;
+  onPaymentRecorded: (updatedCobranca?: any) => void;
+}
+
+export interface OpenReceiptDialogProps {
+  receiptUrl: string;
+  cobrancaDescricao?: string;
 }
 
 export interface OpenFirstChargeDialogProps {
@@ -91,9 +96,9 @@ export interface OpenCobrancaHistoryProps {
 }
 
 export interface OpenContractSetupDialogProps {
-    forceOpen?: boolean;
-    skipWelcome?: boolean;
-    onSuccess?: (usarContratos?: boolean) => void;
+  forceOpen?: boolean;
+  skipWelcome?: boolean;
+  onSuccess?: (usarContratos?: boolean) => void;
 }
 
 export interface OpenPixPaymentDialogProps {
@@ -116,7 +121,7 @@ export interface LayoutContextType {
   setPageTitle: (title: string) => void;
   pageSubtitle: string;
   setPageSubtitle: (subtitle: string) => void;
-  
+
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
@@ -127,6 +132,7 @@ export interface LayoutContextType {
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
+  openReceiptDialog: (props: OpenReceiptDialogProps) => void;
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
@@ -134,19 +140,20 @@ export interface LayoutContextType {
   openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
 
   isFirstChargeDialogOpen: boolean;
-  
+
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
-  
+
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
   openEditarCadastroDialog: () => void;
-  
+  openEditarPixDialog: () => void;
+
   // Mobile Menu
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   isHelpOpen: boolean;
   setIsHelpOpen: (open: boolean) => void;
-  
+
   // Loading Global
   isGlobalLoading: boolean;
   setIsGlobalLoading: (active: boolean, text?: string) => void;

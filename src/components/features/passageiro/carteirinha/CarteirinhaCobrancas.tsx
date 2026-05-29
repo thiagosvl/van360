@@ -1,5 +1,4 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
-import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getPaymentMethodLabel } from "@/constants/paymentMethods";
@@ -38,6 +37,7 @@ interface CarteirinhaCobrancasProps {
   onToggleLembretes: (cobranca: Cobranca) => void;
   onDesfazerPagamento: (cobrancaId: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
+  onVerRecibo: (url: string) => void;
   limiteCobrancasMobile?: number;
 }
 
@@ -50,14 +50,8 @@ export const CarteirinhaCobrancas = ({
   onRegistrarPagamento,
   onExcluirCobranca,
   onDesfazerPagamento,
+  onVerRecibo,
 }: CarteirinhaCobrancasProps) => {
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
-
-  const handleOpenReceipt = useCallback((url: string) => {
-    setReceiptUrl(url);
-    setIsReceiptOpen(true);
-  }, []);
 
   // KPIs rápidos
   const resumo = cobrancas.reduce(
@@ -122,7 +116,7 @@ export const CarteirinhaCobrancas = ({
                 onRegistrarPagamento={onRegistrarPagamento}
                 onExcluirCobranca={onExcluirCobranca}
                 onDesfazerPagamento={onDesfazerPagamento}
-                onVerRecibo={handleOpenReceipt}
+                onVerRecibo={onVerRecibo}
               />
             ))}
           </AnimatePresence>
@@ -155,12 +149,6 @@ export const CarteirinhaCobrancas = ({
           />
         </div>
       )}
-
-      <ReceiptDialog
-        isOpen={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
-        receiptUrl={receiptUrl}
-      />
     </div>
   );
 };

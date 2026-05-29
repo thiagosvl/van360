@@ -6,6 +6,7 @@ import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
+import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
@@ -16,7 +17,8 @@ import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps } from "./LayoutContext";
+import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -117,6 +119,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [receiptDialogState, setReceiptDialogState] = useState<{
+    open: boolean;
+    props?: OpenReceiptDialogProps;
+  }>({
+    open: false,
+  });
+
   const [cobrancaFormDialogState, setCobrancaFormDialogState] = useState<{
     open: boolean;
     props?: OpenCobrancaFormProps;
@@ -159,10 +168,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-
-
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
+  const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
@@ -174,12 +182,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setContractSetupDialogState({ open: true });
   }, []);
 
-  useContractGuard({
-    profile,
-    isLoading: isProfileLoading,
-    onShouldOpen: handleContractGuardOpen,
-    disabled: usarContratos === false || isProfileLoading || !profile,
-  });
+  // useContractGuard({
+  //   profile,
+  //   isLoading: isProfileLoading,
+  //   onShouldOpen: handleContractGuardOpen,
+  //   disabled: usarContratos === false || isProfileLoading || !profile,
+  // });
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({
@@ -245,6 +253,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openReceiptDialog = (props: OpenReceiptDialogProps) => {
+    setReceiptDialogState({
+      open: true,
+      props,
+    });
+  };
+
   const openCobrancaFormDialog = (props: OpenCobrancaFormProps) => {
     setCobrancaFormDialogState({
       open: true,
@@ -286,6 +301,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
         openManualPaymentDialog,
+        openReceiptDialog,
         openCobrancaFormDialog,
         openFirstChargeDialog,
         openCobrancaHistoryDialog,
@@ -296,6 +312,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
+        openEditarPixDialog: () => setEditarPixDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isHelpOpen,
@@ -485,8 +502,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           valorOriginal={manualPaymentDialogState.props.valorOriginal}
           status={manualPaymentDialogState.props.status}
           dataVencimento={manualPaymentDialogState.props.dataVencimento}
-          onPaymentRecorded={() => {
-            manualPaymentDialogState.props?.onPaymentRecorded();
+          onPaymentRecorded={(updatedCobranca) => {
+            manualPaymentDialogState.props?.onPaymentRecorded?.(updatedCobranca);
           }}
         />
       )}
@@ -555,6 +572,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {editarPixDialogOpen && (
+        <EditarPixDialog
+          isOpen={editarPixDialogOpen}
+          onClose={() => safeCloseDialog(() => setEditarPixDialogOpen(false))}
+        />
+      )}
+
       {pixPaymentDialogState.open && pixPaymentDialogState.props && (
         <PixPaymentDialog
           isOpen={true}
@@ -574,7 +598,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-
+      {receiptDialogState.open && receiptDialogState.props && (
+        <ReceiptDialog
+          isOpen={true}
+          onClose={() => setReceiptDialogState({ open: false })}
+          receiptUrl={receiptDialogState.props.receiptUrl}
+          cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
+        />
+      )}
 
     </LayoutContext.Provider>
   );
