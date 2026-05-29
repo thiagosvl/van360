@@ -22,17 +22,12 @@ export default function Gastos() {
     veiculoFilter,
     searchTerm,
     setSearchTerm,
-    setSelectedMes,
-    setSelectedAno,
     setSelectedCategoria,
     setSelectedVeiculo,
     setFilters,
     gastos,
     totalGasto,
-    mediaDiaria,
-    principalCategoriaData,
     isLoading: loading,
-    isActionLoading,
     handleRefresh,
     handleDelete,
     handleOpenForm,
@@ -46,7 +41,7 @@ export default function Gastos() {
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* 1. Header & Navigation */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <DateNavigation
               mes={mesFilter}
               ano={anoFilter}

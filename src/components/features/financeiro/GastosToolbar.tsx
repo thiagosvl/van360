@@ -1,12 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { Plus, Layers, Car } from "lucide-react";
 import { memo, useEffect, useState } from "react";
@@ -80,8 +72,8 @@ export const GastosToolbar = memo(function GastosToolbar({
     });
   };
 
-  const hasActiveFilters = 
-    hasActiveFiltersProp ?? 
+  const hasActiveFilters =
+    hasActiveFiltersProp ??
     (categoriaFilter !== FilterDefaults.TODAS || veiculoFilter !== FilterDefaults.TODOS || !!searchTerm);
 
   const filterChildren = (
@@ -135,7 +127,7 @@ export const GastosToolbar = memo(function GastosToolbar({
         title: "Filtrar Gastos",
         description: "Refine sua busca para encontrar gastos específicos.",
         hasActiveFilters,
-        onClear: onClearFilters || (() => {}),
+        onClear: onClearFilters || (() => { }),
         onApply: handleApplyFilters,
         onClearTemp: handleClearMobileFilters,
         isOpen: isSheetOpen,
