@@ -59,7 +59,7 @@ export function useSaaSCheckoutViewModel({
   const { isPromotionActive, plans: plansFromApi } = useSubscriptionPlans();
   const { invoices, refetchInvoices, paymentMethods } = useSubscriptionBilling(user?.id);
   const { createCheckout } = useSubscriptionCheckout();
-  const { referral, isLoading: isLoadingReferral } = useSubscriptionReferral(user?.id);
+  const { referral, isLoading: isLoadingReferral, refetch: refetchReferral } = useSubscriptionReferral(user?.id);
 
   const plans = plansFromProps || plansFromApi;
   const { isReady: isProviderReady, generatePaymentToken } = usePaymentProvider();
@@ -71,8 +71,20 @@ export function useSaaSCheckoutViewModel({
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeInvoice, setActiveInvoice] = useState<SubscriptionInvoice | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
+  const [isRefetchingReferral, setIsRefetchingReferral] = useState(false);
   const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialSubscriptionStatusRef = useRef<SubscriptionStatus | null>(null);
+
+  useEffect(() => {
+    if (isOpen && user?.id) {
+      setIsRefetchingReferral(true);
+      refetchReferral()
+        .catch((err) => console.error("Erro ao atualizar dados de indicação:", err))
+        .finally(() => {
+          setIsRefetchingReferral(false);
+        });
+    }
+  }, [isOpen, user?.id, refetchReferral]);
 
   const savedCards: PaymentMethod[] = paymentMethods ?? [];
   const defaultCard = savedCards.find(c => c.is_default) ?? savedCards[0] ?? null;
@@ -281,6 +293,6 @@ export function useSaaSCheckoutViewModel({
     profile,
     hasActiveDiscount: referral?.hasActiveDiscount,
     discountPct: referral?.discountPct,
-    isLoadingData: isLoadingReferral || !plans,
+    isLoadingData: isLoadingReferral || isRefetchingReferral || !plans,
   };
 }

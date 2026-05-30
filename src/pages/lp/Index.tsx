@@ -816,6 +816,40 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ══════════ INDIQUE E GANHE ══════════ */}
+      <section className="py-14 md:py-20 bg-gradient-to-b from-white to-[#f9f9f7]">
+        <div className="max-w-[1000px] mx-auto px-5">
+          <Reveal>
+            <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1a3a5c] to-[#244c75] p-8 md:p-12 text-white shadow-xl text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-8 border border-white/5">
+              {/* Background Glow */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+              
+              <div className="relative z-10 space-y-4 max-w-[580px]">
+                <div className="inline-flex items-center gap-1.5 bg-amber-500/25 px-3.5 py-1.5 rounded-full border border-amber-500/30 text-amber-300 font-black text-[10px] sm:text-xs uppercase tracking-wider">
+                  🎁 Indique e Ganhe
+                </div>
+                <h2 className="text-[clamp(1.4rem,3vw,2.1rem)] font-black leading-tight tracking-tight">
+                  Use o Van360 sem pagar nada convidando colegas
+                </h2>
+                <p className="text-[0.92rem] opacity-80 leading-relaxed">
+                  Gostou da facilidade? Indique o aplicativo para outros motoristas de transporte escolar. Quando um colega se cadastrar com o seu convite e assinar, <strong className="font-bold text-amber-300">você ganha mensalidades gratuitas</strong> em sua assinatura e <strong className="font-bold text-amber-300">ele recebe um desconto especial</strong> na primeira contratação!
+                </p>
+              </div>
+
+              <div className="relative z-10 shrink-0 flex flex-col items-center gap-2.5">
+                <Link
+                  to={CTA}
+                  className="w-full md:w-auto inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-slate-950 font-black text-sm px-8 py-4 rounded-xl shadow-lg active:scale-95 hover:-translate-y-0.5 transition-all text-center whitespace-nowrap min-h-[44px]"
+                >
+                  Começar agora
+                </Link>
+                <p className="text-[0.75rem] opacity-60">Benefício mútuo ativado automaticamente</p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ══════════ FAQ ══════════ */}
       <section id="faq" className="py-14 md:py-20 bg-[#f9f9f7] scroll-mt-20">
         <div className="max-w-[1120px] mx-auto px-5 text-center">
@@ -857,6 +891,10 @@ const Index = () => {
             <FaqItem
               q="Quanto vou pagar depois dos 15 dias?"
               a={`Se você entrar agora como fundador, paga a partir de R$ ${pricing.highlightFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.`}
+            />
+            <FaqItem
+              q="Como funciona o programa de indicações?"
+              a="É muito simples! Dentro do aplicativo, na tela de assinaturas, você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas motoristas pelo WhatsApp. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha bônus adicionais gratuitos em sua conta (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na primeira contratação. Ambos ganham!"
             />
           </div>
         </div>

@@ -197,6 +197,7 @@ export const useSubscriptionReferral = (userId?: string) => {
   return {
     referral: query.data,
     isLoading: query.isLoading,
+    refetch: query.refetch,
     claimReferral,
   };
 };
