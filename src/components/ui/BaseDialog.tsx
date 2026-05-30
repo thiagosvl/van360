@@ -13,7 +13,22 @@ interface BaseDialogProps {
   className?: string
   lockClose?: boolean
   description?: string
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full"
 }
+
+const maxWidthMap = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+  "3xl": "max-w-3xl",
+  "4xl": "max-w-4xl",
+  "5xl": "max-w-5xl",
+  "6xl": "max-w-6xl",
+  "7xl": "max-w-7xl",
+  full: "max-w-full"
+};
 
 const BaseDialogRoot = ({
   children,
@@ -21,8 +36,11 @@ const BaseDialogRoot = ({
   onOpenChange,
   className,
   lockClose = false,
-  description
+  description,
+  maxWidth = "md"
 }: BaseDialogProps) => {
+  const maxWidthClass = maxWidthMap[maxWidth];
+
   return (
     <Dialog
       open={open}
@@ -33,7 +51,8 @@ const BaseDialogRoot = ({
     >
       <DialogContent
         className={cn(
-          "w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100dvh-var(--safe-area-top)-var(--safe-area-bottom)-3rem)] gap-0",
+          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100dvh-var(--safe-area-top)-var(--safe-area-bottom)-3rem)] gap-0",
+          maxWidthClass,
           className
         )}
         onPointerDownOutside={(e) => lockClose && e.preventDefault()}

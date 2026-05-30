@@ -190,7 +190,7 @@ export function useSaaSCheckoutViewModel({
             ? `${birthYear}-${birthMonth}-${birthDay}`
             : undefined;
 
-          if (!birthForApi) throw new Error("Data de nascimento inválida. Use o formato DD/MM/AAAA.");
+          if (!birthForApi) throw new Error("Data de nascimento inválida. Use o formato dd/mm/aaaa.");
 
           paymentToken = await generatePaymentToken({
             brand: cardBrand,
@@ -264,5 +264,6 @@ export function useSaaSCheckoutViewModel({
     plans,
     isPromotionActive,
     isProviderReady,
+    profile,
   };
 }

@@ -108,7 +108,7 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
                       fieldState.error && "border-red-500"
                     )}
                   >
-                    <SelectValue placeholder="Selecione..." />
+                    <SelectValue placeholder="Selecione o parentesco" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

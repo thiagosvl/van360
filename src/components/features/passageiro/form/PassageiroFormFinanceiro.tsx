@@ -70,7 +70,7 @@ export function PassageiroFormFinanceiro({
                       <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                       <SelectTrigger
                         className={cn(
-                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5",
+                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
                           fieldState.error && "border-red-500",
                         )}
                         aria-invalid={!!fieldState.error}
@@ -102,7 +102,7 @@ export function PassageiroFormFinanceiro({
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     maxLength={10}
                     inputMode="numeric"
                     {...field}

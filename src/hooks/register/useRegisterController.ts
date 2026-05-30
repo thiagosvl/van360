@@ -45,6 +45,7 @@ export function useRegisterController() {
       telefone: "",
       senha: "",
       termos_aceitos: false as unknown as true,
+      data_nascimento: "",
     },
   });
 
@@ -56,7 +57,8 @@ export function useRegisterController() {
       email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
       senha: "Ogaiht+1",
-      termos_aceitos: true
+      termos_aceitos: true,
+      data_nascimento: "01/01/1990",
     });
   };
 
@@ -181,7 +183,7 @@ export function useRegisterController() {
   };
 
   const handleNextStep = async () => {
-    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos"];
+    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
     const ok = await form.trigger(fields as any);
     if (!ok) return false;
 

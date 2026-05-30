@@ -17,6 +17,7 @@ export const usuarioApi = {
     telefone?: string;
     assinatura_digital_url?: string;
     config_contrato?: any;
+    data_nascimento?: string;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),
 
   atualizarPixUsuario: (usuarioId: string, payload: {

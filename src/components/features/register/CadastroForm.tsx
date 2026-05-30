@@ -9,8 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { cpfMask } from "@/utils/masks";
-import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { cpfMask, dateMask } from "@/utils/masks";
+import { Calendar, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { RegisterFormData } from "@/schemas/registerSchema";
@@ -28,31 +28,31 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
-          name="nome"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel className="text-slate-700 font-medium ml-1">
-                Nome completo <span className="text-red-600">*</span>
-              </FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                  <Input
-                    placeholder="Digite seu nome completo"
-                    {...field}
-                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                    aria-invalid={!!fieldState.error}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <FormField
+        control={form.control}
+        name="nome"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormLabel className="text-slate-700 font-medium ml-1">
+              Nome completo <span className="text-red-600">*</span>
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                <Input
+                  placeholder="Digite seu nome completo"
+                  {...field}
+                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                  aria-invalid={!!fieldState.error}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <FormField
           control={form.control}
           name="cpfcnpj"
@@ -67,6 +67,33 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                     inputMode="numeric"
                     onChange={(e) => field.onChange(cpfMask(e.target.value))}
                     placeholder="000.000.000-00"
+                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                    aria-invalid={!!fieldState.error}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="data_nascimento"
+          render={({ field, fieldState }) => (
+            <FormItem>
+              <FormLabel className="text-slate-700 font-medium ml-1">
+                Data de nascimento <span className="text-red-600">*</span>
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                  <Input
+                    {...field}
+                    inputMode="numeric"
+                    maxLength={10}
+                    onChange={(e) => field.onChange(dateMask(e.target.value))}
+                    placeholder="dd/mm/aaaa"
                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
                     aria-invalid={!!fieldState.error}
                   />

@@ -189,7 +189,7 @@ const SubscriptionPage = () => {
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="min-h-screen bg-surface px-4 pt-10 pb-32 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* Subscription Status Hero */}
         <section className="px-1 mb-10">
@@ -202,7 +202,7 @@ const SubscriptionPage = () => {
                   <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Status: Expirado</span>
                 </div>
                 <h3 className="font-headline font-extrabold text-3xl text-white">Acesso Suspenso</h3>
-                <p className="text-white/80 font-medium leading-relaxed">Sua assinatura expirou em seu último ciclo. Reative para continuar usando todos os recursos.</p>
+                <p className="text-white/80 font-medium leading-relaxed">Sua assinatura expirou. Renove para continuar usando todos os recursos.</p>
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                 <Button
@@ -219,9 +219,9 @@ const SubscriptionPage = () => {
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-accent" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Período de Experiência</span>
+                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">Modo Degustação</h3>
+                <h3 className="font-headline font-extrabold text-3xl text-white">Período de Testes</h3>
                 <p className="text-white/80 font-medium leading-relaxed">Você tem <span className="text-accent font-bold">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">

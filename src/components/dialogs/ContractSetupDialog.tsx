@@ -505,15 +505,17 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
     </div>
   );
 
-  const podeFechar = !!profile?.config_contrato?.configurado;
-  const canCloseNow = podeFechar || (step === SetupStep.WELCOME && !usarContratos);
+  // Código antigo de restrição (comentado para uso futuro):
+  // const podeFechar = !!profile?.config_contrato?.configurado;
+  // const canCloseNow = podeFechar || (step === SetupStep.WELCOME && !usarContratos);
 
   return (
     <>
       <BaseDialog
         open={isOpen}
-        onOpenChange={(open) => { if (!open && canCloseNow) onClose(); }}
-        lockClose={!canCloseNow}
+        onOpenChange={(open) => { if (!open) onClose(); }} // Código antigo: onOpenChange={(open) => { if (!open && canCloseNow) onClose(); }}
+        // lockClose={!canCloseNow}
+        maxWidth="2xl"
       >
         <BaseDialog.Header
           title={currentStepTitle()}
@@ -521,8 +523,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
           showSteps
           currentStep={step + 1}
           totalSteps={5}
-          hideCloseButton={!podeFechar}
-          onClose={podeFechar ? onClose : undefined}
+          hideCloseButton={false} // Código antigo: hideCloseButton={!podeFechar}
+          onClose={onClose} // Código antigo: onClose={podeFechar ? onClose : undefined}
         />
         <BaseDialog.Body animate animationKey={step} className="min-h-[300px]">
           {step === SetupStep.WELCOME && renderWelcome()}

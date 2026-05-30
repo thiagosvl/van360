@@ -1,10 +1,4 @@
 import { CepInput } from "@/components/forms";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -289,7 +283,7 @@ export default function EscolaFormDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={() => !isSaving && safeCloseDialog(onClose)} lockClose={isSaving}>
+    <BaseDialog open={isOpen} onOpenChange={() => !isSaving && safeCloseDialog(onClose)} lockClose={isSaving} maxWidth="xl">
       <BaseDialog.Header
         title={editingEscola ? "Editar Escola" : "Nova Escola"}
         onClose={() => safeCloseDialog(onClose)}

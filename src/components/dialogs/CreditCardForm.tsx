@@ -20,15 +20,29 @@ export interface CreditCardData {
 
 interface CreditCardFormProps {
   onChange: (data: CreditCardData | null) => void;
+  initialBirthDate?: string;
 }
 
-export default function CreditCardForm({ onChange }: CreditCardFormProps) {
+export default function CreditCardForm({ onChange, initialBirthDate }: CreditCardFormProps) {
+  const formattedInitialBirth = (() => {
+    if (!initialBirthDate) return "";
+    const clean = initialBirthDate.trim();
+    if (clean.includes("-")) {
+      const parts = clean.split("-");
+      if (parts.length === 3) {
+        const [y, m, d] = parts;
+        return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+      }
+    }
+    return clean;
+  })();
+
   const [formData, setFormData] = useState<CreditCardData>({
     number: "",
     name: "",
     expiry: "",
     cvv: "",
-    birth: "",
+    birth: formattedInitialBirth,
     zipcode: "",
     street: "",
     number_address: "",
@@ -39,7 +53,7 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
 
   const [maskedNumber, setMaskedNumber] = useState("");
   const [maskedExpiry, setMaskedExpiry] = useState("");
-  const [maskedBirth, setMaskedBirth] = useState("");
+  const [maskedBirth, setMaskedBirth] = useState(formattedInitialBirth);
   const [maskedZip, setMaskedZip] = useState("");
   const [loadingCep, setLoadingCep] = useState(false);
 
@@ -134,6 +148,22 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
       onChange(null);
     }
   }, [formData, onChange]);
+
+  useEffect(() => {
+    if (initialBirthDate) {
+      const clean = initialBirthDate.trim();
+      let formatted = clean;
+      if (clean.includes("-")) {
+        const parts = clean.split("-");
+        if (parts.length === 3) {
+          const [y, m, d] = parts;
+          formatted = `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+        }
+      }
+      setFormData(prev => ({ ...prev, birth: formatted }));
+      setMaskedBirth(formatted);
+    }
+  }, [initialBirthDate]);
 
   const fillMagicData = (type: 'success' | 'error_invalid' | 'error_risk') => {
     const cardNumber = type === 'success'
@@ -260,10 +290,14 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
             <div className="space-y-1">
               <label className={labelStyles}>Nascimento</label>
               <input
-                className={inputStyles}
-                placeholder="DD/MM/AAAA"
+                className={cn(
+                  inputStyles,
+                  initialBirthDate && "bg-[#d2d5d8] cursor-not-allowed opacity-70 focus:ring-0"
+                )}
+                placeholder="dd/mm/aaaa"
                 value={maskedBirth}
                 onChange={(e) => handleChange("birth", e.target.value)}
+                readOnly={!!initialBirthDate}
               />
             </div>
             <div className="space-y-1">

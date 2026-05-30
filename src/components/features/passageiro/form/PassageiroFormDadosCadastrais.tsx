@@ -55,7 +55,7 @@ export function PassageiroFormDadosCadastrais({
   const form = useFormContext();
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {/* Seção 1: Dados Pessoais */}
       <section className="space-y-6">
         <div className="grid grid-cols-1 mt-3 md:grid-cols-2 gap-6">
@@ -148,7 +148,7 @@ export function PassageiroFormDadosCadastrais({
                   <Input
                     type="text"
                     inputMode="numeric"
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     maxLength={10}
                     {...field}
                     onChange={(e) => {
@@ -182,7 +182,7 @@ export function PassageiroFormDadosCadastrais({
                       )}
                       aria-invalid={!!fieldState.error}
                     >
-                      <SelectValue placeholder="Selecione..." />
+                      <SelectValue placeholder="Selecione o gênero" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -198,7 +198,34 @@ export function PassageiroFormDadosCadastrais({
             )}
           />
         </div>
+
+        {!hideAtivo && (
+          <div className="mt-2">
+            <FormField
+              control={form.control}
+              name="ativo"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
+                  <Checkbox
+                    id="ativo"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <FormLabel
+                    htmlFor="ativo"
+                    className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
+                  >
+                    Passageiro Ativo
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
       </section>
+
+      <hr className="border-slate-100" />
 
       {/* Seção 2: Escola e Período */}
       <section className="space-y-6">
@@ -332,15 +359,15 @@ export function PassageiroFormDadosCadastrais({
                   value={field.value}
                 >
                   <FormControl>
-                    <div className="relative">
+                    <div className="relative"> <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                       <SelectTrigger
                         className={cn(
-                          "h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
                           fieldState.error && "border-red-500"
                         )}
                         aria-invalid={!!fieldState.error}
                       >
-                        <SelectValue placeholder="Selecione..." />
+                        <SelectValue placeholder="Selecione a modalidade" />
                       </SelectTrigger>
                     </div>
                   </FormControl>
@@ -357,31 +384,6 @@ export function PassageiroFormDadosCadastrais({
             )}
           />
         </div>
-
-        {!hideAtivo && (
-          <div className="mt-2">
-            <FormField
-              control={form.control}
-              name="ativo"
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
-                  <Checkbox
-                    id="ativo"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <FormLabel
-                    htmlFor="ativo"
-                    className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
-                  >
-                    Passageiro Ativo
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
       </section>
     </div>
   );

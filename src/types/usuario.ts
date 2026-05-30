@@ -7,6 +7,7 @@ export interface Usuario {
   cpfcnpj: string;
   email: string;
   telefone: string;
+  data_nascimento?: string;
   chave_pix?: string;
   tipo_chave_pix?: string;
 

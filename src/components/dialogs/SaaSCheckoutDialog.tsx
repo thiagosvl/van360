@@ -40,6 +40,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     cardError,
     handleGenerateCheckout,
     isPromotionActive,
+    profile,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
@@ -348,7 +349,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
                 {/* Formulário de novo cartão */}
                 {(savedCards.length === 0 || selectedSavedCardId === "new") && (
-                  <CreditCardForm onChange={setCardData} />
+                  <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} />
                 )}
 
                 {cardError && (
