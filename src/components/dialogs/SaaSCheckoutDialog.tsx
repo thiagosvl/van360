@@ -118,7 +118,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl mb-2">
                 <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
                 <p className="text-[11px] font-medium text-amber-700">
-                  Você está alterando para o plano anual. Esta ação é definitiva para este checkout.
+                  Você está alterando para o plano anual. Esta ação é definitiva.
                 </p>
               </div>
             )}
@@ -363,7 +363,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
                     <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
-                      {isAnual ? "Anual" : "Mensal"}
+                      Plano {isAnual ? "Anual" : "Mensal"}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1">

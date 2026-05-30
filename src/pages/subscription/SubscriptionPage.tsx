@@ -199,7 +199,7 @@ const SubscriptionPage = () => {
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
                   <Lock className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Status: Expirado</span>
+                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura Expirada</span>
                 </div>
                 <h3 className="font-headline font-extrabold text-3xl text-white">Acesso Suspenso</h3>
                 <p className="text-white/80 font-medium leading-relaxed">Sua assinatura expirou. Renove para continuar usando todos os recursos.</p>
@@ -239,10 +239,10 @@ const SubscriptionPage = () => {
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Status: Ativo</span>
+                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
                 </div>
                 <h3 className="font-headline font-extrabold text-3xl text-white">
-                  {subscription?.planos?.nome || "Plano Transportador Pro"}
+                  Plano {subscription?.planos?.nome}
                 </h3>
                 <p className="text-white/80 font-medium">
                   Próxima renovação em <span className="text-white font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
@@ -295,7 +295,7 @@ const SubscriptionPage = () => {
                           <div className="text-sm font-semibold text-primary">{formatLocalDate(parseLocalDate(inv.created_at))}</div>
                           <div className="text-sm text-slate-500 font-medium">
                             <span className="sm:hidden text-[10px] text-slate-300 block mb-0.5 uppercase tracking-wider font-bold">Plano</span>
-                            {inv.assinaturas?.planos?.nome || "Pro Mensal"}
+                            {inv.assinaturas?.planos?.nome}
                           </div>
                           <div className="text-sm font-black text-primary">
                             <span className="sm:hidden text-[10px] text-slate-300 block mb-0.5 uppercase tracking-wider font-bold">Valor</span>
