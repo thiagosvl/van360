@@ -47,6 +47,7 @@ export interface ReferralData {
   bonusDays?: number;
   discountPct?: number;
   hasActiveDiscount?: boolean;
+  hasIndicator?: boolean;
 }
 
 export interface SubscriptionInvoice {

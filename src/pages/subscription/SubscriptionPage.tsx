@@ -533,42 +533,44 @@ const SubscriptionPage = () => {
                   </Button>
                 </div>
 
-                <div className="pt-6 border-t border-white/10 text-center">
-                  {!isClaimOpen ? (
-                    <button
-                      onClick={() => setIsClaimOpen(true)}
-                      className="text-[10px] font-black text-white/40 hover:text-accent uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
-                    >
-                      <Award className="w-4 h-4" />
-                      Ganhei um convite
-                    </button>
-                  ) : (
-                    <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
-                      <Input
-                        value={claimPhone}
-                        onChange={(e) => setClaimPhone(phoneMask(e.target.value))}
-                        placeholder="WhatsApp de quem indicou"
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/20 h-11 rounded-xl text-xs px-4 focus:ring-accent/50"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          className="flex-1 h-11 bg-white text-primary font-black text-[11px] font-headline uppercase rounded-xl hover:bg-slate-50 shadow-lg"
-                          onClick={handleClaimReferral}
-                          disabled={claimReferral.isPending}
-                        >
-                          {claimReferral.isPending ? "Processando..." : "Utilizar o Bônus"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="w-11 h-11 text-white/40 hover:bg-white/5 hover:text-rose-400 p-0 rounded-xl transition-colors"
-                          onClick={() => setIsClaimOpen(false)}
-                        >
-                          <X className="w-5 h-5" />
-                        </Button>
+                {isTrial && !referral?.hasIndicator && (
+                  <div className="pt-6 border-t border-white/10 text-center">
+                    {!isClaimOpen ? (
+                      <button
+                        onClick={() => setIsClaimOpen(true)}
+                        className="text-[10px] font-black text-white/40 hover:text-accent uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                      >
+                        <Award className="w-4 h-4" />
+                        Ganhei um convite
+                      </button>
+                    ) : (
+                      <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
+                        <Input
+                          value={claimPhone}
+                          onChange={(e) => setClaimPhone(phoneMask(e.target.value))}
+                          placeholder="WhatsApp de quem indicou"
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/20 h-11 rounded-xl text-xs px-4 focus:ring-accent/50"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1 h-11 bg-white text-primary font-black text-[11px] font-headline uppercase rounded-xl hover:bg-slate-50 shadow-lg"
+                            onClick={handleClaimReferral}
+                            disabled={claimReferral.isPending}
+                          >
+                            {claimReferral.isPending ? "Processando..." : "Utilizar o Bônus"}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="w-11 h-11 text-white/40 hover:bg-white/5 hover:text-rose-400 p-0 rounded-xl transition-colors"
+                            onClick={() => setIsClaimOpen(false)}
+                          >
+                            <X className="w-5 h-5" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </aside>
