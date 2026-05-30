@@ -546,7 +546,7 @@ const SubscriptionPage = () => {
                           onClick={handleClaimReferral}
                           disabled={claimReferral.isPending}
                         >
-                          {claimReferral.isPending ? "Processando..." : "Conseguir Bônus"}
+                          {claimReferral.isPending ? "Processando..." : "Utilizar o Bônus"}
                         </Button>
                         <Button
                           variant="ghost"

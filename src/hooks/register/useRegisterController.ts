@@ -2,12 +2,12 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
-import { isMobilePlatform, isNativeApp } from "@/utils/detectPlatform";
+import { isMobilePlatform } from "@/utils/detectPlatform";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export interface PostRegisterData {
   cpf: string;
@@ -23,8 +23,16 @@ export interface DuplicateError {
 
 export function useRegisterController() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
+
+  useEffect(() => {
+    const refParam = searchParams.get("ref");
+    if (refParam) {
+      localStorage.setItem("van360_referral_code", refParam);
+    }
+  }, [searchParams]);
 
   /* [TEMPORÁRIO] Usando isMobilePlatform para exibir boas-vindas no mobile browser também */
   const [showNativeWelcome, setShowNativeWelcome] = useState(
@@ -65,8 +73,14 @@ export function useRegisterController() {
   const handleFinalRegister = async (data: RegisterFormData) => {
     try {
       setLoading(true);
-      const result = await usuarioApi.registrar(data);
+      const referralCode = localStorage.getItem("van360_referral_code") || undefined;
+      const result = await usuarioApi.registrar({
+        ...data,
+        indicador_id: referralCode,
+      });
       if (result?.error) throw new Error(result.error);
+
+      localStorage.removeItem("van360_referral_code");
 
       // --- FLUXO DE PÓS-CADASTRO ---
 
