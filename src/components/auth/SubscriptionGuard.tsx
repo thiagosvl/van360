@@ -9,16 +9,14 @@ interface SubscriptionGuardProps {
   children: React.ReactNode;
 }
 
-/**
- * Guard para proteger rotas que exigem assinatura ativa.
- * Redireciona para a página de assinatura se o status for EXPIRED.
- */
 export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({ children }) => {
   const { session } = useSession();
   const { subscription, isLoading } = useSubscriptionStatus(session?.user?.id);
   const location = useLocation();
 
-  const isExpired = subscription?.status === SubscriptionStatus.EXPIRED;
+  const isExpired =
+    subscription?.status === SubscriptionStatus.EXPIRED ||
+    subscription?.status === SubscriptionStatus.CANCELED;
   const isTrialExpired =
     subscription?.status === SubscriptionStatus.TRIAL &&
     !!subscription?.trial_ends_at &&

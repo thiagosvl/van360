@@ -138,6 +138,7 @@ export interface LayoutContextType {
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
   openPixPaymentDialog: (props: OpenPixPaymentDialogProps) => void;
   openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
+  openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;
 
   isFirstChargeDialogOpen: boolean;
 

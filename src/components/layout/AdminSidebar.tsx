@@ -19,6 +19,16 @@ const adminNavItems = [
     href: ROUTES.PRIVATE.ADMIN.DASHBOARD,
     icon: LayoutDashboard,
   },
+  {
+    title: "Usuários",
+    href: ROUTES.PRIVATE.ADMIN.USERS,
+    icon: Users,
+  },
+  {
+    title: "Configurações",
+    href: ROUTES.PRIVATE.ADMIN.SETTINGS,
+    icon: Settings,
+  },
 ];
 
 export function AdminSidebar() {

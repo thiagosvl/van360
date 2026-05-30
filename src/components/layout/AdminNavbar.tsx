@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 import { Search, Bell, Menu, User, LogOut, Settings } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/business/useSession";
@@ -31,17 +31,17 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
     <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-slate-100 shadow-sm transition-all duration-500 px-6 py-4 flex items-center justify-between">
       {/* Search Bar Area */}
       <div className="flex items-center gap-4 flex-1 max-w-xl">
-        <button 
+        <button
           onClick={onMenuToggle}
           className="lg:hidden p-2 rounded-xl hover:bg-slate-50 text-slate-500"
         >
           <Menu className="h-5 w-5" />
         </button>
-        
+
         <div className="relative group flex-1 hidden sm:block">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-[#1a3a5c]" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Pesquisar motoristas, veículos ou logs..."
             className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs font-semibold text-slate-600 outline-none transition-all focus:bg-white focus:ring-4 focus:ring-slate-100 focus:border-slate-200"
           />
@@ -75,16 +75,9 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
           <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100 shadow-diff-shadow">
             <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase text-slate-400 tracking-wider">Conta Admin</DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-slate-50" />
-            <DropdownMenuItem className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-slate-600 focus:bg-slate-50 focus:text-[#1a3a5c]">
-              <User className="h-4 w-4" /> Perfil
-            </DropdownMenuItem>
-            <DropdownMenuItem className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-slate-600 focus:bg-slate-50 focus:text-[#1a3a5c]" onClick={() => navigate(ROUTES.PRIVATE.ADMIN.SETTINGS)}>
-              <Settings className="h-4 w-4" /> Configurações
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-slate-50" />
-            <DropdownMenuItem 
-               className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-destructive focus:bg-destructive/5 focus:text-destructive"
-               onClick={handleLogout}
+            <DropdownMenuItem
+              className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-destructive focus:bg-destructive/5 focus:text-destructive"
+              onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" /> Sair do Painel
             </DropdownMenuItem>

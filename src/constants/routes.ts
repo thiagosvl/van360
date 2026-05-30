@@ -17,6 +17,8 @@ export const ROUTES = {
     ADMIN: {
       ROOT: "/admin",
       DASHBOARD: "/admin/dashboard",
+      USERS: "/admin/usuarios",
+      USER_DETAILS: "/admin/usuarios/:id",
       SETTINGS: "/admin/configuracoes",
     },
     MOTORISTA: {

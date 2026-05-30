@@ -4,6 +4,7 @@ import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
@@ -171,6 +172,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
+  const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
+    open: boolean;
+    onSuccess?: (userId: string) => void;
+  }>({ open: false });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
@@ -284,6 +289,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setSaasCheckoutDialogState({ open: true, props });
   };
 
+  const openAdminCreateUserDialog = (onSuccess?: (userId: string) => void) => {
+    setAdminCreateUserDialogState({ open: true, onSuccess });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -307,6 +316,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openCobrancaHistoryDialog,
         openPixPaymentDialog,
         openSaaSCheckoutDialog,
+        openAdminCreateUserDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -604,6 +614,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => setReceiptDialogState({ open: false })}
           receiptUrl={receiptDialogState.props.receiptUrl}
           cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
+        />
+      )}
+
+      {adminCreateUserDialogState.open && (
+        <AdminCreateUserDialog
+          isOpen={true}
+          onClose={() => setAdminCreateUserDialogState({ open: false })}
+          onSuccess={adminCreateUserDialogState.onSuccess}
         />
       )}
 
