@@ -95,8 +95,14 @@ const SubscriptionPage = () => {
   };
 
   const isLoading = isLoadingStatus || isLoadingPlans;
-  const isExpired = subscription?.status === SubscriptionStatus.EXPIRED;
   const isTrial = subscription?.status === SubscriptionStatus.TRIAL;
+
+  const isTrialExpired = (() => {
+    if (!isTrial || !subscription?.trial_ends_at) return false;
+    return differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()) < 0;
+  })();
+
+  const isExpired = subscription?.status === SubscriptionStatus.EXPIRED || isTrialExpired;
 
   const trialDaysLeft = (() => {
     if (!isTrial || !subscription?.trial_ends_at) return 0;
@@ -199,17 +205,23 @@ const SubscriptionPage = () => {
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
                   <Lock className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura Expirada</span>
+                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">
+                    {isTrialExpired ? "Período de Teste Expirado" : "Assinatura Expirada"}
+                  </span>
                 </div>
                 <h3 className="font-headline font-extrabold text-3xl text-white">Acesso Suspenso</h3>
-                <p className="text-white/80 font-medium leading-relaxed">Sua assinatura expirou. Renove para continuar usando todos os recursos.</p>
+                <p className="text-white/80 font-medium leading-relaxed">
+                  {isTrialExpired
+                    ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todos os recursos."
+                    : "Sua assinatura expirou. Renove para continuar usando todos os recursos."}
+                </p>
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                 <Button
                   className="bg-white text-[#ba1a1a] hover:bg-white/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
                   onClick={() => handleSubscribe()}
                 >
-                  Reativar Agora
+                  {isTrialExpired ? "Assinar Agora" : "Reativar Agora"}
                 </Button>
               </div>
             </div>
