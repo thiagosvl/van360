@@ -1,6 +1,7 @@
 import { SaaSPlan } from "@/types/subscription";
 import { useSaaSCheckoutViewModel } from "@/hooks/ui/useSaaSCheckoutViewModel";
 import { SubscriptionIdentifer, CheckoutPaymentMethod } from "@/types/enums";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
 import CreditCardForm, { CreditCardData } from "@/components/dialogs/CreditCardForm";
@@ -41,6 +42,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     handleGenerateCheckout,
     isPromotionActive,
     profile,
+    hasActiveDiscount,
+    discountPct,
+    isLoadingData,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
@@ -51,10 +55,15 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
   const selectedPlan = isAnual ? annualPlan : monthlyPlan;
 
-  const annualPrice = annualPlan ? SubscriptionUtils.getFinalPrice(annualPlan, isPromotionActive) : 0;
-  const monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
+  let annualPrice = annualPlan ? SubscriptionUtils.getFinalPrice(annualPlan, isPromotionActive) : 0;
+  let monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
 
-  const totalPrice = selectedPlan ? SubscriptionUtils.getFinalPrice(selectedPlan, isPromotionActive) : 0;
+  if (hasActiveDiscount && discountPct > 0) {
+    annualPrice = annualPrice * (1 - discountPct / 100);
+    monthlyPrice = monthlyPrice * (1 - discountPct / 100);
+  }
+
+  const totalPrice = isAnual ? annualPrice : monthlyPrice;
   const formattedPrice = SubscriptionUtils.formatCurrency(totalPrice);
 
   const discountPercent = monthlyPrice > 0 ? Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100) : 0;
@@ -112,8 +121,55 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       <BaseDialog.Body animate animationKey={`${step}-${paymentMethod}`} className="p-0">
 
         {/* ── STEP 1: Seleção de Plano ── */}
-        {step === 1 && (
+        {step === 1 && isLoadingData ? (
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 animate-pulse">
+            {/* Skeleton do Alerta/Selo de Desconto */}
+            <Skeleton className="h-12 w-full rounded-xl bg-slate-100" />
+            
+            {/* Skeleton do Card Anual */}
+            <div className="relative rounded-xl p-4 sm:p-6 border border-slate-100 bg-[#f8f9fa] space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3 flex-1">
+                  <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-200" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-24 rounded bg-slate-200" />
+                    <Skeleton className="h-4 w-40 rounded bg-slate-200" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-24 rounded bg-slate-200" />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="h-8 w-24 rounded-lg bg-slate-200" />
+                <Skeleton className="h-8 w-24 rounded-lg bg-slate-200" />
+                <Skeleton className="h-8 w-24 rounded-lg bg-slate-200" />
+              </div>
+            </div>
+
+            {/* Skeleton do Card Mensal */}
+            <div className="rounded-xl p-4 sm:p-6 border border-slate-100 bg-[#f8f9fa]">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3 flex-1">
+                  <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-200" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-20 rounded bg-slate-200" />
+                    <Skeleton className="h-4 w-32 rounded bg-slate-200" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-20 rounded bg-slate-200" />
+              </div>
+            </div>
+          </div>
+        ) : step === 1 ? (
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+            {hasActiveDiscount && (
+              <div className="flex items-center gap-2.5 p-3 bg-[#d1fae5] border border-[#a7f3d0] rounded-xl mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
+                <ShieldCheck className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
+                <p className="text-[11px] font-bold text-[#065f46]">
+                  Desconto de {discountPct}% de indicação ativo! Aproveite seu benefício.
+                </p>
+              </div>
+            )}
+
             {forcedPeriod && (
               <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl mb-2">
                 <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
@@ -229,7 +285,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               </div>
             )}
           </div>
-        )}
+        ) : null}
 
         {/* ── STEP 2: Forma de Pagamento ── */}
         {step === 2 && (
@@ -370,6 +426,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                     <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
                     <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
                   </div>
+                  {hasActiveDiscount && (
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Desconto de indicação de {discountPct}% aplicado!
+                    </p>
+                  )}
                 </div>
               </div>
             )}

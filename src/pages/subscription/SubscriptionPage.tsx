@@ -215,6 +215,11 @@ const SubscriptionPage = () => {
                     ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todos os recursos."
                     : "Sua assinatura expirou. Renove para continuar usando todos os recursos."}
                 </p>
+                {referral?.hasActiveDiscount && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-white font-bold text-[11px] uppercase tracking-wide animate-pulse">
+                    🎁 Desconto de {referral.discountPct}% por indicação ativo! Aproveite.
+                  </div>
+                )}
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                 <Button
@@ -235,6 +240,11 @@ const SubscriptionPage = () => {
                 </div>
                 <h3 className="font-headline font-extrabold text-3xl text-white">Período de Testes</h3>
                 <p className="text-white/80 font-medium leading-relaxed">Você tem <span className="text-accent font-bold">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
+                {referral?.hasActiveDiscount && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-accent/20 px-3.5 py-1.5 rounded-xl border border-accent/20 text-accent font-bold text-[11px] uppercase tracking-wide animate-pulse">
+                    🎁 Desconto de {referral.discountPct}% por indicação ativo!
+                  </div>
+                )}
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                 <Button

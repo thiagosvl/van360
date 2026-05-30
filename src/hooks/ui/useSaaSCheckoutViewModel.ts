@@ -14,6 +14,7 @@ import {
   useSubscriptionPlans,
   useSubscriptionBilling,
   useSubscriptionCheckout,
+  useSubscriptionReferral,
 } from "@/hooks/api/useSubscription";
 import type { PaymentMethod } from "@/types/subscription";
 import { useSession } from "@/hooks/business/useSession";
@@ -58,6 +59,7 @@ export function useSaaSCheckoutViewModel({
   const { isPromotionActive, plans: plansFromApi } = useSubscriptionPlans();
   const { invoices, refetchInvoices, paymentMethods } = useSubscriptionBilling(user?.id);
   const { createCheckout } = useSubscriptionCheckout();
+  const { referral, isLoading: isLoadingReferral } = useSubscriptionReferral(user?.id);
 
   const plans = plansFromProps || plansFromApi;
   const { isReady: isProviderReady, generatePaymentToken } = usePaymentProvider();
@@ -277,5 +279,8 @@ export function useSaaSCheckoutViewModel({
     isPromotionActive,
     isProviderReady,
     profile,
+    hasActiveDiscount: referral?.hasActiveDiscount,
+    discountPct: referral?.discountPct,
+    isLoadingData: isLoadingReferral || !plans,
   };
 }

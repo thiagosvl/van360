@@ -44,6 +44,9 @@ export interface ReferralData {
   pending: number;
   referralCode: string;
   referralLink: string;
+  bonusDays?: number;
+  discountPct?: number;
+  hasActiveDiscount?: boolean;
 }
 
 export interface SubscriptionInvoice {
