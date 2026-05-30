@@ -592,6 +592,10 @@ const InvoiceStatusBadge = ({ status }: { status: SubscriptionInvoiceStatus }) =
       label: "Vencido",
       className: "bg-slate-50 text-slate-400 border-slate-100/50",
     },
+    [SubscriptionInvoiceStatus.FAILED]: {
+      label: "Recusado",
+      className: "bg-rose-50 text-rose-600 border-rose-100/50",
+    },
   }[status] ?? {
     label: status,
     className: "bg-slate-50 text-slate-500",
