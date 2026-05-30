@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
-import { CreditCard, User, Calendar, MapPin, Info } from "lucide-react";
+import { CreditCard, MapPin, Info, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { cepService } from "@/services/cepService";
 
 export interface CreditCardData {
   number: string;
@@ -40,6 +41,31 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
   const [maskedExpiry, setMaskedExpiry] = useState("");
   const [maskedBirth, setMaskedBirth] = useState("");
   const [maskedZip, setMaskedZip] = useState("");
+  const [loadingCep, setLoadingCep] = useState(false);
+
+  const handleCepFetch = async (cleanCep: string) => {
+    setLoadingCep(true);
+    try {
+      const address = await cepService.buscarEndereco(cleanCep);
+      if (address) {
+        setFormData(prev => ({
+          ...prev,
+          street: address.logradouro,
+          neighborhood: address.bairro,
+          city: address.cidade,
+          state: address.estado
+        }));
+
+        setTimeout(() => {
+          document.getElementById("number_address")?.focus();
+        }, 100);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar CEP", error);
+    } finally {
+      setLoadingCep(false);
+    }
+  };
 
   const formatCardNumber = (value: string) => {
     const val = value.replace(/\D/g, "");
@@ -81,16 +107,20 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
     } else if (field === "zipcode") {
       finalValue = formatZip(value).substr(0, 9);
       setMaskedZip(finalValue);
+      const cleanValue = finalValue.replace(/\D/g, "");
+      if (cleanValue.length === 8) {
+        handleCepFetch(cleanValue);
+      }
     }
 
     setFormData(prev => ({ ...prev, [field]: finalValue }));
   };
 
   useEffect(() => {
-    const isComplete = 
-      formData.number.length >= 13 && 
-      formData.name.length >= 3 && 
-      formData.expiry.length === 5 && 
+    const isComplete =
+      formData.number.length >= 13 &&
+      formData.name.length >= 3 &&
+      formData.expiry.length === 5 &&
       formData.cvv.length >= 3 &&
       formData.birth.length === 10 &&
       formData.zipcode.length === 9 &&
@@ -168,7 +198,7 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
           <div className="space-y-1">
             <label className={labelStyles}>Número do Cartão</label>
             <div className="relative group">
-              <input 
+              <input
                 className={cn(inputStyles, "pr-12")}
                 placeholder="0000 0000 0000 0000"
                 value={maskedNumber}
@@ -180,7 +210,7 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
 
           <div className="space-y-1">
             <label className={labelStyles}>Nome do Titular</label>
-            <input 
+            <input
               className={cn(inputStyles, "uppercase")}
               placeholder="COMO ESTÁ NO CARTÃO"
               value={formData.name}
@@ -191,7 +221,7 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className={labelStyles}>Validade</label>
-              <input 
+              <input
                 className={inputStyles}
                 placeholder="MM/AA"
                 value={maskedExpiry}
@@ -201,7 +231,7 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
             <div className="space-y-1">
               <label className={labelStyles}>CVV</label>
               <div className="relative">
-                <input 
+                <input
                   type="text"
                   name="cvv"
                   id="cvv"
@@ -229,7 +259,7 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className={labelStyles}>Nascimento</label>
-              <input 
+              <input
                 className={inputStyles}
                 placeholder="DD/MM/AAAA"
                 value={maskedBirth}
@@ -238,19 +268,26 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
             </div>
             <div className="space-y-1">
               <label className={labelStyles}>CEP</label>
-              <input 
-                className={inputStyles}
-                placeholder="00000-000"
-                value={maskedZip}
-                onChange={(e) => handleChange("zipcode", e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  className={cn(inputStyles, "pr-10")}
+                  placeholder="00000-000"
+                  value={maskedZip}
+                  onChange={(e) => handleChange("zipcode", e.target.value)}
+                />
+                {loadingCep && (
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#002444]" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3 space-y-1">
               <label className={labelStyles}>Logradouro</label>
-              <input 
+              <input
                 className={inputStyles}
                 placeholder="Rua, Avenida..."
                 value={formData.street}
@@ -259,7 +296,8 @@ export default function CreditCardForm({ onChange }: CreditCardFormProps) {
             </div>
             <div className="col-span-1 space-y-1">
               <label className={labelStyles}>Nº</label>
-              <input 
+              <input
+                id="number_address"
                 className={inputStyles}
                 placeholder="123"
                 value={formData.number_address}

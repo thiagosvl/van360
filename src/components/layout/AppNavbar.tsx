@@ -19,6 +19,7 @@ import {
   LogOut,
   UserPen,
   CreditCard,
+  Rocket,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -137,7 +138,10 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                 ) : (
                   <p className="text-sm font-semibold text-slate-700 truncate">{formatFirstName(profile?.nome)}</p>
                 )}
-              </div>
+              </div><DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+                <Rocket className="h-4 w-4 text-slate-400" />
+                Minha Assinatura
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarCadastroDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <UserPen className="h-4 w-4 text-slate-400" />
                 Editar Cadastro

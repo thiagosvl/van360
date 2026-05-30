@@ -191,16 +191,6 @@ const SubscriptionPage = () => {
     <PullToRefreshWrapper onRefresh={handleRefresh}>
       <div className="min-h-screen bg-surface px-4 pt-10 pb-32 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-        {/* Header Editorial */}
-        <header className="px-2 mb-8">
-          <h1 className="font-headline font-black text-primary text-4xl lg:text-[2.75rem] leading-tight tracking-tighter">
-            Minha Assinatura
-          </h1>
-          <p className="text-on-surface-variant font-medium mt-1">
-            Gerencie seu plano e detalhes de faturamento.
-          </p>
-        </header>
-
         {/* Subscription Status Hero */}
         <section className="px-1 mb-10">
           {isExpired ? (
