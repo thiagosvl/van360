@@ -93,6 +93,7 @@ export function CepInput<T extends FieldValues>({
             placeholder="00000-000"
             maxLength={9}
             type="text"
+            inputMode="numeric"
             className={cn("pl-12 pr-8", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
             aria-invalid={!!error}

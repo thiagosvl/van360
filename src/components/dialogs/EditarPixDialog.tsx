@@ -177,6 +177,14 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                           placeholder="Digite sua chave Pix"
                           {...field}
                           value={field.value || ""}
+                          type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
+                          inputMode={
+                            tipoChave === TipoChavePix.CPF ||
+                            tipoChave === TipoChavePix.CNPJ ||
+                            tipoChave === TipoChavePix.TELEFONE
+                              ? "numeric"
+                              : "text"
+                          }
                           onChange={(e) => {
                             const val = e.target.value;
                             let maskedVal = val;

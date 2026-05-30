@@ -74,6 +74,7 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
                   <Hash className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                   <Input
                     {...field}
+                    inputMode="numeric"
                     placeholder="000.000.000-00"
                     onChange={(e) => {
                       field.onChange(cpfMask(e.target.value));

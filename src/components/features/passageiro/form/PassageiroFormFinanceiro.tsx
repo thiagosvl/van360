@@ -104,6 +104,7 @@ export function PassageiroFormFinanceiro({
                   <Input
                     placeholder="DD/MM/AAAA"
                     maxLength={10}
+                    inputMode="numeric"
                     {...field}
                     onChange={(e) => {
                       field.onChange(dateMask(e.target.value));

@@ -37,6 +37,8 @@ export function PhoneInput<T extends FieldValues>({
           <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
           <Input
             {...field}
+            type="tel"
+            inputMode="numeric"
             placeholder={placeholder}
             maxLength={15}
             onChange={(e) => {

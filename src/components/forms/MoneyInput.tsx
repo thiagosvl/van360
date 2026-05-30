@@ -39,6 +39,7 @@ export function MoneyInput<T extends FieldValues>({
             {...field}
             placeholder={placeholder}
             type="text"
+            inputMode="numeric"
             className={inputClassName}
             disabled={disabled}
             onChange={(e) => {

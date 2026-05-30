@@ -89,6 +89,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                           <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                           <Input
                             {...field}
+                            inputMode="numeric"
                             placeholder="000.000.000-00"
                             onChange={(e) => field.onChange(cpfMask(e.target.value))}
                             className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"

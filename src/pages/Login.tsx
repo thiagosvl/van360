@@ -358,6 +358,7 @@ export default function Login() {
                             <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                             <Input
                               {...field}
+                              inputMode="numeric"
                               onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
                               placeholder="000.000.000-00"
                               autoComplete="username"

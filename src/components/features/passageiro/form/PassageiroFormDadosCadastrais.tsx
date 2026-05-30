@@ -147,6 +147,7 @@ export function PassageiroFormDadosCadastrais({
                 <FormControl>
                   <Input
                     type="text"
+                    inputMode="numeric"
                     placeholder="DD/MM/AAAA"
                     maxLength={10}
                     {...field}
