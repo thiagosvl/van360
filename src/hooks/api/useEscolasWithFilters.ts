@@ -11,23 +11,30 @@ export function useEscolasWithFilters(
   options?: {
     enabled?: boolean;
     onError?: (error: unknown) => void;
+    isPublic?: boolean;
   }
 ) {
   // Criar uma chave estável para o queryKey baseada nos filtros
   const filterKey = filtros ? JSON.stringify(filtros) : undefined;
   
   return useQuery({
-    queryKey: ["escolas-form", usuarioId, filterKey],
+    queryKey: ["escolas-form", usuarioId, filterKey, options?.isPublic],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
     // Sempre refazer a requisição quando os filtros mudarem ou quando o componente montar
     staleTime: 0,
     refetchOnMount: "always",
     queryFn: async () => {
       if (!usuarioId) return [];
-      const data = await escolaApi.listEscolas(usuarioId, filtros);
-      return (data as Escola[]) ?? [];
+      try {
+        const data = options?.isPublic
+          ? await escolaApi.listEscolasPublic(usuarioId, filtros)
+          : await escolaApi.listEscolas(usuarioId, filtros);
+        return (data as Escola[]) ?? [];
+      } catch (error) {
+        options?.onError?.(error);
+        throw error;
+      }
     },
-    onError: options?.onError,
   });
 }
 

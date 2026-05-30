@@ -21,6 +21,11 @@ export const escolaApi = {
       .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
+  listEscolasPublic: (usuarioId: string, filtros?: Record<string, string>): Promise<Escola[]> =>
+    apiClient
+      .get(`/public/motoristas/${usuarioId}/escolas`, { params: filtros })
+      .then(res => res.data),
+
   listEscolasComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>): Promise<(Escola & { passageiros_ativos_count?: number })[]> =>
     apiClient
       .get(`${endpointBase}/usuario/${usuarioId}/com-contagem`, { params: filtros })

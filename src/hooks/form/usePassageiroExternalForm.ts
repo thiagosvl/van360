@@ -85,6 +85,7 @@ export function usePassageiroExternalForm() {
     { ativo: "true" },
     {
       enabled: !!motoristaId,
+      isPublic: true,
     }
   ) as { data: import("@/types/escola").Escola[] };
 
