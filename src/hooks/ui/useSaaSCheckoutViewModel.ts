@@ -70,9 +70,20 @@ export function useSaaSCheckoutViewModel({
   const [activeInvoice, setActiveInvoice] = useState<SubscriptionInvoice | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
   const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initialSubscriptionStatusRef = useRef<SubscriptionStatus | null>(null);
 
   const savedCards: PaymentMethod[] = paymentMethods ?? [];
   const defaultCard = savedCards.find(c => c.is_default) ?? savedCards[0] ?? null;
+
+  useEffect(() => {
+    if (isOpen) {
+      if (subscription?.status && initialSubscriptionStatusRef.current === null) {
+        initialSubscriptionStatusRef.current = subscription.status;
+      }
+    } else {
+      initialSubscriptionStatusRef.current = null;
+    }
+  }, [isOpen, subscription?.status]);
 
   useEffect(() => {
     if (isOpen && plans && plans.length > 0) {
@@ -131,7 +142,8 @@ export function useSaaSCheckoutViewModel({
 
     const currentInvoice = invoices?.find(inv => inv.id === activeInvoice?.id);
     const isPaid = currentInvoice?.status === SubscriptionInvoiceStatus.PAID;
-    const isSubscriptionActive = subscription?.status === SubscriptionStatus.ACTIVE;
+    const wasNotActiveBefore = initialSubscriptionStatusRef.current !== SubscriptionStatus.ACTIVE;
+    const isSubscriptionActive = wasNotActiveBefore && subscription?.status === SubscriptionStatus.ACTIVE;
 
     if (isPaid || isSubscriptionActive) {
       handlePaymentConfirmed("REALTIME/CACHE");
