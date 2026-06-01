@@ -2,6 +2,7 @@ import { SaaSPlan } from "@/types/subscription";
 import { useSaaSCheckoutViewModel } from "@/hooks/ui/useSaaSCheckoutViewModel";
 import { SubscriptionIdentifer, CheckoutPaymentMethod, SubscriptionStatus } from "@/types/enums";
 import { ROUTES } from "@/constants/routes";
+import { BASE_DOMAIN } from "@/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
@@ -66,7 +67,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
         return;
       }
       const { access_token, refresh_token } = data.session;
-      const checkoutUrl = `${window.location.origin}${ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}?access_token=${access_token}&refresh_token=${refresh_token}`;
+      const checkoutUrl = `${BASE_DOMAIN}${ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}?access_token=${access_token}&refresh_token=${refresh_token}`;
       await openBrowserLink(checkoutUrl);
       toast.info("Abrimos o checkout no seu navegador padrão.");
     } catch (err) {
