@@ -46,6 +46,7 @@ const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
+const ExternalCheckoutBridge = lazyLoad(() => import("./pages/subscription/ExternalCheckoutBridge"));
 const PrivacyPolicy = lazyLoad(() => import("./pages/legal/PrivacyPolicyPage"));
 const TermsOfUse = lazyLoad(() => import("./pages/legal/TermsOfUsePage"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -232,6 +233,11 @@ const App = () => {
                 <Route
                   path={ROUTES.PUBLIC.TERMS_OF_USE}
                   element={<TermsOfUse />}
+                />
+
+                <Route
+                  path={ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}
+                  element={<ExternalCheckoutBridge />}
                 />
 
                 {/* Rota Pública de assinatura de contrato */}

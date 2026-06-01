@@ -287,6 +287,7 @@ export function useSaaSCheckoutViewModel({
     cardError,
     handleGenerateCheckout,
     subscription,
+    refetchStatus,
     plans,
     isPromotionActive,
     isProviderReady,
