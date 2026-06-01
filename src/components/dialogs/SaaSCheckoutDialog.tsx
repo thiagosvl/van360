@@ -1,8 +1,6 @@
 import { SaaSPlan } from "@/types/subscription";
 import { useSaaSCheckoutViewModel } from "@/hooks/ui/useSaaSCheckoutViewModel";
-import { SubscriptionIdentifer, CheckoutPaymentMethod, SubscriptionStatus } from "@/types/enums";
-import { ROUTES } from "@/constants/routes";
-import { BASE_DOMAIN } from "@/constants";
+import { SubscriptionIdentifer, CheckoutPaymentMethod } from "@/types/enums";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
@@ -16,9 +14,6 @@ import {
   Smartphone, CreditCard as CreditCardIcon, ShieldCheck,
   ChevronLeft, ArrowRight, Check, Calendar, RefreshCw, Copy, Star, AlertCircle, Plus
 } from "lucide-react";
-import { Capacitor } from "@capacitor/core";
-import { openBrowserLink } from "@/utils/browser";
-import { supabase } from "@/integrations/supabase/client";
 
 interface SaaSCheckoutDialogProps {
   plans: SaaSPlan[];
@@ -45,8 +40,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     activeInvoice,
     cardError,
     handleGenerateCheckout,
-    subscription,
-    refetchStatus,
     isPromotionActive,
     profile,
     hasActiveDiscount,
@@ -55,108 +48,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  const isNative = Capacitor.isNativePlatform();
-
-  const handleExternalCheckout = async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (!data?.session) {
-        toast.error("Não foi possível gerar a sessão. Faça login novamente.");
-        return;
-      }
-      const { access_token, refresh_token } = data.session;
-      const checkoutUrl = `${BASE_DOMAIN}${ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}?access_token=${access_token}&refresh_token=${refresh_token}`;
-      await openBrowserLink(checkoutUrl);
-      toast.info("Abrimos o checkout no seu navegador padrão.");
-    } catch (err) {
-      console.error("Erro ao gerar link de checkout externo:", err);
-      toast.error("Falha ao abrir checkout externo.");
-    }
-  };
-
-  const handleManualVerify = async () => {
-    setIsVerifying(true);
-    try {
-      const { data } = await refetchStatus();
-      if (data?.status === SubscriptionStatus.ACTIVE) {
-        toast.success("Assinatura confirmada e ativa!");
-        onSuccess?.();
-        onClose();
-      } else {
-        toast.error("Pagamento ainda pendente. Caso tenha pago, aguarde um instante.");
-      }
-    } catch (err) {
-      toast.error("Erro ao verificar status do pagamento.");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  if (isNative) {
-    return (
-      <BaseDialog
-        open={isOpen}
-        onOpenChange={(val) => !val && onClose()}
-        className="max-w-md"
-        lockClose={isVerifying}
-      >
-        <BaseDialog.Header
-          title="Assinatura van360"
-          subtitle="Ative seu acesso com segurança"
-          onClose={onClose}
-          hideCloseButton={isVerifying}
-        />
-
-        <BaseDialog.Body className="p-6 flex flex-col items-center text-center space-y-6">
-          <div className="w-20 h-20 rounded-full bg-[#1a3a5c]/5 flex items-center justify-center animate-pulse">
-            <Smartphone className="w-10 h-10 text-[#1a3a5c]" />
-          </div>
-          
-          <div className="space-y-3">
-            <h4 className="font-headline font-bold text-base text-[#1a3a5c]">
-              Pagamento via Navegador Seguro
-            </h4>
-            <p className="text-xs text-[#545f73] leading-relaxed max-w-[280px] mx-auto">
-              Para sua total segurança e conformidade, o checkout (Pix ou Cartão) é concluído na aba do navegador padrão do seu celular.
-            </p>
-            <p className="text-xs text-[#545f73] leading-relaxed max-w-[280px] mx-auto font-medium">
-              Ao pagar lá, seu aplicativo van360 atualizará e liberará seu painel automaticamente!
-            </p>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl w-full">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="text-[10px] font-black uppercase text-emerald-700 tracking-wider">
-              Aguardando confirmação do pagamento...
-            </span>
-          </div>
-        </BaseDialog.Body>
-
-        <BaseDialog.Footer className="flex-col gap-3 bg-[#f2f4f6]/50">
-          <div className="flex flex-col gap-2 w-full">
-            <Button
-              onClick={handleExternalCheckout}
-              className="w-full h-12 bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 group transition-all"
-            >
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              Pagar no Navegador
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={handleManualVerify}
-              disabled={isVerifying}
-              className="w-full h-12 border-slate-200 text-slate-500 rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest transition-colors hover:bg-slate-50"
-            >
-              {isVerifying ? "Verificando..." : "Já paguei, verificar agora"}
-            </Button>
-          </div>
-        </BaseDialog.Footer>
-      </BaseDialog>
-    );
-  }
 
   const annualPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
   const monthlyPlan = plans.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
@@ -234,7 +125,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 animate-pulse">
             {/* Skeleton do Alerta/Selo de Desconto */}
             <Skeleton className="h-12 w-full rounded-xl bg-slate-100" />
-            
+
             {/* Skeleton do Card Anual */}
             <div className="relative rounded-xl p-4 sm:p-6 border border-slate-100 bg-[#f8f9fa] space-y-4">
               <div className="flex items-center justify-between gap-2">

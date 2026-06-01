@@ -23,6 +23,11 @@ import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDial
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { Capacitor } from "@capacitor/core";
+import { openBrowserLink } from "@/utils/browser";
+import { BASE_DOMAIN } from "@/constants";
+import { ROUTES } from "@/constants/routes";
+import { supabase } from "@/integrations/supabase/client";
 import { useContractGuard } from "@/hooks/ui/useContractGuard";
 import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useCallback, useEffect, useState } from "react";
@@ -285,7 +290,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setPixPaymentDialogState({ open: true, props });
   };
 
-  const openSaaSCheckoutDialog = (props: OpenSaaSCheckoutDialogProps) => {
+  const openSaaSCheckoutDialog = async (props: OpenSaaSCheckoutDialogProps) => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          const { access_token, refresh_token } = data.session;
+          const checkoutUrl = `${BASE_DOMAIN}${ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}?access_token=${access_token}&refresh_token=${refresh_token}&auto_open=true`;
+          openBrowserLink(checkoutUrl);
+          return;
+        }
+      } catch (err) {
+        console.error("Erro ao gerar link de checkout externo:", err);
+      }
+    }
     setSaasCheckoutDialogState({ open: true, props });
   };
 

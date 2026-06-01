@@ -37,7 +37,8 @@ export default function ExternalCheckoutBridge() {
         }
 
         toast.success("Conectado com sucesso!");
-        navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION, { replace: true });
+        const autoOpen = searchParams.get("auto_open") === "true";
+        navigate(`${ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}${autoOpen ? "?open_checkout=true" : ""}`, { replace: true });
       } catch (err) {
         console.error("Erro na ponte de autenticação externa:", err);
         toast.error("Não foi possível autenticar. Faça login manualmente.");
