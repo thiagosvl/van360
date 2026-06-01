@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
 import CreditCardForm, { CreditCardData } from "@/components/dialogs/CreditCardForm";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
 import { Button } from "@/components/ui/button";
@@ -45,9 +45,19 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     hasActiveDiscount,
     discountPct,
     isLoadingData,
+    refetchInvoices,
+    refetchStatus,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
+  const [pixCopied, setPixCopied] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || step !== 3) {
+      setPixCopied(false);
+    }
+  }, [isOpen, step]);
 
   const annualPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
   const monthlyPlan = plans.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
@@ -74,6 +84,26 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     if (activeInvoice?.pix_copy_paste) {
       navigator.clipboard.writeText(activeInvoice.pix_copy_paste);
       toast.success("Código Pix copiado!");
+      setPixCopied(true);
+    }
+  };
+
+  const handleVerifyPixPayment = async () => {
+    setIsVerifying(true);
+    try {
+      toast.loading("Verificando seu pagamento junto ao banco...", { id: "verify-pix" });
+      await Promise.all([refetchInvoices(), refetchStatus()]);
+      
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      
+      toast.info("Ainda não identificamos a confirmação. O banco pode levar até 1 minuto para processar. Continue aguardando ou tente de novo em instantes.", {
+        id: "verify-pix",
+        duration: 5000,
+      });
+    } catch (error) {
+      toast.error("Erro ao verificar pagamento. Tente novamente.", { id: "verify-pix" });
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -528,12 +558,40 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           )}
 
           {step === 3 && !isCardStep3 && activeInvoice?.pix_copy_paste && (
-            <BaseDialog.Action
-              label="Copiar Código"
-              onClick={handleCopyPix}
-              icon={<Copy className="w-4 h-4" />}
-              className="bg-[#002444] hover:bg-[#002444]/95 h-12 text-sm"
-            />
+            <div className="flex flex-col sm:flex-row gap-2.5 w-full">
+              {pixCopied ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyPix}
+                    className="h-12 border-slate-200 text-[#002444] hover:bg-slate-50 flex items-center justify-center gap-2 flex-1 text-sm font-semibold"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copiar Novamente
+                  </Button>
+                  <Button
+                    onClick={handleVerifyPixPayment}
+                    disabled={isVerifying}
+                    className="bg-[#10b981] hover:bg-[#059669] text-white h-12 flex items-center justify-center gap-2 flex-1 text-sm font-semibold shadow-sm transition-all duration-200"
+                  >
+                    {isVerifying ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    Já fiz o pagamento
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleCopyPix}
+                  className="bg-[#002444] hover:bg-[#002444]/95 text-white h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copiar Código Pix
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </BaseDialog.Footer>
