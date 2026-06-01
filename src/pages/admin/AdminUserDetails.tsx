@@ -271,7 +271,7 @@ export default function AdminUserDetails() {
         </div>
       </div>
 
-      <div className="flex border-b border-slate-200 gap-6">
+      <div className="flex border-b border-slate-200 gap-6 overflow-x-auto scrollbar-none whitespace-nowrap">
         <button
           onClick={() => setActiveTab("dados")}
           className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
@@ -638,9 +638,9 @@ export default function AdminUserDetails() {
                       <tr className="border-b border-slate-100">
                         <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
                         <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Entidade</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Entidade</th>
                         <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">IP</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
                         <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Dados</th>
                       </tr>
                     </thead>
@@ -667,13 +667,13 @@ export default function AdminUserDetails() {
                                 {actionLabel}
                               </span>
                             </td>
-                            <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                            <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell">
                               {log.entidade_tipo}
                             </td>
                             <td className="py-4 text-xs font-medium text-slate-600 max-w-[280px] truncate" title={log.descricao}>
                               {log.descricao}
                             </td>
-                            <td className="py-4">
+                            <td className="py-4 hidden md:table-cell">
                               <code className="text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 font-mono text-slate-500">
                                 {log.ip_address || "—"}
                               </code>
