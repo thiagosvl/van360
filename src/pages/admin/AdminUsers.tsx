@@ -16,14 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SubscriptionStatus } from "@/types/enums";
 import { phoneMask } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
-
-const STATUS_BADGES: Record<string, { label: string; className: string }> = {
-  [SubscriptionStatus.TRIAL]: { label: "Período de Teste", className: "bg-sky-100 text-sky-700" },
-  [SubscriptionStatus.ACTIVE]: { label: "Ativo (Em dia)", className: "bg-emerald-100 text-emerald-700" },
-  [SubscriptionStatus.PAST_DUE]: { label: "Atrasado (Carência)", className: "bg-amber-100 text-amber-700" },
-  [SubscriptionStatus.EXPIRED]: { label: "Bloqueado (Expirado)", className: "bg-red-100 text-red-700" },
-  [SubscriptionStatus.CANCELED]: { label: "Cancelado", className: "bg-slate-100 text-slate-500" },
-};
+import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
@@ -140,7 +133,6 @@ export default function AdminUsers() {
                   <tbody>
                     {users.map((user) => {
                       const sub = Array.isArray(user.assinaturas) ? user.assinaturas[0] : null;
-                      const badge = sub ? STATUS_BADGES[sub.status] : null;
 
                       return (
                         <tr
@@ -174,13 +166,7 @@ export default function AdminUsers() {
                             </span>
                           </td>
                           <td className="py-4">
-                            {badge ? (
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${badge.className}`}>
-                                {badge.label}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-slate-400">—</span>
-                            )}
+                            <SubscriptionStatusBadge status={sub?.status} />
                           </td>
                           <td className="py-4 text-right">
                             <Button

@@ -15,8 +15,12 @@ export interface AdminDashboardStats {
     id: string;
     nome: string;
     email: string;
+    telefone?: string;
     created_at: string;
     tipo: string;
+    assinaturas?: Array<{
+      status: string;
+    }>;
   }>;
 }
 

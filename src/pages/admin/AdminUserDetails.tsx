@@ -36,6 +36,7 @@ import { SubscriptionStatus } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "@/utils/notifications/toast";
+import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 
 const STATUS_OPTIONS = [
   { value: SubscriptionStatus.TRIAL, label: "Período de Teste" },
@@ -44,14 +45,6 @@ const STATUS_OPTIONS = [
   { value: SubscriptionStatus.EXPIRED, label: "Bloqueado (Expirado)" },
   { value: SubscriptionStatus.CANCELED, label: "Cancelado" },
 ];
-
-const STATUS_COLORS: Record<string, string> = {
-  [SubscriptionStatus.TRIAL]: "bg-sky-100 text-sky-700",
-  [SubscriptionStatus.ACTIVE]: "bg-emerald-100 text-emerald-700",
-  [SubscriptionStatus.PAST_DUE]: "bg-amber-100 text-amber-700",
-  [SubscriptionStatus.EXPIRED]: "bg-red-100 text-red-700",
-  [SubscriptionStatus.CANCELED]: "bg-slate-100 text-slate-500",
-};
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -240,7 +233,6 @@ export default function AdminUserDetails() {
   }
 
   const sub = data.assinatura;
-  const currentBadge = sub ? STATUS_COLORS[sub.status] || "" : "";
 
   return (
     <div className="space-y-8">
@@ -260,9 +252,7 @@ export default function AdminUserDetails() {
           <p className="text-xs font-semibold text-slate-400">
             Cadastrado em {formatDate(data.user.created_at)}
             {sub && (
-              <span className={`ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${currentBadge}`}>
-                {STATUS_OPTIONS.find(o => o.value === sub.status)?.label || sub.status}
-              </span>
+              <SubscriptionStatusBadge status={sub.status} className="ml-3" />
             )}
           </p>
         </div>

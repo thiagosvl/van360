@@ -1,5 +1,7 @@
 import { useAdminStats } from "@/hooks/api/adminHooks";
 import { useNavigate } from "react-router-dom";
+import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
+import { phoneMask } from "@/utils/masks";
 import {
   Users,
   Bus,
@@ -199,12 +201,15 @@ export default function AdminDashboard() {
                       {user.nome}
                     </p>
                     <p className="text-[10px] font-semibold text-slate-400 truncate">
-                      {user.email}
+                      {phoneMask(user.telefone || "") || "—"}
                     </p>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                    {formatDate(user.created_at)}
-                  </span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap hidden sm:inline">
+                      {formatDate(user.created_at)}
+                    </span>
+                    <SubscriptionStatusBadge status={user.assinaturas?.[0]?.status} />
+                  </div>
                 </div>
               ))
             )}

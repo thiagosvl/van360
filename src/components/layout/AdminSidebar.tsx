@@ -31,7 +31,11 @@ const adminNavItems = [
   },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  onLinkClick?: () => void;
+}
+
+export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
   return (
     <aside className="w-72 bg-[#1a3a5c] text-white flex flex-col h-screen sticky top-0 overflow-y-auto">
       {/* Logo Area */}
@@ -53,6 +57,7 @@ export function AdminSidebar() {
           <NavLink
             key={item.href}
             to={item.href}
+            onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
                 "group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all duration-300",
