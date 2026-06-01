@@ -27,7 +27,7 @@ const createUserSchema = z.object({
   email: emailSchema,
   telefone: phoneSchema,
   cpfcnpj: cpfSchema,
-  data_nascimento: dateSchema(false, false),
+  data_nascimento: dateSchema(true, false),
   senha: z.string().min(6, "A senha temporária deve ter pelo menos 6 caracteres"),
 });
 
@@ -266,7 +266,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                      Data de Nascimento
+                      Data de Nascimento <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
