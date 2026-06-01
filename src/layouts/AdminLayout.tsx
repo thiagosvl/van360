@@ -38,7 +38,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </main>
 
           {/* Optional Footer */}
-          <footer className="px-6 py-6 border-t border-slate-100 bg-white/50 text-center">
+          <footer className="px-6 pt-6 pb-[calc(1.5rem+var(--safe-area-bottom))] border-t border-slate-100 bg-white/50 text-center">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Van360 © {getNowBR().getFullYear()} — Você dirige. A gente organiza.
             </p>

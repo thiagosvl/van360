@@ -112,23 +112,23 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {kpis.map((stat, i) => (
           <Card
             key={i}
-            className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300"
+            className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300"
           >
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-start justify-between">
-                <div className={cn("p-3.5 rounded-2xl", stat.bg)}>
-                  <stat.icon className={cn("h-6 w-6", stat.color)} />
+                <div className={cn("p-2 sm:p-3.5 rounded-xl sm:rounded-2xl", stat.bg)}>
+                  <stat.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", stat.color)} />
                 </div>
               </div>
-              <div className="mt-6 flex flex-col items-start">
-                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+              <div className="mt-4 sm:mt-6 flex flex-col items-start">
+                <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
                   {stat.title}
                 </h3>
-                <p className="text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
                   {stat.value}
                 </p>
               </div>
@@ -191,24 +191,24 @@ export default function AdminDashboard() {
                 <div
                   key={user.id}
                   onClick={() => navigate(`/admin/usuarios/${user.id}`)}
-                  className="flex items-center gap-4 group cursor-pointer hover:bg-slate-50 p-3 rounded-2xl transition-all"
+                  className="flex items-center gap-2 sm:gap-4 group cursor-pointer hover:bg-slate-50 p-2 sm:p-3 rounded-2xl transition-all"
                 >
-                  <div className="h-10 w-10 bg-[#1a3a5c]/10 flex items-center justify-center rounded-xl text-[#1a3a5c] font-black text-sm">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-[#1a3a5c]/10 flex items-center justify-center rounded-lg sm:rounded-xl text-[#1a3a5c] font-black text-xs sm:text-sm shrink-0">
                     {user.nome?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-700 truncate leading-tight">
                       {user.nome}
                     </p>
-                    <p className="text-[10px] font-semibold text-slate-400 truncate">
+                    <p className="text-[10px] font-semibold text-slate-400 truncate mt-0.5">
                       {phoneMask(user.telefone || "") || "—"}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap hidden sm:inline">
                       {formatDate(user.created_at)}
                     </span>
-                    <SubscriptionStatusBadge status={user.assinaturas?.[0]?.status} />
+                    <SubscriptionStatusBadge status={user.assinaturas?.[0]?.status} className="text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1" />
                   </div>
                 </div>
               ))
