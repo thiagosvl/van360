@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 import {
   CreditCard,
-  FileText,
   LayoutDashboard,
   Menu,
+  Route as RouteIcon,
   Users
 } from "lucide-react";
 import { useLocation, NavLink } from "react-router-dom";
@@ -32,9 +32,9 @@ export function BottomNavbar() {
       icon: CreditCard,
     },
     {
-      title: "Contratos",
-      href: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
-      icon: FileText,
+      title: "Rotas",
+      href: ROUTES.PRIVATE.MOTORISTA.ROUTES,
+      icon: RouteIcon,
     },
   ];
 

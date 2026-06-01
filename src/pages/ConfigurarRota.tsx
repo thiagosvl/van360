@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Card } from "@/components/ui/card";
-import { 
-  ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown, GripVertical, 
-  MapPin, GraduationCap, Compass, AlertCircle
+import {
+  ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown, GripVertical,
+  GraduationCap, Compass, AlertCircle,
+  MapPin
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
@@ -62,7 +63,7 @@ export default function ConfigurarRota() {
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
       <div className="space-y-6">
-        
+
         <div className="flex items-center gap-3">
           <Button
             size="icon"
@@ -94,7 +95,7 @@ export default function ConfigurarRota() {
                 className="rounded-xl border-slate-200 bg-white/80 shadow-inner h-11 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label className="text-xs font-bold text-[#1a3a5c]">Período</Label>
               <div className="bg-slate-100/80 p-1 rounded-xl">
@@ -128,7 +129,7 @@ export default function ConfigurarRota() {
         </Card>
 
         <div className="grid gap-6 md:grid-cols-5 items-start">
-          
+
           <div className="md:col-span-3 space-y-4">
             <div className="px-1 flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline flex items-center gap-1.5">
@@ -153,16 +154,18 @@ export default function ConfigurarRota() {
               </div>
 
               {tipo === "volta" && (
-                <div className="bg-slate-50 border border-slate-200/50 border-dashed p-3.5 rounded-2xl flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-sky-100 flex items-center justify-center text-[10px] font-bold text-sky-800 uppercase">
-                    Ini
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-slate-500 font-headline truncate">
-                      Ponto de Partida Escolar
+                <div className="bg-white/70 border border-slate-150/40 p-2.5 sm:p-3.5 rounded-2xl flex items-center gap-2 sm:gap-3 shadow-sm opacity-65 select-none">
+                  <div className="w-4 h-4 shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <h4 className="text-xs font-bold text-[#1a3a5c]/70 font-headline truncate pr-1 flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-sky-100/70 text-[10px] font-black text-sky-800 shrink-0">
+                        INI
+                      </span>
+                      <span className="truncate">Ponto de Partida Escolar</span>
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-semibold truncate flex items-center gap-1 mt-0.5">
-                      <GraduationCap className="w-3 h-3 text-slate-300" /> Os passageiros embarcam na escola
+                    <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1 mt-0.5 pr-1 min-w-0">
+                      <GraduationCap className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                      <span className="truncate shrink-1">Os passageiros embarcam na escola</span>
                     </p>
                   </div>
                 </div>
@@ -185,58 +188,53 @@ export default function ConfigurarRota() {
                       onDragStart={(e) => handleDragStart(e, index)}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, index)}
-                      className="group bg-white border border-slate-150/60 p-3.5 rounded-2xl flex items-center gap-3 shadow-sm hover:shadow-md hover:border-slate-200/80 transition-all duration-200 ease-in-out cursor-grab active:cursor-grabbing hover:scale-[1.005]"
+                      className="group bg-white border border-slate-150/60 p-2 sm:p-3.5 rounded-2xl flex items-center gap-1.5 sm:gap-3 shadow-sm hover:shadow-md hover:border-slate-200/80 transition-all duration-200 ease-in-out cursor-grab active:cursor-grabbing hover:scale-[1.005]"
                     >
                       <div className="flex items-center text-slate-300 group-hover:text-slate-500 transition-colors shrink-0">
-                        <GripVertical className="w-4 h-4 shrink-0 text-slate-400 cursor-grab active:cursor-grabbing" />
+                        <GripVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-slate-400 cursor-grab active:cursor-grabbing" />
                       </div>
 
                       <div className="flex-1 min-w-0 space-y-0.5">
-                        <h4 className="text-xs font-bold text-[#1a3a5c] font-headline truncate pr-1 flex items-center gap-2">
+                        <h4 className="text-xs font-bold text-[#1a3a5c] font-headline truncate pr-1 flex items-center gap-1.5 sm:gap-2">
                           <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-slate-100 text-[10px] font-black text-[#1a3a5c]/80 shrink-0">
                             {index + 1}
                           </span>
-                          <span>{formatShortName(passenger.nome, true)}</span>
+                          <span className="truncate">{formatShortName(passenger.nome, true)}</span>
                         </h4>
-                        <p className="text-[10px] text-slate-400 font-semibold truncate flex items-center gap-1 mt-0.5 pr-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-300 shrink-0" /> {passenger.bairro || "Bairro não cadastrado"}
-                          {passenger.escola_nome && (
-                            <>
-                              <span className="text-slate-200 shrink-0">•</span>
-                              <GraduationCap className="w-3.5 h-3.5 text-slate-300 shrink-0" /> {passenger.escola_nome}
-                            </>
-                          )}
+                        <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1 mt-0.5 pr-1 min-w-0">
+                          <GraduationCap className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                          <span className="truncate">{passenger.escola_nome || "Sem escola"}</span>
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0 border-l border-slate-100/80 pl-3">
+                      <div className="flex items-center gap-1 sm:gap-2 shrink-0 border-l border-slate-100/80 pl-1.5 sm:pl-3">
                         <div className="flex flex-col gap-0.5 shrink-0">
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="w-6 h-6 rounded-md text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 border border-transparent disabled:opacity-20"
+                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-md text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 border border-transparent disabled:opacity-20"
                             onClick={(e) => { e.stopPropagation(); moverParaCima(index); }}
                             disabled={index === 0}
                           >
-                            <ArrowUp className="w-3.5 h-3.5" />
+                            <ArrowUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           </Button>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="w-6 h-6 rounded-md text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 border border-transparent disabled:opacity-20"
+                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-md text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 border border-transparent disabled:opacity-20"
                             onClick={(e) => { e.stopPropagation(); moverParaBaixo(index); }}
                             disabled={index === selectedPassengers.length - 1}
                           >
-                            <ArrowDown className="w-3.5 h-3.5" />
+                            <ArrowDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           </Button>
                         </div>
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="w-7 h-7 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50/50 border border-transparent shrink-0"
+                          className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50/50 border border-transparent shrink-0"
                           onClick={(e) => { e.stopPropagation(); togglePassengerSelection(passenger as any); }}
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                     </div>
@@ -245,16 +243,18 @@ export default function ConfigurarRota() {
               )}
 
               {tipo === "ida" && (
-                <div className="bg-slate-50 border border-slate-200/50 border-dashed p-3.5 rounded-2xl flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-800 uppercase">
-                    Fim
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-slate-500 font-headline truncate">
-                      Destino Escolar Final
+                <div className="bg-white/70 border border-slate-150/40 p-2.5 sm:p-3.5 rounded-2xl flex items-center gap-2 sm:gap-3 shadow-sm opacity-65 select-none">
+                  <div className="w-4 h-4 shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <h4 className="text-xs font-bold text-[#1a3a5c]/70 font-headline truncate pr-1 flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-100/70 text-[10px] font-black text-emerald-800 shrink-0">
+                        FIM
+                      </span>
+                      <span className="truncate">Destino Escolar Final</span>
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-semibold truncate flex items-center gap-1 mt-0.5">
-                      <GraduationCap className="w-3.5 h-3.5 text-slate-300" /> Os passageiros desembarcam na escola
+                    <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1 mt-0.5 pr-1 min-w-0">
+                      <GraduationCap className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                      <span className="truncate shrink-1">Os passageiros desembarcam na escola</span>
                     </p>
                   </div>
                 </div>
@@ -283,20 +283,21 @@ export default function ConfigurarRota() {
                   <div
                     key={p.id}
                     onClick={() => togglePassengerSelection(p)}
-                    className="bg-white border border-slate-100 p-3 rounded-xl flex items-center justify-between gap-3 cursor-pointer shadow-sm hover:border-slate-200/80 hover:shadow-md transition-all duration-200 group hover:scale-[1.01]"
+                    className="bg-white border border-slate-100 p-2 sm:p-3 rounded-xl flex items-center justify-between gap-2 sm:gap-3 cursor-pointer shadow-sm hover:border-slate-200/80 hover:shadow-md transition-all duration-200 group hover:scale-[1.01]"
                   >
-                    <div className="min-w-0 space-y-0.5">
+                    <div className="flex-1 min-w-0 space-y-0.5">
                       <h4 className="text-xs font-bold text-[#1a3a5c] font-headline truncate">
                         {formatShortName(p.nome, true)}
                       </h4>
-                      <p className="text-[9px] text-slate-400 font-semibold truncate">
-                        {p.bairro || "Sem bairro"} • {p.escola?.nome || "Sem escola"}
+                      <p className="text-[9px] text-slate-400 font-semibold truncate flex items-center gap-1">
+                        <GraduationCap className="w-3 h-3 text-slate-300 shrink-0" />
+                        {p.escola?.nome || "Sem escola"}
                       </p>
                     </div>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="w-7 h-7 rounded-lg text-slate-400 group-hover:text-emerald-600 group-hover:bg-emerald-50 border border-transparent"
+                      className="w-7 h-7 rounded-lg text-slate-400 group-hover:text-emerald-600 group-hover:bg-emerald-50 border border-transparent shrink-0"
                     >
                       <Plus className="w-4 h-4" />
                     </Button>
