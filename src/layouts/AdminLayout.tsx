@@ -23,7 +23,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {/* Mobile Sidebar (Drawer) */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetContent side="left" className="p-0 border-r-0 w-72 bg-[#1a3a5c]">
-            <AdminSidebar />
+            <AdminSidebar onLinkClick={() => setIsMobileMenuOpen(false)} />
           </SheetContent>
         </Sheet>
 
@@ -31,16 +31,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex-1 flex flex-col min-w-0">
           <AdminNavbar onMenuToggle={() => setIsMobileMenuOpen(true)} />
 
-          <main className="flex-1 p-6 lg:p-10 animate-in fade-in duration-700">
+          <main className="flex-1 p-4 sm:p-6 lg:p-10 animate-in fade-in duration-700">
             <div className="mx-auto max-w-7xl">
               {children}
             </div>
           </main>
 
           {/* Optional Footer */}
-          <footer className="px-6 py-6 border-t border-slate-100 bg-white/50 text-center">
+          <footer className="px-6 pt-6 pb-[calc(1.5rem+var(--safe-area-bottom))] border-t border-slate-100 bg-white/50 text-center">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Van360 Ecosystem © {getNowBR().getFullYear()} — Plataforma de Gestão Inteligente
+              Van360 © {getNowBR().getFullYear()} — Você dirige. A gente organiza.
             </p>
           </footer>
         </div>

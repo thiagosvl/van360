@@ -45,6 +45,16 @@ export function useAdminUserDetails(id: string) {
   });
 }
 
+export function useAdminUserLogs(id: string, params?: { page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "logs", params],
+    queryFn: () => adminApi.getUserLogs(id, params),
+    enabled: !!id,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useUpdateUserAdmin() {
   const qc = useQueryClient();
   return useMutation({

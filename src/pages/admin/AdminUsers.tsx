@@ -13,25 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SubscriptionStatus } from "@/types/enums";
 import { phoneMask } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
-
-const STATUS_BADGES: Record<string, { label: string; className: string }> = {
-  [SubscriptionStatus.TRIAL]: { label: "Período de Teste", className: "bg-sky-100 text-sky-700" },
-  [SubscriptionStatus.ACTIVE]: { label: "Ativo (Em dia)", className: "bg-emerald-100 text-emerald-700" },
-  [SubscriptionStatus.PAST_DUE]: { label: "Atrasado (Carência)", className: "bg-amber-100 text-amber-700" },
-  [SubscriptionStatus.EXPIRED]: { label: "Bloqueado (Expirado)", className: "bg-red-100 text-red-700" },
-  [SubscriptionStatus.CANCELED]: { label: "Cancelado", className: "bg-slate-100 text-slate-500" },
-};
+import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
-  { value: SubscriptionStatus.TRIAL, label: "Em Teste" },
-  { value: SubscriptionStatus.ACTIVE, label: "Ativos" },
-  { value: SubscriptionStatus.PAST_DUE, label: "Atrasados" },
-  { value: SubscriptionStatus.EXPIRED, label: "Bloqueados" },
-  { value: SubscriptionStatus.CANCELED, label: "Cancelados" },
+  ...Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
+    value,
+    label: detail.label,
+  })),
 ];
 
 export default function AdminUsers() {
@@ -81,7 +72,7 @@ export default function AdminUsers() {
             <div className="relative flex-1">
               <Search className="absolute left-4 top-3 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Buscar por nome, CPF ou e-mail..."
+                placeholder="Buscar por nome ou telefone..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -125,7 +116,7 @@ export default function AdminUsers() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-100">
@@ -140,7 +131,6 @@ export default function AdminUsers() {
                   <tbody>
                     {users.map((user) => {
                       const sub = Array.isArray(user.assinaturas) ? user.assinaturas[0] : null;
-                      const badge = sub ? STATUS_BADGES[sub.status] : null;
 
                       return (
                         <tr
@@ -174,13 +164,7 @@ export default function AdminUsers() {
                             </span>
                           </td>
                           <td className="py-4">
-                            {badge ? (
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${badge.className}`}>
-                                {badge.label}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-slate-400">—</span>
-                            )}
+                            <SubscriptionStatusBadge status={sub?.status} />
                           </td>
                           <td className="py-4 text-right">
                             <Button
@@ -200,6 +184,66 @@ export default function AdminUsers() {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="md:hidden space-y-4 mb-4">
+                {users.map((user) => {
+                  const sub = Array.isArray(user.assinaturas) ? user.assinaturas[0] : null;
+                  const phoneFormatted = phoneMask(user.telefone || "");
+                  const dateFormatted = new Date(user.created_at).toLocaleDateString("pt-BR");
+
+                  return (
+                    <div
+                      key={user.id}
+                      onClick={() => navigate(`/admin/usuarios/${user.id}`)}
+                      className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-left cursor-pointer hover:bg-slate-100/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-800 line-clamp-1">
+                            {user.nome}
+                          </h3>
+                          {user.apelido && (
+                            <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                              {user.apelido}
+                            </p>
+                          )}
+                        </div>
+                        <SubscriptionStatusBadge status={sub?.status} />
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-slate-500 gap-4">
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Telefone</span>
+                          <span className="font-semibold text-slate-600">{phoneFormatted || "—"}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Cadastro</span>
+                          <span className="font-semibold text-slate-600">{dateFormatted}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Plano</span>
+                          <span className="text-xs font-bold text-slate-700">{sub?.planos?.nome || "—"}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-2.5 flex items-center gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/usuarios/${user.id}`);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Ver Detalhes</span>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {totalPages > 1 && (

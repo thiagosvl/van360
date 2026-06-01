@@ -28,7 +28,7 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-slate-100 shadow-sm transition-all duration-500 px-6 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-slate-100 shadow-sm transition-all duration-500 px-4 sm:px-6 pt-[calc(1rem+var(--safe-area-top))] pb-4 flex items-center justify-between">
       {/* Search Bar Area */}
       <div className="flex items-center gap-4 flex-1 max-w-xl">
         <button

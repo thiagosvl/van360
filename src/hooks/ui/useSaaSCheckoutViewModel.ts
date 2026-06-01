@@ -144,7 +144,10 @@ export function useSaaSCheckoutViewModel({
 
     if (fallbackIntervalRef.current) clearInterval(fallbackIntervalRef.current);
 
-    toast.success("Pagamento confirmado com sucesso!");
+    toast.success("Assinatura confirmada com sucesso!", {
+      id: "verify-pix",
+      description: "Você já pode voltar para o aplicativo."
+    });
     onSuccess?.();
     onClose();
   };
@@ -288,6 +291,7 @@ export function useSaaSCheckoutViewModel({
     handleGenerateCheckout,
     subscription,
     refetchStatus,
+    refetchInvoices,
     plans,
     isPromotionActive,
     isProviderReady,

@@ -24,7 +24,8 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   SaaSPlan,
 } from "@/types/subscription";
@@ -118,6 +119,8 @@ const SubscriptionPage = () => {
     }
   };
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const handleSubscribe = (plan?: SaaSPlan, forcedPeriod?: SubscriptionIdentifer) => {
     if (!plans) return;
     openSaaSCheckoutDialog({
@@ -127,6 +130,15 @@ const SubscriptionPage = () => {
       onSuccess: () => handleRefresh(),
     });
   };
+
+  useEffect(() => {
+    if (searchParams.get("open_checkout") === "true" && plans && plans.length > 0) {
+      handleSubscribe();
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("open_checkout");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, plans]);
 
   const handleSetDefaultCard = async (cardId: string) => {
     try {

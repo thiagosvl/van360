@@ -5,7 +5,9 @@ import {
   useUpdateUserAdmin,
   useUpdateSubscriptionAdmin,
   useResetPasswordAdmin,
+  useAdminUserLogs,
 } from "@/hooks/api/adminHooks";
+import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
   ArrowLeft,
   Save,
@@ -17,6 +19,10 @@ import {
   AlertTriangle,
   Key,
   Check,
+  Eye,
+  Terminal,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,22 +42,12 @@ import { SubscriptionStatus } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "@/utils/notifications/toast";
+import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 
-const STATUS_OPTIONS = [
-  { value: SubscriptionStatus.TRIAL, label: "Período de Teste" },
-  { value: SubscriptionStatus.ACTIVE, label: "Ativo (Em dia)" },
-  { value: SubscriptionStatus.PAST_DUE, label: "Atrasado (Carência)" },
-  { value: SubscriptionStatus.EXPIRED, label: "Bloqueado (Expirado)" },
-  { value: SubscriptionStatus.CANCELED, label: "Cancelado" },
-];
-
-const STATUS_COLORS: Record<string, string> = {
-  [SubscriptionStatus.TRIAL]: "bg-sky-100 text-sky-700",
-  [SubscriptionStatus.ACTIVE]: "bg-emerald-100 text-emerald-700",
-  [SubscriptionStatus.PAST_DUE]: "bg-amber-100 text-amber-700",
-  [SubscriptionStatus.EXPIRED]: "bg-red-100 text-red-700",
-  [SubscriptionStatus.CANCELED]: "bg-slate-100 text-slate-500",
-};
+const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
+  value,
+  label: detail.label,
+}));
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -74,7 +70,14 @@ export default function AdminUserDetails() {
   const { data, isLoading } = useAdminUserDetails(id!);
   const updateUser = useUpdateUserAdmin();
   const updateSub = useUpdateSubscriptionAdmin();
-  const [activeTab, setActiveTab] = useState<"dados" | "cobrancas">("dados");
+  const [activeTab, setActiveTab] = useState<"dados" | "cobrancas" | "logs">("dados");
+  const [logsPage, setLogsPage] = useState(1);
+  const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
+
+  const { data: logsData, isLoading: isLoadingLogs } = useAdminUserLogs(id!, {
+    page: logsPage,
+    limit: 15,
+  });
 
   const [userForm, setUserForm] = useState({
     nome: "",
@@ -240,7 +243,6 @@ export default function AdminUserDetails() {
   }
 
   const sub = data.assinatura;
-  const currentBadge = sub ? STATUS_COLORS[sub.status] || "" : "";
 
   return (
     <div className="space-y-8">
@@ -260,15 +262,13 @@ export default function AdminUserDetails() {
           <p className="text-xs font-semibold text-slate-400">
             Cadastrado em {formatDate(data.user.created_at)}
             {sub && (
-              <span className={`ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${currentBadge}`}>
-                {STATUS_OPTIONS.find(o => o.value === sub.status)?.label || sub.status}
-              </span>
+              <SubscriptionStatusBadge status={sub.status} className="ml-3" />
             )}
           </p>
         </div>
       </div>
 
-      <div className="flex border-b border-slate-200 gap-6">
+      <div className="flex border-b border-slate-200 gap-6 overflow-x-auto scrollbar-none whitespace-nowrap">
         <button
           onClick={() => setActiveTab("dados")}
           className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
@@ -288,6 +288,17 @@ export default function AdminUserDetails() {
         >
           Cobranças
           {activeTab === "cobrancas" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("logs")}
+          className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
+            activeTab === "logs" ? "text-[#1a3a5c]" : "text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          Histórico de Logs
+          {activeTab === "logs" && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
           )}
         </button>
@@ -527,75 +538,362 @@ export default function AdminUserDetails() {
                 <p className="text-xs font-bold text-slate-400">Nenhuma fatura encontrada.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...data.faturas]
-                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                      .map((f) => (
-                        <tr key={f.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                          <td className="py-4 text-xs font-semibold text-slate-600">
-                            {formatDate(f.created_at)}
-                          </td>
-                          <td className="py-4 text-xs text-slate-500 font-medium">
-                            {f.planos?.nome || "—"}
-                          </td>
-                          <td className="py-4 text-xs font-bold text-[#1a3a5c]">
-                            {moneyMask(f.valor)}
-                          </td>
-                          <td className="py-4 text-xs text-slate-500">
-                            {f.metodo_pagamento === "pix"
-                              ? "Pix"
-                              : f.metodo_pagamento === "credit_card"
-                              ? "Cartão"
-                              : f.metodo_pagamento?.toUpperCase() || "—"}
-                          </td>
-                          <td className="py-4 text-xs text-slate-500">
-                            {formatDate(f.data_vencimento)}
-                          </td>
-                          <td className="py-4 text-xs text-slate-500">
-                            {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
-                          </td>
-                          <td className="py-4 text-right">
-                            <span
-                              className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                                f.status === "PAID"
-                                  ? "bg-emerald-100 text-emerald-700"
+              <>
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...data.faturas]
+                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                        .map((f) => (
+                          <tr key={f.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td className="py-4 text-xs font-semibold text-slate-600">
+                              {formatDate(f.created_at)}
+                            </td>
+                            <td className="py-4 text-xs text-slate-500 font-medium">
+                              {f.planos?.nome || "—"}
+                            </td>
+                            <td className="py-4 text-xs font-bold text-[#1a3a5c]">
+                              {moneyMask(f.valor)}
+                            </td>
+                            <td className="py-4 text-xs text-slate-500">
+                              {f.metodo_pagamento === "pix"
+                                ? "Pix"
+                                : f.metodo_pagamento === "credit_card"
+                                ? "Cartão"
+                                : f.metodo_pagamento?.toUpperCase() || "—"}
+                            </td>
+                            <td className="py-4 text-xs text-slate-500">
+                              {formatDate(f.data_vencimento)}
+                            </td>
+                            <td className="py-4 text-xs text-slate-500">
+                              {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                            </td>
+                            <td className="py-4 text-right">
+                              <span
+                                className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                                  f.status === "PAID"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : f.status === "PENDING"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : f.status === "FAILED"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-slate-100 text-slate-500"
+                                }`}
+                              >
+                                {f.status === "PAID"
+                                  ? "Pago"
                                   : f.status === "PENDING"
-                                  ? "bg-amber-100 text-amber-700"
+                                  ? "Pendente"
                                   : f.status === "FAILED"
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-slate-100 text-slate-500"
-                              }`}
-                            >
-                              {f.status === "PAID"
-                                ? "Pago"
+                                  ? "Falhou"
+                                  : "Cancelado"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="md:hidden space-y-4">
+                  {[...data.faturas]
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .map((f) => (
+                      <div key={f.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            {formatDate(f.created_at)}
+                          </span>
+                          <span
+                            className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                              f.status === "PAID"
+                                ? "bg-emerald-100 text-emerald-700"
                                 : f.status === "PENDING"
-                                ? "Pendente"
+                                ? "bg-amber-100 text-amber-700"
                                 : f.status === "FAILED"
-                                ? "Falhou"
-                                : "Cancelado"}
+                                ? "bg-red-100 text-red-700"
+                                : "bg-slate-100 text-slate-500"
+                            }`}
+                          >
+                            {f.status === "PAID"
+                              ? "Pago"
+                              : f.status === "PENDING"
+                              ? "Pendente"
+                              : f.status === "FAILED"
+                              ? "Falhou"
+                              : "Cancelado"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">{f.planos?.nome || "—"}</p>
+                            <p className="text-[10px] text-slate-400">
+                              {f.metodo_pagamento === "pix"
+                                ? "Pix"
+                                : f.metodo_pagamento === "credit_card"
+                                ? "Cartão"
+                                : f.metodo_pagamento?.toUpperCase() || "—"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-black text-[#1a3a5c]">{moneyMask(f.valor)}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[10px]">
+                          <div>
+                            <span className="font-semibold text-slate-400 block uppercase tracking-wider">Vencimento</span>
+                            <span className="font-bold text-slate-600">{formatDate(f.data_vencimento)}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-semibold text-slate-400 block uppercase tracking-wider">Pagamento</span>
+                            <span className="font-bold text-slate-600">
+                              {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
                             </span>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === "logs" && (
+        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+              <Terminal className="h-4 w-4" />
+              Logs de Atividades
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {isLoadingLogs ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
+              </div>
+            ) : !logsData || logsData.data.length === 0 ? (
+              <div className="text-center py-16 space-y-3">
+                <Terminal className="h-12 w-12 mx-auto text-slate-300" />
+                <p className="text-xs font-bold text-slate-400">Nenhum log de atividade encontrado.</p>
+              </div>
+            ) : (
+              <>
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Entidade</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Dados</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {logsData.data.map((log) => {
+                        const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        });
+
+                        const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
+
+                        return (
+                          <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td className="py-4 text-xs font-semibold text-slate-600">
+                              {dateFormatted}
+                            </td>
+                            <td className="py-4">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
+                                {actionLabel}
+                              </span>
+                            </td>
+                            <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell">
+                              {log.entidade_tipo}
+                            </td>
+                            <td className="py-4 text-xs font-medium text-slate-600 max-w-[280px] truncate" title={log.descricao}>
+                              {log.descricao}
+                            </td>
+                            <td className="py-4 hidden md:table-cell">
+                              <code className="text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 font-mono text-slate-500">
+                                {log.ip_address || "—"}
+                              </code>
+                            </td>
+                            <td className="py-4 text-right">
+                              {log.meta && Object.keys(log.meta).length > 0 ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2 flex items-center gap-1.5 ml-auto"
+                                  onClick={() => setSelectedLog(log)}
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                  <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-slate-400 pr-4">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="md:hidden space-y-4 mb-4">
+                  {logsData.data.map((log) => {
+                    const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    });
+
+                    const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
+
+                    return (
+                      <div key={log.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            {dateFormatted}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
+                            {actionLabel}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-bold text-slate-500 uppercase tracking-wide">
+                              {log.entidade_tipo}
+                            </span>
+                            {log.ip_address && (
+                              <code className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50 font-mono text-slate-500">
+                                {log.ip_address}
+                              </code>
+                            )}
+                          </div>
+                          <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                            {log.descricao}
+                          </p>
+                        </div>
+
+                        {log.meta && Object.keys(log.meta).length > 0 && (
+                          <div className="pt-2 border-t border-slate-100 flex justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
+                              onClick={() => setSelectedLog(log)}
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {logsData.total > logsData.limit && (
+                  <div className="flex items-center justify-between pt-4">
+                    <p className="text-xs font-semibold text-slate-400">
+                      Página {logsData.page} de {Math.ceil(logsData.total / logsData.limit)} ({logsData.total} logs)
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={logsPage <= 1}
+                        onClick={() => setLogsPage(p => p - 1)}
+                        className="rounded-xl border-slate-200"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
+                        onClick={() => setLogsPage(p => p + 1)}
+                        className="rounded-xl border-slate-200"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {selectedLog && (
+        <BaseDialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
+          <BaseDialog.Header
+            title="Metadados da Atividade"
+            icon={<Terminal className="w-5 h-5 text-[#1a3a5c] bg-[#1a3a5c]/5 rounded-full p-0.5" />}
+            onClose={() => setSelectedLog(null)}
+          />
+          <BaseDialog.Body>
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ação</p>
+                  <p className="text-xs font-bold text-slate-700 mt-0.5 uppercase">{selectedLog.acao.replace(/_/g, " ")}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Entidade ID</p>
+                  <p className="text-xs font-mono text-slate-500 mt-0.5 truncate" title={selectedLog.entidade_id}>
+                    {selectedLog.entidade_id}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dados Completos (JSON)</p>
+                <pre className="bg-slate-900 text-slate-200 p-4 rounded-2xl text-xs overflow-x-auto font-mono max-h-[320px] scrollbar-thin select-all">
+                  {JSON.stringify(selectedLog.meta, null, 2)}
+                </pre>
+              </div>
+            </div>
+          </BaseDialog.Body>
+          <BaseDialog.Footer>
+            <Button
+              onClick={async () => {
+                await navigator.clipboard.writeText(JSON.stringify(selectedLog.meta, null, 2));
+                toast.success("Metadados copiados para a área de transferência!");
+              }}
+              className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/15 hover:bg-[#1a3a5c]/95"
+            >
+              Copiar JSON
+            </Button>
+          </BaseDialog.Footer>
+        </BaseDialog>
       )}
 
       {resetPasswordData?.open && (
