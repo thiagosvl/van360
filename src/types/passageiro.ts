@@ -31,6 +31,8 @@ export interface Passageiro {
   enviar_notificacoes?: boolean;
   referencia?: string;
   observacoes?: string;
+  latitude?: number;
+  longitude?: number;
   escola?: { nome: string };
   veiculo?: { placa: string };
 

@@ -33,6 +33,10 @@ export const ROUTES = {
       REPORTS: "/relatorios",
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
+      ROUTES: "/rotas",
+      ROUTE_SETUP: "/rotas/configurar",
+      ROUTE_EDIT: "/rotas/configurar/:id",
+      ROUTE_ACTIVE: "/rotas/executar/:id",
     }
   }
 } as const;
