@@ -42,15 +42,12 @@ import { SubscriptionStatus } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "@/utils/notifications/toast";
-import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
+import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 
-const STATUS_OPTIONS = [
-  { value: SubscriptionStatus.TRIAL, label: "Período de Teste" },
-  { value: SubscriptionStatus.ACTIVE, label: "Ativo (Em dia)" },
-  { value: SubscriptionStatus.PAST_DUE, label: "Atrasado (Carência)" },
-  { value: SubscriptionStatus.EXPIRED, label: "Bloqueado (Expirado)" },
-  { value: SubscriptionStatus.CANCELED, label: "Cancelado" },
-];
+const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
+  value,
+  label: detail.label,
+}));
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";

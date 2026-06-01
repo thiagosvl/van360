@@ -6,7 +6,7 @@ interface SubscriptionStatusBadgeProps {
   className?: string;
 }
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
+export const SUBSCRIPTION_STATUS_DETAILS: Record<SubscriptionStatus, { label: string; className: string }> = {
   [SubscriptionStatus.TRIAL]: {
     label: "Período de Teste",
     className: "bg-sky-100 text-sky-700 hover:bg-sky-100/80",
@@ -34,7 +34,7 @@ export function SubscriptionStatusBadge({ status, className }: SubscriptionStatu
     return <span className={cn("text-xs text-slate-400", className)}>—</span>;
   }
 
-  const badge = STATUS_MAP[status];
+  const badge = SUBSCRIPTION_STATUS_DETAILS[status as SubscriptionStatus];
   if (!badge) {
     return (
       <span

@@ -13,18 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SubscriptionStatus } from "@/types/enums";
 import { phoneMask } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
-import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
+import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
-  { value: SubscriptionStatus.TRIAL, label: "Em Teste" },
-  { value: SubscriptionStatus.ACTIVE, label: "Ativos" },
-  { value: SubscriptionStatus.PAST_DUE, label: "Atrasados" },
-  { value: SubscriptionStatus.EXPIRED, label: "Bloqueados" },
-  { value: SubscriptionStatus.CANCELED, label: "Cancelados" },
+  ...Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
+    value,
+    label: detail.label,
+  })),
 ];
 
 export default function AdminUsers() {
@@ -118,7 +116,7 @@ export default function AdminUsers() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-100">
@@ -186,6 +184,66 @@ export default function AdminUsers() {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="md:hidden space-y-4 mb-4">
+                {users.map((user) => {
+                  const sub = Array.isArray(user.assinaturas) ? user.assinaturas[0] : null;
+                  const phoneFormatted = phoneMask(user.telefone || "");
+                  const dateFormatted = new Date(user.created_at).toLocaleDateString("pt-BR");
+
+                  return (
+                    <div
+                      key={user.id}
+                      onClick={() => navigate(`/admin/usuarios/${user.id}`)}
+                      className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-left cursor-pointer hover:bg-slate-100/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-800 line-clamp-1">
+                            {user.nome}
+                          </h3>
+                          {user.apelido && (
+                            <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                              {user.apelido}
+                            </p>
+                          )}
+                        </div>
+                        <SubscriptionStatusBadge status={sub?.status} />
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-slate-500 gap-4">
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Telefone</span>
+                          <span className="font-semibold text-slate-600">{phoneFormatted || "—"}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Cadastro</span>
+                          <span className="font-semibold text-slate-600">{dateFormatted}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Plano</span>
+                          <span className="text-xs font-bold text-slate-700">{sub?.planos?.nome || "—"}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-2.5 flex items-center gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/usuarios/${user.id}`);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Ver Detalhes</span>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {totalPages > 1 && (
