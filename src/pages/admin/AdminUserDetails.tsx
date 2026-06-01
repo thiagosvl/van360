@@ -5,7 +5,9 @@ import {
   useUpdateUserAdmin,
   useUpdateSubscriptionAdmin,
   useResetPasswordAdmin,
+  useAdminUserLogs,
 } from "@/hooks/api/adminHooks";
+import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
   ArrowLeft,
   Save,
@@ -17,6 +19,10 @@ import {
   AlertTriangle,
   Key,
   Check,
+  Eye,
+  Terminal,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +73,14 @@ export default function AdminUserDetails() {
   const { data, isLoading } = useAdminUserDetails(id!);
   const updateUser = useUpdateUserAdmin();
   const updateSub = useUpdateSubscriptionAdmin();
-  const [activeTab, setActiveTab] = useState<"dados" | "cobrancas">("dados");
+  const [activeTab, setActiveTab] = useState<"dados" | "cobrancas" | "logs">("dados");
+  const [logsPage, setLogsPage] = useState(1);
+  const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
+
+  const { data: logsData, isLoading: isLoadingLogs } = useAdminUserLogs(id!, {
+    page: logsPage,
+    limit: 15,
+  });
 
   const [userForm, setUserForm] = useState({
     nome: "",
@@ -278,6 +291,17 @@ export default function AdminUserDetails() {
         >
           Cobranças
           {activeTab === "cobrancas" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("logs")}
+          className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
+            activeTab === "logs" ? "text-[#1a3a5c]" : "text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          Histórico de Logs
+          {activeTab === "logs" && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
           )}
         </button>
@@ -586,6 +610,171 @@ export default function AdminUserDetails() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === "logs" && (
+        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+              <Terminal className="h-4 w-4" />
+              Logs de Atividades
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {isLoadingLogs ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
+              </div>
+            ) : !logsData || logsData.data.length === 0 ? (
+              <div className="text-center py-16 space-y-3">
+                <Terminal className="h-12 w-12 mx-auto text-slate-300" />
+                <p className="text-xs font-bold text-slate-400">Nenhum log de atividade encontrado.</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Entidade</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">IP</th>
+                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Dados</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {logsData.data.map((log) => {
+                        const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        });
+
+                        const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
+
+                        return (
+                          <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td className="py-4 text-xs font-semibold text-slate-600">
+                              {dateFormatted}
+                            </td>
+                            <td className="py-4">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
+                                {actionLabel}
+                              </span>
+                            </td>
+                            <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                              {log.entidade_tipo}
+                            </td>
+                            <td className="py-4 text-xs font-medium text-slate-600 max-w-[280px] truncate" title={log.descricao}>
+                              {log.descricao}
+                            </td>
+                            <td className="py-4">
+                              <code className="text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 font-mono text-slate-500">
+                                {log.ip_address || "—"}
+                              </code>
+                            </td>
+                            <td className="py-4 text-right">
+                              {log.meta && Object.keys(log.meta).length > 0 ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2 flex items-center gap-1.5 ml-auto"
+                                  onClick={() => setSelectedLog(log)}
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                  <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-slate-400 pr-4">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {logsData.total > logsData.limit && (
+                  <div className="flex items-center justify-between pt-4">
+                    <p className="text-xs font-semibold text-slate-400">
+                      Página {logsData.page} de {Math.ceil(logsData.total / logsData.limit)} ({logsData.total} logs)
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={logsPage <= 1}
+                        onClick={() => setLogsPage(p => p - 1)}
+                        className="rounded-xl border-slate-200"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
+                        onClick={() => setLogsPage(p => p + 1)}
+                        className="rounded-xl border-slate-200"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {selectedLog && (
+        <BaseDialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
+          <BaseDialog.Header
+            title="Metadados da Atividade"
+            icon={<Terminal className="w-5 h-5 text-[#1a3a5c] bg-[#1a3a5c]/5 rounded-full p-0.5" />}
+            onClose={() => setSelectedLog(null)}
+          />
+          <BaseDialog.Body>
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ação</p>
+                  <p className="text-xs font-bold text-slate-700 mt-0.5 uppercase">{selectedLog.acao.replace(/_/g, " ")}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Entidade ID</p>
+                  <p className="text-xs font-mono text-slate-500 mt-0.5 truncate" title={selectedLog.entidade_id}>
+                    {selectedLog.entidade_id}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dados Completos (JSON)</p>
+                <pre className="bg-slate-900 text-slate-200 p-4 rounded-2xl text-xs overflow-x-auto font-mono max-h-[320px] scrollbar-thin select-all">
+                  {JSON.stringify(selectedLog.meta, null, 2)}
+                </pre>
+              </div>
+            </div>
+          </BaseDialog.Body>
+          <BaseDialog.Footer>
+            <Button
+              onClick={async () => {
+                await navigator.clipboard.writeText(JSON.stringify(selectedLog.meta, null, 2));
+                toast.success("Metadados copiados para a área de transferência!");
+              }}
+              className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/15 hover:bg-[#1a3a5c]/95"
+            >
+              Copiar JSON
+            </Button>
+          </BaseDialog.Footer>
+        </BaseDialog>
       )}
 
       {resetPasswordData?.open && (

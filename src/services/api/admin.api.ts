@@ -110,6 +110,25 @@ export interface AdminUserDetailsResponse {
   }>;
 }
 
+export interface AdminUserLogItem {
+  id: string;
+  usuario_id: string;
+  entidade_tipo: string;
+  entidade_id: string;
+  acao: string;
+  descricao: string;
+  meta: Record<string, any>;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export interface AdminUserLogsResponse {
+  data: AdminUserLogItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface AdminConfigItem {
   id: number;
   chave: string;
@@ -151,6 +170,9 @@ export const adminApi = {
 
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),
+
+  getUserLogs: (id: string, params?: { page?: number; limit?: number }) =>
+    apiClient.get<AdminUserLogsResponse>(`${BASE}/users/${id}/logs`, { params }).then(r => r.data),
 
   updateUser: (id: string, data: UpdateUserPayload) =>
     apiClient.patch(`${BASE}/users/${id}`, data).then(r => r.data),
