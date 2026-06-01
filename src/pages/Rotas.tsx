@@ -8,18 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRoutes, useExecucoesRota } from "@/hooks/api/useRoutes";
 import { useDeleteRoute, useIniciarRota } from "@/hooks/api/useRouteMutations";
-import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
-import { Route, MapPin, Play, Trash2, Edit, History, Calendar, Clock, AlertTriangle } from "lucide-react";
+import { Route as RouteIcon, MapPin, Play, Trash2, Edit, History, Calendar, Clock, AlertTriangle, Plus } from "lucide-react";
 import { toast } from "@/utils/notifications/toast";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
+import { KPICard } from "@/components/common/KPICard";
+import { KPICardVariant } from "@/types/enums";
+import { useSession } from "@/hooks/business/useSession";
+import { useProfile } from "@/hooks/business/useProfile";
 
 export default function Rotas() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("minhas-rotas");
 
-  const { data: userSummary, isLoading: isLoadingUser } = useUsuarioResumo();
-  const usuarioId = userSummary?.id || "";
+  const { user } = useSession();
+  const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
+  const usuarioId = profile?.id || "";
   const { data: rotas = [], isLoading: isLoadingRotas, refetch: refetchRotas } = useRoutes(usuarioId);
   const { data: execucoes = [], isLoading: isLoadingExecs, refetch: refetchExecs } = useExecucoesRota(usuarioId);
   const deleteRouteMutation = useDeleteRoute(usuarioId);
@@ -76,7 +80,7 @@ export default function Rotas() {
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
       <div className="space-y-6">
-        
+
         {/* Banner de Rota Ativa (se aplicável) */}
         {execucaoAtiva && (
           <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 rounded-[1.25rem] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse">
@@ -99,24 +103,19 @@ export default function Rotas() {
             </Button>
           </div>
         )}
-
-        {/* Estatísticas Simples no Topo */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-white/60 backdrop-blur-md border border-slate-200/60 p-4 rounded-[1.25rem] shadow-sm flex flex-col justify-between h-[100px]">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total de Rotas</span>
-            <span className="text-2xl font-bold text-[#1a3a5c] font-headline">{rotas.length}</span>
-          </div>
-          <div className="bg-white/60 backdrop-blur-md border border-slate-200/60 p-4 rounded-[1.25rem] shadow-sm flex flex-col justify-between h-[100px]">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Última Corrida</span>
-            <span className="text-[11px] font-bold text-slate-500 truncate mt-2 leading-tight">
-              {execucoes.length > 0 ? (
-                <>
-                  <div className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatarDataHora(execucoes[0].iniciada_em).split(",")[0]}</div>
-                  <div className="text-[10px] text-slate-400 font-medium mt-1 truncate">{execucoes[0].rota?.nome}</div>
-                </>
-              ) : "Nenhuma realizada"}
-            </span>
-          </div>
+        <div className="grid grid-cols-2 gap-3 md:gap-4 px-1">
+          <KPICard
+            label="Total de Rotas"
+            value={rotas.length}
+            icon={RouteIcon}
+            variant={KPICardVariant.PRIMARY}
+          />
+          <KPICard
+            label="Corridas Concluídas"
+            value={execucoes.filter(e => e.status === "concluida").length}
+            icon={History}
+            variant={KPICardVariant.OUTLINE}
+          />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
@@ -127,8 +126,11 @@ export default function Rotas() {
                 className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
               >
                 Minhas Rotas
-                <span className="ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold bg-[#1a3a5c]/5 text-[#1a3a5c]">
-                  {rotas.length}
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                  activeTab === "minhas-rotas" ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                )}>
+                  {rotas.length || 0}
                 </span>
               </TabsTrigger>
               <TabsTrigger
@@ -136,31 +138,33 @@ export default function Rotas() {
                 className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
               >
                 Histórico
-                <span className="ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold bg-[#1a3a5c]/5 text-[#1a3a5c]">
-                  {execucoes.length}
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                  activeTab === "historico" ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                )}>
+                  {execucoes.length || 0}
                 </span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          {/* Tab: Minhas Rotas */}
           <TabsContent value="minhas-rotas" className="space-y-6 mt-0">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">Rotas Cadastradas</h2>
               <Button
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP)}
-                size="sm"
-                className="bg-[#1a3a5c] hover:bg-[#16314f] text-white rounded-xl text-xs font-bold shadow-sm"
+                className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 md:px-6 shadow-md transition-all active:scale-95 gap-2"
               >
-                Cadastrar Rota
+                <Plus className="h-4 w-4" />
+                <span>Cadastrar</span>
               </Button>
             </div>
 
-            {isLoadingRotas || isLoadingUser ? (
+            {isLoadingRotas || isLoadingProfile ? (
               <ListSkeleton count={3} />
             ) : rotas.length === 0 ? (
               <UnifiedEmptyState
-                icon={Route}
+                icon={RouteIcon}
                 title="Nenhuma rota criada"
                 description="Cadastre suas rotas de ida e volta para gerenciar os itinerários diários e automatizar avisos para as famílias."
                 action={{
@@ -270,7 +274,7 @@ export default function Rotas() {
                           {exec.tipo}
                         </Badge>
                       </div>
-                      
+
                       <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-400">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5 text-slate-300" />
