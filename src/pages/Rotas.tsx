@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -34,6 +34,13 @@ export default function Rotas() {
   const { data: execucoes = [], isLoading: isLoadingExecs, refetch: refetchExecs } = useExecucoesRota(usuarioId);
   const deleteRouteMutation = useDeleteRoute(usuarioId);
   const iniciarRotaMutation = useIniciarRota();
+
+  useEffect(() => {
+    if (usuarioId) {
+      refetchRotas();
+      refetchExecs();
+    }
+  }, [usuarioId, refetchRotas, refetchExecs]);
 
   const handleRefresh = async () => {
     await Promise.all([refetchRotas(), refetchExecs()]);
@@ -259,11 +266,7 @@ export default function Rotas() {
                   <div
                     key={exec.id}
                     onClick={() => {
-                      if (exec.status === RouteExecutionStatus.INICIADA) {
-                        navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_ACTIVE.replace(":id", exec.id));
-                      } else {
-                        toast.info("Detalhes de execuções passadas estarão disponíveis em breve.");
-                      }
+                      navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_ACTIVE.replace(":id", exec.id));
                     }}
                     className={cn(
                       "bg-white border border-slate-100 hover:border-slate-200/80 p-4 rounded-[1.25rem] shadow-sm flex items-center justify-between gap-4 cursor-pointer transition-all",

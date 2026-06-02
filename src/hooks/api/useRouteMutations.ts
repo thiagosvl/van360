@@ -92,8 +92,6 @@ export function useAtualizarParadaStatus() {
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
       if (variables.status === RouteStopStatus.EMBARCADO) {
         toast.success("Passageiro marcado como embarcado/desembarcado!");
-      } else {
-        toast.success("Passageiro pulado na rota!");
       }
     },
     onError: (error: any) => {

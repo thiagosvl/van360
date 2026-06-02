@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useRouteSetupViewModel } from "@/hooks/ui/useRouteSetupViewModel";
+import { useRouteSetupViewModel, ALL_SCHOOLS_FILTER } from "@/hooks/ui/useRouteSetupViewModel";
 import { useRouteDetail } from "@/hooks/api/useRoutes";
+import { PassageiroPeriodo } from "@/types/enums";
+import { RouteType } from "@/types/route";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,13 +11,21 @@ import { Card } from "@/components/ui/card";
 import {
   ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown, GripVertical,
   GraduationCap, Compass, AlertCircle,
-  MapPin, Route
+  MapPin, Route, Search, Clock
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { formatShortName } from "@/utils/formatters";
+import { formatPeriodo } from "@/utils/formatters/periodo";
 import {
   Form,
   FormControl,
@@ -46,6 +56,13 @@ export default function ConfigurarRota() {
     setTipo,
     selectedPassengers,
     availablePassengers,
+    availableSchools,
+    searchName,
+    setSearchName,
+    selectedSchoolId,
+    setSelectedSchoolId,
+    onlySamePeriod,
+    setOnlySamePeriod,
     isLoading,
     togglePassengerSelection,
     moverParaCima,
@@ -58,6 +75,21 @@ export default function ConfigurarRota() {
     usuarioId,
     routeToEdit
   });
+
+  const getFiltroPeriodoLabel = () => {
+    switch (periodo) {
+      case PassageiroPeriodo.MANHA:
+        return "Apenas Manhã";
+      case PassageiroPeriodo.TARDE:
+        return "Apenas Tarde";
+      case PassageiroPeriodo.NOITE:
+        return "Apenas Noite";
+      case PassageiroPeriodo.INTEGRAL:
+        return "Apenas Integral";
+      default:
+        return "Mesmo Período";
+    }
+  };
 
   const handleRefresh = async () => {
     if (id) await refetch();
@@ -140,10 +172,10 @@ export default function ConfigurarRota() {
                       <div className="bg-slate-100/80 p-1 rounded-xl">
                         <Tabs value={field.value} onValueChange={field.onChange} className="w-full">
                           <TabsList className="grid grid-cols-4 w-full bg-transparent p-0 h-[36px] gap-0.5">
-                            <TabsTrigger value="manha" className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Manhã</TabsTrigger>
-                            <TabsTrigger value="tarde" className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Tarde</TabsTrigger>
-                            <TabsTrigger value="noite" className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Noite</TabsTrigger>
-                            <TabsTrigger value="integral" className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Integral</TabsTrigger>
+                            <TabsTrigger value={PassageiroPeriodo.MANHA} className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Manhã</TabsTrigger>
+                            <TabsTrigger value={PassageiroPeriodo.TARDE} className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Tarde</TabsTrigger>
+                            <TabsTrigger value={PassageiroPeriodo.NOITE} className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Noite</TabsTrigger>
+                            <TabsTrigger value={PassageiroPeriodo.INTEGRAL} className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]">Integral</TabsTrigger>
                           </TabsList>
                         </Tabs>
                       </div>
@@ -163,10 +195,10 @@ export default function ConfigurarRota() {
                       <div className="bg-slate-100/80 p-1 rounded-xl">
                         <Tabs value={field.value} onValueChange={field.onChange} className="w-full">
                           <TabsList className="grid grid-cols-2 w-full bg-transparent p-0 h-[36px] gap-0.5">
-                            <TabsTrigger value="ida" className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c] flex items-center justify-center gap-1.5">
+                            <TabsTrigger value={RouteType.IDA} className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c] flex items-center justify-center gap-1.5">
                               <Compass className="w-3.5 h-3.5" /> Ida
                             </TabsTrigger>
-                            <TabsTrigger value="volta" className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c] flex items-center justify-center gap-1.5">
+                            <TabsTrigger value={RouteType.VOLTA} className="rounded-lg h-full text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c] flex items-center justify-center gap-1.5">
                               <Compass className="w-3.5 h-3.5" /> Volta
                             </TabsTrigger>
                           </TabsList>
@@ -219,14 +251,11 @@ export default function ConfigurarRota() {
                   </div>
                 </div>
 
-                {tipo === "volta" && selectedPassengers.length > 0 && (
+                {tipo === RouteType.VOLTA && selectedPassengers.length > 0 && (
                   <div className="bg-white/70 border border-slate-150/40 p-2.5 sm:p-3.5 rounded-2xl flex items-center gap-2 sm:gap-3 shadow-sm opacity-65 select-none">
                     <div className="w-4 h-4 shrink-0" />
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <h4 className="text-xs font-bold text-[#1a3a5c]/70 font-headline truncate pr-1 flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-sky-100/70 text-[10px] font-black text-sky-800 shrink-0">
-                          INI
-                        </span>
                         <span className="truncate">Ponto de Partida Escolar</span>
                       </h4>
                       <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1 mt-0.5 pr-1 min-w-0">
@@ -308,14 +337,11 @@ export default function ConfigurarRota() {
                   </div>
                 )}
 
-                {tipo === "ida" && selectedPassengers.length > 0 && (
+                {tipo === RouteType.IDA && selectedPassengers.length > 0 && (
                   <div className="bg-white/70 border border-slate-150/40 p-2.5 sm:p-3.5 rounded-2xl flex items-center gap-2 sm:gap-3 shadow-sm opacity-65 select-none">
                     <div className="w-4 h-4 shrink-0" />
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <h4 className="text-xs font-bold text-[#1a3a5c]/70 font-headline truncate pr-1 flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-100/70 text-[10px] font-black text-emerald-800 shrink-0">
-                          FIM
-                        </span>
                         <span className="truncate">Destino Escolar Final</span>
                       </h4>
                       <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1 mt-0.5 pr-1 min-w-0">
@@ -339,7 +365,53 @@ export default function ConfigurarRota() {
                 </span>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-[1.25rem] max-h-[460px] overflow-y-auto space-y-2 shadow-inner">
+              {/* Painel de Filtros e Busca */}
+              <div className="space-y-2 px-1">
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400 opacity-60" />
+                  <Input
+                    placeholder="Buscar por nome..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    className="pl-11 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
+                      <SelectTrigger className="h-10 rounded-xl bg-white border-slate-200 text-xs text-left">
+                        <SelectValue placeholder="Todas as escolas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_SCHOOLS_FILTER}>Todas as escolas</SelectItem>
+                        {availableSchools.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOnlySamePeriod(!onlySamePeriod)}
+                    className={cn(
+                      "h-10 rounded-xl text-xs px-3.5 border-slate-200 gap-1.5 transition-all select-none",
+                      onlySamePeriod
+                        ? "bg-sky-50 text-[#1a3a5c] border-sky-200 font-bold hover:bg-sky-100"
+                        : "bg-white text-slate-500 hover:bg-slate-50"
+                    )}
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{getFiltroPeriodoLabel()}</span>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-[1.25rem] max-h-[360px] overflow-y-auto space-y-2 shadow-inner">
                 {availablePassengers.length === 0 ? (
                   <p className="text-[10px] font-bold text-slate-400/80 text-center py-6">
                     {isLoading ? "Buscando passageiros..." : "Nenhum passageiro disponível para seleção."}
@@ -357,7 +429,10 @@ export default function ConfigurarRota() {
                         </h4>
                         <p className="text-[9px] text-slate-400 font-semibold truncate flex items-center gap-1">
                           <GraduationCap className="w-3 h-3 text-slate-300 shrink-0" />
-                          {p.escola?.nome || "Sem escola"}
+                          <span>
+                            {p.escola?.nome || "Sem escola"}
+                            {p.periodo && ` • ${formatPeriodo(p.periodo)}`}
+                          </span>
                         </p>
                       </div>
                       <Button

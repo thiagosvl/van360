@@ -67,8 +67,8 @@ export default function ActiveRoutePage() {
       ? (isIda ? "Confirmar Embarque?" : "Confirmar Desembarque?")
       : "Confirmar Ausência?";
     const desc = isEmbarcado
-      ? (isIda ? `Deseja marcar que ${shortName} embarcou na van?` : `Deseja marcar que ${shortName} desembarcou da van?`)
-      : `Deseja marcar ${shortName} como ausente hoje? Ele será pulado no trajeto.`;
+      ? (isIda ? `Deseja confirmar que ${shortName} embarcou na van?` : `Deseja confirmar que ${shortName} desembarcou da van?`)
+      : `Deseja confirmar ${shortName} como ausente hoje? Ele será pulado no trajeto.`;
 
     openConfirmationDialog({
       title,
@@ -121,20 +121,40 @@ export default function ActiveRoutePage() {
         <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/20 p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Em Andamento
-              </span>
+              {execucao?.status === RouteExecutionStatus.INICIADA && (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                    Em Andamento
+                  </span>
+                </>
+              )}
+              {execucao?.status === RouteExecutionStatus.CONCLUIDA && (
+                <>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Concluída
+                  </span>
+                </>
+              )}
+              {execucao?.status === RouteExecutionStatus.CANCELADA && (
+                <>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+                  <span className="text-[10px] font-black text-rose-700 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Cancelada
+                  </span>
+                </>
+              )}
             </div>
             <h1 className="text-base font-black text-[#1a3a5c] font-headline tracking-tight leading-tight">
               {execucao?.rota?.nome}
             </h1>
           </div>
 
-          {execucao?.status === RouteExecutionStatus.INICIADA ? (
+          {execucao?.status === RouteExecutionStatus.INICIADA && (
             <Button
               variant="outline"
               className="rounded-xl border-rose-200 text-rose-500 hover:bg-rose-50 hover:text-rose-600 font-bold text-xs self-start sm:self-auto flex items-center gap-1.5 shadow-sm active:scale-95 transition-all h-9 px-3"
@@ -143,14 +163,6 @@ export default function ActiveRoutePage() {
             >
               <XCircle className="w-3.5 h-3.5" />
               Cancelar Corrida
-            </Button>
-          ) : (
-            <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs self-start sm:self-auto flex items-center gap-1.5 shadow-sm active:scale-95 transition-all h-9 px-3"
-              onClick={onFinish}
-            >
-              <Check className="w-3.5 h-3.5" />
-              Corrida Finalizada
             </Button>
           )}
         </div>
@@ -181,15 +193,21 @@ export default function ActiveRoutePage() {
 
             {/* Status da Corrida Finalizada ou Inativa */}
             {execucao?.status === RouteExecutionStatus.CONCLUIDA && (
-              <div className="bg-slate-50 border border-slate-200/60 rounded-[1.5rem] p-8 flex flex-col items-center justify-center text-center space-y-3">
-                <Check className="w-12 h-12 text-emerald-500 bg-emerald-50 p-2.5 rounded-full border border-emerald-100" />
-                <h3 className="text-base font-bold text-[#1a3a5c] font-headline">Corrida Concluída com Sucesso!</h3>
-                <p className="text-xs text-slate-400 font-semibold max-w-[280px]">
-                  Todos os passageiros ativos do trajeto foram visitados e as famílias foram notificadas.
-                </p>
+              <div className="bg-gradient-to-r from-emerald-50/90 to-teal-50/40 border border-emerald-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm backdrop-blur-md animate-in fade-in duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="bg-emerald-500 text-white p-2 rounded-xl shadow-sm shadow-emerald-200">
+                    <Check className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-0.5 text-left">
+                    <h3 className="text-xs font-black text-emerald-950 uppercase tracking-wider">Corrida Concluída</h3>
+                    <p className="text-[11px] text-emerald-700 font-semibold">
+                      Todos os passageiros do trajeto foram visitados com sucesso.
+                    </p>
+                  </div>
+                </div>
                 <Button
                   onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
-                  className="bg-[#1a3a5c] hover:bg-[#16314f] text-white rounded-xl font-bold text-xs px-6"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shrink-0 px-5 h-9 shadow-sm shadow-emerald-100 active:scale-95 transition-all w-full sm:w-auto"
                 >
                   Voltar para Rotas
                 </Button>
@@ -197,23 +215,26 @@ export default function ActiveRoutePage() {
             )}
 
             {execucao?.status === RouteExecutionStatus.CANCELADA && (
-              <div className="bg-slate-50 border border-slate-200/60 rounded-[1.5rem] p-8 flex flex-col items-center justify-center text-center space-y-3">
-                <AlertTriangle className="w-12 h-12 text-red-500 bg-red-50 p-2.5 rounded-full border border-red-100" />
-                <h3 className="text-base font-bold text-[#1a3a5c] font-headline">Corrida Inativa</h3>
-                <p className="text-xs text-slate-400 font-semibold max-w-[280px]">
-                  Esta corrida não está ativa ou foi encerrada pelo motorista.
-                </p>
+              <div className="bg-gradient-to-r from-rose-50/90 to-red-50/40 border border-rose-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm backdrop-blur-md animate-in fade-in duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="bg-rose-500 text-white p-2 rounded-xl shadow-sm shadow-rose-200">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-0.5 text-left">
+                    <h3 className="text-xs font-black text-rose-950 uppercase tracking-wider">Corrida Inativa</h3>
+                    <p className="text-[11px] text-rose-700 font-semibold">
+                      Esta corrida não está ativa ou foi encerrada pelo motorista.
+                    </p>
+                  </div>
+                </div>
                 <Button
                   onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
-                  className="bg-[#1a3a5c] hover:bg-[#16314f] text-white rounded-xl font-bold text-xs px-6"
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shrink-0 px-5 h-9 shadow-sm shadow-rose-100 active:scale-95 transition-all w-full sm:w-auto"
                 >
                   Voltar para Rotas
                 </Button>
               </div>
             )}
-
-            {execucao?.status === RouteExecutionStatus.INICIADA && (
-              <div className="space-y-6">
 
                 {/* 🧭 LINHA DO TEMPO DO ITINERÁRIO (LARGURA CONTIDA E SEGURA) */}
                 {execucao.paradas && execucao.paradas.length > 0 && (
@@ -371,15 +392,21 @@ export default function ActiveRoutePage() {
                                     </p>
                                   </div>
 
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleConfirmStep(parada.passageiro_id || parada.id, parada.nome, RouteStopStatus.AUSENTE)}
-                                    className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 text-[10px] font-bold h-8 flex items-center gap-1 shrink-0 px-2.5 active:scale-95 transition-all"
-                                  >
-                                    <UserMinus className="w-3.5 h-3.5" />
-                                    Não vai
-                                  </Button>
+                                  {execucao.status === RouteExecutionStatus.INICIADA ? (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleConfirmStep(parada.passageiro_id || parada.id, parada.nome, RouteStopStatus.AUSENTE)}
+                                      className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 text-[10px] font-bold h-8 flex items-center gap-1 shrink-0 px-2.5 active:scale-95 transition-all"
+                                    >
+                                      <UserMinus className="w-3.5 h-3.5" />
+                                      Não vai
+                                    </Button>
+                                  ) : (
+                                    <Badge className="rounded-lg text-[9px] font-bold border shrink-0 bg-slate-50 text-slate-400 border-slate-100">
+                                      NÃO VISITADO
+                                    </Badge>
+                                  )}
                                 </Card>
                               )}
                             </div>
@@ -390,9 +417,6 @@ export default function ActiveRoutePage() {
                     </div>
                   </div>
                 )}
-
-              </div>
-            )}
 
           </div>
         )}

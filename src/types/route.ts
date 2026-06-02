@@ -13,12 +13,17 @@ export enum RouteStopStatus {
   AUSENTE = "ausente"
 }
 
+export enum RouteType {
+  IDA = "ida",
+  VOLTA = "volta"
+}
+
 export interface Route {
   id: string;
   usuario_id: string;
   nome: string;
   periodo: string; // 'manha', 'tarde', 'noite'
-  tipo: "ida" | "volta";
+  tipo: RouteType;
   numero_passageiros?: number;
   passageiros?: RoutePassenger[];
   created_at: string;
@@ -49,7 +54,7 @@ export interface RouteExecution {
   rota_id: string;
   usuario_id: string;
   status: RouteExecutionStatus;
-  tipo: "ida" | "volta";
+  tipo: RouteType;
   iniciada_em: string;
   finalizada_em?: string;
   created_at: string;

@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePassageiros } from "../api/usePassageiros";
 import { useCreateRoute, useUpdateRoute } from "../api/useRouteMutations";
-import { Route } from "@/types/route";
+import { Route, RouteType } from "@/types/route";
 import { Passageiro } from "@/types/passageiro";
+import { PassageiroPeriodo } from "@/types/enums";
+
+export const ALL_SCHOOLS_FILTER = "all";
 
 interface SetupPassenger {
   id: string;
@@ -17,8 +20,8 @@ interface SetupPassenger {
 
 export const routeSetupSchema = z.object({
   nome: z.string({ required_error: "Nome da rota é obrigatório" }).min(1, "Nome da rota é obrigatório"),
-  periodo: z.string({ required_error: "Período é obrigatório" }),
-  tipo: z.enum(["ida", "volta"], { required_error: "Tipo é obrigatório" }),
+  periodo: z.nativeEnum(PassageiroPeriodo, { required_error: "Período é obrigatório" }),
+  tipo: z.nativeEnum(RouteType, { required_error: "Tipo é obrigatório" }),
   passageiros: z.array(z.object({
     id: z.string(),
     nome: z.string(),
@@ -37,12 +40,15 @@ export function useRouteSetupViewModel({
   usuarioId: string;
   routeToEdit?: Route;
 }) {
+  const [searchName, setSearchName] = useState("");
+  const [selectedSchoolId, setSelectedSchoolId] = useState(ALL_SCHOOLS_FILTER);
+  const [onlySamePeriod, setOnlySamePeriod] = useState(true);
   const form = useForm<RouteSetupFormData>({
     resolver: zodResolver(routeSetupSchema),
     defaultValues: {
       nome: "",
-      periodo: "manha",
-      tipo: "ida",
+      periodo: PassageiroPeriodo.MANHA,
+      tipo: RouteType.IDA,
       passageiros: []
     },
     mode: "onBlur"
@@ -82,7 +88,7 @@ export function useRouteSetupViewModel({
 
   const setNome = (val: string) => form.setValue("nome", val, { shouldValidate: true });
   const setPeriodo = (val: string) => form.setValue("periodo", val, { shouldValidate: true });
-  const setTipo = (val: "ida" | "volta") => form.setValue("tipo", val, { shouldValidate: true });
+  const setTipo = (val: RouteType) => form.setValue("tipo", val, { shouldValidate: true });
 
   const togglePassengerSelection = (passenger: Passageiro) => {
     const isSelected = selectedPassengers.some((p) => p.id === passenger.id);
@@ -187,9 +193,44 @@ export function useRouteSetupViewModel({
     }
   };
 
-  const availablePassengers = allPassengers.filter(
-    (ap) => !selectedPassengers.some((sp) => sp.id === ap.id)
-  );
+  const availableSchools = useMemo(() => {
+    const schoolsMap = new Map<string, string>();
+    allPassengers.forEach((p) => {
+      if (p.escola_id && p.escola?.nome) {
+        schoolsMap.set(p.escola_id, p.escola.nome);
+      }
+    });
+    return Array.from(schoolsMap.entries()).map(([id, nome]) => ({ id, nome }));
+  }, [allPassengers]);
+
+  const availablePassengers = useMemo(() => {
+    return allPassengers.filter((ap) => {
+      const isAlreadySelected = selectedPassengers.some((sp) => sp.id === ap.id);
+      if (isAlreadySelected) return false;
+
+      if (searchName) {
+        const normalName = ap.nome.toLowerCase();
+        const normalSearch = searchName.toLowerCase();
+        if (!normalName.includes(normalSearch)) return false;
+      }
+
+      if (selectedSchoolId !== ALL_SCHOOLS_FILTER) {
+        if (ap.escola_id !== selectedSchoolId) return false;
+      }
+
+      if (onlySamePeriod && periodo) {
+        const pPeriod = (ap.periodo || "").toLowerCase();
+        const rPeriod = (periodo || "").toLowerCase();
+        if (rPeriod !== PassageiroPeriodo.INTEGRAL) {
+          if (pPeriod !== rPeriod && pPeriod !== PassageiroPeriodo.INTEGRAL) return false;
+        } else {
+          if (pPeriod !== PassageiroPeriodo.INTEGRAL) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allPassengers, selectedPassengers, searchName, selectedSchoolId, onlySamePeriod, periodo]);
 
   return {
     form,
@@ -201,6 +242,13 @@ export function useRouteSetupViewModel({
     setTipo,
     selectedPassengers,
     availablePassengers,
+    availableSchools,
+    searchName,
+    setSearchName,
+    selectedSchoolId,
+    setSelectedSchoolId,
+    onlySamePeriod,
+    setOnlySamePeriod,
     isLoading: isLoadingPassengers || createRouteMutation.isPending || updateRouteMutation.isPending,
     togglePassengerSelection,
     moverParaCima,
