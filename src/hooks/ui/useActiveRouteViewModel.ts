@@ -1,6 +1,7 @@
 import { useExecucaoDetail } from "../api/useRoutes";
 import { useAtualizarParadaStatus, useCancelarExecucao } from "../api/useRouteMutations";
 import { toast } from "@/utils/notifications/toast";
+import { RouteStopStatus } from "@/types/route";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
   const { data: execucao, isLoading, isError } = useExecucaoDetail(execucaoId);
@@ -10,7 +11,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
   const handleStep = async (
     passageiroId: string,
-    status: "embarcado" | "ausente",
+    status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE,
     onSuccessCallback?: () => void
   ) => {
     if (!execucaoId) return;
@@ -84,14 +85,14 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     window.open(url, "_system");
   };
 
-  const paradaAtual = execucao?.paradas?.find((p) => p.status === "a_caminho");
+  const paradaAtual = execucao?.paradas?.find((p) => p.status === RouteStopStatus.A_CAMINHO);
 
   const paradasPendentes = execucao?.paradas?.filter(
-    (p) => p.status === "pendente"
+    (p) => p.status === RouteStopStatus.PENDENTE
   ) || [];
 
   const paradasConcluidas = execucao?.paradas?.filter(
-    (p) => p.status === "embarcado" || p.status === "ausente"
+    (p) => p.status === RouteStopStatus.EMBARCADO || p.status === RouteStopStatus.AUSENTE
   ) || [];
 
   return {

@@ -58,7 +58,7 @@ export function PrivacyPolicyContent() {
         </ListItem>
       </ul>
       <p className="text-slate-500 leading-relaxed mt-3 text-[0.95rem]">
-        Após a solicitação, todos os seus dados pessoais, registros de alunos e histórico financeiro serão removidos permanentemente de nossos servidores em até 7 dias úteis.
+        Após a solicitação, todos os seus dados pessoais, registros de passageiros e histórico financeiro serão removidos permanentemente de nossos servidores em até 7 dias úteis.
       </p>
     </div>
   );

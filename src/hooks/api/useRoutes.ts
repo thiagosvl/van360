@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
+import { RouteExecutionStatus } from "@/types/route";
 
 export function useRoutes(usuarioId: string) {
   return useQuery({
@@ -33,7 +34,7 @@ export function useExecucaoDetail(id: string) {
     refetchInterval: (query) => {
       // Se a rota está ativa/iniciada, podemos fazer refetch periódico suave (ex: a cada 15 segundos)
       const data = query.state.data as any;
-      return data?.status === "iniciada" ? 15000 : false;
+      return data?.status === RouteExecutionStatus.INICIADA ? 15000 : false;
     }
   });
 }

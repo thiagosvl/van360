@@ -12,14 +12,20 @@ import { Route as RouteIcon, MapPin, Play, Trash2, Edit, History, Calendar, Cloc
 import { toast } from "@/utils/notifications/toast";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
-import { KPICard } from "@/components/common/KPICard";
-import { KPICardVariant } from "@/types/enums";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
+import { RouteExecutionStatus } from "@/types/route";
 
 export default function Rotas() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("minhas-rotas");
+
+  const {
+    openConfirmationDialog,
+    closeConfirmationDialog
+  } = useLayout();
 
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
@@ -35,9 +41,22 @@ export default function Rotas() {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm("Deseja realmente excluir esta rota? Todos os dados de sequenciamento serão apagados.")) {
-      deleteRouteMutation.mutate(id);
-    }
+    openConfirmationDialog({
+      title: "Excluir rota?",
+      description: "Deseja realmente excluir esta rota? Todos os dados de sequenciamento serão apagados.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteRouteMutation.mutate(id, {
+          onSuccess: () => {
+            safeCloseDialog(closeConfirmationDialog);
+          },
+          onError: () => {
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        });
+      }
+    });
   };
 
   const handleIniciar = async (id: string, e: React.MouseEvent) => {
@@ -75,11 +94,12 @@ export default function Rotas() {
     });
   };
 
-  const execucaoAtiva = execucoes.find(e => e.status === "iniciada");
+  const execucaoAtiva = execucoes.find(e => e.status === RouteExecutionStatus.INICIADA);
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
       <div className="space-y-6">
+
 
         {/* Banner de Rota Ativa (se aplicável) */}
         {execucaoAtiva && (
@@ -87,10 +107,10 @@ export default function Rotas() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
-                <h3 className="text-sm font-bold text-emerald-800">Trajeto em Andamento</h3>
+                <h3 className="text-sm font-bold text-emerald-800">Rota em Andamento</h3>
               </div>
               <p className="text-xs text-emerald-700/90 font-medium">
-                Você possui uma corrida ativa para a rota: <strong className="font-bold">{execucaoAtiva.rota?.nome}</strong>.
+                Você já iniciou a rota <strong className="font-bold">{execucaoAtiva.rota?.nome}</strong>.
               </p>
             </div>
             <Button
@@ -99,24 +119,10 @@ export default function Rotas() {
               onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_ACTIVE.replace(":id", execucaoAtiva.id))}
             >
               <Play className="w-3 h-3 mr-1.5 fill-white" />
-              Retornar ao Painel
+              Continuar Rota
             </Button>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-3 md:gap-4 px-1">
-          <KPICard
-            label="Total de Rotas"
-            value={rotas.length}
-            icon={RouteIcon}
-            variant={KPICardVariant.PRIMARY}
-          />
-          <KPICard
-            label="Corridas Concluídas"
-            value={execucoes.filter(e => e.status === "concluida").length}
-            icon={History}
-            variant={KPICardVariant.OUTLINE}
-          />
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
           <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
@@ -156,7 +162,7 @@ export default function Rotas() {
                 className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 md:px-6 shadow-md transition-all active:scale-95 gap-2"
               >
                 <Plus className="h-4 w-4" />
-                <span>Cadastrar</span>
+                <span>Nova Rota</span>
               </Button>
             </div>
 
@@ -177,7 +183,6 @@ export default function Rotas() {
                 {rotas.map((rota) => (
                   <div
                     key={rota.id}
-                    onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", rota.id))}
                     className="group bg-white border border-slate-100 hover:border-slate-200/80 p-4 rounded-[1.25rem] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer"
                   >
                     <div className="space-y-2.5 flex-1">
@@ -195,8 +200,8 @@ export default function Rotas() {
                       <div className="flex items-center text-xs font-semibold text-slate-400">
                         <MapPin className="w-3.5 h-3.5 mr-1 text-slate-300" />
                         {rota.numero_passageiros === 1
-                          ? "1 passageiro ordenado"
-                          : `${rota.numero_passageiros || 0} passageiros ordenados`}
+                          ? "1 passageiro"
+                          : `${rota.numero_passageiros || 0} passageiros`}
                       </div>
                     </div>
 
@@ -205,7 +210,7 @@ export default function Rotas() {
                         size="sm"
                         className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs px-4"
                         onClick={(e) => handleIniciar(rota.id, e)}
-                        disabled={iniciarRotaMutation.isPending}
+                        disabled={iniciarRotaMutation.isPending || !!execucaoAtiva}
                       >
                         <Play className="w-3.5 h-3.5 mr-1.5 fill-white" />
                         Iniciar
@@ -254,7 +259,7 @@ export default function Rotas() {
                   <div
                     key={exec.id}
                     onClick={() => {
-                      if (exec.status === "iniciada") {
+                      if (exec.status === RouteExecutionStatus.INICIADA) {
                         navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_ACTIVE.replace(":id", exec.id));
                       } else {
                         toast.info("Detalhes de execuções passadas estarão disponíveis em breve.");
@@ -262,7 +267,7 @@ export default function Rotas() {
                     }}
                     className={cn(
                       "bg-white border border-slate-100 hover:border-slate-200/80 p-4 rounded-[1.25rem] shadow-sm flex items-center justify-between gap-4 cursor-pointer transition-all",
-                      exec.status === "iniciada" && "border-emerald-500/30 hover:border-emerald-500/40 bg-emerald-500/5"
+                      exec.status === RouteExecutionStatus.INICIADA && "border-emerald-500/30 hover:border-emerald-500/40 bg-emerald-500/5"
                     )}
                   >
                     <div className="space-y-1.5 flex-1 min-w-0">
@@ -290,11 +295,11 @@ export default function Rotas() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {exec.status === "iniciada" ? (
+                      {exec.status === RouteExecutionStatus.INICIADA ? (
                         <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[9px] font-bold py-1">
                           EM ANDAMENTO
                         </Badge>
-                      ) : exec.status === "concluida" ? (
+                      ) : exec.status === RouteExecutionStatus.CONCLUIDA ? (
                         <Badge className="bg-slate-100 text-slate-600 rounded-lg text-[9px] font-bold py-1 border border-slate-200/60">
                           CONCLUÍDA
                         </Badge>

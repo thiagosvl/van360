@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { usePassageiros } from "../api/usePassageiros";
 import { useCreateRoute, useUpdateRoute } from "../api/useRouteMutations";
-import { Route, RoutePassenger } from "@/types/route";
+import { Route } from "@/types/route";
 import { Passageiro } from "@/types/passageiro";
-import { toast } from "@/utils/notifications/toast";
 
 interface SetupPassenger {
   id: string;
@@ -13,6 +15,21 @@ interface SetupPassenger {
   ordem: number;
 }
 
+export const routeSetupSchema = z.object({
+  nome: z.string({ required_error: "Nome da rota é obrigatório" }).min(1, "Nome da rota é obrigatório"),
+  periodo: z.string({ required_error: "Período é obrigatório" }),
+  tipo: z.enum(["ida", "volta"], { required_error: "Tipo é obrigatório" }),
+  passageiros: z.array(z.object({
+    id: z.string(),
+    nome: z.string(),
+    bairro: z.string().optional(),
+    escola_nome: z.string().optional(),
+    ordem: z.number()
+  })).min(1, "Selecione pelo menos um passageiro para a rota")
+});
+
+export type RouteSetupFormData = z.infer<typeof routeSetupSchema>;
+
 export function useRouteSetupViewModel({
   usuarioId,
   routeToEdit
@@ -20,10 +37,16 @@ export function useRouteSetupViewModel({
   usuarioId: string;
   routeToEdit?: Route;
 }) {
-  const [nome, setNome] = useState("");
-  const [periodo, setPeriodo] = useState("manha");
-  const [tipo, setTipo] = useState<"ida" | "volta">("ida");
-  const [selectedPassengers, setSelectedPassengers] = useState<SetupPassenger[]>([]);
+  const form = useForm<RouteSetupFormData>({
+    resolver: zodResolver(routeSetupSchema),
+    defaultValues: {
+      nome: "",
+      periodo: "manha",
+      tipo: "ida",
+      passageiros: []
+    },
+    mode: "onBlur"
+  });
 
   const { data: passageirosData, isLoading: isLoadingPassengers } = usePassageiros({
     usuarioId,
@@ -36,9 +59,9 @@ export function useRouteSetupViewModel({
 
   useEffect(() => {
     if (routeToEdit) {
-      setNome(routeToEdit.nome);
-      setPeriodo(routeToEdit.periodo);
-      setTipo(routeToEdit.tipo);
+      form.setValue("nome", routeToEdit.nome);
+      form.setValue("periodo", routeToEdit.periodo);
+      form.setValue("tipo", routeToEdit.tipo);
       if (routeToEdit.passageiros) {
         const mapped = routeToEdit.passageiros.map((p) => ({
           id: p.passageiro_id,
@@ -47,10 +70,19 @@ export function useRouteSetupViewModel({
           escola_nome: p.escola?.nome,
           ordem: p.ordem
         }));
-        setSelectedPassengers(mapped.sort((a, b) => a.ordem - b.ordem));
+        form.setValue("passageiros", mapped.sort((a, b) => a.ordem - b.ordem));
       }
     }
-  }, [routeToEdit]);
+  }, [routeToEdit, form]);
+
+  const selectedPassengers = form.watch("passageiros") || [];
+  const nome = form.watch("nome");
+  const periodo = form.watch("periodo");
+  const tipo = form.watch("tipo");
+
+  const setNome = (val: string) => form.setValue("nome", val, { shouldValidate: true });
+  const setPeriodo = (val: string) => form.setValue("periodo", val, { shouldValidate: true });
+  const setTipo = (val: "ida" | "volta") => form.setValue("tipo", val, { shouldValidate: true });
 
   const togglePassengerSelection = (passenger: Passageiro) => {
     const isSelected = selectedPassengers.some((p) => p.id === passenger.id);
@@ -61,7 +93,7 @@ export function useRouteSetupViewModel({
         ...p,
         ordem: index + 1
       }));
-      setSelectedPassengers(reordered);
+      form.setValue("passageiros", reordered, { shouldValidate: true });
     } else {
       const newPassenger: SetupPassenger = {
         id: passenger.id,
@@ -70,7 +102,7 @@ export function useRouteSetupViewModel({
         escola_nome: passenger.escola?.nome,
         ordem: selectedPassengers.length + 1
       };
-      setSelectedPassengers([...selectedPassengers, newPassenger]);
+      form.setValue("passageiros", [...selectedPassengers, newPassenger], { shouldValidate: true });
     }
   };
 
@@ -85,7 +117,7 @@ export function useRouteSetupViewModel({
       ...p,
       ordem: idx + 1
     }));
-    setSelectedPassengers(reordered);
+    form.setValue("passageiros", reordered, { shouldValidate: true });
   };
 
   const moverParaBaixo = (index: number) => {
@@ -99,7 +131,7 @@ export function useRouteSetupViewModel({
       ...p,
       ordem: idx + 1
     }));
-    setSelectedPassengers(reordered);
+    form.setValue("passageiros", reordered, { shouldValidate: true });
   };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -122,20 +154,10 @@ export function useRouteSetupViewModel({
       ...p,
       ordem: idx + 1
     }));
-    setSelectedPassengers(reordered);
+    form.setValue("passageiros", reordered, { shouldValidate: true });
   };
 
   const handleSave = async (onSuccessCallback?: () => void) => {
-    if (!nome.trim()) {
-      toast.error("Nome da rota é obrigatório");
-      return;
-    }
-
-    if (selectedPassengers.length === 0) {
-      toast.error("Selecione pelo menos um passageiro para a rota");
-      return;
-    }
-
     const payload = {
       usuario_id: usuarioId,
       nome,
@@ -170,6 +192,7 @@ export function useRouteSetupViewModel({
   );
 
   return {
+    form,
     nome,
     setNome,
     periodo,
@@ -188,3 +211,4 @@ export function useRouteSetupViewModel({
     handleSave
   };
 }
+

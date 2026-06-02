@@ -1,5 +1,18 @@
 import { Passageiro } from "./passageiro";
 
+export enum RouteExecutionStatus {
+  INICIADA = "iniciada",
+  CONCLUIDA = "concluida",
+  CANCELADA = "cancelada"
+}
+
+export enum RouteStopStatus {
+  PENDENTE = "pendente",
+  A_CAMINHO = "a_caminho",
+  EMBARCADO = "embarcado",
+  AUSENTE = "ausente"
+}
+
 export interface Route {
   id: string;
   usuario_id: string;
@@ -35,7 +48,7 @@ export interface RouteExecution {
   id: string;
   rota_id: string;
   usuario_id: string;
-  status: "iniciada" | "concluida" | "cancelada";
+  status: RouteExecutionStatus;
   tipo: "ida" | "volta";
   iniciada_em: string;
   finalizada_em?: string;
@@ -51,7 +64,7 @@ export interface RouteExecutionPassenger {
   id: string;
   execucao_rota_id: string;
   passageiro_id: string;
-  status: "pendente" | "a_caminho" | "embarcado" | "ausente";
+  status: RouteStopStatus;
   ordem: number;
   notificado_em?: string;
   visitado_em?: string;
@@ -62,6 +75,8 @@ export interface RouteExecutionPassenger {
   numero?: string;
   bairro?: string;
   cidade?: string;
+  latitude?: number;
+  longitude?: number;
   escola?: {
     id: string;
     nome: string;

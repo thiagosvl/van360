@@ -2,14 +2,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { toast } from "@/utils/notifications/toast";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { RouteStopStatus } from "@/types/route";
 
 export function useCreateRoute() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: any) => routeApi.createRoute(data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["routes", data.usuario_id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
       toast.success("Rota criada com sucesso!");
     },
     onError: (error: any) => {
@@ -26,9 +27,9 @@ export function useUpdateRoute() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       routeApi.updateRoute(id, data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["routes", data.usuario_id] });
-      queryClient.invalidateQueries({ queryKey: ["route", data.id] });
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["route", variables.id] });
       toast.success("Rota atualizada com sucesso!");
     },
     onError: (error: any) => {
@@ -45,7 +46,7 @@ export function useDeleteRoute(usuarioId: string) {
   return useMutation({
     mutationFn: (id: string) => routeApi.deleteRoute(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["routes", usuarioId] });
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
       toast.success("Rota excluída com sucesso!");
     },
     onError: (error: any) => {
@@ -62,7 +63,7 @@ export function useIniciarRota() {
   return useMutation({
     mutationFn: (id: string) => routeApi.iniciarRota(id),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["routes", data.usuario_id] });
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution", data.id] });
       toast.success("Rota iniciada com sucesso!");
     },
@@ -85,11 +86,11 @@ export function useAtualizarParadaStatus() {
     }: {
       execucaoId: string;
       passageiroId: string;
-      status: "embarcado" | "ausente";
+      status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE;
     }) => routeApi.atualizarParadaStatus(execucaoId, passageiroId, status),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
-      if (variables.status === "embarcado") {
+      if (variables.status === RouteStopStatus.EMBARCADO) {
         toast.success("Passageiro marcado como embarcado/desembarcado!");
       } else {
         toast.success("Passageiro pulado na rota!");
@@ -109,7 +110,7 @@ export function useCancelarExecucao() {
   return useMutation({
     mutationFn: (id: string) => routeApi.cancelarExecucao(id),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["routes", data.usuario_id] });
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution", data.id] });
       toast.success("Rota cancelada com sucesso!");
     },
