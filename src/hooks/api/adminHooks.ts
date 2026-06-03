@@ -11,8 +11,8 @@ import { toast } from "@/utils/notifications/toast";
 
 const KEYS = {
   stats: ["admin", "stats"] as const,
-  users: (params?: ListUsersParams) => ["admin", "users", params] as const,
-  userDetails: (id: string) => ["admin", "users", id] as const,
+  users: (params?: ListUsersParams) => ["admin", "users", "list", params] as const,
+  userDetails: (id: string) => ["admin", "users", "detail", id] as const,
   configs: ["admin", "configs"] as const,
   plans: ["admin", "plans"] as const,
 };
@@ -23,6 +23,7 @@ export function useAdminStats() {
     queryFn: adminApi.getStats,
     staleTime: 0,
     refetchOnWindowFocus: false,
+    refetchOnMount: true,
   });
 }
 
@@ -32,6 +33,7 @@ export function useAdminUsers(params?: ListUsersParams) {
     queryFn: () => adminApi.getUsers(params),
     staleTime: 0,
     refetchOnWindowFocus: false,
+    refetchOnMount: true,
   });
 }
 
@@ -63,7 +65,7 @@ export function useUpdateUserAdmin() {
     onSuccess: (_, variables) => {
       toast.success("Cadastro atualizado com sucesso.");
       qc.invalidateQueries({ queryKey: KEYS.userDetails(variables.id) });
-      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "users", "list"] });
     },
     onError: () => {
       toast.error("Erro ao atualizar cadastro.");
@@ -79,7 +81,7 @@ export function useUpdateSubscriptionAdmin() {
     onSuccess: (_, variables) => {
       toast.success("Assinatura atualizada com sucesso.");
       qc.invalidateQueries({ queryKey: KEYS.userDetails(variables.id) });
-      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "users", "list"] });
       qc.invalidateQueries({ queryKey: KEYS.stats });
     },
     onError: () => {
