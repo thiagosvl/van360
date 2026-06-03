@@ -14,7 +14,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE,
     onSuccessCallback?: () => void
   ) => {
-    if (!execucaoId) return;
+    if (!execucaoId || stepMutation.isPending) return;
 
     stepMutation.mutate(
       {
