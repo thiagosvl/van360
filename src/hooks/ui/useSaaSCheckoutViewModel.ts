@@ -74,6 +74,7 @@ export function useSaaSCheckoutViewModel({
   const [isRefetchingReferral, setIsRefetchingReferral] = useState(false);
   const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialSubscriptionStatusRef = useRef<SubscriptionStatus | null>(null);
+  const isGeneratingRef = useRef(false);
 
   useEffect(() => {
     if (isOpen && user?.id) {
@@ -187,8 +188,9 @@ export function useSaaSCheckoutViewModel({
   };
 
   const handleGenerateCheckout = async (cardData: CreditCardData | null) => {
-    if (!user) return;
+    if (!user || isGeneratingRef.current) return;
 
+    isGeneratingRef.current = true;
     setIsGenerating(true);
     setCardError(null);
     try {
@@ -270,6 +272,7 @@ export function useSaaSCheckoutViewModel({
         toast.error(msg);
       }
     } finally {
+      isGeneratingRef.current = false;
       setIsGenerating(false);
     }
   };

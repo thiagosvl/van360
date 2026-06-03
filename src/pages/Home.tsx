@@ -3,6 +3,7 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { KPICard } from "@/components/common/KPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
+import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
@@ -70,6 +71,23 @@ const Home = () => {
             <TrialBanner
               daysLeft={subscription.trialDaysLeft}
               onSubscribe={() => {
+                if (plans && plans.length > 0) {
+                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
+                  openSaaSCheckoutDialog({
+                    plans,
+                    initialPlanId: defaultPlan.id
+                  });
+                } else {
+                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+                }
+              }}
+            />
+          )}
+
+          {/* Banner de Carência (SaaS) */}
+          {subscription?.status === SubscriptionStatus.PAST_DUE && (
+            <PastDueBanner
+              onRegularize={() => {
                 if (plans && plans.length > 0) {
                   const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
                   openSaaSCheckoutDialog({
