@@ -23,6 +23,7 @@ import {
   CircleDot,
   ChevronDown,
   X,
+  AlertOctagon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -104,6 +105,7 @@ const SubscriptionPage = () => {
   })();
 
   const isExpired = subscription?.status === SubscriptionStatus.EXPIRED || isTrialExpired;
+  const isPastDue = subscription?.status === SubscriptionStatus.PAST_DUE;
 
   const trialDaysLeft = (() => {
     if (!isTrial || !subscription?.trial_ends_at) return 0;
@@ -239,6 +241,30 @@ const SubscriptionPage = () => {
                   onClick={() => handleSubscribe()}
                 >
                   {isTrialExpired ? "Assinar Agora" : "Reativar Agora"}
+                </Button>
+              </div>
+            </div>
+          ) : isPastDue ? (
+            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden text-white transition-all transform hover:shadow-2xl">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <AlertOctagon className="w-5 h-5 text-white" />
+                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura em Atraso</span>
+                </div>
+                <h3 className="font-headline font-extrabold text-3xl text-white">
+                  Regularização Pendente
+                </h3>
+                <p className="text-white/95 font-medium leading-relaxed max-w-2xl">
+                  Sua assinatura do <span className="font-bold">Plano {subscription?.planos?.nome}</span> venceu em <span className="font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "breve"}</span>. Regularize o pagamento para evitar a suspensão do seu acesso.
+                </p>
+              </div>
+              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
+                <Button
+                  className="bg-white text-orange-600 hover:bg-white/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                  onClick={() => handleSubscribe()}
+                >
+                  Regularizar Agora
                 </Button>
               </div>
             </div>
