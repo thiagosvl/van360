@@ -90,7 +90,7 @@ export function useContratosViewModel() {
     await Promise.all([refetchKPIs(), refetchContratos()]);
   };
 
-  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
+  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
 
   const handleOpenContractSetup = useCallback(() => {
     openContractSetupDialog({

@@ -205,7 +205,7 @@ export default function PassageiroCarteirinha() {
     refetchPassageiro();
 
     const hasChanges = meta?.hasCriticalContractChanges === true;
-    const usarContratos = profile?.config_contrato?.usar_contratos;
+    const usarContratos = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
 
     if (hasChanges && usarContratos) {
       const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
@@ -237,7 +237,7 @@ export default function PassageiroCarteirinha() {
         });
       }, 400);
     }
-  }, [refetchPassageiro, passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
+  }, [refetchPassageiro, passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos, profile?.config_contrato?.configurado]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -508,7 +508,7 @@ export default function PassageiroCarteirinha() {
     onCopyToClipboard: handleCopyToClipboard,
     onToggleClick: handleToggleClick,
     onEnviarWhatsApp: handleEnviarWhatsApp,
-    contratosAtivos: profile?.config_contrato?.usar_contratos !== false,
+    contratosAtivos: !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado,
     onDeleteClick: () =>
       openConfirmationDialog({
         title: "Excluir passageiro?",

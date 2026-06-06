@@ -89,7 +89,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
       const isContratoConfigurado = !!profile.config_contrato?.configurado;
-      const isContratoAtivo = profile.config_contrato?.usar_contratos ?? true;
+      const isContratoAtivo = profile.config_contrato?.usar_contratos ?? false;
 
       setUsarContratos(skipWelcome ? true : isContratoAtivo);
 

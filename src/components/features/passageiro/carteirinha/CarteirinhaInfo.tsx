@@ -73,9 +73,9 @@ const ProfileActions = ({
 >) => {
   const isMobile = useIsMobile();
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
-  const isPendente = 
-    statusContrato === ContratoStatus.PENDENTE || 
-    statusContrato === 'pendente' || 
+  const isPendente =
+    statusContrato === ContratoStatus.PENDENTE ||
+    statusContrato === 'pendente' ||
     statusContrato === '1' ||
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
@@ -361,7 +361,7 @@ export const CarteirinhaDadosPessoais = ({
     if (isContractActionDisabled) {
       toast.warning("Ative o uso de Contratos", {
         description:
-          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos' no menu inferior.",
+          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos'.",
       });
       return;
     }
