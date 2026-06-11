@@ -1,11 +1,11 @@
-import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
-
+import { Button } from "@/components/ui/button";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 import { ContratosList } from "@/components/features/contrato/ContratosList";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
+import { AlertCircle } from "lucide-react";
 
 import { useContratosViewModel } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
@@ -22,6 +22,7 @@ const Contratos = () => {
     isLoading,
     isActionLoading,
     isContratoAtivo,
+    isContratoConfigurado,
     handleRefresh,
     handleOpenContractSetup,
     handleActivateContracts,
@@ -39,16 +40,7 @@ const Contratos = () => {
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
-          {/* Banner de Estado Desativado */}
-          {!isContratoAtivo && (
-            <DashboardStatusCard
-              type="pending"
-              title="Contratos Desativados"
-              description="Para gerar, editar ou substituir contratos, você precisa ativar essa funcionalidade. Por enquanto, as ações de alteração estão bloqueadas, mas seus dados continuam disponíveis para consulta."
-              actionLabel="Ativar Agora"
-              onAction={handleActivateContracts}
-            />
-          )}
+
 
           <Tabs
             value={activeTab}
@@ -65,12 +57,56 @@ const Contratos = () => {
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
               isDesativado={!isContratoAtivo}
+              isContratoConfigurado={isContratoConfigurado}
               onToggleContratos={handleToggleContracts}
               isToggling={isToggling}
               isPreviewLoading={isPreviewLoading}
             />
 
-            <div className="flex items-center justify-between px-1">
+            {/* Banner: Não Configurado */}
+            {!isContratoAtivo && !isContratoConfigurado && (
+              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/60 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1">
+                <div className="flex items-start gap-3 flex-1">
+                  <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-amber-900 tracking-tight">Você ainda não configurou os contratos</h4>
+                    <p className="text-xs text-amber-800/80 leading-relaxed font-medium">
+                      Ative e configure essa funcionalidade para gerar contratos em PDF automaticamente para seus passageiros.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleOpenContractSetup}
+                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs h-10 px-5 rounded-xl whitespace-nowrap shadow-sm w-full sm:w-auto shrink-0"
+                >
+                  Configurar Agora
+                </Button>
+              </div>
+            )}
+
+            {/* Banner: Desativado (Mas já configurado) */}
+            {!isContratoAtivo && isContratoConfigurado && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1">
+                <div className="flex items-start gap-3 flex-1">
+                  <AlertCircle className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                      A emissão e o gerenciamento de contratos em PDF para seus passageiros estão desativados. Reative para voltar a utilizar.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => handleToggleContracts(true)}
+                  disabled={isToggling}
+                  className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs h-10 px-5 rounded-xl whitespace-nowrap shadow-sm w-full sm:w-auto shrink-0"
+                >
+                  Reativar Contratos
+                </Button>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
                 {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" :
                   activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Sem Contrato"}

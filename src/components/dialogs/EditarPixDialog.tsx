@@ -23,7 +23,7 @@ import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Key, Loader2 } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -96,7 +96,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Configurar Recebimento Pix" icon={<CreditCard className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header title="Configurar Recebimento Pix" icon={<Key className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
         {isLoading ? (
           <div className="flex items-center justify-center py-6">

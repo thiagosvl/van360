@@ -35,25 +35,22 @@ interface ContractSetupDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (usarContratos?: boolean) => void;
-  skipWelcome?: boolean;
 }
 
 enum SetupStep {
-  WELCOME = 0,
-  FEES = 1,
-  CLAUSES = 2,
-  SIGNATURE = 3,
-  PREVIEW = 4,
+  FEES = 0,
+  CLAUSES = 1,
+  SIGNATURE = 2,
+  PREVIEW = 3,
 }
 
-export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWelcome }: ContractSetupDialogProps) {
+export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: ContractSetupDialogProps) {
   const { profile, refreshProfile } = useProfile();
-  const [step, setStep] = useState<SetupStep>(SetupStep.WELCOME);
+  const [step, setStep] = useState<SetupStep>(SetupStep.FEES);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const previewMutation = usePreviewContrato();
 
-  const [usarContratos, setUsarContratos] = useState(true);
   const [multaAtraso, setMultaAtraso] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
     valor: 10,
     tipo: "percentual",
@@ -88,16 +85,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       if (profile.config_contrato?.multa_rescisao) setMultaRescisao(profile.config_contrato.multa_rescisao);
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
-      const isContratoConfigurado = !!profile.config_contrato?.configurado;
-      const isContratoAtivo = profile.config_contrato?.usar_contratos ?? false;
-
-      setUsarContratos(skipWelcome ? true : isContratoAtivo);
-
-      if (skipWelcome) {
-        setStep(SetupStep.FEES); // Pula para a segunda etapa
-      } else {
-        setStep(SetupStep.WELCOME);
-      }
+      setStep(SetupStep.FEES);
 
       initializedRef.current = true;
     }
@@ -113,10 +101,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
   };
 
   const handleNext = () => {
-    if (step === SetupStep.WELCOME && !usarContratos) {
-      handleFinalSubmit(false);
-      return;
-    }
     if (step === SetupStep.CLAUSES) {
       const cleanClausulas = clausulas.filter((c) => c.trim() !== "");
       if (cleanClausulas.length === 0) {
@@ -140,7 +124,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       captureSignature();
     }
     if (step === SetupStep.PREVIEW) {
-      handleFinalSubmit(true);
+      handleFinalSubmit();
       return;
     }
     setStep((s) => s + 1);
@@ -153,7 +137,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
 
   const currentStepTitle = () => {
     switch (step) {
-      case SetupStep.WELCOME: return "Boas-Vindas";
       case SetupStep.FEES: return "Penalidades e Multas";
       case SetupStep.CLAUSES: return "Cláusulas e Termos";
       case SetupStep.SIGNATURE: return "Assinatura";
@@ -162,12 +145,12 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
     }
   };
 
-  const handleFinalSubmit = async (active: boolean) => {
+  const handleFinalSubmit = async () => {
     if (!profile?.id) return;
     setIsSubmitting(true);
     try {
       let signatureUrl = signatureTemp || profile.assinatura_digital_url;
-      if (active && (step === SetupStep.SIGNATURE || step === SetupStep.PREVIEW)) {
+      if (step === SetupStep.SIGNATURE || step === SetupStep.PREVIEW) {
         if (sigPad.current && !sigPad.current.isEmpty()) {
           signatureUrl = sigPad.current.toDataURL("image/png");
         }
@@ -176,8 +159,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       await usuarioApi.atualizarUsuario(profile.id, {
         assinatura_digital_url: signatureUrl,
         config_contrato: {
-          usar_contratos: active,
-          configurado: true,
+          usar_contratos: true,
           multa_atraso: multaAtraso,
           multa_rescisao: multaRescisao,
           clausulas: finalClausulas,
@@ -185,7 +167,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       await refreshProfile();
-      if (onSuccess) onSuccess(active);
+      if (onSuccess) onSuccess(true);
       onClose();
       toast.success("Configurações salvas com sucesso!");
     } catch (err) {
@@ -194,89 +176,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       setIsSubmitting(false);
     }
   };
-
-  const renderWelcome = () => (
-    <div className="space-y-4">
-      <div className="text-center space-y-1">
-        <h2 className="text-lg font-black text-[#1a3a5c] uppercase tracking-tight">Contratos Automáticos</h2>
-        <p className="text-[11px] text-slate-500 leading-relaxed px-4 italic font-medium">
-          O sistema gera o contrato, envia para o responsável e solicita a assinatura digital, para cada passageiro cadastrado.
-        </p>
-      </div>
-      <div className="grid gap-3">
-        <button
-          type="button"
-          onClick={() => setUsarContratos(true)}
-          className={cn(
-            "w-full p-4 sm:p-5 rounded-[2rem] border transition-all flex items-center gap-4 active:scale-[0.98] group shadow-sm",
-            usarContratos
-              ? "border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-200 shadow-lg shadow-emerald-500/5"
-              : "border-slate-100 bg-white hover:border-slate-200"
-          )}
-        >
-          <div className={cn(
-            "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-            usarContratos ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
-          )}>
-            <FileText className="w-6 h-6" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <h4 className={cn("text-[13px] font-black uppercase tracking-tight", usarContratos ? "text-emerald-900" : "text-slate-600")}>
-              Usar Contratos
-            </h4>
-            <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">PDF automático e digital</p>
-          </div>
-          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", usarContratos ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
-            {usarContratos && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setUsarContratos(false)}
-          className={cn(
-            "w-full p-4 sm:p-5 rounded-[2rem] border transition-all flex items-center gap-4 active:scale-[0.98] group shadow-sm",
-            !usarContratos
-              ? "border-slate-400 bg-slate-50 ring-1 ring-slate-200 shadow-lg shadow-slate-200/5"
-              : "border-slate-100 bg-white hover:border-slate-200"
-          )}
-        >
-          <div className={cn(
-            "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-            !usarContratos ? "bg-slate-400 text-white shadow-lg shadow-slate-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
-          )}>
-            <FileText className="w-6 h-6 opacity-30" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <h4 className={cn("text-[13px] font-black uppercase tracking-tight", !usarContratos ? "text-slate-900" : "text-slate-500")}>
-              Não usar contratos
-            </h4>
-            <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">Você poderá ativar depois</p>
-          </div>
-          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", !usarContratos ? "border-slate-400 bg-slate-400" : "border-slate-300")}>
-            {!usarContratos && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-          </div>
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {!usarContratos && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/60 flex gap-3 items-start shadow-sm"
-          >
-            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-amber-900 leading-relaxed italic font-medium">
-              A qualquer momento você poderá ativar as configurações de contrato na tela de contratos.
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-
   const renderFees = () => (
     <div className="space-y-4">
       <div className="space-y-1">
@@ -505,16 +404,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
     </div>
   );
 
-  // Código antigo de restrição (comentado para uso futuro):
-  // const podeFechar = !!profile?.config_contrato?.configurado;
-  // const canCloseNow = podeFechar || (step === SetupStep.WELCOME && !usarContratos);
-
   return (
     <>
       <BaseDialog
         open={isOpen}
-        onOpenChange={(open) => { if (!open) onClose(); }} // Código antigo: onOpenChange={(open) => { if (!open && canCloseNow) onClose(); }}
-        // lockClose={!canCloseNow}
+        onOpenChange={(open) => { if (!open) onClose(); }}
         maxWidth="2xl"
       >
         <BaseDialog.Header
@@ -522,12 +416,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
           icon={<FileText className="w-5 h-5 opacity-80" />}
           showSteps
           currentStep={step + 1}
-          totalSteps={5}
-          hideCloseButton={false} // Código antigo: hideCloseButton={!podeFechar}
-          onClose={onClose} // Código antigo: onClose={podeFechar ? onClose : undefined}
+          totalSteps={4}
+          hideCloseButton={false}
+          onClose={onClose}
         />
         <BaseDialog.Body animate animationKey={step} className="min-h-[300px]">
-          {step === SetupStep.WELCOME && renderWelcome()}
           {step === SetupStep.FEES && renderFees()}
           {step === SetupStep.CLAUSES && renderClauses()}
           {step === SetupStep.SIGNATURE && renderSignature()}
@@ -545,7 +438,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
           )}
           <BaseDialog.Action
             label={
-              step === SetupStep.PREVIEW || (step === SetupStep.WELCOME && !usarContratos)
+              step === SetupStep.PREVIEW
                 ? "Confirmar"
                 : "Continuar"
             }

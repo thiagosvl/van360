@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Bus,
@@ -8,7 +6,7 @@ import {
   Rocket,
   School,
   User,
-  CreditCard
+  Key
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
@@ -73,7 +71,7 @@ export const QuickStartCard = ({
         done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
         label: "Configurar Chave Pix",
         onAction: openEditarPixDialog,
-        icon: CreditCard,
+        icon: Key,
         buttonText: "Configurar",
       },
     ];

@@ -57,7 +57,7 @@ export function useContratoActions({
 
     const list: ActionItem[] = [];
 
-    if (onGerarContrato && !hasContract) {
+    if (onGerarContrato && !hasContract && !isFeatureDisabled) {
       list.push({
         label: 'Gerar Contrato',
         icon: <FileText className="h-4 w-4" />,
@@ -107,7 +107,7 @@ export function useContratoActions({
       }
     }
 
-    if (hasContract) {
+    if (hasContract && !isFeatureDisabled) {
       list.push({
         label: 'Substituir Contrato',
         icon: <RefreshCcw className="h-4 w-4" />,

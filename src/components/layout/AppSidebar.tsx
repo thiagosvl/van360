@@ -1,9 +1,6 @@
 import { cn } from "@/lib/utils";
-import { getWhatsAppUrl } from "@/constants";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
-import { ExternalLink } from "lucide-react";
 
 interface AppSidebarProps {
   role: "motorista";
@@ -56,40 +53,6 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
           </NavLink>
         ))}
       </nav>
-
-      {/* Canal de Suporte (Design Integrado) */}
-      <div className="hidden sm:block mt-auto">
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-[#1a3a5c]/20 hover:shadow-md">
-          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500/5 transition-transform group-hover:scale-110" />
-          
-          <div className="relative flex flex-col gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-              <WhatsAppIcon className="h-5 w-5" />
-            </div>
-
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-slate-900">Canal de Suporte</h4>
-              <p className="text-[11px] leading-relaxed text-slate-500">
-                Fale com nossa equipe para dúvidas ou sugestões de melhoria.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                window.open(getWhatsAppUrl(), "_blank");
-                onLinkClick?.();
-              }}
-              className="mt-1 flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#1a3a5c]"
-            >
-              <span className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                (11) 96250-8068
-              </span>
-              <ExternalLink className="h-3 w-3 opacity-40" />
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

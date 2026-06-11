@@ -158,7 +158,7 @@ export default function Passageiros() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
                       onEnviarWhatsApp={handleEnviarWhatsApp}
-                      usarContratos={!!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado}
+                      usarContratos={!!profile?.config_contrato?.usar_contratos}
                     />
                   )}
                 </>

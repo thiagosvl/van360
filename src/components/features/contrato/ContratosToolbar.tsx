@@ -8,10 +8,11 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ interface ContratosToolbarProps {
   onOpenConfig: () => void;
   onOpenPreview: () => void;
   isDesativado?: boolean;
+  isContratoConfigurado?: boolean;
   onToggleContratos: (active: boolean) => void | Promise<void>;
   isToggling?: boolean;
   isPreviewLoading?: boolean;
@@ -46,6 +48,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   onOpenConfig,
   onOpenPreview,
   isDesativado = false,
+  isContratoConfigurado = false,
   onToggleContratos,
   isToggling = false,
   isPreviewLoading = false,
@@ -134,37 +137,16 @@ export const ContratosToolbar = memo(function ContratosToolbar({
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Button
-              variant="outline"
-              size="icon"
-              className={cn(
-                "h-12 w-12 bg-white border-none rounded-xl shadow-diff-shadow hover:bg-slate-50 hover:text-[#1a3a5c] transition-all active:scale-95"
-              )}
-              onClick={onOpenPreview}
-              title="Visualizar Modelo"
-              disabled={isPreviewLoading}
-            >
-              {isPreviewLoading ? (
-                <Loader2 className="w-5 h-5 text-[#1a3a5c] animate-spin" />
-              ) : (
-                <Eye className={cn(
-                  "w-5 h-5 transition-colors",
-                  isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
-                )} />
-              )}
-            </Button>
 
-            {!isMobile ? (
-              <Popover open={openPopover} onOpenChange={setOpenPopover} modal={true}>
-                <PopoverTrigger asChild>
+            {!isMobile && (
+              <DropdownMenu open={openPopover} onOpenChange={setOpenPopover}>
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    size="icon"
                     className={cn(
-                      "h-12 w-12 bg-white border border-slate-100 shadow-sm transition-all active:scale-95 group hover:bg-slate-50 relative",
+                      "h-12 w-12 px-0 bg-white border border-slate-100 shadow-sm transition-all active:scale-95 hover:bg-slate-50 relative shrink-0",
                       openPopover ? "ring-2 ring-[#1a3a5c] ring-offset-2" : ""
                     )}
-                    title="Configurações e Ações"
                   >
                     {isToggling ? (
                       <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
@@ -181,88 +163,47 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                       </span>
                     )}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[320px] p-6 rounded-2xl shadow-xl border-none ring-1 ring-gray-100"
-                  align="end"
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-headline font-black text-[#1a3a5c] text-sm uppercase tracking-wider">Opções de Contrato</h4>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={() => {
-                          setOpenPopover(false);
-                          onOpenConfig();
-                        }}
-                        disabled={isDesativado || isToggling}
-                        className={cn(
-                          "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
-                          isDesativado
-                            ? "opacity-40 grayscale pointer-events-none text-slate-400"
-                            : "text-[#1a3a5c] hover:bg-slate-50 active:bg-slate-50"
-                        )}
-                      >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
-                          <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
-                            <FileText />
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Configurar Contrato</span>
-                        </div>
-                      </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
+                  <DropdownMenuItem
+                    disabled={isDesativado || isToggling}
+                    onClick={onOpenConfig}
+                    className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
+                  >
+                    <FileText className="w-4 h-4 opacity-70" />
+                    Configurar Contrato
+                  </DropdownMenuItem>
 
-                      <button
-                        onClick={() => {
-                          onToggleContratos(isDesativado);
-                          setOpenPopover(false);
-                        }}
-                        disabled={isToggling}
-                        className={cn(
-                          "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
-                          !isDesativado
-                            ? "text-red-600 bg-red-50/10 hover:bg-red-50/30 active:bg-red-50/50"
-                            : "text-[#1a3a5c] active:bg-slate-50"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                          !isDesativado ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"
-                        )}>
-                          <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
-                            {isToggling ? (
-                              <Loader2 className="animate-spin" />
-                            ) : !isDesativado ? (
-                              <PauseCircle />
-                            ) : (
-                              <CheckCircle2 />
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">
-                            {!isDesativado ? "Desativar Contratos" : "Ativar Contratos"}
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            ) : (
+                  <DropdownMenuItem
+                    disabled={isToggling}
+                    onClick={() => onToggleContratos(isDesativado)}
+                    className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer font-medium text-slate-700"
+                  >
+                    {isToggling ? <Loader2 className="w-4 h-4 animate-spin" /> : (!isDesativado ? <PauseCircle className="w-4 h-4 opacity-70 text-red-500" /> : <CheckCircle2 className="w-4 h-4 opacity-70" />)}
+                    {!isDesativado ? <span className="text-red-500">Desativar Uso</span> : <span>{isContratoConfigurado ? "Reativar Uso" : "Ativar Uso"}</span>}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    disabled={!isContratoConfigurado || isPreviewLoading}
+                    onClick={onOpenPreview}
+                    className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
+                  >
+                    {isPreviewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4 opacity-70" />}
+                    Visualizar Modelo PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {isMobile && (
               <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
                 <DrawerTrigger asChild>
                   <Button
                     variant="outline"
-                    size="icon"
                     className={cn(
-                      "h-12 w-12 bg-white border border-slate-100 shadow-sm transition-all active:scale-95 group hover:bg-slate-50 relative",
+                      "h-12 w-12 px-0 bg-white border border-slate-100 shadow-sm transition-all active:scale-95 hover:bg-slate-50 relative shrink-0",
                       openDrawer ? "ring-2 ring-[#1a3a5c] ring-offset-2" : ""
                     )}
-                    title="Configurações e Ações"
                   >
                     {isToggling ? (
                       <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
@@ -293,6 +234,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
 
                   <div className="flex-1 overflow-y-auto px-4 pb-10 mt-2">
                     <div className="flex flex-col gap-1">
+
                       <button
                         onClick={() => {
                           setOpenDrawer(false);
@@ -325,13 +267,13 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                         className={cn(
                           "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
                           !isDesativado
-                            ? "text-red-600 bg-red-50/10 active:bg-red-50/50"
+                            ? "text-red-500 active:bg-slate-50"
                             : "text-[#1a3a5c] active:bg-slate-50"
                         )}
                       >
                         <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                          !isDesativado ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50",
+                          !isDesativado ? "text-red-500" : "text-slate-500"
                         )}>
                           <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
                             {isToggling ? (
@@ -345,10 +287,34 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                         </div>
                         <div className="flex flex-col items-start gap-0.5 overflow-hidden">
                           <span className="font-bold text-sm tracking-tight truncate">
-                            {!isDesativado ? "Desativar Uso de Contratos" : "Ativar Uso de Contratos"}
+                            {!isDesativado ? "Desativar Uso de Contratos" : (isContratoConfigurado ? "Reativar Uso de Contratos" : "Ativar Uso de Contratos")}
                           </span>
                         </div>
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setOpenDrawer(false);
+                          onOpenPreview();
+                        }}
+                        disabled={!isContratoConfigurado || isPreviewLoading}
+                        className={cn(
+                          "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
+                          !isContratoConfigurado
+                            ? "opacity-40 grayscale pointer-events-none text-slate-400"
+                            : "text-[#1a3a5c] active:bg-slate-50"
+                        )}
+                      >
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
+                          <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
+                            {isPreviewLoading ? <Loader2 className="animate-spin" /> : <Eye />}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-start gap-0.5 overflow-hidden">
+                          <span className="font-bold text-sm tracking-tight truncate">Visualizar Modelo PDF</span>
+                        </div>
+                      </button>
+
                     </div>
                   </div>
                 </DrawerContent>

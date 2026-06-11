@@ -28,7 +28,6 @@ import { openBrowserLink } from "@/utils/browser";
 import { BASE_DOMAIN } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { supabase } from "@/integrations/supabase/client";
-import { useContractGuard } from "@/hooks/ui/useContractGuard";
 import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
@@ -191,13 +190,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const handleContractGuardOpen = useCallback(() => {
     setContractSetupDialogState({ open: true });
   }, []);
-
-  // useContractGuard({
-  //   profile,
-  //   isLoading: isProfileLoading,
-  //   onShouldOpen: handleContractGuardOpen,
-  //   disabled: usarContratos === false || isProfileLoading || !profile,
-  // });
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({

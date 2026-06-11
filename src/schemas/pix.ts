@@ -5,6 +5,7 @@ import { z } from "zod";
 export const pixKeyObject = z.object({
   tipo_chave_pix: z.nativeEnum(TipoChavePix, {
     required_error: "Selecione o tipo de chave",
+    invalid_type_error: "Selecione o tipo de chave",
   }).optional().nullable(),
   chave_pix: z.string().optional().nullable(),
 });
@@ -53,6 +54,7 @@ export const pixKeySchema = pixKeyObject.superRefine(pixKeyRefinement);
 export const pixKeyObjectRequired = z.object({
   tipo_chave_pix: z.nativeEnum(TipoChavePix, {
     required_error: "Selecione o tipo de chave",
+    invalid_type_error: "Selecione o tipo de chave",
   }),
   chave_pix: z.string({
       required_error: "Chave PIX é obrigatória"

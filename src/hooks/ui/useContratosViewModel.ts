@@ -90,12 +90,12 @@ export function useContratosViewModel() {
     await Promise.all([refetchKPIs(), refetchContratos()]);
   };
 
-  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
+  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
+  const isContratoConfigurado = !!profile?.assinatura_digital_url;
 
   const handleOpenContractSetup = useCallback(() => {
     openContractSetupDialog({
       forceOpen: true,
-      skipWelcome: true,
       onSuccess: (usarContratos) => {
         if (usarContratos) {
           refetchKPIs();
@@ -108,12 +108,25 @@ export function useContratosViewModel() {
   const handleToggleContracts = useCallback(async (active: boolean) => {
     if (!profile?.id) return;
 
+    if (active && !profile.assinatura_digital_url) {
+      openContractSetupDialog({
+        onSuccess: (usarContratos) => {
+          if (usarContratos) {
+            refreshProfile();
+            refetchKPIs();
+            refetchContratos();
+          }
+        }
+      });
+      return;
+    }
+
     openConfirmationDialog({
-      title: active ? "Ativar Contratos?" : "Desativar Contratos?",
+      title: active ? "Reativar Uso de Contratos?" : "Desativar Uso de Contratos?",
       description: active
-        ? "Tem certeza que deseja ativar a geração de contratos para sua van? Você poderá configurar as regras e modelos."
-        : "Tem certeza que deseja desativar a geração de contratos? Os contratos existentes continuarão valendo, mas novos contratos não serão gerados automaticamente.",
-      confirmText: active ? "Ativar" : "Desativar",
+        ? "Tem certeza que deseja reativar o uso de contratos? Você poderá gerar e gerenciar contratos em PDF para os passageiros com as configurações salvas anteriormente."
+        : "Tem certeza que deseja desativar a funcionalidade de contratos? Os contratos existentes continuarão valendo, mas novos contratos não poderão ser emitidos.",
+      confirmText: active ? "Reativar" : "Desativar",
       variant: active ? "default" : "destructive",
       onConfirm: async () => {
         setIsToggling(true);
@@ -127,7 +140,7 @@ export function useContratosViewModel() {
           });
           refreshProfile();
           await Promise.all([refetchKPIs(), refetchContratos()]);
-          toast.success(active ? "Contratos ativados com sucesso!" : "Geração automática desativada.");
+          toast.success(active ? "Uso de contratos reativado com sucesso!" : "Uso de contratos desativado.");
         } catch (err) {
           toast.error("Erro ao alterar o status do contrato.");
         } finally {
@@ -136,11 +149,10 @@ export function useContratosViewModel() {
         }
       }
     });
-  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile]);
+  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile, openContractSetupDialog]);
 
   const handleActivateContracts = useCallback(() => {
     openContractSetupDialog({
-      skipWelcome: true,
       onSuccess: (usarContratos) => {
         if (usarContratos) {
           refreshProfile();
@@ -239,8 +251,8 @@ export function useContratosViewModel() {
   }, [openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
   const handleOpenPreview = useCallback(async () => {
-    if (!isContratoAtivo) {
-      toast.error("Ative a funcionalidade de contratos para visualizar o modelo");
+    if (!isContratoConfigurado) {
+      toast.error("Configure os contratos primeiro para visualizar o modelo");
       return;
     }
 
@@ -278,6 +290,7 @@ export function useContratosViewModel() {
     isLoading: isLoadingContratos || isLoadingKPIs,
     isActionLoading,
     isContratoAtivo,
+    isContratoConfigurado,
     handleRefresh,
     handleOpenContractSetup,
     handleActivateContracts,

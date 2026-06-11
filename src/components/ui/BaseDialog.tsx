@@ -104,7 +104,7 @@ const BaseDialogHeader = ({
           </div>
         ) : null}
         <div className="flex flex-col min-w-0 flex-1">
-          <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight truncate">
+          <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight line-clamp-2 leading-tight">
             {title}
           </DialogTitle>
 

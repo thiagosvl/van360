@@ -19,7 +19,7 @@ export type FirstChargeStep = "CONTRACT_CHECK" | "REGISTER_CHECK" | "PAYMENT_STA
 
 export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeViewModelProps) {
   const { profile } = useProfile();
-  const showContractStep = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
+  const showContractStep = !!profile?.config_contrato?.usar_contratos;
 
   const [step, setStep] = useState<FirstChargeStep>(showContractStep ? "CONTRACT_CHECK" : "REGISTER_CHECK");
   const [paymentStatus, setPaymentStatus] = useState<CobrancaStatus | null>(null);

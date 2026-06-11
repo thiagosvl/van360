@@ -18,7 +18,7 @@ import {
   Loader2,
   LogOut,
   UserPen,
-  CreditCard,
+  Key,
   Rocket,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -151,7 +151,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                 Alterar Senha
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
-                <CreditCard className="h-4 w-4 text-slate-400" />
+                <Key className="h-4 w-4 text-slate-400" />
                 Alterar Chave Pix
               </DropdownMenuItem>
               <div className="h-px bg-gray-50 my-1" />
