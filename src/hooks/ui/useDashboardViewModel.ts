@@ -139,22 +139,14 @@ export function useDashboardViewModel() {
   const handleOpenVeiculoDialog = useCallback(() => {
     openVeiculoFormDialog({
       allowBatchCreation: true,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      },
     });
-  }, [openVeiculoFormDialog, queryClient]);
+  }, [openVeiculoFormDialog]);
 
   const handleOpenEscolaDialog = useCallback(() => {
     openEscolaFormDialog({
       allowBatchCreation: true,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["escolas"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      },
     });
-  }, [openEscolaFormDialog, queryClient]);
+  }, [openEscolaFormDialog]);
 
   const navigateTo = useCallback((route: string) => {
     navigate(route);

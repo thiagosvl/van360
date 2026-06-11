@@ -23,7 +23,8 @@ import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Key, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Key, Loader2, Info } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -96,7 +97,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Configurar Recebimento Pix" icon={<Key className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header title="Configurar Chave Pix" icon={<Key className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
         {isLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -105,6 +106,15 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
+              {!profile?.chave_pix && (
+                <Alert className="bg-blue-50 border-blue-100/50">
+                  <Info className="h-4 w-4 text-blue-500" />
+                  <AlertDescription className="text-blue-700 text-[13px] ml-1">
+                    A chave Pix cadastrada será utilizada nos lembretes e cobranças automáticas enviadas para os responsáveis via WhatsApp.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <FormField
                 control={form.control}
                 name="tipo_chave_pix"

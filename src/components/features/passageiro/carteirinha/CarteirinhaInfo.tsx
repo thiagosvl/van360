@@ -178,7 +178,7 @@ const ProfileActions = ({
             className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
           >
             <Trash2 className="h-3.5 w-3.5 opacity-60" />
-            Excluir cadastro
+            Excluir passageiro
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -226,6 +226,11 @@ const ProfileSummary = ({
         >
           {passageiro.ativo ? "Passageiro Ativo" : "Passageiro Inativo"}
         </Badge>
+        {temCobrancasVencidas && (
+          <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
+            Possui Débitos
+          </Badge>
+        )}
         <Badge
           variant="outline"
           className={cn(
@@ -237,11 +242,6 @@ const ProfileSummary = ({
         >
           {passageiro.enviar_notificacoes ? "Notificações Ativas" : "Notificações Inativas"}
         </Badge>
-        {temCobrancasVencidas && (
-          <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
-            Possui Débitos
-          </Badge>
-        )}
       </div>
     </div>
   </div>
