@@ -2,6 +2,7 @@ import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { toast } from "sonner";
+import { openBrowserLink } from "@/utils/browser";
 
 export interface ShareReceiptData {
   url: string;
@@ -83,7 +84,7 @@ export async function shareReceiptFile(data: ShareReceiptData) {
     }
 
     // 4. Fallback final para Desktop ou navegadores sem Share API
-    window.open(url, "_blank");
+    openBrowserLink(url);
 
   } catch (error) {
     console.error("[ShareReceipt] Erro técnico detalhado:", error);

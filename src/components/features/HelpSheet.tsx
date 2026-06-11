@@ -7,6 +7,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { getWhatsAppUrl } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
+import { openBrowserLink } from "@/utils/browser";
 import { ChevronDown, HelpCircle, ExternalLink, Lightbulb } from "lucide-react";
 import { useState } from "react";
 
@@ -71,7 +72,7 @@ export function HelpSheet() {
   ];
 
   const handleWhatsAppSupport = () => {
-    window.open(getWhatsAppUrl(), "_blank");
+    openBrowserLink(getWhatsAppUrl());
   };
 
   return (

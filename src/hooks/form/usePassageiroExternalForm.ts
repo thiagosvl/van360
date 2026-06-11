@@ -195,9 +195,27 @@ export function usePassageiroExternalForm() {
 
       setSuccess(true);
     } catch (error: any) {
-      toast.error("sistema.erro.enviarDados", {
-        description: error.message || "Tente novamente mais tarde.",
-      });
+      if (error.response?.data?.details) {
+        const issues = error.response.data.details;
+        issues.forEach((issue: any) => {
+          const field = issue.path.join('.');
+          form.setError(field as any, { type: 'manual', message: issue.message });
+        });
+        toast.error("validacao.formularioComErros");
+        
+        setOpenAccordionItems([
+          "passageiro",
+          "responsavel",
+          "cobranca",
+          "endereco",
+          "observacoes",
+        ]);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        toast.error("sistema.erro.enviarDados", {
+          description: error.response?.data?.error || error.message || "Tente novamente mais tarde.",
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -208,6 +226,7 @@ export function usePassageiroExternalForm() {
 
     form.reset({
       nome_responsavel: currentValues.nome_responsavel,
+      parentesco_responsavel: currentValues.parentesco_responsavel,
       email_responsavel: currentValues.email_responsavel,
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,

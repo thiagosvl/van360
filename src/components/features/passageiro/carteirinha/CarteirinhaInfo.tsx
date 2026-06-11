@@ -20,6 +20,7 @@ import {
 } from "@/utils/formatters";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { phoneMask } from "@/utils/masks";
+import { openBrowserLink } from "@/utils/browser";
 import {
   Bus,
   Calendar,
@@ -101,9 +102,8 @@ const ProfileActions = ({
       <Button
         size="icon"
         onClick={() =>
-          window.open(
-            `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`,
-            "_blank",
+          openBrowserLink(
+            `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`
           )
         }
         className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"

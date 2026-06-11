@@ -74,14 +74,15 @@ export default function Veiculos() {
                 : "Comece cadastrando seu primeiro veículo para gerenciar a frota."
             }
             action={
-              !searchTerm && !hasActiveFilters
+              (searchTerm || hasActiveFilters)
                 ? {
-                  label: "Cadastrar Veículo",
-                  onClick: () => {
-                    handleRegister();
-                  },
+                  label: "Limpar Filtros",
+                  onClick: clearFilters,
                 }
-                : undefined
+                : {
+                  label: "Cadastrar Veículo",
+                  onClick: handleRegister,
+                }
             }
           />
         ) : (

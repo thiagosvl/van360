@@ -3,11 +3,13 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { Passageiro } from "@/types/passageiro";
+
 export function useCreatePassageiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => passageiroApi.createPassageiro(data),
+    mutationFn: (data: Partial<Passageiro> & { usuario_id: string }) => passageiroApi.createPassageiro(data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
@@ -31,7 +33,7 @@ export function useUpdatePassageiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Passageiro> }) =>
       passageiroApi.updatePassageiro(id, data),
     onError: (error: any, variables) => {
       toast.error("passageiro.erro.atualizar", {
@@ -137,7 +139,7 @@ export function useFinalizePreCadastro() {
       data,
     }: {
       prePassageiroId: string;
-      data: any & { usuario_id: string; };
+      data: Partial<Passageiro> & { usuario_id: string; };
     }) =>
       passageiroApi.finalizePreCadastro(
         prePassageiroId,

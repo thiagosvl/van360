@@ -40,7 +40,6 @@ export enum CobrancaTipoPagamento {
   CARTAO_DEBITO = "cartao-debito"
 }
 
-
 export enum PassageiroTab {
   PASSAGEIROS = "passageiros",
   SOLICITACOES = "solicitacoes",
@@ -175,13 +174,14 @@ export enum AtividadeAcao {
 }
 
 export enum GastoCategoria {
-  SALARIO = "Salário",
-  COMBUSTIVEL = "Combustível",
-  MANUTENCAO = "Manutenção",
-  VISTORIAS = "Vistorias",
-  DOCUMENTACAO = "Documentação",
-  ADMINISTRATIVA = "Administrativa",
-  OUTRO = "Outro"
+  COMBUSTIVEL = "combustivel",
+  MANUTENCAO = "manutencao",
+  IMPOSTOS = "impostos",
+  MULTAS = "multas",
+  LAVAGEM = "lavagem",
+  ALIMENTACAO = "alimentacao",
+  SEGURO = "seguro",
+  OUTROS = "outros"
 }
 
 export enum ContratoProvider {

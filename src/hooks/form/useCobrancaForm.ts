@@ -179,7 +179,7 @@ export function useCobrancaForm({
        return;
     }
 
-    const valorNumerico = data.valor;
+    const valorNumerico = typeof data.valor === 'string' ? parseCurrencyToNumber(data.valor) : data.valor;
     
     // Persistência segura em Brasília
     const dataVencimentoStr = toPersistenceString(data.data_vencimento);

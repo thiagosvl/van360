@@ -76,6 +76,8 @@ export function useRegisterController() {
       const referralCode = localStorage.getItem("van360_referral_code") || undefined;
       const result = await usuarioApi.registrar({
         ...data,
+        cpfcnpj: data.cpfcnpj?.replace(/\D/g, ""),
+        telefone: data.telefone?.replace(/\D/g, ""),
         indicador_id: referralCode,
       });
       if (result?.error) throw new Error(result.error);

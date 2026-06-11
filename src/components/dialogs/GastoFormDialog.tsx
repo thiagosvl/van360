@@ -25,7 +25,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
+import { CATEGORIAS_GASTOS, GASTO_CATEGORIA_LABELS, Gasto } from "@/types/gasto";
+import { GastoCategoria } from "@/types/enums";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { moneyMask } from "@/utils/masks";
@@ -213,7 +214,7 @@ export default function GastoFormDialog({
                     <SelectContent className="max-h-60 overflow-y-auto">
                       {CATEGORIAS_GASTOS.map((cat) => (
                         <SelectItem key={cat} value={cat}>
-                          {cat}
+                          {GASTO_CATEGORIA_LABELS[cat as GastoCategoria] || cat}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -145,10 +145,13 @@ export default function Passageiros() {
                       icon={Users2}
                       title="Nenhum passageiro encontrado"
                       description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."}
-                      action={searchTerm.length === 0 ? {
+                      action={(hasActiveFilters || searchTerm.length > 0) ? {
+                        label: "Limpar Filtros",
+                        onClick: clearFilters
+                      } : {
                         label: "Cadastrar Passageiro",
                         onClick: () => setIsPassengerDrawerOpen(true)
-                      } : undefined}
+                      }}
                     />
                   ) : (
                     <PassageirosList

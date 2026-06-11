@@ -3,6 +3,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Usuario } from "@/types/usuario";
 import { isMobilePlatform } from "@/utils/detectPlatform";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { openBrowserLink } from "@/utils/browser";
 import { Copy, CopyCheck, MessageCircle, UserPlus } from "lucide-react";
 import { useState } from "react";
 
@@ -46,7 +47,7 @@ export function PassengerOnboardingDrawer({
     const text = encodeURIComponent(`Olá! Aqui está o link para o cadastro do passageiro na nossa van: ${link}`);
     const whatsappUrl = `https://api.whatsapp.com/send?text=${text}`;
 
-    window.open(whatsappUrl, "_blank");
+    openBrowserLink(whatsappUrl);
   };
 
   const actions: ActionSheetItem[] = [

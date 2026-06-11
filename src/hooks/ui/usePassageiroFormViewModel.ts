@@ -13,6 +13,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { phoneMask } from "@/utils/masks";
+import { parseCurrencyToNumber } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
@@ -161,11 +162,22 @@ export function usePassageiroFormViewModel({
 
     const purePayload = { ...data };
 
+    if (purePayload.email_responsavel) {
+      purePayload.email_responsavel = purePayload.email_responsavel.toLowerCase().trim();
+    }
+    if (purePayload.cep) {
+      purePayload.cep = purePayload.cep.replace(/\D/g, "");
+    }
+
     if (purePayload.data_nascimento) {
       purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
     }
     if (purePayload.data_inicio_transporte) {
       purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
+    }
+    
+    if (typeof purePayload.valor_cobranca === "string") {
+      purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca) as any;
     }
 
     const commonOptions = {

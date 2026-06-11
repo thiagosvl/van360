@@ -146,6 +146,7 @@ export default function Cobrancas() {
               busca={buscaAReceber}
               mesFilter={mesFilter}
               meses={meses}
+              onClearSearch={() => setBusca("")}
               {...actionProps}
             />
           </TabsContent>
@@ -158,6 +159,7 @@ export default function Cobrancas() {
               busca={buscaRecebidos}
               mesFilter={mesFilter}
               meses={meses}
+              onClearSearch={() => setBusca("")}
               {...actionProps}
             />
           </TabsContent>

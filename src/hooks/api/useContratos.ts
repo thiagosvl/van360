@@ -104,9 +104,16 @@ export function useSubstituirContrato() {
   });
 }
 
+export interface PreviewConfig {
+  clausulas?: string[];
+  multaAtraso?: { valor: number; tipo: "percentual" | "fixo" };
+  multaRescisao?: { valor: number; tipo: "percentual" | "fixo" };
+  assinaturaCondutorUrl?: string | null;
+}
+
 export function usePreviewContrato() {
   return useMutation({
-    mutationFn: async (draftConfig?: any) => {
+    mutationFn: async (draftConfig?: PreviewConfig) => {
       const data = await contratoApi.previewContrato(draftConfig);
       const blob = new Blob([data as any], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);

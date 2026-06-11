@@ -201,10 +201,15 @@ export default function EscolaFormDialog({
   const handleSubmit = async (data: EscolaFormData) => {
     if (!profile?.id) return;
 
+    const payload = { ...data };
+    if (payload.cep) {
+      payload.cep = payload.cep.replace(/\D/g, "");
+    }
+
     if (
       editingEscola &&
       editingEscola.ativo &&
-      data.ativo === false &&
+      payload.ativo === false &&
       editingEscola.passageiros_ativos_count > 0
     ) {
       toast.error("escola.erro.desativar", {
@@ -215,7 +220,7 @@ export default function EscolaFormDialog({
 
     if (editingEscola == null) {
       createEscola.mutate(
-        { usuarioId: profile.id, data },
+        { usuarioId: profile.id, data: payload },
         {
           onSuccess: (escolaSalva) => {
             onSuccess(escolaSalva, keepOpen);
@@ -258,7 +263,7 @@ export default function EscolaFormDialog({
       );
     } else {
       updateEscola.mutate(
-        { id: editingEscola.id, data },
+        { id: editingEscola.id, data: payload },
         {
           onSuccess: (escolaSalvo) => {
             onSuccess(escolaSalvo);

@@ -217,7 +217,7 @@ export function PassageirosList({
                       })}
                     </span>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
+                  <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <PassageiroActionsMenu
                       passageiro={passageiro}
                       onHistorico={props.onHistorico}

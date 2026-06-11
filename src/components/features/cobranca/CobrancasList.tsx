@@ -45,6 +45,7 @@ interface CobrancasListProps {
   onDesfazerPagamento?: (cobranca: Cobranca) => void;
   onVerRecibo: (url: string) => void;
   onActionSuccess: () => void;
+  onClearSearch?: () => void;
 }
 
 const CobrancaMobileCard = memo(function CobrancaMobileCard({
@@ -168,6 +169,7 @@ export function CobrancasList({
   activeTab,
   isLoading,
   busca,
+  onClearSearch,
   ...props
 }: CobrancasListProps) {
 
@@ -181,6 +183,7 @@ export function CobrancasList({
           icon={Wallet}
           title="Nenhum resultado"
           description="Tente buscar por outro nome ou termo."
+          action={onClearSearch ? { label: "Limpar Busca", onClick: onClearSearch } : undefined}
         />
       );
     }
@@ -300,7 +303,7 @@ export function CobrancasList({
                     </div>
                   </TableCell>
 
-                  <TableCell className="px-6 py-4 text-right">
+                  <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <CobrancaActionsMenu
                       cobranca={cobranca}
                       onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}

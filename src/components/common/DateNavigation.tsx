@@ -36,6 +36,7 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
           "w-10 h-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-90 duration-200 disabled:opacity-20",
           disabled && "cursor-not-allowed"
         )}
+        aria-label="Mês anterior"
       >
         <ChevronLeft className="h-[22px] w-[22px]" />
       </button>
@@ -56,6 +57,7 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
           "w-10 h-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-90 duration-200 disabled:opacity-20",
           disabled && "cursor-not-allowed"
         )}
+        aria-label="Próximo mês"
       >
         <ChevronRight className="h-[22px] w-[22px]" />
       </button>

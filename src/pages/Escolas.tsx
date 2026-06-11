@@ -72,14 +72,17 @@ export default function Escolas() {
                 : "Cadastre as escolas que você atende para organizar seus passageiros."
             }
             action={
-              !searchTerm && !hasActiveFilters
+              (searchTerm || hasActiveFilters)
                 ? {
+                  label: "Limpar Filtros",
+                  onClick: clearFilters,
+                }
+                : {
                   label: "Cadastrar Escola",
                   onClick: () => {
                     openEscolaFormDialog();
                   },
                 }
-                : undefined
             }
           />
         ) : (

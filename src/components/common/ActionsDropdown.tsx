@@ -54,6 +54,7 @@ export function ActionsDropdown({
         size={triggerSize}
         className={cn("text-gray-300 cursor-not-allowed opacity-30", triggerClassName)}
         disabled
+        aria-label="Abrir menu de ações"
       >
         <MoreVertical className="h-4 w-4" />
       </Button>
@@ -71,6 +72,7 @@ export function ActionsDropdown({
       onClick={(e) => {
         e.stopPropagation();
       }}
+      aria-label="Abrir menu de ações"
     >
       <MoreVertical className="h-4 w-4" />
     </Button>

@@ -542,7 +542,7 @@ export default function PassageiroCarteirinha() {
       const hasUrl = passageiro.contrato_url || passageiro.minuta_url;
 
       if (isAssinado || (isPendente && hasUrl)) {
-        window.open(passageiro.contrato_url || passageiro.minuta_url, "_blank");
+        openBrowserLink(passageiro.contrato_url || passageiro.minuta_url);
       } else {
         openConfirmationDialog({
           title: "Gerar contrato?",
