@@ -65,44 +65,48 @@ const Contratos = () => {
 
             {/* Banner: Não Configurado */}
             {!isContratoAtivo && !isContratoConfigurado && (
-              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/60 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1">
-                <div className="flex items-start gap-3 flex-1">
-                  <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-amber-900 tracking-tight">Você ainda não configurou os contratos</h4>
-                    <p className="text-xs text-amber-800/80 leading-relaxed font-medium">
+              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-100 text-amber-600 shrink-0">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-amber-900 tracking-tight">Você ainda não configurou os contratos</p>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
                       Ative e configure essa funcionalidade para gerar contratos em PDF automaticamente para seus passageiros.
                     </p>
                   </div>
                 </div>
-                <Button
+                <button
                   onClick={handleOpenContractSetup}
-                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs h-10 px-5 rounded-xl whitespace-nowrap shadow-sm w-full sm:w-auto shrink-0"
+                  className="px-4 py-2 bg-amber-600 text-white text-[11px] font-bold rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200 shrink-0 active:scale-95 w-full sm:w-auto"
                 >
                   Configurar Agora
-                </Button>
+                </button>
               </div>
             )}
 
             {/* Banner: Desativado (Mas já configurado) */}
             {!isContratoAtivo && isContratoConfigurado && (
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1">
-                <div className="flex items-start gap-3 flex-1">
-                  <AlertCircle className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</h4>
-                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-200 text-slate-600 shrink-0">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</p>
+                    <p className="text-[11px] text-slate-700 leading-relaxed">
                       A emissão e o gerenciamento de contratos em PDF para seus passageiros estão desativados. Reative para voltar a utilizar.
                     </p>
                   </div>
                 </div>
-                <Button
+                <button
                   onClick={() => handleToggleContracts(true)}
                   disabled={isToggling}
-                  className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs h-10 px-5 rounded-xl whitespace-nowrap shadow-sm w-full sm:w-auto shrink-0"
+                  className="px-4 py-2 bg-[#1a3a5c] text-white text-[11px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-slate-200 shrink-0 active:scale-95 w-full sm:w-auto disabled:opacity-50"
                 >
                   Reativar Contratos
-                </Button>
+                </button>
               </div>
             )}
 

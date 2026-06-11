@@ -110,7 +110,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                 name="tipo_chave_pix"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">Tipo de Chave Pix</FormLabel>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">Tipo de Chave Pix</FormLabel>
                     <Select
                       onValueChange={(val) => {
                         const selecionado = (val || null) as TipoChavePix | null;
@@ -171,7 +171,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                   const tipoChave = form.watch("tipo_chave_pix");
                   return (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium ml-1">Chave Pix</FormLabel>
+                      <FormLabel className="text-slate-700 font-semibold ml-1">Chave Pix</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Digite sua chave Pix"

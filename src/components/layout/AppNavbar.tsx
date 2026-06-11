@@ -144,7 +144,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarCadastroDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <UserPen className="h-4 w-4 text-slate-400" />
-                Alterar Cadastro
+                Editar Cadastro
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openAlterarSenhaDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Lock className="h-4 w-4 text-slate-400" />
@@ -152,7 +152,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Key className="h-4 w-4 text-slate-400" />
-                Alterar Chave Pix
+                Trocar Chave Pix
               </DropdownMenuItem>
               <div className="h-px bg-gray-50 my-1" />
               <DropdownMenuItem

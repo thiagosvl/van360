@@ -40,7 +40,9 @@ import {
   Route,
   Trash2,
   User,
-  Users
+  Users,
+  Bot,
+  BotOff
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +55,7 @@ export interface CarteirinhaInfoProps {
   onCopyToClipboard: (text: string, label: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
+  onToggleNotificacoesClick: () => void;
   onContractAction: () => void;
   onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   contratosAtivos?: boolean;
@@ -67,10 +70,11 @@ const ProfileActions = ({
   onToggleClick,
   onEditClick,
   onDeleteClick,
+  onToggleNotificacoesClick,
   onEnviarWhatsApp,
 }: Pick<
   CarteirinhaInfoProps,
-  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick" | "onEnviarWhatsApp"
+  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick" | "onToggleNotificacoesClick" | "onEnviarWhatsApp"
 >) => {
   const isMobile = useIsMobile();
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
@@ -153,6 +157,23 @@ const ProfileActions = ({
           )}
 
           <DropdownMenuItem
+            onClick={onToggleNotificacoesClick}
+            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
+          >
+            {passageiro.enviar_notificacoes ? (
+              <>
+                <BotOff className="h-4 w-4 text-slate-400" />
+                Desativar Notificações e Lembretes
+              </>
+            ) : (
+              <>
+                <Bot className="h-4 w-4 text-slate-400" />
+                Ativar Notificações e Lembretes
+              </>
+            )}
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
             onClick={onDeleteClick}
             className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
           >
@@ -203,7 +224,18 @@ const ProfileSummary = ({
               : "text-rose-500 bg-rose-50",
           )}
         >
-          {passageiro.ativo ? "Ativo" : "Inativo"}
+          {passageiro.ativo ? "Passageiro Ativo" : "Passageiro Inativo"}
+        </Badge>
+        <Badge
+          variant="outline"
+          className={cn(
+            "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
+            passageiro.enviar_notificacoes
+              ? "text-emerald-500 bg-emerald-50"
+              : "text-rose-500 bg-rose-50",
+          )}
+        >
+          {passageiro.enviar_notificacoes ? "Notificações Ativas" : "Notificações Inativas"}
         </Badge>
         {temCobrancasVencidas && (
           <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
@@ -259,6 +291,7 @@ export const CarteirinhaHeader = (
     | "onToggleClick"
     | "onEditClick"
     | "onDeleteClick"
+    | "onToggleNotificacoesClick"
     | "onEnviarWhatsApp"
   >,
 ) => {
@@ -289,6 +322,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
           onToggleClick={props.onToggleClick}
           onEditClick={props.onEditClick}
           onDeleteClick={props.onDeleteClick}
+          onToggleNotificacoesClick={props.onToggleNotificacoesClick}
           onEnviarWhatsApp={props.onEnviarWhatsApp}
         />
       </div>

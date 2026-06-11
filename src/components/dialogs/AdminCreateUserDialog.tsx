@@ -202,7 +202,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
               name="nome"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     Nome Completo <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
@@ -225,7 +225,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     E-mail <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
@@ -252,7 +252,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                   <PhoneInput
                     field={field}
                     label="WhatsApp"
-                    labelClassName="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1"
+                    labelClassName="text-slate-700 font-semibold ml-1"
                     placeholder="(00) 00000-0000"
                     required
                     inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
@@ -265,7 +265,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 name="data_nascimento"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Data de Nascimento <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -294,7 +294,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 name="cpfcnpj"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       CPF <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -319,7 +319,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 name="senha"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Senha Temporária <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>

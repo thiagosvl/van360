@@ -19,7 +19,6 @@ import {
   CarteirinhaHeader,
   CarteirinhaInfo,
   CarteirinhaObservacoes,
-  CarteirinhaNotificacoes
 } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -530,6 +529,30 @@ export default function PassageiroCarteirinha() {
           }
         },
       }),
+    onToggleNotificacoesClick: () => {
+      const isAtivo = !!passageiro.enviar_notificacoes;
+      const action = isAtivo ? "desativar" : "ativar";
+      openConfirmationDialog({
+        title: action === "ativar" ? "Ativar notificações?" : "Desativar notificações?",
+        description: action === "ativar"
+          ? "O passageiro voltará a receber lembretes e notificações de cobrança via WhatsApp."
+          : "O passageiro não receberá mais lembretes e notificações de cobrança via WhatsApp.",
+        confirmText: action === "ativar" ? "Ativar" : "Desativar",
+        variant: action === "desativar" ? "warning" : "default",
+        onConfirm: async () => {
+          try {
+            await updatePassageiro.mutateAsync({
+              id: passageiro.id!,
+              data: { enviar_notificacoes: !isAtivo },
+            });
+            safeCloseDialog(closeConfirmationDialog);
+          } catch (error) {
+            toast.error("Erro ao atualizar a configuração de notificações.");
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        },
+      });
+    },
     onContractAction: () => {
       const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
       const isPendente =
@@ -594,6 +617,7 @@ export default function PassageiroCarteirinha() {
                     onEditClick={handleEditClick}
                     onDeleteClick={infoProps.onDeleteClick}
                     onEnviarWhatsApp={handleEnviarWhatsApp}
+                    onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
                   />
                 </Suspense>
 
@@ -636,9 +660,6 @@ export default function PassageiroCarteirinha() {
                   </TabsContent>
 
                   <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5">
-                    <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
-                      <CarteirinhaNotificacoes passageiro={passageiro} />
-                    </Suspense>
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
                     </Suspense>
@@ -661,9 +682,6 @@ export default function PassageiroCarteirinha() {
 
                 {/* Lado Direito: Mensalidades */}
                 <div className="lg:col-span-8 space-y-6">
-                  <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
-                    <CarteirinhaNotificacoes passageiro={passageiro} />
-                  </Suspense>
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas {...cobrancasProps} />
                   </Suspense>

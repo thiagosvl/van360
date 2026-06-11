@@ -234,14 +234,14 @@ export default function VeiculoFormDialog({
         <Form {...form}>
           <form
             id="veiculo-form"
-            onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-10 pb-6"
+            onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 pb-6"
           >
             <FormField
               name="placa"
               control={form.control}
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 uppercase text-[10px] tracking-wider ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     Placa <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
@@ -268,13 +268,13 @@ export default function VeiculoFormDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FormField
                 name="marca"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 uppercase text-[10px] tracking-wider ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Marca <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -300,7 +300,7 @@ export default function VeiculoFormDialog({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 uppercase text-[10px] tracking-wider ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Modelo <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -337,7 +337,7 @@ export default function VeiculoFormDialog({
                     />
                     <FormLabel
                       htmlFor="ativo"
-                      className="flex-1 cursor-pointer uppercase text-[10px] tracking-wider text-slate-700 m-0"
+                      className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
                     >
                       Veículo Ativo
                     </FormLabel>
@@ -353,11 +353,11 @@ export default function VeiculoFormDialog({
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-5 w-5 rounded-md border-slate-300"
+                  className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none"
+                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
                 >
                   Cadastrar outro em seguida
                 </label>

@@ -150,7 +150,7 @@ export function CobrancaFormContent({
                         name="mes"
                         render={({ field, fieldState }) => (
                             <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Mês <span className="text-red-600">*</span>
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
@@ -181,7 +181,7 @@ export function CobrancaFormContent({
                         name="ano"
                         render={({ field, fieldState }) => (
                             <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Ano <span className="text-red-600">*</span>
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value} disabled>
@@ -230,6 +230,7 @@ export function CobrancaFormContent({
                         field={field}
                         required
                         disabled={shouldDisableValue}
+                        labelClassName="text-slate-700 font-semibold ml-1"
                         inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
                         label="Valor da Mensalidade"
                     />
@@ -243,7 +244,7 @@ export function CobrancaFormContent({
                     name="data_vencimento"
                     render={({ field, fieldState }) => (
                         <FormItem className="flex flex-col">
-                            <FormLabel className="text-gray-700 font-medium ml-1">
+                            <FormLabel className="text-slate-700 font-semibold ml-1">
                                 Data do Vencimento <span className="text-red-600">*</span>
                             </FormLabel>
                             <Popover
@@ -311,7 +312,7 @@ export function CobrancaFormContent({
                                 />
                             </FormControl>
                             <div className="flex-1 space-y-1 leading-none">
-                                <FormLabel className="cursor-pointer font-medium text-gray-700 m-0 mt-0 w-full block">
+                                <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
                                     Esta mensalidade já foi paga?
                                 </FormLabel>
                             </div>
@@ -332,7 +333,7 @@ export function CobrancaFormContent({
                         name="data_pagamento"
                         render={({ field, fieldState }) => (
                             <FormItem className="flex flex-col">
-                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Data do pagamento <span className="text-red-600">*</span>
                                 </FormLabel>
                                 <Popover open={openCalendarPagamento} onOpenChange={setOpenCalendarPagamento}>
@@ -376,7 +377,7 @@ export function CobrancaFormContent({
                         name="tipo_pagamento"
                         render={({ field, fieldState }) => (
                             <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Forma de pagamento <span className="text-red-600">*</span>
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>

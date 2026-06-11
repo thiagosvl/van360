@@ -320,7 +320,7 @@ export default function EscolaFormDialog({
                   name="nome"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium ml-1">
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
                         Nome da Escola <span className="text-red-600">*</span>
                       </FormLabel>
                       <FormControl>
@@ -381,6 +381,7 @@ export default function EscolaFormDialog({
                       <div className="md:col-span-2">
                         <CepInput
                           field={field}
+                          labelClassName="text-slate-700 font-semibold ml-1"
                           inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
                           onLoadingChange={setIsCepLoading}
                         />
@@ -392,7 +393,7 @@ export default function EscolaFormDialog({
                     name="logradouro"
                     render={({ field, fieldState }) => (
                       <FormItem className="md:col-span-4">
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
                           Logradouro
                         </FormLabel>
                         <FormControl>
@@ -413,7 +414,7 @@ export default function EscolaFormDialog({
                     name="numero"
                     render={({ field, fieldState }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
                           Número
                         </FormLabel>
                         <FormControl>
@@ -432,7 +433,7 @@ export default function EscolaFormDialog({
                     name="bairro"
                     render={({ field, fieldState }) => (
                       <FormItem className="md:col-span-4">
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
                           Bairro
                         </FormLabel>
                         <FormControl>
@@ -453,7 +454,7 @@ export default function EscolaFormDialog({
                     name="cidade"
                     render={({ field, fieldState }) => (
                       <FormItem className="md:col-span-4">
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
                           Cidade
                         </FormLabel>
                         <FormControl>
@@ -473,7 +474,7 @@ export default function EscolaFormDialog({
                     name="estado"
                     render={({ field, fieldState }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
                           Estado
                         </FormLabel>
                         <Select
@@ -532,7 +533,7 @@ export default function EscolaFormDialog({
                     name="referencia"
                     render={({ field, fieldState }) => (
                       <FormItem className="col-span-1 md:col-span-6">
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
                           Referência
                         </FormLabel>
                         <FormControl>
@@ -559,11 +560,11 @@ export default function EscolaFormDialog({
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-5 w-5 rounded-md border-slate-300"
+                  className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none"
+                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
                 >
                   Cadastrar outra em seguida
                 </label>
