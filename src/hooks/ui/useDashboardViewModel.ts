@@ -55,8 +55,8 @@ export function useDashboardViewModel() {
     const completedStepsCount = [
       contadores.veiculos > 0,
       contadores.escolas > 0,
-      contadores.passageiros > 0,
       !!profile?.chave_pix && !!profile?.tipo_chave_pix,
+      contadores.passageiros > 0,
     ].filter(Boolean).length;
 
     return {

@@ -60,19 +60,19 @@ export const QuickStartCard = ({
       },
       {
         id: 3,
-        done: passageirosCount > 0,
-        label: "Cadastrar Primeiro Passageiro",
-        onAction: () => setIsPassengerDrawerOpen(true),
-        icon: User,
-        buttonText: "Cadastrar",
-      },
-      {
-        id: 4,
         done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
         label: "Configurar Chave Pix",
         onAction: openEditarPixDialog,
         icon: Key,
         buttonText: "Configurar",
+      },
+      {
+        id: 4,
+        done: passageirosCount > 0,
+        label: "Cadastrar Primeiro Passageiro",
+        onAction: () => setIsPassengerDrawerOpen(true),
+        icon: User,
+        buttonText: "Cadastrar",
       },
     ];
 
