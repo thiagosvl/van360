@@ -162,20 +162,34 @@ export function usePassageiroFormViewModel({
 
     const purePayload = { ...data };
 
-    if (purePayload.email_responsavel) {
-      purePayload.email_responsavel = purePayload.email_responsavel.toLowerCase().trim();
-    }
-    if (purePayload.cep) {
-      purePayload.cep = purePayload.cep.replace(/\D/g, "");
-    }
+    purePayload.email_responsavel = purePayload.email_responsavel?.trim()
+      ? purePayload.email_responsavel.toLowerCase().trim()
+      : null;
 
-    if (purePayload.data_nascimento) {
-      purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
-    }
-    if (purePayload.data_inicio_transporte) {
-      purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
-    }
-    
+    purePayload.cep = purePayload.cep?.replace(/\D/g, "") || null;
+    purePayload.cpf_responsavel = purePayload.cpf_responsavel?.replace(/\D/g, "") || null;
+
+    purePayload.data_nascimento = purePayload.data_nascimento
+      ? convertDateBrToISO(purePayload.data_nascimento)
+      : null;
+
+    purePayload.data_inicio_transporte = purePayload.data_inicio_transporte
+      ? convertDateBrToISO(purePayload.data_inicio_transporte)
+      : null;
+
+    purePayload.genero = purePayload.genero || null;
+    purePayload.periodo = purePayload.periodo || null;
+    purePayload.modalidade = purePayload.modalidade || null;
+    purePayload.parentesco_responsavel = purePayload.parentesco_responsavel || null;
+
+    purePayload.logradouro = purePayload.logradouro || null;
+    purePayload.numero = purePayload.numero || null;
+    purePayload.bairro = purePayload.bairro || null;
+    purePayload.cidade = purePayload.cidade || null;
+    purePayload.estado = purePayload.estado || null;
+    purePayload.referencia = purePayload.referencia || null;
+    purePayload.observacoes = purePayload.observacoes || null;
+
     if (typeof purePayload.valor_cobranca === "string") {
       purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca) as any;
     }

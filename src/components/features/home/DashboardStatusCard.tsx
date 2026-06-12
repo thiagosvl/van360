@@ -67,12 +67,13 @@ export const DashboardStatusCard = ({
   return (
     <div
       className={cn(
-        "mb-6 border rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500",
+        "mb-6 border rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500",
         style.wrapperBg,
         style.borderColor,
         className
       )}
     >
+      <div className="flex items-center gap-4 flex-1 w-full">
       <div
         className={cn(
           "h-10 w-10 flex items-center justify-center rounded-xl shrink-0",
@@ -86,11 +87,12 @@ export const DashboardStatusCard = ({
         <p className={cn("text-xs font-bold", style.titleColor)}>{title}</p>
         <p className={cn("text-[11px]", style.descColor)}>{description}</p>
       </div>
+      </div>
       {actionLabel && (
         <button
           onClick={onAction}
           className={cn(
-            "px-4 py-2 text-white text-[11px] font-bold rounded-xl transition-all shadow-sm shrink-0 active:scale-95 flex items-center gap-1",
+            "px-4 py-2 text-white text-[11px] font-bold rounded-xl transition-all shadow-sm shrink-0 active:scale-95 flex items-center justify-center gap-1 w-full sm:w-auto",
             style.buttonBg
           )}
         >

@@ -1,0 +1,123 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { moneyToNumber } from "@/utils/masks";
+import { useState } from "react";
+import { apiClient } from "@/services/api/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/utils/notifications/toast";
+import { mockGenerator } from "@/utils/mocks/generator";
+import { phoneMask } from "@/utils/masks";
+import { Passageiro } from "@/types/passageiro";
+
+export const quickStartPassageiroSchema = z.object({
+  nome: z.string({ required_error: "Campo obrigatório" })
+    .min(1, "Campo obrigatório")
+    .min(2, "Deve ter pelo menos 2 caracteres"),
+  nome_responsavel: z.string({ required_error: "Campo obrigatório" })
+    .min(1, "Campo obrigatório")
+    .min(2, "Deve ter pelo menos 2 caracteres"),
+  telefone_responsavel: z.string({ required_error: "Campo obrigatório" })
+    .min(1, "Campo obrigatório")
+    .refine((val) => {
+      const nums = val.replace(/\D/g, "");
+      return nums.length >= 10 && nums.length <= 11;
+    }, "Telefone inválido"),
+  valor_cobranca: z
+    .string({ required_error: "Campo obrigatório" })
+    .min(1, "Campo obrigatório")
+    .refine((val) => {
+      const num = moneyToNumber(val);
+      return num >= 1;
+    }, "O valor deve ser no mínimo R$ 1,00"),
+  dia_vencimento: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  escola_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  veiculo_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+});
+
+export type QuickStartPassageiroFormData = z.infer<typeof quickStartPassageiroSchema>;
+
+interface UsePassageiroQuickStartFormProps {
+  onSuccess?: (passageiro?: Passageiro) => void;
+  usuarioId?: string;
+}
+
+export function usePassageiroQuickStartForm({ onSuccess, usuarioId }: UsePassageiroQuickStartFormProps) {
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<QuickStartPassageiroFormData>({
+    resolver: zodResolver(quickStartPassageiroSchema),
+    defaultValues: {
+      nome: "",
+      nome_responsavel: "",
+      telefone_responsavel: "",
+      valor_cobranca: "",
+      dia_vencimento: "",
+      escola_id: "",
+      veiculo_id: "",
+    },
+    mode: "onChange",
+  });
+
+  const handleSubmit = async (data: QuickStartPassageiroFormData) => {
+    try {
+      setIsSubmitting(true);
+
+      const payload = {
+        ...data,
+        telefone_responsavel: String(data.telefone_responsavel || "").replace(/\D/g, ""),
+        valor_cobranca: moneyToNumber(String(data.valor_cobranca)),
+        dia_vencimento: parseInt(String(data.dia_vencimento)),
+        escola_id: data.escola_id,
+        veiculo_id: data.veiculo_id,
+        ativo: true,
+        usuario_id: usuarioId, // se fornecido pelo contexto externo/store de profile
+      };
+
+      const response = await apiClient.post("/passageiros", payload);
+
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+
+      toast.success("Passageiro cadastrado com sucesso!");
+
+      if (onSuccess) {
+        onSuccess(response.data);
+      }
+    } catch (error: any) {
+      toast.error("Erro ao salvar passageiro", {
+        description: error.response?.data?.error || "Verifique os dados e tente novamente",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onFormError = () => {
+    toast.error("Formulário incompleto", {
+      description: "Por favor, preencha todos os campos obrigatórios."
+    });
+  };
+
+  const handleFillMock = () => {
+    if (import.meta.env.DEV) {
+      const mockPassenger = mockGenerator.passenger();
+      form.setValue("nome", mockPassenger.nome);
+      form.setValue("nome_responsavel", mockPassenger.nome_responsavel || "Responsável Teste");
+      form.setValue("telefone_responsavel", phoneMask(mockPassenger.telefone_responsavel));
+      form.setValue("valor_cobranca", mockPassenger.valor_cobranca);
+      form.setValue("dia_vencimento", mockPassenger.dia_vencimento);
+      form.setValue("escola_id", mockPassenger.escola_id || "");
+      form.setValue("veiculo_id", mockPassenger.veiculo_id || "");
+    }
+  };
+
+  return {
+    form,
+    isSubmitting,
+    handleSubmit,
+    onFormError,
+    handleFillMock,
+  };
+}

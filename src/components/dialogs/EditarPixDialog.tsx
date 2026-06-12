@@ -42,6 +42,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   const originalTipoRef = React.useRef<TipoChavePix | null>(null);
   const originalChaveRef = React.useRef<string>("");
+  const showWarningRef = React.useRef<boolean>(false);
+  const initializedRef = React.useRef<boolean>(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(pixKeySchemaRequired),
@@ -50,6 +52,11 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   React.useEffect(() => {
     if (isOpen && profile) {
+      if (!initializedRef.current) {
+        showWarningRef.current = !profile.chave_pix;
+        initializedRef.current = true;
+      }
+
       const tipo = (profile.tipo_chave_pix as TipoChavePix) || null;
       let chave = profile.chave_pix || "";
 
@@ -65,6 +72,10 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         tipo_chave_pix: tipo,
         chave_pix: chave,
       });
+    }
+    
+    if (!isOpen) {
+      initializedRef.current = false;
     }
   }, [isOpen, profile, form]);
 
@@ -83,8 +94,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         description: "cadastro.sucesso.perfilAtualizadoDescricao",
       });
 
-      await refreshProfile();
       onClose();
+      refreshProfile();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar as alterações.";
       toast.error("cadastro.erro.atualizar", { description: errorMessage });
@@ -106,7 +117,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
-              {!profile?.chave_pix && (
+              {showWarningRef.current && (
                 <Alert className="bg-blue-50 border-blue-100/50">
                   <Info className="h-4 w-4 text-blue-500" />
                   <AlertDescription className="text-blue-700 text-[13px] ml-1">
@@ -190,8 +201,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                           type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
                           inputMode={
                             tipoChave === TipoChavePix.CPF ||
-                            tipoChave === TipoChavePix.CNPJ ||
-                            tipoChave === TipoChavePix.TELEFONE
+                              tipoChave === TipoChavePix.CNPJ ||
+                              tipoChave === TipoChavePix.TELEFONE
                               ? "numeric"
                               : "text"
                           }
@@ -222,11 +233,11 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         )}
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting || form.formState.isSubmitSuccessful} />
         <BaseDialog.Action
           label="Salvar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
-          isLoading={form.formState.isSubmitting}
+          isLoading={form.formState.isSubmitting || form.formState.isSubmitSuccessful}
         />
       </BaseDialog.Footer>
     </BaseDialog>

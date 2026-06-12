@@ -39,6 +39,7 @@ export function usePassageirosViewModel() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openPassageiroFormDialog,
+    openQuickStartPassageiroDialog,
     openFirstChargeDialog,
   } = useLayout();
 
@@ -256,8 +257,7 @@ export function usePassageirosViewModel() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
-    openPassageiroFormDialog({
-      mode: PassageiroFormModes.CREATE,
+    openQuickStartPassageiroDialog({
       onSuccess: (passageiro) => {
         refetchPassageiros();
         if (passageiro) {
@@ -265,7 +265,7 @@ export function usePassageirosViewModel() {
         }
       },
     });
-  }, [openPassageiroFormDialog, openFirstChargeDialog, refetchPassageiros]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, refetchPassageiros]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;

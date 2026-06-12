@@ -538,12 +538,12 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* Rota de Embarque / Endereço */}
+      {/* Endereço */}
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
         <div className="flex items-center gap-2">
           <MapPin className="h-3.5 w-3.5 text-slate-400" />
           <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-            Rota de Embarque
+            Endereço
           </span>
         </div>
         <div className="flex items-start justify-between gap-3">

@@ -173,14 +173,16 @@ const Home = () => {
                 />
               </>
             )}
-            <KPICard
-              className={cn(!onboarding.showOnboarding && "col-span-2 lg:col-span-1")}
-              label="Passageiros Ativos"
-              value={contadores.passageirosAtivos}
-              icon={Users}
-              variant={KPICardVariant.OUTLINE}
-              loading={isLoading}
-            />
+            {contadores.passageirosAtivos > 0 && (
+              <KPICard
+                className={cn(!onboarding.showOnboarding && "col-span-2 lg:col-span-1")}
+                label="Passageiros Ativos"
+                value={contadores.passageirosAtivos}
+                icon={Users}
+                variant={KPICardVariant.OUTLINE}
+                loading={isLoading}
+              />
+            )}
           </div>
 
           {/* Acessos Rápidos */}

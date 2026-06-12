@@ -263,7 +263,7 @@ export default function VeiculoFormDialog({
                       />
                     </div>
                   </FormControl>
-                  <FormMessage className="text-[10px] uppercase italic ml-1" />
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -291,7 +291,7 @@ export default function VeiculoFormDialog({
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[10px] uppercase italic ml-1" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -317,7 +317,7 @@ export default function VeiculoFormDialog({
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[10px] uppercase italic ml-1" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />

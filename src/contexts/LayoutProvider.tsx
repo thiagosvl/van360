@@ -19,7 +19,8 @@ import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps } from "./LayoutContext";
+import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -85,6 +86,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [passageiroFormDialogState, setPassageiroFormDialogState] = useState<{
     open: boolean;
     props?: OpenPassageiroFormProps;
+  }>({
+    open: false,
+  });
+
+  const [quickStartPassageiroState, setQuickStartPassageiroState] = useState<{
+    open: boolean;
+    props?: OpenQuickStartPassageiroProps;
   }>({
     open: false,
   });
@@ -223,6 +231,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openQuickStartPassageiroDialog = (props?: OpenQuickStartPassageiroProps) => {
+    setQuickStartPassageiroState({
+      open: true,
+      props,
+    });
+  };
+
   const openGastoFormDialog = (props?: OpenGastoFormProps) => {
     setGastoFormDialogState({
       open: true,
@@ -315,6 +330,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openEscolaFormDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
+        openQuickStartPassageiroDialog,
         openGastoFormDialog,
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
@@ -436,6 +452,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           prePassageiro={passageiroFormDialogState.props?.prePassageiro}
           profile={profile}
+        />
+      )}
+
+      {quickStartPassageiroState.open && (
+        <QuickStartPassageiroDialog
+          isOpen={true}
+          onClose={() => setQuickStartPassageiroState({ open: false })}
+          onSuccess={quickStartPassageiroState.props?.onSuccess}
+          usuarioId={profile?.id}
         />
       )}
 

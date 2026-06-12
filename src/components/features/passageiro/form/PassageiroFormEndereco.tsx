@@ -20,7 +20,11 @@ import { MapPin } from "lucide-react";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
-export function PassageiroFormEndereco() {
+interface PassageiroFormEnderecoProps {
+  isExternal?: boolean;
+}
+
+export function PassageiroFormEndereco({ isExternal = false }: PassageiroFormEnderecoProps) {
   const form = useFormContext();
   const [isCepLoading, setIsCepLoading] = useState(false);
 
@@ -40,7 +44,7 @@ export function PassageiroFormEndereco() {
           render={({ field }) => (
             <CepInput
               field={field}
-              required
+              required={isExternal}
               label="CEP"
               className="md:col-span-2"
               labelClassName="text-slate-700 font-semibold ml-1"
@@ -55,7 +59,7 @@ export function PassageiroFormEndereco() {
           render={({ field, fieldState }) => (
             <FormItem className="md:col-span-4">
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                Logradouro <span className="text-red-600">*</span>
+                Logradouro {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -79,7 +83,7 @@ export function PassageiroFormEndereco() {
           render={({ field, fieldState }) => (
             <FormItem className="md:col-span-2">
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                Número <span className="text-red-600">*</span>
+                Número {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -100,7 +104,7 @@ export function PassageiroFormEndereco() {
           render={({ field, fieldState }) => (
             <FormItem className="md:col-span-4">
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                Bairro <span className="text-red-600">*</span>
+                Bairro {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -123,7 +127,7 @@ export function PassageiroFormEndereco() {
           render={({ field, fieldState }) => (
             <FormItem className="md:col-span-4">
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                Cidade <span className="text-red-600">*</span>
+                Cidade {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -146,11 +150,11 @@ export function PassageiroFormEndereco() {
           render={({ field, fieldState }) => (
             <FormItem className="md:col-span-2">
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                Estado <span className="text-red-600">*</span>
+                Estado {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <Select
                 onValueChange={field.onChange}
-                value={field.value}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger

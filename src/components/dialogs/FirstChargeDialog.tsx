@@ -86,15 +86,12 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
       <BaseDialog.Body>
         {step === "CONTRACT_CHECK" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <FileText className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
+            <div className="py-2">
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold text-slate-700">
                   Gerar contrato?
                 </h2>
-                <p className="text-[13px] text-slate-500 font-medium leading-relaxed pr-2">
+                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                   Gostaria de gerar o contrato para{" "}
                   <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong> e já envia-lo automaticamente para o responsável?
                 </p>
@@ -153,15 +150,12 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
         {step === "REGISTER_CHECK" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
+            <div className="py-2">
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold text-slate-700">
                   Registrar primeira mensalidade?
                 </h2>
-                <p className="text-[13px] text-slate-500 font-medium leading-relaxed pr-2">
+                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                   Gostaria de registrar a mensalidade de{" "}
                   <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para{" "}
                   <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
@@ -218,12 +212,9 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
         {step === "PAYMENT_STATUS" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">O responsável já pagou {currentMonthNameCapitalized}?</h3>
+            <div className="py-2">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-slate-700">O responsável já pagou {currentMonthNameCapitalized}?</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
                   {firstNamePassageiro} <span className="text-slate-300">({firstNameResponsavel})</span>
                 </p>
@@ -280,12 +271,9 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
         {step === "PAYMENT_METHOD" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">Forma de pagamento</h3>
+            <div className="py-2">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-slate-700">Forma de pagamento</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Como o pagamento foi realizado?</p>
               </div>
             </div>

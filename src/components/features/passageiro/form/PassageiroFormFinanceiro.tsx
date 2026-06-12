@@ -51,6 +51,7 @@ export function PassageiroFormFinanceiro({
               <MoneyInput
                 field={field}
                 label="Valor"
+                required={!isExternal}
                 labelClassName="text-slate-700 font-semibold ml-1"
                 inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
               />
@@ -62,9 +63,9 @@ export function PassageiroFormFinanceiro({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Dia do Vencimento <span className={cn("text-red-600", isExternal && "hidden")}>*</span>
+                  Dia do Vencimento {!isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || undefined}>
                   <FormControl>
                     <div className="relative">
                       <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
@@ -98,7 +99,7 @@ export function PassageiroFormFinanceiro({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Início do Transporte <span className="text-red-600">*</span>
+                  Início do Transporte {isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <FormControl>
                   <Input

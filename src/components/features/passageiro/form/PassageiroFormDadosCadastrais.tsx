@@ -93,7 +93,7 @@ export function PassageiroFormDadosCadastrais({
                     Veículo <span className="text-red-600">*</span>
                   </FormLabel>
                   <Select
-                    value={field.value}
+                    value={field.value || undefined}
                     onValueChange={(value) => {
                       if (value === "add-new-vehicle") {
                         handleAddNewVehicle();
@@ -142,7 +142,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Data de Nascimento <span className="text-red-600">*</span>
+                  Data de Nascimento {isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -168,11 +168,11 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Gênero <span className="text-red-600">*</span>
+                  Gênero {isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  value={field.value}
+                  value={field.value || undefined}
                 >
                   <FormControl>
                     <SelectTrigger
@@ -246,7 +246,7 @@ export function PassageiroFormDadosCadastrais({
                   Escola <span className={cn("text-red-600", isExternal && "hidden")}>*</span>
                 </FormLabel>
                 <Select
-                  value={field.value}
+                  value={field.value || undefined}
                   onValueChange={(value) => {
                     if (value === "add-new-school") {
                       handleAddNewSchool();
@@ -313,11 +313,11 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Período <span className={cn("text-red-600", isExternal && "hidden")}>*</span>
+                  Período
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  value={field.value}
+                  value={field.value || undefined}
                 >
                   <FormControl>
                     <div className="relative">
@@ -352,11 +352,11 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Modalidade <span className="text-red-600">*</span>
+                  Modalidade {isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  value={field.value}
+                  value={field.value || undefined}
                 >
                   <FormControl>
                     <div className="relative"> <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />

@@ -30,7 +30,7 @@ const getPeriodoSuffix = (periodo?: PassageiroPeriodo) => {
     [PassageiroPeriodo.NOITE]: formatPeriodo(PassageiroPeriodo.NOITE),
     [PassageiroPeriodo.INTEGRAL]: formatPeriodo(PassageiroPeriodo.INTEGRAL),
   };
-  return labels[periodo || ""] || "N/I";
+  return labels[periodo || ""];
 };
 
 interface PassageirosListProps {
@@ -186,14 +186,16 @@ export function PassageirosList({
                     <div className="flex flex-col gap-1">
                       <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                         {passageiro.escola?.nome || "Não informada"}
-                        <span
-                          className={cn(
-                            "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
-                            "bg-gray-50/50 text-gray-400 border-gray-100/80"
-                          )}
-                        >
-                          {getPeriodoSuffix(passageiro.periodo)}
-                        </span>
+                        {passageiro.periodo && (
+                          <span
+                            className={cn(
+                              "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
+                              "bg-gray-50/50 text-gray-400 border-gray-100/80"
+                            )}
+                          >
+                            {getPeriodoSuffix(passageiro.periodo)}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </TableCell>
