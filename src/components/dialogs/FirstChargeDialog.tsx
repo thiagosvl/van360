@@ -58,7 +58,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
   const primaryButtonText = () => {
     if (step === "CONTRACT_CHECK") return wantsContract ? "Gerar e Enviar" : "Próximo";
-    if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Finalizar";
+    if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Confirmar";
     if (step === "PAYMENT_METHOD") return "Confirmar";
     if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Registrar";
     return "Próximo";
@@ -178,7 +178,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <p className={cn("text-[13px] font-black uppercase tracking-tight", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, registrar</p>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Já estará visível na carteirinha</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Já estará visível na carteirinha</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
                   {wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -289,7 +289,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                     <div className="w-7 h-7 rounded-md bg-slate-50 flex items-center justify-center text-[#1a3a5c]/60">
                       <Wallet className="w-3.5 h-3.5 shrink-0" />
                     </div>
-                    <SelectValue placeholder="Selecione a forma..." />
+                    <SelectValue placeholder="Selecionar" />
                   </div>
                 </SelectTrigger>
                 <SelectContent className="max-h-[280px] rounded-xl border-slate-100 shadow-diff-shadow p-1.5">

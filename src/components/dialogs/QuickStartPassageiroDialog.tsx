@@ -75,7 +75,7 @@ export function QuickStartPassageiroDialog({
             variant="ghost"
             size="icon"
             className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
-            onClick={handleFillMock}
+            onClick={() => handleFillMock(escolasList, veiculosList)}
             title="Preencher com dados fictícios"
           >
             <Wand2 className="h-5 w-5" />

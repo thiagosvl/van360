@@ -73,7 +73,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         chave_pix: chave,
       });
     }
-    
+
     if (!isOpen) {
       initializedRef.current = false;
     }
@@ -131,7 +131,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                 name="tipo_chave_pix"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">Tipo de Chave Pix</FormLabel>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">Tipo de Chave</FormLabel>
                     <Select
                       onValueChange={(val) => {
                         const selecionado = (val || null) as TipoChavePix | null;

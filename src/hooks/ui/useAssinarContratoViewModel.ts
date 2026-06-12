@@ -43,7 +43,7 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
     if (!token) return;
 
     try {
-      const assinaturaBase64 = sigCanvas.current.toDataURL();
+      const assinaturaBase64 = sigCanvas.current.toDataURL("image/png");
       const ip = await obterIP();
 
       const metadados = {

@@ -32,6 +32,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
   ({ onChange, initialValue, className, penColor = "#1a3a5c" }, ref) => {
     const sigCanvasRef = useRef<SignatureCanvas>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const ratio = typeof window !== "undefined" ? Math.max(window.devicePixelRatio || 1, 1) : 1;
 
     // Expõe métodos para o pai controlar o canvas
     useImperativeHandle(ref, () => ({
@@ -53,14 +54,14 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
         const canvas = sigCanvasRef.current.getCanvas();
         const container = containerRef.current;
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        
+
         // Armazena a imagem atual para não perder o desenho no resize
         const currentData = sigCanvasRef.current.isEmpty() ? null : sigCanvasRef.current.toDataURL();
-        
+
         canvas.width = container.offsetWidth * ratio;
         canvas.height = container.offsetHeight * ratio;
         canvas.getContext("2d")?.scale(ratio, ratio);
-        
+
         // Restaura a assinatura se existir
         if (currentData) {
           sigCanvasRef.current.fromDataURL(currentData);
@@ -73,7 +74,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
     useLayoutEffect(() => {
       const timeout = setTimeout(resizeCanvas, 150);
       window.addEventListener("resize", resizeCanvas);
-      
+
       // Carrega valor inicial se fornecido
       if (initialValue && sigCanvasRef.current) {
         sigCanvasRef.current.fromDataURL(initialValue);
@@ -101,23 +102,23 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
         <div className="relative group">
           {/* Sombra de fundo inspirada no modelo do motorista */}
           <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-100 rounded-[2.2rem] blur opacity-40 group-hover:opacity-60 transition-opacity" />
-          
-          <div 
+
+          <div
             ref={containerRef}
             className="relative border-4 border-white rounded-[2.1rem] bg-slate-50/50 overflow-hidden shadow-inner h-52 transition-all cursor-crosshair"
           >
             <SignatureCanvas
               ref={sigCanvasRef}
               penColor={penColor}
-              minWidth={1.5}
-              maxWidth={3.5}
+              minWidth={1.5 * ratio}
+              maxWidth={3.5 * ratio}
               onEnd={handleEnd}
               canvasProps={{
                 className: "w-full h-full",
               }}
               backgroundColor="transparent"
             />
-            
+
             {/* Selo flutuante de instrução */}
             <div className="absolute top-4 right-4 pointer-events-none">
               <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-slate-100 shadow-sm">

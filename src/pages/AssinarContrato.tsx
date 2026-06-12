@@ -97,7 +97,7 @@ export default function AssinarContrato() {
 
             <Button
               onClick={() => openBrowserLink(contrato.contrato_final_url || contrato.contrato_url)}
-              className="w-full bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 h-16 rounded-2xl font-headline font-black text-sm shadow-xl shadow-[#1a3a5c]/20 transition-all active:scale-95 text-white uppercase tracking-widest flex items-center justify-center gap-3"
+              className="w-full bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 h-16 rounded-2xl font-headline font-black text-sm shadow-xl shadow-[#1a3a5c]/20 transition-all active:scale-95 text-white uppercase tracking-widest flex items-center justify-center"
             >
               Ver Contrato <span className="hidden sm:inline">Assinado</span>
             </Button>

@@ -100,9 +100,22 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId }: UsePassage
     });
   };
 
-  const handleFillMock = () => {
+  const handleFillMock = (escolas?: any[], veiculos?: any[]) => {
     if (import.meta.env.DEV) {
-      const mockPassenger = mockGenerator.passenger();
+      let escolaId = "";
+      if (escolas && escolas.length > 0) {
+        escolaId = escolas[0].id;
+      }
+      let veiculoId = "";
+      if (veiculos && veiculos.length > 0) {
+        veiculoId = veiculos[0].id;
+      }
+
+      const mockPassenger = mockGenerator.passenger({
+        escola_id: escolaId,
+        veiculo_id: veiculoId,
+      });
+
       form.setValue("nome", mockPassenger.nome);
       form.setValue("nome_responsavel", mockPassenger.nome_responsavel || "Responsável Teste");
       form.setValue("telefone_responsavel", phoneMask(mockPassenger.telefone_responsavel));

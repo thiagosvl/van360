@@ -80,8 +80,6 @@ const ProfileActions = ({
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
   const isPendente =
     statusContrato === ContratoStatus.PENDENTE ||
-    statusContrato === 'pendente' ||
-    statusContrato === '1' ||
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
   return (
@@ -358,35 +356,61 @@ export const CarteirinhaDadosPessoais = ({
   | "onContractAction"
   | "contratosAtivos"
 >) => {
-  const getContratoStatusStyles = (status?: ContratoStatus) => {
-    if (status === ContratoStatus.ASSINADO)
-      return {
-        label: formatContratoStatus(passageiro.status_contrato || ""),
-        color: "text-emerald-500 bg-emerald-50",
-        icon: FileCheck2,
-      };
-    if (status === ContratoStatus.PENDENTE)
-      return {
-        label: formatContratoStatus(passageiro.status_contrato || ""),
-        color: "text-amber-500 bg-amber-50",
-        icon: Clock,
-      };
-    return {
-      label: formatContratoStatus(passageiro.status_contrato || ""),
-      color: "text-slate-400 bg-slate-100",
-      icon: FileX2,
-    };
-  };
-
-  const contratoStyle = getContratoStatusStyles(passageiro.status_contrato);
-
   const isContractActionDisabled =
     !contratosAtivos &&
     passageiro.status_contrato !== ContratoStatus.PENDENTE &&
     passageiro.status_contrato !== ContratoStatus.ASSINADO;
 
+  const getContratoConfig = (status?: ContratoStatus) => {
+    if (status === ContratoStatus.ASSINADO) {
+      return {
+        title: "Contrato Assinado",
+        desc: "Documento oficial assinado eletronicamente",
+        color: "bg-emerald-50/40 border-emerald-100/80 hover:bg-emerald-50 hover:border-emerald-200/50",
+        iconColor: "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-sm",
+        icon: FileCheck2,
+        actionLabel: "Visualizar",
+        actionColor: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/10",
+        actionIcon: ExternalLink,
+      };
+    }
+    if (status === ContratoStatus.PENDENTE) {
+      return {
+        title: "Assinatura Pendente",
+        desc: "Aguardando assinatura do responsável",
+        color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
+        iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-sm",
+        icon: Clock,
+        actionLabel: "Ver contrato",
+        actionColor: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/10",
+        actionIcon: ExternalLink,
+      };
+    }
+
+    return {
+      title: "Sem Contrato Ativo",
+      desc: isContractActionDisabled
+        ? "Ative a funcionalidade para gerar contratos"
+        : "Gere o contrato para assinatura do responsável",
+      color: isContractActionDisabled
+        ? "bg-slate-50/30 border-slate-200/50 opacity-75 cursor-not-allowed"
+        : "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
+      iconColor: isContractActionDisabled
+        ? "text-slate-400 bg-slate-100/80 border border-slate-200/30"
+        : "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-sm",
+      icon: FileX2,
+      actionLabel: isContractActionDisabled ? "Bloqueado" : "Gerar",
+      actionColor: isContractActionDisabled
+        ? "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300/20"
+        : "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
+      actionIcon: isContractActionDisabled ? FileX2 : Plus,
+    };
+  };
+
+  const contratoConfig = getContratoConfig(passageiro.status_contrato);
+
   const getEnderecoFormatado = () => {
-    if (!passageiro.logradouro) return "Endereço não informado";
+    if (!passageiro.logradouro) return "-";
     return `${passageiro.logradouro}, ${passageiro.numero || "S/N"} - ${passageiro.bairro || ""}`;
   };
   const enderecoFormatado = getEnderecoFormatado();
@@ -402,15 +426,8 @@ export const CarteirinhaDadosPessoais = ({
     onContractAction();
   };
 
-  const RightIcon =
-    passageiro.status_contrato === ContratoStatus.PENDENTE ||
-      passageiro.status_contrato === ContratoStatus.ASSINADO
-      ? ExternalLink
-      : Plus;
-
   return (
     <div className="space-y-3">
-      {/* Linha: Período + Escola */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Período"
@@ -424,32 +441,37 @@ export const CarteirinhaDadosPessoais = ({
         />
       </div>
 
-      {/* Contrato */}
       <div
-        onClick={handleContratoClick}
         className={cn(
-          "rounded-2xl border border-slate-200 p-3.5 transition-all cursor-pointer group/tile flex items-center justify-between",
-          contratoStyle.color,
+          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato",
+          contratoConfig.color
         )}
       >
-        <div className="flex items-center gap-2.5">
-          <contratoStyle.icon className="h-4 w-4" />
-          <div>
-            <span className="block text-[8px] font-bold uppercase tracking-widest opacity-60">
-              Contrato
+        <div className="flex items-start gap-3 min-w-0">
+          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5", contratoConfig.iconColor)}>
+            <contratoConfig.icon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug">
+              {contratoConfig.title}
             </span>
-            <span className="text-sm font-bold">{contratoStyle.label}</span>
+            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+              {contratoConfig.desc}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 group-hover/tile:opacity-100 transition-opacity bg-black/5 px-2.5 py-1.5 rounded-xl border border-black/5">
-          <RightIcon className="h-3 w-3" />
-          <span className="text-[9px] font-bold uppercase tracking-widest leading-none pt-0.5">
-            {passageiro.status_contrato === ContratoStatus.PENDENTE ||
-              passageiro.status_contrato === ContratoStatus.ASSINADO
-              ? "Ver"
-              : "Gerar"}
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={handleContratoClick}
+          disabled={isContractActionDisabled && passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO}
+          className={cn(
+            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 shadow-sm hover:shadow active:scale-[0.99] shrink-0",
+            contratoConfig.actionColor
+          )}
+        >
+          <contratoConfig.actionIcon className="h-3.5 w-3.5" />
+          <span>{contratoConfig.actionLabel}</span>
+        </button>
       </div>
 
       {/* Linha: Modalidade + Veículo */}

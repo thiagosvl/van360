@@ -69,7 +69,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
 
   const shortName = formatShortName(passageiro?.nome, true);
   const respName = formatFirstName(passageiro?.nome_responsavel);
-  const schoolName = passageiro.escola?.nome || "Não informada";
+  const schoolName = passageiro.escola?.nome;
 
   return (
     <div
@@ -153,7 +153,7 @@ export function PassageirosList({
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome, true);
               const respName = formatFirstName(passageiro?.nome_responsavel);
-              const schoolName = passageiro.escola?.nome || "Não informada";
+              const schoolName = passageiro.escola?.nome;
 
               return (
                 <TableRow
@@ -185,7 +185,7 @@ export function PassageirosList({
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col gap-1">
                       <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                        {passageiro.escola?.nome || "Não informada"}
+                        {passageiro.escola?.nome}
                         {passageiro.periodo && (
                           <span
                             className={cn(

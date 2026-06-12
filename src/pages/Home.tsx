@@ -19,6 +19,9 @@ import {
   TrendingDown,
   UserCheck,
   Users,
+  GraduationCap,
+  Car,
+  Rocket,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
@@ -65,24 +68,6 @@ const Home = () => {
                 : "Tudo em dia por aqui!"}
             </p>
           </div>
-
-          {/* Banner de Trial (SaaS) */}
-          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
-            <TrialBanner
-              daysLeft={subscription.trialDaysLeft}
-              onSubscribe={() => {
-                if (plans && plans.length > 0) {
-                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
-                  openSaaSCheckoutDialog({
-                    plans,
-                    initialPlanId: defaultPlan.id
-                  });
-                } else {
-                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
-                }
-              }}
-            />
-          )}
 
           {/* Banner de Carência (SaaS) */}
           {subscription?.status === SubscriptionStatus.PAST_DUE && (
@@ -131,6 +116,24 @@ const Home = () => {
                 onOpenPassageiroDialog={handleOpenPassageiroDialog}
               />
             </section>
+          )}
+
+          {/* Banner de Trial (SaaS) */}
+          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
+            <TrialBanner
+              daysLeft={subscription.trialDaysLeft}
+              onSubscribe={() => {
+                if (plans && plans.length > 0) {
+                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
+                  openSaaSCheckoutDialog({
+                    plans,
+                    initialPlanId: defaultPlan.id
+                  });
+                } else {
+                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+                }
+              }}
+            />
           )}
 
           {/* Notificação de Mensalidades pendentes */}
@@ -246,6 +249,24 @@ const Home = () => {
                 icon={FileText}
                 label="Contratos"
                 variant="sky"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
+                icon={GraduationCap}
+                label="Escolas"
+                variant="violet"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.VEHICLES}
+                icon={Car}
+                label="Veículos"
+                variant="slate"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
+                icon={Rocket}
+                label="Minha Assinatura"
+                variant="blue"
               />
             </div>
           </section>
