@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
 import { phoneMask } from "@/utils/masks";
 import { MoneyInput } from "@/components/forms";
-import { Car, Loader2, Rocket, School, User, Phone, CalendarDays, Wand2 } from "lucide-react";
+import { Car, Rocket, School, User, Phone, CalendarDays, Wand2 } from "lucide-react";
 import { useEscolasWithFilters, useVeiculosWithFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -67,7 +67,7 @@ export function QuickStartPassageiroDialog({
     >
       <BaseDialog.Header
         title="Cadastro de Passageiro"
-        icon={<Rocket className="w-5 h-5 text-indigo-500" />}
+        icon={<Rocket className="w-5 h-5" />}
         onClose={onClose}
         leftAction={import.meta.env.DEV && (
           <Button

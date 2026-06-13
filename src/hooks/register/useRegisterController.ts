@@ -201,7 +201,10 @@ export function useRegisterController() {
   const handleNextStep = async () => {
     const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
     const ok = await form.trigger(fields as any);
-    if (!ok) return false;
+    if (!ok) {
+      toast.error("validacao.formularioComErros");
+      return false;
+    }
 
     await handleFinalRegister(form.getValues());
     return true;

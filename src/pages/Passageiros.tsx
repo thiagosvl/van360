@@ -16,7 +16,6 @@ import { useState } from "react";
 export default function Passageiros() {
   const {
     profile,
-    isProfileLoading,
     activeTab,
     handleTabChange,
     countPassageiros,
@@ -121,7 +120,7 @@ export default function Passageiros() {
                   onRegister={handleOpenNewDialog}
                   showAdvancedFilters={isMainTab}
                   showRegister={isMainTab}
-                  searchPlaceholder={isMainTab ? "Buscar por nome ou responsável..." : "Buscar solicitação..."}
+                  searchPlaceholder="Buscar por nome ou responsável..."
                 />
               </div>
 

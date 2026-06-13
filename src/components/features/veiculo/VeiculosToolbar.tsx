@@ -1,12 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Plus, CheckCircle2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { FilterDefaults } from "@/types/enums";
@@ -108,8 +100,8 @@ export const VeiculosToolbar = memo(function VeiculosToolbar({
           className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 md:px-6 shadow-md transition-all active:scale-95"
         >
           <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden md:inline">Novo Veículo</span>
-          <span className="md:hidden">Novo</span>
+          <span className="hidden md:inline">Cadastrar</span>
+          <span className="md:hidden">Cadastrar</span>
         </Button>
       }
     />

@@ -140,18 +140,19 @@ export const QuickStartCard = ({
                 <div
                   key={step.id}
                   className={cn(
-                    "flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3.5 rounded-xl border transition-all duration-300 relative",
+                    "flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3.5 rounded-xl border transition-colors duration-200 relative",
                     isCurrent
                       ? "bg-slate-50/50 border-slate-200/50 shadow-sm ring-1 ring-[#1a3a5c]/5"
-                      : "bg-white border-gray-100/50",
-                    isDone && "bg-gray-50/50 border-gray-100/30 opacity-60"
+                      : isDone
+                        ? "bg-gray-50/50 border-gray-100/30 opacity-60"
+                        : "bg-white border-gray-100/50"
                   )}
                 >
                   <div className="flex items-center gap-4 w-full flex-1">
                     {/* Ícone Indicador */}
                     <div
                       className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300",
+                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200",
                         isDone
                           ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
                           : isCurrent

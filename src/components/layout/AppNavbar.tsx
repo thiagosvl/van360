@@ -95,7 +95,6 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                   <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Seção Atual</p>
                   <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
                     {currentPage.title}
                   </h2>

@@ -2,7 +2,8 @@ import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
-import { Gasto } from "@/types/gasto";
+import { Gasto, GASTO_CATEGORIA_LABELS } from "@/types/gasto";
+import { GastoCategoria } from "@/types/enums";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
@@ -12,6 +13,7 @@ import {
 import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
 import { GastoSummary } from "./GastoSummary";
+import { cn } from "@/lib/utils";
 
 interface GastosListProps {
   gastos: Gasto[];
@@ -67,8 +69,8 @@ const GastoMobileCard = memo(function GastoMobileCard({
         </div>
 
         <div className="flex-grow min-w-0">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-            {gasto.categoria}
+          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight capitalize">
+            {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}
           </p>
           <div className="">
             <p className="text-[10px] text-gray-500 font-medium opacity-60 break-words line-clamp-2 leading-relaxed">
@@ -174,21 +176,15 @@ export function GastosList({
                             {gastoDia}
                           </span>
                         </div>
-                        <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-                          {gasto.categoria}
+                        <span className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
+                          {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}
                         </span>
                       </div>
                     </td>
                     <td className="px-8 py-5 align-middle">
-                      {placa ? (
-                        <span className="text-xs font-semibold text-gray-700 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-lg">
-                          {formatarPlacaExibicao(placa)}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic opacity-50">
-                          N/A
-                        </span>
-                      )}
+                      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg", placa ? "bg-slate-50 border border-slate-100" : "")}>
+                        {placa ? formatarPlacaExibicao(placa) : "-"}
+                      </span>
                     </td>
                     <td className="px-8 py-5 align-middle">
                       <span className="text-sm text-slate-500 max-w-[180px] block truncate">
