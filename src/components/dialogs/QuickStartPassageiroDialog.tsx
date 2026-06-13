@@ -11,9 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
-import { phoneMask } from "@/utils/masks";
-import { MoneyInput } from "@/components/forms";
-import { Car, Rocket, School, User, Phone, CalendarDays, Wand2 } from "lucide-react";
+import { MoneyInput, PhoneInput } from "@/components/forms";
+import { Car, Rocket, School, User, CalendarDays, Wand2 } from "lucide-react";
 import { useEscolasWithFilters, useVeiculosWithFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -41,8 +40,8 @@ export function QuickStartPassageiroDialog({
     usuarioId,
   });
 
-  const { data: escolasList = [] } = useEscolasWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen });
-  const { data: veiculosList = [] } = useVeiculosWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen });
+  const { data: escolasList = [] } = useEscolasWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/escola").Escola[] };
+  const { data: veiculosList = [] } = useVeiculosWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/veiculo").Veiculo[] };
   const { openEscolaFormDialog, openVeiculoFormDialog } = useLayout();
 
   useEffect(() => {
@@ -147,26 +146,14 @@ export function QuickStartPassageiroDialog({
               <FormField
                 control={form.control}
                 name="telefone_responsavel"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      WhatsApp Responsável <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <Input
-                          placeholder="(11) 99999-9999"
-                          maxLength={15}
-                          {...field}
-                          onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                          aria-invalid={!!fieldState.error}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field }) => (
+                  <PhoneInput
+                    field={field}
+                    label="WhatsApp Responsável"
+                    required
+                    labelClassName="text-slate-700 font-semibold ml-1"
+                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                  />
                 )}
               />
             </div>
@@ -263,7 +250,7 @@ export function QuickStartPassageiroDialog({
                         </div>
                       </FormControl>
                       <SelectContent>
-                        {escolasList.map((e: any) => (
+                        {escolasList.map((e) => (
                           <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
                         ))}
                         <SelectItem
@@ -318,7 +305,7 @@ export function QuickStartPassageiroDialog({
                         </div>
                       </FormControl>
                       <SelectContent>
-                        {veiculosList.map((v: any) => (
+                        {veiculosList.map((v) => (
                           <SelectItem key={v.id} value={v.id}>{v.placa}</SelectItem>
                         ))}
                         <SelectItem

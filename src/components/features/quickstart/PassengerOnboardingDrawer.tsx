@@ -44,7 +44,7 @@ export function PassengerOnboardingDrawer({
     const link = getRegistrationLink();
     if (!link) return;
 
-    const text = encodeURIComponent(`Olá! Aqui está o link para o cadastro do passageiro na nossa van: ${link}`);
+    const text = encodeURIComponent(`Olá! Aqui está o link para o cadastro do passageiro: ${link}`);
     const whatsappUrl = `https://api.whatsapp.com/send?text=${text}`;
 
     openBrowserLink(whatsappUrl);
