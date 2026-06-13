@@ -428,19 +428,8 @@ export const CarteirinhaDadosPessoais = ({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Período"
-          value={formatPeriodo(passageiro.periodo)}
-          icon={<Clock className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Escola"
-          value={passageiro.escola?.nome || "-"}
-          icon={<GraduationCap className="h-3.5 w-3.5" />}
-        />
-      </div>
 
+      {/* Contrato */}
       <div
         className={cn(
           "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato",
@@ -472,6 +461,60 @@ export const CarteirinhaDadosPessoais = ({
           <contratoConfig.actionIcon className="h-3.5 w-3.5" />
           <span>{contratoConfig.actionLabel}</span>
         </button>
+      </div>
+
+      {/* Responsável */}
+      <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
+        <div className="flex items-center gap-2">
+          <Users className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
+            Responsável
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <span className="block text-sm font-bold text-[#1a3a5c]">
+              {passageiro.nome_responsavel}
+              <div className="text-[11px] font-medium text-slate-500">
+                {formatParentesco(passageiro.parentesco_responsavel)}
+              </div>
+            </span>
+            <span className="text-[11px] font-medium text-slate-500">
+              {phoneMask(passageiro.telefone_responsavel)}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() =>
+              onCopyToClipboard(
+                passageiro.telefone_responsavel || "",
+                "Telefone",
+              )
+            }
+            className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
+          >
+            {isCopiedTelefone ? (
+              <Check className="h-3.5 w-3.5 text-emerald-500" />
+            ) : (
+              <Copy className="h-3.5 w-3.5 text-slate-400" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Linha: Período + Escola */}
+      <div className="grid grid-cols-2 gap-3">
+        <InfoTile
+          label="Período"
+          value={formatPeriodo(passageiro.periodo)}
+          icon={<Clock className="h-3.5 w-3.5" />}
+        />
+        <InfoTile
+          label="Escola"
+          value={passageiro.escola?.nome || "-"}
+          icon={<GraduationCap className="h-3.5 w-3.5" />}
+        />
       </div>
 
       {/* Linha: Modalidade + Veículo */}
@@ -519,46 +562,6 @@ export const CarteirinhaDadosPessoais = ({
           fullWidth
         />
       )}
-
-      {/* Representante Legal */}
-      <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
-        <div className="flex items-center gap-2">
-          <Users className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-            Representante Legal
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="min-w-0">
-            <span className="block text-sm font-bold text-[#1a3a5c]">
-              {passageiro.nome_responsavel}
-              <div className="text-[11px] font-medium text-slate-500">
-                {formatParentesco(passageiro.parentesco_responsavel)}
-              </div>
-            </span>
-            <span className="text-[11px] font-medium text-slate-500">
-              {phoneMask(passageiro.telefone_responsavel)}
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() =>
-              onCopyToClipboard(
-                passageiro.telefone_responsavel || "",
-                "Telefone",
-              )
-            }
-            className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
-          >
-            {isCopiedTelefone ? (
-              <Check className="h-3.5 w-3.5 text-emerald-500" />
-            ) : (
-              <Copy className="h-3.5 w-3.5 text-slate-400" />
-            )}
-          </Button>
-        </div>
-      </div>
 
       {/* Endereço */}
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">

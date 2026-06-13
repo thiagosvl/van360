@@ -5,6 +5,7 @@ import { FilterDefaults } from "@/types/enums";
 import { periodos } from "@/utils/formatters/periodo";
 import { DataTableToolbar } from "../common/DataTableToolbar";
 import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 
 interface PassageirosToolbarProps {
   searchTerm: string;
@@ -57,6 +58,7 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
   showRegister = true,
   searchPlaceholder = "Buscar por nome do passageiro...",
 }: PassageirosToolbarProps) {
+  const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     status: selectedStatus || FilterDefaults.TODOS,
@@ -100,9 +102,9 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
       <DataTableFilterSelect
         label="Status"
         placeholder="Status"
-        value={isSheetOpen ? tempFilters.status : selectedStatus}
+        value={isMobile ? tempFilters.status : selectedStatus}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, status: val }));
           } else {
             onStatusChange(val);
@@ -119,9 +121,9 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
       <DataTableFilterSelect
         label="Escola"
         placeholder="Escola"
-        value={isSheetOpen ? tempFilters.escola : selectedEscola}
+        value={isMobile ? tempFilters.escola : selectedEscola}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, escola: val }));
           } else {
             onEscolaChange(val);
@@ -137,9 +139,9 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
       <DataTableFilterSelect
         label="Veículo"
         placeholder="Veículo"
-        value={isSheetOpen ? tempFilters.veiculo : selectedVeiculo}
+        value={isMobile ? tempFilters.veiculo : selectedVeiculo}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, veiculo: val }));
           } else {
             onVeiculoChange(val);
@@ -155,9 +157,9 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
       <DataTableFilterSelect
         label="Período"
         placeholder="Período"
-        value={isSheetOpen ? tempFilters.periodo : selectedPeriodo}
+        value={isMobile ? tempFilters.periodo : selectedPeriodo}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, periodo: val }));
           } else {
             onPeriodoChange(val);

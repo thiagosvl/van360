@@ -4,6 +4,7 @@ import { memo, useEffect, useState } from "react";
 import { FilterDefaults } from "@/types/enums";
 import { DataTableToolbar } from "../common/DataTableToolbar";
 import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 
 interface VeiculosToolbarProps {
   searchTerm: string;
@@ -28,6 +29,7 @@ export const VeiculosToolbar = memo(function VeiculosToolbar({
   onRegister,
   isRegisterDisabled,
 }: VeiculosToolbarProps) {
+  const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     status: selectedStatus || FilterDefaults.TODOS,
@@ -59,9 +61,9 @@ export const VeiculosToolbar = memo(function VeiculosToolbar({
       <DataTableFilterSelect
         label="Status"
         placeholder="Status"
-        value={isSheetOpen ? tempFilters.status : selectedStatus}
+        value={isMobile ? tempFilters.status : selectedStatus}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, status: val }));
           } else {
             onStatusChange(val);
