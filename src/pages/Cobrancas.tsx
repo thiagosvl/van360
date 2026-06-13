@@ -10,6 +10,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel, useLayout } from "@/hooks";
 import { CobrancaTab, KPICardVariant } from "@/types/enums";
 import { formatCurrency, meses } from "@/utils/formatters";
+import { Cobranca } from "@/types/cobranca";
 
 export default function Cobrancas() {
   const {
@@ -48,7 +49,10 @@ export default function Cobrancas() {
     onEditarCobranca: handleEditCobrancaClick,
     onRegistrarPagamento: openPaymentDialog,
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onVerRecibo: (url: string) => openReceiptDialog({ receiptUrl: url }),
+    onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
+      receiptUrl: url,
+      cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${cobranca.passageiro?.nome || ""}`,
+    }),
     onActionSuccess: () => { },
   };
 

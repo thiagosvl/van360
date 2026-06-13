@@ -495,7 +495,10 @@ export default function PassageiroCarteirinha() {
     onDesfazerPagamento: handleDesfazerClick,
     onExcluirCobranca: handleExcluirCobranca,
     onToggleClick: handleToggleClick,
-    onVerRecibo: (url: string) => openReceiptDialog({ receiptUrl: url }),
+    onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
+      receiptUrl: url,
+      cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
+    }),
   };
 
   const infoProps = {

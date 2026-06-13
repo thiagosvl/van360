@@ -37,7 +37,7 @@ interface CarteirinhaCobrancasProps {
   onToggleLembretes: (cobranca: Cobranca) => void;
   onDesfazerPagamento: (cobrancaId: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
-  onVerRecibo: (url: string) => void;
+  onVerRecibo: (url: string, cobranca: Cobranca) => void;
   limiteCobrancasMobile?: number;
 }
 
@@ -168,7 +168,7 @@ const CobrancaItemPassageiro = forwardRef<
     onRegistrarPagamento: (c: Cobranca) => void;
     onExcluirCobranca: (c: Cobranca) => void;
     onDesfazerPagamento: (id: string) => void;
-    onVerRecibo: (url: string) => void;
+    onVerRecibo: (url: string, cobranca: Cobranca) => void;
   }
 >(({
   cobranca,
@@ -209,7 +209,7 @@ const CobrancaItemPassageiro = forwardRef<
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
     onEnviarCobranca,
     showHistory: true,
   });

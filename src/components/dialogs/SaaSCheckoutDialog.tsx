@@ -91,12 +91,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   const handleVerifyPixPayment = async () => {
     setIsVerifying(true);
     try {
-      toast.loading("Verificando seu pagamento junto ao banco...", { id: "verify-pix" });
+      toast.loading("Verificando seu pagamento...", { id: "verify-pix" });
       await Promise.all([refetchInvoices(), refetchStatus()]);
-      
+
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      
-      toast.info("Ainda não identificamos a confirmação. O banco pode levar até 1 minuto para processar. Continue aguardando ou tente de novo em instantes.", {
+
+      toast.info("Ainda não identificamos a confirmação. Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.", {
         id: "verify-pix",
         duration: 5000,
       });
