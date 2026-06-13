@@ -560,28 +560,18 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           {step === 3 && !isCardStep3 && activeInvoice?.pix_copy_paste && (
             <div className="flex flex-col sm:flex-row gap-2.5 w-full">
               {pixCopied ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyPix}
-                    className="h-12 border-slate-200 text-[#002444] hover:bg-slate-50 flex items-center justify-center gap-2 flex-1 text-sm font-semibold"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copiar Novamente
-                  </Button>
-                  <Button
-                    onClick={handleVerifyPixPayment}
-                    disabled={isVerifying}
-                    className="bg-[#10b981] hover:bg-[#059669] text-white h-12 flex items-center justify-center gap-2 flex-1 text-sm font-semibold shadow-sm transition-all duration-200"
-                  >
-                    {isVerifying ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
-                    )}
-                    Já fiz o pagamento
-                  </Button>
-                </>
+                <Button
+                  onClick={handleVerifyPixPayment}
+                  disabled={isVerifying}
+                  className="bg-[#10b981] hover:bg-[#059669] text-white h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200"
+                >
+                  {isVerifying ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  Já fiz o pagamento
+                </Button>
               ) : (
                 <Button
                   onClick={handleCopyPix}
