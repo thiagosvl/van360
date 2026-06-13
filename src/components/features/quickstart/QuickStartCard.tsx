@@ -144,7 +144,7 @@ export const QuickStartCard = ({
                     isCurrent
                       ? "bg-slate-50/50 border-slate-200/50 shadow-sm ring-1 ring-[#1a3a5c]/5"
                       : isDone
-                        ? "bg-gray-50/50 border-gray-100/30 opacity-60"
+                        ? "bg-slate-50/40 border-slate-100"
                         : "bg-white border-gray-100/50"
                   )}
                 >
@@ -173,7 +173,7 @@ export const QuickStartCard = ({
                         className={cn(
                           "text-[13px] font-bold leading-tight",
                           isDone
-                            ? "text-slate-400 line-through font-medium"
+                            ? "text-slate-500 line-through font-medium"
                             : isCurrent
                               ? "text-[#1a3a5c]"
                               : "text-slate-400"
