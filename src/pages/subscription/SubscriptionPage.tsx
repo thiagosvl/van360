@@ -444,7 +444,7 @@ const SubscriptionPage = () => {
                     <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
                       <Clock className="w-6 h-6 text-slate-300" />
                     </div>
-                    <p className="text-xs font-bold text-slate-400">Nenhum pagamento identificado.</p>
+                    <p className="text-xs font-bold text-slate-400">Não há histórico de pagamentos.</p>
                   </div>
                 )}
               </div>
