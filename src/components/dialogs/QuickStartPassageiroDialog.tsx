@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
 import { MoneyInput, PhoneInput } from "@/components/forms";
-import { Car, Rocket, School, User, CalendarDays, Wand2 } from "lucide-react";
+import { Car, Rocket, School, User, CalendarDays, Wand2, Info } from "lucide-react";
 import { useEscolasWithFilters, useVeiculosWithFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -88,8 +88,11 @@ export function QuickStartPassageiroDialog({
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
             className="space-y-5 py-2 px-1"
           >
-            <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
-              <p className="text-sm text-indigo-800 font-medium leading-relaxed">
+            <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2 flex items-center gap-4 shadow-sm">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
+                <Info className="w-5 h-5" />
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
                 Esses são apenas os dados essenciais. Você poderá completar o cadastro depois, através da carteirinha digital.
               </p>
             </div>

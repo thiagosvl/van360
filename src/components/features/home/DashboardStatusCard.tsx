@@ -51,13 +51,13 @@ export const DashboardStatusCard = ({
     },
     info: {
       icon: UserPlus,
-      wrapperBg: "bg-blue-50",
-      borderColor: "border-blue-200",
-      iconWrapperBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-      titleColor: "text-blue-900",
-      descColor: "text-blue-700",
-      buttonBg: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 shadow-[#1a3a5c]/30",
+      wrapperBg: "bg-blue-50 shadow-sm",
+      borderColor: "border-blue-100",
+      iconWrapperBg: "bg-blue-100/50 border border-blue-200/50",
+      iconColor: "text-[#1a3a5c]",
+      titleColor: "text-[#1a3a5c] tracking-tight",
+      descColor: "text-slate-600 leading-relaxed",
+      buttonBg: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 shadow-md shadow-[#1a3a5c]/20 h-10 px-5 text-[10px] font-black uppercase tracking-widest rounded-2xl",
     },
   };
 

@@ -118,12 +118,14 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
               {showWarningRef.current && (
-                <Alert className="bg-blue-50 border-blue-100/50">
-                  <Info className="h-4 w-4 text-blue-500" />
-                  <AlertDescription className="text-blue-700 text-[13px] ml-1">
+                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2 flex items-center gap-4 shadow-sm">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
+                    <Info className="w-5 h-5" />
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
                     A chave Pix cadastrada será utilizada nos lembretes e cobranças automáticas enviadas para os responsáveis via WhatsApp.
-                  </AlertDescription>
-                </Alert>
+                  </p>
+                </div>
               )}
 
               <FormField
