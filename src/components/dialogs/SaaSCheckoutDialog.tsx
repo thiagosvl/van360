@@ -200,15 +200,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               </div>
             )}
 
-            {forcedPeriod && (
-              <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl mb-2">
-                <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                <p className="text-[11px] font-medium text-amber-700">
-                  Você está alterando para o plano anual. Esta ação é definitiva.
-                </p>
-              </div>
-            )}
-
             {/* Card Anual */}
             {annualPlan && (
               <div

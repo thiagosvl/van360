@@ -294,30 +294,30 @@ const SubscriptionPage = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-[#10b981] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden text-white transition-all transform hover:shadow-2xl">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
+            <div className="bg-slate-50/80 border border-slate-200/60 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-slate-100 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">
+                <h3 className="font-headline font-extrabold text-3xl text-primary">
                   Plano {subscription?.planos?.nome}
                 </h3>
-                <p className="text-white/80 font-medium">
-                  Próxima renovação em <span className="text-white font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
+                <p className="text-slate-500 font-medium">
+                  Próxima renovação em <span className="text-primary font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
                 </p>
               </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
+              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
+                <div className="mt-6 md:mt-0 relative z-10 shrink-0">
                   <Button
-                    className="bg-white text-primary hover:bg-white/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
                     onClick={() => handleSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
                   >
                     Assinar Plano Anual
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </section>

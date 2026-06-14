@@ -30,7 +30,6 @@ import { getNowBR } from "@/utils/dateUtils";
 
 const Home = () => {
   const {
-    profile,
     subscription,
     plans,
     isLoading,
