@@ -81,9 +81,9 @@ export enum ContratoStatus {
 }
 
 export enum PassageiroModalidade {
+  IDA_VOLTA = "ida_volta",
   IDA = "ida",
-  VOLTA = "volta",
-  IDA_VOLTA = "ida_volta"
+  VOLTA = "volta"
 }
 
 export enum PassageiroGenero {

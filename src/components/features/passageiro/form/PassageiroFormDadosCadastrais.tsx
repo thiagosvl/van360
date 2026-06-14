@@ -313,7 +313,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Período
+                  Período {isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}

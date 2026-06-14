@@ -40,7 +40,7 @@ const prePassageiroSchema = z.object({
   observacoes: z.string().optional(),
 
   escola_id: z.string().optional(),
-  periodo: z.string().optional(),
+  periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
   data_nascimento: dateSchema(true),
   genero: z.string().min(1, "Campo obrigatório"),
