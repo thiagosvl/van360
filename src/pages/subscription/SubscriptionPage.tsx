@@ -440,8 +440,8 @@ const SubscriptionPage = () => {
                       </div>
                     ))
                 ) : (
-                  <div className="py-12 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
-                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
+                  <div className="py-4 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
+                    <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
                       <Clock className="w-6 h-6 text-slate-300" />
                     </div>
                     <p className="text-xs font-bold text-slate-400">Nenhum pagamento identificado.</p>
@@ -544,17 +544,6 @@ const SubscriptionPage = () => {
               </section>
             )}
 
-            {!isCanceled && (
-              <div className="px-1 flex justify-center mt-8">
-                <button
-                  type="button"
-                  onClick={handleCancelSubscription}
-                  className="text-[11px] font-medium text-slate-400 hover:text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-400 transition-colors"
-                >
-                  Cancelar minha assinatura
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
@@ -688,6 +677,18 @@ const SubscriptionPage = () => {
             </div>
           </aside>
         </div>
+
+        {!isCanceled && (
+          <div className="flex justify-center pt-10">
+            <button
+              type="button"
+              onClick={handleCancelSubscription}
+              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-400 transition-colors"
+            >
+              Cancelar minha assinatura
+            </button>
+          </div>
+        )}
       </div>
     </PullToRefreshWrapper>
   );
