@@ -59,7 +59,7 @@ export const useSubscriptionStatus = (userId?: string) => {
       const data = query.state.data as Subscription | undefined;
       return data?.status === SubscriptionStatus.PAST_DUE ? 60000 : 300000;
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: 'always',
   });
 
   // Realtime subscription updates com controle de Single Source
@@ -148,7 +148,7 @@ export const useSubscriptionBilling = (userId?: string) => {
     queryFn: () => subscriptionApi.getInvoices(),
     enabled: !!userId,
     staleTime: 120000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: 'always',
   });
 
   const setDefaultPaymentMethod = useMutation({
