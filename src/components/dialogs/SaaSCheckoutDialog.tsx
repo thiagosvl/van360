@@ -362,7 +362,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   <div className="flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-[#87a4cc] shrink-0 mt-0.5" />
                     <p className="text-xs text-[#43474e] leading-relaxed">
-                      O QR Code será gerado na próxima etapa e terá validade de 24 horas.
+                      Clique em Gerar PIX para visualizar o QR Code e realizar o pagamento.
                     </p>
                   </div>
                 </div>
@@ -463,24 +463,26 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   </div>
                 )}
 
-                <div className="p-4 bg-[#f2f4f6] rounded-xl">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
-                    <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
-                      Plano {isAnual ? "Anual" : "Mensal"}
-                    </span>
+                {!hasNewCardFlow && (
+                  <div className="p-4 bg-[#f2f4f6] rounded-xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
+                      <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
+                        Plano {isAnual ? "Anual" : "Mensal"}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
+                      <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
+                    </div>
+                    {hasActiveDiscount && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Desconto de indicação de {discountPct}% aplicado!
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
-                    <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
-                  </div>
-                  {hasActiveDiscount && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Desconto de indicação de {discountPct}% aplicado!
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -489,6 +491,25 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
         {step === 3 && hasNewCardFlow && (
           <div className="p-6 space-y-4">
             <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} cardError={cardError} />
+
+            <div className="p-4 bg-[#f2f4f6] rounded-xl">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
+                <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
+                  Plano {isAnual ? "Anual" : "Mensal"}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
+                <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
+              </div>
+              {hasActiveDiscount && (
+                <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Desconto de indicação de {discountPct}% aplicado!
+                </p>
+              )}
+            </div>
             {cardError && (
               <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
