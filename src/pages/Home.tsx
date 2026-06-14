@@ -64,7 +64,7 @@ const Home = () => {
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
               {
                 financeiro.countAtrasos > 0
-                  ? `${financeiro.countAtrasos} mensalidades em atraso`
+                  ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "mensalidade" : "mensalidades"} em atraso`
                   : `Mensalidades do mês em dia!`
               }
             </p>
