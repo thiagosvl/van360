@@ -56,11 +56,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
 
   const [multaAtraso, setMultaAtraso] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
     valor: 10,
-    tipo: "percentual",
+    tipo: "fixo",
   });
   const [multaRescisao, setMultaRescisao] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
     valor: 15,
-    tipo: "percentual",
+    tipo: "fixo",
   });
   const [clausulas, setClausulas] = useState<string[]>([]);
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
@@ -189,7 +189,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           setState: setMultaAtraso,
           icon: Timer,
           iconColor: "text-[#1a3a5c]",
-          simBaseLabel: "Mensalidade Base",
+          simBaseLabel: "Exemplo Mensalidade",
           simResultLabel: "Total com Atraso",
           simBaseValue: 200,
           simValue:
@@ -205,7 +205,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           setState: setMultaRescisao,
           icon: Scale,
           iconColor: "text-[#1a3a5c]",
-          simBaseLabel: "Contrato Anual Exemplo",
+          simBaseLabel: "Exemplo Contrato Anual",
           simResultLabel: "Multa Rescisória",
           simBaseValue: 2400,
           simValue:
@@ -234,18 +234,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               <div className="flex bg-slate-100 p-1 rounded-xl w-full border border-slate-200/20">
                 <button
                   type="button"
-                  onClick={() => setState({ ...state, tipo: "percentual" })}
-                  className={cn(
-                    "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
-                    state.tipo === "percentual"
-                      ? "bg-white text-[#1a3a5c] shadow-sm"
-                      : "text-slate-400 hover:text-slate-600"
-                  )}
-                >
-                  Porcentagem (%)
-                </button>
-                <button
-                  type="button"
                   onClick={() => setState({ ...state, tipo: "fixo" })}
                   className={cn(
                     "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
@@ -255,6 +243,18 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                   )}
                 >
                   Valor Fixo (R$)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setState({ ...state, tipo: "percentual" })}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
+                    state.tipo === "percentual"
+                      ? "bg-white text-[#1a3a5c] shadow-sm"
+                      : "text-slate-400 hover:text-slate-600"
+                  )}
+                >
+                  Porcentagem (%)
                 </button>
               </div>
             </div>

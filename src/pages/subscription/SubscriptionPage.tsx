@@ -334,15 +334,7 @@ const SubscriptionPage = () => {
                 <h4 className="font-headline font-bold text-xl text-primary">Histórico de Cobrança</h4>
               </div>
 
-              <div className="bg-surface-container-low/50 rounded-2xl overflow-hidden border border-slate-100/50">
-                <div className="hidden sm:grid grid-cols-4 px-6 py-4 bg-surface-container-high/30 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                  <div>Data</div>
-                  <div>Plano</div>
-                  <div>Valor</div>
-                  <div className="text-right">Status</div>
-                </div>
-
-                <div className="divide-y divide-slate-100/30">
+              <div className="space-y-3">
                   {invoices && invoices.length > 0 ? (
                     invoices
                       .filter(inv => inv.status !== SubscriptionInvoiceStatus.CANCELED)
@@ -350,40 +342,67 @@ const SubscriptionPage = () => {
                       .map((inv) => (
                         <div
                           key={inv.id}
-                          className="grid grid-cols-1 sm:grid-cols-4 px-4 sm:px-6 py-4 hover:bg-white transition-colors cursor-default items-center gap-3 sm:gap-0"
+                          className="bg-white rounded-[22px] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md"
                         >
-                          <div className="text-sm font-semibold text-primary">{formatLocalDate(parseLocalDate(inv.created_at))}</div>
-                          <div className="text-sm text-slate-500 font-medium">
-                            <span className="sm:hidden text-[10px] text-slate-300 block mb-0.5 uppercase tracking-wider font-bold">Plano</span>
-                            {inv.assinaturas?.planos?.nome}
+                          <div className="flex items-center justify-between p-4 sm:px-6 sm:py-5">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm sm:text-base font-black text-primary">
+                                  Plano {((inv as any).planos?.nome) || inv.assinaturas?.planos?.nome || "Van360"}
+                                </span>
+                                <InvoiceStatusBadge status={inv.status} />
+                              </div>
+                              <div className="text-[11px] sm:text-xs font-medium text-slate-500">
+                                <span className="font-bold text-slate-400">Vencimento:</span>{" "}
+                                {formatLocalDate(parseLocalDate(inv.data_vencimento || inv.created_at))}
+                                {inv.metodo_pagamento && (
+                                  <>
+                                    <span className="mx-1.5 text-slate-300">•</span>
+                                    <span className="capitalize tracking-wider">
+                                      {inv.metodo_pagamento === "credit_card" ? "Cartão" : inv.metodo_pagamento === "pix" ? "Pix" : "Boleto"}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                              <div className="text-sm sm:text-base font-black text-primary">
+                                {formatCurrency(inv.valor)}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-sm font-black text-primary">
-                            <span className="sm:hidden text-[10px] text-slate-300 block mb-0.5 uppercase tracking-wider font-bold">Valor</span>
-                            {formatCurrency(inv.valor)}
-                          </div>
-                          <div className="flex flex-col items-end gap-2 shrink-0">
-                            <InvoiceStatusBadge status={inv.status} />
-                            {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING && (
-                              <button
-                                className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-[0.1em]"
-                                onClick={() => handleCopyPix(inv.pix_copy_paste!)}
-                              >
-                                <Copy className="w-3 h-3" />
-                                Copiar PIX
-                              </button>
-                            )}
-                          </div>
+
+                          {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
+                            <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
+                              {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
+                                <button
+                                  className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-amber-700 hover:bg-amber-100 transition-colors uppercase tracking-[0.1em] bg-amber-50 px-4 py-3 rounded-xl border border-amber-200"
+                                  onClick={() => handleCopyPix(inv.pix_copy_paste!)}
+                                >
+                                  <Copy className="w-4 h-4" />
+                                  Copiar código PIX
+                                </button>
+                              ) : (
+                                <button
+                                  className="w-full px-4 py-3 bg-amber-600 text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200 active:scale-95 text-center flex justify-center items-center"
+                                  onClick={() => handleSubscribe()}
+                                >
+                                  Pagar Agora
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))
                   ) : (
-                    <div className="py-16 text-center space-y-3 bg-white/30">
-                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-                        <Clock className="w-6 h-6 text-slate-200" />
+                    <div className="py-12 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
+                      <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
+                        <Clock className="w-6 h-6 text-slate-300" />
                       </div>
                       <p className="text-xs font-bold text-slate-400">Nenhum pagamento identificado.</p>
                     </div>
                   )}
-                </div>
               </div>
             </section>
 

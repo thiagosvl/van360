@@ -268,9 +268,8 @@ export function useSaaSCheckoutViewModel({
       const msg = getErrorMessage(error, "Erro ao configurar assinatura");
       if (paymentMethod === CheckoutPaymentMethod.CREDIT_CARD) {
         setCardError(msg);
-      } else {
-        toast.error(msg);
       }
+      toast.error(msg);
     } finally {
       isGeneratingRef.current = false;
       setIsGenerating(false);
