@@ -48,4 +48,5 @@ export interface Passageiro {
   genero?: PassageiroGenero;
   parentesco_responsavel?: ParentescoResponsavel;
   data_inicio_transporte?: string;
+  data_fim_transporte?: string;
 }

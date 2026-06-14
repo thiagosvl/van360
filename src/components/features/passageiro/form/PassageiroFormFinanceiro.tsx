@@ -117,6 +117,31 @@ export function PassageiroFormFinanceiro({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="data_fim_transporte"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-slate-700 font-semibold ml-1">
+                  Término do Transporte
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    inputMode="numeric"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(dateMask(e.target.value));
+                    }}
+                    className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </div>
     </div>

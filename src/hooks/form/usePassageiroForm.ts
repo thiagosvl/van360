@@ -68,6 +68,7 @@ export const passageiroSchema = z
       }, "O valor deve ser no mínimo R$ 1,00"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
     data_inicio_transporte: dateSchema(false, true),
+    data_fim_transporte: dateSchema(false, true),
 
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
@@ -124,6 +125,7 @@ export function usePassageiroForm({
       valor_cobranca: "",
       dia_vencimento: "",
       data_inicio_transporte: "",
+      data_fim_transporte: "31/12/" + new Date().getFullYear(),
 
       ativo: true,
     },
@@ -162,6 +164,7 @@ export function usePassageiroForm({
               : "",
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
+            data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -213,6 +216,7 @@ export function usePassageiroForm({
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
+          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
 
           ativo: true,
         });
@@ -265,6 +269,7 @@ export function usePassageiroForm({
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",
+          data_fim_transporte: "31/12/" + new Date().getFullYear(),
 
           ativo: true,
         });

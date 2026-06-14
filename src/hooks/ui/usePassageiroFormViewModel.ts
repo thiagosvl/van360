@@ -160,7 +160,7 @@ export function usePassageiroFormViewModel({
   const handleSubmit = useCallback(async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
-    const purePayload = { ...data };
+    const purePayload: any = { ...data };
 
     purePayload.email_responsavel = purePayload.email_responsavel?.trim()
       ? purePayload.email_responsavel.toLowerCase().trim()
@@ -175,6 +175,10 @@ export function usePassageiroFormViewModel({
 
     purePayload.data_inicio_transporte = purePayload.data_inicio_transporte
       ? convertDateBrToISO(purePayload.data_inicio_transporte)
+      : null;
+
+    purePayload.data_fim_transporte = purePayload.data_fim_transporte
+      ? convertDateBrToISO(purePayload.data_fim_transporte)
       : null;
 
     purePayload.genero = purePayload.genero || null;

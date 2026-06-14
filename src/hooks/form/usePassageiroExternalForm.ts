@@ -46,6 +46,7 @@ const prePassageiroSchema = z.object({
   genero: z.string().min(1, "Campo obrigatório"),
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
   data_inicio_transporte: dateSchema(false, true),
+  data_fim_transporte: dateSchema(false, true),
 
 
   valor_cobranca: z
@@ -114,6 +115,7 @@ export function usePassageiroExternalForm() {
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
+      data_fim_transporte: "31/12/" + new Date().getFullYear(),
     },
     mode: "onBlur",
   });
@@ -185,6 +187,9 @@ export function usePassageiroExternalForm() {
       }
       if (payload.data_inicio_transporte) {
         payload.data_inicio_transporte = convertDateBrToISO(payload.data_inicio_transporte);
+      }
+      if (payload.data_fim_transporte) {
+        payload.data_fim_transporte = convertDateBrToISO(payload.data_fim_transporte);
       }
 
       await prePassageiroApi.createPrePassageiro({
