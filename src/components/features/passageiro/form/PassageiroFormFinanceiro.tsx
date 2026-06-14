@@ -99,7 +99,7 @@ export function PassageiroFormFinanceiro({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Início do Transporte {isExternal && <span className="text-red-600">*</span>}
+                  Início do Transporte
                 </FormLabel>
                 <FormControl>
                   <Input

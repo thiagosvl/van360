@@ -45,7 +45,7 @@ const prePassageiroSchema = z.object({
   data_nascimento: dateSchema(true),
   genero: z.string().min(1, "Campo obrigatório"),
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
-  data_inicio_transporte: dateSchema(true, true),
+  data_inicio_transporte: dateSchema(false, true),
 
 
   valor_cobranca: z
