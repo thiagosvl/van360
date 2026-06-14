@@ -10,6 +10,9 @@ export const subscriptionApi = {
   getPlans: (): Promise<PlansResponse> =>
     apiClient.get(`${endpointBase}/plans`).then((res) => res.data),
 
+  cancelSubscription: () =>
+    apiClient.post(`${endpointBase}/cancel`).then((res) => res.data),
+
   createCheckout: (data: {
     planId: string;
     paymentMethod: "pix" | "credit_card";

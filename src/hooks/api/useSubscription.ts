@@ -220,3 +220,15 @@ export const useSubscriptionCheckout = () => {
   };
 };
 
+export const useCancelSubscription = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => subscriptionApi.cancelSubscription(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-invoices"] });
+    },
+  });
+};
+

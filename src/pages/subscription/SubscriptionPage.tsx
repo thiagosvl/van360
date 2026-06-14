@@ -2,7 +2,8 @@ import {
   useSubscriptionStatus,
   useSubscriptionPlans,
   useSubscriptionBilling,
-  useSubscriptionReferral
+  useSubscriptionReferral,
+  useCancelSubscription
 } from "@/hooks/api/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -77,11 +78,13 @@ const SubscriptionPage = () => {
     claimReferral
   } = useSubscriptionReferral(user?.id);
 
-  const { openSaaSCheckoutDialog, openConfirmationDialog } = useLayout();
+  const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [isCopied, setIsCopied] = useState(false);
   const [claimPhone, setClaimPhone] = useState("");
   const [isClaimOpen, setIsClaimOpen] = useState(false);
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
+
+  const cancelSubscription = useCancelSubscription();
 
   const handleRefresh = async () => {
     if (!user?.id) return;
@@ -104,6 +107,7 @@ const SubscriptionPage = () => {
     return differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()) < 0;
   })();
 
+  const isCanceled = subscription?.status === SubscriptionStatus.CANCELED;
   const isExpired = subscription?.status === SubscriptionStatus.EXPIRED || isTrialExpired;
   const isPastDue = subscription?.status === SubscriptionStatus.PAST_DUE;
 
@@ -141,6 +145,26 @@ const SubscriptionPage = () => {
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, plans]);
+
+  const handleCancelSubscription = () => {
+    openConfirmationDialog({
+      title: "Cancelar Assinatura",
+      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso aos recursos e não será mais cobrado.",
+      confirmText: "Sim, Cancelar",
+      cancelText: "Voltar",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await cancelSubscription.mutateAsync();
+          toast.success("Sua assinatura foi cancelada com sucesso.");
+          closeConfirmationDialog();
+        } catch {
+          toast.error("Erro ao cancelar assinatura. Tente novamente ou chame o suporte.");
+          closeConfirmationDialog();
+        }
+      },
+    });
+  };
 
   const handleSetDefaultCard = async (cardId: string) => {
     try {
@@ -213,7 +237,27 @@ const SubscriptionPage = () => {
 
         {/* Subscription Status Hero */}
         <section className="px-1 mb-10">
-          {isExpired ? (
+          {isCanceled ? (
+            <div className="bg-slate-100 border border-slate-200 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all">
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-headline font-bold text-slate-500 uppercase tracking-[0.2em] text-[10px]">Assinatura Cancelada</span>
+                </div>
+                <h3 className="font-headline font-extrabold text-3xl text-slate-700">Acesso Suspenso</h3>
+                <p className="text-slate-500 font-medium leading-relaxed max-w-2xl">
+                  Sua assinatura está cancelada. Você não receberá novas cobranças e o uso do aplicativo está bloqueado.
+                </p>
+              </div>
+              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
+                <Button
+                  className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                  onClick={() => handleSubscribe()}
+                >
+                  Reativar Agora
+                </Button>
+              </div>
+            </div>
+          ) : isExpired ? (
             <div className="bg-[#ba1a1a] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden transition-all text-white">
               <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
               <div className="relative z-10 space-y-3">
@@ -498,6 +542,18 @@ const SubscriptionPage = () => {
                   })}
                 </div>
               </section>
+            )}
+
+            {!isCanceled && (
+              <div className="px-1 flex justify-center mt-8">
+                <button
+                  type="button"
+                  onClick={handleCancelSubscription}
+                  className="text-[11px] font-medium text-slate-400 hover:text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-400 transition-colors"
+                >
+                  Cancelar minha assinatura
+                </button>
+              </div>
             )}
           </div>
 

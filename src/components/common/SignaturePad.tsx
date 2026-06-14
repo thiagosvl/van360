@@ -26,7 +26,7 @@ interface SignaturePadProps {
 
 /**
  * Componente unificado para captura de assinaturas digitais.
- * Resolve problemas de offset em diferentes DPIs e garante consistência visual premium.
+ * Resolve problemas de offset em diferentes DPIs e garante consistência visual.
  */
 const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
   ({ onChange, initialValue, className, penColor = "#1a3a5c" }, ref) => {
