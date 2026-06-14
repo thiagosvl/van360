@@ -3,13 +3,9 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  Bus,
-  School,
-  Wallet,
-  History,
   Settings,
-  ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Calculator
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
@@ -23,6 +19,11 @@ const adminNavItems = [
     title: "Usuários",
     href: ROUTES.PRIVATE.ADMIN.USERS,
     icon: Users,
+  },
+  {
+    title: "Calculadora",
+    href: ROUTES.PRIVATE.ADMIN.CALCULATOR,
+    icon: Calculator,
   },
   {
     title: "Configurações",

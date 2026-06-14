@@ -61,6 +61,7 @@ const AdminDashboard = lazyLoad(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazyLoad(() => import("./pages/admin/AdminUsers"));
 const AdminUserDetails = lazyLoad(() => import("./pages/admin/AdminUserDetails"));
 const AdminSettings = lazyLoad(() => import("./pages/admin/AdminSettings"));
+const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 
 const App = () => {
   const [updating, setUpdating] = useState(false);
@@ -285,6 +286,7 @@ const App = () => {
                   <Route path={ROUTES.PRIVATE.ADMIN.USERS} element={<AdminUsers />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.USER_DETAILS} element={<AdminUserDetails />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.SETTINGS} element={<AdminSettings />} />
+                  <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
                 </Route>
 
                 {/* Rotas Protegidas - Motorista */}
