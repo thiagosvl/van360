@@ -82,24 +82,6 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               )}
             </TabsTrigger>
             <TabsTrigger
-              value={ContratoTab.ASSINADOS}
-              className={cn(
-                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
-                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
-                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              )}
-            >
-              Assinados
-              {countAssinados !== undefined && (
-                <span className={cn(
-                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                  activeTab === ContratoTab.ASSINADOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                )}>
-                  {countAssinados}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
               value={ContratoTab.SEM_CONTRATO}
               className={cn(
                 "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
@@ -114,6 +96,24 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                   activeTab === ContratoTab.SEM_CONTRATO ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                 )}>
                   {countSemContrato}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value={ContratoTab.ASSINADOS}
+              className={cn(
+                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
+                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
+                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+              )}
+            >
+              Assinados
+              {countAssinados !== undefined && (
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                  activeTab === ContratoTab.ASSINADOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                )}>
+                  {countAssinados}
                 </span>
               )}
             </TabsTrigger>
@@ -183,7 +183,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                     {!isDesativado ? <span className="text-red-500">Desativar Uso</span> : <span>{isContratoConfigurado ? "Reativar Uso" : "Ativar Uso"}</span>}
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     disabled={!isContratoConfigurado || isPreviewLoading}
                     onClick={onOpenPreview}
                     className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"

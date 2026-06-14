@@ -96,7 +96,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      toast.info("Ainda não identificamos a confirmação. Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.", {
+      toast.info("Ainda não identificamos o pagamento. Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.", {
         id: "verify-pix",
         duration: 5000,
       });
@@ -484,7 +484,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   <RefreshCw className="w-8 h-8 text-[#002444] animate-spin" />
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-sm font-bold text-[#002444]">Confirmando pagamento...</p>
                   <p className="text-xs text-[#43474e] leading-relaxed max-w-[240px]">
                     Seu pagamento foi enviado. Aguardando a confirmação da operadora do cartão para ativar a assinatura.
                   </p>

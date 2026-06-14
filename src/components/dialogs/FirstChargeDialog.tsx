@@ -152,9 +152,6 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
           <div className="space-y-5">
             <div className="py-2">
               <div className="space-y-1">
-                <h2 className="text-sm font-semibold text-slate-700">
-                  Registrar primeira mensalidade?
-                </h2>
                 <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                   Gostaria de registrar a mensalidade de{" "}
                   <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para{" "}
@@ -215,9 +212,6 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
             <div className="py-2">
               <div className="space-y-1">
                 <h3 className="text-sm font-semibold text-slate-700">O responsável já pagou {currentMonthNameCapitalized}?</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  {firstNamePassageiro} <span className="text-slate-300">({firstNameResponsavel})</span>
-                </p>
               </div>
             </div>
             <div className="space-y-3">

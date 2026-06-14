@@ -205,7 +205,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           setState: setMultaRescisao,
           icon: Scale,
           iconColor: "text-[#1a3a5c]",
-          simBaseLabel: "Contrato Anual",
+          simBaseLabel: "Contrato Anual Exemplo",
           simResultLabel: "Multa Rescisória",
           simBaseValue: 2400,
           simValue:

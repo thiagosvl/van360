@@ -131,22 +131,22 @@ const Contratos = () => {
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
-                activeTab={ContratoTab.ASSINADOS}
+                activeTab={ContratoTab.SEM_CONTRATO}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
                 {...actions}
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
-                activeTab={ContratoTab.SEM_CONTRATO}
+                activeTab={ContratoTab.ASSINADOS}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
                 {...actions}
