@@ -372,7 +372,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
             {/* Conteúdo Cartão */}
             {paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
               <div className="animate-in fade-in duration-300 space-y-4">
-                {cardError && (
+                {!hasNewCardFlow && cardError && (
                   <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
                     <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
@@ -442,21 +442,21 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
                 {/* Formulário de novo cartão (Endereço Primeiro) */}
                 {(savedCards.length === 0 || selectedSavedCardId === "new") && (
-                  <BillingAddressForm 
-                    onChange={setAddressData} 
+                  <BillingAddressForm
+                    onChange={setAddressData}
                     initialBirthDate={profile?.data_nascimento}
                     initialData={{
-                      zipcode: profile?.cep,
-                      street: profile?.logradouro,
-                      number_address: profile?.numero,
-                      neighborhood: profile?.bairro,
-                      city: profile?.cidade,
-                      state: profile?.estado
+                      zipcode: addressData?.zipcode || profile?.cep,
+                      street: addressData?.street || profile?.logradouro,
+                      number_address: addressData?.number_address || profile?.numero,
+                      neighborhood: addressData?.neighborhood || profile?.bairro,
+                      city: addressData?.city || profile?.cidade,
+                      state: addressData?.state || profile?.estado
                     }}
                   />
                 )}
 
-                {cardError && (
+                {!hasNewCardFlow && cardError && (
                   <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
                     <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
@@ -488,7 +488,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
         {step === 3 && hasNewCardFlow && (
           <div className="p-6 space-y-4">
-            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} />
+            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} cardError={cardError} />
             {cardError && (
               <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -508,7 +508,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 </p>
                 <p className="text-xs text-[#43474e]">Aguarde um momento</p>
               </div>
-            ) : isCardStep3 ? (
+            ) : isCardStep4 ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-5 text-center">
                 <div className="w-16 h-16 rounded-full bg-[#002444]/5 flex items-center justify-center">
                   <RefreshCw className="w-8 h-8 text-[#002444] animate-spin" />
@@ -560,7 +560,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
             <BaseDialog.Action
               label="Continuar"
               onClick={nextStep}
-              icon={<ArrowRight className="w-4 h-4" />}
+              isLoading={isLoadingData}
+              disabled={isLoadingData || !selectedPlan}
+              icon={!isLoadingData ? <ArrowRight className="w-4 h-4" /> : undefined}
             />
           )}
 

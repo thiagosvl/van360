@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { CreditCard, MapPin, Info, Loader2 } from "lucide-react";
+import { CreditCard, MapPin, Info, Loader2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
@@ -21,9 +21,10 @@ export interface CreditCardData {
 interface CreditCardFormProps {
   onChange: (data: CreditCardData | null) => void;
   initialBirthDate?: string;
+  cardError?: string | null;
 }
 
-export default function CreditCardForm({ onChange, initialBirthDate }: CreditCardFormProps) {
+export default function CreditCardForm({ onChange, initialBirthDate, cardError }: CreditCardFormProps) {
   const formattedInitialBirth = (() => {
     if (!initialBirthDate) return "";
     const clean = initialBirthDate.trim();
@@ -218,6 +219,13 @@ export default function CreditCardForm({ onChange, initialBirthDate }: CreditCar
           <CreditCard className="w-4 h-4 text-[#002444]" />
           <h4 className="font-manrope font-bold text-[#002444] text-sm">Informações do Cartão</h4>
         </div>
+
+        {cardError && (
+          <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl animate-in fade-in duration-300">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
+          </div>
+        )}
 
         <div className="grid gap-5">
           <div className="space-y-1">

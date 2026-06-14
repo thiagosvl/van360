@@ -159,21 +159,9 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
         <h4 className="font-manrope font-bold text-[#002444] text-sm">Endereço de Cobrança</h4>
       </div>
 
-      <div className="grid gap-5">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className={labelStyles}>Nascimento</label>
-            <input
-              className={cn(
-                inputStyles,
-                initialBirthDate && "bg-[#d2d5d8] cursor-not-allowed opacity-70 focus:ring-0"
-              )}
-              placeholder="dd/mm/aaaa"
-              value={maskedBirth}
-              onChange={(e) => handleChange("birth", e.target.value)}
-              readOnly={!!initialBirthDate}
-            />
-          </div>
+      <div className="grid gap-4 sm:gap-5">
+        {/* Linha 1: CEP */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1">
             <label className={labelStyles}>CEP</label>
             <div className="relative">
@@ -192,8 +180,9 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-3 space-y-1">
+        {/* Linha 2: Logradouro e Nº */}
+        <div className="grid grid-cols-4 sm:grid-cols-12 gap-4">
+          <div className="col-span-3 sm:col-span-9 space-y-1">
             <label className={labelStyles}>Logradouro</label>
             <input
               className={inputStyles}
@@ -202,7 +191,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               onChange={(e) => handleChange("street", e.target.value)}
             />
           </div>
-          <div className="col-span-1 space-y-1">
+          <div className="col-span-1 sm:col-span-3 space-y-1">
             <label className={labelStyles}>Nº</label>
             <input
               id="number_address"
@@ -214,18 +203,39 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className={labelStyles}>Bairro</label>
-          <input
-            className={inputStyles}
-            placeholder="Seu bairro"
-            value={formData.neighborhood}
-            onChange={(e) => handleChange("neighborhood", e.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-cols-5 gap-4">
-          <div className="col-span-3 space-y-1">
+        {/* Linha 3: Bairro, Cidade e UF */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+          <div className="sm:col-span-5 space-y-1">
+            <label className={labelStyles}>Bairro</label>
+            <input
+              className={inputStyles}
+              placeholder="Seu bairro"
+              value={formData.neighborhood}
+              onChange={(e) => handleChange("neighborhood", e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-3 sm:hidden gap-4">
+            <div className="col-span-2 space-y-1">
+              <label className={labelStyles}>Cidade</label>
+              <input
+                className={inputStyles}
+                placeholder="Sua cidade"
+                value={formData.city}
+                onChange={(e) => handleChange("city", e.target.value)}
+              />
+            </div>
+            <div className="col-span-1 space-y-1">
+              <label className={labelStyles}>UF</label>
+              <input
+                className={cn(inputStyles, "uppercase")}
+                placeholder="SP"
+                maxLength={2}
+                value={formData.state}
+                onChange={(e) => handleChange("state", e.target.value.toUpperCase())}
+              />
+            </div>
+          </div>
+          <div className="hidden sm:block sm:col-span-5 space-y-1">
             <label className={labelStyles}>Cidade</label>
             <input
               className={inputStyles}
@@ -234,7 +244,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               onChange={(e) => handleChange("city", e.target.value)}
             />
           </div>
-          <div className="col-span-2 space-y-1">
+          <div className="hidden sm:block sm:col-span-2 space-y-1">
             <label className={labelStyles}>UF</label>
             <input
               className={cn(inputStyles, "uppercase")}
@@ -243,6 +253,25 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               value={formData.state}
               onChange={(e) => handleChange("state", e.target.value.toUpperCase())}
             />
+          </div>
+        </div>
+
+        {/* Linha 4: Data de Nascimento */}
+        <div className="pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <label className={labelStyles}>Data de Nascimento</label>
+              <input
+                className={cn(
+                  inputStyles,
+                  initialBirthDate && "bg-[#d2d5d8] cursor-not-allowed opacity-70 focus:ring-0"
+                )}
+                placeholder="dd/mm/aaaa"
+                value={maskedBirth}
+                onChange={(e) => handleChange("birth", e.target.value)}
+                readOnly={!!initialBirthDate}
+              />
+            </div>
           </div>
         </div>
       </div>
