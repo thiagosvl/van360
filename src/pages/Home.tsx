@@ -213,31 +213,19 @@ const Home = () => {
                 activeIcon={CopyCheck}
                 label={isCopied ? "Copiado!" : "Link de Cadastro"}
                 isActive={isCopied}
-                variant="violet"
+                variant="indigo"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
                 icon={Users}
                 label="Passageiros"
-                variant="indigo"
+                variant="blue"
               />
               <ShortcutCard
                 to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
-                variant="emerald"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
-                icon={TrendingDown}
-                label="Gastos"
-                variant="orange"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
-                icon={FileText}
-                label="Relatórios"
-                variant="amber"
+                variant="sky"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.BILLING}
@@ -246,10 +234,22 @@ const Home = () => {
                 variant="emerald"
               />
               <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
+                icon={TrendingDown}
+                label="Gastos"
+                variant="rose"
+              />
+              <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
                 icon={FileText}
                 label="Contratos"
-                variant="sky"
+                variant="amber"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
+                icon={FileText}
+                label="Relatórios"
+                variant="orange"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
@@ -267,7 +267,7 @@ const Home = () => {
                 to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
                 icon={Rocket}
                 label="Minha Assinatura"
-                variant="blue"
+                variant="indigo"
               />
             </div>
           </section>

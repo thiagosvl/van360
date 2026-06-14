@@ -57,7 +57,7 @@ export const DashboardStatusCard = ({
       iconColor: "text-blue-600",
       titleColor: "text-blue-900",
       descColor: "text-blue-700",
-      buttonBg: "bg-blue-600 hover:bg-blue-600/90 shadow-blue-200",
+      buttonBg: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 shadow-[#1a3a5c]/30",
     },
   };
 
