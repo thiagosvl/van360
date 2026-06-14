@@ -27,12 +27,12 @@ export const TrialBanner = ({ daysLeft, onSubscribe }: TrialBannerProps) => {
       {onSubscribe ? (
         <button
           onClick={onSubscribe}
-          className="px-4 py-2 bg-amber-600 text-white text-[11px] font-bold rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center"
+          className="h-10 px-5 bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-amber-600/90 transition-all shadow-md shadow-amber-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
         >
           Assinar
         </button>
       ) : (
-        <div className="px-4 py-2 bg-amber-600/50 text-white text-[11px] font-bold rounded-xl shrink-0 opacity-50 w-full sm:w-auto text-center flex justify-center">
+        <div className="h-10 px-5 bg-amber-600/50 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shrink-0 opacity-50 w-full sm:w-auto text-center flex justify-center items-center cursor-not-allowed">
           Assinar
         </div>
       )}

@@ -65,21 +65,21 @@ const Contratos = () => {
 
             {/* Banner: Não Configurado */}
             {!isContratoAtivo && !isContratoConfigurado && (
-              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 shrink-0">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-blue-900 tracking-tight">Você ainda não configurou os contratos</p>
-                    <p className="text-[11px] text-blue-700 leading-relaxed">
+                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Você ainda não configurou os contratos</p>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
                       Ative e configure essa funcionalidade para gerar contratos em PDF automaticamente para seus passageiros.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleOpenContractSetup}
-                  className="px-4 py-2 bg-blue-600 text-white text-[11px] font-bold rounded-xl hover:bg-blue-600/90 transition-all shadow-sm shadow-blue-200 shrink-0 active:scale-95 w-full sm:w-auto"
+                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
                 >
                   Configurar Agora
                 </button>
@@ -103,7 +103,7 @@ const Contratos = () => {
                 <button
                   onClick={() => handleToggleContracts(true)}
                   disabled={isToggling}
-                  className="px-4 py-2 bg-[#1a3a5c] text-white text-[11px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-slate-200 shrink-0 active:scale-95 w-full sm:w-auto disabled:opacity-50"
+                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center disabled:opacity-50"
                 >
                   Reativar Contratos
                 </button>

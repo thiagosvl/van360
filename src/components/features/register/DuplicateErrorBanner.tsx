@@ -30,7 +30,7 @@ export function DuplicateErrorBanner({
           <button
             type="button"
             onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
-            className="inline-flex items-center mt-3 text-sm font-bold text-amber-800 bg-amber-200/60 hover:bg-amber-200 px-4 py-2 rounded-lg transition-colors"
+            className="inline-flex justify-center items-center mt-3 text-[10px] font-black uppercase tracking-widest text-amber-800 bg-amber-200/60 hover:bg-amber-200 px-5 h-10 rounded-2xl transition-all active:scale-95 shadow-sm"
           >
             Ir para login
           </button>
