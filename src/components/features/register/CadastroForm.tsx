@@ -201,7 +201,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                 htmlFor="termos_aceitos"
                 className="text-xs sm:text-sm text-slate-500 cursor-pointer select-none leading-relaxed"
               >
-                Li e aceito os{" "}
+                Aceito os{" "}
                 <button
                   type="button"
                   onClick={() => setOpenTermos(true)}

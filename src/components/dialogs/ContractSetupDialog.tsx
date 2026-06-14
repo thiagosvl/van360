@@ -84,8 +84,13 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     }
     if (isOpen && profile && !initializedRef.current) {
       setClausulas(profile.config_contrato?.clausulas ?? DEFAULT_CLAUSULAS_CONTRATO);
-      if (profile.config_contrato?.multa_atraso) setMultaAtraso(profile.config_contrato.multa_atraso);
-      if (profile.config_contrato?.multa_rescisao) setMultaRescisao(profile.config_contrato.multa_rescisao);
+      const isDefault = !profile.config_contrato?.usar_contratos;
+      if (profile.config_contrato?.multa_atraso) {
+        setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: "fixo" } : profile.config_contrato.multa_atraso);
+      }
+      if (profile.config_contrato?.multa_rescisao) {
+        setMultaRescisao(isDefault ? { ...profile.config_contrato.multa_rescisao, tipo: "fixo" } : profile.config_contrato.multa_rescisao);
+      }
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
       setStep(SetupStep.FEES);

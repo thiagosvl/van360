@@ -110,8 +110,8 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
             <SignatureCanvas
               ref={sigCanvasRef}
               penColor={penColor}
-              minWidth={1.5 * ratio}
-              maxWidth={3.5 * ratio}
+              minWidth={1.5}
+              maxWidth={3.5}
               onEnd={handleEnd}
               canvasProps={{
                 className: "w-full h-full",
