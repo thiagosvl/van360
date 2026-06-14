@@ -170,7 +170,7 @@ export function useSaaSCheckoutViewModel({
 
   // Polling de fallback a cada 45s — cobre PIX e Cartão, caso o Realtime falhe
   useEffect(() => {
-    if (!isOpen || step !== 3 || isHandlingConfirmation.current) return;
+    if (!isOpen || step !== 4 || isHandlingConfirmation.current) return;
 
     fallbackIntervalRef.current = setInterval(() => {
       if (isHandlingConfirmation.current) return;
@@ -182,10 +182,12 @@ export function useSaaSCheckoutViewModel({
     };
   }, [isOpen, step, activeInvoice?.id]);
 
-  const nextStep = () => setStep(prev => Math.min(prev + 1, 3));
+  const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => {
     setStep(prev => Math.max(prev - 1, 1));
   };
+
+  const jumpToStep = (newStep: number) => setStep(newStep);
 
   const handleGenerateCheckout = async (cardData: CreditCardData | null) => {
     if (!user || isGeneratingRef.current) return;
@@ -262,7 +264,7 @@ export function useSaaSCheckoutViewModel({
       // A atualização do cache de faturas (listagem) ocorrerá via Realtime (useSubscription.ts).
       if (result) {
         setActiveInvoice(result as unknown as SubscriptionInvoice);
-        setStep(3);
+        setStep(4);
       }
     } catch (error: unknown) {
       const msg = getErrorMessage(error, "Erro ao configurar assinatura");
@@ -280,6 +282,7 @@ export function useSaaSCheckoutViewModel({
     step,
     nextStep,
     prevStep,
+    jumpToStep,
     selectedPeriod,
     setSelectedPeriod,
     paymentMethod,

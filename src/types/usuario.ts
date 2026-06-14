@@ -10,6 +10,12 @@ export interface Usuario {
   data_nascimento?: string;
   chave_pix?: string;
   tipo_chave_pix?: string;
+  logradouro?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
 
   ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
 

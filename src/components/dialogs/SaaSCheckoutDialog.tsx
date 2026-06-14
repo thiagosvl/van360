@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
 import CreditCardForm, { CreditCardData } from "@/components/dialogs/CreditCardForm";
+import BillingAddressForm from "@/components/dialogs/BillingAddressForm";
 import { useState, useEffect } from "react";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
@@ -29,6 +30,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     step,
     nextStep,
     prevStep,
+    jumpToStep,
     selectedPeriod,
     setSelectedPeriod,
     paymentMethod,
@@ -50,11 +52,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
+  const [addressData, setAddressData] = useState<Partial<CreditCardData> | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || step !== 3) {
+    if (!isOpen || step !== 4) {
       setPixCopied(false);
     }
   }, [isOpen, step]);
@@ -107,19 +110,32 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     }
   };
 
-  const isCardStep3 = step === 3 && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD;
-  const isLocked = isGenerating || isCardStep3;
+  const isCardStep4 = step === 4 && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD;
+  const isLocked = isGenerating || isCardStep4;
 
-  const stepTitles = [
-    "Assinatura Van360",
-    "Forma de Pagamento",
-    paymentMethod === CheckoutPaymentMethod.PIX ? "Aguardando PIX" : "Confirmando Pagamento",
-  ];
-  const stepSubtitles = [
-    "Escolha o melhor plano para você",
-    paymentMethod === CheckoutPaymentMethod.PIX ? "Pague com PIX e ative instantaneamente" : "Preencha os dados do cartão",
-    paymentMethod === CheckoutPaymentMethod.PIX ? "Escaneie o QR Code no app do banco" : "Seu banco está confirmando o pagamento",
-  ];
+  const hasNewCardFlow = paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (!savedCards.length || selectedSavedCardId === "new");
+  const totalSteps = hasNewCardFlow ? 4 : 3;
+
+  // Mapeamento dinâmico de passos dependendo se tem endereço ou não
+  const currentStepDisplay = step === 4 ? totalSteps : step;
+
+  const getStepTitle = (s: number) => {
+    if (s === 1) return "Assinatura Van360";
+    if (s === 2) return "Forma de Pagamento";
+    if (s === 3 && hasNewCardFlow) return "Dados do Cartão";
+    return paymentMethod === CheckoutPaymentMethod.PIX ? "Aguardando PIX" : "Confirmando Pagamento";
+  };
+
+  const getStepSubtitle = (s: number) => {
+    if (s === 1) return "Escolha o melhor plano para você";
+    if (s === 2) {
+      if (paymentMethod === CheckoutPaymentMethod.PIX) return "Pague com PIX e ative instantaneamente";
+      if (hasNewCardFlow) return "Onde a fatura deve ser registrada";
+      return "Selecione o cartão de crédito";
+    }
+    if (s === 3 && hasNewCardFlow) return "Preencha os dados do cartão";
+    return paymentMethod === CheckoutPaymentMethod.PIX ? "Escaneie o QR Code no app do banco" : "Seu banco está confirmando o pagamento";
+  };
 
   return (
     <BaseDialog
@@ -129,11 +145,11 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       lockClose={isLocked}
     >
       <BaseDialog.Header
-        title={stepTitles[step - 1]}
-        subtitle={stepSubtitles[step - 1]}
+        title={getStepTitle(step)}
+        subtitle={getStepSubtitle(step)}
         showSteps
-        currentStep={step}
-        totalSteps={3}
+        currentStep={currentStepDisplay}
+        totalSteps={totalSteps}
         onClose={onClose}
         hideCloseButton={isLocked}
         leftAction={step > 1 ? (
@@ -424,9 +440,20 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   </div>
                 )}
 
-                {/* Formulário de novo cartão */}
+                {/* Formulário de novo cartão (Endereço Primeiro) */}
                 {(savedCards.length === 0 || selectedSavedCardId === "new") && (
-                  <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} />
+                  <BillingAddressForm 
+                    onChange={setAddressData} 
+                    initialBirthDate={profile?.data_nascimento}
+                    initialData={{
+                      zipcode: profile?.cep,
+                      street: profile?.logradouro,
+                      number_address: profile?.numero,
+                      neighborhood: profile?.bairro,
+                      city: profile?.cidade,
+                      state: profile?.estado
+                    }}
+                  />
                 )}
 
                 {cardError && (
@@ -459,7 +486,19 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && hasNewCardFlow && (
+          <div className="p-6 space-y-4">
+            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} />
+            {cardError && (
+              <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="p-6 space-y-4">
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-16 space-y-3">
@@ -533,21 +572,44 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 onClick={prevStep}
               />
               <BaseDialog.Action
-                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : "Confirmar"}
-                onClick={() => handleGenerateCheckout(cardData)}
+                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : (hasNewCardFlow ? "Continuar" : "Confirmar")}
+                onClick={() => {
+                  if (hasNewCardFlow) {
+                    jumpToStep(3);
+                  } else {
+                    handleGenerateCheckout(null); // Will use selectedSavedCardId or Pix
+                  }
+                }}
                 isLoading={isGenerating}
                 disabled={
                   paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
                     !selectedSavedCardId ||
-                    (selectedSavedCardId === "new" && !cardData)
+                    (selectedSavedCardId === "new" && !addressData)
                   )
                 }
-                icon={paymentMethod === CheckoutPaymentMethod.CREDIT_CARD ? <ShieldCheck className="w-4 h-4" /> : undefined}
+                icon={(!hasNewCardFlow && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD) ? <ShieldCheck className="w-4 h-4" /> : undefined}
               />
             </>
           )}
 
-          {step === 3 && !isCardStep3 && activeInvoice?.pix_copy_paste && (
+          {step === 3 && hasNewCardFlow && (
+            <>
+              <BaseDialog.Action
+                label="Voltar"
+                variant="outline"
+                onClick={() => jumpToStep(2)}
+              />
+              <BaseDialog.Action
+                label="Confirmar"
+                onClick={() => handleGenerateCheckout({ ...cardData, ...addressData } as CreditCardData)}
+                isLoading={isGenerating}
+                disabled={!cardData}
+                icon={<ShieldCheck className="w-4 h-4" />}
+              />
+            </>
+          )}
+
+          {step === 4 && !isCardStep4 && activeInvoice?.pix_copy_paste && (
             <div className="flex flex-col sm:flex-row gap-2.5 w-full">
               {pixCopied ? (
                 <Button
