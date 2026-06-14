@@ -294,8 +294,8 @@ const SubscriptionPage = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-slate-50/80 border border-slate-200/60 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-slate-100 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
+            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
