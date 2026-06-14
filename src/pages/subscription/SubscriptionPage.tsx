@@ -335,74 +335,74 @@ const SubscriptionPage = () => {
               </div>
 
               <div className="space-y-3">
-                  {invoices && invoices.length > 0 ? (
-                    invoices
-                      .filter(inv => inv.status !== SubscriptionInvoiceStatus.CANCELED)
-                      .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime())
-                      .map((inv) => (
-                        <div
-                          key={inv.id}
-                          className="bg-white rounded-[22px] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md"
-                        >
-                          <div className="flex items-center justify-between p-4 sm:px-6 sm:py-5">
-                            <div className="space-y-1.5">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm sm:text-base font-black text-primary">
-                                  Plano {((inv as any).planos?.nome) || inv.assinaturas?.planos?.nome || "Van360"}
-                                </span>
-                                <InvoiceStatusBadge status={inv.status} />
-                              </div>
-                              <div className="text-[11px] sm:text-xs font-medium text-slate-500">
-                                <span className="font-bold text-slate-400">Vencimento:</span>{" "}
-                                {formatLocalDate(parseLocalDate(inv.data_vencimento || inv.created_at))}
-                                {inv.metodo_pagamento && (
-                                  <>
-                                    <span className="mx-1.5 text-slate-300">•</span>
-                                    <span className="capitalize tracking-wider">
-                                      {inv.metodo_pagamento === "credit_card" ? "Cartão" : inv.metodo_pagamento === "pix" ? "Pix" : "Boleto"}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
+                {invoices && invoices.length > 0 ? (
+                  invoices
+                    .filter(inv => inv.status !== SubscriptionInvoiceStatus.CANCELED)
+                    .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime())
+                    .map((inv) => (
+                      <div
+                        key={inv.id}
+                        className="bg-white rounded-[22px] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all"
+                      >
+                        <div className="flex items-center justify-between p-4 sm:px-6 sm:py-5">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm sm:text-base font-black text-primary">
+                                Plano {((inv as any).planos?.nome) || inv.assinaturas?.planos?.nome || "Van360"}
+                              </span>
+                              <InvoiceStatusBadge status={inv.status} />
                             </div>
-
-                            <div className="flex flex-col items-end gap-2 shrink-0">
-                              <div className="text-sm sm:text-base font-black text-primary">
-                                {formatCurrency(inv.valor)}
-                              </div>
+                            <div className="text-[11px] sm:text-xs font-medium text-slate-500">
+                              <span className="font-bold text-slate-400">Vencimento:</span>{" "}
+                              {formatLocalDate(parseLocalDate(inv.data_vencimento || inv.created_at))}
+                              {inv.metodo_pagamento && (
+                                <>
+                                  <span className="mx-1.5 text-slate-300">•</span>
+                                  <span className="capitalize tracking-wider">
+                                    {inv.metodo_pagamento === "credit_card" ? "Cartão" : inv.metodo_pagamento === "pix" ? "Pix" : "Boleto"}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
 
-                          {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
-                            <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
-                              {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
-                                <button
-                                  className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-amber-700 hover:bg-amber-100 transition-colors uppercase tracking-[0.1em] bg-amber-50 px-4 py-3 rounded-xl border border-amber-200"
-                                  onClick={() => handleCopyPix(inv.pix_copy_paste!)}
-                                >
-                                  <Copy className="w-4 h-4" />
-                                  Copiar código PIX
-                                </button>
-                              ) : (
-                                <button
-                                  className="w-full px-4 py-3 bg-amber-600 text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200 active:scale-95 text-center flex justify-center items-center"
-                                  onClick={() => handleSubscribe()}
-                                >
-                                  Pagar Agora
-                                </button>
-                              )}
+                          <div className="flex flex-col items-end gap-2 shrink-0">
+                            <div className="text-sm sm:text-base font-black text-primary">
+                              {formatCurrency(inv.valor)}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      ))
-                  ) : (
-                    <div className="py-12 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
-                      <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
-                        <Clock className="w-6 h-6 text-slate-300" />
+
+                        {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
+                          <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
+                            {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
+                              <button
+                                className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-amber-700 hover:bg-amber-100 transition-colors uppercase tracking-[0.1em] bg-amber-50 px-4 py-3 rounded-xl border border-amber-200"
+                                onClick={() => handleCopyPix(inv.pix_copy_paste!)}
+                              >
+                                <Copy className="w-4 h-4" />
+                                Copiar código PIX
+                              </button>
+                            ) : (
+                              <button
+                                className="w-full px-4 py-3 bg-amber-600 text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200 active:scale-95 text-center flex justify-center items-center"
+                                onClick={() => handleSubscribe()}
+                              >
+                                Pagar Agora
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs font-bold text-slate-400">Nenhum pagamento identificado.</p>
+                    ))
+                ) : (
+                  <div className="py-12 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
+                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
+                      <Clock className="w-6 h-6 text-slate-300" />
                     </div>
-                  )}
+                    <p className="text-xs font-bold text-slate-400">Nenhum pagamento identificado.</p>
+                  </div>
+                )}
               </div>
             </section>
 
