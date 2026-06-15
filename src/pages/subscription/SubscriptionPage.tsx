@@ -374,7 +374,7 @@ const SubscriptionPage = () => {
             {/* 1. Histórico de Faturas: PRIORIDADE */}
             <section className="space-y-6">
               <div className="flex items-center justify-between px-1">
-                <h4 className="font-headline font-bold text-xl text-primary">Histórico de Cobrança</h4>
+                <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Histórico de Cobrança</h4>
               </div>
 
               <div className="space-y-3">
@@ -453,7 +453,7 @@ const SubscriptionPage = () => {
             {paymentMethods && paymentMethods.length > 0 && (
               <section className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="flex items-center justify-between px-1">
-                  <h4 className="font-headline font-bold text-xl text-primary">Métodos de Pagamento</h4>
+                  <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Métodos de Pagamento</h4>
                 </div>
 
                 <div className="space-y-3">
@@ -548,14 +548,14 @@ const SubscriptionPage = () => {
           {/* Lateral Column: Recompensas (1/3 desktop) */}
           <aside className="lg:col-span-1 mt-4">
             <div className="flex items-center justify-between px-1 pb-6">
-              <h4 className="font-headline font-bold text-xl text-primary">Indique e Ganhe</h4>
+              <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Indique e Ganhe</h4>
             </div>
             <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[32px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
               <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 
               <div className="relative z-10 space-y-6 lg:space-y-8">
                 <div className="space-y-3">
-                  <p className="font-semibold text-sm sm:text-xl leading-[1.1] text-primary">
+                  <p className="font-normal text-sm sm:text-base leading-[1.1] text-primary">
                     Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
                   </p>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed">
@@ -567,14 +567,14 @@ const SubscriptionPage = () => {
                 <div className="flex items-center justify-around bg-white/50 p-5 rounded-[22px] border border-[#d6e4f0] shadow-sm">
                   <div className="text-center w-full">
                     <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Indicações</p>
-                    <p className="text-2xl font-black text-primary">{completedReferrals}</p>
+                    <p className="text-2xl font-semibold text-primary">{completedReferrals}</p>
                   </div>
 
                   <div className="w-px h-10 bg-slate-200 shrink-0 mx-2"></div>
 
                   <div className="text-center w-full">
                     <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Dias Ganhos</p>
-                    <p className="text-2xl font-black text-primary">{totalBonusDays}d</p>
+                    <p className="text-2xl font-semibold text-primary">{totalBonusDays} dias</p>
                   </div>
                 </div>
 
