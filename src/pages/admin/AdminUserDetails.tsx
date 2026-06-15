@@ -236,12 +236,13 @@ export default function AdminUserDetails() {
       confirmText: "Sim, Resetar",
       variant: "warning",
       onConfirm: async () => {
-        resetPassword.mutate(id, {
-          onSuccess: (res: any) => {
-            closeConfirmationDialog();
-            setResetPasswordData({ open: true, senha: res.senha });
-          },
-        });
+        try {
+          const res: any = await resetPassword.mutateAsync(id);
+          closeConfirmationDialog();
+          setResetPasswordData({ open: true, senha: res.senha });
+        } catch (error) {
+          console.error("Falha ao resetar senha", error);
+        }
       },
     });
   };
@@ -278,12 +279,13 @@ export default function AdminUserDetails() {
       confirmText: "Sim, Excluir",
       variant: "destructive",
       onConfirm: async () => {
-        deleteUser.mutate(id, {
-          onSuccess: () => {
-            closeConfirmationDialog();
-            navigate(ROUTES.PRIVATE.ADMIN.USERS);
-          },
-        });
+        try {
+          await deleteUser.mutateAsync(id);
+          closeConfirmationDialog();
+          navigate(ROUTES.PRIVATE.ADMIN.USERS);
+        } catch (error) {
+          console.error("Falha ao excluir usuário", error);
+        }
       },
     });
   };
