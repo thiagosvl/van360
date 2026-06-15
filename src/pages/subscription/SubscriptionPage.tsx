@@ -372,7 +372,7 @@ const SubscriptionPage = () => {
           <div className="lg:col-span-2 space-y-12">
 
             {/* 1. Histórico de Faturas: PRIORIDADE */}
-            <section className="space-y-6">
+            <section className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Histórico de Cobrança</h4>
               </div>
@@ -451,7 +451,7 @@ const SubscriptionPage = () => {
 
             {/* 2. Métodos de Pagamento: COMPACTO - Só aparece se houver cartões */}
             {paymentMethods && paymentMethods.length > 0 && (
-              <section className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <section className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="flex items-center justify-between px-1">
                   <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Métodos de Pagamento</h4>
                 </div>
@@ -547,13 +547,13 @@ const SubscriptionPage = () => {
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
           <aside className="lg:col-span-1 mt-4">
-            <div className="flex items-center justify-between px-1 pb-6">
+            <div className="flex items-center justify-between px-1 pb-4">
               <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Indique e Ganhe</h4>
             </div>
-            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[32px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
+            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[22px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
               <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 
-              <div className="relative z-10 space-y-6 lg:space-y-8">
+              <div className="relative z-10 space-y-3 lg:space-y-8">
                 <div className="space-y-3">
                   <p className="font-normal text-sm sm:text-base leading-[1.1] text-primary">
                     Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
