@@ -555,7 +555,7 @@ const SubscriptionPage = () => {
 
               <div className="relative z-10 space-y-6 lg:space-y-8">
                 <div className="space-y-3">
-                  <p className="font-headline font-extrabold text-xl leading-[1.1] text-primary">
+                  <p className="font-semibold text-sm sm:text-xl leading-[1.1] text-primary">
                     Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
                   </p>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed">
