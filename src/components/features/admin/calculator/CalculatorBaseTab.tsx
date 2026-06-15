@@ -152,18 +152,18 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               <div className="space-y-4">
                 <div className="flex justify-between items-center gap-4">
                   <span className="text-sm font-medium text-slate-700">Mensalidade Normal</span>
-                  <AdminMoneyInput className="w-[130px] font-semibold" value={baseState.pN} onChange={(v) => updateBase('pN', v)} />
+                  <AdminMoneyInput className="w-[130px]" value={baseState.pN} onChange={(v) => updateBase('pN', v)} />
                 </div>
                 <div className="flex justify-between items-center gap-4">
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-slate-700">Plano Anual</span>
                     <span className="text-[10px] text-slate-400 font-medium">≈ {formatCurrency(pAmes)}/mês eq.</span>
                   </div>
-                  <AdminMoneyInput className="w-[130px] font-semibold" value={baseState.pA} onChange={(v) => updateBase('pA', v)} />
+                  <AdminMoneyInput className="w-[130px]" value={baseState.pA} onChange={(v) => updateBase('pA', v)} />
                 </div>
                 <div className="flex justify-between items-center gap-4">
                   <span className="text-sm font-medium text-slate-700">Preço Especial (Desconto)</span>
-                  <AdminMoneyInput className="w-[130px] font-semibold" value={baseState.pF} onChange={(v) => updateBase('pF', v)} />
+                  <AdminMoneyInput className="w-[130px]" value={baseState.pF} onChange={(v) => updateBase('pF', v)} />
                 </div>
               </div>
             </CardContent>
@@ -180,41 +180,41 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-                <div className="flex justify-between items-center gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-slate-600">Churn mensal (%)</span>
-                    <span className="text-[10px] text-slate-400">Taxa de cancelamento</span>
-                  </div>
-                  <Input type="number" className="w-[100px] bg-white" value={baseState.churn} onChange={e => updateBase('churn', parseFloat(e.target.value) || 0)} />
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col">
+                  <span className="text-sm text-slate-600">Churn mensal (%)</span>
+                  <span className="text-[10px] text-slate-400">Taxa de cancelamento</span>
                 </div>
-                <div className="flex justify-between items-center gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-slate-600">CAC - Custo de Aquisição (R$)</span>
-                    <span className="text-[10px] text-slate-400">Custo de marketing/vendas por novo cliente</span>
-                  </div>
-                  <AdminMoneyInput className="w-[120px] bg-white" value={baseState.cac} onChange={(v) => updateBase('cac', v)} />
+                <Input type="number" className="w-[100px] bg-white" value={baseState.churn} onChange={e => updateBase('churn', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col">
+                  <span className="text-sm text-slate-600">CAC - Custo de Aquisição (R$)</span>
+                  <span className="text-[10px] text-slate-400">Custo de marketing/vendas por novo cliente</span>
                 </div>
-                <div className="space-y-2 mt-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">% pagando via Pix</span>
-                    <span className="font-medium text-slate-700">{baseState.pixPct}%</span>
-                  </div>
-                  <Slider value={[baseState.pixPct]} min={0} max={100} step={5} onValueChange={(v) => updateBase('pixPct', v[0])} />
+                <AdminMoneyInput className="w-[120px] bg-white" value={baseState.cac} onChange={(v) => updateBase('cac', v)} />
+              </div>
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">% pagando via Pix</span>
+                  <span className="font-medium text-slate-700">{baseState.pixPct}%</span>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  <div>
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase">Taxa Pix (%)</label>
-                    <Input type="number" className="h-8 mt-1 bg-white text-xs" value={baseState.tPix} onChange={e => updateBase('tPix', parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase">Taxa Cartão (%)</label>
-                    <Input type="number" className="h-8 mt-1 bg-white text-xs" value={baseState.tCard} onChange={e => updateBase('tCard', parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase">Imposto (%)</label>
-                    <Input type="number" className="h-8 mt-1 bg-white text-xs" value={baseState.tImp} onChange={e => updateBase('tImp', parseFloat(e.target.value) || 0)} />
-                  </div>
+                <Slider value={[baseState.pixPct]} min={0} max={100} step={5} onValueChange={(v) => updateBase('pixPct', v[0])} />
+              </div>
+              <div className="grid grid-cols-3 gap-3 mt-4">
+                <div>
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase">Taxa Pix (%)</label>
+                  <Input type="number" className="h-8 mt-1 bg-white text-xs" value={baseState.tPix} onChange={e => updateBase('tPix', parseFloat(e.target.value) || 0)} />
                 </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase">Taxa Cartão (%)</label>
+                  <Input type="number" className="h-8 mt-1 bg-white text-xs" value={baseState.tCard} onChange={e => updateBase('tCard', parseFloat(e.target.value) || 0)} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase">Imposto (%)</label>
+                  <Input type="number" className="h-8 mt-1 bg-white text-xs" value={baseState.tImp} onChange={e => updateBase('tImp', parseFloat(e.target.value) || 0)} />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

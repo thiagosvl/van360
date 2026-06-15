@@ -38,26 +38,10 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="relative group flex-1 hidden sm:block">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-[#1a3a5c]" />
-          <input
-            type="text"
-            placeholder="Pesquisar motoristas, veículos ou logs..."
-            className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs font-semibold text-slate-600 outline-none transition-all focus:bg-white focus:ring-4 focus:ring-slate-100 focus:border-slate-200"
-          />
-        </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#1a3a5c]">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-emerald-500 rounded-full border-2 border-white" />
-        </Button>
-
-        {/* Vertical Divider */}
-        <div className="w-[1px] h-8 bg-slate-100 mx-2 hidden sm:block" />
 
         {/* User Profile */}
         <DropdownMenu>

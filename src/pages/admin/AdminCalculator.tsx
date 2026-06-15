@@ -11,7 +11,7 @@ import { toast } from "@/utils/notifications/toast";
 
 export default function AdminCalculator() {
   const calcHook = useAdminCalculator();
-  const { openConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
@@ -23,16 +23,16 @@ export default function AdminCalculator() {
         >
           <div>
             <h1 className="text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-              Painel Executivo
+              Calculadora
             </h1>
             <p className="text-sm font-semibold text-slate-400">
-              Modelagem financeira inteligente. Simule o crescimento do Van360 manipulando variáveis de mercado em tempo real.
+              Simulações de cenários para o Van360
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              className="bg-white/60 hover:bg-white text-slate-600 border-slate-200"
+              variant="link"
+              className="text-slate-600"
               onClick={() => {
                 openConfirmationDialog({
                   title: 'Resetar Cenário',
@@ -42,6 +42,7 @@ export default function AdminCalculator() {
                   onConfirm: () => {
                     calcHook.clearScenario();
                     toast.success('Cenário resetado para os valores padrões.');
+                    closeConfirmationDialog();
                   }
                 });
               }}
@@ -59,6 +60,7 @@ export default function AdminCalculator() {
                   onConfirm: () => {
                     calcHook.saveScenario();
                     toast.success('Cenário salvo com sucesso!');
+                    closeConfirmationDialog();
                   }
                 });
               }}
@@ -69,35 +71,46 @@ export default function AdminCalculator() {
           </div>
         </motion.div>
 
-        <Tabs defaultValue="base" className="w-full">
-          <TabsList className="mb-8 grid w-full grid-cols-3 md:w-auto md:inline-grid bg-white/60 backdrop-blur-md border border-slate-200/50 p-1 rounded-xl shadow-sm">
-            <TabsTrigger value="base" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
-              <Calculator className="w-4 h-4 mr-2 hidden sm:block" />
-              Base & Custos
-            </TabsTrigger>
-            <TabsTrigger value="addon" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
-              <PlusCircle className="w-4 h-4 mr-2 hidden sm:block" />
-              Add-ons
-            </TabsTrigger>
-            <TabsTrigger value="consolidado" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
-              <LineChart className="w-4 h-4 mr-2 hidden sm:block" />
-              Visão Investidor
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="base" className="w-full space-y-6">
+          <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
+            <TabsList className="flex w-full h-[52px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
+              <TabsTrigger
+                value="base"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+              >
+                <Calculator className="w-4 h-4 mr-2 hidden sm:block" />
+                Base & Custos
+              </TabsTrigger>
+              <TabsTrigger
+                value="addon"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+              >
+                <PlusCircle className="w-4 h-4 mr-2 hidden sm:block" />
+                Add-ons
+              </TabsTrigger>
+              <TabsTrigger
+                value="consolidado"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+              >
+                <LineChart className="w-4 h-4 mr-2 hidden sm:block" />
+                Visão Investidor
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="base" className="m-0 focus-visible:outline-none">
+          <TabsContent value="base" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <CalculatorBaseTab calcHook={calcHook} />
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="addon" className="m-0 focus-visible:outline-none">
+          <TabsContent value="addon" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <CalculatorAddonTab calcHook={calcHook} />
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="consolidado" className="m-0 focus-visible:outline-none">
+          <TabsContent value="consolidado" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <CalculatorConsolidatedTab calcHook={calcHook} />
             </motion.div>
