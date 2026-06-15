@@ -26,6 +26,7 @@ import {
   ChevronRight,
   RefreshCw,
   Trash2,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,6 +101,7 @@ export default function AdminUserDetails() {
 
   const [logsPage, setLogsPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
   const [logsFilter, setLogsFilter] = useState({
@@ -703,36 +705,46 @@ export default function AdminUserDetails() {
                   <Terminal className="h-4 w-4" />
                   Logs de Atividades
                 </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { setLogsPage(1); refetchLogs(); }}
-                  disabled={isFetchingLogs}
-                  className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
-                >
-                  <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
-                  <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsMobileFiltersOpen(p => !p)}
+                    className={`md:hidden h-8 rounded-xl px-2 flex items-center gap-1.5 ${isMobileFiltersOpen ? 'bg-[#1a3a5c]/10 text-[#1a3a5c]' : 'text-slate-500 hover:bg-slate-100'}`}
+                  >
+                    <Filter className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setLogsPage(1); refetchLogs(); }}
+                    disabled={isFetchingLogs}
+                    className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
+                    <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 ${!isMobileFiltersOpen ? 'hidden md:grid' : ''}`}>
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Início</Label>
-                  <Input 
-                    type="date" 
-                    value={logsFilter.dataInicio} 
-                    onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataInicio: e.target.value })) }} 
-                    className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0" 
+                  <Input
+                    type="date"
+                    value={logsFilter.dataInicio}
+                    onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataInicio: e.target.value })) }}
+                    className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Fim</Label>
-                  <Input 
-                    type="date" 
-                    value={logsFilter.dataFim} 
-                    onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataFim: e.target.value })) }} 
-                    className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0" 
+                  <Input
+                    type="date"
+                    value={logsFilter.dataFim}
+                    onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataFim: e.target.value })) }}
+                    className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -776,7 +788,7 @@ export default function AdminUserDetails() {
                 </div>
               ) : (
                 <>
-                  <div className="hidden md:block overflow-x-auto">
+                  <div className="hidden md:block overflow-x-auto mt-12">
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-slate-100">
@@ -881,7 +893,7 @@ export default function AdminUserDetails() {
                                 </code>
                               )}
                             </div>
-                            <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                            <p className="text-xs font-medium text-slate-600 leading-relaxed break-words break-all">
                               {log.descricao}
                             </p>
                           </div>
@@ -947,14 +959,14 @@ export default function AdminUserDetails() {
           />
           <BaseDialog.Body>
             <div className="space-y-4 py-2">
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ação</p>
                   <p className="text-xs font-bold text-slate-700 mt-0.5 uppercase">{selectedLog.acao.replace(/_/g, " ")}</p>
                 </div>
                 <div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Entidade ID</p>
-                  <p className="text-xs font-mono text-slate-500 mt-0.5 truncate" title={selectedLog.entidade_id}>
+                  <p className="text-xs font-mono text-slate-500 mt-0.5 break-all" title={selectedLog.entidade_id}>
                     {selectedLog.entidade_id}
                   </p>
                 </div>
