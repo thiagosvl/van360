@@ -45,7 +45,7 @@ export function useAdminUserDetails(id: string) {
   });
 }
 
-export function useAdminUserLogs(id: string, params?: { page?: number; limit?: number }) {
+export function useAdminUserLogs(id: string, params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string }) {
   return useQuery({
     queryKey: ["admin", "users", id, "logs", params],
     queryFn: () => adminApi.getUserLogs(id, params),

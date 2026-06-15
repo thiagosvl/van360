@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   useAdminUserDetails,
   useUpdateUserAdmin,
@@ -24,6 +24,7 @@ import {
   Terminal,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SubscriptionStatus, CheckoutPaymentMethod } from "@/types/enums";
+import { SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "@/utils/notifications/toast";
@@ -67,9 +68,13 @@ function toDateInputValue(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
+const ADMIN_USER_TABS = ["dados", "cobrancas", "logs"] as const;
+type AdminUserTab = (typeof ADMIN_USER_TABS)[number];
+
 export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
@@ -77,13 +82,40 @@ export default function AdminUserDetails() {
   const { data, isLoading } = useAdminUserDetails(id!);
   const updateUser = useUpdateUserAdmin();
   const updateSub = useUpdateSubscriptionAdmin();
-  const [activeTab, setActiveTab] = useState<"dados" | "cobrancas" | "logs">("dados");
+
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab") as AdminUserTab;
+    if (tabParam && ADMIN_USER_TABS.includes(tabParam)) return tabParam;
+    return "dados" as AdminUserTab;
+  }, [searchParams]);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", value);
+      setSearchParams(newParams);
+    },
+    [searchParams, setSearchParams],
+  );
+
   const [logsPage, setLogsPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
 
-  const { data: logsData, isLoading: isLoadingLogs } = useAdminUserLogs(id!, {
+  const today = new Date().toISOString().split("T")[0];
+  const [logsFilter, setLogsFilter] = useState({
+    dataInicio: today,
+    dataFim: today,
+    acao: "all",
+    entidade: "all"
+  });
+
+  const { data: logsData, isFetching: isFetchingLogs, refetch: refetchLogs } = useAdminUserLogs(id!, {
     page: logsPage,
     limit: 15,
+    dataInicio: logsFilter.dataInicio || undefined,
+    dataFim: logsFilter.dataFim || undefined,
+    acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
+    entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
   });
 
   const [userForm, setUserForm] = useState({
@@ -295,7 +327,7 @@ export default function AdminUserDetails() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(val) => setActiveTab(val as "dados" | "cobrancas" | "logs")}
+        onValueChange={handleTabChange}
         className="w-full space-y-6"
       >
         <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
@@ -666,13 +698,74 @@ export default function AdminUserDetails() {
         <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
           <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                <Terminal className="h-4 w-4" />
-                Logs de Atividades
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                  <Terminal className="h-4 w-4" />
+                  Logs de Atividades
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setLogsPage(1); refetchLogs(); }}
+                  disabled={isFetchingLogs}
+                  className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="pt-4">
-              {isLoadingLogs ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Início</Label>
+                  <Input 
+                    type="date" 
+                    value={logsFilter.dataInicio} 
+                    onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataInicio: e.target.value })) }} 
+                    className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Fim</Label>
+                  <Input 
+                    type="date" 
+                    value={logsFilter.dataFim} 
+                    onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataFim: e.target.value })) }} 
+                    className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ação</Label>
+                  <Select value={logsFilter.acao} onValueChange={(val) => { setLogsPage(1); setLogsFilter(p => ({ ...p, acao: val })) }}>
+                    <SelectTrigger className="h-10 rounded-xl bg-slate-50 border-slate-200 text-[13px] focus-visible:ring-0">
+                      <SelectValue placeholder="Todas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as ações</SelectItem>
+                      {Object.values(AtividadeAcao).map(acao => (
+                        <SelectItem key={acao} value={acao} className="text-[13px]">{acao.replace(/_/g, " ")}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Entidade</Label>
+                  <Select value={logsFilter.entidade} onValueChange={(val) => { setLogsPage(1); setLogsFilter(p => ({ ...p, entidade: val })) }}>
+                    <SelectTrigger className="h-10 rounded-xl bg-slate-50 border-slate-200 text-[13px] focus-visible:ring-0">
+                      <SelectValue placeholder="Todas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as entidades</SelectItem>
+                      {Object.values(AtividadeEntidadeTipo).map(ent => (
+                        <SelectItem key={ent} value={ent} className="text-[13px]">{ent.replace(/_/g, " ")}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {isFetchingLogs ? (
                 <div className="flex items-center justify-center py-16">
                   <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
                 </div>
