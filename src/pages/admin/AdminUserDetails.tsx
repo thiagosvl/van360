@@ -246,6 +246,30 @@ export default function AdminUserDetails() {
     });
   };
 
+  const handleAddDays = (days: number) => {
+    if (!data?.assinatura) return;
+
+    const sub = data.assinatura;
+
+    // Puxa a data de vencimento. Se for nula, puxa do trial. Se ambas forem nulas, hoje.
+    const refStr = sub.data_vencimento || sub.trial_ends_at || "";
+
+    const datePart = refStr ? refStr.split("T")[0] : "";
+
+    const baseDate = datePart 
+      ? new Date(datePart + "T12:00:00") 
+      : new Date(); 
+
+    const newDate = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000);
+    const newDateStr = newDate.toISOString().split("T")[0];
+
+    setSubForm((p) => ({
+        ...p, 
+        status: SubscriptionStatus.ACTIVE,
+        data_vencimento: newDateStr 
+    }));
+  };
+
   const handleDeleteUser = () => {
     if (!id || !data?.user) return;
     openConfirmationDialog({
@@ -527,7 +551,12 @@ export default function AdminUserDetails() {
                         <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</Label>
                         <Select
                           value={subForm.status}
-                          onValueChange={(val) => setSubForm(p => ({ ...p, status: val }))}
+                          onValueChange={(val) => setSubForm(p => ({ 
+                            ...p, 
+                            status: val,
+                            data_vencimento: toDateInputValue(data?.assinatura?.data_vencimento),
+                            trial_ends_at: toDateInputValue(data?.assinatura?.trial_ends_at),
+                          }))}
                         >
                           <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus:ring-0">
                             <SelectValue />
@@ -553,7 +582,8 @@ export default function AdminUserDetails() {
                           type="date"
                           value={subForm.data_vencimento}
                           onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
-                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                          disabled={subForm.status === SubscriptionStatus.TRIAL}
+                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </div>
                       <div className="space-y-2">
@@ -565,9 +595,32 @@ export default function AdminUserDetails() {
                           type="date"
                           value={subForm.trial_ends_at}
                           onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
-                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                          disabled={subForm.status !== SubscriptionStatus.TRIAL}
+                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1 pb-3">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Conceder acesso:</span>
+                      {[
+                        { days: 15, label: "+15 dias" },
+                        { days: 30, label: "+1 mês" },
+                        { days: 90, label: "+3 meses" },
+                        { days: 180, label: "+6 meses" },
+                        { days: 365, label: "+1 ano" },
+                      ].map((shortcut) => (
+                        <Button
+                          key={shortcut.days}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddDays(shortcut.days)}
+                          className="h-7 px-2.5 text-[10px] font-bold rounded-lg border-slate-200 text-slate-600 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm"
+                        >
+                          {shortcut.label}
+                        </Button>
+                      ))}
                     </div>
 
                     <Button
