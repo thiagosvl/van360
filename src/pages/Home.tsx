@@ -158,7 +158,7 @@ const Home = () => {
               "grid gap-4 px-1",
               onboarding.showOnboarding
                 ? "grid-cols-1"
-                : "grid-cols-2 lg:grid-cols-3",
+                : "grid-cols-2 lg:grid-cols-4",
             )}
           >
             {!onboarding.showOnboarding && (
@@ -179,10 +179,18 @@ const Home = () => {
             )}
             {contadores.passageirosAtivos > 0 && (
               <KPICard
-                className={cn(!onboarding.showOnboarding && "col-span-2 lg:col-span-1")}
                 label="Passageiros Ativos"
                 value={contadores.passageirosAtivos}
                 icon={Users}
+                variant={KPICardVariant.OUTLINE}
+                loading={isLoading}
+              />
+            )}
+            {!onboarding.showOnboarding && contadores.escolasAtivas > 0 && (
+              <KPICard
+                label="Escolas Ativas"
+                value={contadores.escolasAtivas}
+                icon={GraduationCap}
                 variant={KPICardVariant.OUTLINE}
                 loading={isLoading}
               />

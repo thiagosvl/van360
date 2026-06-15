@@ -288,7 +288,7 @@ export default function PrePassageiros({
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-8"
+                          className="bg-primary text-white shadow-sm h-8"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleFinalizeClick(prePassageiro);

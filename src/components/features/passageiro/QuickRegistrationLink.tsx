@@ -65,7 +65,7 @@ export function QuickRegistrationLink({
               </div>
 
               {pendingCount > 0 && (
-                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-black text-white shadow-sm ring-2 ring-white animate-in zoom-in-50 duration-300">
+                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white shadow-sm ring-2 ring-white animate-in zoom-in-50 duration-300">
                   {pendingCount}
                 </div>
               )}

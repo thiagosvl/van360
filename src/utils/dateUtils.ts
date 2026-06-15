@@ -146,14 +146,6 @@ export const addMonths = (date: Date | string, months: number): Date => {
   return d;
 };
 
-/**
- * Verifica se a data fornecida é antes de "agora" em Brasília.
- */
-export const isBeforeNowBR = (date: Date | string | null | undefined): boolean => {
-  if (!date) return false;
-  const target = typeof date === 'string' ? parseLocalDate(date) : date;
-  return target.getTime() < getNowBR().getTime();
-};
 
 /**
  * Converte um objeto Date para uma string ISO completa com fuso de Brasília (-03:00).

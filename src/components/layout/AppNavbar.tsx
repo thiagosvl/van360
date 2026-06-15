@@ -119,7 +119,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-x-2 outline-none p-1">
-                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-[#1a3a5c] group-hover:text-white transition-all shadow-sm">
+                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-slate-100 group-hover:text-primary transition-all shadow-sm">
                   {isLoadingProfile ? (
                     <Skeleton className="h-full w-full rounded-2xl" />
                   ) : (

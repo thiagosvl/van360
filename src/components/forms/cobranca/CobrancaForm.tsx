@@ -363,7 +363,12 @@ export function CobrancaFormContent({
                                                 field.onChange(date);
                                                 setOpenCalendarPagamento(false);
                                             }}
-                                            disabled={(date) => date > getNowBR()}
+                                            disabled={(date) => {
+                                                const now = new Date();
+                                                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                                const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                                                return d > today;
+                                            }}
                                             locale={ptBR}
                                         />
                                     </PopoverContent>

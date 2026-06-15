@@ -1,7 +1,6 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile, useSession } from "@/hooks";
 import { useSubscriptionStatus, useSubscriptionPlans } from "@/hooks/api/useSubscription";
-import { PassageiroFormModes } from "@/types/enums";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatFirstName } from "@/utils/formatters";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,7 +16,6 @@ export function useDashboardViewModel() {
     setPageTitle,
     openEscolaFormDialog,
     openVeiculoFormDialog,
-    openPassageiroFormDialog,
     openQuickStartPassageiroDialog,
     openGastoFormDialog,
     openFirstChargeDialog,
@@ -45,6 +43,7 @@ export function useDashboardViewModel() {
 
   const contadores = useMemo(() => ({
     escolas: systemSummary?.contadores?.escolas?.total ?? 0,
+    escolasAtivas: systemSummary?.contadores?.escolas?.ativos ?? 0,
     veiculos: systemSummary?.contadores?.veiculos?.total ?? 0,
     passageiros: systemSummary?.contadores?.passageiros?.total ?? 0,
     passageirosAtivos: systemSummary?.contadores?.passageiros?.ativos ?? 0,

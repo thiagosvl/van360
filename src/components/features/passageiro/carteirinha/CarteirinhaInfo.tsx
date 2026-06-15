@@ -18,8 +18,7 @@ import {
   formatParentesco,
   formatPeriodo,
 } from "@/utils/formatters";
-import { formatContratoStatus } from "@/utils/formatters/contrato";
-import { phoneMask } from "@/utils/masks";
+import { cpfMask, phoneMask } from "@/utils/masks";
 import { openBrowserLink } from "@/utils/browser";
 import {
   Bus,
@@ -29,6 +28,7 @@ import {
   Copy,
   ExternalLink,
   FileCheck2,
+  FileText,
   FileX2,
   GraduationCap,
   MapPin,
@@ -480,9 +480,11 @@ export const CarteirinhaDadosPessoais = ({
                 {formatParentesco(passageiro.parentesco_responsavel)}
               </div>
             </span>
-            <span className="text-[11px] font-medium text-slate-500">
-              {phoneMask(passageiro.telefone_responsavel)}
-            </span>
+            <div className="text-[11px] font-medium text-slate-500 flex flex-col mt-1 gap-0.5">
+              <span>{phoneMask(passageiro.telefone_responsavel)}</span>
+              {passageiro.cpf_responsavel && <span>{cpfMask(passageiro.cpf_responsavel)}</span>}
+              {passageiro.email_responsavel && <span className="truncate max-w-[180px] sm:max-w-xs">{passageiro.email_responsavel}</span>}
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -554,15 +556,19 @@ export const CarteirinhaDadosPessoais = ({
         />
       </div>
 
-      {/* Início do Transporte */}
-      {passageiro.data_inicio_transporte && (
+      {/* Linha: Início e Fim do Transporte */}
+      <div className="grid grid-cols-2 gap-3">
         <InfoTile
-          label="Início do Transporte"
-          value={formatDateToBR(passageiro.data_inicio_transporte)}
+          label="Início Transporte"
+          value={passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "-"}
           icon={<Calendar className="h-3.5 w-3.5" />}
-          fullWidth
         />
-      )}
+        <InfoTile
+          label="Término Transporte"
+          value={passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "-"}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+      </div>
 
       {/* Endereço */}
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
@@ -589,6 +595,14 @@ export const CarteirinhaDadosPessoais = ({
             )}
           </Button>
         </div>
+        {passageiro.referencia && (
+          <div className="pt-2 mt-2 border-t border-slate-200">
+            <p className="text-[10px] text-slate-500 leading-relaxed">
+              <span className="font-bold text-slate-600 mr-1">Referência:</span>
+              {passageiro.referencia}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
