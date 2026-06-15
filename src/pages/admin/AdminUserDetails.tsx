@@ -721,8 +721,10 @@ export default function AdminUserDetails() {
                               <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell">
                                 {log.entidade_tipo}
                               </td>
-                              <td className="py-4 text-xs font-medium text-slate-600 max-w-[360px] whitespace-normal break-words" title={log.descricao}>
-                                {log.descricao}
+                              <td className="py-4">
+                                <div className="text-xs font-medium text-slate-600 max-w-[360px] whitespace-normal break-words" title={log.descricao}>
+                                  {log.descricao}
+                                </div>
                               </td>
                               <td className="py-4 hidden md:table-cell">
                                 <code className="text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 font-mono text-slate-500">

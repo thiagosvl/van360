@@ -53,8 +53,6 @@ import { Label } from "@/components/ui/label";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 
-const BONUS_DAYS_PER_REFERRAL = 30;
-
 const SubscriptionPage = () => {
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -228,8 +226,9 @@ const SubscriptionPage = () => {
     );
   }
 
+  const bonusDaysPerReferral = referral?.bonusDays;
   const completedReferrals = referral?.completed ?? 0;
-  const totalBonusDays = completedReferrals * BONUS_DAYS_PER_REFERRAL;
+  const totalBonusDays = completedReferrals * bonusDaysPerReferral;
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
@@ -547,21 +546,17 @@ const SubscriptionPage = () => {
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 mt-4">
+            <div className="flex items-center justify-between px-1 pb-6">
+              <h4 className="font-headline font-bold text-xl text-primary">Indique e Ganhe</h4>
+            </div>
             <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[32px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
               <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 
               <div className="relative z-10 space-y-6 lg:space-y-8">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white p-2.5 rounded-xl border border-[#d6e4f0] shadow-sm">
-                    <Gift className="w-5 h-5 text-primary" />
-                  </div>
-                  <h4 className="font-headline font-bold text-lg tracking-tight text-primary">Indique e Ganhe</h4>
-                </div>
-
                 <div className="space-y-3">
-                  <p className="font-headline font-extrabold text-2xl leading-[1.1] text-primary">
-                    Ganhe 30 dias grátis <span className="text-primary font-black">por indicação</span>
+                  <p className="font-headline font-extrabold text-xl leading-[1.1] text-primary">
+                    Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
                   </p>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed">
                     Indique colegas motoristas e receba mensalidades gratuitas assim que eles se tornarem assinantes.
