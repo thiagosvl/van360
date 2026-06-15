@@ -71,9 +71,9 @@ const Contratos = () => {
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Você ainda não configurou os contratos</p>
+                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Você ainda não pode gerar contratos</p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Ative e configure essa funcionalidade para gerar contratos em PDF automaticamente para seus passageiros.
+                      Para gerar contratos, antes você precisa configurar os valores de multa, de juros e também a sua assinatura.
                     </p>
                   </div>
                 </div>

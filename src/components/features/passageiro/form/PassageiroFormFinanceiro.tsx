@@ -21,8 +21,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { dateMask } from "@/utils/masks";
-import { CalendarDays, CalendarIcon, CreditCard } from "lucide-react";
+import { CalendarDays, CalendarIcon, CreditCard, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
@@ -113,19 +112,31 @@ export function PassageiroFormFinanceiro({
                 <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <div className="relative">
+                      <div className="relative group">
                         <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                         <Button
                           type="button"
                           variant="outline"
                           className={cn(
-                            "w-full pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
                             !field.value && "text-muted-foreground",
                             fieldState.error && "border-red-500"
                           )}
                         >
                           {field.value ? field.value : "dd/mm/aaaa"}
                         </Button>
+                        {field.value && (
+                          <div
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                          >
+                            <X className="h-5 w-5" />
+                          </div>
+                        )}
                       </div>
                     </FormControl>
                   </PopoverTrigger>
@@ -161,19 +172,31 @@ export function PassageiroFormFinanceiro({
                 <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <div className="relative">
+                      <div className="relative group">
                         <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                         <Button
                           type="button"
                           variant="outline"
                           className={cn(
-                            "w-full pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
                             !field.value && "text-muted-foreground",
                             fieldState.error && "border-red-500"
                           )}
                         >
                           {field.value ? field.value : "dd/mm/aaaa"}
                         </Button>
+                        {field.value && (
+                          <div
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                          >
+                            <X className="h-5 w-5" />
+                          </div>
+                        )}
                       </div>
                     </FormControl>
                   </PopoverTrigger>
