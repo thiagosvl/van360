@@ -309,7 +309,7 @@ export const messages = {
     },
     atualizacao: {
       titulo: "Nova versão disponível",
-      descricao: "Uma nova versão do aplicativo está disponível. O aplicativo será atualizado agora para garantir o melhor funcionamento.",
+      descricao: "O aplicativo será atualizado agora para garantir o melhor funcionamento.",
       processando: "Atualizando o aplicativo...",
       progresso: "{{PERCENTUAL}}% concluído",
     },
