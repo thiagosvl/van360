@@ -41,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SubscriptionStatus, SubscriptionInvoiceStatus, CheckoutPaymentMethod } from "@/types/enums";
+import { SubscriptionStatus, CheckoutPaymentMethod } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "@/utils/notifications/toast";
@@ -322,526 +322,526 @@ export default function AdminUserDetails() {
         </div>
 
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                <User className="h-4 w-4" />
-                Dados Cadastrais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Nome</Label>
-                  <Input
-                    value={userForm.nome}
-                    onChange={(e) => setUserForm(p => ({ ...p, nome: e.target.value }))}
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Apelido</Label>
-                  <Input
-                    value={userForm.apelido}
-                    onChange={(e) => setUserForm(p => ({ ...p, apelido: e.target.value }))}
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF</Label>
-                  <Input
-                    value={userForm.cpfcnpj}
-                    onChange={(e) => setUserForm(p => ({ ...p, cpfcnpj: cpfMask(e.target.value) }))}
-                    inputMode="numeric"
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Telefone</Label>
-                  <Input
-                    value={userForm.telefone}
-                    onChange={(e) => setUserForm(p => ({ ...p, telefone: phoneMask(e.target.value) }))}
-                    inputMode="tel"
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</Label>
-                <Input
-                  type="email"
-                  value={userForm.email}
-                  onChange={(e) => setUserForm(p => ({ ...p, email: e.target.value }))}
-                  className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</Label>
-                <Input
-                  type="date"
-                  value={userForm.data_nascimento}
-                  onChange={(e) => setUserForm(p => ({ ...p, data_nascimento: e.target.value }))}
-                  className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={userForm.ativo}
-                    onCheckedChange={(val) => setUserForm(p => ({ ...p, ativo: val }))}
-                  />
-                  <Label className="text-xs font-bold text-slate-600">
-                    {userForm.ativo ? "Conta Ativa" : "Conta Inativa"}
-                  </Label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button
-                  onClick={handleSaveUser}
-                  disabled={updateUser.isPending}
-                  className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
-                >
-                  {updateUser.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handleResetPassword}
-                  type="button"
-                  variant="outline"
-                  disabled={resetPassword.isPending}
-                  className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-bold uppercase tracking-wider transition-all"
-                >
-                  {resetPassword.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Key className="h-4 w-4 mr-2" />
-                      Resetar Senha
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handleDeleteUser}
-                  type="button"
-                  variant="destructive"
-                  disabled={deleteUser.isPending}
-                  className="w-full h-11 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold uppercase tracking-wider transition-all"
-                >
-                  {deleteUser.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Excluir
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                <ShieldCheck className="h-4 w-4" />
-                Assinatura
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-4">
-              {!sub ? (
-                <p className="text-sm text-slate-400 py-8 text-center">
-                  Nenhuma assinatura encontrada para este usuário.
-                </p>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Plano</Label>
-                      <Select
-                        value={subForm.plano_id}
-                        onValueChange={(val) => setSubForm(p => ({ ...p, plano_id: val }))}
-                      >
-                        <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus:ring-0">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {data.planos.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {p.nome} — R$ {Number(p.valor).toFixed(2)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</Label>
-                      <Select
-                        value={subForm.status}
-                        onValueChange={(val) => setSubForm(p => ({ ...p, status: val }))}
-                      >
-                        <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus:ring-0">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_OPTIONS.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>
-                              {o.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                  <User className="h-4 w-4" />
+                  Dados Cadastrais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Nome</Label>
+                    <Input
+                      value={userForm.nome}
+                      onChange={(e) => setUserForm(p => ({ ...p, nome: e.target.value }))}
+                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                    />
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Data de Vencimento
-                      </Label>
-                      <Input
-                        type="date"
-                        value={subForm.data_vencimento}
-                        onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
-                        className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Fim do Trial
-                      </Label>
-                      <Input
-                        type="date"
-                        value={subForm.trial_ends_at}
-                        onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
-                        className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Apelido</Label>
+                    <Input
+                      value={userForm.apelido}
+                      onChange={(e) => setUserForm(p => ({ ...p, apelido: e.target.value }))}
+                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                    />
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF</Label>
+                    <Input
+                      value={userForm.cpfcnpj}
+                      onChange={(e) => setUserForm(p => ({ ...p, cpfcnpj: cpfMask(e.target.value) }))}
+                      inputMode="numeric"
+                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Telefone</Label>
+                    <Input
+                      value={userForm.telefone}
+                      onChange={(e) => setUserForm(p => ({ ...p, telefone: phoneMask(e.target.value) }))}
+                      inputMode="tel"
+                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</Label>
+                  <Input
+                    type="email"
+                    value={userForm.email}
+                    onChange={(e) => setUserForm(p => ({ ...p, email: e.target.value }))}
+                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</Label>
+                  <Input
+                    type="date"
+                    value={userForm.data_nascimento}
+                    onChange={(e) => setUserForm(p => ({ ...p, data_nascimento: e.target.value }))}
+                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={userForm.ativo}
+                      onCheckedChange={(val) => setUserForm(p => ({ ...p, ativo: val }))}
+                    />
+                    <Label className="text-xs font-bold text-slate-600">
+                      {userForm.ativo ? "Conta Ativa" : "Conta Inativa"}
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Button
-                    onClick={handleSaveSub}
-                    disabled={updateSub.isPending}
+                    onClick={handleSaveUser}
+                    disabled={updateUser.isPending}
                     className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
                   >
-                    {updateSub.isPending ? (
+                    {updateUser.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        Salvar Assinatura
+                        Salvar
                       </>
                     )}
                   </Button>
+
+                  <Button
+                    onClick={handleResetPassword}
+                    type="button"
+                    variant="outline"
+                    disabled={resetPassword.isPending}
+                    className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-bold uppercase tracking-wider transition-all"
+                  >
+                    {resetPassword.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Key className="h-4 w-4 mr-2" />
+                        Resetar Senha
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={handleDeleteUser}
+                    type="button"
+                    variant="destructive"
+                    disabled={deleteUser.isPending}
+                    className="w-full h-11 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold uppercase tracking-wider transition-all"
+                  >
+                    {deleteUser.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                  <ShieldCheck className="h-4 w-4" />
+                  Assinatura
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-4">
+                {!sub ? (
+                  <p className="text-sm text-slate-400 py-8 text-center">
+                    Nenhuma assinatura encontrada para este usuário.
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Plano</Label>
+                        <Select
+                          value={subForm.plano_id}
+                          onValueChange={(val) => setSubForm(p => ({ ...p, plano_id: val }))}
+                        >
+                          <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus:ring-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {data.planos.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.nome} — R$ {Number(p.valor).toFixed(2)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</Label>
+                        <Select
+                          value={subForm.status}
+                          onValueChange={(val) => setSubForm(p => ({ ...p, status: val }))}
+                        >
+                          <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus:ring-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_OPTIONS.map((o) => (
+                              <SelectItem key={o.value} value={o.value}>
+                                {o.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Data de Vencimento
+                        </Label>
+                        <Input
+                          type="date"
+                          value={subForm.data_vencimento}
+                          onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
+                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Fim do Trial
+                        </Label>
+                        <Input
+                          type="date"
+                          value={subForm.trial_ends_at}
+                          onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
+                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleSaveSub}
+                      disabled={updateSub.isPending}
+                      className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
+                    >
+                      {updateSub.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvar Assinatura
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cobrancas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+          <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                <CreditCard className="h-4 w-4" />
+                Histórico de Cobranças
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {data.faturas.length === 0 ? (
+                <div className="text-center py-16 space-y-3">
+                  <CreditCard className="h-12 w-12 mx-auto text-slate-300" />
+                  <p className="text-xs font-bold text-slate-400">Nenhuma fatura encontrada.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-slate-100">
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...data.faturas]
+                          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                          .map((f) => (
+                            <tr key={f.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                              <td className="py-4 text-xs font-semibold text-slate-600">
+                                {formatDate(f.created_at)}
+                              </td>
+                              <td className="py-4 text-xs text-slate-500 font-medium">
+                                {f.planos?.nome || "—"}
+                              </td>
+                              <td className="py-4 text-xs font-bold text-[#1a3a5c]">
+                                {moneyMask(f.valor)}
+                              </td>
+                              <td className="py-4 text-xs text-slate-500">
+                                {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
+                              </td>
+                              <td className="py-4 text-xs text-slate-500">
+                                {formatDate(f.data_vencimento)}
+                              </td>
+                              <td className="py-4 text-xs text-slate-500">
+                                {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                              </td>
+                              <td className="py-4 text-right">
+                                <InvoiceStatusBadge status={f.status} />
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="md:hidden space-y-4">
+                    {[...data.faturas]
+                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                      .map((f) => (
+                        <div key={f.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                              {formatDate(f.created_at)}
+                            </span>
+                            <InvoiceStatusBadge status={f.status} />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-bold text-slate-700">{f.planos?.nome || "—"}</p>
+                              <p className="text-[10px] text-slate-400">
+                                {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-black text-[#1a3a5c]">{moneyMask(f.valor)}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[10px]">
+                            <div>
+                              <span className="font-semibold text-slate-400 block uppercase tracking-wider">Vencimento</span>
+                              <span className="font-bold text-slate-600">{formatDate(f.data_vencimento)}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-semibold text-slate-400 block uppercase tracking-wider">Pagamento</span>
+                              <span className="font-bold text-slate-600">
+                                {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
-        </div>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="cobrancas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
-        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-              <CreditCard className="h-4 w-4" />
-              Histórico de Cobranças
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {data.faturas.length === 0 ? (
-              <div className="text-center py-16 space-y-3">
-                <CreditCard className="h-12 w-12 mx-auto text-slate-300" />
-                <p className="text-xs font-bold text-slate-400">Nenhuma fatura encontrada.</p>
-              </div>
-            ) : (
-              <>
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-slate-100">
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...data.faturas]
-                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                        .map((f) => (
-                          <tr key={f.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                            <td className="py-4 text-xs font-semibold text-slate-600">
-                              {formatDate(f.created_at)}
-                            </td>
-                            <td className="py-4 text-xs text-slate-500 font-medium">
-                              {f.planos?.nome || "—"}
-                            </td>
-                            <td className="py-4 text-xs font-bold text-[#1a3a5c]">
-                              {moneyMask(f.valor)}
-                            </td>
-                            <td className="py-4 text-xs text-slate-500">
-                              {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
-                            </td>
-                            <td className="py-4 text-xs text-slate-500">
-                              {formatDate(f.data_vencimento)}
-                            </td>
-                            <td className="py-4 text-xs text-slate-500">
-                              {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
-                            </td>
-                            <td className="py-4 text-right">
-                              <InvoiceStatusBadge status={f.status} />
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+        <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+          <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                <Terminal className="h-4 w-4" />
+                Logs de Atividades
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {isLoadingLogs ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
                 </div>
+              ) : !logsData || logsData.data.length === 0 ? (
+                <div className="text-center py-16 space-y-3">
+                  <Terminal className="h-12 w-12 mx-auto text-slate-300" />
+                  <p className="text-xs font-bold text-slate-400">Nenhum log de atividade encontrado.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-slate-100">
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Entidade</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Dados</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {logsData.data.map((log) => {
+                          const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          });
 
-                <div className="md:hidden space-y-4">
-                  {[...data.faturas]
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .map((f) => (
-                      <div key={f.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                            {formatDate(f.created_at)}
-                          </span>
-                          <InvoiceStatusBadge status={f.status} />
-                        </div>
+                          const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
 
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-bold text-slate-700">{f.planos?.nome || "—"}</p>
-                            <p className="text-[10px] text-slate-400">
-                              {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
+                          return (
+                            <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                              <td className="py-4 text-xs font-semibold text-slate-600">
+                                {dateFormatted}
+                              </td>
+                              <td className="py-4">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
+                                  {actionLabel}
+                                </span>
+                              </td>
+                              <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell">
+                                {log.entidade_tipo}
+                              </td>
+                              <td className="py-4 text-xs font-medium text-slate-600 max-w-[360px] whitespace-normal break-words" title={log.descricao}>
+                                {log.descricao}
+                              </td>
+                              <td className="py-4 hidden md:table-cell">
+                                <code className="text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 font-mono text-slate-500">
+                                  {log.ip_address || "—"}
+                                </code>
+                              </td>
+                              <td className="py-4 text-right">
+                                {log.meta && Object.keys(log.meta).length > 0 ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2 flex items-center gap-1.5 ml-auto"
+                                    onClick={() => setSelectedLog(log)}
+                                  >
+                                    <Eye className="h-3.5 w-3.5" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
+                                  </Button>
+                                ) : (
+                                  <span className="text-xs text-slate-400 pr-4">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="md:hidden space-y-4 mb-4">
+                    {logsData.data.map((log) => {
+                      const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      });
+
+                      const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
+
+                      return (
+                        <div key={log.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                              {dateFormatted}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
+                              {actionLabel}
+                            </span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="font-bold text-slate-500 uppercase tracking-wide">
+                                {log.entidade_tipo}
+                              </span>
+                              {log.ip_address && (
+                                <code className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50 font-mono text-slate-500">
+                                  {log.ip_address}
+                                </code>
+                              )}
+                            </div>
+                            <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                              {log.descricao}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-black text-[#1a3a5c]">{moneyMask(f.valor)}</p>
-                          </div>
+
+                          {log.meta && Object.keys(log.meta).length > 0 && (
+                            <div className="pt-2 border-t border-slate-100 flex justify-end">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
+                                onClick={() => setSelectedLog(log)}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
+                              </Button>
+                            </div>
+                          )}
                         </div>
-
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[10px]">
-                          <div>
-                            <span className="font-semibold text-slate-400 block uppercase tracking-wider">Vencimento</span>
-                            <span className="font-bold text-slate-600">{formatDate(f.data_vencimento)}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-semibold text-slate-400 block uppercase tracking-wider">Pagamento</span>
-                            <span className="font-bold text-slate-600">
-                              {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
-        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-              <Terminal className="h-4 w-4" />
-              Logs de Atividades
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {isLoadingLogs ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
-              </div>
-            ) : !logsData || logsData.data.length === 0 ? (
-              <div className="text-center py-16 space-y-3">
-                <Terminal className="h-12 w-12 mx-auto text-slate-300" />
-                <p className="text-xs font-bold text-slate-400">Nenhum log de atividade encontrado.</p>
-              </div>
-            ) : (
-              <>
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-slate-100">
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Entidade</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
-                        <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Dados</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {logsData.data.map((log) => {
-                        const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        });
-
-                        const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
-
-                        return (
-                          <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                            <td className="py-4 text-xs font-semibold text-slate-600">
-                              {dateFormatted}
-                            </td>
-                            <td className="py-4">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
-                                {actionLabel}
-                              </span>
-                            </td>
-                            <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell">
-                              {log.entidade_tipo}
-                            </td>
-                            <td className="py-4 text-xs font-medium text-slate-600 max-w-[280px] truncate" title={log.descricao}>
-                              {log.descricao}
-                            </td>
-                            <td className="py-4 hidden md:table-cell">
-                              <code className="text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 font-mono text-slate-500">
-                                {log.ip_address || "—"}
-                              </code>
-                            </td>
-                            <td className="py-4 text-right">
-                              {log.meta && Object.keys(log.meta).length > 0 ? (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2 flex items-center gap-1.5 ml-auto"
-                                  onClick={() => setSelectedLog(log)}
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                  <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
-                                </Button>
-                              ) : (
-                                <span className="text-xs text-slate-400 pr-4">—</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="md:hidden space-y-4 mb-4">
-                  {logsData.data.map((log) => {
-                    const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    });
-
-                    const actionLabel = log.acao.replace(/_/g, " ").toLowerCase();
-
-                    return (
-                      <div key={log.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-left">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                            {dateFormatted}
-                          </span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
-                            {actionLabel}
-                          </span>
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="font-bold text-slate-500 uppercase tracking-wide">
-                              {log.entidade_tipo}
-                            </span>
-                            {log.ip_address && (
-                              <code className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50 font-mono text-slate-500">
-                                {log.ip_address}
-                              </code>
-                            )}
-                          </div>
-                          <p className="text-xs font-medium text-slate-600 leading-relaxed">
-                            {log.descricao}
-                          </p>
-                        </div>
-
-                        {log.meta && Object.keys(log.meta).length > 0 && (
-                          <div className="pt-2 border-t border-slate-100 flex justify-end">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
-                              onClick={() => setSelectedLog(log)}
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {logsData.total > logsData.limit && (
-                  <div className="flex items-center justify-between pt-4">
-                    <p className="text-xs font-semibold text-slate-400">
-                      Página {logsData.page} de {Math.ceil(logsData.total / logsData.limit)} ({logsData.total} logs)
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={logsPage <= 1}
-                        onClick={() => setLogsPage(p => p - 1)}
-                        className="rounded-xl border-slate-200"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
-                        onClick={() => setLogsPage(p => p + 1)}
-                        className="rounded-xl border-slate-200"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
+                      );
+                    })}
                   </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+
+                  {logsData.total > logsData.limit && (
+                    <div className="flex items-center justify-between pt-4">
+                      <p className="text-xs font-semibold text-slate-400">
+                        Página {logsData.page} de {Math.ceil(logsData.total / logsData.limit)} ({logsData.total} logs)
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={logsPage <= 1}
+                          onClick={() => setLogsPage(p => p - 1)}
+                          className="rounded-xl border-slate-200"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
+                          onClick={() => setLogsPage(p => p + 1)}
+                          className="rounded-xl border-slate-200"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {selectedLog && (
         <BaseDialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>

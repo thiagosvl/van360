@@ -230,9 +230,6 @@ const SubscriptionPage = () => {
 
   const completedReferrals = referral?.completed ?? 0;
   const totalBonusDays = completedReferrals * BONUS_DAYS_PER_REFERRAL;
-  const conversionRate = (referral?.total ?? 0) > 0
-    ? Math.round((completedReferrals / (referral?.total ?? 1)) * 100)
-    : 0;
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
