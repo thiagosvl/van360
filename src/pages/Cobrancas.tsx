@@ -10,6 +10,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel, useLayout } from "@/hooks";
 import { CobrancaTab, KPICardVariant } from "@/types/enums";
 import { formatCurrency, meses } from "@/utils/formatters";
+import { Cobranca } from "@/types/cobranca";
 
 export default function Cobrancas() {
   const {
@@ -48,12 +49,25 @@ export default function Cobrancas() {
     onEditarCobranca: handleEditCobrancaClick,
     onRegistrarPagamento: openPaymentDialog,
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onVerRecibo: (url: string) => openReceiptDialog({ receiptUrl: url }),
+    onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
+      receiptUrl: url,
+      cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${cobranca.passageiro?.nome || ""}`,
+    }),
     onActionSuccess: () => { },
   };
 
   const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
-  const statusLabel = activeTab === CobrancaTab.ARECEBER ? "PENDENTES" : "RECEBIDOS";
+  
+  let statusLabel = "";
+  if (busca) {
+    statusLabel = currentCount === 1 ? "ENCONTRADA" : "ENCONTRADAS";
+  } else {
+    if (activeTab === CobrancaTab.ARECEBER) {
+      statusLabel = currentCount === 1 ? "PENDENTE" : "PENDENTES";
+    } else {
+      statusLabel = currentCount === 1 ? "RECEBIDA" : "RECEBIDAS";
+    }
+  }
 
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
@@ -146,6 +160,7 @@ export default function Cobrancas() {
               busca={buscaAReceber}
               mesFilter={mesFilter}
               meses={meses}
+              onClearSearch={() => setBusca("")}
               {...actionProps}
             />
           </TabsContent>
@@ -158,6 +173,7 @@ export default function Cobrancas() {
               busca={buscaRecebidos}
               mesFilter={mesFilter}
               meses={meses}
+              onClearSearch={() => setBusca("")}
               {...actionProps}
             />
           </TabsContent>

@@ -22,9 +22,13 @@ import { useFormContext } from "react-hook-form";
 
 interface PassageiroFormResponsavelProps {
   isSearching?: boolean;
+  isExternal?: boolean;
 }
 
-export function PassageiroFormResponsavel({ isSearching }: PassageiroFormResponsavelProps) {
+export function PassageiroFormResponsavel({
+  isSearching,
+  isExternal = false,
+}: PassageiroFormResponsavelProps) {
   const form = useFormContext();
 
   return (
@@ -61,13 +65,29 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="telefone_responsavel"
+          render={({ field }) => (
+            <PhoneInput
+              field={field}
+              label="WhatsApp"
+              required
+              labelClassName="text-slate-700 font-semibold ml-1"
+              inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+              disabled={isSearching}
+            />
+          )}
+        />
+
         <FormField
           control={form.control}
           name="cpf_responsavel"
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                CPF <span className="text-red-600">*</span>
+                CPF {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -95,11 +115,11 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                Parentesco <span className="text-red-600">*</span>
+                Parentesco {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <Select
                 onValueChange={field.onChange}
-                value={field.value}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger
@@ -125,25 +145,11 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
         />
         <FormField
           control={form.control}
-          name="telefone_responsavel"
-          render={({ field }) => (
-            <PhoneInput
-              field={field}
-              label="WhatsApp"
-              required
-              labelClassName="text-slate-700 font-semibold ml-1"
-              inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-              disabled={isSearching}
-            />
-          )}
-        />
-        <FormField
-          control={form.control}
           name="email_responsavel"
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-semibold ml-1">
-                E-mail <span className="text-red-600">*</span>
+                E-mail {isExternal && <span className="text-red-600">*</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">

@@ -30,11 +30,6 @@ interface ActivityTimelineProps {
 
 const getActionStyles = (acao: string | AtividadeAcao) => {
   switch (acao) {
-    case AtividadeAcao.BAIXA_BANCARIA:
-      return {
-        icon: <CreditCard className="w-3.5 h-3.5" />,
-        color: "text-emerald-600 bg-emerald-50 border-emerald-100",
-      };
     case AtividadeAcao.PAGAMENTO_MANUAL:
       return {
         icon: <CreditCard className="w-3.5 h-3.5" />,

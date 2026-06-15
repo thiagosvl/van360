@@ -33,7 +33,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         name="nome"
         render={({ field, fieldState }) => (
           <FormItem>
-            <FormLabel className="text-slate-700 font-medium ml-1">
+            <FormLabel className="text-slate-700 font-semibold ml-1">
               Nome completo <span className="text-red-600">*</span>
             </FormLabel>
             <FormControl>
@@ -58,7 +58,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           name="cpfcnpj"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-slate-700 font-medium ml-1">CPF <span className="text-red-600">*</span></FormLabel>
+              <FormLabel className="text-slate-700 font-semibold ml-1">CPF <span className="text-red-600">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
                   <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
@@ -82,7 +82,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           name="data_nascimento"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-slate-700 font-medium ml-1">
+              <FormLabel className="text-slate-700 font-semibold ml-1">
                 Data de nascimento <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
@@ -111,7 +111,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           name="email"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-slate-700 font-medium ml-1">
+              <FormLabel className="text-slate-700 font-semibold ml-1">
                 E-mail <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
@@ -139,6 +139,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
               label="WhatsApp"
               required
               placeholder="(11) 99999-9999"
+              labelClassName="text-slate-700 font-semibold ml-1"
               inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
             />
           )}
@@ -150,7 +151,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         name="senha"
         render={({ field, fieldState }) => (
           <FormItem>
-            <FormLabel className="text-slate-700 font-medium ml-1">
+            <FormLabel className="text-slate-700 font-semibold ml-1">
               Crie uma senha segura <span className="text-red-600">*</span>
             </FormLabel>
             <FormControl>
@@ -200,7 +201,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                 htmlFor="termos_aceitos"
                 className="text-xs sm:text-sm text-slate-500 cursor-pointer select-none leading-relaxed"
               >
-                Li e aceito os{" "}
+                Aceito os{" "}
                 <button
                   type="button"
                   onClick={() => setOpenTermos(true)}

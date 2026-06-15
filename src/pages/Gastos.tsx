@@ -91,9 +91,17 @@ export default function Gastos() {
           <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
             Gastos
           </h2>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-            {gastos.length} REGISTROS
-          </span>
+          {(() => {
+            const sectionCount = gastos.length;
+            const countLabel = searchTerm || hasActiveFilters 
+              ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+              : (sectionCount === 1 ? "REGISTRO" : "REGISTROS");
+            return sectionCount != null ? (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                {sectionCount} {countLabel}
+              </span>
+            ) : null;
+          })()}
         </div>
 
         {loading ? (

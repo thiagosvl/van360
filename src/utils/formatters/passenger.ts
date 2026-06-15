@@ -10,9 +10,9 @@ export const formatModalidade = (modalidade: string) => {
     case PassageiroModalidade.IDA_VOLTA:
       return "Ida e Volta";
     case PassageiroModalidade.IDA:
-      return "Ida";
+      return "Somente Ida";
     case PassageiroModalidade.VOLTA:
-      return "Volta";
+      return "Somente Volta";
     default:
       return modalidade;
   }

@@ -61,7 +61,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
   const handleSolicitar = async (data: Step1Data) => {
     setLoading(true);
     try {
-      const response = await apiClient.post('/auth/recuperacao/solicitar', { cpf: data.cpf });
+      const response = await apiClient.post('/auth/recuperacao/solicitar', { cpf: data.cpf.replace(/\D/g, "") });
       setCpf(data.cpf);
       setTelefoneMascarado(response.data.telefoneMascarado || null);
       setStep(2);
@@ -87,7 +87,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
     setLoading(true);
     try {
       const response = await apiClient.post('/auth/recuperacao/validar', {
-        cpf: currentCpf,
+        cpf: currentCpf.replace(/\D/g, ""),
         codigo: data.codigo
       });
       setRecoveryId(response.data.recoveryId);

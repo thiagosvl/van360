@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { Plus, Layers, Car } from "lucide-react";
 import { memo, useEffect, useState } from "react";
-import { FilterDefaults } from "@/types/enums";
+import { FilterDefaults, GastoCategoria } from "@/types/enums";
 import { DataTableToolbar } from "../common/DataTableToolbar";
 import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { GASTO_CATEGORIA_LABELS } from "@/types/gasto";
 
 interface GastosToolbarProps {
   categoriaFilter: string;
@@ -37,6 +39,7 @@ export const GastosToolbar = memo(function GastosToolbar({
   hasActiveFilters: hasActiveFiltersProp,
   onClearFilters,
 }: GastosToolbarProps) {
+  const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     categoria: categoriaFilter || FilterDefaults.TODAS,
@@ -81,9 +84,9 @@ export const GastosToolbar = memo(function GastosToolbar({
       <DataTableFilterSelect
         label="Categoria"
         placeholder="Todas"
-        value={isSheetOpen ? tempFilters.categoria : categoriaFilter}
+        value={isMobile ? tempFilters.categoria : categoriaFilter}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, categoria: val }));
           } else {
             onCategoriaChange(val);
@@ -92,16 +95,19 @@ export const GastosToolbar = memo(function GastosToolbar({
         icon={<Layers className="w-3.5 h-3.5 shrink-0" />}
         options={[
           { label: "Todas Categorias", value: FilterDefaults.TODAS },
-          ...categorias.map((cat) => ({ label: cat, value: cat })),
+          ...categorias.map((cat) => ({
+            label: GASTO_CATEGORIA_LABELS[cat as GastoCategoria] || cat,
+            value: cat,
+          })),
         ]}
       />
 
       <DataTableFilterSelect
         label="Veículo"
         placeholder="Veículo"
-        value={isSheetOpen ? tempFilters.veiculo : veiculoFilter}
+        value={isMobile ? tempFilters.veiculo : veiculoFilter}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, veiculo: val }));
           } else {
             onVeiculoChange(val);
@@ -141,7 +147,7 @@ export const GastosToolbar = memo(function GastosToolbar({
           className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 md:px-6 shadow-md transition-all active:scale-95"
         >
           <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden md:inline">Registrar Gasto</span>
+          <span className="hidden md:inline">Registrar</span>
           <span className="md:hidden">Registrar</span>
         </Button>
       }

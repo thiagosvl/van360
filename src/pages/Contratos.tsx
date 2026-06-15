@@ -1,11 +1,11 @@
-import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
-
+import { Button } from "@/components/ui/button";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 import { ContratosList } from "@/components/features/contrato/ContratosList";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
+import { AlertCircle } from "lucide-react";
 
 import { useContratosViewModel } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
@@ -22,6 +22,7 @@ const Contratos = () => {
     isLoading,
     isActionLoading,
     isContratoAtivo,
+    isContratoConfigurado,
     handleRefresh,
     handleOpenContractSetup,
     handleActivateContracts,
@@ -39,16 +40,7 @@ const Contratos = () => {
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
-          {/* Banner de Estado Desativado */}
-          {!isContratoAtivo && (
-            <DashboardStatusCard
-              type="pending"
-              title="Contratos Desativados"
-              description="Para gerar, editar ou substituir contratos, você precisa ativar essa funcionalidade. Por enquanto, as ações de alteração estão bloqueadas, mas seus dados continuam disponíveis para consulta."
-              actionLabel="Ativar Agora"
-              onAction={handleActivateContracts}
-            />
-          )}
+
 
           <Tabs
             value={activeTab}
@@ -65,12 +57,60 @@ const Contratos = () => {
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
               isDesativado={!isContratoAtivo}
+              isContratoConfigurado={isContratoConfigurado}
               onToggleContratos={handleToggleContracts}
               isToggling={isToggling}
               isPreviewLoading={isPreviewLoading}
             />
 
-            <div className="flex items-center justify-between px-1">
+            {/* Banner: Não Configurado */}
+            {!isContratoAtivo && !isContratoConfigurado && (
+              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Você ainda não configurou os contratos</p>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Ative e configure essa funcionalidade para gerar contratos em PDF automaticamente para seus passageiros.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleOpenContractSetup}
+                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
+                >
+                  Configurar Agora
+                </button>
+              </div>
+            )}
+
+            {/* Banner: Desativado (Mas já configurado) */}
+            {!isContratoAtivo && isContratoConfigurado && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-200 text-slate-600 shrink-0">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</p>
+                    <p className="text-[11px] text-slate-700 leading-relaxed">
+                      A emissão e o gerenciamento de contratos em PDF para seus passageiros estão desativados. Reative para voltar a utilizar.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleToggleContracts(true)}
+                  disabled={isToggling}
+                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center disabled:opacity-50"
+                >
+                  Reativar Contratos
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
                 {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" :
                   activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Sem Contrato"}
@@ -91,22 +131,22 @@ const Contratos = () => {
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
-                activeTab={ContratoTab.ASSINADOS}
+                activeTab={ContratoTab.SEM_CONTRATO}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
                 {...actions}
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
-                activeTab={ContratoTab.SEM_CONTRATO}
+                activeTab={ContratoTab.ASSINADOS}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
                 {...actions}

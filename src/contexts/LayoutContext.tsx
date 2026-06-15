@@ -29,6 +29,10 @@ export interface OpenPassageiroFormProps {
   prePassageiro?: PrePassageiro | null;
 }
 
+export interface OpenQuickStartPassageiroProps {
+  onSuccess?: (passageiro?: Passageiro) => void;
+}
+
 export interface OpenGastoFormProps {
   onSuccess?: () => void;
   gastoToEdit?: Gasto | null;
@@ -127,6 +131,7 @@ export interface LayoutContextType {
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
+  openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;

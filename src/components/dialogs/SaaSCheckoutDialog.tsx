@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
 import CreditCardForm, { CreditCardData } from "@/components/dialogs/CreditCardForm";
+import BillingAddressForm from "@/components/dialogs/BillingAddressForm";
 import { useState, useEffect } from "react";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
@@ -29,6 +30,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     step,
     nextStep,
     prevStep,
+    jumpToStep,
     selectedPeriod,
     setSelectedPeriod,
     paymentMethod,
@@ -50,11 +52,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
+  const [addressData, setAddressData] = useState<Partial<CreditCardData> | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || step !== 3) {
+    if (!isOpen || step !== 4) {
       setPixCopied(false);
     }
   }, [isOpen, step]);
@@ -91,12 +94,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   const handleVerifyPixPayment = async () => {
     setIsVerifying(true);
     try {
-      toast.loading("Verificando seu pagamento junto ao banco...", { id: "verify-pix" });
+      toast.loading("Verificando seu pagamento...", { id: "verify-pix" });
       await Promise.all([refetchInvoices(), refetchStatus()]);
-      
+
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      
-      toast.info("Ainda não identificamos a confirmação. O banco pode levar até 1 minuto para processar. Continue aguardando ou tente de novo em instantes.", {
+
+      toast.info("Ainda não identificamos o pagamento. Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.", {
         id: "verify-pix",
         duration: 5000,
       });
@@ -107,19 +110,32 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     }
   };
 
-  const isCardStep3 = step === 3 && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD;
-  const isLocked = isGenerating || isCardStep3;
+  const isCardStep4 = step === 4 && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD;
+  const isLocked = isGenerating || isCardStep4;
 
-  const stepTitles = [
-    "Assinatura Van360",
-    "Forma de Pagamento",
-    paymentMethod === CheckoutPaymentMethod.PIX ? "Aguardando PIX" : "Confirmando Pagamento",
-  ];
-  const stepSubtitles = [
-    "Escolha o melhor plano para você",
-    paymentMethod === CheckoutPaymentMethod.PIX ? "Pague com PIX e ative instantaneamente" : "Preencha os dados do cartão",
-    paymentMethod === CheckoutPaymentMethod.PIX ? "Escaneie o QR Code no app do banco" : "Seu banco está confirmando o pagamento",
-  ];
+  const hasNewCardFlow = paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (!savedCards.length || selectedSavedCardId === "new");
+  const totalSteps = hasNewCardFlow ? 4 : 3;
+
+  // Mapeamento dinâmico de passos dependendo se tem endereço ou não
+  const currentStepDisplay = step === 4 ? totalSteps : step;
+
+  const getStepTitle = (s: number) => {
+    if (s === 1) return "Assinatura Van360";
+    if (s === 2) return "Forma de Pagamento";
+    if (s === 3 && hasNewCardFlow) return "Dados do Cartão";
+    return paymentMethod === CheckoutPaymentMethod.PIX ? "Aguardando PIX" : "Confirmando Pagamento";
+  };
+
+  const getStepSubtitle = (s: number) => {
+    if (s === 1) return "Escolha o melhor plano para você";
+    if (s === 2) {
+      if (paymentMethod === CheckoutPaymentMethod.PIX) return "Pague com PIX e ative instantaneamente";
+      if (hasNewCardFlow) return "Onde a fatura deve ser registrada";
+      return "Selecione o cartão de crédito";
+    }
+    if (s === 3 && hasNewCardFlow) return "Preencha os dados do cartão";
+    return paymentMethod === CheckoutPaymentMethod.PIX ? "Escaneie o QR Code no app do banco" : "Seu banco está confirmando o pagamento";
+  };
 
   return (
     <BaseDialog
@@ -129,11 +145,11 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       lockClose={isLocked}
     >
       <BaseDialog.Header
-        title={stepTitles[step - 1]}
-        subtitle={stepSubtitles[step - 1]}
+        title={getStepTitle(step)}
+        subtitle={getStepSubtitle(step)}
         showSteps
-        currentStep={step}
-        totalSteps={3}
+        currentStep={currentStepDisplay}
+        totalSteps={totalSteps}
         onClose={onClose}
         hideCloseButton={isLocked}
         leftAction={step > 1 ? (
@@ -196,15 +212,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 <ShieldCheck className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
                 <p className="text-[11px] font-bold text-[#065f46]">
                   Desconto de {discountPct}% de indicação ativo! Aproveite seu benefício.
-                </p>
-              </div>
-            )}
-
-            {forcedPeriod && (
-              <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl mb-2">
-                <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                <p className="text-[11px] font-medium text-amber-700">
-                  Você está alterando para o plano anual. Esta ação é definitiva.
                 </p>
               </div>
             )}
@@ -355,7 +362,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   <div className="flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-[#87a4cc] shrink-0 mt-0.5" />
                     <p className="text-xs text-[#43474e] leading-relaxed">
-                      O QR Code será gerado na próxima etapa e terá validade de 24 horas.
+                      Clique em Gerar PIX para visualizar o QR Code e realizar o pagamento.
                     </p>
                   </div>
                 </div>
@@ -365,7 +372,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
             {/* Conteúdo Cartão */}
             {paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
               <div className="animate-in fade-in duration-300 space-y-4">
-                {cardError && (
+                {!hasNewCardFlow && cardError && (
                   <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
                     <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
@@ -433,42 +440,86 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   </div>
                 )}
 
-                {/* Formulário de novo cartão */}
+                {/* Formulário de novo cartão (Endereço Primeiro) */}
                 {(savedCards.length === 0 || selectedSavedCardId === "new") && (
-                  <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} />
+                  <BillingAddressForm
+                    onChange={setAddressData}
+                    initialBirthDate={profile?.data_nascimento}
+                    initialData={{
+                      zipcode: addressData?.zipcode || profile?.cep,
+                      street: addressData?.street || profile?.logradouro,
+                      number_address: addressData?.number_address || profile?.numero,
+                      neighborhood: addressData?.neighborhood || profile?.bairro,
+                      city: addressData?.city || profile?.cidade,
+                      state: addressData?.state || profile?.estado
+                    }}
+                  />
                 )}
 
-                {cardError && (
+                {!hasNewCardFlow && cardError && (
                   <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
                     <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
                   </div>
                 )}
 
-                <div className="p-4 bg-[#f2f4f6] rounded-xl">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
-                    <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
-                      Plano {isAnual ? "Anual" : "Mensal"}
-                    </span>
+                {!hasNewCardFlow && (
+                  <div className="p-4 bg-[#f2f4f6] rounded-xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
+                      <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
+                        Plano {isAnual ? "Anual" : "Mensal"}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
+                      <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
+                    </div>
+                    {hasActiveDiscount && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Desconto de indicação de {discountPct}% aplicado!
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
-                    <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
-                  </div>
-                  {hasActiveDiscount && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Desconto de indicação de {discountPct}% aplicado!
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && hasNewCardFlow && (
+          <div className="p-6 space-y-4">
+            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} cardError={cardError} />
+
+            <div className="p-4 bg-[#f2f4f6] rounded-xl">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
+                <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
+                  Plano {isAnual ? "Anual" : "Mensal"}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
+                <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
+              </div>
+              {hasActiveDiscount && (
+                <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Desconto de indicação de {discountPct}% aplicado!
+                </p>
+              )}
+            </div>
+            {cardError && (
+              <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="p-6 space-y-4">
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-16 space-y-3">
@@ -478,13 +529,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 </p>
                 <p className="text-xs text-[#43474e]">Aguarde um momento</p>
               </div>
-            ) : isCardStep3 ? (
+            ) : isCardStep4 ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-5 text-center">
                 <div className="w-16 h-16 rounded-full bg-[#002444]/5 flex items-center justify-center">
                   <RefreshCw className="w-8 h-8 text-[#002444] animate-spin" />
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-sm font-bold text-[#002444]">Confirmando pagamento...</p>
                   <p className="text-xs text-[#43474e] leading-relaxed max-w-[240px]">
                     Seu pagamento foi enviado. Aguardando a confirmação da operadora do cartão para ativar a assinatura.
                   </p>
@@ -531,7 +581,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
             <BaseDialog.Action
               label="Continuar"
               onClick={nextStep}
-              icon={<ArrowRight className="w-4 h-4" />}
+              isLoading={isLoadingData}
+              disabled={isLoadingData || !selectedPlan}
+              icon={!isLoadingData ? <ArrowRight className="w-4 h-4" /> : undefined}
             />
           )}
 
@@ -543,45 +595,58 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 onClick={prevStep}
               />
               <BaseDialog.Action
-                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : "Confirmar"}
-                onClick={() => handleGenerateCheckout(cardData)}
+                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : (hasNewCardFlow ? "Continuar" : "Confirmar")}
+                onClick={() => {
+                  if (hasNewCardFlow) {
+                    jumpToStep(3);
+                  } else {
+                    handleGenerateCheckout(null); // Will use selectedSavedCardId or Pix
+                  }
+                }}
                 isLoading={isGenerating}
                 disabled={
                   paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
                     !selectedSavedCardId ||
-                    (selectedSavedCardId === "new" && !cardData)
+                    (selectedSavedCardId === "new" && !addressData)
                   )
                 }
-                icon={paymentMethod === CheckoutPaymentMethod.CREDIT_CARD ? <ShieldCheck className="w-4 h-4" /> : undefined}
+                icon={(!hasNewCardFlow && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD) ? <ShieldCheck className="w-4 h-4" /> : undefined}
               />
             </>
           )}
 
-          {step === 3 && !isCardStep3 && activeInvoice?.pix_copy_paste && (
+          {step === 3 && hasNewCardFlow && (
+            <>
+              <BaseDialog.Action
+                label="Voltar"
+                variant="outline"
+                onClick={() => jumpToStep(2)}
+              />
+              <BaseDialog.Action
+                label="Confirmar"
+                onClick={() => handleGenerateCheckout({ ...cardData, ...addressData } as CreditCardData)}
+                isLoading={isGenerating}
+                disabled={!cardData}
+                icon={<ShieldCheck className="w-4 h-4" />}
+              />
+            </>
+          )}
+
+          {step === 4 && !isCardStep4 && activeInvoice?.pix_copy_paste && (
             <div className="flex flex-col sm:flex-row gap-2.5 w-full">
               {pixCopied ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyPix}
-                    className="h-12 border-slate-200 text-[#002444] hover:bg-slate-50 flex items-center justify-center gap-2 flex-1 text-sm font-semibold"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copiar Novamente
-                  </Button>
-                  <Button
-                    onClick={handleVerifyPixPayment}
-                    disabled={isVerifying}
-                    className="bg-[#10b981] hover:bg-[#059669] text-white h-12 flex items-center justify-center gap-2 flex-1 text-sm font-semibold shadow-sm transition-all duration-200"
-                  >
-                    {isVerifying ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
-                    )}
-                    Já fiz o pagamento
-                  </Button>
-                </>
+                <Button
+                  onClick={handleVerifyPixPayment}
+                  disabled={isVerifying}
+                  className="bg-[#10b981] hover:bg-[#059669] text-white h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200"
+                >
+                  {isVerifying ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  Já fiz o pagamento
+                </Button>
               ) : (
                 <Button
                   onClick={handleCopyPix}

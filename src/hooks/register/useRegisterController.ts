@@ -76,6 +76,8 @@ export function useRegisterController() {
       const referralCode = localStorage.getItem("van360_referral_code") || undefined;
       const result = await usuarioApi.registrar({
         ...data,
+        cpfcnpj: data.cpfcnpj?.replace(/\D/g, ""),
+        telefone: data.telefone?.replace(/\D/g, ""),
         indicador_id: referralCode,
       });
       if (result?.error) throw new Error(result.error);
@@ -199,7 +201,10 @@ export function useRegisterController() {
   const handleNextStep = async () => {
     const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
     const ok = await form.trigger(fields as any);
-    if (!ok) return false;
+    if (!ok) {
+      toast.error("validacao.formularioComErros");
+      return false;
+    }
 
     await handleFinalRegister(form.getValues());
     return true;

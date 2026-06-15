@@ -50,8 +50,8 @@ export function CookieBanner({ isPending, onAccept, onReject, onCustomize }: Coo
               Personalizar
             </button>
             <button
-              onClick={onAccept}
-              className="text-[14px] sm:text-[14px] font-bold px-5 sm:px-6 py-2 sm:py-2 rounded-lg bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] transition-all shadow-[0_2px_8px_rgba(245,158,11,.3)]"
+              onClick={onAccept} className="text-[14px] sm:text-[14px] font-bold px-5 sm:px-6 py-2 sm:py-2 rounded-lg bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] transition-all shadow-[0_2px_8px_rgba(245,158,11,.3)]"
+
             >
               Aceitar
             </button>

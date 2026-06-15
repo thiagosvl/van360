@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import { Contrato, CreateContratoDTO } from "@/types/contract";
+import { PreviewConfig } from "@/hooks/api/useContratos";
 
 export const contratoApi = {
   listContratos: async (params?: Record<string, any>) => {
@@ -27,7 +28,7 @@ export const contratoApi = {
     return data;
   },
 
-  previewContrato: async (draftConfig?: any) => {
+  previewContrato: async (draftConfig?: PreviewConfig) => {
     const { data } = await apiClient.post('/contratos/preview', draftConfig || {}, {
       responseType: 'blob',
     });

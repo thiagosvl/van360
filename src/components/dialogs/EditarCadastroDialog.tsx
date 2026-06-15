@@ -140,7 +140,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Alterar Cadastro" icon={<User className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header title="Editar Cadastro" icon={<User className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
         {isLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -154,7 +154,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                 name="nome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Nome completo <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -177,7 +177,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                 name="apelido"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">Apelido</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -203,6 +203,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                       label="WhatsApp"
                       placeholder="(00) 00000-0000"
                       required
+                      labelClassName="text-slate-700 font-semibold ml-1"
                       inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
                     />
                   )}
@@ -213,7 +214,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                   name="data_nascimento"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium ml-1">
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
                         Data de nascimento <span className="text-red-600">*</span>
                       </FormLabel>
                       <FormControl>
@@ -242,7 +243,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                   name="cpfcnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium ml-1">
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
                         CPF <span className="text-red-600">*</span>
                       </FormLabel>
                       <FormControl>
@@ -261,7 +262,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium ml-1">
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
                         E-mail <span className="text-red-600">*</span>
                       </FormLabel>
                       <FormControl>

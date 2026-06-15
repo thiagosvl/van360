@@ -9,6 +9,7 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
+import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
@@ -21,28 +22,41 @@ export const passageiroSchema = z
     veiculo_id: z.string().min(1, "Campo obrigatório"),
     nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
 
-    periodo: z.string().min(1, "Campo obrigatório"),
-    modalidade: z.string().min(1, "Campo obrigatório"),
-    data_nascimento: dateSchema(true),
-    genero: z.string().min(1, "Campo obrigatório"),
+    periodo: z.string().optional().nullable().or(z.literal("")),
+    modalidade: z.string().optional().nullable().or(z.literal("")),
+    data_nascimento: dateSchema(false),
+    genero: z.string().optional().nullable().or(z.literal("")),
 
-    logradouro: z.string().min(1, "Campo obrigatório"),
-    numero: z.string().min(1, "Campo obrigatório"),
-    bairro: z.string().min(1, "Campo obrigatório"),
-    cidade: z.string().min(1, "Campo obrigatório"),
-    estado: z.string().min(1, "Campo obrigatório"),
-    cep: cepSchema,
-    referencia: z.string().optional(),
+    logradouro: z.string().optional().nullable().or(z.literal("")),
+    numero: z.string().optional().nullable().or(z.literal("")),
+    bairro: z.string().optional().nullable().or(z.literal("")),
+    cidade: z.string().optional().nullable().or(z.literal("")),
+    estado: z.string().optional().nullable().or(z.literal("")),
+    cep: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine((val) => !val || isValidCEPFormat(val), {
+        message: "Formato inválido (00000-000)",
+      }),
+    referencia: z.string().optional().nullable().or(z.literal("")),
 
-    observacoes: z.string().optional(),
+    observacoes: z.string().optional().nullable().or(z.literal("")),
 
     nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-    parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
+    parentesco_responsavel: z.string().optional().nullable().or(z.literal("")),
     email_responsavel: z
       .string()
-      .min(1, "Campo obrigatório")
-      .email("E-mail inválido"),
-    cpf_responsavel: cpfSchema,
+      .email("E-mail inválido")
+      .optional()
+      .or(z.literal("")),
+    cpf_responsavel: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine((val) => !val || isValidCPF(val), {
+        message: "CPF inválido",
+      }),
     telefone_responsavel: phoneSchema,
 
     valor_cobranca: z
@@ -53,7 +67,8 @@ export const passageiroSchema = z
         return num >= 1;
       }, "O valor deve ser no mínimo R$ 1,00"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
-    data_inicio_transporte: dateSchema(true, true),
+    data_inicio_transporte: dateSchema(false, true),
+    data_fim_transporte: dateSchema(false, true),
 
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
@@ -110,6 +125,7 @@ export function usePassageiroForm({
       valor_cobranca: "",
       dia_vencimento: "",
       data_inicio_transporte: "",
+      data_fim_transporte: "31/12/" + new Date().getFullYear(),
 
       ativo: true,
     },
@@ -128,14 +144,14 @@ export function usePassageiroForm({
         flushSync(() => {
           form.reset({
             nome: editingPassageiro.nome,
-            periodo: editingPassageiro.periodo,
+            periodo: editingPassageiro.periodo || "",
             modalidade: editingPassageiro.modalidade || "",
             data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
             genero: editingPassageiro.genero || "",
             nome_responsavel: editingPassageiro.nome_responsavel,
             parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
-            email_responsavel: editingPassageiro.email_responsavel,
-            cpf_responsavel: cpfMask(editingPassageiro.cpf_responsavel),
+            email_responsavel: editingPassageiro.email_responsavel || "",
+            cpf_responsavel: editingPassageiro.cpf_responsavel ? cpfMask(editingPassageiro.cpf_responsavel) : "",
             telefone_responsavel: phoneMask(
               editingPassageiro.telefone_responsavel
             ),
@@ -148,6 +164,7 @@ export function usePassageiroForm({
               : "",
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
+            data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -199,6 +216,7 @@ export function usePassageiroForm({
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
+          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
 
           ativo: true,
         });
@@ -251,6 +269,7 @@ export function usePassageiroForm({
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",
+          data_fim_transporte: "31/12/" + new Date().getFullYear(),
 
           ativo: true,
         });

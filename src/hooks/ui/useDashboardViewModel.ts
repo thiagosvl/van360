@@ -1,7 +1,6 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile, useSession } from "@/hooks";
 import { useSubscriptionStatus, useSubscriptionPlans } from "@/hooks/api/useSubscription";
-import { PassageiroFormModes } from "@/types/enums";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatFirstName } from "@/utils/formatters";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,7 +16,7 @@ export function useDashboardViewModel() {
     setPageTitle,
     openEscolaFormDialog,
     openVeiculoFormDialog,
-    openPassageiroFormDialog,
+    openQuickStartPassageiroDialog,
     openGastoFormDialog,
     openFirstChargeDialog,
     openSaaSCheckoutDialog,
@@ -44,6 +43,7 @@ export function useDashboardViewModel() {
 
   const contadores = useMemo(() => ({
     escolas: systemSummary?.contadores?.escolas?.total ?? 0,
+    escolasAtivas: systemSummary?.contadores?.escolas?.ativos ?? 0,
     veiculos: systemSummary?.contadores?.veiculos?.total ?? 0,
     passageiros: systemSummary?.contadores?.passageiros?.total ?? 0,
     passageirosAtivos: systemSummary?.contadores?.passageiros?.ativos ?? 0,
@@ -55,8 +55,8 @@ export function useDashboardViewModel() {
     const completedStepsCount = [
       contadores.veiculos > 0,
       contadores.escolas > 0,
-      contadores.passageiros > 0,
       !!profile?.chave_pix && !!profile?.tipo_chave_pix,
+      contadores.passageiros > 0,
     ].filter(Boolean).length;
 
     return {
@@ -122,11 +122,16 @@ export function useDashboardViewModel() {
   }, [openFirstChargeDialog]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
-    openPassageiroFormDialog({
-      mode: PassageiroFormModes.CREATE,
-      onSuccess: handleSuccessFormPassageiro,
+    openQuickStartPassageiroDialog({
+      onSuccess: (passageiro) => {
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+        if (passageiro) {
+          openFirstChargeDialog({ passageiro });
+        }
+      },
     });
-  }, [openPassageiroFormDialog, handleSuccessFormPassageiro]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, queryClient]);
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({
@@ -139,22 +144,14 @@ export function useDashboardViewModel() {
   const handleOpenVeiculoDialog = useCallback(() => {
     openVeiculoFormDialog({
       allowBatchCreation: true,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      },
     });
-  }, [openVeiculoFormDialog, queryClient]);
+  }, [openVeiculoFormDialog]);
 
   const handleOpenEscolaDialog = useCallback(() => {
     openEscolaFormDialog({
       allowBatchCreation: true,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["escolas"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      },
     });
-  }, [openEscolaFormDialog, queryClient]);
+  }, [openEscolaFormDialog]);
 
   const navigateTo = useCallback((route: string) => {
     navigate(route);

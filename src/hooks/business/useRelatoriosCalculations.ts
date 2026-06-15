@@ -21,31 +21,20 @@ import { parseLocalDate } from "@/utils/dateUtils";
 
 // Constantes para agrupamento
 const VEICULO_OUTROS = "outros";
-const PERIODO_OUTROS = "Outros";
+const PERIODO_NAO_INFORMADO = "Não informado";
 
 export const CATEGORIA_ICONS: Record<
   string,
-  { icon: any; color: string; bg: string }
+  { icon: any; color: string; bg: string; label: string }
 > = {
-  [GastoCategoria.COMBUSTIVEL]: { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100" },
-  [GastoCategoria.MANUTENCAO]: { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100" },
-  [GastoCategoria.SALARIO]: { icon: Wallet, color: "text-green-600", bg: "bg-green-100" },
-  [GastoCategoria.VISTORIAS]: {
-    icon: ClipboardCheck,
-    color: "text-purple-600",
-    bg: "bg-purple-100",
-  },
-  [GastoCategoria.DOCUMENTACAO]: {
-    icon: FileText,
-    color: "text-yellow-600",
-    bg: "bg-yellow-100",
-  },
-  [GastoCategoria.ADMINISTRATIVA]: {
-    icon: Cog,
-    color: "text-purple-600",
-    bg: "bg-purple-100",
-  },
-  [GastoCategoria.OUTRO]: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100" },
+  [GastoCategoria.COMBUSTIVEL]: { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100", label: "Combustível" },
+  [GastoCategoria.MANUTENCAO]: { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100", label: "Manutenção" },
+  [GastoCategoria.IMPOSTOS]: { icon: FileText, color: "text-red-600", bg: "bg-red-100", label: "Impostos" },
+  [GastoCategoria.MULTAS]: { icon: ClipboardCheck, color: "text-red-800", bg: "bg-red-200", label: "Multas" },
+  [GastoCategoria.LAVAGEM]: { icon: Cog, color: "text-cyan-600", bg: "bg-cyan-100", label: "Lavagem" },
+  [GastoCategoria.ALIMENTACAO]: { icon: Wallet, color: "text-green-600", bg: "bg-green-100", label: "Alimentação" },
+  [GastoCategoria.SEGURO]: { icon: ClipboardCheck, color: "text-indigo-600", bg: "bg-indigo-100", label: "Seguro" },
+  [GastoCategoria.OUTROS]: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100", label: "Outros" },
 };
 
 
@@ -62,13 +51,20 @@ export const FORMAS_PAGAMENTO_LABELS: Record<
 };
 
 
+import { Cobranca } from "@/types/cobranca";
+import { Gasto } from "@/types/gasto";
+import { Passageiro } from "@/types/passageiro";
+import { Escola } from "@/types/escola";
+import { Veiculo } from "@/types/veiculo";
+import { Usuario } from "@/types/usuario";
+
 interface UseRelatoriosCalculationsProps {
-  cobrancasData: any;
-  gastosData: any;
-  passageirosData: any;
-  escolasData: any;
-  veiculosData: any;
-  profile: any;
+  cobrancasData?: { all: Cobranca[]; recebidos: Cobranca[]; areceber: Cobranca[] };
+  gastosData?: { list: Gasto[] };
+  passageirosData?: { list: Passageiro[] };
+  escolasData?: { list: Escola[] };
+  veiculosData?: { list: Veiculo[] };
+  profile?: Usuario;
   financeiro?: {
     receita: {
       realizada: number;
@@ -104,8 +100,8 @@ export const useRelatoriosCalculations = ({
     const cobrancasAbertas = cobrancasData?.areceber || [];
     const gastos = gastosData?.list || [];
     const passageirosList = passageirosData?.list || [];
-    const escolasList = (escolasData as any)?.list || [];
-    const veiculosListFull = (veiculosData as any)?.list || [];
+    const escolasList = escolasData?.list || [];
+    const veiculosListFull = veiculosData?.list || [];
 
     // Visão Geral
     const recebido = financeiro?.receita.realizada ?? cobrancasPagas.reduce(
@@ -208,7 +204,7 @@ export const useRelatoriosCalculations = ({
     > = {};
 
     gastos.forEach((g: any) => {
-      const cat = g.categoria || GastoCategoria.OUTRO;
+      const cat = g.categoria || GastoCategoria.OUTROS;
       const veiculoId = g.veiculo_id || VEICULO_OUTROS;
       const valor = Number(g.valor || 0);
 
@@ -228,7 +224,7 @@ export const useRelatoriosCalculations = ({
     const topCategorias = Object.values(categoriasMap)
       .sort((a, b) => b.valor - a.valor)
       .map((cat) => {
-        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS[GastoCategoria.OUTRO];
+        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS[GastoCategoria.OUTROS];
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
           const info = veiculosMap[vId] || { nome: "Geral / Não especificado", placa: "-" };
           return {
@@ -245,7 +241,7 @@ export const useRelatoriosCalculations = ({
         });
 
         return {
-          nome: cat.nome,
+          nome: iconData.label || cat.nome,
           valor: cat.valor,
           count: cat.count,
           icon: iconData.icon,
@@ -360,7 +356,7 @@ export const useRelatoriosCalculations = ({
     passageirosList
       .filter((p: any) => p.ativo)
       .forEach((p: any) => {
-        const periodo = p.periodo || PERIODO_OUTROS;
+        const periodo = p.periodo || PERIODO_NAO_INFORMADO;
         if (!periodosMap[periodo]) {
           periodosMap[periodo] = { count: 0, valor: 0 };
         }

@@ -84,11 +84,11 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
       <div className="w-full max-w-[320px] pt-4 mt-2 border-t border-[#f2f4f6]">
         <h4 className="text-[10px] font-black text-[#43474e]/60 uppercase tracking-widest mb-3 px-1">Precisa de ajuda?</h4>
         <div className="grid grid-cols-1 gap-2.5">
-          <div className="flex items-start gap-3 px-2 py-2 rounded-lg hover:bg-[#f2f4f6]/40 transition-colors">
+          <div className="flex items-start gap-3 px-2 py-2 rounded-lg">
             <div className="w-5 h-5 rounded-md bg-[#002444]/5 flex items-center justify-center text-[10px] font-black text-[#002444] shrink-0 border border-[#002444]/10">1</div>
             <p className="text-[11px] font-medium text-[#43474e] leading-tight">Copie o código <span className="font-bold text-[#002444]">Pix Copia e Cola</span> acima</p>
           </div>
-          <div className="flex items-start gap-3 px-2 py-2 rounded-lg hover:bg-[#f2f4f6]/40 transition-colors">
+          <div className="flex items-start gap-3 px-2 py-2 rounded-lg">
             <div className="w-5 h-5 rounded-md bg-[#002444]/5 flex items-center justify-center text-[10px] font-black text-[#002444] shrink-0 border border-[#002444]/10">2</div>
             <p className="text-[11px] font-medium text-[#43474e] leading-tight">No aplicativo do seu banco, escolha a opção de pagar via <span className="font-bold text-[#002444]">Pix Copia e Cola</span></p>
           </div>

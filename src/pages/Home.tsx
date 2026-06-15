@@ -3,6 +3,7 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { KPICard } from "@/components/common/KPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
+import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
@@ -18,6 +19,9 @@ import {
   TrendingDown,
   UserCheck,
   Users,
+  GraduationCap,
+  Car,
+  Rocket,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
@@ -26,7 +30,6 @@ import { getNowBR } from "@/utils/dateUtils";
 
 const Home = () => {
   const {
-    profile,
     subscription,
     plans,
     isLoading,
@@ -59,17 +62,18 @@ const Home = () => {
               {dateContext}
             </p>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
-              {financeiro.countAtrasos > 0
-                ? `${financeiro.countAtrasos} mensalidades em atraso`
-                : "Tudo em dia por aqui!"}
+              {
+                financeiro.countAtrasos > 0
+                  ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "mensalidade" : "mensalidades"} em atraso`
+                  : `Mensalidades do mês em dia!`
+              }
             </p>
           </div>
 
-          {/* Banner de Trial (SaaS) */}
-          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
-            <TrialBanner
-              daysLeft={subscription.trialDaysLeft}
-              onSubscribe={() => {
+          {/* Banner de Carência (SaaS) */}
+          {subscription?.status === SubscriptionStatus.PAST_DUE && (
+            <PastDueBanner
+              onRegularize={() => {
                 if (plans && plans.length > 0) {
                   const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
                   openSaaSCheckoutDialog({
@@ -115,6 +119,24 @@ const Home = () => {
             </section>
           )}
 
+          {/* Banner de Trial (SaaS) */}
+          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
+            <TrialBanner
+              daysLeft={subscription.trialDaysLeft}
+              onSubscribe={() => {
+                if (plans && plans.length > 0) {
+                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
+                  openSaaSCheckoutDialog({
+                    plans,
+                    initialPlanId: defaultPlan.id
+                  });
+                } else {
+                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+                }
+              }}
+            />
+          )}
+
           {/* Notificação de Mensalidades pendentes */}
           {!onboarding.showOnboarding && financeiro.countAtrasos > 0 && (
             <section>
@@ -136,7 +158,7 @@ const Home = () => {
               "grid gap-4 px-1",
               onboarding.showOnboarding
                 ? "grid-cols-1"
-                : "grid-cols-2 lg:grid-cols-3",
+                : "grid-cols-2 lg:grid-cols-4",
             )}
           >
             {!onboarding.showOnboarding && (
@@ -155,14 +177,24 @@ const Home = () => {
                 />
               </>
             )}
-            <KPICard
-              className={cn(!onboarding.showOnboarding && "col-span-2 lg:col-span-1")}
-              label="Passageiros Ativos"
-              value={contadores.passageirosAtivos}
-              icon={Users}
-              variant={KPICardVariant.OUTLINE}
-              loading={isLoading}
-            />
+            {contadores.passageirosAtivos > 0 && (
+              <KPICard
+                label="Passageiros Ativos"
+                value={contadores.passageirosAtivos}
+                icon={Users}
+                variant={KPICardVariant.OUTLINE}
+                loading={isLoading}
+              />
+            )}
+            {!onboarding.showOnboarding && contadores.escolasAtivas > 0 && (
+              <KPICard
+                label="Escolas Ativas"
+                value={contadores.escolasAtivas}
+                icon={GraduationCap}
+                variant={KPICardVariant.OUTLINE}
+                loading={isLoading}
+              />
+            )}
           </div>
 
           {/* Acessos Rápidos */}
@@ -189,31 +221,19 @@ const Home = () => {
                 activeIcon={CopyCheck}
                 label={isCopied ? "Copiado!" : "Link de Cadastro"}
                 isActive={isCopied}
-                variant="violet"
+                variant="indigo"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
                 icon={Users}
                 label="Passageiros"
-                variant="indigo"
+                variant="blue"
               />
               <ShortcutCard
                 to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
-                variant="emerald"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
-                icon={TrendingDown}
-                label="Gastos"
-                variant="orange"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
-                icon={FileText}
-                label="Relatórios"
-                variant="amber"
+                variant="sky"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.BILLING}
@@ -222,10 +242,40 @@ const Home = () => {
                 variant="emerald"
               />
               <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
+                icon={TrendingDown}
+                label="Gastos"
+                variant="rose"
+              />
+              <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
                 icon={FileText}
                 label="Contratos"
-                variant="sky"
+                variant="amber"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
+                icon={FileText}
+                label="Relatórios"
+                variant="orange"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
+                icon={GraduationCap}
+                label="Escolas"
+                variant="violet"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.VEHICLES}
+                icon={Car}
+                label="Veículos"
+                variant="slate"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
+                icon={Rocket}
+                label="Minha Assinatura"
+                variant="indigo"
               />
             </div>
           </section>

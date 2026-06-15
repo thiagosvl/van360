@@ -58,7 +58,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
   const primaryButtonText = () => {
     if (step === "CONTRACT_CHECK") return wantsContract ? "Gerar e Enviar" : "Próximo";
-    if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Finalizar";
+    if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Confirmar";
     if (step === "PAYMENT_METHOD") return "Confirmar";
     if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Registrar";
     return "Próximo";
@@ -86,15 +86,12 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
       <BaseDialog.Body>
         {step === "CONTRACT_CHECK" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <FileText className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
+            <div className="py-2">
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold text-slate-700">
                   Gerar contrato?
                 </h2>
-                <p className="text-[13px] text-slate-500 font-medium leading-relaxed pr-2">
+                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                   Gostaria de gerar o contrato para{" "}
                   <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong> e já envia-lo automaticamente para o responsável?
                 </p>
@@ -153,15 +150,9 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
         {step === "REGISTER_CHECK" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
-                  Registrar primeira mensalidade?
-                </h2>
-                <p className="text-[13px] text-slate-500 font-medium leading-relaxed pr-2">
+            <div className="py-2">
+              <div className="space-y-1">
+                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                   Gostaria de registrar a mensalidade de{" "}
                   <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para{" "}
                   <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
@@ -184,7 +175,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <p className={cn("text-[13px] font-black uppercase tracking-tight", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, registrar</p>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Já estará visível na carteirinha</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Já estará visível na carteirinha</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
                   {wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -218,15 +209,9 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
         {step === "PAYMENT_STATUS" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">O responsável já pagou {currentMonthNameCapitalized}?</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  {firstNamePassageiro} <span className="text-slate-300">({firstNameResponsavel})</span>
-                </p>
+            <div className="py-2">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-slate-700">O responsável já pagou {currentMonthNameCapitalized}?</h3>
               </div>
             </div>
             <div className="space-y-3">
@@ -280,12 +265,9 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
 
         {step === "PAYMENT_METHOD" && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 py-2">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
-                <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">Forma de pagamento</h3>
+            <div className="py-2">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-slate-700">Forma de pagamento</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Como o pagamento foi realizado?</p>
               </div>
             </div>
@@ -301,7 +283,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                     <div className="w-7 h-7 rounded-md bg-slate-50 flex items-center justify-center text-[#1a3a5c]/60">
                       <Wallet className="w-3.5 h-3.5 shrink-0" />
                     </div>
-                    <SelectValue placeholder="Selecione a forma..." />
+                    <SelectValue placeholder="Selecionar" />
                   </div>
                 </SelectTrigger>
                 <SelectContent className="max-h-[280px] rounded-xl border-slate-100 shadow-diff-shadow p-1.5">

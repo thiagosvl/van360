@@ -30,7 +30,7 @@ const getPeriodoSuffix = (periodo?: PassageiroPeriodo) => {
     [PassageiroPeriodo.NOITE]: formatPeriodo(PassageiroPeriodo.NOITE),
     [PassageiroPeriodo.INTEGRAL]: formatPeriodo(PassageiroPeriodo.INTEGRAL),
   };
-  return labels[periodo || ""] || "N/I";
+  return labels[periodo || ""];
 };
 
 interface PassageirosListProps {
@@ -69,7 +69,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
 
   const shortName = formatShortName(passageiro?.nome, true);
   const respName = formatFirstName(passageiro?.nome_responsavel);
-  const schoolName = passageiro.escola?.nome || "Não informada";
+  const schoolName = passageiro.escola?.nome;
 
   return (
     <div
@@ -153,7 +153,7 @@ export function PassageirosList({
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome, true);
               const respName = formatFirstName(passageiro?.nome_responsavel);
-              const schoolName = passageiro.escola?.nome || "Não informada";
+              const schoolName = passageiro.escola?.nome;
 
               return (
                 <TableRow
@@ -185,15 +185,17 @@ export function PassageirosList({
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col gap-1">
                       <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                        {passageiro.escola?.nome || "Não informada"}
-                        <span
-                          className={cn(
-                            "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
-                            "bg-gray-50/50 text-gray-400 border-gray-100/80"
-                          )}
-                        >
-                          {getPeriodoSuffix(passageiro.periodo)}
-                        </span>
+                        {passageiro.escola?.nome}
+                        {passageiro.periodo && (
+                          <span
+                            className={cn(
+                              "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
+                              "bg-gray-50/50 text-gray-400 border-gray-100/80"
+                            )}
+                          >
+                            {getPeriodoSuffix(passageiro.periodo)}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </TableCell>
@@ -217,7 +219,7 @@ export function PassageirosList({
                       })}
                     </span>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
+                  <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <PassageiroActionsMenu
                       passageiro={passageiro}
                       onHistorico={props.onHistorico}

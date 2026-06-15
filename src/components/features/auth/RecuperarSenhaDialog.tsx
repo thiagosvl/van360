@@ -149,15 +149,15 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                             }}
                             containerClassName="justify-center flex-1"
                           >
-                              <InputOTPGroup className="gap-1.5 sm:gap-3">
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                  <InputOTPSlot
-                                    key={index}
-                                    index={index}
-                                    className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-headline font-black rounded-xl border-gray-200 bg-gray-50 text-[#1a3a5c] shadow-sm transition-all focus-within:ring-4 focus-within:ring-[#1a3a5c]/10"
-                                  />
-                                ))}
-                              </InputOTPGroup>
+                            <InputOTPGroup className="gap-1.5 sm:gap-3">
+                              {Array.from({ length: 6 }).map((_, index) => (
+                                <InputOTPSlot
+                                  key={index}
+                                  index={index}
+                                  className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-headline font-black rounded-xl border-gray-200 bg-gray-50 text-[#1a3a5c] shadow-sm transition-all focus-within:ring-4 focus-within:ring-[#1a3a5c]/10"
+                                />
+                              ))}
+                            </InputOTPGroup>
                           </InputOTP>
                           <FormMessage className="text-center" />
 

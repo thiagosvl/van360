@@ -3,11 +3,13 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { PrePassageiro } from "@/types/prePassageiro";
+
 export function useCreatePrePassageiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => prePassageiroApi.createPrePassageiro(data),
+    mutationFn: (data: Partial<PrePassageiro>) => prePassageiroApi.createPrePassageiro(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });

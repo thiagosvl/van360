@@ -13,6 +13,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { phoneMask } from "@/utils/masks";
+import { parseCurrencyToNumber } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
@@ -159,20 +160,49 @@ export function usePassageiroFormViewModel({
   const handleSubmit = useCallback(async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
-    const purePayload = { ...data };
+    const purePayload: any = { ...data };
 
-    if (purePayload.data_nascimento) {
-      purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
-    }
-    if (purePayload.data_inicio_transporte) {
-      purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
+    purePayload.email_responsavel = purePayload.email_responsavel?.trim()
+      ? purePayload.email_responsavel.toLowerCase().trim()
+      : null;
+
+    purePayload.cep = purePayload.cep?.replace(/\D/g, "") || null;
+    purePayload.cpf_responsavel = purePayload.cpf_responsavel?.replace(/\D/g, "") || null;
+
+    purePayload.data_nascimento = purePayload.data_nascimento
+      ? convertDateBrToISO(purePayload.data_nascimento)
+      : null;
+
+    purePayload.data_inicio_transporte = purePayload.data_inicio_transporte
+      ? convertDateBrToISO(purePayload.data_inicio_transporte)
+      : null;
+
+    purePayload.data_fim_transporte = purePayload.data_fim_transporte
+      ? convertDateBrToISO(purePayload.data_fim_transporte)
+      : null;
+
+    purePayload.genero = purePayload.genero || null;
+    purePayload.periodo = purePayload.periodo || null;
+    purePayload.modalidade = purePayload.modalidade || null;
+    purePayload.parentesco_responsavel = purePayload.parentesco_responsavel || null;
+
+    purePayload.logradouro = purePayload.logradouro || null;
+    purePayload.numero = purePayload.numero || null;
+    purePayload.bairro = purePayload.bairro || null;
+    purePayload.cidade = purePayload.cidade || null;
+    purePayload.estado = purePayload.estado || null;
+    purePayload.referencia = purePayload.referencia || null;
+    purePayload.observacoes = purePayload.observacoes || null;
+
+    if (typeof purePayload.valor_cobranca === "string") {
+      purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca) as any;
     }
 
     const commonOptions = {
       onSuccess: (responseData?: any) => {
         // Business Logic: Detect if critical contract fields changed
         const isEdit = mode === PassageiroFormModes.EDIT;
-        const isContractActive = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
+        const isContractActive = !!profile?.config_contrato?.usar_contratos;
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {

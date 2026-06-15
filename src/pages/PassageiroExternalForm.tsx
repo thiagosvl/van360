@@ -104,7 +104,7 @@ export default function PassageiroExternalForm() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-12 mt-4"
+                className="space-y-8 mt-4"
               >
                 {/* DADOS DO PASSAGEIRO */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500">
@@ -122,7 +122,7 @@ export default function PassageiroExternalForm() {
 
                 {/* DADOS DO RESPONSÁVEL */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-75">
-                  <PassageiroFormResponsavel />
+                  <PassageiroFormResponsavel isExternal={true} />
                 </section>
 
                 <hr className="border-slate-100" />
@@ -136,7 +136,7 @@ export default function PassageiroExternalForm() {
 
                 {/* ENDEREÇO E OBSERVAÇÕES */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-150">
-                  <PassageiroFormEndereco />
+                  <PassageiroFormEndereco isExternal={true} />
                 </section>
               </form>
             </Form>

@@ -84,8 +84,8 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   const isSemContrato = item.tipo === "passageiro";
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
-  const nomeExibicao = item.passageiro?.nome || item.nome || "Não informado";
-  const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "Responsável não inf.";
+  const nomeExibicao = item.passageiro?.nome || item.nome || "";
+  const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "";
 
   const iconConfig = isAssinado
     ? { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" }

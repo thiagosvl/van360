@@ -3,13 +3,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  User, Mail, Phone, Calendar, Key, RefreshCw, Copy, Check, Eye, EyeOff, Loader2
+  User, Mail, Calendar, Key, RefreshCw, Copy, Check, Eye, EyeOff, Loader2, Wand2
 } from "lucide-react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { PhoneInput } from "@/components/forms";
 import { cpfSchema, phoneSchema, emailSchema, dateSchema } from "@/schemas/common";
 import { cpfMask as maskCpf, dateMask as maskDate } from "@/utils/masks";
@@ -68,7 +69,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
     if (!successData) return;
     const cleanedCpf = successData.cpf.replace(/\D/g, "");
     const maskedCpf = `${cleanedCpf.slice(0, 3)}.${cleanedCpf.slice(3, 4)}**.***-${cleanedCpf.slice(9, 11)}`;
-    const text = `*Seu acesso ao Van360!* 🚀\n\nOlá *${successData.nome}*, sua conta de motorista foi cadastrada no sistema.\n\n*Seus dados de acesso:*\n👤 CPF: ${maskedCpf}\n🔑 Senha temporária: ${successData.senha} (Recomendamos alterá-la no app)\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://app.van360.com.br/login`;
+    const text = `*Seu acesso ao Van360!* 🚀\n\nOlá *${successData.nome}*, sua conta de motorista foi cadastrada no sistema.\n\n*Seus dados de acesso:*\n👤 CPF: ${maskedCpf}\n🔑 Senha temporária: ${successData.senha} (Recomendamos alterá-la no app)\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://van360.com.br/login`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -193,7 +194,30 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose} maxWidth="lg">
-      <BaseDialog.Header title="Novo Motorista" icon={<User className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header
+        title="Novo Motorista"
+        icon={<User className="w-5 h-5" />}
+        onClose={onClose}
+        leftAction={import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            onClick={() => {
+              form.setValue("nome", "Thiago Barros Abilio");
+              form.setValue("email", "thiago-svl@hotmail.com");
+              form.setValue("telefone", "(11) 95118-6951");
+              form.setValue("cpfcnpj", "395.423.918-38");
+              form.setValue("data_nascimento", "30/06/1997");
+              form.setValue("senha", "Ogaiht+1");
+            }}
+            title="Preencher com dados fictícios"
+          >
+            <Wand2 className="h-5 w-5" />
+          </Button>
+        )}
+      />
       <BaseDialog.Body>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 mt-1">
@@ -202,7 +226,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
               name="nome"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     Nome Completo <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
@@ -211,31 +235,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                       <Input
                         placeholder="Nome completo do motorista"
                         {...field}
-                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    E-mail <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        type="email"
-                        placeholder="motorista@email.com"
-                        {...field}
-                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10"
+                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
                       />
                     </div>
                   </FormControl>
@@ -247,12 +247,63 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      E-mail <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Input
+                          type="email"
+                          placeholder="motorista@email.com"
+                          {...field}
+                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cpfcnpj"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      CPF <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Input
+                          {...field}
+                          maxLength={14}
+                          onChange={(e) => field.onChange(maskCpf(e.target.value))}
+                          placeholder="000.000.000-00"
+                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
                 name="telefone"
                 render={({ field }) => (
                   <PhoneInput
                     field={field}
                     label="WhatsApp"
-                    labelClassName="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1"
+                    labelClassName="text-slate-700 font-semibold ml-1"
                     placeholder="(00) 00000-0000"
                     required
                     inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
@@ -265,7 +316,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 name="data_nascimento"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Data de Nascimento <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
@@ -277,7 +328,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                           maxLength={10}
                           onChange={(e) => field.onChange(maskDate(e.target.value))}
                           placeholder="dd/mm/aaaa"
-                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10"
+                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -288,72 +339,45 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="cpfcnpj"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                      CPF <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+            <FormField
+              control={form.control}
+              name="senha"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Senha Temporária <span className="text-red-600">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Key className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
+                          type={showPassword ? "text" : "password"}
                           {...field}
-                          maxLength={14}
-                          onChange={(e) => field.onChange(maskCpf(e.target.value))}
-                          placeholder="000.000.000-00"
-                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10"
+                          className="pl-11 pr-10 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
                         />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="senha"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                      Senha Temporária <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Key className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            {...field}
-                            className="pl-11 pr-10 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 font-mono tracking-widest"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
-                          >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
                         <button
                           type="button"
-                          onClick={handleRegeneratePassword}
-                          title="Gerar nova senha"
-                          className="w-11 h-11 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <button
+                        type="button"
+                        onClick={handleRegeneratePassword}
+                        title="Gerar nova senha"
+                        className="w-11 h-11 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
       </BaseDialog.Body>

@@ -124,8 +124,8 @@ export function useVeiculosViewModel() {
   const handleDeleteClick = useCallback(
     (veiculo: Veiculo & { passageiros_ativos_count?: number }) => {
       if ((veiculo.passageiros_ativos_count ?? 0) > 0) {
-        toast.error("veiculo.erro.excluir", {
-          description: "veiculo.erro.excluirComPassageiros",
+        toast.error(getMessage("veiculo.erro.excluir"), {
+          description: getMessage("veiculo.erro.excluirComPassageiros"),
         });
         return;
       }
@@ -155,8 +155,8 @@ export function useVeiculosViewModel() {
       const novoStatus = !veiculo.ativo;
 
       if (!novoStatus && (veiculo.passageiros_ativos_count ?? 0) > 0) {
-        toast.error("veiculo.erro.desativar", {
-          description: "veiculo.erro.desativarComPassageiros",
+        toast.error(getMessage("veiculo.erro.desativar"), {
+          description: getMessage("veiculo.erro.desativarComPassageiros"),
         });
         return;
       }
@@ -164,11 +164,11 @@ export function useVeiculosViewModel() {
       const action = novoStatus ? "Ativar" : "Desativar";
       openConfirmationDialog({
         title: novoStatus
-          ? "veiculo.confirmar.ativar"
-          : "veiculo.confirmar.desativar",
+          ? getMessage("veiculo.confirmar.ativar")
+          : getMessage("veiculo.confirmar.desativar"),
         description: novoStatus
-          ? "veiculo.confirmar.ativarDescricao"
-          : "veiculo.confirmar.desativarDescricao",
+          ? getMessage("veiculo.confirmar.ativarDescricao")
+          : getMessage("veiculo.confirmar.desativarDescricao"),
         confirmText: action,
         variant: novoStatus ? "success" : "warning",
         onConfirm: async () => {

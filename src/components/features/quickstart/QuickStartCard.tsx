@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Bus,
@@ -8,7 +6,7 @@ import {
   Rocket,
   School,
   User,
-  CreditCard
+  Key
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
@@ -62,19 +60,19 @@ export const QuickStartCard = ({
       },
       {
         id: 3,
+        done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
+        label: "Configurar Chave Pix",
+        onAction: openEditarPixDialog,
+        icon: Key,
+        buttonText: "Configurar",
+      },
+      {
+        id: 4,
         done: passageirosCount > 0,
         label: "Cadastrar Primeiro Passageiro",
         onAction: () => setIsPassengerDrawerOpen(true),
         icon: User,
         buttonText: "Cadastrar",
-      },
-      {
-        id: 4,
-        done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
-        label: "Configurar Chave Pix",
-        onAction: openEditarPixDialog,
-        icon: CreditCard,
-        buttonText: "Configurar",
       },
     ];
 
@@ -142,52 +140,55 @@ export const QuickStartCard = ({
                 <div
                   key={step.id}
                   className={cn(
-                    "flex items-center gap-4 p-3.5 rounded-xl border transition-all duration-300 relative",
+                    "flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3.5 rounded-xl border transition-colors duration-200 relative",
                     isCurrent
                       ? "bg-slate-50/50 border-slate-200/50 shadow-sm ring-1 ring-[#1a3a5c]/5"
-                      : "bg-white border-gray-100/50",
-                    isDone && "bg-gray-50/50 border-gray-100/30 opacity-60"
+                      : isDone
+                        ? "bg-slate-50/40 border-slate-100"
+                        : "bg-white border-gray-100/50"
                   )}
                 >
-                  {/* Ícone Indicador */}
-                  <div
-                    className={cn(
-                      "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300",
-                      isDone
-                        ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
-                        : isCurrent
-                          ? "bg-[#1a3a5c] text-white shadow-lg shadow-[#1a3a5c]/20 scale-105"
-                          : "bg-gray-50 text-gray-400 border border-gray-100"
-                    )}
-                  >
-                    {isDone ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <StepIcon className={cn("h-4 w-4", isCurrent && "animate-pulse")} />
-                    )}
-                  </div>
-
-                  {/* Texto do Passo */}
-                  <div className="flex-1 min-w-0 flex flex-col pointer-events-none">
-                    <span
+                  <div className="flex items-center gap-4 w-full flex-1">
+                    {/* Ícone Indicador */}
+                    <div
                       className={cn(
-                        "text-[13px] font-bold leading-tight",
+                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200",
                         isDone
-                          ? "text-slate-400 line-through font-medium"
+                          ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
                           : isCurrent
-                            ? "text-[#1a3a5c]"
-                            : "text-slate-400"
+                            ? "bg-[#1a3a5c] text-white shadow-lg shadow-[#1a3a5c]/20 scale-105"
+                            : "bg-gray-50 text-gray-400 border border-gray-100"
                       )}
                     >
-                      {step.label}
-                    </span>
+                      {isDone ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <StepIcon className={cn("h-4 w-4", isCurrent && "animate-pulse")} />
+                      )}
+                    </div>
+
+                    {/* Texto do Passo */}
+                    <div className="flex-1 min-w-0 flex flex-col pointer-events-none">
+                      <span
+                        className={cn(
+                          "text-[13px] font-bold leading-tight",
+                          isDone
+                            ? "text-slate-500 line-through font-medium"
+                            : isCurrent
+                              ? "text-[#1a3a5c]"
+                              : "text-slate-400"
+                        )}
+                      >
+                        {step.label}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Ação */}
                   {isCurrent && (
                     <button
                       onClick={step.onAction}
-                      className="shrink-0 h-8 px-4 rounded-lg bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1a3a5c]/10 active:scale-95 transition-all"
+                      className="w-full sm:w-auto shrink-0 h-10 sm:h-8 px-4 rounded-lg bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white text-[11px] sm:text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1a3a5c]/10 active:scale-95 transition-all"
                     >
                       {step.buttonText}
                     </button>

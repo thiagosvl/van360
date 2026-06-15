@@ -23,7 +23,8 @@ import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Key, Loader2, Info } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -41,6 +42,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   const originalTipoRef = React.useRef<TipoChavePix | null>(null);
   const originalChaveRef = React.useRef<string>("");
+  const showWarningRef = React.useRef<boolean>(false);
+  const initializedRef = React.useRef<boolean>(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(pixKeySchemaRequired),
@@ -49,6 +52,11 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   React.useEffect(() => {
     if (isOpen && profile) {
+      if (!initializedRef.current) {
+        showWarningRef.current = !profile.chave_pix;
+        initializedRef.current = true;
+      }
+
       const tipo = (profile.tipo_chave_pix as TipoChavePix) || null;
       let chave = profile.chave_pix || "";
 
@@ -64,6 +72,10 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         tipo_chave_pix: tipo,
         chave_pix: chave,
       });
+    }
+
+    if (!isOpen) {
+      initializedRef.current = false;
     }
   }, [isOpen, profile, form]);
 
@@ -82,8 +94,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         description: "cadastro.sucesso.perfilAtualizadoDescricao",
       });
 
-      await refreshProfile();
       onClose();
+      refreshProfile();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar as alterações.";
       toast.error("cadastro.erro.atualizar", { description: errorMessage });
@@ -96,7 +108,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Configurar Recebimento Pix" icon={<CreditCard className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header title="Configurar Chave Pix" icon={<Key className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
         {isLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -105,12 +117,23 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
+              {showWarningRef.current && (
+                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2 flex items-center gap-4 shadow-sm">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
+                    <Info className="w-5 h-5" />
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+                    A chave Pix cadastrada será utilizada nos lembretes e cobranças automáticas enviadas para os responsáveis via WhatsApp.
+                  </p>
+                </div>
+              )}
+
               <FormField
                 control={form.control}
                 name="tipo_chave_pix"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">Tipo de Chave Pix</FormLabel>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">Tipo de Chave</FormLabel>
                     <Select
                       onValueChange={(val) => {
                         const selecionado = (val || null) as TipoChavePix | null;
@@ -171,7 +194,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                   const tipoChave = form.watch("tipo_chave_pix");
                   return (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium ml-1">Chave Pix</FormLabel>
+                      <FormLabel className="text-slate-700 font-semibold ml-1">Chave Pix</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Digite sua chave Pix"
@@ -180,8 +203,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
                           type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
                           inputMode={
                             tipoChave === TipoChavePix.CPF ||
-                            tipoChave === TipoChavePix.CNPJ ||
-                            tipoChave === TipoChavePix.TELEFONE
+                              tipoChave === TipoChavePix.CNPJ ||
+                              tipoChave === TipoChavePix.TELEFONE
                               ? "numeric"
                               : "text"
                           }
@@ -212,11 +235,11 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         )}
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting || form.formState.isSubmitSuccessful} />
         <BaseDialog.Action
           label="Salvar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
-          isLoading={form.formState.isSubmitting}
+          isLoading={form.formState.isSubmitting || form.formState.isSubmitSuccessful}
         />
       </BaseDialog.Footer>
     </BaseDialog>

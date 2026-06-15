@@ -18,8 +18,8 @@ import {
   formatParentesco,
   formatPeriodo,
 } from "@/utils/formatters";
-import { formatContratoStatus } from "@/utils/formatters/contrato";
-import { phoneMask } from "@/utils/masks";
+import { cpfMask, phoneMask } from "@/utils/masks";
+import { openBrowserLink } from "@/utils/browser";
 import {
   Bus,
   Calendar,
@@ -28,6 +28,7 @@ import {
   Copy,
   ExternalLink,
   FileCheck2,
+  FileText,
   FileX2,
   GraduationCap,
   MapPin,
@@ -39,7 +40,10 @@ import {
   Route,
   Trash2,
   User,
-  Users
+  Users,
+  Bot,
+  BotOff,
+  Lock
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,6 +56,7 @@ export interface CarteirinhaInfoProps {
   onCopyToClipboard: (text: string, label: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
+  onToggleNotificacoesClick: () => void;
   onContractAction: () => void;
   onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   contratosAtivos?: boolean;
@@ -66,17 +71,16 @@ const ProfileActions = ({
   onToggleClick,
   onEditClick,
   onDeleteClick,
+  onToggleNotificacoesClick,
   onEnviarWhatsApp,
 }: Pick<
   CarteirinhaInfoProps,
-  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick" | "onEnviarWhatsApp"
+  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick" | "onToggleNotificacoesClick" | "onEnviarWhatsApp"
 >) => {
   const isMobile = useIsMobile();
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
-  const isPendente = 
-    statusContrato === ContratoStatus.PENDENTE || 
-    statusContrato === 'pendente' || 
-    statusContrato === '1' ||
+  const isPendente =
+    statusContrato === ContratoStatus.PENDENTE ||
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
   return (
@@ -101,9 +105,8 @@ const ProfileActions = ({
       <Button
         size="icon"
         onClick={() =>
-          window.open(
-            `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`,
-            "_blank",
+          openBrowserLink(
+            `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`
           )
         }
         className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
@@ -153,11 +156,28 @@ const ProfileActions = ({
           )}
 
           <DropdownMenuItem
+            onClick={onToggleNotificacoesClick}
+            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
+          >
+            {passageiro.enviar_notificacoes ? (
+              <>
+                <BotOff className="h-4 w-4 text-slate-400" />
+                Desativar Notificações e Lembretes
+              </>
+            ) : (
+              <>
+                <Bot className="h-4 w-4 text-slate-400" />
+                Ativar Notificações e Lembretes
+              </>
+            )}
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
             onClick={onDeleteClick}
             className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
           >
             <Trash2 className="h-3.5 w-3.5 opacity-60" />
-            Excluir cadastro
+            Excluir passageiro
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -203,13 +223,24 @@ const ProfileSummary = ({
               : "text-rose-500 bg-rose-50",
           )}
         >
-          {passageiro.ativo ? "Ativo" : "Inativo"}
+          {passageiro.ativo ? "Passageiro Ativo" : "Passageiro Inativo"}
         </Badge>
         {temCobrancasVencidas && (
           <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
             Possui Débitos
           </Badge>
         )}
+        <Badge
+          variant="outline"
+          className={cn(
+            "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
+            passageiro.enviar_notificacoes
+              ? "text-emerald-500 bg-emerald-50"
+              : "text-rose-500 bg-rose-50",
+          )}
+        >
+          {passageiro.enviar_notificacoes ? "Notificações Ativas" : "Notificações Inativas"}
+        </Badge>
       </div>
     </div>
   </div>
@@ -259,6 +290,7 @@ export const CarteirinhaHeader = (
     | "onToggleClick"
     | "onEditClick"
     | "onDeleteClick"
+    | "onToggleNotificacoesClick"
     | "onEnviarWhatsApp"
   >,
 ) => {
@@ -289,6 +321,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
           onToggleClick={props.onToggleClick}
           onEditClick={props.onEditClick}
           onDeleteClick={props.onDeleteClick}
+          onToggleNotificacoesClick={props.onToggleNotificacoesClick}
           onEnviarWhatsApp={props.onEnviarWhatsApp}
         />
       </div>
@@ -324,35 +357,61 @@ export const CarteirinhaDadosPessoais = ({
   | "onContractAction"
   | "contratosAtivos"
 >) => {
-  const getContratoStatusStyles = (status?: ContratoStatus) => {
-    if (status === ContratoStatus.ASSINADO)
-      return {
-        label: formatContratoStatus(passageiro.status_contrato || ""),
-        color: "text-emerald-500 bg-emerald-50",
-        icon: FileCheck2,
-      };
-    if (status === ContratoStatus.PENDENTE)
-      return {
-        label: formatContratoStatus(passageiro.status_contrato || ""),
-        color: "text-amber-500 bg-amber-50",
-        icon: Clock,
-      };
-    return {
-      label: formatContratoStatus(passageiro.status_contrato || ""),
-      color: "text-slate-400 bg-slate-100",
-      icon: FileX2,
-    };
-  };
-
-  const contratoStyle = getContratoStatusStyles(passageiro.status_contrato);
-
   const isContractActionDisabled =
     !contratosAtivos &&
     passageiro.status_contrato !== ContratoStatus.PENDENTE &&
     passageiro.status_contrato !== ContratoStatus.ASSINADO;
 
+  const getContratoConfig = (status?: ContratoStatus) => {
+    if (status === ContratoStatus.ASSINADO) {
+      return {
+        title: "Contrato Assinado",
+        desc: "Documento oficial assinado eletronicamente",
+        color: "bg-emerald-50/40 border-emerald-100/80 hover:bg-emerald-50 hover:border-emerald-200/50",
+        iconColor: "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-sm",
+        icon: FileCheck2,
+        actionLabel: "Visualizar",
+        actionColor: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/10",
+        actionIcon: ExternalLink,
+      };
+    }
+    if (status === ContratoStatus.PENDENTE) {
+      return {
+        title: "Assinatura Pendente",
+        desc: "Aguardando assinatura do responsável",
+        color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
+        iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-sm",
+        icon: Clock,
+        actionLabel: "Ver contrato",
+        actionColor: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/10",
+        actionIcon: ExternalLink,
+      };
+    }
+
+    return {
+      title: "Sem contrato gerado",
+      desc: isContractActionDisabled
+        ? "Você precisa ativar o uso de contratos na sua conta antes de gerar o documento."
+        : "Gere o contrato para assinatura do responsável",
+      color: isContractActionDisabled
+        ? "bg-slate-50/30 border-slate-200/50 opacity-75 cursor-not-allowed"
+        : "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
+      iconColor: isContractActionDisabled
+        ? "text-slate-400 bg-slate-100/80 border border-slate-200/30"
+        : "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-sm",
+      icon: FileX2,
+      actionLabel: "Gerar contrato",
+      actionColor: isContractActionDisabled
+        ? "bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300/20 font-bold"
+        : "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
+      actionIcon: isContractActionDisabled ? Lock : Plus,
+    };
+  };
+
+  const contratoConfig = getContratoConfig(passageiro.status_contrato);
+
   const getEnderecoFormatado = () => {
-    if (!passageiro.logradouro) return "Endereço não informado";
+    if (!passageiro.logradouro) return "-";
     return `${passageiro.logradouro}, ${passageiro.numero || "S/N"} - ${passageiro.bairro || ""}`;
   };
   const enderecoFormatado = getEnderecoFormatado();
@@ -361,21 +420,92 @@ export const CarteirinhaDadosPessoais = ({
     if (isContractActionDisabled) {
       toast.warning("Ative o uso de Contratos", {
         description:
-          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos' no menu inferior.",
+          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos'.",
       });
       return;
     }
     onContractAction();
   };
 
-  const RightIcon =
-    passageiro.status_contrato === ContratoStatus.PENDENTE ||
-      passageiro.status_contrato === ContratoStatus.ASSINADO
-      ? ExternalLink
-      : Plus;
-
   return (
     <div className="space-y-3">
+
+      {/* Contrato */}
+      <div
+        className={cn(
+          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato",
+          contratoConfig.color
+        )}
+      >
+        <div className="flex items-start gap-3 min-w-0">
+          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5", contratoConfig.iconColor)}>
+            <contratoConfig.icon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug">
+              {contratoConfig.title}
+            </span>
+            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+              {contratoConfig.desc}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleContratoClick}
+          disabled={isContractActionDisabled && passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO}
+          className={cn(
+            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 shadow-sm hover:shadow active:scale-[0.99] shrink-0",
+            contratoConfig.actionColor
+          )}
+        >
+          <contratoConfig.actionIcon className="h-3.5 w-3.5" />
+          <span>{contratoConfig.actionLabel}</span>
+        </button>
+      </div>
+
+      {/* Responsável */}
+      <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
+        <div className="flex items-center gap-2">
+          <Users className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
+            Responsável
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <span className="block text-sm font-bold text-[#1a3a5c]">
+              {passageiro.nome_responsavel}
+              <div className="text-[11px] font-medium text-slate-500">
+                {formatParentesco(passageiro.parentesco_responsavel)}
+              </div>
+            </span>
+            <div className="text-[11px] font-medium text-slate-500 flex flex-col mt-1 gap-0.5">
+              <span>{phoneMask(passageiro.telefone_responsavel)}</span>
+              {passageiro.cpf_responsavel && <span>{cpfMask(passageiro.cpf_responsavel)}</span>}
+              {passageiro.email_responsavel && <span className="truncate max-w-[180px] sm:max-w-xs">{passageiro.email_responsavel}</span>}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() =>
+              onCopyToClipboard(
+                passageiro.telefone_responsavel || "",
+                "Telefone",
+              )
+            }
+            className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
+          >
+            {isCopiedTelefone ? (
+              <Check className="h-3.5 w-3.5 text-emerald-500" />
+            ) : (
+              <Copy className="h-3.5 w-3.5 text-slate-400" />
+            )}
+          </Button>
+        </div>
+      </div>
+
       {/* Linha: Período + Escola */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
@@ -388,34 +518,6 @@ export const CarteirinhaDadosPessoais = ({
           value={passageiro.escola?.nome || "-"}
           icon={<GraduationCap className="h-3.5 w-3.5" />}
         />
-      </div>
-
-      {/* Contrato */}
-      <div
-        onClick={handleContratoClick}
-        className={cn(
-          "rounded-2xl border border-slate-200 p-3.5 transition-all cursor-pointer group/tile flex items-center justify-between",
-          contratoStyle.color,
-        )}
-      >
-        <div className="flex items-center gap-2.5">
-          <contratoStyle.icon className="h-4 w-4" />
-          <div>
-            <span className="block text-[8px] font-bold uppercase tracking-widest opacity-60">
-              Contrato
-            </span>
-            <span className="text-sm font-bold">{contratoStyle.label}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 group-hover/tile:opacity-100 transition-opacity bg-black/5 px-2.5 py-1.5 rounded-xl border border-black/5">
-          <RightIcon className="h-3 w-3" />
-          <span className="text-[9px] font-bold uppercase tracking-widest leading-none pt-0.5">
-            {passageiro.status_contrato === ContratoStatus.PENDENTE ||
-              passageiro.status_contrato === ContratoStatus.ASSINADO
-              ? "Ver"
-              : "Gerar"}
-          </span>
-        </div>
       </div>
 
       {/* Linha: Modalidade + Veículo */}
@@ -454,62 +556,26 @@ export const CarteirinhaDadosPessoais = ({
         />
       </div>
 
-      {/* Início do Transporte */}
-      {passageiro.data_inicio_transporte && (
+      {/* Linha: Início e Fim do Transporte */}
+      <div className="grid grid-cols-2 gap-3">
         <InfoTile
-          label="Início do Transporte"
-          value={formatDateToBR(passageiro.data_inicio_transporte)}
+          label="Início Transporte"
+          value={passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "-"}
           icon={<Calendar className="h-3.5 w-3.5" />}
-          fullWidth
         />
-      )}
-
-      {/* Representante Legal */}
-      <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
-        <div className="flex items-center gap-2">
-          <Users className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-            Representante Legal
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="min-w-0">
-            <span className="block text-sm font-bold text-[#1a3a5c]">
-              {passageiro.nome_responsavel}
-              <div className="text-[11px] font-medium text-slate-500">
-                {formatParentesco(passageiro.parentesco_responsavel)}
-              </div>
-            </span>
-            <span className="text-[11px] font-medium text-slate-500">
-              {phoneMask(passageiro.telefone_responsavel)}
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() =>
-              onCopyToClipboard(
-                passageiro.telefone_responsavel || "",
-                "Telefone",
-              )
-            }
-            className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
-          >
-            {isCopiedTelefone ? (
-              <Check className="h-3.5 w-3.5 text-emerald-500" />
-            ) : (
-              <Copy className="h-3.5 w-3.5 text-slate-400" />
-            )}
-          </Button>
-        </div>
+        <InfoTile
+          label="Término Transporte"
+          value={passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "-"}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
       </div>
 
-      {/* Rota de Embarque / Endereço */}
+      {/* Endereço */}
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
         <div className="flex items-center gap-2">
           <MapPin className="h-3.5 w-3.5 text-slate-400" />
           <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-            Rota de Embarque
+            Endereço
           </span>
         </div>
         <div className="flex items-start justify-between gap-3">
@@ -529,6 +595,14 @@ export const CarteirinhaDadosPessoais = ({
             )}
           </Button>
         </div>
+        {passageiro.referencia && (
+          <div className="pt-2 mt-2 border-t border-slate-200">
+            <p className="text-[10px] text-slate-500 leading-relaxed">
+              <span className="font-bold text-slate-600 mr-1">Referência:</span>
+              {passageiro.referencia}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

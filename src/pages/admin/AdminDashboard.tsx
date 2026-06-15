@@ -2,6 +2,7 @@ import { useAdminStats } from "@/hooks/api/adminHooks";
 import { useNavigate } from "react-router-dom";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 import { phoneMask } from "@/utils/masks";
+import { ROUTES } from "@/constants/routes";
 import {
   Users,
   Bus,
@@ -190,7 +191,7 @@ export default function AdminDashboard() {
               stats.recentUsers.map((user) => (
                 <div
                   key={user.id}
-                  onClick={() => navigate(`/admin/usuarios/${user.id}`)}
+                  onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
                   className="flex items-center gap-2 sm:gap-4 group cursor-pointer hover:bg-slate-50 p-2 sm:p-3 rounded-2xl transition-all"
                 >
                   <div className="h-8 w-8 sm:h-10 sm:w-10 bg-[#1a3a5c]/10 flex items-center justify-center rounded-lg sm:rounded-xl text-[#1a3a5c] font-black text-xs sm:text-sm shrink-0">

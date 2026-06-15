@@ -1,7 +1,6 @@
 import { KPICard } from "@/components/common/KPICard";
 import { Progress } from "@/components/ui/progress";
 import { KPICardVariant } from "@/types/enums";
-import { formatarPlacaExibicao } from "@/utils/domain";
 import { formatCurrency } from "@/utils/formatters";
 import { Users } from "lucide-react";
 

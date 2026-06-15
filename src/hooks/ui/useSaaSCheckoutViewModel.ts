@@ -74,6 +74,7 @@ export function useSaaSCheckoutViewModel({
   const [isRefetchingReferral, setIsRefetchingReferral] = useState(false);
   const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialSubscriptionStatusRef = useRef<SubscriptionStatus | null>(null);
+  const isGeneratingRef = useRef(false);
 
   useEffect(() => {
     if (isOpen && user?.id) {
@@ -169,7 +170,7 @@ export function useSaaSCheckoutViewModel({
 
   // Polling de fallback a cada 45s — cobre PIX e Cartão, caso o Realtime falhe
   useEffect(() => {
-    if (!isOpen || step !== 3 || isHandlingConfirmation.current) return;
+    if (!isOpen || step !== 4 || isHandlingConfirmation.current) return;
 
     fallbackIntervalRef.current = setInterval(() => {
       if (isHandlingConfirmation.current) return;
@@ -181,14 +182,25 @@ export function useSaaSCheckoutViewModel({
     };
   }, [isOpen, step, activeInvoice?.id]);
 
-  const nextStep = () => setStep(prev => Math.min(prev + 1, 3));
+  const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => {
-    setStep(prev => Math.max(prev - 1, 1));
+    setStep(prev => {
+      if (prev === 4) {
+        const hasNewCardFlow = paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (!savedCards.length || selectedSavedCardId === "new");
+        if (!hasNewCardFlow) {
+          return 2;
+        }
+      }
+      return Math.max(prev - 1, 1);
+    });
   };
 
-  const handleGenerateCheckout = async (cardData: CreditCardData | null) => {
-    if (!user) return;
+  const jumpToStep = (newStep: number) => setStep(newStep);
 
+  const handleGenerateCheckout = async (cardData: CreditCardData | null) => {
+    if (!user || isGeneratingRef.current) return;
+
+    isGeneratingRef.current = true;
     setIsGenerating(true);
     setCardError(null);
     try {
@@ -260,16 +272,16 @@ export function useSaaSCheckoutViewModel({
       // A atualização do cache de faturas (listagem) ocorrerá via Realtime (useSubscription.ts).
       if (result) {
         setActiveInvoice(result as unknown as SubscriptionInvoice);
-        setStep(3);
+        setStep(4);
       }
     } catch (error: unknown) {
       const msg = getErrorMessage(error, "Erro ao configurar assinatura");
       if (paymentMethod === CheckoutPaymentMethod.CREDIT_CARD) {
         setCardError(msg);
-      } else {
-        toast.error(msg);
       }
+      toast.error(msg);
     } finally {
+      isGeneratingRef.current = false;
       setIsGenerating(false);
     }
   };
@@ -278,6 +290,7 @@ export function useSaaSCheckoutViewModel({
     step,
     nextStep,
     prevStep,
+    jumpToStep,
     selectedPeriod,
     setSelectedPeriod,
     paymentMethod,

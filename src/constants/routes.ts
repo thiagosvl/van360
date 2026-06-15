@@ -21,6 +21,7 @@ export const ROUTES = {
       USERS: "/admin/usuarios",
       USER_DETAILS: "/admin/usuarios/:id",
       SETTINGS: "/admin/configuracoes",
+      CALCULATOR: "/admin/calculadora",
     },
     MOTORISTA: {
       HOME: "/inicio",

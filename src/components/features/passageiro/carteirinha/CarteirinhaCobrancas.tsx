@@ -37,7 +37,7 @@ interface CarteirinhaCobrancasProps {
   onToggleLembretes: (cobranca: Cobranca) => void;
   onDesfazerPagamento: (cobrancaId: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
-  onVerRecibo: (url: string) => void;
+  onVerRecibo: (url: string, cobranca: Cobranca) => void;
   limiteCobrancasMobile?: number;
 }
 
@@ -89,8 +89,9 @@ export const CarteirinhaCobrancas = ({
             size="sm"
             className="h-10 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white px-4 font-bold shadow-diff-shadow transition-all group text-xs"
           >
-            <Plus className="h-4 w-4 mr-1.5 group-hover:rotate-90 transition-transform" />
-            Registrar
+            <Plus className="h-4 w-4 mr-1.5" />
+            <span className="hidden sm:block">Registrar Mensalidade</span>
+            <span className="block sm:hidden">Registrar</span>
           </Button>
         </div>
       </div>
@@ -101,7 +102,7 @@ export const CarteirinhaCobrancas = ({
           <div className="flex flex-col items-center justify-center p-10 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100">
             <History className="h-8 w-8 text-slate-200 mb-3" />
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
-              Nenhum registro em {yearFilter}
+              Nenhuma mensalidade registrada em {yearFilter}
             </p>
           </div>
         ) : (
@@ -168,7 +169,7 @@ const CobrancaItemPassageiro = forwardRef<
     onRegistrarPagamento: (c: Cobranca) => void;
     onExcluirCobranca: (c: Cobranca) => void;
     onDesfazerPagamento: (id: string) => void;
-    onVerRecibo: (url: string) => void;
+    onVerRecibo: (url: string, cobranca: Cobranca) => void;
   }
 >(({
   cobranca,
@@ -192,13 +193,13 @@ const CobrancaItemPassageiro = forwardRef<
   const telefoneResponsavel = passageiro.telefone_responsavel;
   const onEnviarCobranca = telefoneResponsavel
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
-        telefoneResponsavel,
-        nomeResponsavel: passageiro.nome_responsavel,
-        nomePassageiro: passageiro.nome,
-        mes: cobranca.mes,
-        valor: cobranca.valor,
-        dataVencimento: cobranca.data_vencimento,
-      }))
+      telefoneResponsavel,
+      nomeResponsavel: passageiro.nome_responsavel,
+      nomePassageiro: passageiro.nome,
+      mes: cobranca.mes,
+      valor: cobranca.valor,
+      dataVencimento: cobranca.data_vencimento,
+    }))
     : undefined;
 
   const actions = useCobrancaActions({
@@ -209,7 +210,7 @@ const CobrancaItemPassageiro = forwardRef<
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
     onEnviarCobranca,
     showHistory: true,
   });

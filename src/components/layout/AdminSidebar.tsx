@@ -3,13 +3,9 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  Bus,
-  School,
-  Wallet,
-  History,
   Settings,
-  ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Calculator
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
@@ -25,6 +21,11 @@ const adminNavItems = [
     icon: Users,
   },
   {
+    title: "Calculadora",
+    href: ROUTES.PRIVATE.ADMIN.CALCULATOR,
+    icon: Calculator,
+  },
+  {
     title: "Configurações",
     href: ROUTES.PRIVATE.ADMIN.SETTINGS,
     icon: Settings,
@@ -37,7 +38,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
   return (
-    <aside className="w-72 bg-[#1a3a5c] text-white flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <aside className="w-72 bg-[#1a3a5c] text-white flex flex-col h-[100dvh] sticky top-0 overflow-y-auto pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)]">
       {/* Logo Area */}
       <div className="p-8 pb-4">
         <div className="flex items-center gap-3">

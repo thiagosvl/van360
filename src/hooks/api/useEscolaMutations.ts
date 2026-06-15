@@ -3,14 +3,16 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { Escola } from "@/types/escola";
+
 export function useCreateEscola() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ usuarioId, data }: { usuarioId: string; data: any }) =>
+    mutationFn: ({ usuarioId, data }: { usuarioId: string; data: Partial<Escola> }) =>
       escolaApi.createEscola(usuarioId, data),
     onSuccess: (data: any) => {
-            // Optimistic update for lists
+      // Optimistic update for lists
       queryClient.setQueriesData({ queryKey: ["escolas"] }, (old: any) => {
         if (!old) return old;
         if (old.list) {
@@ -41,7 +43,7 @@ export function useUpdateEscola() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Escola> }) =>
       escolaApi.updateEscola(id, data),
     onError: (error: any) => {
       toast.error("escola.erro.atualizar", {

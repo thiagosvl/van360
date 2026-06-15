@@ -6,10 +6,10 @@ export const formatPeriodo = (periodo: string): string => {
   if (periodo === PassageiroPeriodo.TARDE) return "Tarde";
   if (periodo === PassageiroPeriodo.NOITE) return "Noite";
 
-  return "Não Identificado";
+  return "-";
 };
 
 export const periodos = Object.values(PassageiroPeriodo).map(value => ({
-    value,
-    label: formatPeriodo(value)
+  value,
+  label: formatPeriodo(value)
 }));

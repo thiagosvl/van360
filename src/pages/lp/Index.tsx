@@ -807,12 +807,6 @@ const Index = () => {
               </div>
             </Reveal>
           </div>
-
-          <Reveal>
-            <p className="text-[0.85rem] text-slate-400 mt-6">
-              Quem entra agora como fundador terá acesso primeiro.
-            </p>
-          </Reveal>
         </div>
       </section>
 

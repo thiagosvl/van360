@@ -40,12 +40,13 @@ const prePassageiroSchema = z.object({
   observacoes: z.string().optional(),
 
   escola_id: z.string().optional(),
-  periodo: z.string().optional(),
+  periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
   data_nascimento: dateSchema(true),
   genero: z.string().min(1, "Campo obrigatório"),
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
-  data_inicio_transporte: dateSchema(true, true),
+  data_inicio_transporte: dateSchema(false, true),
+  data_fim_transporte: dateSchema(false, true),
 
 
   valor_cobranca: z
@@ -114,6 +115,7 @@ export function usePassageiroExternalForm() {
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
+      data_fim_transporte: "31/12/" + new Date().getFullYear(),
     },
     mode: "onBlur",
   });
@@ -186,6 +188,9 @@ export function usePassageiroExternalForm() {
       if (payload.data_inicio_transporte) {
         payload.data_inicio_transporte = convertDateBrToISO(payload.data_inicio_transporte);
       }
+      if (payload.data_fim_transporte) {
+        payload.data_fim_transporte = convertDateBrToISO(payload.data_fim_transporte);
+      }
 
       await prePassageiroApi.createPrePassageiro({
         ...payload,
@@ -195,9 +200,27 @@ export function usePassageiroExternalForm() {
 
       setSuccess(true);
     } catch (error: any) {
-      toast.error("sistema.erro.enviarDados", {
-        description: error.message || "Tente novamente mais tarde.",
-      });
+      if (error.response?.data?.details) {
+        const issues = error.response.data.details;
+        issues.forEach((issue: any) => {
+          const field = issue.path.join('.');
+          form.setError(field as any, { type: 'manual', message: issue.message });
+        });
+        toast.error("validacao.formularioComErros");
+        
+        setOpenAccordionItems([
+          "passageiro",
+          "responsavel",
+          "cobranca",
+          "endereco",
+          "observacoes",
+        ]);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        toast.error("sistema.erro.enviarDados", {
+          description: error.response?.data?.error || error.message || "Tente novamente mais tarde.",
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -208,6 +231,7 @@ export function usePassageiroExternalForm() {
 
     form.reset({
       nome_responsavel: currentValues.nome_responsavel,
+      parentesco_responsavel: currentValues.parentesco_responsavel,
       email_responsavel: currentValues.email_responsavel,
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,

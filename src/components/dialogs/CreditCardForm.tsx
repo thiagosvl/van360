@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { CreditCard, MapPin, Info, Loader2 } from "lucide-react";
+import { CreditCard, MapPin, Info, Loader2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
@@ -21,9 +21,10 @@ export interface CreditCardData {
 interface CreditCardFormProps {
   onChange: (data: CreditCardData | null) => void;
   initialBirthDate?: string;
+  cardError?: string | null;
 }
 
-export default function CreditCardForm({ onChange, initialBirthDate }: CreditCardFormProps) {
+export default function CreditCardForm({ onChange, initialBirthDate, cardError }: CreditCardFormProps) {
   const formattedInitialBirth = (() => {
     if (!initialBirthDate) return "";
     const clean = initialBirthDate.trim();
@@ -135,12 +136,7 @@ export default function CreditCardForm({ onChange, initialBirthDate }: CreditCar
       formData.number.length >= 13 &&
       formData.name.length >= 3 &&
       formData.expiry.length === 5 &&
-      formData.cvv.length >= 3 &&
-      formData.birth.length === 10 &&
-      formData.zipcode.length === 9 &&
-      formData.street.length >= 3 &&
-      formData.number_address.length >= 1 &&
-      formData.neighborhood.length >= 2;
+      formData.cvv.length >= 3;
 
     if (isComplete) {
       onChange(formData);
@@ -224,6 +220,13 @@ export default function CreditCardForm({ onChange, initialBirthDate }: CreditCar
           <h4 className="font-manrope font-bold text-[#002444] text-sm">Informações do Cartão</h4>
         </div>
 
+        {cardError && (
+          <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl animate-in fade-in duration-300">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
+          </div>
+        )}
+
         <div className="grid gap-5">
           <div className="space-y-1">
             <label className={labelStyles}>Número do Cartão</label>
@@ -260,119 +263,21 @@ export default function CreditCardForm({ onChange, initialBirthDate }: CreditCar
             </div>
             <div className="space-y-1">
               <label className={labelStyles}>CVV</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="cvv"
-                  id="cvv"
-                  className={cn(inputStyles, "pr-12")}
-                  placeholder="123"
-                  value={formData.cvv}
-                  onChange={(e) => handleChange("cvv", e.target.value)}
-                  autoComplete="off"
-                />
-                <Info className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c3c6cf]" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Seção 2: Endereço de Faturamento */}
-      <div className="space-y-6 pt-2">
-        <div className="flex items-center gap-2 mb-2">
-          <MapPin className="w-4 h-4 text-[#002444]" />
-          <h4 className="font-manrope font-bold text-[#002444] text-sm">Endereço de Cobrança</h4>
-        </div>
-
-        <div className="grid gap-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className={labelStyles}>Nascimento</label>
               <input
-                className={cn(
-                  inputStyles,
-                  initialBirthDate && "bg-[#d2d5d8] cursor-not-allowed opacity-70 focus:ring-0"
-                )}
-                placeholder="dd/mm/aaaa"
-                value={maskedBirth}
-                onChange={(e) => handleChange("birth", e.target.value)}
-                readOnly={!!initialBirthDate}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelStyles}>CEP</label>
-              <div className="relative">
-                <input
-                  className={cn(inputStyles, "pr-10")}
-                  placeholder="00000-000"
-                  value={maskedZip}
-                  onChange={(e) => handleChange("zipcode", e.target.value)}
-                />
-                {loadingCep && (
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                    <Loader2 className="h-4 w-4 animate-spin text-[#002444]" />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-4 gap-4">
-            <div className="col-span-3 space-y-1">
-              <label className={labelStyles}>Logradouro</label>
-              <input
-                className={inputStyles}
-                placeholder="Rua, Avenida..."
-                value={formData.street}
-                onChange={(e) => handleChange("street", e.target.value)}
-              />
-            </div>
-            <div className="col-span-1 space-y-1">
-              <label className={labelStyles}>Nº</label>
-              <input
-                id="number_address"
+                type="text"
+                name="cvv"
+                id="cvv"
                 className={inputStyles}
                 placeholder="123"
-                value={formData.number_address}
-                onChange={(e) => handleChange("number_address", e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className={labelStyles}>Bairro</label>
-            <input
-              className={inputStyles}
-              placeholder="Seu bairro"
-              value={formData.neighborhood}
-              onChange={(e) => handleChange("neighborhood", e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-5 gap-4">
-            <div className="col-span-3 space-y-1">
-              <label className={labelStyles}>Cidade</label>
-              <input
-                className={inputStyles}
-                placeholder="Sua cidade"
-                value={formData.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-              />
-            </div>
-            <div className="col-span-2 space-y-1">
-              <label className={labelStyles}>UF</label>
-              <input
-                className={cn(inputStyles, "uppercase")}
-                placeholder="SP"
-                maxLength={2}
-                value={formData.state}
-                onChange={(e) => handleChange("state", e.target.value.toUpperCase())}
+                value={formData.cvv}
+                onChange={(e) => handleChange("cvv", e.target.value)}
+                autoComplete="off"
               />
             </div>
           </div>
         </div>
       </div>
+
     </div>
   );
 }

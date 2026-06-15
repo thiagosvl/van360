@@ -2,7 +2,8 @@ import {
   useSubscriptionStatus,
   useSubscriptionPlans,
   useSubscriptionBilling,
-  useSubscriptionReferral
+  useSubscriptionReferral,
+  useCancelSubscription
 } from "@/hooks/api/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -23,6 +24,7 @@ import {
   CircleDot,
   ChevronDown,
   X,
+  AlertOctagon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -32,7 +34,8 @@ import {
 import {
   SubscriptionStatus,
   SubscriptionInvoiceStatus,
-  SubscriptionIdentifer
+  SubscriptionIdentifer,
+  CheckoutPaymentMethod
 } from "@/types/enums";
 import {
   getNowBR,
@@ -47,8 +50,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/business/useSession";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const BONUS_DAYS_PER_REFERRAL = 30;
+import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
+import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 
 const SubscriptionPage = () => {
   const { user } = useSession();
@@ -76,11 +79,13 @@ const SubscriptionPage = () => {
     claimReferral
   } = useSubscriptionReferral(user?.id);
 
-  const { openSaaSCheckoutDialog, openConfirmationDialog } = useLayout();
+  const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [isCopied, setIsCopied] = useState(false);
   const [claimPhone, setClaimPhone] = useState("");
   const [isClaimOpen, setIsClaimOpen] = useState(false);
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
+
+  const cancelSubscription = useCancelSubscription();
 
   const handleRefresh = async () => {
     if (!user?.id) return;
@@ -103,7 +108,9 @@ const SubscriptionPage = () => {
     return differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()) < 0;
   })();
 
+  const isCanceled = subscription?.status === SubscriptionStatus.CANCELED;
   const isExpired = subscription?.status === SubscriptionStatus.EXPIRED || isTrialExpired;
+  const isPastDue = subscription?.status === SubscriptionStatus.PAST_DUE;
 
   const trialDaysLeft = (() => {
     if (!isTrial || !subscription?.trial_ends_at) return 0;
@@ -139,6 +146,26 @@ const SubscriptionPage = () => {
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, plans]);
+
+  const handleCancelSubscription = () => {
+    openConfirmationDialog({
+      title: "Cancelar Assinatura",
+      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso aos recursos e não será mais cobrado.",
+      confirmText: "Sim, Cancelar",
+      cancelText: "Voltar",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await cancelSubscription.mutateAsync();
+          toast.success("Sua assinatura foi cancelada com sucesso.");
+          closeConfirmationDialog();
+        } catch {
+          toast.error("Erro ao cancelar assinatura. Tente novamente ou chame o suporte.");
+          closeConfirmationDialog();
+        }
+      },
+    });
+  };
 
   const handleSetDefaultCard = async (cardId: string) => {
     try {
@@ -199,11 +226,9 @@ const SubscriptionPage = () => {
     );
   }
 
+  const bonusDaysPerReferral = referral?.bonusDays;
   const completedReferrals = referral?.completed ?? 0;
-  const totalBonusDays = completedReferrals * BONUS_DAYS_PER_REFERRAL;
-  const conversionRate = (referral?.total ?? 0) > 0
-    ? Math.round((completedReferrals / (referral?.total ?? 1)) * 100)
-    : 0;
+  const totalBonusDays = completedReferrals * bonusDaysPerReferral;
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
@@ -211,7 +236,27 @@ const SubscriptionPage = () => {
 
         {/* Subscription Status Hero */}
         <section className="px-1 mb-10">
-          {isExpired ? (
+          {isCanceled ? (
+            <div className="bg-slate-100 border border-slate-200 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all">
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-headline font-bold text-slate-500 uppercase tracking-[0.2em] text-[10px]">Assinatura Cancelada</span>
+                </div>
+                <h3 className="font-headline font-extrabold text-3xl text-slate-700">Acesso Suspenso</h3>
+                <p className="text-slate-500 font-medium leading-relaxed max-w-2xl">
+                  Sua assinatura está cancelada. Você não receberá novas cobranças e o uso do aplicativo está bloqueado.
+                </p>
+              </div>
+              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
+                <Button
+                  className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                  onClick={() => handleSubscribe()}
+                >
+                  Reativar Agora
+                </Button>
+              </div>
+            </div>
+          ) : isExpired ? (
             <div className="bg-[#ba1a1a] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden transition-all text-white">
               <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
               <div className="relative z-10 space-y-3">
@@ -242,25 +287,49 @@ const SubscriptionPage = () => {
                 </Button>
               </div>
             </div>
-          ) : isTrial ? (
-            <div className="bg-primary rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden text-white group cursor-pointer" onClick={() => handleSubscribe()}>
-              <div className="absolute left-0 bottom-0 w-64 h-64 bg-accent/20 rounded-full -ml-20 -mb-20 blur-3xl opacity-50"></div>
+          ) : isPastDue ? (
+            <div className="bg-[#ba1a1a] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden transition-all text-white">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-accent" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
+                  <AlertOctagon className="w-5 h-5 text-white" />
+                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura em Atraso</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">Período de Testes</h3>
-                <p className="text-white/80 font-medium leading-relaxed">Você tem <span className="text-accent font-bold">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
+                <h3 className="font-headline font-extrabold text-3xl text-white">
+                  Regularização Pendente
+                </h3>
+                <p className="text-white/80 font-medium leading-relaxed max-w-2xl">
+                  Sua assinatura do <span className="font-bold text-white">Plano {subscription?.planos?.nome}</span> venceu em <span className="font-bold text-white">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "breve"}</span>. Regularize o pagamento para evitar a suspensão do seu acesso.
+                </p>
+              </div>
+              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
+                <Button
+                  className="bg-white text-[#ba1a1a] hover:bg-white/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                  onClick={() => handleSubscribe()}
+                >
+                  Regularizar Agora
+                </Button>
+              </div>
+            </div>
+          ) : isTrial ? (
+            <div className="bg-[#fff8f0] border border-orange-200/60 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md group cursor-pointer" onClick={() => handleSubscribe()}>
+              <div className="absolute left-0 bottom-0 w-64 h-64 bg-white/60 rounded-full -ml-20 -mb-20 blur-3xl"></div>
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-orange-500" />
+                  <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
+                </div>
+                <h3 className="font-headline font-extrabold text-3xl text-primary">Período de Testes</h3>
+                <p className="text-slate-500 font-medium leading-relaxed">Você tem <span className="text-orange-500 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
                 {referral?.hasActiveDiscount && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 bg-accent/20 px-3.5 py-1.5 rounded-xl border border-accent/20 text-accent font-bold text-[11px] uppercase tracking-wide animate-pulse">
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-100/50 px-3.5 py-1.5 rounded-xl border border-orange-200/50 text-orange-600 font-bold text-[11px] uppercase tracking-wide animate-pulse">
                     🎁 Desconto de {referral.discountPct}% por indicação ativo!
                   </div>
                 )}
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                 <Button
-                  className="bg-accent text-primary hover:bg-accent/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                  className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
                   onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
                 >
                   Assinar um Plano
@@ -268,30 +337,30 @@ const SubscriptionPage = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-[#10b981] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden text-white transition-all transform hover:shadow-2xl">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
+            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">
+                <h3 className="font-headline font-extrabold text-3xl text-primary">
                   Plano {subscription?.planos?.nome}
                 </h3>
-                <p className="text-white/80 font-medium">
-                  Próxima renovação em <span className="text-white font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
+                <p className="text-slate-500 font-medium">
+                  Próxima renovação em <span className="text-primary font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
                 </p>
               </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
+              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
+                <div className="mt-6 md:mt-0 relative z-10 shrink-0">
                   <Button
-                    className="bg-white text-primary hover:bg-white/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
+                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
                     onClick={() => handleSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
                   >
                     Assinar Plano Anual
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -308,56 +377,75 @@ const SubscriptionPage = () => {
                 <h4 className="font-headline font-bold text-xl text-primary">Histórico de Cobrança</h4>
               </div>
 
-              <div className="bg-surface-container-low/50 rounded-2xl overflow-hidden border border-slate-100/50">
-                <div className="hidden sm:grid grid-cols-4 px-6 py-4 bg-surface-container-high/30 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                  <div>Data</div>
-                  <div>Plano</div>
-                  <div>Valor</div>
-                  <div className="text-right">Status</div>
-                </div>
+              <div className="space-y-3">
+                {invoices && invoices.length > 0 ? (
+                  invoices
+                    .filter(inv => inv.status !== SubscriptionInvoiceStatus.CANCELED)
+                    .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime())
+                    .map((inv) => (
+                      <div
+                        key={inv.id}
+                        className="bg-white rounded-[22px] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all"
+                      >
+                        <div className="flex items-center justify-between p-4 sm:px-6 sm:py-5">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm sm:text-base font-semibold text-primary">
+                                Plano {((inv as any).planos?.nome) || inv.assinaturas?.planos?.nome}
+                              </span>
+                              <InvoiceStatusBadge status={inv.status} />
+                            </div>
+                            <div className="text-[11px] sm:text-xs font-medium text-slate-500">
+                              <span>Vencimento:</span>{" "}
+                              {formatLocalDate(parseLocalDate(inv.data_vencimento || inv.created_at))}
+                              {inv.metodo_pagamento && (
+                                <>
+                                  <span className="mx-1.5 text-slate-300">•</span>
+                                  <span className="capitalize tracking-wider">
+                                    {PAYMENT_METHOD_LABELS[inv.metodo_pagamento as CheckoutPaymentMethod] || "Boleto"}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
 
-                <div className="divide-y divide-slate-100/30">
-                  {invoices && invoices.length > 0 ? (
-                    invoices
-                      .filter(inv => inv.status !== SubscriptionInvoiceStatus.CANCELED)
-                      .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime())
-                      .map((inv) => (
-                        <div
-                          key={inv.id}
-                          className="grid grid-cols-1 sm:grid-cols-4 px-4 sm:px-6 py-4 hover:bg-white transition-colors cursor-default items-center gap-3 sm:gap-0"
-                        >
-                          <div className="text-sm font-semibold text-primary">{formatLocalDate(parseLocalDate(inv.created_at))}</div>
-                          <div className="text-sm text-slate-500 font-medium">
-                            <span className="sm:hidden text-[10px] text-slate-300 block mb-0.5 uppercase tracking-wider font-bold">Plano</span>
-                            {inv.assinaturas?.planos?.nome}
-                          </div>
-                          <div className="text-sm font-black text-primary">
-                            <span className="sm:hidden text-[10px] text-slate-300 block mb-0.5 uppercase tracking-wider font-bold">Valor</span>
-                            {formatCurrency(inv.valor)}
-                          </div>
                           <div className="flex flex-col items-end gap-2 shrink-0">
-                            <InvoiceStatusBadge status={inv.status} />
-                            {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING && (
+                            <div className="text-sm sm:text-base font-semibold text-primary">
+                              {formatCurrency(inv.valor)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
+                          <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
+                            {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
                               <button
-                                className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-[0.1em]"
+                                className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-white hover:bg-primary/90 transition-colors uppercase tracking-[0.1em] bg-primary px-4 py-3 rounded-xl border border-primary-400/40"
                                 onClick={() => handleCopyPix(inv.pix_copy_paste!)}
                               >
-                                <Copy className="w-3 h-3" />
-                                Copiar PIX
+                                <Copy className="w-4 h-4" />
+                                Copiar código PIX
+                              </button>
+                            ) : (
+                              <button
+                                className="w-full px-4 py-3 bg-primary text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
+                                onClick={() => handleSubscribe()}
+                              >
+                                Pagar Agora
                               </button>
                             )}
                           </div>
-                        </div>
-                      ))
-                  ) : (
-                    <div className="py-16 text-center space-y-3 bg-white/30">
-                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-                        <Clock className="w-6 h-6 text-slate-200" />
+                        )}
                       </div>
-                      <p className="text-xs font-bold text-slate-400">Nenhum pagamento identificado.</p>
+                    ))
+                ) : (
+                  <div className="py-4 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
+                    <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
+                      <Clock className="w-6 h-6 text-slate-300" />
                     </div>
-                  )}
-                </div>
+                    <p className="text-xs font-bold text-slate-400">Não há histórico de pagamentos.</p>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -454,72 +542,53 @@ const SubscriptionPage = () => {
                 </div>
               </section>
             )}
+
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
-          <aside className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-primary to-primary-container rounded-[32px] p-6 lg:p-8 text-white shadow-2xl sticky top-24 overflow-hidden border border-white/5">
-              {/* Background Glow */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-accent/10 rounded-full -mr-24 -mt-24 blur-3xl opacity-40"></div>
+          <aside className="lg:col-span-1 mt-4">
+            <div className="flex items-center justify-between px-1 pb-6">
+              <h4 className="font-headline font-bold text-xl text-primary">Indique e Ganhe</h4>
+            </div>
+            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[32px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 
               <div className="relative z-10 space-y-6 lg:space-y-8">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
-                    <Gift className="w-5 h-5 text-accent" />
-                  </div>
-                  <h4 className="font-headline font-bold text-lg tracking-tight">Indique e Ganhe</h4>
-                </div>
-
                 <div className="space-y-3">
-                  <p className="font-headline font-extrabold text-2xl leading-[1.1]">
-                    Ganhe 30 dias grátis <span className="text-accent font-black">por indicação</span>
+                  <p className="font-headline font-extrabold text-xl leading-[1.1] text-primary">
+                    Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
                   </p>
-                  <p className="text-white/60 text-xs font-medium leading-relaxed">
+                  <p className="text-slate-500 text-xs font-medium leading-relaxed">
                     Indique colegas motoristas e receba mensalidades gratuitas assim que eles se tornarem assinantes.
                   </p>
                 </div>
 
-                {/* Stats Progress - Circular minimal */}
-                <div className="flex items-center justify-between bg-black/20 p-5 rounded-[22px] border border-white/5 shadow-inner">
-                  <div className="text-center">
-                    <p className="text-[9px] uppercase font-black text-white/40 mb-1 tracking-widest">Bônus</p>
-                    <p className="text-2xl font-black text-accent">{totalBonusDays}d</p>
+                {/* Stats */}
+                <div className="flex items-center justify-around bg-white/50 p-5 rounded-[22px] border border-[#d6e4f0] shadow-sm">
+                  <div className="text-center w-full">
+                    <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Indicações</p>
+                    <p className="text-2xl font-black text-primary">{completedReferrals}</p>
                   </div>
 
-                  <div className="relative w-16 h-16 flex items-center justify-center">
-                    <svg className="w-full h-full -rotate-90">
-                      <circle className="text-white/5" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="4"></circle>
-                      <circle
-                        className="text-accent"
-                        cx="32" cy="32"
-                        fill="transparent" r="28"
-                        stroke="currentColor"
-                        strokeDasharray="175.9"
-                        strokeDashoffset={175.9 - (175.9 * conversionRate) / 100}
-                        strokeWidth="5"
-                        strokeLinecap="round"
-                      ></circle>
-                    </svg>
-                    <span className="absolute text-[11px] font-black text-white">{conversionRate}%</span>
-                  </div>
+                  <div className="w-px h-10 bg-slate-200 shrink-0 mx-2"></div>
 
-                  <div className="text-center">
-                    <p className="text-[9px] uppercase font-black text-white/40 mb-1 tracking-widest">Indicações</p>
-                    <p className="text-2xl font-black">{completedReferrals}</p>
+                  <div className="text-center w-full">
+                    <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Dias Ganhos</p>
+                    <p className="text-2xl font-black text-primary">{totalBonusDays}d</p>
                   </div>
                 </div>
 
                 {/* Share Link */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 ml-1">Seu Link de Convite</Label>
+                    <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Seu Link de Convite</Label>
                     <div className="flex gap-2">
-                      <div className="bg-white/10 flex-1 px-4 py-3 rounded-xl text-[11px] font-medium truncate text-white/80 border border-white/5 leading-none flex items-center">
+                      <div className="bg-white flex-1 px-4 py-3 rounded-xl text-[11px] font-medium truncate text-slate-600 border border-[#d6e4f0] shadow-sm leading-none flex items-center">
                         {referral?.referralLink || "Gerando link..."}
                       </div>
                       <button
                         onClick={handleCopyReferral}
-                        className="bg-accent text-primary p-3 rounded-xl active:scale-90 transition-transform shadow-lg shrink-0"
+                        className="bg-primary text-white p-3 rounded-xl active:scale-90 transition-transform shadow-md shrink-0"
                       >
                         {isCopied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       </button>
@@ -538,7 +607,7 @@ const SubscriptionPage = () => {
                         handleCopyReferral();
                       }
                     }}
-                    className="w-full h-12 bg-accent text-primary hover:bg-accent/90 rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest shadow-xl flex items-center gap-2 group transition-all"
+                    className="w-full h-12 bg-primary text-white hover:bg-primary/90 rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest shadow-md shadow-primary/20 flex items-center gap-2 group transition-all"
                   >
                     <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     Compartilhar Link
@@ -546,11 +615,11 @@ const SubscriptionPage = () => {
                 </div>
 
                 {isTrial && !referral?.hasIndicator && (
-                  <div className="pt-6 border-t border-white/10 text-center">
+                  <div className="pt-6 border-t border-[#d6e4f0] text-center">
                     {!isClaimOpen ? (
                       <button
                         onClick={() => setIsClaimOpen(true)}
-                        className="text-[10px] font-black text-white/40 hover:text-accent uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                        className="text-[10px] font-black text-slate-400 hover:text-primary uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
                       >
                         <Award className="w-4 h-4" />
                         Ganhei um convite
@@ -561,11 +630,11 @@ const SubscriptionPage = () => {
                           value={claimPhone}
                           onChange={(e) => setClaimPhone(phoneMask(e.target.value))}
                           placeholder="WhatsApp de quem indicou"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/20 h-11 rounded-xl text-xs px-4 focus:ring-accent/50"
+                          className="bg-white border-[#d6e4f0] text-slate-700 placeholder:text-slate-400 h-11 rounded-xl text-xs px-4 focus:ring-amber-500/50 shadow-sm"
                         />
                         <div className="flex gap-2">
                           <Button
-                            className="flex-1 h-11 bg-white text-primary font-black text-[11px] font-headline uppercase rounded-xl hover:bg-slate-50 shadow-lg"
+                            className="flex-1 h-11 bg-primary text-white font-black text-[11px] font-headline uppercase rounded-xl hover:bg-primary/90 shadow-md shadow-primary/20"
                             onClick={handleClaimReferral}
                             disabled={claimReferral.isPending}
                           >
@@ -573,7 +642,7 @@ const SubscriptionPage = () => {
                           </Button>
                           <Button
                             variant="ghost"
-                            className="w-11 h-11 text-white/40 hover:bg-white/5 hover:text-rose-400 p-0 rounded-xl transition-colors"
+                            className="w-11 h-11 text-slate-400 hover:bg-slate-100 hover:text-rose-500 p-0 rounded-xl transition-colors"
                             onClick={() => setIsClaimOpen(false)}
                           >
                             <X className="w-5 h-5" />
@@ -587,42 +656,23 @@ const SubscriptionPage = () => {
             </div>
           </aside>
         </div>
+
+        {!isCanceled && (
+          <div className="flex justify-center pt-10">
+            <button
+              type="button"
+              onClick={handleCancelSubscription}
+              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-400 transition-colors"
+            >
+              Cancelar minha assinatura
+            </button>
+          </div>
+        )}
       </div>
     </PullToRefreshWrapper>
   );
 };
 
-const InvoiceStatusBadge = ({ status }: { status: SubscriptionInvoiceStatus }) => {
-  const config = {
-    [SubscriptionInvoiceStatus.PAID]: {
-      label: "Pago",
-      className: "bg-emerald-50 text-emerald-600 border-emerald-100/50",
-    },
-    [SubscriptionInvoiceStatus.PENDING]: {
-      label: "Pendente",
-      className: "bg-amber-50 text-amber-600 border-amber-100/50",
-    },
-    [SubscriptionInvoiceStatus.CANCELED]: {
-      label: "Vencido",
-      className: "bg-slate-50 text-slate-400 border-slate-100/50",
-    },
-    [SubscriptionInvoiceStatus.FAILED]: {
-      label: "Recusado",
-      className: "bg-rose-50 text-rose-600 border-rose-100/50",
-    },
-  }[status] ?? {
-    label: status,
-    className: "bg-slate-50 text-slate-500",
-  };
 
-  return (
-    <span className={cn(
-      "inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border",
-      config.className
-    )}>
-      {config.label}
-    </span>
-  );
-};
 
 export default SubscriptionPage;

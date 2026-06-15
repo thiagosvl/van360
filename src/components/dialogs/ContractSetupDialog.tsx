@@ -15,6 +15,7 @@ import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
+import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
@@ -28,6 +29,8 @@ import {
   PenTool,
   Plus,
   Trash2,
+  Timer,
+  Scale,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -35,32 +38,29 @@ interface ContractSetupDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (usarContratos?: boolean) => void;
-  skipWelcome?: boolean;
 }
 
 enum SetupStep {
-  WELCOME = 0,
-  FEES = 1,
-  CLAUSES = 2,
-  SIGNATURE = 3,
-  PREVIEW = 4,
+  FEES = 0,
+  CLAUSES = 1,
+  SIGNATURE = 2,
+  PREVIEW = 3,
 }
 
-export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWelcome }: ContractSetupDialogProps) {
+export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: ContractSetupDialogProps) {
   const { profile, refreshProfile } = useProfile();
-  const [step, setStep] = useState<SetupStep>(SetupStep.WELCOME);
+  const [step, setStep] = useState<SetupStep>(SetupStep.FEES);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const previewMutation = usePreviewContrato();
 
-  const [usarContratos, setUsarContratos] = useState(true);
   const [multaAtraso, setMultaAtraso] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
     valor: 10,
-    tipo: "percentual",
+    tipo: "fixo",
   });
   const [multaRescisao, setMultaRescisao] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
     valor: 15,
-    tipo: "percentual",
+    tipo: "fixo",
   });
   const [clausulas, setClausulas] = useState<string[]>([]);
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
@@ -84,20 +84,16 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
     }
     if (isOpen && profile && !initializedRef.current) {
       setClausulas(profile.config_contrato?.clausulas ?? DEFAULT_CLAUSULAS_CONTRATO);
-      if (profile.config_contrato?.multa_atraso) setMultaAtraso(profile.config_contrato.multa_atraso);
-      if (profile.config_contrato?.multa_rescisao) setMultaRescisao(profile.config_contrato.multa_rescisao);
+      const isDefault = !profile.config_contrato?.usar_contratos;
+      if (profile.config_contrato?.multa_atraso) {
+        setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: "fixo" } : profile.config_contrato.multa_atraso);
+      }
+      if (profile.config_contrato?.multa_rescisao) {
+        setMultaRescisao(isDefault ? { ...profile.config_contrato.multa_rescisao, tipo: "fixo" } : profile.config_contrato.multa_rescisao);
+      }
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
-      const isContratoConfigurado = !!profile.config_contrato?.configurado;
-      const isContratoAtivo = profile.config_contrato?.usar_contratos ?? true;
-
-      setUsarContratos(skipWelcome ? true : isContratoAtivo);
-
-      if (skipWelcome) {
-        setStep(SetupStep.FEES); // Pula para a segunda etapa
-      } else {
-        setStep(SetupStep.WELCOME);
-      }
+      setStep(SetupStep.FEES);
 
       initializedRef.current = true;
     }
@@ -113,10 +109,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
   };
 
   const handleNext = () => {
-    if (step === SetupStep.WELCOME && !usarContratos) {
-      handleFinalSubmit(false);
-      return;
-    }
     if (step === SetupStep.CLAUSES) {
       const cleanClausulas = clausulas.filter((c) => c.trim() !== "");
       if (cleanClausulas.length === 0) {
@@ -140,7 +132,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       captureSignature();
     }
     if (step === SetupStep.PREVIEW) {
-      handleFinalSubmit(true);
+      handleFinalSubmit();
       return;
     }
     setStep((s) => s + 1);
@@ -153,21 +145,20 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
 
   const currentStepTitle = () => {
     switch (step) {
-      case SetupStep.WELCOME: return "Boas-Vindas";
       case SetupStep.FEES: return "Penalidades e Multas";
       case SetupStep.CLAUSES: return "Cláusulas e Termos";
-      case SetupStep.SIGNATURE: return "Assinatura";
+      case SetupStep.SIGNATURE: return "Assinatura Digital";
       case SetupStep.PREVIEW: return "Revisão do Contrato";
       default: return "Configurar Contratos";
     }
   };
 
-  const handleFinalSubmit = async (active: boolean) => {
+  const handleFinalSubmit = async () => {
     if (!profile?.id) return;
     setIsSubmitting(true);
     try {
       let signatureUrl = signatureTemp || profile.assinatura_digital_url;
-      if (active && (step === SetupStep.SIGNATURE || step === SetupStep.PREVIEW)) {
+      if (step === SetupStep.SIGNATURE || step === SetupStep.PREVIEW) {
         if (sigPad.current && !sigPad.current.isEmpty()) {
           signatureUrl = sigPad.current.toDataURL("image/png");
         }
@@ -176,8 +167,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       await usuarioApi.atualizarUsuario(profile.id, {
         assinatura_digital_url: signatureUrl,
         config_contrato: {
-          usar_contratos: active,
-          configurado: true,
+          usar_contratos: true,
           multa_atraso: multaAtraso,
           multa_rescisao: multaRescisao,
           clausulas: finalClausulas,
@@ -185,7 +175,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       await refreshProfile();
-      if (onSuccess) onSuccess(active);
+      if (onSuccess) onSuccess(true);
       onClose();
       toast.success("Configurações salvas com sucesso!");
     } catch (err) {
@@ -194,165 +184,139 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
       setIsSubmitting(false);
     }
   };
-
-  const renderWelcome = () => (
-    <div className="space-y-4">
-      <div className="text-center space-y-1">
-        <h2 className="text-lg font-black text-[#1a3a5c] uppercase tracking-tight">Contratos Automáticos</h2>
-        <p className="text-[11px] text-slate-500 leading-relaxed px-4 italic font-medium">
-          O sistema gera o contrato, envia para o responsável e solicita a assinatura digital, para cada passageiro cadastrado.
-        </p>
-      </div>
-      <div className="grid gap-3">
-        <button
-          type="button"
-          onClick={() => setUsarContratos(true)}
-          className={cn(
-            "w-full p-4 sm:p-5 rounded-[2rem] border transition-all flex items-center gap-4 active:scale-[0.98] group shadow-sm",
-            usarContratos
-              ? "border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-200 shadow-lg shadow-emerald-500/5"
-              : "border-slate-100 bg-white hover:border-slate-200"
-          )}
-        >
-          <div className={cn(
-            "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-            usarContratos ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
-          )}>
-            <FileText className="w-6 h-6" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <h4 className={cn("text-[13px] font-black uppercase tracking-tight", usarContratos ? "text-emerald-900" : "text-slate-600")}>
-              Usar Contratos
-            </h4>
-            <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">PDF automático e digital</p>
-          </div>
-          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", usarContratos ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
-            {usarContratos && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setUsarContratos(false)}
-          className={cn(
-            "w-full p-4 sm:p-5 rounded-[2rem] border transition-all flex items-center gap-4 active:scale-[0.98] group shadow-sm",
-            !usarContratos
-              ? "border-slate-400 bg-slate-50 ring-1 ring-slate-200 shadow-lg shadow-slate-200/5"
-              : "border-slate-100 bg-white hover:border-slate-200"
-          )}
-        >
-          <div className={cn(
-            "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-            !usarContratos ? "bg-slate-400 text-white shadow-lg shadow-slate-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
-          )}>
-            <FileText className="w-6 h-6 opacity-30" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <h4 className={cn("text-[13px] font-black uppercase tracking-tight", !usarContratos ? "text-slate-900" : "text-slate-500")}>
-              Não usar contratos
-            </h4>
-            <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">Você poderá ativar depois</p>
-          </div>
-          <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", !usarContratos ? "border-slate-400 bg-slate-400" : "border-slate-300")}>
-            {!usarContratos && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-          </div>
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {!usarContratos && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/60 flex gap-3 items-start shadow-sm"
-          >
-            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-amber-900 leading-relaxed italic font-medium">
-              A qualquer momento você poderá ativar as configurações de contrato na tela de contratos.
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-
   const renderFees = () => (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <DollarSign className="w-5 h-5 text-[#1a3a5c]" />
-          <h3 className="font-black text-xs uppercase tracking-wider text-[#1a3a5c]">Penalidades e Multas</h3>
-        </div>
-        <p className="text-[10px] text-slate-400 ml-7 italic font-medium">
-          Defina as penalidades padrão que constarão nas cláusulas dos seus contratos.
-        </p>
-      </div>
-      <div className="space-y-4">
-        {[
-          {
-            label: "Multa por Atraso",
-            desc: "Aplicada sobre o valor da mensalidade em caso de atraso no pagamento.",
-            state: multaAtraso,
-            setState: setMultaAtraso,
-            dotColor: "bg-[#1a3a5c]",
-            simLabel: "Simulação: R$ 200,00",
-            simValue:
-              multaAtraso.tipo === "percentual"
-                ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-            simColor: "text-[#1a3a5c]",
-          },
-          {
-            label: "Multa por Rescisão",
-            desc: "Cobrada se o contrato for encerrado antes do prazo estipulado.",
-            state: multaRescisao,
-            setState: setMultaRescisao,
-            dotColor: "bg-red-400",
-            simLabel: "Se o plano anual for R$ 2.400,00",
-            simValue:
-              multaRescisao.tipo === "percentual"
-                ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-            simColor: "text-red-500",
-          },
-        ].map(({ label, desc, state, setState, dotColor, simLabel, simValue, simColor }) => (
-          <div key={label} className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100/60 space-y-4 shadow-sm">
+      {[
+        {
+          label: "Multa por Atraso",
+          desc: "Aplicada sobre o valor da mensalidade em caso de atraso no pagamento.",
+          state: multaAtraso,
+          setState: setMultaAtraso,
+          icon: Timer,
+          iconColor: "text-[#1a3a5c]",
+          simBaseLabel: "Exemplo Mensalidade",
+          simResultLabel: "Total com Atraso",
+          simBaseValue: 200,
+          simValue:
+            multaAtraso.tipo === "percentual"
+              ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+          simColor: "text-[#1a3a5c]",
+        },
+        {
+          label: "Multa por Rescisão",
+          desc: "Cobrada se o contrato for encerrado antes do prazo estipulado.",
+          state: multaRescisao,
+          setState: setMultaRescisao,
+          icon: Scale,
+          iconColor: "text-[#1a3a5c]",
+          simBaseLabel: "Exemplo Contrato Anual",
+          simResultLabel: "Multa Rescisória",
+          simBaseValue: 2400,
+          simValue:
+            multaRescisao.tipo === "percentual"
+              ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+          simColor: "text-[#1a3a5c]",
+        },
+      ].map(({ label, desc, state, setState, icon: Icon, iconColor, simBaseLabel, simResultLabel, simBaseValue, simValue, simColor }) => (
+        <div key={label} className="p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+          <div className="flex gap-3">
+            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm", iconColor)}>
+              <Icon className="w-5 h-5" />
+            </div>
             <div>
-              <Label className="text-[#1a3a5c] font-black text-[10px] uppercase tracking-wider flex items-center gap-2">
-                <span className={cn("w-2 h-2 rounded-full shadow-sm", dotColor)} />
+              <Label className="text-[#1a3a5c] font-black text-sm block">
                 {label}
               </Label>
-              <p className="text-[10px] text-slate-400 mt-1 italic pl-4 font-medium">{desc}</p>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                min={0}
-                value={state.valor}
-                onChange={(e) => setState({ ...state, valor: Number(e.target.value) })}
-                className="flex-1 h-12 rounded-2xl bg-white border-slate-200 focus:ring-4 focus:ring-[#1a3a5c]/10 text-center font-black text-lg text-[#1a3a5c]"
-              />
-              <Select
-                value={state.tipo}
-                onValueChange={(v: "percentual" | "fixo") => setState({ ...state, tipo: v })}
-              >
-                <SelectTrigger className="w-36 h-12 rounded-2xl bg-white border-slate-200 font-bold text-slate-600">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="percentual" className="font-bold">Porcentagem (%)</SelectItem>
-                  <SelectItem value="fixo" className="font-bold">Valor Fixo (R$)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="text-[10px] bg-white text-slate-600 px-4 py-3 rounded-2xl flex justify-between items-center border border-slate-100 shadow-sm">
-              <span className="font-bold italic opacity-60 uppercase tracking-wider">{simLabel}</span>
-              <strong className={cn("text-xs font-black", simColor)}>{simValue}</strong>
+              <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-0.5">{desc}</p>
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="space-y-3">
+            <div>
+              <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Forma de cobrança</Label>
+              <div className="flex bg-slate-100 p-1 rounded-xl w-full border border-slate-200/20">
+                <button
+                  type="button"
+                  onClick={() => setState({ ...state, tipo: "fixo" })}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
+                    state.tipo === "fixo"
+                      ? "bg-white text-[#1a3a5c] shadow-sm"
+                      : "text-slate-400 hover:text-slate-600"
+                  )}
+                >
+                  Valor Fixo (R$)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setState({ ...state, tipo: "percentual" })}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
+                    state.tipo === "percentual"
+                      ? "bg-white text-[#1a3a5c] shadow-sm"
+                      : "text-slate-400 hover:text-slate-600"
+                  )}
+                >
+                  Porcentagem (%)
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Valor da multa</Label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={state.tipo === "percentual" ? (state.valor === 0 ? "" : state.valor.toString()) : (state.valor === 0 ? "" : moneyMask(state.valor))}
+                  onChange={(e) => {
+                    if (state.tipo === "percentual") {
+                      const val = e.target.value.replace(/\D/g, "");
+                      const numVal = val === "" ? 0 : Number(val);
+                      setState({ ...state, valor: numVal });
+                    } else {
+                      const val = moneyMask(e.target.value);
+                      const numVal = moneyToNumber(val);
+                      setState({ ...state, valor: numVal });
+                    }
+                  }}
+                  className={cn(
+                    "w-full h-12 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 font-black text-base text-[#1a3a5c] pl-4",
+                    state.tipo === "percentual" ? "pr-10 text-left" : "pr-4 text-left"
+                  )}
+                  placeholder={state.tipo === "percentual" ? "0" : "R$ 0,00"}
+                />
+                {state.tipo === "percentual" && (
+                  <span className="absolute right-4 top-3.5 text-sm font-black text-[#1a3a5c]/40">%</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/40 space-y-2">
+            <div className="flex justify-between items-center text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+              <span>{simBaseLabel}</span>
+              <span>{simResultLabel}</span>
+            </div>
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs font-bold text-slate-500">
+                {simBaseValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+              <div className="text-right">
+                <span className={cn("text-base font-black leading-none", simColor)}>{simValue}</span>
+                <p className="text-[9px] font-bold text-slate-400 mt-1 leading-none">
+                  {state.tipo === "percentual"
+                    ? `+ ${state.valor}% (${(simBaseValue * (state.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
+                    : `+ ${state.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 
@@ -360,11 +324,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
     <div className="space-y-4">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2 text-[#1a3a5c]">
-          <PenTool className="w-5 h-5 opacity-80" />
-          <h3 className="font-black text-xs uppercase tracking-wider">Cláusulas e Termos</h3>
         </div>
         <div className="px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/50">
-          {clausulas.length} {clausulas.length === 1 ? "Item" : "Itens"}
+          {clausulas.length} {clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
         </div>
       </div>
       <div className="space-y-4">
@@ -427,7 +389,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
   const renderSignature = () => (
     <div className="space-y-6">
       <div className="text-center space-y-2 mb-2">
-        <h3 className="font-black text-[#1a3a5c] text-lg uppercase tracking-tight">Assinatura Digital</h3>
         <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
           Sua assinatura aparecerá no final de todos os contratos em PDF de forma automatizada.
         </p>
@@ -445,27 +406,24 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
   const renderPreview = () => (
     <div className="space-y-3">
       <div className="text-center space-y-0.5">
-        <h3 className="text-lg font-black text-[#1a3a5c] uppercase tracking-tight">Revise as configurações</h3>
         <p className="text-[10px] text-slate-500 italic font-medium px-4 leading-relaxed">Só confirme após revisar as configurações.</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1 border-b border-slate-200/50 pb-0.5 w-full text-center">Multa Atraso</p>
+          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
           <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
-            {multaAtraso.tipo === "percentual" ? `${multaAtraso.valor}%` : `R$ ${multaAtraso.valor}`}
+            {multaAtraso.tipo === "percentual" ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor)}
           </p>
         </div>
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1 border-b border-slate-200/50 pb-0.5 w-full text-center">Multa Rescisão</p>
-          <p className="text-xs font-semibold text-red-500 tracking-tight">
-            {multaRescisao.tipo === "percentual" ? `${multaRescisao.valor}%` : `R$ ${multaRescisao.valor}`}
+          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão</p>
+          <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
+            {multaRescisao.tipo === "percentual" ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor)}
           </p>
         </div>
-        <div className="col-span-2 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex items-center justify-between">
-          <div>
-            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
-            <p className="text-[10px] font-semibold text-[#1a3a5c] uppercase">{clausulas.filter((c) => c.trim()).length} itens ativos</p>
-          </div>
+        <div className="col-span-2 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
+          <p className="text-[10px] font-semibold text-[#1a3a5c] uppercase">{clausulas.filter((c) => c.trim()).length}</p>
         </div>
       </div>
       <div className="space-y-3 px-2">
@@ -505,29 +463,23 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
     </div>
   );
 
-  // Código antigo de restrição (comentado para uso futuro):
-  // const podeFechar = !!profile?.config_contrato?.configurado;
-  // const canCloseNow = podeFechar || (step === SetupStep.WELCOME && !usarContratos);
-
   return (
     <>
       <BaseDialog
         open={isOpen}
-        onOpenChange={(open) => { if (!open) onClose(); }} // Código antigo: onOpenChange={(open) => { if (!open && canCloseNow) onClose(); }}
-        // lockClose={!canCloseNow}
-        maxWidth="2xl"
+        onOpenChange={(open) => { if (!open) onClose(); }}
+        maxWidth="lg"
       >
         <BaseDialog.Header
           title={currentStepTitle()}
           icon={<FileText className="w-5 h-5 opacity-80" />}
           showSteps
           currentStep={step + 1}
-          totalSteps={5}
-          hideCloseButton={false} // Código antigo: hideCloseButton={!podeFechar}
-          onClose={onClose} // Código antigo: onClose={podeFechar ? onClose : undefined}
+          totalSteps={4}
+          hideCloseButton={false}
+          onClose={onClose}
         />
         <BaseDialog.Body animate animationKey={step} className="min-h-[300px]">
-          {step === SetupStep.WELCOME && renderWelcome()}
           {step === SetupStep.FEES && renderFees()}
           {step === SetupStep.CLAUSES && renderClauses()}
           {step === SetupStep.SIGNATURE && renderSignature()}
@@ -545,7 +497,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, skipWe
           )}
           <BaseDialog.Action
             label={
-              step === SetupStep.PREVIEW || (step === SetupStep.WELCOME && !usarContratos)
+              step === SetupStep.PREVIEW
                 ? "Confirmar"
                 : "Continuar"
             }

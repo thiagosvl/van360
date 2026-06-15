@@ -16,7 +16,6 @@ import { useState } from "react";
 export default function Passageiros() {
   const {
     profile,
-    isProfileLoading,
     activeTab,
     handleTabChange,
     countPassageiros,
@@ -37,7 +36,6 @@ export default function Passageiros() {
     setFilters,
     isPassageirosLoading,
     passageiros,
-    isActionLoading,
     handleOpenNewDialog,
     handleHistorico,
     handleEdit,
@@ -53,7 +51,18 @@ export default function Passageiros() {
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
   const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
   const sectionCount = isMainTab ? passageiros.length : countPrePassageiros;
-  const countLabel = isMainTab ? (searchTerm || hasActiveFilters ? "ENCONTRADOS" : "PASSAGEIROS") : "SOLICITAÇÕES";
+  let countLabel = "";
+  if (isMainTab) {
+    const hasSearch = searchTerm || hasActiveFilters;
+    countLabel = hasSearch 
+      ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+      : (sectionCount === 1 ? "PASSAGEIRO" : "PASSAGEIROS");
+  } else {
+    const hasSearch = !!searchTerm;
+    countLabel = hasSearch
+      ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
+      : (sectionCount === 1 ? "SOLICITAÇÃO" : "SOLICITAÇÕES");
+  }
 
   return (
     <>
@@ -121,7 +130,7 @@ export default function Passageiros() {
                   onRegister={handleOpenNewDialog}
                   showAdvancedFilters={isMainTab}
                   showRegister={isMainTab}
-                  searchPlaceholder={isMainTab ? "Buscar por nome ou responsável..." : "Buscar solicitação..."}
+                  searchPlaceholder="Buscar por nome ou responsável..."
                 />
               </div>
 
@@ -145,10 +154,13 @@ export default function Passageiros() {
                       icon={Users2}
                       title="Nenhum passageiro encontrado"
                       description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."}
-                      action={searchTerm.length === 0 ? {
+                      action={(hasActiveFilters || searchTerm.length > 0) ? {
+                        label: "Limpar Filtros",
+                        onClick: clearFilters
+                      } : {
                         label: "Cadastrar Passageiro",
                         onClick: () => setIsPassengerDrawerOpen(true)
-                      } : undefined}
+                      }}
                     />
                   ) : (
                     <PassageirosList
@@ -158,7 +170,7 @@ export default function Passageiros() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
                       onEnviarWhatsApp={handleEnviarWhatsApp}
-                      usarContratos={profile?.config_contrato?.usar_contratos}
+                      usarContratos={!!profile?.config_contrato?.usar_contratos}
                     />
                   )}
                 </>

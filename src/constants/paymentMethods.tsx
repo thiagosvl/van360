@@ -1,4 +1,4 @@
-import { CobrancaTipoPagamento } from "@/types/enums";
+import { CobrancaTipoPagamento, CheckoutPaymentMethod } from "@/types/enums";
 import { formatPaymentType } from "@/utils/formatters";
 import {
   Banknote,
@@ -15,6 +15,11 @@ export interface PaymentMethodOption {
   icon: ReactNode;
   color: string;
 }
+
+export const PAYMENT_METHOD_LABELS: Record<CheckoutPaymentMethod, string> = {
+  [CheckoutPaymentMethod.PIX]: "Pix",
+  [CheckoutPaymentMethod.CREDIT_CARD]: "Cartão",
+};
 
 
 export const getPaymentMethodLabel = (type?: CobrancaTipoPagamento) => {

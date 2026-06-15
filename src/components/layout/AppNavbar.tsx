@@ -18,7 +18,7 @@ import {
   Loader2,
   LogOut,
   UserPen,
-  CreditCard,
+  Key,
   Rocket,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -95,7 +95,6 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                   <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Seção Atual</p>
                   <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
                     {currentPage.title}
                   </h2>
@@ -120,7 +119,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-x-2 outline-none p-1">
-                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-[#1a3a5c] group-hover:text-white transition-all shadow-sm">
+                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-slate-100 group-hover:text-primary transition-all shadow-sm">
                   {isLoadingProfile ? (
                     <Skeleton className="h-full w-full rounded-2xl" />
                   ) : (
@@ -144,15 +143,15 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarCadastroDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <UserPen className="h-4 w-4 text-slate-400" />
-                Alterar Cadastro
+                Editar Cadastro
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openAlterarSenhaDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Lock className="h-4 w-4 text-slate-400" />
                 Alterar Senha
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
-                <CreditCard className="h-4 w-4 text-slate-400" />
-                Alterar Chave Pix
+                <Key className="h-4 w-4 text-slate-400" />
+                Trocar Chave Pix
               </DropdownMenuItem>
               <div className="h-px bg-gray-50 my-1" />
               <DropdownMenuItem

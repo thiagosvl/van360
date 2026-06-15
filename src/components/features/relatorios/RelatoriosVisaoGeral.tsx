@@ -120,7 +120,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
           {/* Balanço progress */}
           <div className="space-y-2.5">
             <div className="flex justify-between items-end">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Balanço (Líquido)</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Lucro Líquido</span>
               <span className={cn(
                 "text-[11px] font-headline font-black",
                 lucroPositivo ? "text-emerald-600" : "text-rose-600"

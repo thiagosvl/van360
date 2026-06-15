@@ -3,11 +3,13 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { Gasto } from "@/types/gasto";
+
 export function useCreateGasto() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ usuarioId, data }: { usuarioId: string; data: any }) =>
+    mutationFn: ({ usuarioId, data }: { usuarioId: string; data: Partial<Gasto> }) =>
       gastoApi.createGasto(usuarioId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
@@ -25,7 +27,7 @@ export function useUpdateGasto() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Gasto> }) =>
       gastoApi.updateGasto(id, data),
     onError: (error: any) => {
       toast.error("gasto.erro.atualizar", {

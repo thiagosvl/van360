@@ -8,8 +8,7 @@ import {
   getNowBR, 
   parseLocalDate, 
   toPersistenceString, 
-  toISODateTimeBR,
-  isBeforeNowBR
+  toISODateTimeBR
 } from "@/utils/dateUtils";
 import {
   parseCurrencyToNumber
@@ -67,12 +66,11 @@ export const cobrancaSchema = z
     (data) => {
       // Validação de data de pagamento futura
        if (data.foi_pago && data.data_pagamento) {
-           return !isBeforeNowBR(data.data_pagamento); // Se é ANTES do agora, é válido. Se for depois, falha.
-           // Na verdade isBeforeNowBR retorna true se target < now.
-           // Queremos: data_pagamento <= nowBR.
-           // Vou usar a lógica manual aqui para ser mais preciso na validação de formulário.
-           const now = getNowBR();
-           return data.data_pagamento.getTime() <= now.getTime();
+           // Zera as horas para comparar apenas os dias, evitando problemas de timezone/horários
+           const pagDate = new Date(data.data_pagamento.getFullYear(), data.data_pagamento.getMonth(), data.data_pagamento.getDate());
+           const now = new Date();
+           const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+           return pagDate.getTime() <= today.getTime();
        }
        return true;
     },
@@ -179,7 +177,7 @@ export function useCobrancaForm({
        return;
     }
 
-    const valorNumerico = data.valor;
+    const valorNumerico = typeof data.valor === 'string' ? parseCurrencyToNumber(data.valor) : data.valor;
     
     // Persistência segura em Brasília
     const dataVencimentoStr = toPersistenceString(data.data_vencimento);

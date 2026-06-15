@@ -16,4 +16,15 @@ export interface Gasto {
   } | null;
 };
 
+export const GASTO_CATEGORIA_LABELS: Record<GastoCategoria, string> = {
+  [GastoCategoria.COMBUSTIVEL]: "Combustível",
+  [GastoCategoria.MANUTENCAO]: "Manutenção",
+  [GastoCategoria.IMPOSTOS]: "Impostos",
+  [GastoCategoria.MULTAS]: "Multas",
+  [GastoCategoria.LAVAGEM]: "Lavagem",
+  [GastoCategoria.ALIMENTACAO]: "Alimentação",
+  [GastoCategoria.SEGURO]: "Seguro",
+  [GastoCategoria.OUTROS]: "Outros"
+};
+
 export const CATEGORIAS_GASTOS = Object.values(GastoCategoria);

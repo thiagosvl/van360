@@ -25,7 +25,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
+import { CATEGORIAS_GASTOS, GASTO_CATEGORIA_LABELS, Gasto } from "@/types/gasto";
+import { GastoCategoria } from "@/types/enums";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { moneyMask } from "@/utils/masks";
@@ -189,7 +190,7 @@ export default function GastoFormDialog({
               name="categoria"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     Categoria <span className="text-red-600">*</span>
                   </FormLabel>
                   <Select
@@ -213,7 +214,7 @@ export default function GastoFormDialog({
                     <SelectContent className="max-h-60 overflow-y-auto">
                       {CATEGORIAS_GASTOS.map((cat) => (
                         <SelectItem key={cat} value={cat}>
-                          {cat}
+                          {GASTO_CATEGORIA_LABELS[cat as GastoCategoria] || cat}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -228,7 +229,7 @@ export default function GastoFormDialog({
               name="veiculo_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     Veículo
                   </FormLabel>
                   <Select
@@ -265,7 +266,7 @@ export default function GastoFormDialog({
                 name="data"
                 render={({ field, fieldState }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-gray-700 font-medium ml-1">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
                       Data <span className="text-red-600">*</span>
                     </FormLabel>
                     <Popover
@@ -326,6 +327,7 @@ export default function GastoFormDialog({
                     required
                     label="Valor"
                     className="flex flex-col"
+                    labelClassName="text-slate-700 font-semibold ml-1"
                     inputClassName="pl-12 h-12 text-sm rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                   />
                 )}
@@ -336,7 +338,7 @@ export default function GastoFormDialog({
               name="descricao"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
                     Descrição
                   </FormLabel>
                   <FormControl>

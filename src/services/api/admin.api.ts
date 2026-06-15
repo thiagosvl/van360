@@ -171,7 +171,7 @@ export const adminApi = {
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),
 
-  getUserLogs: (id: string, params?: { page?: number; limit?: number }) =>
+  getUserLogs: (id: string, params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string }) =>
     apiClient.get<AdminUserLogsResponse>(`${BASE}/users/${id}/logs`, { params }).then(r => r.data),
 
   updateUser: (id: string, data: UpdateUserPayload) =>
@@ -197,6 +197,9 @@ export const adminApi = {
 
   resetPassword: (id: string) =>
     apiClient.post<{ success: boolean; senha: string }>(`${BASE}/users/${id}/reset-password`).then(r => r.data),
+
+  deleteUser: (id: string) =>
+    apiClient.delete(`${BASE}/users/${id}`).then(r => r.data),
 };
 
 export interface AdminSaaSPlanItem {

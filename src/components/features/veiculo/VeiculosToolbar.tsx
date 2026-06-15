@@ -1,17 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Plus, CheckCircle2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { FilterDefaults } from "@/types/enums";
 import { DataTableToolbar } from "../common/DataTableToolbar";
 import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
+import { useIsMobile } from "@/hooks/ui/useIsMobile";
 
 interface VeiculosToolbarProps {
   searchTerm: string;
@@ -36,6 +29,7 @@ export const VeiculosToolbar = memo(function VeiculosToolbar({
   onRegister,
   isRegisterDisabled,
 }: VeiculosToolbarProps) {
+  const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     status: selectedStatus || FilterDefaults.TODOS,
@@ -67,9 +61,9 @@ export const VeiculosToolbar = memo(function VeiculosToolbar({
       <DataTableFilterSelect
         label="Status"
         placeholder="Status"
-        value={isSheetOpen ? tempFilters.status : selectedStatus}
+        value={isMobile ? tempFilters.status : selectedStatus}
         onValueChange={(val) => {
-          if (isSheetOpen) {
+          if (isMobile) {
             setTempFilters((prev) => ({ ...prev, status: val }));
           } else {
             onStatusChange(val);
@@ -108,8 +102,8 @@ export const VeiculosToolbar = memo(function VeiculosToolbar({
           className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 md:px-6 shadow-md transition-all active:scale-95"
         >
           <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden md:inline">Novo Veículo</span>
-          <span className="md:hidden">Novo</span>
+          <span className="hidden md:inline">Cadastrar</span>
+          <span className="md:hidden">Cadastrar</span>
         </Button>
       }
     />

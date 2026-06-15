@@ -8,7 +8,6 @@ export interface SystemSummary {
     flags: {
       pix_key_configurada: boolean;
       is_ativo: boolean;
-      contrato_configurado: boolean;
       usar_contratos: boolean;
     };
   };

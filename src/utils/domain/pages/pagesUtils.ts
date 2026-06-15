@@ -17,14 +17,14 @@ const pagesItems = [
         icon: CreditCard,
     },
     {
-        title: "Contratos",
-        href: "/contratos",
-        icon: FileText,
-    },
-    {
         title: "Passageiros",
         href: "/passageiros",
         icon: Users,
+    },
+    {
+        title: "Contratos",
+        href: "/contratos",
+        icon: FileText,
     },
     {
         title: "Escolas",

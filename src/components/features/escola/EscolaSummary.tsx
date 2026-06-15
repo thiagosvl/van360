@@ -33,9 +33,9 @@ export const EscolaSummary = ({ escola }: EscolaSummaryProps) => {
 
       {/* Subtítulo: Endereço Resumido */}
       {enderecoResumido && (
-        <div className="flex items-center gap-1 mt-0.5">
-          <MapPin className="h-2.5 w-2.5 text-slate-400" />
-          <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase leading-none truncate pr-4">
+        <div className="flex items-start gap-1.5 mt-1 pr-2">
+          <MapPin className="h-3 w-3 text-slate-400 shrink-0 mt-[1px]" />
+          <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase leading-tight line-clamp-2 break-words">
             {enderecoResumido}
           </p>
         </div>

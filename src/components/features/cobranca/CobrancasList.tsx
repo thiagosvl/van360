@@ -43,8 +43,9 @@ interface CobrancasListProps {
   onRegistrarPagamento: (cobranca: Cobranca) => void;
   onExcluirCobranca: (cobranca: Cobranca) => void;
   onDesfazerPagamento?: (cobranca: Cobranca) => void;
-  onVerRecibo: (url: string) => void;
+  onVerRecibo: (url: string, cobranca: Cobranca) => void;
   onActionSuccess: () => void;
+  onClearSearch?: () => void;
 }
 
 const CobrancaMobileCard = memo(function CobrancaMobileCard({
@@ -84,7 +85,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
     onEnviarCobranca,
     onActionSuccess,
   });
@@ -168,6 +169,7 @@ export function CobrancasList({
   activeTab,
   isLoading,
   busca,
+  onClearSearch,
   ...props
 }: CobrancasListProps) {
 
@@ -181,6 +183,7 @@ export function CobrancasList({
           icon={Wallet}
           title="Nenhum resultado"
           description="Tente buscar por outro nome ou termo."
+          action={onClearSearch ? { label: "Limpar Busca", onClick: onClearSearch } : undefined}
         />
       );
     }
@@ -300,7 +303,7 @@ export function CobrancasList({
                     </div>
                   </TableCell>
 
-                  <TableCell className="px-6 py-4 text-right">
+                  <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <CobrancaActionsMenu
                       cobranca={cobranca}
                       onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
@@ -309,7 +312,7 @@ export function CobrancasList({
                       onActionSuccess={props.onActionSuccess}
                       onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
                       onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
-                      onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!) : undefined}
+                      onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined}
                     />
                   </TableCell>
                 </TableRow>
@@ -353,7 +356,7 @@ function ActionSheetWrapper({
     onRegistrarPagamento: () => props.onRegistrarPagamento(cobranca),
     onExcluirCobranca: () => props.onExcluirCobranca(cobranca),
     onDesfazerPagamento: props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => props.onVerRecibo(cobranca.recibo_url!) : undefined,
+    onVerRecibo: cobranca.recibo_url ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
     onActionSuccess: props.onActionSuccess,
   });
 
