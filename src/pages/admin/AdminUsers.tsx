@@ -51,7 +51,7 @@ export default function AdminUsers() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1 text-left">
-          <h1 className="text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
+          <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
             Usuários
           </h1>
           <p className="text-sm font-semibold text-slate-400">

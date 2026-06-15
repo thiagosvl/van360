@@ -341,7 +341,7 @@ export default function AdminUserDetails() {
           <ArrowLeft className="h-5 w-5 text-[#1a3a5c]" />
         </Button>
         <div className="flex-1 text-left">
-          <h1 className="text-2xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
+          <h1 className="text-lg sm:text-2xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
             {data.user.nome}
           </h1>
           <p className="text-xs font-semibold text-slate-400">
