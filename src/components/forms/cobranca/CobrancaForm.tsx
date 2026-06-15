@@ -345,7 +345,7 @@ export function CobrancaFormContent({
                                                     type="button"
                                                     variant="outline"
                                                     className={cn(
-                                                        "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left font-normal hover:bg-gray-100 justify-start",
+                                                        "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left text-base hover:bg-gray-100 justify-start",
                                                         !field.value && "text-muted-foreground",
                                                         fieldState.error && "border-red-500"
                                                     )}
