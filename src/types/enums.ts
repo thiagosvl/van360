@@ -1,8 +1,6 @@
 export enum UserType {
   ADMIN = "admin",
   MOTORISTA = "motorista",
-  RESPONSAVEL = "responsavel",
-  ESCOLA = "escola"
 }
 
 export enum CobrancaStatus {
