@@ -13,26 +13,26 @@ export const TrialBanner = ({ daysLeft, onSubscribe }: TrialBannerProps) => {
           <AlertTriangle className="h-5 w-5" />
         </div>
         <div className="flex-1">
-        <p className="text-xs font-bold text-amber-900">Período de Teste Gratuito</p>
-        <p className="text-[11px] text-amber-700">
-          {daysLeft > 0 ? (
-            <>Você tem <span className="font-bold">{daysLeft} {daysLeft === 1 ? 'dia' : 'dias'}</span> restante{daysLeft === 1 ? '' : 's'}.</>
-          ) : (
-            <>Hoje é o seu <span className="font-bold">último dia</span> de teste gratuito!</>
-          )}
-          {" "}Assine agora para manter seu acesso completo!
-        </p>
-      </div>
+          <p className="text-xs font-bold text-amber-900">Período de Teste Gratuito</p>
+          <p className="text-[11px] text-amber-700">
+            {daysLeft > 0 ? (
+              <>Você tem <span className="font-bold">{daysLeft} {daysLeft === 1 ? 'dia' : 'dias'}</span> restante{daysLeft === 1 ? '' : 's'}.</>
+            ) : (
+              <>Hoje é o seu <span className="font-bold">último dia</span> de teste gratuito!</>
+            )}
+            {" "}Assine agora para manter seu acesso completo!
+          </p>
+        </div>
       </div>
       {onSubscribe ? (
         <button
           onClick={onSubscribe}
-          className="h-10 px-5 bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-amber-600/90 transition-all shadow-md shadow-amber-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
+          className="h-10 px-5 bg-accent text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-amber-600/90 transition-all shadow-md shadow-amber-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
         >
           Assinar
         </button>
       ) : (
-        <div className="h-10 px-5 bg-amber-600/50 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shrink-0 opacity-50 w-full sm:w-auto text-center flex justify-center items-center cursor-not-allowed">
+        <div className="h-10 px-5 bg-accent/50 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shrink-0 opacity-50 w-full sm:w-auto text-center flex justify-center items-center cursor-not-allowed">
           Assinar
         </div>
       )}

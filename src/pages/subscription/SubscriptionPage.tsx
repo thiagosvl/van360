@@ -421,7 +421,7 @@ const SubscriptionPage = () => {
                           <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
                             {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
                               <button
-                                className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-amber-700 hover:bg-amber-100 transition-colors uppercase tracking-[0.1em] bg-amber-50 px-4 py-3 rounded-xl border border-amber-200"
+                                className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-white hover:bg-primary/90 transition-colors uppercase tracking-[0.1em] bg-primary px-4 py-3 rounded-xl border border-primary-400/40"
                                 onClick={() => handleCopyPix(inv.pix_copy_paste!)}
                               >
                                 <Copy className="w-4 h-4" />
@@ -429,7 +429,7 @@ const SubscriptionPage = () => {
                               </button>
                             ) : (
                               <button
-                                className="w-full px-4 py-3 bg-amber-600 text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200 active:scale-95 text-center flex justify-center items-center"
+                                className="w-full px-4 py-3 bg-primary text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
                                 onClick={() => handleSubscribe()}
                               >
                                 Pagar Agora

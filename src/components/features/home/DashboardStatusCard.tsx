@@ -27,7 +27,7 @@ export const DashboardStatusCard = ({
       iconColor: "text-rose-600",
       titleColor: "text-rose-900",
       descColor: "text-rose-700",
-      buttonBg: "bg-rose-600 hover:bg-rose-600/90 shadow-rose-200",
+      buttonBg: "bg-rose-600 hover:bg-rose-600/90 shadow-rose-600/20",
     },
     success: {
       icon: CheckCircle2,
@@ -37,7 +37,7 @@ export const DashboardStatusCard = ({
       iconColor: "text-emerald-600",
       titleColor: "text-emerald-900",
       descColor: "text-emerald-700",
-      buttonBg: "bg-emerald-600 hover:bg-emerald-600/90 shadow-emerald-200",
+      buttonBg: "bg-emerald-600 hover:bg-emerald-600/90 shadow-emerald-600/20",
     },
     error: {
       icon: AlertCircle,
@@ -47,7 +47,7 @@ export const DashboardStatusCard = ({
       iconColor: "text-rose-600",
       titleColor: "text-rose-900",
       descColor: "text-rose-700",
-      buttonBg: "bg-rose-600 hover:bg-rose-600/90 shadow-rose-200",
+      buttonBg: "bg-rose-600 hover:bg-rose-600/90 shadow-rose-600/20",
     },
     info: {
       icon: UserPlus,
@@ -57,7 +57,7 @@ export const DashboardStatusCard = ({
       iconColor: "text-[#1a3a5c]",
       titleColor: "text-[#1a3a5c] tracking-tight",
       descColor: "text-slate-600 leading-relaxed",
-      buttonBg: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 shadow-md shadow-[#1a3a5c]/20 h-10 px-5 text-[10px] font-black uppercase tracking-widest rounded-2xl",
+      buttonBg: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 shadow-[#1a3a5c]/20",
     },
   };
 
@@ -74,25 +74,25 @@ export const DashboardStatusCard = ({
       )}
     >
       <div className="flex items-center gap-4 flex-1 w-full">
-      <div
-        className={cn(
-          "h-10 w-10 flex items-center justify-center rounded-xl shrink-0",
-          style.iconWrapperBg,
-          style.iconColor
-        )}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="flex-1">
-        <p className={cn("text-xs font-bold", style.titleColor)}>{title}</p>
-        <p className={cn("text-[11px]", style.descColor)}>{description}</p>
-      </div>
+        <div
+          className={cn(
+            "h-10 w-10 flex items-center justify-center rounded-xl shrink-0",
+            style.iconWrapperBg,
+            style.iconColor
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className={cn("text-xs font-bold", style.titleColor)}>{title}</p>
+          <p className={cn("text-[11px]", style.descColor)}>{description}</p>
+        </div>
       </div>
       {actionLabel && (
         <button
           onClick={onAction}
           className={cn(
-            "px-4 py-2 text-white text-[11px] font-bold rounded-xl transition-all shadow-sm shrink-0 active:scale-95 flex items-center justify-center gap-1 w-full sm:w-auto",
+            "h-10 px-5 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-md shrink-0 active:scale-95 flex items-center justify-center gap-1 w-full sm:w-auto",
             style.buttonBg
           )}
         >
