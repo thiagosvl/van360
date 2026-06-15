@@ -164,10 +164,14 @@ export function useDeleteUserAdmin() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => adminApi.deleteUser(id),
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       toast.success("Usuário excluído com sucesso.");
-      qc.removeQueries({ queryKey: KEYS.userDetails(id) });
-      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({
+        predicate: (query) => 
+          query.queryKey[0] === "admin" && 
+          query.queryKey[1] === "users" && 
+          typeof query.queryKey[2] !== "string"
+      });
     },
     onError: () => {
       toast.error("Erro ao excluir usuário.");
