@@ -32,6 +32,7 @@ export function useAdminUsers(params?: ListUsersParams) {
     queryFn: () => adminApi.getUsers(params),
     staleTime: 0,
     refetchOnWindowFocus: false,
+    refetchOnMount: true,
   });
 }
 
@@ -163,8 +164,9 @@ export function useDeleteUserAdmin() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => adminApi.deleteUser(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       toast.success("Usuário excluído com sucesso.");
+      qc.removeQueries({ queryKey: KEYS.userDetails(id) });
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },
     onError: () => {

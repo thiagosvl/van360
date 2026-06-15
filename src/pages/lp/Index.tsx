@@ -807,12 +807,6 @@ const Index = () => {
               </div>
             </Reveal>
           </div>
-
-          <Reveal>
-            <p className="text-[0.85rem] text-slate-400 mt-6">
-              Quem entra agora como fundador terá acesso primeiro.
-            </p>
-          </Reveal>
         </div>
       </section>
 
@@ -823,7 +817,7 @@ const Index = () => {
             <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1a3a5c] to-[#244c75] p-8 md:p-12 text-white shadow-xl text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-8 border border-white/5">
               {/* Background Glow */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
-              
+
               <div className="relative z-10 space-y-4 max-w-[580px]">
                 <div className="inline-flex items-center gap-1.5 bg-amber-500/25 px-3.5 py-1.5 rounded-full border border-amber-500/30 text-amber-300 font-black text-[10px] sm:text-xs uppercase tracking-wider">
                   🎁 Indique e Ganhe

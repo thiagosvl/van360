@@ -257,17 +257,17 @@ export default function AdminUserDetails() {
 
     const datePart = refStr ? refStr.split("T")[0] : "";
 
-    const baseDate = datePart 
-      ? new Date(datePart + "T12:00:00") 
-      : new Date(); 
+    const baseDate = datePart
+      ? new Date(datePart + "T12:00:00")
+      : new Date();
 
     const newDate = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000);
     const newDateStr = newDate.toISOString().split("T")[0];
 
     setSubForm((p) => ({
-        ...p, 
-        status: SubscriptionStatus.ACTIVE,
-        data_vencimento: newDateStr 
+      ...p,
+      status: SubscriptionStatus.ACTIVE,
+      data_vencimento: newDateStr
     }));
   };
 
@@ -553,8 +553,8 @@ export default function AdminUserDetails() {
                         <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</Label>
                         <Select
                           value={subForm.status}
-                          onValueChange={(val) => setSubForm(p => ({ 
-                            ...p, 
+                          onValueChange={(val) => setSubForm(p => ({
+                            ...p,
                             status: val,
                             data_vencimento: toDateInputValue(data?.assinatura?.data_vencimento),
                             trial_ends_at: toDateInputValue(data?.assinatura?.trial_ends_at),
@@ -1092,7 +1092,7 @@ export default function AdminUserDetails() {
               onClick={async () => {
                 const cleanedCpf = data.user.cpfcnpj.replace(/\D/g, "");
                 const maskedCpf = `${cleanedCpf.slice(0, 3)}.${cleanedCpf.slice(3, 4)}**.***-${cleanedCpf.slice(9, 11)}`;
-                const text = `*Nova Senha Provisória - Van360!* 🔐\n\nOlá *${data.user.nome}*,\nSua senha foi redefinida pelo administrador do sistema.\n\n*Novos dados de acesso:*\n👤 CPF: ${maskedCpf}\n🔑 Senha temporária: ${resetPasswordData.senha}\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://app.van360.com.br/login`;
+                const text = `*Nova Senha Provisória - Van360!* 🔐\n\nOlá *${data.user.nome}*,\nSua senha foi redefinida pelo administrador do sistema.\n\n*Novos dados de acesso:*\n👤 CPF: ${maskedCpf}\n🔑 Senha temporária: ${resetPasswordData.senha}\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://van360.com.br/login`;
                 await navigator.clipboard.writeText(text);
                 toast.success("Dados de acesso copiados!");
               }}
