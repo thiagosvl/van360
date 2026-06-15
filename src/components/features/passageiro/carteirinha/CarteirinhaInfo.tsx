@@ -42,7 +42,8 @@ import {
   User,
   Users,
   Bot,
-  BotOff
+  BotOff,
+  Lock
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -388,9 +389,9 @@ export const CarteirinhaDadosPessoais = ({
     }
 
     return {
-      title: "Sem Contrato Ativo",
+      title: "Sem contrato gerado",
       desc: isContractActionDisabled
-        ? "Ative a funcionalidade para gerar contratos"
+        ? "Você precisa ativar o uso de contratos na sua conta antes de gerar o documento."
         : "Gere o contrato para assinatura do responsável",
       color: isContractActionDisabled
         ? "bg-slate-50/30 border-slate-200/50 opacity-75 cursor-not-allowed"
@@ -399,11 +400,11 @@ export const CarteirinhaDadosPessoais = ({
         ? "text-slate-400 bg-slate-100/80 border border-slate-200/30"
         : "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-sm",
       icon: FileX2,
-      actionLabel: isContractActionDisabled ? "Bloqueado" : "Gerar",
+      actionLabel: "Gerar contrato",
       actionColor: isContractActionDisabled
-        ? "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300/20"
+        ? "bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300/20 font-bold"
         : "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
-      actionIcon: isContractActionDisabled ? FileX2 : Plus,
+      actionIcon: isContractActionDisabled ? Lock : Plus,
     };
   };
 

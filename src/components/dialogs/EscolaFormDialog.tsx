@@ -33,6 +33,7 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 import { validateEnderecoFields } from "@/utils/validators";
 import { mockGenerator } from "@/utils/mocks/generator";
+import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, MapPin, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -125,7 +126,7 @@ export default function EscolaFormDialog({
       bairro: editingEscola?.bairro || "",
       cidade: editingEscola?.cidade || "",
       estado: editingEscola?.estado || "",
-      cep: editingEscola?.cep || "",
+      cep: editingEscola?.cep ? cepMask(editingEscola.cep) : "",
       referencia: editingEscola?.referencia || "",
       ativo: editingEscola?.ativo ?? true,
     },
@@ -151,7 +152,7 @@ export default function EscolaFormDialog({
           bairro: editingEscola.bairro || "",
           cidade: editingEscola.cidade || "",
           estado: editingEscola.estado || "",
-          cep: editingEscola.cep || "",
+          cep: editingEscola.cep ? cepMask(editingEscola.cep) : "",
           referencia: editingEscola.referencia || "",
           ativo: editingEscola.ativo,
         });

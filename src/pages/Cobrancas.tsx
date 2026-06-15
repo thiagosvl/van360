@@ -57,7 +57,17 @@ export default function Cobrancas() {
   };
 
   const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
-  const statusLabel = activeTab === CobrancaTab.ARECEBER ? "PENDENTES" : "RECEBIDOS";
+  
+  let statusLabel = "";
+  if (busca) {
+    statusLabel = currentCount === 1 ? "ENCONTRADA" : "ENCONTRADAS";
+  } else {
+    if (activeTab === CobrancaTab.ARECEBER) {
+      statusLabel = currentCount === 1 ? "PENDENTE" : "PENDENTES";
+    } else {
+      statusLabel = currentCount === 1 ? "RECEBIDA" : "RECEBIDAS";
+    }
+  }
 
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>

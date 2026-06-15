@@ -36,7 +36,6 @@ export default function Passageiros() {
     setFilters,
     isPassageirosLoading,
     passageiros,
-    isActionLoading,
     handleOpenNewDialog,
     handleHistorico,
     handleEdit,
@@ -52,7 +51,18 @@ export default function Passageiros() {
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
   const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
   const sectionCount = isMainTab ? passageiros.length : countPrePassageiros;
-  const countLabel = isMainTab ? (searchTerm || hasActiveFilters ? "ENCONTRADOS" : "PASSAGEIROS") : "SOLICITAÇÕES";
+  let countLabel = "";
+  if (isMainTab) {
+    const hasSearch = searchTerm || hasActiveFilters;
+    countLabel = hasSearch 
+      ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+      : (sectionCount === 1 ? "PASSAGEIRO" : "PASSAGEIROS");
+  } else {
+    const hasSearch = !!searchTerm;
+    countLabel = hasSearch
+      ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
+      : (sectionCount === 1 ? "SOLICITAÇÃO" : "SOLICITAÇÕES");
+  }
 
   return (
     <>

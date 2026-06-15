@@ -184,7 +184,15 @@ export function useSaaSCheckoutViewModel({
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => {
-    setStep(prev => Math.max(prev - 1, 1));
+    setStep(prev => {
+      if (prev === 4) {
+        const hasNewCardFlow = paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (!savedCards.length || selectedSavedCardId === "new");
+        if (!hasNewCardFlow) {
+          return 2;
+        }
+      }
+      return Math.max(prev - 1, 1);
+    });
   };
 
   const jumpToStep = (newStep: number) => setStep(newStep);

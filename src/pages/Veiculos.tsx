@@ -2,17 +2,13 @@ import { Car } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
 import { VeiculosToolbar } from "@/components/features/veiculo/VeiculosToolbar";
 import { useVeiculosViewModel } from "@/hooks";
 
 export default function Veiculos() {
   const {
-    isLoading,
     isVeiculosLoading,
-    isActionLoading,
     veiculos,
     searchTerm,
     setSearchTerm,
@@ -25,7 +21,6 @@ export default function Veiculos() {
     handleDeleteClick,
     handleToggleAtivo,
     handleRegister,
-    openVeiculoFormDialog,
     refetch,
     navigate,
   } = useVeiculosViewModel();
@@ -35,7 +30,9 @@ export default function Veiculos() {
   };
 
   const sectionCount = veiculos.length;
-  const countLabel = searchTerm || hasActiveFilters ? "ENCONTRADOS" : "VEÍCULOS";
+  const countLabel = searchTerm || hasActiveFilters 
+    ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS") 
+    : (sectionCount === 1 ? "VEÍCULO" : "VEÍCULOS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>

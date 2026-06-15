@@ -1,8 +1,6 @@
 import { GraduationCap } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { EscolasList } from "@/components/features/escola/EscolasList";
 import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
@@ -10,9 +8,7 @@ import { useEscolasViewModel } from "@/hooks";
 
 export default function Escolas() {
   const {
-    isLoading,
     isEscolasLoading,
-    isActionLoading,
     escolas,
     searchTerm,
     setSearchTerm,
@@ -35,7 +31,9 @@ export default function Escolas() {
   };
 
   const sectionCount = escolas.length;
-  const countLabel = searchTerm || hasActiveFilters ? "ENCONTRADAS" : "ESCOLAS";
+  const countLabel = searchTerm || hasActiveFilters 
+    ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
+    : (sectionCount === 1 ? "ESCOLA" : "ESCOLAS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>

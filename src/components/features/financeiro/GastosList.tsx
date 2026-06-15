@@ -6,10 +6,6 @@ import { Gasto, GASTO_CATEGORIA_LABELS } from "@/types/gasto";
 import { GastoCategoria } from "@/types/enums";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
-import {
-  Bus,
-  Calendar,
-} from "lucide-react";
 import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
 import { GastoSummary } from "./GastoSummary";
@@ -21,7 +17,6 @@ interface GastosListProps {
   onDelete: (id: string) => void;
   veiculos?: { id: string; placa: string }[];
 }
-
 
 const GastoMobileCard = memo(function GastoMobileCard({
   gasto,

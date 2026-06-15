@@ -63,7 +63,7 @@ export function PassageiroFormDadosCadastrais({
             control={form.control}
             name="nome"
             render={({ field, fieldState }) => (
-              <FormItem className={cn("col-span-1", hideVeiculo && "md:col-span-2")}>
+              <FormItem className="col-span-1 md:col-span-2">
                 <FormLabel className="text-slate-700 font-semibold ml-1">
                   Nome Completo <span className="text-red-600">*</span>
                 </FormLabel>
@@ -83,58 +83,7 @@ export function PassageiroFormDadosCadastrais({
             )}
           />
 
-          {!hideVeiculo && (
-            <FormField
-              control={form.control}
-              name="veiculo_id"
-              render={({ field, fieldState }) => (
-                <FormItem className="col-span-1">
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Veículo <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <Select
-                    value={field.value || undefined}
-                    onValueChange={(value) => {
-                      if (value === "add-new-vehicle") {
-                        handleAddNewVehicle();
-                        return;
-                      }
-                      field.onChange(value);
-                    }}
-                  >
-                    <FormControl>
-                      <div className="relative">
-                        <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <SelectTrigger
-                          className={cn(
-                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                            fieldState.error && "border-red-500"
-                          )}
-                          aria-invalid={!!fieldState.error}
-                        >
-                          <SelectValue placeholder="Selecione o veículo" />
-                        </SelectTrigger>
-                      </div>
-                    </FormControl>
-                    <SelectContent className="max-h-60 overflow-y-auto">
-                      {veiculosDisplay.map((veiculo) => (
-                        <SelectItem key={veiculo.id} value={veiculo.id}>
-                          {formatarPlacaExibicao(veiculo.placa)}
-                        </SelectItem>
-                      ))}
-                      <SelectItem
-                        value="add-new-vehicle"
-                        className="font-semibold text-[#1a3a5c] cursor-pointer"
-                      >
-                        + Cadastrar Veículo
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+
 
           <FormField
             control={form.control}
@@ -306,6 +255,59 @@ export function PassageiroFormDadosCadastrais({
               </FormItem>
             )}
           />
+
+          {!hideVeiculo && (
+            <FormField
+              control={form.control}
+              name="veiculo_id"
+              render={({ field, fieldState }) => (
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Veículo <span className="text-red-600">*</span>
+                  </FormLabel>
+                  <Select
+                    value={field.value || undefined}
+                    onValueChange={(value) => {
+                      if (value === "add-new-vehicle") {
+                        handleAddNewVehicle();
+                        return;
+                      }
+                      field.onChange(value);
+                    }}
+                  >
+                    <FormControl>
+                      <div className="relative">
+                        <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <SelectTrigger
+                          className={cn(
+                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                            fieldState.error && "border-red-500"
+                          )}
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione o veículo" />
+                        </SelectTrigger>
+                      </div>
+                    </FormControl>
+                    <SelectContent className="max-h-60 overflow-y-auto">
+                      {veiculosDisplay.map((veiculo) => (
+                        <SelectItem key={veiculo.id} value={veiculo.id}>
+                          {formatarPlacaExibicao(veiculo.placa)}
+                        </SelectItem>
+                      ))}
+                      <SelectItem
+                        value="add-new-vehicle"
+                        className="font-semibold text-[#1a3a5c] cursor-pointer"
+                      >
+                        + Cadastrar Veículo
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}

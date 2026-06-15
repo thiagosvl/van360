@@ -21,7 +21,7 @@ import { parseLocalDate } from "@/utils/dateUtils";
 
 // Constantes para agrupamento
 const VEICULO_OUTROS = "outros";
-const PERIODO_OUTROS = "Outros";
+const PERIODO_NAO_INFORMADO = "Não informado";
 
 export const CATEGORIA_ICONS: Record<
   string,
@@ -356,7 +356,7 @@ export const useRelatoriosCalculations = ({
     passageirosList
       .filter((p: any) => p.ativo)
       .forEach((p: any) => {
-        const periodo = p.periodo || PERIODO_OUTROS;
+        const periodo = p.periodo || PERIODO_NAO_INFORMADO;
         if (!periodosMap[periodo]) {
           periodosMap[periodo] = { count: 0, valor: 0 };
         }
