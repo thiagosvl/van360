@@ -275,7 +275,7 @@ export default function AdminUserDetails() {
     if (!id || !data?.user) return;
     openConfirmationDialog({
       title: "Excluir Usuário",
-      description: `Deseja realmente excluir permanentemente o usuário ${data.user.nome}? Esta ação é irreversível e removerá todos os dados vinculados a ele (motoristas, passageiros, cobranças, etc.).`,
+      description: `Deseja realmente excluir permanentemente o usuário ${data.user.nome}?`,
       confirmText: "Sim, Excluir",
       variant: "destructive",
       onConfirm: async () => {
