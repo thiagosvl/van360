@@ -242,7 +242,7 @@ const SubscriptionPage = () => {
                 <div className="flex items-center gap-2">
                   <span className="font-headline font-bold text-slate-500 uppercase tracking-[0.2em] text-[10px]">Assinatura Cancelada</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-slate-700">Acesso Suspenso</h3>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-slate-700">Acesso Suspenso</h3>
                 <p className="text-slate-500 font-medium leading-relaxed max-w-2xl">
                   Sua assinatura está cancelada. Você não receberá novas cobranças e o uso do aplicativo está bloqueado.
                 </p>
@@ -266,7 +266,7 @@ const SubscriptionPage = () => {
                     {isTrialExpired ? "Período de Teste Expirado" : "Assinatura Expirada"}
                   </span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">Acesso Suspenso</h3>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">Acesso Suspenso</h3>
                 <p className="text-white/80 font-medium leading-relaxed">
                   {isTrialExpired
                     ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todos os recursos."
@@ -295,7 +295,7 @@ const SubscriptionPage = () => {
                   <AlertOctagon className="w-5 h-5 text-white" />
                   <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura em Atraso</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">
                   Regularização Pendente
                 </h3>
                 <p className="text-white/80 font-medium leading-relaxed max-w-2xl">
@@ -319,7 +319,7 @@ const SubscriptionPage = () => {
                   <TrendingUp className="w-5 h-5 text-orange-500" />
                   <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-primary">Período de Testes</h3>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">Período de Testes</h3>
                 <p className="text-slate-500 font-medium leading-relaxed">Você tem <span className="text-orange-500 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
                 {referral?.hasActiveDiscount && (
                   <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-100/50 px-3.5 py-1.5 rounded-xl border border-orange-200/50 text-orange-600 font-bold text-[11px] uppercase tracking-wide animate-pulse">
@@ -344,7 +344,7 @@ const SubscriptionPage = () => {
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-primary">
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
                   Plano {subscription?.planos?.nome}
                 </h3>
                 <p className="text-slate-500 font-medium">
