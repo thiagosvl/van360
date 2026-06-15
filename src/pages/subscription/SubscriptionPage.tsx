@@ -50,6 +50,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/business/useSession";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
+import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 
 const BONUS_DAYS_PER_REFERRAL = 30;
 
@@ -404,7 +406,7 @@ const SubscriptionPage = () => {
                                 <>
                                   <span className="mx-1.5 text-slate-300">•</span>
                                   <span className="capitalize tracking-wider">
-                                    {inv.metodo_pagamento === CheckoutPaymentMethod.CREDIT_CARD ? "Cartão" : inv.metodo_pagamento === CheckoutPaymentMethod.PIX ? "Pix" : "Boleto"}
+                                    {PAYMENT_METHOD_LABELS[inv.metodo_pagamento as CheckoutPaymentMethod] || "Boleto"}
                                   </span>
                                 </>
                               )}
@@ -679,37 +681,6 @@ const SubscriptionPage = () => {
   );
 };
 
-const InvoiceStatusBadge = ({ status }: { status: SubscriptionInvoiceStatus }) => {
-  const config = {
-    [SubscriptionInvoiceStatus.PAID]: {
-      label: "Pago",
-      className: "bg-emerald-50 text-emerald-600 border-emerald-100/50",
-    },
-    [SubscriptionInvoiceStatus.PENDING]: {
-      label: "Pendente",
-      className: "bg-amber-50 text-amber-600 border-amber-100/50",
-    },
-    [SubscriptionInvoiceStatus.CANCELED]: {
-      label: "Vencido",
-      className: "bg-slate-50 text-slate-400 border-slate-100/50",
-    },
-    [SubscriptionInvoiceStatus.FAILED]: {
-      label: "Recusado",
-      className: "bg-rose-50 text-rose-600 border-rose-100/50",
-    },
-  }[status] ?? {
-    label: status,
-    className: "bg-slate-50 text-slate-500",
-  };
 
-  return (
-    <span className={cn(
-      "inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border",
-      config.className
-    )}>
-      {config.label}
-    </span>
-  );
-};
 
 export default SubscriptionPage;

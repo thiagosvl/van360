@@ -159,4 +159,18 @@ export function useResetPasswordAdmin() {
   });
 }
 
+export function useDeleteUserAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminApi.deleteUser(id),
+    onSuccess: () => {
+      toast.success("Usuário excluído com sucesso.");
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: () => {
+      toast.error("Erro ao excluir usuário.");
+    },
+  });
+}
+
 

@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { phoneMask } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
+import { ROUTES } from "@/constants/routes";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
@@ -58,7 +59,7 @@ export default function AdminUsers() {
           </p>
         </div>
         <Button
-          onClick={() => openAdminCreateUserDialog((userId) => navigate(`/admin/usuarios/${userId}`))}
+          onClick={() => openAdminCreateUserDialog((userId) => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`))}
           className="rounded-xl h-11 bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -136,7 +137,7 @@ export default function AdminUsers() {
                         <tr
                           key={user.id}
                           className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
-                          onClick={() => navigate(`/admin/usuarios/${user.id}`)}
+                          onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
                         >
                           <td className="py-4">
                             <div>
@@ -173,7 +174,7 @@ export default function AdminUsers() {
                               className="rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/admin/usuarios/${user.id}`);
+                                navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`);
                               }}
                             >
                               <Eye className="h-4 w-4" />
@@ -195,7 +196,7 @@ export default function AdminUsers() {
                   return (
                     <div
                       key={user.id}
-                      onClick={() => navigate(`/admin/usuarios/${user.id}`)}
+                      onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
                       className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-left cursor-pointer hover:bg-slate-100/50 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -234,7 +235,7 @@ export default function AdminUsers() {
                           className="rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-2.5 flex items-center gap-1"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/admin/usuarios/${user.id}`);
+                            navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`);
                           }}
                         >
                           <Eye className="h-4 w-4" />

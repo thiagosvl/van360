@@ -6,6 +6,7 @@ import {
   useUpdateSubscriptionAdmin,
   useResetPasswordAdmin,
   useAdminUserLogs,
+  useDeleteUserAdmin,
 } from "@/hooks/api/adminHooks";
 import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
@@ -23,6 +24,7 @@ import {
   Terminal,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +33,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -38,11 +41,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SubscriptionStatus } from "@/types/enums";
+import { SubscriptionStatus, SubscriptionInvoiceStatus, CheckoutPaymentMethod } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "@/utils/notifications/toast";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
+import { ROUTES } from "@/constants/routes";
+import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
+import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
@@ -66,6 +72,7 @@ export default function AdminUserDetails() {
   const navigate = useNavigate();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const resetPassword = useResetPasswordAdmin();
+  const deleteUser = useDeleteUserAdmin();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
   const { data, isLoading } = useAdminUserDetails(id!);
   const updateUser = useUpdateUserAdmin();
@@ -205,6 +212,24 @@ export default function AdminUserDetails() {
     });
   };
 
+  const handleDeleteUser = () => {
+    if (!id || !data?.user) return;
+    openConfirmationDialog({
+      title: "Excluir Usuário",
+      description: `Deseja realmente excluir permanentemente o usuário ${data.user.nome}? Esta ação é irreversível e removerá todos os dados vinculados a ele (motoristas, passageiros, cobranças, etc.).`,
+      confirmText: "Sim, Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        deleteUser.mutate(id, {
+          onSuccess: () => {
+            closeConfirmationDialog();
+            navigate(ROUTES.PRIVATE.ADMIN.USERS);
+          },
+        });
+      },
+    });
+  };
+
   const handleSaveSub = () => {
     if (!id) return;
     updateSub.mutate({
@@ -251,7 +276,7 @@ export default function AdminUserDetails() {
           variant="ghost"
           size="icon"
           className="rounded-xl"
-          onClick={() => navigate("/admin/usuarios")}
+          onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
         >
           <ArrowLeft className="h-5 w-5 text-[#1a3a5c]" />
         </Button>
@@ -268,43 +293,35 @@ export default function AdminUserDetails() {
         </div>
       </div>
 
-      <div className="flex border-b border-slate-200 gap-6 overflow-x-auto scrollbar-none whitespace-nowrap">
-        <button
-          onClick={() => setActiveTab("dados")}
-          className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
-            activeTab === "dados" ? "text-[#1a3a5c]" : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          Dados e Configurações
-          {activeTab === "dados" && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("cobrancas")}
-          className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
-            activeTab === "cobrancas" ? "text-[#1a3a5c]" : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          Cobranças
-          {activeTab === "cobrancas" && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("logs")}
-          className={`pb-3 text-xs font-black uppercase tracking-wider transition-all relative ${
-            activeTab === "logs" ? "text-[#1a3a5c]" : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          Histórico de Logs
-          {activeTab === "logs" && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a3a5c] rounded-full" />
-          )}
-        </button>
-      </div>
+      <Tabs
+        value={activeTab}
+        onValueChange={(val) => setActiveTab(val as "dados" | "cobrancas" | "logs")}
+        className="w-full space-y-6"
+      >
+        <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
+          <TabsList className="flex w-full h-[52px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
+            <TabsTrigger
+              value="dados"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+            >
+              Dados e Configurações
+            </TabsTrigger>
+            <TabsTrigger
+              value="cobrancas"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+            >
+              Cobranças
+            </TabsTrigger>
+            <TabsTrigger
+              value="logs"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+            >
+              Histórico de Logs
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-      {activeTab === "dados" && (
+        <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
             <CardHeader className="pb-2">
@@ -386,7 +403,7 @@ export default function AdminUserDetails() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Button
                   onClick={handleSaveUser}
                   disabled={updateUser.isPending}
@@ -397,7 +414,7 @@ export default function AdminUserDetails() {
                   ) : (
                     <>
                       <Save className="h-4 w-4 mr-2" />
-                      Salvar Cadastro
+                      Salvar
                     </>
                   )}
                 </Button>
@@ -415,6 +432,23 @@ export default function AdminUserDetails() {
                     <>
                       <Key className="h-4 w-4 mr-2" />
                       Resetar Senha
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={handleDeleteUser}
+                  type="button"
+                  variant="destructive"
+                  disabled={deleteUser.isPending}
+                  className="w-full h-11 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold uppercase tracking-wider transition-all"
+                >
+                  {deleteUser.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
                     </>
                   )}
                 </Button>
@@ -521,9 +555,9 @@ export default function AdminUserDetails() {
             </CardContent>
           </Card>
         </div>
-      )}
+      </TabsContent>
 
-      {activeTab === "cobrancas" && (
+      <TabsContent value="cobrancas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
         <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
@@ -567,11 +601,7 @@ export default function AdminUserDetails() {
                               {moneyMask(f.valor)}
                             </td>
                             <td className="py-4 text-xs text-slate-500">
-                              {f.metodo_pagamento === "pix"
-                                ? "Pix"
-                                : f.metodo_pagamento === "credit_card"
-                                ? "Cartão"
-                                : f.metodo_pagamento?.toUpperCase() || "—"}
+                              {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
                             </td>
                             <td className="py-4 text-xs text-slate-500">
                               {formatDate(f.data_vencimento)}
@@ -580,25 +610,7 @@ export default function AdminUserDetails() {
                               {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
                             </td>
                             <td className="py-4 text-right">
-                              <span
-                                className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                                  f.status === "PAID"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : f.status === "PENDING"
-                                    ? "bg-amber-100 text-amber-700"
-                                    : f.status === "FAILED"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                              >
-                                {f.status === "PAID"
-                                  ? "Pago"
-                                  : f.status === "PENDING"
-                                  ? "Pendente"
-                                  : f.status === "FAILED"
-                                  ? "Falhou"
-                                  : "Cancelado"}
-                              </span>
+                              <InvoiceStatusBadge status={f.status} />
                             </td>
                           </tr>
                         ))}
@@ -615,36 +627,14 @@ export default function AdminUserDetails() {
                           <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                             {formatDate(f.created_at)}
                           </span>
-                          <span
-                            className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                              f.status === "PAID"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : f.status === "PENDING"
-                                ? "bg-amber-100 text-amber-700"
-                                : f.status === "FAILED"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-slate-100 text-slate-500"
-                            }`}
-                          >
-                            {f.status === "PAID"
-                              ? "Pago"
-                              : f.status === "PENDING"
-                              ? "Pendente"
-                              : f.status === "FAILED"
-                              ? "Falhou"
-                              : "Cancelado"}
-                          </span>
+                          <InvoiceStatusBadge status={f.status} />
                         </div>
 
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-xs font-bold text-slate-700">{f.planos?.nome || "—"}</p>
                             <p className="text-[10px] text-slate-400">
-                              {f.metodo_pagamento === "pix"
-                                ? "Pix"
-                                : f.metodo_pagamento === "credit_card"
-                                ? "Cartão"
-                                : f.metodo_pagamento?.toUpperCase() || "—"}
+                              {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
                             </p>
                           </div>
                           <div className="text-right">
@@ -671,9 +661,9 @@ export default function AdminUserDetails() {
             )}
           </CardContent>
         </Card>
-      )}
+      </TabsContent>
 
-      {activeTab === "logs" && (
+      <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
         <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
@@ -850,7 +840,8 @@ export default function AdminUserDetails() {
             )}
           </CardContent>
         </Card>
-      )}
+      </TabsContent>
+    </Tabs>
 
       {selectedLog && (
         <BaseDialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>

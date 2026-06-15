@@ -197,6 +197,9 @@ export const adminApi = {
 
   resetPassword: (id: string) =>
     apiClient.post<{ success: boolean; senha: string }>(`${BASE}/users/${id}/reset-password`).then(r => r.data),
+
+  deleteUser: (id: string) =>
+    apiClient.delete(`${BASE}/users/${id}`).then(r => r.data),
 };
 
 export interface AdminSaaSPlanItem {
