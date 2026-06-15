@@ -28,11 +28,11 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
       {/* Hero KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className={`${cardStyle} border-l-4 border-l-indigo-500`}>
+          <Card className={`${cardStyle} border-l-4 border-l-primary`}>
             <CardContent className="p-5 flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Passageiros (MRR)</span>
-                <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-md"><Users className="w-4 h-4" /></div>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Passageiros (Recorrentes)</span>
+                <div className="p-1.5 bg-primary/10 text-primary rounded-md"><Users className="w-4 h-4" /></div>
               </div>
               <span className="text-2xl lg:text-3xl font-black text-slate-800 tracking-tight">{totalPass.toLocaleString('pt-BR')}</span>
               <span className="text-xs text-slate-500 mt-2 font-medium">Nas rotas ativas</span>
@@ -41,11 +41,11 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
         </motion.div>
         
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className={`${cardStyle} border-l-4 border-l-emerald-500`}>
+          <Card className={`${cardStyle} border-l-4 border-l-primary`}>
             <CardContent className="p-5 flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Receita Bruta (Add-on)</span>
-                <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-md"><DollarSign className="w-4 h-4" /></div>
+                <div className="p-1.5 bg-primary/10 text-primary rounded-md"><DollarSign className="w-4 h-4" /></div>
               </div>
               <span className="text-2xl lg:text-3xl font-black text-slate-800 tracking-tight">{formatCurrency(brutaTotal)}</span>
               <span className="text-xs text-slate-500 mt-2 font-medium">Faturamento total</span>
@@ -67,13 +67,17 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className={`${cardStyle} border-l-4 border-l-blue-500`}>
+          <Card className={`${cardStyle} border-l-4 ${isProfit ? 'border-l-emerald-500' : 'border-l-red-500'}`}>
             <CardContent className="p-5 flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lucro Líquido</span>
-                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-md"><TrendingUp className="w-4 h-4" /></div>
+                <div className={`p-1.5 rounded-md ${isProfit ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                  <TrendingUp className="w-4 h-4" />
+                </div>
               </div>
-              <span className="text-2xl lg:text-3xl font-black text-blue-600 tracking-tight">{formatCurrency(lucro)}</span>
+              <span className={`text-2xl lg:text-3xl font-black tracking-tight ${isProfit ? 'text-emerald-600' : 'text-red-600'}`}>
+                {formatCurrency(lucro)}
+              </span>
               <span className="text-xs text-slate-500 mt-2 font-medium">Margem {margem.toFixed(1)}%</span>
             </CardContent>
           </Card>
@@ -87,7 +91,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
           <Card className={cardStyle}>
             <CardHeader className="pb-4 border-b border-slate-100/50">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Puzzle className="w-5 h-5" /></div>
+                <div className="p-2 bg-primary/10 text-primary rounded-lg"><Puzzle className="w-5 h-5" /></div>
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Motor do Add-on</CardTitle>
                   <CardDescription>Taxa por passageiro rastreado.</CardDescription>
@@ -99,26 +103,16 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium text-slate-700">Condutores c/ Add-on Ativo</span>
-                    <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{addonState.nc}</span>
+                    <span className="font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{addonState.nc}</span>
                   </div>
                   <Slider value={[addonState.nc]} min={0} max={200} step={1} onValueChange={(v) => updateAddon('nc', v[0])} className="py-1" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium text-slate-700">Média de passageiros (por condutor)</span>
-                    <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{addonState.pass}</span>
+                    <span className="font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{addonState.pass}</span>
                   </div>
                   <Slider value={[addonState.pass]} min={0} max={150} step={1} onValueChange={(v) => updateAddon('pass', v[0])} className="py-1" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium text-slate-700">% absorvida pelo passageiro</span>
-                    <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{addonState.paiPct}%</span>
-                  </div>
-                  <Slider value={[addonState.paiPct]} min={0} max={100} step={5} onValueChange={(v) => updateAddon('paiPct', v[0])} className="py-1" />
-                  <p className="text-[10px] text-slate-400 font-medium pt-1">
-                    {100 - addonState.paiPct}% são repassados ao Tio da Van no Split.
-                  </p>
                 </div>
               </div>
 
@@ -134,7 +128,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
           <Card className={cardStyle}>
             <CardHeader className="pb-4 border-b border-slate-100/50">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><DollarSign className="w-5 h-5" /></div>
+                <div className="p-2 bg-primary/10 text-primary rounded-lg"><DollarSign className="w-5 h-5" /></div>
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Split & Impostos</CardTitle>
                   <CardDescription>Configurações de custo e churn.</CardDescription>
@@ -223,31 +217,27 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
             </CardContent>
           </Card>
 
-          <Card className={`${cardStyle} bg-gradient-to-br from-indigo-50/50 to-purple-50/50 border-indigo-100`}>
-            <CardHeader className="pb-3 border-b border-indigo-100/50">
-              <CardTitle className="text-sm font-bold text-indigo-900 uppercase tracking-wider">
+          <Card className={`${cardStyle} bg-gradient-to-br from-primary/5 to-slate-50/50 border-primary/20`}>
+            <CardHeader className="pb-3 border-b border-primary/10">
+              <CardTitle className="text-sm font-bold text-primary uppercase tracking-wider">
                 Unit Economics (1 Condutor)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm p-5">
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-white/80 p-3 rounded-lg border border-indigo-100 shadow-sm">
+                <div className="bg-white/80 p-3 rounded-lg border border-primary/20 shadow-sm">
                   <span className="block text-[10px] font-semibold text-slate-500 uppercase">Receita Gerada</span>
-                  <span className="block text-lg font-bold text-indigo-700">{formatCurrency(rb1)}</span>
+                  <span className="block text-lg font-bold text-primary">{formatCurrency(rb1)}</span>
                 </div>
-                <div className="bg-white/80 p-3 rounded-lg border border-indigo-100 shadow-sm">
+                <div className="bg-white/80 p-3 rounded-lg border border-primary/20 shadow-sm">
                   <span className="block text-[10px] font-semibold text-slate-500 uppercase">Lucro Incremental</span>
                   <span className="block text-lg font-bold text-emerald-600">{formatCurrency(ll1)}</span>
                 </div>
               </div>
               
-              <div className="flex justify-between py-1 text-indigo-800/70 font-medium">
+              <div className="flex justify-between py-1 text-primary/80 font-medium">
                 <span>Margem por passageiro:</span>
-                <span className="font-bold text-indigo-900">{formatCurrency(mpp)}</span>
-              </div>
-              <div className="flex justify-between py-1 text-indigo-800/70 font-medium">
-                <span>Absorvido pelo Condutor:</span>
-                <span className="font-bold text-indigo-900">{condAbs} passageiros</span>
+                <span className="font-bold text-primary">{formatCurrency(mpp)}</span>
               </div>
             </CardContent>
           </Card>

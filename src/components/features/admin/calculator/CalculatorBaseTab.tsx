@@ -45,11 +45,11 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
       {/* Hero KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className={`${cardStyle} border-l-4 border-l-indigo-500`}>
+          <Card className={`${cardStyle} border-l-4 border-l-primary`}>
             <CardContent className="p-5 flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Receita Bruta</span>
-                <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-md"><DollarSign className="w-4 h-4" /></div>
+                <div className="p-1.5 bg-primary/10 text-primary rounded-md"><DollarSign className="w-4 h-4" /></div>
               </div>
               <span className="text-2xl lg:text-3xl font-black text-slate-800 tracking-tight">{formatCurrency(bruta)}</span>
               <span className="text-xs text-slate-500 mt-2 font-medium">{totalCond} condutores ativos</span>
@@ -92,11 +92,11 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className={`${cardStyle} border-l-4 border-l-blue-500`}>
+          <Card className={`${cardStyle} border-l-4 border-l-slate-500`}>
             <CardContent className="p-5 flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Break-even</span>
-                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-md"><Target className="w-4 h-4" /></div>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ponto de Equilíbrio</span>
+                <div className="p-1.5 bg-slate-50 text-slate-600 rounded-md"><Target className="w-4 h-4" /></div>
               </div>
               <span className="text-2xl lg:text-3xl font-black text-slate-800 tracking-tight">{beInt < 500 ? beInt : '—'}</span>
               <span className="text-xs text-slate-500 mt-2 font-medium">Condutores necessários</span>
@@ -113,7 +113,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
           <Card className={cardStyle}>
             <CardHeader className="pb-4 border-b border-slate-100/50">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Users className="w-5 h-5" /></div>
+                <div className="p-2 bg-primary/10 text-primary rounded-lg"><Users className="w-5 h-5" /></div>
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Motor de Aquisição</CardTitle>
                   <CardDescription>Configure a base de clientes e preços.</CardDescription>
@@ -126,21 +126,21 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium text-slate-700">Plano Normal (qtd)</span>
-                    <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{baseState.nN}</span>
+                    <span className="font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{baseState.nN}</span>
                   </div>
                   <Slider value={[baseState.nN]} min={0} max={200} step={1} onValueChange={(v) => updateBase('nN', v[0])} className="py-1" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium text-slate-700">Condições Especiais / Desconto (qtd)</span>
-                    <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{baseState.nF}</span>
+                    <span className="font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{baseState.nF}</span>
                   </div>
                   <Slider value={[baseState.nF]} min={0} max={50} step={1} onValueChange={(v) => updateBase('nF', v[0])} className="py-1" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium text-slate-700">% Optantes pelo Plano Anual</span>
-                    <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{baseState.anualPct}%</span>
+                    <span className="font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{baseState.anualPct}%</span>
                   </div>
                   <Slider value={[baseState.anualPct]} min={0} max={100} step={5} onValueChange={(v) => updateBase('anualPct', v[0])} className="py-1" />
                 </div>
@@ -172,7 +172,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
           <Card className={cardStyle}>
             <CardHeader className="pb-4 border-b border-slate-100/50">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><TrendingUp className="w-5 h-5" /></div>
+                <div className="p-2 bg-primary/10 text-primary rounded-lg"><TrendingUp className="w-5 h-5" /></div>
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Taxas e Retenção</CardTitle>
                   <CardDescription>Configurações de churn e conversão.</CardDescription>
@@ -223,8 +223,11 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
           <Card className={cardStyle}>
             <CardHeader className="pb-3 border-b border-slate-100/50">
               <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" /> Waterfall Financeiro
+                <TrendingUp className="w-4 h-4 text-emerald-600" /> Fluxo Financeiro (Waterfall)
               </CardTitle>
+              <CardDescription className="text-xs mt-1">
+                Visão detalhada de como a receita se transforma em lucro.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm p-5 bg-gradient-to-b from-transparent to-slate-50/50 rounded-b-xl">
               <div className="flex justify-between py-1.5 font-medium">
@@ -261,7 +264,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
           <Card className={cardStyle}>
             <CardHeader className="pb-4 border-b border-slate-100/50">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Activity className="w-5 h-5" /></div>
+                <div className="p-2 bg-primary/10 text-primary rounded-lg"><Activity className="w-5 h-5" /></div>
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Custos Fixos</CardTitle>
                   <CardDescription>Gerencie suas despesas mensais e anuais operacionais.</CardDescription>
@@ -285,18 +288,18 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* LTV & Break-even Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Card className={`${cardStyle} bg-gradient-to-br from-blue-50/80 to-indigo-50/80 border-blue-200/50`}>
+          <Card className={`${cardStyle} bg-gradient-to-br from-primary/5 to-slate-50/80 border-primary/20`}>
             <CardContent className="p-6 flex flex-col justify-center h-full relative overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-5 text-blue-900">
+              <div className="absolute -right-4 -bottom-4 opacity-5 text-primary">
                 <Target className="w-32 h-32" />
               </div>
-              <span className="text-xs font-bold text-blue-800 uppercase mb-2 tracking-widest z-10">LTV - Lifetime Value</span>
-              <span className="text-3xl font-black text-blue-900 mb-1 z-10">{formatCurrency(ltv)}</span>
-              <span className="text-xs text-blue-700/70 font-medium z-10">Lucro total que o cliente deixa ao longo do tempo</span>
+              <span className="text-xs font-bold text-primary uppercase mb-2 tracking-widest z-10">LTV - Lifetime Value</span>
+              <span className="text-3xl font-black text-primary mb-1 z-10">{formatCurrency(ltv)}</span>
+              <span className="text-xs text-primary/70 font-medium z-10">Lucro total que o cliente deixa ao longo do tempo</span>
 
-              <div className="mt-4 pt-4 border-t border-blue-200/50 z-10">
+              <div className="mt-4 pt-4 border-t border-primary/20 z-10">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-blue-800">Proporção LTV : CAC</span>
+                  <span className="text-xs font-medium text-primary">Proporção LTV : CAC</span>
                   <Badge variant="outline" className={`border-transparent text-white ${ltvToCac >= 3 ? 'bg-emerald-500' : 'bg-orange-500'}`}>
                     {ltvToCac.toFixed(1)}x
                   </Badge>
@@ -307,7 +310,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
 
           <Card className={cardStyle}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">Progresso Break-even</CardTitle>
+              <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">Ponto de Equilíbrio (Break-even)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-3 flex justify-between items-end">
@@ -369,10 +372,10 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
                   <Area
                     type="monotone"
                     dataKey="lucro"
-                    stroke={(data: any) => data?.lucro >= 0 ? "#10b981" : "#f43f5e"}
+                    stroke={isProfit ? "#10b981" : "#f43f5e"}
                     strokeWidth={3}
                     fillOpacity={1}
-                    fill="url(#colorLucro)"
+                    fill={isProfit ? "url(#colorLucro)" : "url(#colorPrej)"}
                     activeDot={{ r: 6, strokeWidth: 0 }}
                   />
                 </AreaChart>
