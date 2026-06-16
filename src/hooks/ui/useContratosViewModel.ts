@@ -24,7 +24,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function useContratosViewModel() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openGerarContratoValidadorDialog } = useLayout();
   const { user } = useSession();
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -239,16 +239,21 @@ export function useContratosViewModel() {
   }, [openConfirmationDialog, substituirMutation, closeConfirmationDialog]);
 
   const handleGerarContrato = useCallback((passageiroId: string) => {
-    openConfirmationDialog({
-      title: "Gerar Contrato?",
-      description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
-      confirmText: "Gerar",
-      onConfirm: async () => {
-        await createMutation.mutateAsync({ passageiroId });
-        safeCloseDialog(closeConfirmationDialog);
+    openGerarContratoValidadorDialog({
+      passageiroId,
+      onSuccess: (id) => {
+        openConfirmationDialog({
+          title: "Gerar Contrato?",
+          description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
+          confirmText: "Gerar",
+          onConfirm: async () => {
+            await createMutation.mutateAsync({ passageiroId: id });
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        });
       }
     });
-  }, [openConfirmationDialog, createMutation, closeConfirmationDialog]);
+  }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
   const handleOpenPreview = useCallback(async () => {
     if (!isContratoConfigurado) {

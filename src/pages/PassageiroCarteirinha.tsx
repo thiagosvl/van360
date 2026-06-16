@@ -70,6 +70,7 @@ export default function PassageiroCarteirinha() {
     openCobrancaFormDialog,
     openManualPaymentDialog,
     openReceiptDialog,
+    openGerarContratoValidadorDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -570,23 +571,28 @@ export default function PassageiroCarteirinha() {
       if (isAssinado || (isPendente && hasUrl)) {
         openBrowserLink(passageiro.contrato_url || passageiro.minuta_url);
       } else {
-        openConfirmationDialog({
-          title: "Gerar contrato?",
-          description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
-          confirmText: "Gerar",
-          onConfirm: async () => {
-            try {
-              await createContrato.mutateAsync({
-                passageiroId: passageiro.id!,
-                valorMensal: passageiro.valor_cobranca,
-                diaVencimento: passageiro.dia_vencimento
-              });
-              safeCloseDialog(closeConfirmationDialog);
-              refetchPassageiro();
-            } catch (error) {
-              safeCloseDialog(closeConfirmationDialog);
-            }
-          },
+        openGerarContratoValidadorDialog({
+          passageiroId: passageiro.id!,
+          onSuccess: (id) => {
+            openConfirmationDialog({
+              title: "Gerar contrato?",
+              description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
+              confirmText: "Gerar",
+              onConfirm: async () => {
+                try {
+                  await createContrato.mutateAsync({
+                    passageiroId: id,
+                    valorMensal: passageiro.valor_cobranca,
+                    diaVencimento: passageiro.dia_vencimento
+                  });
+                  safeCloseDialog(closeConfirmationDialog);
+                  refetchPassageiro();
+                } catch (error) {
+                  safeCloseDialog(closeConfirmationDialog);
+                }
+              },
+            });
+          }
         });
       }
     },

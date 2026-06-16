@@ -93,7 +93,7 @@ export function QuickStartPassageiroDialog({
                 <Info className="w-5 h-5" />
               </div>
               <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-                Esses são apenas os dados essenciais. Você poderá completar o cadastro depois, através da carteirinha digital.
+                Esses são apenas os dados essenciais. Você poderá completar o cadastro depois acessando a carteirinha digital.
               </p>
             </div>
 

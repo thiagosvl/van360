@@ -9,6 +9,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useCreateContrato } from "@/hooks/api/useContratos";
+import { useLayout } from "@/contexts/LayoutContext";
 
 interface FirstChargeViewModelProps {
   passageiro: Passageiro;
@@ -34,6 +35,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
 
   const createCobranca = useCreateCobranca();
   const createContrato = useCreateContrato();
+  const { openGerarContratoValidadorDialog } = useLayout();
 
   const handleBack = useCallback(() => {
     if (step === "REGISTER_CHECK") {
@@ -91,6 +93,29 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
     }
   }, [passageiro, customValue, paymentMethod, createCobranca, onClose]);
 
+  const finalizeFlow = useCallback(async (status?: CobrancaStatus) => {
+    setIsGeneratingContract(true);
+    try {
+      if (status) {
+        await submitCobranca(status);
+      }
+
+      if (wantsContract) {
+        openGerarContratoValidadorDialog({
+          passageiroId: passageiro.id!,
+          onSuccess: async (id) => {
+            await createContrato.mutateAsync({ passageiroId: id });
+          }
+        });
+      }
+      onClose();
+    } catch (error) {
+      console.error("Falha ao finalizar fluxo:", error);
+    } finally {
+      setIsGeneratingContract(false);
+    }
+  }, [passageiro.id, wantsContract, submitCobranca, openGerarContratoValidadorDialog, createContrato, onClose]);
+
   const handleNext = useCallback(async () => {
     if (step === "CONTRACT_CHECK") {
       setStep("REGISTER_CHECK");
@@ -101,18 +126,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       if (wantsMonthlyCharge) {
         setStep("PAYMENT_STATUS");
       } else {
-        // Finaliza o fluxo registrando apenas o que foi solicitado
-        setIsGeneratingContract(true);
-        try {
-          if (wantsContract) {
-            await createContrato.mutateAsync({ passageiroId: passageiro.id });
-          }
-          onClose();
-        } catch (error) {
-          console.error("Falha ao finalizar fluxo:", error);
-        } finally {
-          setIsGeneratingContract(false);
-        }
+        await finalizeFlow();
       }
       return;
     }
@@ -122,18 +136,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       if (paymentStatus === CobrancaStatus.PAGO) {
         setStep("PAYMENT_METHOD");
       } else {
-        setIsGeneratingContract(true);
-        try {
-          if (wantsContract) {
-            await createContrato.mutateAsync({ passageiroId: passageiro.id });
-          }
-          await submitCobranca(CobrancaStatus.PENDENTE);
-          onClose();
-        } catch (error) {
-          console.error("Falha ao finalizar fluxo:", error);
-        } finally {
-          setIsGeneratingContract(false);
-        }
+        await finalizeFlow(CobrancaStatus.PENDENTE);
       }
       return;
     }
@@ -143,20 +146,9 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
         toast.error(getMessage("cobranca.erro.selecioneFormaPagamento"));
         return;
       }
-      setIsGeneratingContract(true);
-      try {
-        if (wantsContract) {
-          await createContrato.mutateAsync({ passageiroId: passageiro.id });
-        }
-        await submitCobranca(CobrancaStatus.PAGO);
-        onClose();
-      } catch (error) {
-        console.error("Falha ao finalizar fluxo:", error);
-      } finally {
-        setIsGeneratingContract(false);
-      }
+      await finalizeFlow(CobrancaStatus.PAGO);
     }
-  }, [step, wantsContract, wantsMonthlyCharge, createContrato, passageiro.id, paymentStatus, paymentMethod, submitCobranca, onClose]);
+  }, [step, wantsMonthlyCharge, paymentStatus, paymentMethod, finalizeFlow]);
 
   return {
     step,

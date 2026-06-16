@@ -7,7 +7,8 @@ import {
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { formatDateToBR } from "@/utils/formatters/date";
+import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
+import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,10 +70,25 @@ export const passageiroSchema = z
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
-
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
-  });
+  })
+  .refine(
+    (data) => {
+      if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
+      try {
+        const start = parseLocalDate(convertDateBrToISO(data.data_inicio_transporte)!);
+        const end = parseLocalDate(convertDateBrToISO(data.data_fim_transporte)!);
+        return end > start;
+      } catch {
+        return true;
+      }
+    },
+    {
+      message: "Término deve ser maior que o Início",
+      path: ["data_fim_transporte"],
+    }
+  );
 
 export type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
@@ -125,7 +141,7 @@ export function usePassageiroForm({
       valor_cobranca: "",
       dia_vencimento: "",
       data_inicio_transporte: "",
-      data_fim_transporte: "31/12/" + new Date().getFullYear(),
+      data_fim_transporte: "",
 
       ativo: true,
     },
@@ -164,7 +180,7 @@ export function usePassageiroForm({
               : "",
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
-            data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
+            data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -216,7 +232,7 @@ export function usePassageiroForm({
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
-          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
+          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "",
 
           ativo: true,
         });
@@ -269,7 +285,7 @@ export function usePassageiroForm({
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",
-          data_fim_transporte: "31/12/" + new Date().getFullYear(),
+          data_fim_transporte: "",
 
           ativo: true,
         });

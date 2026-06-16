@@ -96,7 +96,7 @@ const Contratos = () => {
                   <div className="flex-1">
                     <p className="text-xs font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</p>
                     <p className="text-[11px] text-slate-700 leading-relaxed">
-                      A emissão e o gerenciamento de contratos em PDF para seus passageiros estão desativados. Reative para voltar a utilizar.
+                      Reative para voltar a gerar contratos para os passageiros.
                     </p>
                   </div>
                 </div>

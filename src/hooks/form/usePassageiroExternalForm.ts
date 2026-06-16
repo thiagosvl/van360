@@ -15,6 +15,7 @@ import {
   formatFirstName,
   parseCurrencyToNumber
 } from "@/utils/formatters";
+import { parseLocalDate } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -57,7 +58,22 @@ const prePassageiroSchema = z.object({
     }),
   dia_vencimento: z.string().optional(),
   ativo: z.boolean().optional(),
-});
+}).refine(
+  (data) => {
+    if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
+    try {
+      const start = parseLocalDate(convertDateBrToISO(data.data_inicio_transporte)!);
+      const end = parseLocalDate(convertDateBrToISO(data.data_fim_transporte)!);
+      return end > start;
+    } catch {
+      return true;
+    }
+  },
+  {
+    message: "Término deve ser maior que o Início",
+    path: ["data_fim_transporte"],
+  }
+);
 
 export type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
 
@@ -115,7 +131,7 @@ export function usePassageiroExternalForm() {
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
-      data_fim_transporte: "31/12/" + new Date().getFullYear(),
+      data_fim_transporte: "",
     },
     mode: "onBlur",
   });

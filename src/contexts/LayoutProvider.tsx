@@ -20,7 +20,8 @@ import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps } from "./LayoutContext";
+import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -181,6 +182,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [gerarContratoValidadorDialogState, setGerarContratoValidadorDialogState] = useState<{
+    open: boolean;
+    props?: OpenGerarContratoValidadorDialogProps;
+  }>({
+    open: false,
+  });
+
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
@@ -318,6 +326,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminCreateUserDialogState({ open: true, onSuccess });
   };
 
+  const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
+    setGerarContratoValidadorDialogState({ open: true, props });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -343,6 +355,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openPixPaymentDialog,
         openSaaSCheckoutDialog,
         openAdminCreateUserDialog,
+        openGerarContratoValidadorDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -458,7 +471,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {quickStartPassageiroState.open && (
         <QuickStartPassageiroDialog
           isOpen={true}
-          onClose={() => setQuickStartPassageiroState({ open: false })}
+          onClose={() => safeCloseDialog(() => setQuickStartPassageiroState({ open: false }))}
           onSuccess={quickStartPassageiroState.props?.onSuccess}
           usuarioId={profile?.id}
         />
@@ -597,9 +610,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {contractSetupDialogState.open && (
         <ContractSetupDialog
           isOpen={true}
-          onClose={() => setContractSetupDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setContractSetupDialogState({ open: false }))}
           onSuccess={contractSetupDialogState.props?.onSuccess}
-          skipWelcome={contractSetupDialogState.props?.skipWelcome}
         />
       )}
 
@@ -627,7 +639,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {pixPaymentDialogState.open && pixPaymentDialogState.props && (
         <PixPaymentDialog
           isOpen={true}
-          onClose={() => setPixPaymentDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setPixPaymentDialogState({ open: false }))}
           {...pixPaymentDialogState.props}
         />
       )}
@@ -635,7 +647,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {saasCheckoutDialogState.open && saasCheckoutDialogState.props && (
         <SaaSCheckoutDialog
           isOpen={true}
-          onClose={() => setSaasCheckoutDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setSaasCheckoutDialogState({ open: false }))}
           plans={saasCheckoutDialogState.props.plans}
           initialPlanId={saasCheckoutDialogState.props.initialPlanId}
           onSuccess={saasCheckoutDialogState.props.onSuccess}
@@ -646,7 +658,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {receiptDialogState.open && receiptDialogState.props && (
         <ReceiptDialog
           isOpen={true}
-          onClose={() => setReceiptDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setReceiptDialogState({ open: false }))}
           receiptUrl={receiptDialogState.props.receiptUrl}
           cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
         />
@@ -655,8 +667,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {adminCreateUserDialogState.open && (
         <AdminCreateUserDialog
           isOpen={true}
-          onClose={() => setAdminCreateUserDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setAdminCreateUserDialogState({ open: false }))}
           onSuccess={adminCreateUserDialogState.onSuccess}
+        />
+      )}
+
+      {gerarContratoValidadorDialogState.open && gerarContratoValidadorDialogState.props && (
+        <GerarContratoValidadorDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setGerarContratoValidadorDialogState({ open: false }))}
+          passageiroId={gerarContratoValidadorDialogState.props.passageiroId}
+          onSuccess={gerarContratoValidadorDialogState.props.onSuccess}
         />
       )}
 

@@ -101,8 +101,12 @@ export interface OpenCobrancaHistoryProps {
 
 export interface OpenContractSetupDialogProps {
   forceOpen?: boolean;
-  skipWelcome?: boolean;
   onSuccess?: (usarContratos?: boolean) => void;
+}
+
+export interface OpenGerarContratoValidadorDialogProps {
+  passageiroId: string;
+  onSuccess: (passageiroId: string) => void;
 }
 
 export interface OpenPixPaymentDialogProps {
@@ -148,6 +152,7 @@ export interface LayoutContextType {
   isFirstChargeDialogOpen: boolean;
 
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
+  openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

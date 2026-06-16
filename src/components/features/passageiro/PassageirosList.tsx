@@ -136,7 +136,7 @@ export function PassageirosList({
                 Status
               </TableHead>
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Escola / Turno
+                Escola
               </TableHead>
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Veículo
@@ -168,8 +168,6 @@ export function PassageirosList({
                       </p>
                       <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
                         {respName}
-                        <span className="text-[8px] text-gray-300">•</span>
-                        {schoolName}
                       </p>
                     </div>
                   </TableCell>

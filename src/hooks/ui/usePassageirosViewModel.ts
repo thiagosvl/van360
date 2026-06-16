@@ -190,9 +190,6 @@ export function usePassageirosViewModel() {
     if (openModal === "true") {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.CREATE,
-        onSuccess: () => {
-          refetchPassageiros();
-        },
       });
     }
   }, [searchParams, refetchPassageiros, openPassageiroFormDialog]);
@@ -248,9 +245,6 @@ export function usePassageirosViewModel() {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
-        onSuccess: () => {
-          refetchPassageiros();
-        },
       });
     },
     [openPassageiroFormDialog, refetchPassageiros],
@@ -259,13 +253,12 @@ export function usePassageirosViewModel() {
   const handleOpenNewDialog = useCallback(() => {
     openQuickStartPassageiroDialog({
       onSuccess: (passageiro) => {
-        refetchPassageiros();
         if (passageiro) {
           openFirstChargeDialog({ passageiro: passageiro });
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, refetchPassageiros]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;

@@ -101,7 +101,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
               {[
                 {
                   value: true,
-                  label: "Sim, gerar e enviar",
+                  label: "Sim, gerar o contrato",
                   sublabel: "O responsável receberá por WhatsApp",
                   icon: <CheckCircle2 className="w-6 h-6" />,
                   activeColor: "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200",
@@ -111,7 +111,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 },
                 {
                   value: false,
-                  label: "Não, obrigado",
+                  label: "Não gerar o contrato",
                   sublabel: "Você poderá gerar manualmente depois",
                   icon: <AlertCircle className="w-6 h-6" />,
                   activeColor: "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200",
@@ -174,7 +174,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-black uppercase tracking-tight", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, registrar</p>
+                  <p className={cn("text-[13px] font-black uppercase tracking-tight", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, registrar mensalidade</p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Já estará visível na carteirinha</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
@@ -196,7 +196,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   <AlertCircle className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-black uppercase tracking-tight", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não, obrigado</p>
+                  <p className={cn("text-[13px] font-black uppercase tracking-tight", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não registrar mensalidade</p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Você poderá gerar manualmente depois</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", !wantsMonthlyCharge ? "border-slate-400 bg-slate-400" : "border-slate-300")}>
