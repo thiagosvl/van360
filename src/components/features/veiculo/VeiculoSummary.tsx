@@ -22,7 +22,7 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
       {/* LINHA 1: Overline Categoria + Status Badge */}
       <div className="flex justify-between items-center mb-1.5">
         <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
-          VEÍCULO • {veiculo.marca} {veiculo.modelo}
+          VEÍCULO
         </p>
       </div>
 

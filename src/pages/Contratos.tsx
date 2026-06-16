@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -20,12 +19,10 @@ const Contratos = () => {
     kpis,
     contratos,
     isLoading,
-    isActionLoading,
     isContratoAtivo,
     isContratoConfigurado,
     handleRefresh,
     handleOpenContractSetup,
-    handleActivateContracts,
     handleToggleContracts,
     isToggling,
     handleOpenPreview,
@@ -40,8 +37,6 @@ const Contratos = () => {
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
-
-
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}

@@ -95,9 +95,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId }: UsePassage
   };
 
   const onFormError = () => {
-    toast.error("Formulário incompleto", {
-      description: "Por favor, preencha todos os campos obrigatórios."
-    });
+    toast.error("validacao.formularioComErros");
   };
 
   const handleFillMock = (escolas?: any[], veiculos?: any[]) => {

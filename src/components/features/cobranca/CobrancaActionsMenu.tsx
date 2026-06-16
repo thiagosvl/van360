@@ -12,6 +12,7 @@ interface CobrancaActionsMenuProps {
   onToggleLembretes?: () => void;
   onDesfazerPagamento?: () => void;
   onExcluirCobranca?: () => void;
+  onEnviarCobranca?: () => void;
   onVerCarteirinha?: () => void;
   onVerRecibo?: () => void;
   onActionSuccess?: () => void;
@@ -28,6 +29,7 @@ export const CobrancaActionsMenu = ({
   onExcluirCobranca,
   onVerCarteirinha,
   onDesfazerPagamento,
+  onEnviarCobranca,
 }: CobrancaActionsMenuProps) => {
   const actions = useCobrancaActions({
     cobranca,
@@ -39,6 +41,7 @@ export const CobrancaActionsMenu = ({
     onActionSuccess,
     onExcluirCobranca,
     onDesfazerPagamento,
+    onEnviarCobranca,
   });
   const triggerClassName = variant === "mobile" ? "h-8 w-8 shrink-0 -mr-2 -mt-1" : "h-8 w-8 p-0";
 

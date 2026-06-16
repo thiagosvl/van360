@@ -7,6 +7,7 @@ import {
 } from "@/hooks/api/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { phoneMask } from "@/utils/masks";
@@ -556,10 +557,10 @@ const SubscriptionPage = () => {
               <div className="relative z-10 space-y-3 lg:space-y-8">
                 <div className="space-y-3">
                   <p className="font-normal text-sm sm:text-base leading-[1.1] text-primary">
-                    Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
+                    Convide colegas e ganhe <span className="text-primary font-black">mensalidades grátis</span>
                   </p>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed">
-                    Indique colegas motoristas e receba mensalidades gratuitas assim que eles se tornarem assinantes.
+                    A cada motorista indicado que assinar o Van360, você ganha {bonusDaysPerReferral} dias grátis.
                   </p>
                 </div>
 
@@ -607,9 +608,9 @@ const SubscriptionPage = () => {
                         handleCopyReferral();
                       }
                     }}
-                    className="w-full h-12 bg-primary text-white hover:bg-primary/90 rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest shadow-md shadow-primary/20 flex items-center gap-2 group transition-all"
+                    className="w-full sm:hidden h-12 bg-primary text-white hover:bg-primary/90 rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest shadow-md shadow-primary/20 flex items-center justify-center gap-2 group transition-all"
                   >
-                    <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <WhatsAppIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     Compartilhar Link
                   </Button>
                 </div>

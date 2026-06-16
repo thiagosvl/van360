@@ -19,7 +19,6 @@ import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { queryClient } from "@/services/queryClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -58,7 +57,7 @@ export function useContratosViewModel() {
     searchParam: "search",
   });
 
-  const activeTab = (searchParams.get("tab") as ContratoTab) || ContratoTab.PENDENTES;
+  const activeTab = (searchParams.get("tab") as ContratoTab) || ContratoTab.SEM_CONTRATO;
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
@@ -205,9 +204,9 @@ export function useContratosViewModel() {
       return;
     }
 
-    const telefone = 
-      item.passageiro?.telefone_responsavel || 
-      item.telefone_responsavel || 
+    const telefone =
+      item.passageiro?.telefone_responsavel ||
+      item.telefone_responsavel ||
       item.dados_contrato?.telefone_responsavel ||
       item.dados_contrato?.telefoneResponsavel;
 

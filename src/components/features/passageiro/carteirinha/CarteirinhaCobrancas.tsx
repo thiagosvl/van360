@@ -3,6 +3,8 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getPaymentMethodLabel } from "@/constants/paymentMethods";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
+import { useSession } from "@/hooks/business/useSession";
+import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
@@ -52,6 +54,8 @@ export const CarteirinhaCobrancas = ({
   onDesfazerPagamento,
   onVerRecibo,
 }: CarteirinhaCobrancasProps) => {
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
 
   // KPIs rápidos
   const resumo = cobrancas.reduce(
@@ -113,6 +117,8 @@ export const CarteirinhaCobrancas = ({
                 cobranca={cobranca}
                 passageiro={passageiro}
                 index={idx}
+                chavePix={profile?.chave_pix}
+                tipoChavePix={profile?.tipo_chave_pix}
                 onEditCobranca={onEditCobranca}
                 onRegistrarPagamento={onRegistrarPagamento}
                 onExcluirCobranca={onExcluirCobranca}
@@ -128,11 +134,11 @@ export const CarteirinhaCobrancas = ({
       {cobrancas.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
           <MiniKPI
-            label="Pagas"
-            value={resumo.pago}
-            count={resumo.qtdPago}
-            colorClass="text-emerald-500 bg-emerald-50/60"
-            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+            label="Atrasadas"
+            value={resumo.atrasado}
+            count={resumo.qtdAtrasado}
+            colorClass="text-rose-500 bg-rose-50/60"
+            icon={<AlertCircle className="h-3.5 w-3.5" />}
           />
           <MiniKPI
             label="Pendentes"
@@ -142,11 +148,11 @@ export const CarteirinhaCobrancas = ({
             icon={<Clock className="h-3.5 w-3.5" />}
           />
           <MiniKPI
-            label="Atrasadas"
-            value={resumo.atrasado}
-            count={resumo.qtdAtrasado}
-            colorClass="text-rose-500 bg-rose-50/60"
-            icon={<AlertCircle className="h-3.5 w-3.5" />}
+            label="Pagas"
+            value={resumo.pago}
+            count={resumo.qtdPago}
+            colorClass="text-emerald-500 bg-emerald-50/60"
+            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
           />
         </div>
       )}
@@ -165,6 +171,8 @@ const CobrancaItemPassageiro = forwardRef<
     cobranca: Cobranca;
     passageiro: Passageiro;
     index: number;
+    chavePix?: string | null;
+    tipoChavePix?: string | null;
     onEditCobranca: (c: Cobranca) => void;
     onRegistrarPagamento: (c: Cobranca) => void;
     onExcluirCobranca: (c: Cobranca) => void;
@@ -175,6 +183,8 @@ const CobrancaItemPassageiro = forwardRef<
   cobranca,
   passageiro,
   index,
+  chavePix,
+  tipoChavePix,
   onEditCobranca,
   onRegistrarPagamento,
   onExcluirCobranca,
@@ -199,6 +209,8 @@ const CobrancaItemPassageiro = forwardRef<
       mes: cobranca.mes,
       valor: cobranca.valor,
       dataVencimento: cobranca.data_vencimento,
+      chavePix,
+      tipoChavePix,
     }))
     : undefined;
 

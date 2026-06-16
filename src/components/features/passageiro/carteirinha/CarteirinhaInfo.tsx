@@ -219,8 +219,8 @@ const ProfileSummary = ({
           className={cn(
             "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
             passageiro.ativo
-              ? "text-emerald-500 bg-emerald-50"
-              : "text-rose-500 bg-rose-50",
+              ? "text-emerald-500 bg-emerald-50/30"
+              : "text-rose-400 bg-rose-50/30",
           )}
         >
           {passageiro.ativo ? "Passageiro Ativo" : "Passageiro Inativo"}
@@ -235,8 +235,8 @@ const ProfileSummary = ({
           className={cn(
             "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
             passageiro.enviar_notificacoes
-              ? "text-emerald-500 bg-emerald-50"
-              : "text-rose-500 bg-rose-50",
+              ? "text-emerald-500 bg-emerald-50/30"
+              : "text-rose-400 bg-rose-50/30",
           )}
         >
           {passageiro.enviar_notificacoes ? "Notificações Ativas" : "Notificações Inativas"}

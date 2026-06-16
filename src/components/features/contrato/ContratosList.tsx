@@ -175,7 +175,7 @@ export const ContratosList = memo(function ContratosList({
       },
     };
 
-    const config = configs[activeTab] || configs[ContratoTab.PENDENTES];
+    const config = configs[activeTab] || configs[ContratoTab.SEM_CONTRATO];
 
     return (
       <UnifiedEmptyState

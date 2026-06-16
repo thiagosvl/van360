@@ -1,3 +1,4 @@
+import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { formatDateToBR, formatFirstName, formatShortName, getMesNome } from "./formatters";
 
 interface CobrancaWhatsAppParams {
@@ -7,6 +8,8 @@ interface CobrancaWhatsAppParams {
   mes: number;
   valor: number;
   dataVencimento: string;
+  chavePix?: string | null;
+  tipoChavePix?: string | null;
 }
 
 export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string {
@@ -26,9 +29,16 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
     `📅 *Mês:* ${mesNome}`,
     `💰 *Valor:* ${valorFormatado}`,
     `📆 *Vencimento:* ${vencimento}`,
-  ].join("\n");
+  ];
 
-  return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+  if (params.chavePix) {
+    const labelTipo = params.tipoChavePix ? TIPOS_CHAVE_PIX_LABEL[params.tipoChavePix as TipoChavePix] || params.tipoChavePix : "Chave";
+    mensagem.push(``);
+    mensagem.push(`💳 *Pix para pagamento:*`);
+    mensagem.push(`Chave (${labelTipo}): ${params.chavePix}`);
+  }
+
+  return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem.join("\n"))}`;
 }
 
 interface ContratoWhatsAppParams {
@@ -43,7 +53,7 @@ export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string
   const link = params.link;
 
   const mensagem = [
-    `Segue o link para visualização e assinatura do contrato digital:`,
+    `Segue o link para assinatura do contrato digital:`,
     ``,
     `${link}`,
   ].join("\n");

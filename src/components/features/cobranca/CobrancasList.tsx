@@ -14,6 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
+import { useSession } from "@/hooks/business/useSession";
+import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
@@ -59,10 +61,14 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   onDesfazerPagamento,
   onVerRecibo,
   onActionSuccess,
+  chavePix,
+  tipoChavePix,
 }: {
   cobranca: Cobranca;
   index: number;
   activeTab: CobrancaTab;
+  chavePix?: string | null;
+  tipoChavePix?: string | null;
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
 
   const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
@@ -74,6 +80,8 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
         mes: cobranca.mes,
         valor: cobranca.valor,
         dataVencimento: cobranca.data_vencimento,
+        chavePix,
+        tipoChavePix,
       }))
     : undefined;
 
@@ -172,6 +180,8 @@ export function CobrancasList({
   onClearSearch,
   ...props
 }: CobrancasListProps) {
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
 
   const [openedCobranca, setOpenedCobranca] = useState<Cobranca | null>(null);
   const isPendingTab = activeTab === CobrancaTab.ARECEBER;
@@ -210,6 +220,8 @@ export function CobrancasList({
           cobranca={cobranca}
           index={index}
           activeTab={activeTab}
+          chavePix={profile?.chave_pix}
+          tipoChavePix={profile?.tipo_chave_pix}
           onVerCarteirinha={props.onVerCarteirinha}
           onEditarCobranca={props.onEditarCobranca}
           onRegistrarPagamento={props.onRegistrarPagamento}
@@ -244,6 +256,20 @@ export function CobrancasList({
           <TableBody>
             {cobrancas.map((cobranca) => {
               const firstName = formatFirstName(cobranca?.passageiro?.nome_responsavel);
+              
+              const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+              const onEnviarCobranca = telefoneResponsavel
+                ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
+                    telefoneResponsavel,
+                    nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+                    nomePassageiro: cobranca.passageiro?.nome ?? "",
+                    mes: cobranca.mes,
+                    valor: cobranca.valor,
+                    dataVencimento: cobranca.data_vencimento,
+                    chavePix: profile?.chave_pix,
+                    tipoChavePix: profile?.tipo_chave_pix,
+                  }))
+                : undefined;
 
               return (
                 <TableRow
@@ -313,6 +339,7 @@ export function CobrancasList({
                       onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
                       onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
                       onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined}
+                      onEnviarCobranca={onEnviarCobranca}
                     />
                   </TableCell>
                 </TableRow>
@@ -330,6 +357,8 @@ export function CobrancasList({
         open={!!openedCobranca}
         onOpenChange={(open) => !open && setOpenedCobranca(null)}
         props={props}
+        chavePix={profile?.chave_pix}
+        tipoChavePix={profile?.tipo_chave_pix}
       />
     )}
     </>
@@ -341,13 +370,31 @@ function ActionSheetWrapper({
   cobranca, 
   open, 
   onOpenChange, 
-  props 
+  props,
+  chavePix,
+  tipoChavePix,
 }: { 
   cobranca: Cobranca; 
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   props: any;
+  chavePix?: string | null;
+  tipoChavePix?: string | null;
 }) {
+  const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+  const onEnviarCobranca = telefoneResponsavel
+    ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
+        telefoneResponsavel,
+        nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+        nomePassageiro: cobranca.passageiro?.nome ?? "",
+        mes: cobranca.mes,
+        valor: cobranca.valor,
+        dataVencimento: cobranca.data_vencimento,
+        chavePix,
+        tipoChavePix,
+      }))
+    : undefined;
+
   const actions = useCobrancaActions({
     cobranca,
     onVerCobranca: () => {},
@@ -357,6 +404,7 @@ function ActionSheetWrapper({
     onExcluirCobranca: () => props.onExcluirCobranca(cobranca),
     onDesfazerPagamento: props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined,
     onVerRecibo: cobranca.recibo_url ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
+    onEnviarCobranca,
     onActionSuccess: props.onActionSuccess,
   });
 
