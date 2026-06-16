@@ -107,8 +107,8 @@ const Contratos = () => {
 
             <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" :
-                  activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Sem Contrato"}
+                {activeTab === ContratoTab.PENDENTES ? "Pendentes" :
+                  activeTab === ContratoTab.ASSINADOS ? "Assinados" : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                 {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}

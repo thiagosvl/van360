@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { convertDateBrToISO } from "@/utils/formatters/date";
+import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
+import { cpfMask } from "@/utils/masks";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { useEffect, useState } from "react";
 import { Passageiro } from "@/types/passageiro";
@@ -73,9 +74,9 @@ export function useGerarContratoValidadorViewModel({
         onSuccess(passageiroId);
       } else {
         form.reset({
-          data_inicio_transporte: passageiro.data_inicio_transporte || "",
-          data_fim_transporte: passageiro.data_fim_transporte || "",
-          cpf_responsavel: passageiro.cpf_responsavel || "",
+          data_inicio_transporte: passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "",
+          data_fim_transporte: passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "",
+          cpf_responsavel: passageiro.cpf_responsavel ? cpfMask(passageiro.cpf_responsavel) : "",
         });
       }
     }
@@ -86,7 +87,12 @@ export function useGerarContratoValidadorViewModel({
 
     setIsSubmitting(true);
     try {
-      await passageiroApi.updatePassageiro(passageiroId, data);
+      const payload = {
+        ...data,
+        data_inicio_transporte: convertDateBrToISO(data.data_inicio_transporte),
+        data_fim_transporte: convertDateBrToISO(data.data_fim_transporte),
+      };
+      await passageiroApi.updatePassageiro(passageiroId, payload);
 
       onClose();
       onSuccess(passageiroId);

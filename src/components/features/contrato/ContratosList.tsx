@@ -119,16 +119,6 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-7 top-8 -translate-y-1/2">
-          <div className="flex items-center gap-1.5">
-            {(status === ContratoStatus.ASSINADO &&
-              <StatusBadge
-                status={status === ContratoStatus.ASSINADO}
-                trueLabel="ASSINADO"
-                falseLabel="PENDENTE"
-                className="font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none"
-              />
-            )}
-          </div>
         </div>
       </div>
     </MobileActionItem>
@@ -223,6 +213,17 @@ export const ContratosList = memo(function ContratosList({
             {data.map((item) => {
               const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
               const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
+              
+              const isSemContrato = item.tipo === "passageiro";
+              const status = item.status as ContratoStatus | null;
+              const isAssinado = status === ContratoStatus.ASSINADO;
+
+              const iconConfig = isAssinado
+                ? { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" }
+                : isSemContrato
+                  ? { icon: FileX2, className: "bg-slate-50 border-slate-100 text-slate-400" }
+                  : { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+
               return (
                 <TableRow
                   key={item.id}
@@ -230,8 +231,8 @@ export const ContratosList = memo(function ContratosList({
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
-                        <FileText className="w-5 h-5 text-[#1a3a5c]" />
+                      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border", iconConfig.className)}>
+                        <iconConfig.icon className="w-5 h-5" />
                       </div>
                       <div className="flex flex-col">
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm">
