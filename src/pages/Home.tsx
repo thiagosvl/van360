@@ -4,6 +4,7 @@ import { KPICard } from "@/components/common/KPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
+import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
@@ -278,6 +279,11 @@ const Home = () => {
                 variant="indigo"
               />
             </div>
+          </section>
+
+          {/* Indique e Ganhe Banner */}
+          <section className="pt-2">
+            <ReferAndEarnCard isTrial={subscription?.status === SubscriptionStatus.TRIAL} />
           </section>
         </div>
       </PullToRefreshWrapper>
