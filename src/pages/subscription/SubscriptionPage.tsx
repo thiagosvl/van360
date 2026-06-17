@@ -313,24 +313,27 @@ const SubscriptionPage = () => {
               </div>
             </div>
           ) : isTrial ? (
-            <div className="bg-[#fff8f0] border border-orange-200/60 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md group cursor-pointer" onClick={() => handleSubscribe()}>
-              <div className="absolute left-0 bottom-0 w-64 h-64 bg-white/60 rounded-full -ml-20 -mb-20 blur-3xl"></div>
+            <div className="bg-white rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-slate-200/40 relative overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-0.5 group cursor-pointer border border-slate-200/80" onClick={() => handleSubscribe()}>
+              <div className="absolute right-0 top-0 w-64 h-64 bg-amber-400/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+              <div className="absolute left-0 bottom-0 w-64 h-64 bg-primary/5 rounded-full -ml-20 -mb-20 blur-3xl"></div>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-orange-500" />
+                  <div className="p-1.5 rounded-lg">
+                    <TrendingUp className="w-4 h-4 text-amber-600" />
+                  </div>
                   <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
                 </div>
                 <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">Período de Testes</h3>
-                <p className="text-slate-500 font-medium leading-relaxed">Você tem <span className="text-orange-500 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
+                <p className="text-slate-500 font-medium leading-relaxed">Você tem <span className="text-amber-600 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
                 {referral?.hasActiveDiscount && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-100/50 px-3.5 py-1.5 rounded-xl border border-orange-200/50 text-orange-600 font-bold text-[11px] uppercase tracking-wide animate-pulse">
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 px-3.5 py-1.5 rounded-xl border border-emerald-200/60 text-emerald-700 font-bold text-[11px] uppercase tracking-wide animate-pulse shadow-sm">
                     🎁 Desconto de {referral.discountPct}% por indicação ativo!
                   </div>
                 )}
               </div>
               <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                 <Button
-                  className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
+                  className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
                   onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
                 >
                   Assinar um Plano
