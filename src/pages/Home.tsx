@@ -283,6 +283,9 @@ const Home = () => {
 
           {/* Indique e Ganhe Banner */}
           <section className="pt-2">
+            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">
+              Indique e Ganhe
+            </h2>
             <ReferAndEarnCard isTrial={subscription?.status === SubscriptionStatus.TRIAL} />
           </section>
         </div>
