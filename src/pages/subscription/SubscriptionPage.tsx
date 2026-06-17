@@ -229,7 +229,7 @@ const SubscriptionPage = () => {
 
   const bonusDaysPerReferral = referral?.bonusDays;
   const completedReferrals = referral?.completed ?? 0;
-  const totalBonusDays = completedReferrals * bonusDaysPerReferral;
+  const totalBonusDays = (completedReferrals * bonusDaysPerReferral) || 0;
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
@@ -398,7 +398,7 @@ const SubscriptionPage = () => {
                             </div>
                             <div className="text-[11px] sm:text-xs font-medium text-slate-500">
                               <span>Vencimento:</span>{" "}
-                              {formatLocalDate(parseLocalDate(inv.data_vencimento || inv.created_at))}
+                              {formatLocalDate(parseLocalDate(inv.data_vencimento))}
                               {inv.metodo_pagamento && (
                                 <>
                                   <span className="mx-1.5 text-slate-300">•</span>
@@ -551,8 +551,8 @@ const SubscriptionPage = () => {
             <div className="flex items-center justify-between px-1 pb-4">
               <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Indique e Ganhe</h4>
             </div>
-            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[22px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+            <div className="bg-white border border-slate-100 rounded-[22px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
+              <div className="absolute right-0 top-0 w-64 h-64 bg-[#f0f6fc] rounded-full -mr-20 -mt-20 blur-3xl"></div>
 
               <div className="relative z-10 space-y-3 lg:space-y-8">
                 <div className="space-y-3">
@@ -565,7 +565,7 @@ const SubscriptionPage = () => {
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center justify-around bg-white/50 p-5 rounded-[22px] border border-[#d6e4f0] shadow-sm">
+                <div className="flex items-center justify-around bg-slate-50 p-5 rounded-[22px] border border-slate-100 shadow-sm">
                   <div className="text-center w-full">
                     <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Indicações</p>
                     <p className="text-2xl font-semibold text-primary">{completedReferrals}</p>
@@ -584,7 +584,7 @@ const SubscriptionPage = () => {
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Seu Link de Convite</Label>
                     <div className="flex gap-2">
-                      <div className="bg-white flex-1 px-4 py-3 rounded-xl text-[11px] font-medium truncate text-slate-600 border border-[#d6e4f0] shadow-sm leading-none flex items-center">
+                      <div className="bg-slate-50 flex-1 px-4 py-3 rounded-xl text-[11px] font-medium truncate text-slate-600 border border-slate-100 shadow-sm leading-none flex items-center">
                         {referral?.referralLink || "Gerando link..."}
                       </div>
                       <button
@@ -616,7 +616,7 @@ const SubscriptionPage = () => {
                 </div>
 
                 {isTrial && !referral?.hasIndicator && (
-                  <div className="pt-6 border-t border-[#d6e4f0] text-center">
+                  <div className="pt-6 border-t border-slate-100 text-center">
                     {!isClaimOpen ? (
                       <button
                         onClick={() => setIsClaimOpen(true)}
@@ -631,7 +631,7 @@ const SubscriptionPage = () => {
                           value={claimPhone}
                           onChange={(e) => setClaimPhone(phoneMask(e.target.value))}
                           placeholder="WhatsApp de quem indicou"
-                          className="bg-white border-[#d6e4f0] text-slate-700 placeholder:text-slate-400 h-11 rounded-xl text-xs px-4 focus:ring-amber-500/50 shadow-sm"
+                          className="bg-slate-50 border-slate-100 text-slate-700 placeholder:text-slate-400 h-11 rounded-xl text-xs px-4 focus:ring-primary/20 shadow-sm"
                         />
                         <div className="flex gap-2">
                           <Button
