@@ -22,7 +22,6 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { subscriptionApi } from "@/services/api/subscription.api";
-import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "sonner";
 
