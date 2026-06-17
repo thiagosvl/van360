@@ -104,11 +104,13 @@ export default function AdminSettings() {
   const updateConfig = useUpdateConfig();
   const [values, setValues] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState<Set<string>>(new Set());
+  const [savingConfigs, setSavingConfigs] = useState<Set<string>>(new Set());
 
   const { data: plans, isLoading: isPlansLoading } = useAdminPlans();
   const updatePlan = useUpdatePlan();
   const [planValues, setPlanValues] = useState<Record<string, { valor: string; valor_promocional: string }>>({});
   const [planDirty, setPlanDirty] = useState<Set<string>>(new Set());
+  const [savingPlans, setSavingPlans] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (configs) {
@@ -153,6 +155,7 @@ export default function AdminSettings() {
   };
 
   const handleSave = (chave: string) => {
+    setSavingConfigs(p => new Set(p).add(chave));
     updateConfig.mutate(
       { chave, valor: values[chave] },
       {
@@ -163,6 +166,13 @@ export default function AdminSettings() {
             return next;
           });
         },
+        onSettled: () => {
+          setSavingConfigs(p => {
+            const next = new Set(p);
+            next.delete(chave);
+            return next;
+          });
+        }
       }
     );
   };
@@ -177,6 +187,7 @@ export default function AdminSettings() {
 
     const promoVal = vals.valor_promocional ? moneyToNumber(vals.valor_promocional) : 0;
 
+    setSavingPlans(p => new Set(p).add(id));
     updatePlan.mutate(
       {
         id,
@@ -193,6 +204,13 @@ export default function AdminSettings() {
             return next;
           });
         },
+        onSettled: () => {
+          setSavingPlans(p => {
+            const next = new Set(p);
+            next.delete(id);
+            return next;
+          });
+        }
       }
     );
   };
@@ -255,9 +273,10 @@ export default function AdminSettings() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleSave(def.chave)}
+                disabled={savingConfigs.has(def.chave)}
                 className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2"
               >
-                <Save className="h-3.5 w-3.5" />
+                {savingConfigs.has(def.chave) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               </Button>
             )}
           </div>
@@ -290,9 +309,10 @@ export default function AdminSettings() {
               size="sm"
               variant="ghost"
               onClick={() => handleSave(def.chave)}
+              disabled={savingConfigs.has(def.chave)}
               className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-11 px-3"
             >
-              <Save className="h-4 w-4" />
+              {savingConfigs.has(def.chave) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             </Button>
           )}
         </div>
@@ -358,9 +378,14 @@ export default function AdminSettings() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleSavePlan(plan.id)}
+                        disabled={savingPlans.has(plan.id)}
                         className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-2"
                       >
-                        <Save className="h-4 w-4 mr-1" />
+                        {savingPlans.has(plan.id) ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-1" />
+                        )}
                         Salvar
                       </Button>
                     )}
@@ -412,9 +437,10 @@ export default function AdminSettings() {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleSave(ConfigKey.SAAS_PROMOCAO_ATIVA)}
+                      disabled={savingConfigs.has(ConfigKey.SAAS_PROMOCAO_ATIVA)}
                       className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2"
                     >
-                      <Save className="h-3.5 w-3.5" />
+                      {savingConfigs.has(ConfigKey.SAAS_PROMOCAO_ATIVA) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     </Button>
                   )}
                 </div>
