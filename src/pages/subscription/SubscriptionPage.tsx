@@ -11,6 +11,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { phoneMask } from "@/utils/masks";
+import { openBrowserLink } from "@/utils/browser";
 import {
   Gift,
   Copy,
@@ -600,12 +601,9 @@ const SubscriptionPage = () => {
 
                   <Button
                     onClick={() => {
-                      if (referral?.referralLink && navigator.share) {
-                        navigator.share({
-                          url: referral.referralLink,
-                          title: "Van360 - Melhore sua gestão escolar",
-                          text: "Use meu link para se cadastrar na Van360 e ganhe benefícios!"
-                        }).catch(() => null);
+                      if (referral?.referralLink) {
+                        const shareText = encodeURIComponent(`Use meu link para se cadastrar no Van360 e ganhe desconto na assinatura! ${referral.referralLink}`);
+                        openBrowserLink(`https://wa.me/?text=${shareText}`);
                       } else {
                         handleCopyReferral();
                       }
