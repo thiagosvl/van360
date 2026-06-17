@@ -659,6 +659,7 @@ export default function PassageiroCarteirinha() {
                         onCopyToClipboard={handleCopyToClipboard}
                         onContractAction={infoProps.onContractAction}
                         contratosAtivos={infoProps.contratosAtivos}
+                        onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
                       />
                     </Suspense>
 

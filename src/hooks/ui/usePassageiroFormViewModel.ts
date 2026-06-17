@@ -93,7 +93,6 @@ export function usePassageiroFormViewModel({
 
       if (responsavel) {
         form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
-        form.setValue("email_responsavel", responsavel.email_responsavel || "");
         form.setValue(
           "telefone_responsavel",
           phoneMask(responsavel.telefone_responsavel) || ""
@@ -161,10 +160,6 @@ export function usePassageiroFormViewModel({
     if (!profile?.id) return;
 
     const purePayload: any = { ...data };
-
-    purePayload.email_responsavel = purePayload.email_responsavel?.trim()
-      ? purePayload.email_responsavel.toLowerCase().trim()
-      : null;
 
     purePayload.cep = purePayload.cep?.replace(/\D/g, "") || null;
     purePayload.cpf_responsavel = purePayload.cpf_responsavel?.replace(/\D/g, "") || null;

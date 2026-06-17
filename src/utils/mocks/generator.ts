@@ -278,7 +278,7 @@ export const mockGenerator = {
       nome: name,
       periodo: generatePeriodo(),
       nome_responsavel: generateName(),
-      email_responsavel: generateEmail(name),
+
       cpf_responsavel: generateCPF(),
       telefone_responsavel: generatePhone(),
       valor_cobranca: generateValorCobranca(),

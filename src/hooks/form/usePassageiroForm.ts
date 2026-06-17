@@ -46,11 +46,6 @@ export const passageiroSchema = z
 
     nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
     parentesco_responsavel: z.string().optional().nullable().or(z.literal("")),
-    email_responsavel: z
-      .string()
-      .email("E-mail inválido")
-      .optional()
-      .or(z.literal("")),
     cpf_responsavel: z
       .string()
       .optional()
@@ -135,7 +130,7 @@ export function usePassageiroForm({
       referencia: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
-      email_responsavel: "",
+
       telefone_responsavel: "",
       cpf_responsavel: "",
       valor_cobranca: "",
@@ -166,7 +161,7 @@ export function usePassageiroForm({
             genero: editingPassageiro.genero || "",
             nome_responsavel: editingPassageiro.nome_responsavel,
             parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
-            email_responsavel: editingPassageiro.email_responsavel || "",
+
             cpf_responsavel: editingPassageiro.cpf_responsavel ? cpfMask(editingPassageiro.cpf_responsavel) : "",
             telefone_responsavel: phoneMask(
               editingPassageiro.telefone_responsavel
@@ -207,7 +202,7 @@ export function usePassageiroForm({
         form.reset({
           nome: prePassageiro.nome,
           nome_responsavel: prePassageiro.nome_responsavel,
-          email_responsavel: prePassageiro.email_responsavel,
+
           cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
           periodo: prePassageiro.periodo || "",
@@ -248,7 +243,7 @@ export function usePassageiroForm({
           "nome",
           "nome_responsavel",
           "parentesco_responsavel",
-          "email_responsavel",
+
           "telefone_responsavel",
           "cpf_responsavel",
         ]);
@@ -279,7 +274,7 @@ export function usePassageiroForm({
           referencia: "",
           nome_responsavel: "",
           parentesco_responsavel: "",
-          email_responsavel: "",
+
           telefone_responsavel: "",
           cpf_responsavel: "",
           valor_cobranca: "",

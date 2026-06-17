@@ -24,10 +24,6 @@ import { getMessage } from "@/constants/messages";
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
   nome_responsavel: z.string().min(2, "Campo obrigatório"),
-  email_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .email("E-mail inválido"),
   cpf_responsavel: cpfSchema,
   telefone_responsavel: phoneSchema,
 
@@ -112,7 +108,7 @@ export function usePassageiroExternalForm() {
       nome: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
-      email_responsavel: "",
+
       cpf_responsavel: "",
       telefone_responsavel: "",
       logradouro: "",
@@ -248,7 +244,7 @@ export function usePassageiroExternalForm() {
     form.reset({
       nome_responsavel: currentValues.nome_responsavel,
       parentesco_responsavel: currentValues.parentesco_responsavel,
-      email_responsavel: currentValues.email_responsavel,
+
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,
 

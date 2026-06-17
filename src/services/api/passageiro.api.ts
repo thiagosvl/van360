@@ -32,7 +32,7 @@ export const passageiroApi = {
     if (data.valor_cobranca !== undefined) payload.valor_cobranca = moneyToNumber(data.valor_cobranca);
     if (data.nome !== undefined) payload.nome = cleanString(data.nome);
     if (data.nome_responsavel !== undefined) payload.nome_responsavel = cleanString(data.nome_responsavel);
-    if (data.email_responsavel !== undefined) payload.email_responsavel = cleanString(data.email_responsavel);
+
     if (data.endereco !== undefined) payload.endereco = cleanString(data.endereco);
     if (data.bairro !== undefined) payload.bairro = cleanString(data.bairro);
     if (data.complemento !== undefined) payload.complemento = cleanString(data.complemento);
@@ -49,7 +49,7 @@ export const passageiroApi = {
       valor_cobranca: moneyToNumber(data.valor_cobranca),
       nome: cleanString(data.nome),
       nome_responsavel: cleanString(data.nome_responsavel),
-      email_responsavel: cleanString(data.email_responsavel),
+
       endereco: cleanString(data.endereco),
       bairro: cleanString(data.bairro),
       complemento: cleanString(data.complemento),
@@ -67,7 +67,7 @@ export const passageiroApi = {
       valor_cobranca: moneyToNumber(data.valor_cobranca),
       nome: cleanString(data.nome),
       nome_responsavel: cleanString(data.nome_responsavel),
-      email_responsavel: cleanString(data.email_responsavel),
+
       endereco: cleanString(data.endereco),
       bairro: cleanString(data.bairro),
       complemento: cleanString(data.complemento),

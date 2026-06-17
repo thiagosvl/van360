@@ -119,10 +119,6 @@ export default function Login() {
     senha: z.string().min(1, "Senha obrigatória"),
   });
 
-  const formResponsavelSchema = z.object({
-    cpf_responsavel: cpfSchema,
-    email_responsavel: emailSchema.min(1, "Campo obrigatório"),
-  });
 
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
@@ -139,13 +135,6 @@ export default function Login() {
     });
   };
 
-  const formResponsavel = useForm<z.infer<typeof formResponsavelSchema>>({
-    resolver: zodResolver(formResponsavelSchema),
-    defaultValues: {
-      cpf_responsavel: "",
-      email_responsavel: "",
-    },
-  });
 
   const handleForgotPassword = useCallback(() => {
     setForgotPasswordOpen(true);
@@ -241,52 +230,6 @@ export default function Login() {
     }
   };
 
-  const handleLoginResponsavel = async (
-    data: z.infer<typeof formResponsavelSchema>
-  ) => {
-    const cpf = data.cpf_responsavel.replace(/\D/g, "");
-    const email = data.email_responsavel.trim();
-
-    setLoading(true);
-    try {
-      // Use backend endpoint
-      const { data: passageiros } = await apiClient.post("/auth/login/responsavel", {
-        cpf,
-        email
-      });
-
-      if (!passageiros || passageiros.length === 0) {
-        toast.error("auth.erro.login", {
-          description: "auth.erro.nenhumPassageiroEncontrado",
-        });
-        setLoading(false);
-        return;
-      }
-
-      clearAppSession();
-
-      localStorage.setItem("responsavel_cpf", cpf);
-      localStorage.setItem("responsavel_email", email);
-      localStorage.setItem("responsavel_is_logged", "true");
-
-
-      if (passageiros.length === 1) {
-        const p = passageiros[0];
-        localStorage.setItem("responsavel_id", p.id);
-        localStorage.setItem("responsavel_usuario_id", p.usuario_id);
-        navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
-      } else {
-        navigate(ROUTES.PRIVATE.RESPONSAVEL.SELECT, { state: { passageiros } });
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error("auth.erro.login", {
-        description: err.userMessage || "Tente novamente mais tarde.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <>

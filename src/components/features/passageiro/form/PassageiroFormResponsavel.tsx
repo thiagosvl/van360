@@ -143,31 +143,7 @@ export function PassageiroFormResponsavel({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="email_responsavel"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel className="text-slate-700 font-semibold ml-1">
-                E-mail {isExternal && <span className="text-red-600">*</span>}
-              </FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                  <Input
-                    type="email"
-                    placeholder="exemplo@email.com"
-                    {...field}
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isSearching}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
       </div>
     </div>
   );

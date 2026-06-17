@@ -17,7 +17,7 @@ export interface Passageiro {
   cep: string;
   periodo: PassageiroPeriodo;
   nome_responsavel: string;
-  email_responsavel: string;
+
   telefone_responsavel: string;
   cpf_responsavel: string;
   valor_cobranca: number;

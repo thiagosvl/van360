@@ -143,7 +143,7 @@ export type Database = {
           usuario_id: string
           nome: string
           nome_responsavel: string
-          email_responsavel: string
+
           numero: string | null
           referencia: string | null
           logradouro: string | null
@@ -160,7 +160,7 @@ export type Database = {
           periodo: string
           observacoes?: string | null
           nome_responsavel: string
-          email_responsavel: string
+
           telefone_responsavel: string
           valor_cobranca: number
           ativo?: boolean
@@ -191,7 +191,7 @@ export type Database = {
           usuario_id?: string
           nome?: string
           nome_responsavel?: string
-          email_responsavel?: string
+
           numero?: string | null
           referencia?: string | null
           logradouro?: string | null

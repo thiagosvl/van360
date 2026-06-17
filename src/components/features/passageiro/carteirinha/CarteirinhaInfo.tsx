@@ -43,7 +43,9 @@ import {
   Users,
   Bot,
   BotOff,
-  Lock
+  Lock,
+  Phone,
+  IdCard
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -332,6 +334,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
         onCopyToClipboard={props.onCopyToClipboard}
         onContractAction={props.onContractAction}
         contratosAtivos={props.contratosAtivos}
+        onEnviarWhatsApp={props.onEnviarWhatsApp}
       />
     </CarteirinhaCard>
   );
@@ -348,6 +351,7 @@ export const CarteirinhaDadosPessoais = ({
   onCopyToClipboard,
   onContractAction,
   contratosAtivos = true,
+  onEnviarWhatsApp,
 }: Pick<
   CarteirinhaInfoProps,
   | "passageiro"
@@ -356,6 +360,7 @@ export const CarteirinhaDadosPessoais = ({
   | "onCopyToClipboard"
   | "onContractAction"
   | "contratosAtivos"
+  | "onEnviarWhatsApp"
 >) => {
   const isContractActionDisabled =
     !contratosAtivos &&
@@ -367,11 +372,11 @@ export const CarteirinhaDadosPessoais = ({
       return {
         title: "Contrato Assinado",
         desc: "Documento oficial assinado eletronicamente",
-        color: "bg-emerald-50/40 border-emerald-100/80 hover:bg-emerald-50 hover:border-emerald-200/50",
+        color: "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
         iconColor: "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-sm",
         icon: FileCheck2,
         actionLabel: "Visualizar",
-        actionColor: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/10",
+        actionColor: "bg-white border border-[#1a3a5c] text-[#1a3a5c] hover:bg-slate-50 shadow-sm shadow-[#1a3a5c]/5",
         actionIcon: ExternalLink,
       };
     }
@@ -382,9 +387,9 @@ export const CarteirinhaDadosPessoais = ({
         color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
         iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-sm",
         icon: Clock,
-        actionLabel: "Ver contrato",
-        actionColor: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/10",
-        actionIcon: ExternalLink,
+        actionLabel: "Reenviar Contrato",
+        actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
+        actionIcon: WhatsAppIcon,
       };
     }
 
@@ -424,6 +429,12 @@ export const CarteirinhaDadosPessoais = ({
       });
       return;
     }
+
+    if (passageiro.status_contrato === ContratoStatus.PENDENTE && onEnviarWhatsApp) {
+      onEnviarWhatsApp(passageiro);
+      return;
+    }
+
     onContractAction();
   };
 
@@ -481,9 +492,8 @@ export const CarteirinhaDadosPessoais = ({
               </div>
             </span>
             <div className="text-[11px] font-medium text-slate-500 flex flex-col mt-1 gap-0.5">
-              <span>{phoneMask(passageiro.telefone_responsavel)}</span>
-              {passageiro.cpf_responsavel && <span>{cpfMask(passageiro.cpf_responsavel)}</span>}
-              {passageiro.email_responsavel && <span className="truncate max-w-[180px] sm:max-w-xs">{passageiro.email_responsavel}</span>}
+              <span className="flex items-center gap-1.5"><Phone className="h-3 w-3 text-slate-400" />{phoneMask(passageiro.telefone_responsavel)}</span>
+              {passageiro.cpf_responsavel && <span className="flex items-center gap-1.5"><IdCard className="h-3 w-3 text-slate-400" />{cpfMask(passageiro.cpf_responsavel)}</span>}
             </div>
           </div>
           <Button

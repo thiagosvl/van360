@@ -6,7 +6,7 @@ export interface PrePassageiro {
 
     nome: string;
     nome_responsavel: string;
-    email_responsavel: string;
+
     cpf_responsavel: string;
     telefone_responsavel: string;
     periodo: string;
