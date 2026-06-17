@@ -17,7 +17,7 @@ export interface PostRegisterData {
 }
 
 export interface DuplicateError {
-  field: "email" | "cpfcnpj" | "generic";
+  field: "email" | "cpfcnpj" | "telefone" | "generic";
   message: string;
 }
 
@@ -73,6 +73,7 @@ export function useRegisterController() {
   const handleFinalRegister = async (data: RegisterFormData) => {
     try {
       setLoading(true);
+      setDuplicateError(null);
       const referralCode = localStorage.getItem("van360_referral_code") || undefined;
       const result = await usuarioApi.registrar({
         ...data,
@@ -156,12 +157,16 @@ export function useRegisterController() {
       // Detectar erro de duplicidade
       const isDuplicateEmail =
         respData?.field === "email" ||
-        errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já"));
+        (errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
       const isDuplicateCpf =
         respData?.field === "cpfcnpj" ||
         (errorMsg.includes("cpf") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
+      const isDuplicatePhone =
+        respData?.field === "telefone" ||
+        (errorMsg.includes("telefone") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
 
       if (isDuplicateEmail) {
+        form.setError("email", { message: "Este email já está em uso." });
         setDuplicateError({
           field: "email",
           message: "Este email já está cadastrado.",
@@ -170,9 +175,19 @@ export function useRegisterController() {
       }
 
       if (isDuplicateCpf) {
+        form.setError("cpfcnpj", { message: "Este CPF já está em uso." });
         setDuplicateError({
           field: "cpfcnpj",
           message: "Este CPF já está cadastrado.",
+        });
+        return;
+      }
+
+      if (isDuplicatePhone) {
+        form.setError("telefone", { message: "Este telefone já está em uso." });
+        setDuplicateError({
+          field: "telefone",
+          message: "Este telefone já está cadastrado.",
         });
         return;
       }
@@ -181,7 +196,7 @@ export function useRegisterController() {
       if (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate")) {
         setDuplicateError({
           field: "generic",
-          message: "Email ou CPF já cadastrado.",
+          message: "Este cadastro já existe no sistema.",
         });
         return;
       }

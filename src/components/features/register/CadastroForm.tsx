@@ -224,13 +224,6 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         )}
       />
 
-      <div className="flex items-center justify-center gap-2 text-xs text-emerald-700 opacity-80">
-        <Lock className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-        <span className="font-medium">
-          Dados protegidos com criptografia de ponta a ponta.
-        </span>
-      </div>
-
       <TermosDialog open={openTermos} onOpenChange={setOpenTermos} />
       <PoliticaPrivacidadeDialog open={openPolitica} onOpenChange={setOpenPolitica} />
     </div>

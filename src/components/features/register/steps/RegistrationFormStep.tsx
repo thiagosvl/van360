@@ -34,7 +34,7 @@ export function RegistrationFormStep({
         >
           <CadastroForm form={form} />
 
-          <div className="pt-4 space-y-4">
+          <div className="space-y-4">
             {duplicateError && onDismissDuplicateError && (
               <DuplicateErrorBanner
                 error={duplicateError}
