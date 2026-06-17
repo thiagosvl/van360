@@ -373,7 +373,7 @@ const SubscriptionPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Main Column (2/3 desktop) */}
-          <div className="lg:col-span-2 space-y-12">
+          <div className="lg:col-span-2 space-y-8">
 
             {/* 1. Histórico de Faturas: PRIORIDADE */}
             <section className="space-y-3">
@@ -550,17 +550,16 @@ const SubscriptionPage = () => {
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
-          <aside className="lg:col-span-1 mt-4">
-            <div className="flex items-center justify-between px-1 pb-4">
+          <aside className="lg:col-span-1 space-y-3">
+            <div className="flex items-center justify-between px-1">
               <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Indique e Ganhe</h4>
             </div>
             <div className="bg-white border border-slate-100 rounded-[22px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-[#f0f6fc] rounded-full -mr-20 -mt-20 blur-3xl"></div>
 
               <div className="relative z-10 space-y-3 lg:space-y-8">
                 <div className="space-y-3">
-                  <p className="font-normal text-sm sm:text-base leading-[1.1] text-primary">
-                    Convide colegas e ganhe <span className="text-primary font-black">mensalidades grátis</span>
+                  <p className="font-normal text-sm sm:text-base text-primary">
+                    Convide colegas e <span className="text-primary font-black"> ganhe mensalidades grátis</span>
                   </p>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed">
                     A cada motorista indicado que assinar o Van360, você ganha {bonusDaysPerReferral} dias grátis.
