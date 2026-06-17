@@ -41,7 +41,7 @@ export const ShortcutCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col items-center justify-center p-3.5 max-[320px]:p-2 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-soft-xl hover:-translate-y-1 active:scale-[0.96] h-[104px] max-[320px]:h-[90px] w-full group select-none cursor-pointer overflow-hidden relative",
+        "flex flex-col items-center justify-center p-3.5 max-[320px]:p-2 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-soft-xl hover:-translate-y-1 active:scale-[0.96] h-[104px] max-[320px]:h-[90px] w-full group select-none cursor-pointer relative transform-gpu",
         isActive ? activeStyles : "hover:border-slate-200",
         className,
       )}

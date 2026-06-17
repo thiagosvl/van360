@@ -50,6 +50,7 @@ export function GerarContratoValidadorDialog({
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
       maxWidth="md"
+      lockClose
     >
       <BaseDialog.Header
         title="Completar Cadastro"
@@ -248,12 +249,6 @@ export function GerarContratoValidadorDialog({
       </BaseDialog.Body>
 
       <BaseDialog.Footer>
-        <BaseDialog.Action
-          variant="secondary"
-          label="Cancelar"
-          onClick={onClose}
-          disabled={isSubmitting || isLoadingPassageiro}
-        />
         <BaseDialog.Action
           label="Salvar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
