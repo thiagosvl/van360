@@ -1,5 +1,7 @@
 import { useAdminStats } from "@/hooks/api/adminHooks";
 import { useNavigate } from "react-router-dom";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useEffect } from "react";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 import { phoneMask } from "@/utils/masks";
 import { ROUTES } from "@/constants/routes";
@@ -49,7 +51,12 @@ function formatDate(iso: string) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
+
+  useEffect(() => {
+    setPageTitle("Dashboard");
+  }, [setPageTitle]);
 
   if (isLoading) {
     return (

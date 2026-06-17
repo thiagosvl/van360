@@ -28,7 +28,7 @@ const STATUS_FILTERS = [
 
 export default function AdminUsers() {
   const navigate = useNavigate();
-  const { openAdminCreateUserDialog } = useLayout();
+  const { openAdminCreateUserDialog, setPageTitle } = useLayout();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -42,6 +42,10 @@ export default function AdminUsers() {
     search: debouncedSearch || undefined,
     status: statusFilter || undefined,
   });
+
+  useEffect(() => {
+    setPageTitle("Usuários");
+  }, [setPageTitle]);
 
   const users = data?.data ?? [];
   const total = data?.total ?? 0;

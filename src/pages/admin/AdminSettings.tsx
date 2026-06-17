@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAdminConfigs, useUpdateConfig, useAdminPlans, useUpdatePlan } from "@/hooks/api/adminHooks";
+import { useLayout } from "@/contexts/LayoutContext";
 import { Save, Loader2, Settings, Bell, DollarSign, Gift, CreditCard, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
@@ -100,6 +101,7 @@ const CONFIG_DEFS: ConfigFieldDef[] = [
 ];
 
 export default function AdminSettings() {
+  const { setPageTitle } = useLayout();
   const { data: configs, isLoading: isConfigsLoading } = useAdminConfigs();
   const updateConfig = useUpdateConfig();
   const [values, setValues] = useState<Record<string, string>>({});
@@ -111,6 +113,10 @@ export default function AdminSettings() {
   const [planValues, setPlanValues] = useState<Record<string, { valor: string; valor_promocional: string }>>({});
   const [planDirty, setPlanDirty] = useState<Set<string>>(new Set());
   const [savingPlans, setSavingPlans] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setPageTitle("Configurações");
+  }, [setPageTitle]);
 
   useEffect(() => {
     if (configs) {

@@ -76,13 +76,21 @@ export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
   const { data, isLoading } = useAdminUserDetails(id!);
   const updateUser = useUpdateUserAdmin();
   const updateSub = useUpdateSubscriptionAdmin();
+
+  useEffect(() => {
+    if (data?.user?.nome) {
+      setPageTitle(data.user.nome);
+    } else {
+      setPageTitle("Detalhes do Usuário");
+    }
+  }, [setPageTitle, data?.user?.nome]);
 
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab") as AdminUserTab;

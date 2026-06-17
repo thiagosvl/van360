@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminCalculator } from "@/hooks/business/admin/useAdminCalculator";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useEffect } from "react";
 import { CalculatorBaseTab } from "@/components/features/admin/calculator/CalculatorBaseTab";
 import { CalculatorAddonTab } from "@/components/features/admin/calculator/CalculatorAddonTab";
 import { CalculatorConsolidatedTab } from "@/components/features/admin/calculator/CalculatorConsolidatedTab";
@@ -11,7 +12,11 @@ import { toast } from "@/utils/notifications/toast";
 
 export default function AdminCalculator() {
   const calcHook = useAdminCalculator();
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
+
+  useEffect(() => {
+    setPageTitle("Calculadora");
+  }, [setPageTitle]);
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
