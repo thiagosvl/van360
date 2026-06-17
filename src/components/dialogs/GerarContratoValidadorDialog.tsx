@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { ptBR } from "date-fns/locale";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseLocalDate, getStartOfDayBR } from "@/utils/dateUtils";
-import { useGerarContratoValidadorViewModel, GerarContratoValidadorDialogProps } from "@/hooks/ui/useGerarContratoValidadorViewModel";
+import { useGerarContratoValidadorViewModel } from "@/hooks/ui/useGerarContratoValidadorViewModel";
 
 import { cpfMask } from "@/utils/masks";
 
@@ -25,7 +25,7 @@ export function GerarContratoValidadorDialog({
   onClose,
   passageiroId,
   onSuccess,
-}: GerarContratoValidadorDialogProps) {
+}: any) {
   const {
     form,
     passageiro,

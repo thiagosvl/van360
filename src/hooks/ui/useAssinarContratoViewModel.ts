@@ -58,7 +58,8 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
         metadados,
       });
 
-      setModalAberto(false);
+      // Não fechamos o modal aqui. Ele será desmontado automaticamente 
+      // quando a página receber o status ASSINADO e mudar a tela de fundo.
     } catch (error: any) {
       toast.error("contrato.erro.assinar");
     }
