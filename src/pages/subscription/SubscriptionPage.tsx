@@ -136,7 +136,7 @@ const SubscriptionPage = () => {
   const handleCancelSubscription = () => {
     openConfirmationDialog({
       title: "Cancelar Assinatura",
-      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso aos recursos e não será mais cobrado.",
+      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso as funcionalidades e não será mais cobrado.",
       confirmText: "Sim, Cancelar",
       cancelText: "Voltar",
       variant: "destructive",
@@ -235,8 +235,8 @@ const SubscriptionPage = () => {
                 <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">Acesso Suspenso</h3>
                 <p className="text-white/80 font-medium leading-relaxed">
                   {isTrialExpired
-                    ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todos os recursos."
-                    : "Sua assinatura expirou. Renove para continuar usando todos os recursos."}
+                    ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todas as funcionalidades."
+                    : "Sua assinatura expirou. Renove para continuar usando todas as funcionalidades."}
                 </p>
                 {referral?.hasActiveDiscount && (
                   <div className="mt-2 inline-flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-white font-bold text-[11px] uppercase tracking-wide animate-pulse">

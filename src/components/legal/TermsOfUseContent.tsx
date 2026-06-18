@@ -31,12 +31,12 @@ export function TermsOfUseContent() {
 
       <SectionTitle icon={Wallet} colorClass="bg-blue-50 text-blue-600">3. Planos e Acesso</SectionTitle>
       <p className="text-slate-500 leading-relaxed text-[0.95rem]">
-        O <strong className="text-[#1a3a5c]">Van360</strong> oferece um período gratuito de 15 dias para novos cadastros. Após este período, o acesso contínuo aos recursos de gestão e automação está condicionado à assinatura de um dos planos vigentes no site. O usuário será notificado sobre o fim do período de testes.
+        O <strong className="text-[#1a3a5c]">Van360</strong> oferece um período gratuito de 15 dias para novos cadastros. Após este período, o acesso contínuo as funcionalidades de gestão e automação está condicionado à assinatura de um dos planos vigentes no site. O usuário será notificado sobre o fim do período de testes.
       </p>
 
       <SectionTitle icon={MessageSquare} colorClass="bg-blue-50 text-blue-600">4. Comunicação e WhatsApp</SectionTitle>
       <p className="text-slate-500 leading-relaxed text-[0.95rem]">
-        A plataforma disponibiliza ferramentas para facilitar a comunicação entre motorista e responsáveis via WhatsApp. O usuário concorda em utilizar este recurso de forma ética, sendo proibido o envio de SPAM. O Van360 não se responsabiliza por eventuais instabilidades ou bloqueios decorrentes do uso inadequado das ferramentas de terceiros.
+        A plataforma disponibiliza ferramentas para facilitar a comunicação entre motorista e responsáveis via WhatsApp. O usuário concorda em utilizar esta funcionalidade de forma ética, sendo proibido o envio de SPAM. O Van360 não se responsabiliza por eventuais instabilidades ou bloqueios decorrentes do uso inadequado das ferramentas de terceiros.
       </p>
     </div>
   );

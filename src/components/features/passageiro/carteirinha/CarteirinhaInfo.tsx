@@ -425,7 +425,7 @@ export const CarteirinhaDadosPessoais = ({
     if (isContractActionDisabled) {
       toast.warning("Ative o uso de Contratos", {
         description:
-          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos'.",
+          "Para gerar novos contratos, primeiro ative a funcionalidade acessando a aba 'Contratos'.",
       });
       return;
     }
