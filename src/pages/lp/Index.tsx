@@ -211,7 +211,7 @@ const Index = () => {
           },
           {
             "@type": "Question",
-            "name": "Preciso de cartão de crédito para começar?",
+            "name": "Preciso pagar para começar a utilizar?",
             "acceptedAnswer": { "@type": "Answer", "text": "Não. Os 15 dias de teste são 100% grátis, sem cadastrar cartão, sem compromisso. Você usa tudo, com seus dados reais, e só decide depois." },
           },
           {
@@ -820,7 +820,7 @@ const Index = () => {
               a="O Van360 organiza a gestão da sua van escolar: cadastro de passageiros, controle de mensalidades, geração de contratos digitais e emissão de recibos. Tudo pelo celular, em um lugar só."
             />
             <FaqItem
-              q="Preciso de cartão de crédito para começar?"
+              q="Preciso pagar para começar a utilizar?"
               a="Não. Os 15 dias de teste são 100% grátis, sem cadastrar cartão, sem compromisso. Você usa tudo, com seus dados reais, e só decide depois."
             />
             <FaqItem
@@ -845,7 +845,7 @@ const Index = () => {
             />
             <FaqItem
               q="Como funciona o programa de indicações?"
-              a="É muito simples! Dentro do aplicativo, na tela de assinaturas, você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas motoristas pelo WhatsApp. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha bônus adicionais gratuitos em sua conta (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na primeira contratação. Ambos ganham!"
+              a="É muito simples! Dentro do aplicativo, na tela de assinaturas, você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas motoristas pelo WhatsApp. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha mensalidades gratuitas (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na assinatura. Ambos ganham!"
             />
           </div>
         </div>
