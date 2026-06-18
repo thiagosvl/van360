@@ -6,13 +6,18 @@ import { useCookieConsent } from "@/hooks/business/useCookieConsent";
 import { getWhatsAppUrl } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useSEO } from "@/hooks/useSEO";
+
 import {
   CheckCircle2,
   ChevronDown,
   Lightbulb,
   Star,
   Users,
+  Share2,
+  UserPlus,
+  Gift,
 } from "lucide-react";
+
 import { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePublicPlans } from "@/hooks/api/usePublicPlans";
@@ -102,7 +107,7 @@ function InlineCta({ label = "Começar grátis — 15 dias sem cartão", to }: {
           {label}
         </Link>
         <p className="text-[0.8rem] text-slate-400 mt-2">
-          Sem cartão de crédito · Sem compromisso
+          Sem cartão · Sem compromisso
         </p>
       </div>
     </Reveal>
@@ -373,20 +378,20 @@ const Index = () => {
                 >
                   Começar grátis — 15 dias sem cartão
                 </Link>
-                <p className="text-[0.82rem] text-slate-400">
+                {/* <p className="text-[0.82rem] text-slate-400">
                   Depois, a partir de{" "}
                   <strong className="text-[#1a3a5c]">R$ {pricing.highlightFormatted}/mês</strong>
-                </p>
+                </p> */}
               </div>
 
               {/* Stats */}
               <div className="grid grid-cols-3 max-[363px]:gap-2 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
                 {[
-                  { num: "1 App", label: "abandone planilhas e caderninho" },
-                  { num: "5 min", label: "pra organizar e começar a usar" },
-                  { num: "100%", label: "do financeiro na palma da mão" },
+                  { num: "R$ 0", label: "pra começar — sem cartão" },
+                  { num: "< 5 min", label: "do cadastro ao 1º passageiro" },
+                  { num: "24/7", label: "acesse de qualquer lugar" },
                 ].map((s) => (
-                  <div key={s.label} className="text-center md:text-left">
+                  <div key={s.label} className="text-center">
                     <div
                       className="max-[363px]:text-xl text-2xl font-black text-[#1a3a5c] leading-none whitespace-nowrap"
                       style={{ animation: "lp-countUp .6s ease both" }}
@@ -422,92 +427,58 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Você conhece essa rotina?
+              Já passou por alguma dessas situações?
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
-              Se pelo menos uma bateu, o Van360 resolve.
+              <span className="md:hidden">Deslize para o lado e veja</span>
+              <span className="hidden md:inline">Veja</span> se alguma dessas dores bate com o seu dia a dia. Se sim, o Van360 resolve.
             </p>
           </Reveal>
 
-          <div className="max-w-[680px] mx-auto grid gap-4">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-8 pt-2 overflow-x-auto md:overflow-visible snap-x snap-mandatory hide-scrollbar pb-6 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0">
             {[
               {
                 icon: "📒",
-                text: (
-                  <>
-                    Controla tudo no{" "}
-                    <strong className="text-[#1a3a5c]">planilha ou caderninho</strong>{" "}
-                    e no fim do mês não sabe quanto entrou.
-                  </>
-                ),
+                title: "Descontrole Financeiro",
+                text: "Anota tudo no caderninho e no fim do mês não sabe o que entrou e o que não entrou.",
               },
               {
                 icon: "⏰",
-                text: (
-                  <>
-                    Perde{" "}
-                    <strong className="text-[#1a3a5c]">horas cadastrando passageiro por passageiro</strong>{" "}
-                    — nome, endereço, escola, responsável — tudo na mão.
-                  </>
-                ),
-              },
-              {
-                icon: "😬",
-                text: (
-                  <>
-                    Confere{" "}
-                    <strong className="text-[#1a3a5c]">um por um</strong>{" "}
-                    quem pagou e quem não pagou — e ainda erra.
-                  </>
-                ),
+                title: "Trabalho Manual",
+                text: "Perde horas cadastrando alunos e conferindo pagamentos um a um na mão.",
               },
               {
                 icon: "😤",
-                text: (
-                  <>
-                    Já teve{" "}
-                    <strong className="text-[#1a3a5c]">problema com responsável</strong>{" "}
-                    porque o combinado era de boca e cada um lembrou diferente.
-                  </>
-                ),
+                title: "Combinados de Boca",
+                text: "Gera estresse com os responsáveis porque os acordos não ficam registrados.",
               },
               {
                 icon: "📱",
-                text: (
-                  <>
-                    Perde{" "}
-                    <strong className="text-[#1a3a5c]">horas no WhatsApp</strong>{" "}
-                    tirando dúvida, anotando dados e conferindo pagamento.
-                  </>
-                ),
+                title: "Sufoco no WhatsApp",
+                text: "Gasta o seu tempo de descanso tirando dúvidas e cobrando mensalidades.",
               },
               {
                 icon: "🧾",
-                text: (
-                  <>
-                    Responsável pede{" "}
-                    <strong className="text-[#1a3a5c]">recibo ou contrato</strong>{" "}
-                    e você não tem nada pronto.
-                  </>
-                ),
+                title: "Falta de Documentos",
+                text: "Responsável pede recibo ou contrato e você não tem nada pronto para enviar.",
               },
               {
                 icon: "💼",
-                text: (
-                  <>
-                    Trabalha muito mas{" "}
-                    <strong className="text-[#1a3a5c]">ninguém leva a sério</strong>{" "}
-                    como profissional.
-                  </>
-                ),
+                title: "Imagem Amadora",
+                text: "Você trabalha duro, mas a falta de organização não passa profissionalismo.",
               },
             ].map((item, i) => (
-              <Reveal key={i}>
-                <div className="flex items-start gap-3.5 bg-white p-5 rounded-lg border-l-4 border-[#dc2626] shadow-[0_2px_12px_rgba(0,0,0,.08)] text-left">
-                  <span className="text-xl flex-shrink-0">{item.icon}</span>
-                  <p className="text-[0.95rem] leading-relaxed">{item.text}</p>
-                </div>
-              </Reveal>
+              <div key={i} className="flex-none w-[85%] sm:w-[50%] md:w-auto snap-center">
+                <Reveal>
+                  <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#f59e0b]/40 transition-all hover:-translate-y-1 h-full text-left flex flex-col">
+                    <div className="w-14 h-14 bg-[#f59e0b]/10 text-[#d97706] rounded-xl flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:bg-[#f59e0b]/20 transition-all">
+                      {item.icon}
+                    </div>
+                    <h3 className="text-[#1a3a5c] font-bold text-[1.1rem] mb-2">{item.title}</h3>
+                    <p className="text-slate-500 text-[0.95rem] leading-relaxed flex-1">{item.text}</p>
+                  </div>
+                </Reveal>
+              </div>
             ))}
           </div>
         </div>
@@ -706,134 +677,85 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ══════════ PROVA SOCIAL ══════════ */}
-      {/* TODO: Substituir por depoimentos reais quando disponíveis */}
-      <section className="py-14 md:py-20 bg-white">
-        <div className="max-w-[1120px] mx-auto px-5 text-center">
-          <Reveal>
-            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-10">
-              Feito por quem conhece a rotina da van
-            </h2>
-          </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-[900px] mx-auto">
-            {[
-              {
-                icon: <Users className="w-7 h-7 text-[#f59e0b]" />,
-                text: "Testado por motoristas reais antes do lançamento.",
-              },
-              {
-                icon: <Lightbulb className="w-7 h-7 text-[#f59e0b]" />,
-                text: "Pensado em cada detalhe, ouvindo quem vive o transporte escolar todo dia.",
-              },
-              {
-                icon: <WhatsAppIcon className="w-7 h-7 text-[#f59e0b]" />,
-                text: "Suporte direto pelo WhatsApp — fala com gente, não com robô.",
-              },
-            ].map((card, i) => (
-              <Reveal key={i}>
-                <div className="bg-white rounded-xl p-7 shadow-[0_2px_16px_rgba(0,0,0,.07)] flex flex-col items-center gap-4 text-center h-full">
-                  <div className="w-14 h-14 rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0">
-                    {card.icon}
-                  </div>
-                  <p className="text-[0.97rem] text-slate-600 leading-relaxed">
-                    {card.text}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════ EM BREVE ══════════ */}
-      <section className="py-12 md:py-16 bg-white">
-        <div className="max-w-[700px] mx-auto px-5 text-center">
-          <Reveal>
-            <p className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest mb-3">
-              Em breve
-            </p>
-            <h2 className="text-[clamp(1.3rem,3vw,1.75rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-8">
-              E tem mais vindo por aí
-            </h2>
-          </Reveal>
-
-          <div className="grid gap-6 text-left max-w-[540px] mx-auto">
-            <Reveal>
-              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
-                <span className="text-2xl flex-shrink-0">💸</span>
-                <div>
-                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Cobrança automática por Pix</h3>
-                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
-                    O responsável recebe, paga e o sistema dá baixa sozinho. Você não precisa cobrar ninguém.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal>
-              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
-                <span className="text-2xl flex-shrink-0">🗺️</span>
-                <div>
-                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Rotas e itinerários</h3>
-                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
-                    Monte suas rotas, organize os pontos de embarque e otimize seu trajeto diário.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal>
-              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
-                <span className="text-2xl flex-shrink-0">👨‍👩‍👦</span>
-                <div>
-                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">App para os pais</h3>
-                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
-                    O responsável acompanha tudo pelo celular — pagamentos, contrato, dados do filho. Menos WhatsApp pra você.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal>
-              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
-                <span className="text-2xl flex-shrink-0">🚌</span>
-                <div>
-                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Fretamentos e Viagens</h3>
-                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
-                    Organize passeios e excursões. Registre suas viagens extras, controle quem já pagou e acompanhe quanto você faturou no mês.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
 
       {/* ══════════ INDIQUE E GANHE ══════════ */}
       <section className="py-14 md:py-20 bg-gradient-to-b from-white to-[#f9f9f7]">
         <div className="max-w-[1000px] mx-auto px-5">
           <Reveal>
-            <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1a3a5c] to-[#244c75] p-8 md:p-12 text-white shadow-xl text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-8 border border-white/5">
+            <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1a3a5c] to-[#244c75] p-8 md:p-12 text-white shadow-xl flex flex-col items-center gap-10 border border-white/5 text-center">
               {/* Background Glow */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full -ml-32 -mb-32 blur-3xl opacity-50"></div>
 
-              <div className="relative z-10 space-y-4 max-w-[580px]">
-                <div className="inline-flex items-center gap-1.5 bg-amber-500/25 px-3.5 py-1.5 rounded-full border border-amber-500/30 text-amber-300 font-black text-[10px] sm:text-xs uppercase tracking-wider">
+              <div className="relative z-10 space-y-4 max-w-[680px]">
+                <div className="inline-flex items-center gap-1.5 bg-amber-500/25 px-3.5 py-1.5 rounded-full border border-amber-500/30 text-amber-300 font-black text-[10px] sm:text-xs uppercase tracking-wider mx-auto">
                   🎁 Indique e Ganhe
                 </div>
                 <h2 className="text-[clamp(1.4rem,3vw,2.1rem)] font-black leading-tight tracking-tight">
                   Use o Van360 sem pagar nada convidando colegas
                 </h2>
                 <p className="text-[0.92rem] opacity-80 leading-relaxed">
-                  Gostou da facilidade? Indique o aplicativo para outros motoristas de transporte escolar. Quando um colega se cadastrar com o seu convite e assinar, <strong className="font-bold text-amber-300">você ganha mensalidades gratuitas</strong> em sua assinatura e <strong className="font-bold text-amber-300">ele recebe um desconto especial</strong> na primeira contratação!
+                  Indique o Van360 para outros motoristas. É simples e os dois ganham:
                 </p>
               </div>
 
+              {/* Timeline Grid */}
+              <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-3 gap-8 mt-2">
+                {/* Connecting Line (Desktop) */}
+                <div className="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-0.5 border-t-2 border-dashed border-white/10 -translate-y-1/2 z-0"></div>
+
+                {/* Connecting Line (Mobile) */}
+                <div className="absolute left-1/2 top-[40px] bottom-[40px] w-0.5 border-l-2 border-dashed border-white/10 -translate-x-1/2 z-0 md:hidden"></div>
+
+                {/* Step 1 */}
+                <div className="relative z-10 flex flex-col items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all hover:bg-white/10 hover:scale-[1.02] hover:border-amber-500/30 duration-300 group">
+                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center relative mb-4 border border-white/15 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
+                    <Share2 className="w-6 h-6 text-amber-300 group-hover:text-slate-950 transition-colors" />
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center border border-[#1a3a5c] group-hover:bg-white group-hover:text-amber-600 transition-colors">
+                      1
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-white text-base mb-2">Envie seu link</h3>
+                  <p className="text-[0.82rem] text-white/70 leading-relaxed">
+                    Compartilhe seu link exclusivo com outros motoristas de van.
+                  </p>
+                </div>
+
+                {/* Step 2 */}
+                <div className="relative z-10 flex flex-col items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all hover:bg-white/10 hover:scale-[1.02] hover:border-amber-500/30 duration-300 group">
+                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center relative mb-4 border border-white/15 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
+                    <UserPlus className="w-6 h-6 text-amber-300 group-hover:text-slate-950 transition-colors" />
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center border border-[#1a3a5c] group-hover:bg-white group-hover:text-amber-600 transition-colors">
+                      2
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-white text-base mb-2">Ele se cadastra</h3>
+                  <p className="text-[0.82rem] text-white/70 leading-relaxed">
+                    Seu colega cria a conta gratuita através do link enviado.
+                  </p>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative z-10 flex flex-col items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all hover:bg-white/10 hover:scale-[1.02] hover:border-amber-500/30 duration-300 group">
+                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center relative mb-4 border border-white/15 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
+                    <Gift className="w-6 h-6 text-amber-300 group-hover:text-slate-950 transition-colors" />
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center border border-[#1a3a5c] group-hover:bg-white group-hover:text-amber-600 transition-colors">
+                      3
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-white text-base mb-2">Ambos ganham!</h3>
+                  <p className="text-[0.82rem] text-white/70 leading-relaxed">
+                    Quando ele assinar, você ganha 1 mensalidade grátis e ele recebe desconto.
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA and Subtext */}
               <div className="relative z-10 shrink-0 flex flex-col items-center gap-2.5">
                 <Link
                   to={CTA}
-                  className="w-full md:w-auto inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-slate-950 font-black text-sm px-8 py-4 rounded-xl shadow-lg active:scale-95 hover:-translate-y-0.5 transition-all text-center whitespace-nowrap min-h-[44px]"
+                  className="w-full md:w-auto inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-slate-950 font-black text-sm px-10 py-4 rounded-xl shadow-lg active:scale-95 hover:-translate-y-0.5 transition-all text-center whitespace-nowrap min-h-[44px]"
                 >
                   Começar agora
                 </Link>
@@ -894,6 +816,70 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ══════════ EM BREVE ══════════ */}
+      <section className="py-12 md:py-16 bg-gradient-to-b from-[#f9f9f7] to-white">
+        <div className="max-w-[700px] mx-auto px-5 text-center">
+          <Reveal>
+            <p className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest mb-3">
+              Em breve
+            </p>
+            <h2 className="text-[clamp(1.3rem,3vw,1.75rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-8">
+              E tem mais vindo por aí
+            </h2>
+          </Reveal>
+
+          <div className="grid gap-6 text-left max-w-[540px] mx-auto">
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">🗺️</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Rotas e itinerários</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    Monte suas rotas, organize os pontos de embarque e otimize seu trajeto diário.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">🚌</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Fretamentos e Viagens</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    Organize passeios e excursões. Registre suas viagens extras, controle quem já pagou e acompanhe quanto você faturou no mês.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">👨‍👩‍👦</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">App para os pais</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    O responsável acompanha tudo pelo celular — pagamentos, contrato, dados do filho. Menos WhatsApp pra você.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
+                <span className="text-2xl flex-shrink-0">💸</span>
+                <div>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Cobrança automática por Pix</h3>
+                  <p className="text-[0.88rem] text-slate-500 leading-relaxed">
+                    O responsável recebe, paga e o sistema dá baixa sozinho. Você não precisa cobrar ninguém.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* ══════════ CTA FINAL ══════════ */}
       <section className="bg-gradient-to-br from-[#1a3a5c] to-[#234b73] text-white py-16 md:py-20">
         <div className="max-w-[1120px] mx-auto px-5 text-center">
@@ -915,7 +901,7 @@ const Index = () => {
               Começar grátis — 15 dias sem cartão
             </Link>
             <p className="text-[0.85rem] opacity-60 mt-4">
-              Depois, a partir de R$ {pricing.highlightFormatted}/mês · Preço de fundador
+              Depois, a partir de R$ {pricing.highlightFormatted}/mês
             </p>
           </Reveal>
         </div>
