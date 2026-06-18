@@ -10,9 +10,7 @@ import { useSEO } from "@/hooks/useSEO";
 import {
   CheckCircle2,
   ChevronDown,
-  Lightbulb,
   Star,
-  Users,
   Share2,
   UserPlus,
   Gift,
@@ -57,6 +55,23 @@ function Reveal({
   return (
     <div ref={ref} className={`lp-reveal ${className}`}>
       {children}
+    </div>
+  );
+}
+
+function WhatsAppBalloon({ text, delay = "1s", positionClass = "top-6 -left-6" }: { text: string, delay?: string, positionClass?: string }) {
+  return (
+    <div
+      className={`absolute bg-white/95 backdrop-blur-md rounded-xl md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2 md:p-3 border border-slate-100 max-w-[150px] md:max-w-[220px] z-20 pointer-events-none ${positionClass}`}
+      style={{ animation: `lp-countUp .6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay} both` }}
+    >
+      <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-1.5">
+        <div className="w-3.5 h-3.5 md:w-5 md:h-5 rounded-full bg-[#25D366]/15 flex items-center justify-center flex-shrink-0">
+          <WhatsAppIcon className="w-2 h-2 md:w-3 md:h-3 text-[#25D366]" />
+        </div>
+        <div className="text-[0.55rem] md:text-[0.65rem] font-bold text-slate-400 uppercase tracking-wider">WhatsApp enviado</div>
+      </div>
+      <div className="text-[0.65rem] md:text-[0.75rem] text-[#1a3a5c] font-medium leading-snug">{text}</div>
     </div>
   );
 }
@@ -235,37 +250,48 @@ const Index = () => {
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
   const planFeatures = [
-    "Passageiros ilimitados",
-    "Controle de mensalidades",
-    "Contratos digitais",
-    "Recibos automáticos",
-    "App Android + acesso web",
+    "Controle financeiro (Mensalidades, Gastos e Relatórios)",
+    "Cobrança automática dos pais via WhatsApp",
+    "Geração de Recibos e Contratos automáticos",
+    "Ilimitado: Passageiros, Escolas e Veículos",
+    "Acesso no App Android, Tablet e Computador",
   ];
 
   const features = [
+    {
+      headline: "Lembretes de cobrança no piloto automático",
+      text: "Chega de se desgastar cobrando mensalidade. O Van360 envia mensagens automáticas no WhatsApp do responsável antes, no dia e depois do vencimento.",
+      mockup: "/assets/lp/mockup-mensalidades.png",
+      alt: "Tela de controle de mensalidades do Van360",
+      balloonText: "A mensalidade do Enzo vence hoje!",
+    },
     {
       headline: "Todos os seus passageiros em um só lugar",
       text: "Cadastre alunos e responsáveis — ou mande o link pro pai e ele cadastra o filho direto. Sem você precisar anotar nada.",
       mockup: "/assets/lp/mockup-passageiros.png",
       alt: "Tela de gestão de passageiros do Van360",
+      balloonText: "Clique no link e cadastre o seu filho na van.",
     },
     {
       headline: "Veja quem já pagou e quem está devendo.",
       text: "Registre pagamentos e acompanhe o status de cada mensalidade. Dê baixa na hora — pix, dinheiro, transferência.",
       mockup: "/assets/lp/mockup-mensalidades.png",
       alt: "Tela de controle de mensalidades do Van360",
+      balloonText: "A mensalidade do Enzo está atrasada há 3 dias.",
     },
     {
       headline: "Contrato digital com validade jurídica",
       text: "Gere contratos com todos os dados já preenchidos. Assinado digitalmente, com validade legal — protege você e o responsável.",
       mockup: "/assets/lp/mockup-contrato.png",
       alt: "Tela de contrato digital do Van360",
+      balloonText: "O motorista enviou um contrato para assinatura.",
     },
     {
       headline: "Recibo gerado na hora, a cada pagamento",
       text: "Cada pagamento registrado gera um recibo automaticamente. Visualize e compartilhe quando o responsável pedir.",
       mockup: "/assets/lp/mockup-recibo.png",
       alt: "Tela de recibo do Van360",
+      balloonText: "Segue abaixo o recibo de pagamento:",
     },
   ];
 
@@ -354,7 +380,8 @@ const Index = () => {
 
               {/* Mockup — SÓ MOBILE */}
               <div className="flex justify-center md:hidden my-6">
-                <div className="max-w-[360px] w-full">
+                <div className="max-w-[360px] w-full relative">
+                  <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-2 left-0 sm:-left-4" />
                   <MockupImage
                     src="/assets/lp/mockup-mensalidades-2.png"
                     alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
@@ -388,7 +415,7 @@ const Index = () => {
               <div className="grid grid-cols-3 max-[363px]:gap-2 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
                 {[
                   { num: "R$ 0", label: "pra começar — sem cartão" },
-                  { num: "< 5 min", label: "do cadastro ao 1º passageiro" },
+                  { num: "5 min", label: "pra você configurar tudo" },
                   { num: "24/7", label: "acesse de qualquer lugar" },
                 ].map((s) => (
                   <div key={s.label} className="text-center">
@@ -408,7 +435,8 @@ const Index = () => {
 
             {/* Mockup — SÓ DESKTOP */}
             <div className="order-2 hidden md:flex justify-end">
-              <div className="max-w-[480px] w-full hero-phone">
+              <div className="max-w-[480px] w-full hero-phone relative">
+                <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
                 <img
                   src="/assets/lp/mockup-mensalidades-2.png"
                   alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
@@ -455,7 +483,7 @@ const Index = () => {
               {
                 icon: "📱",
                 title: "Sufoco no WhatsApp",
-                text: "Gasta o seu tempo de descanso tirando dúvidas e cobrando mensalidades.",
+                text: "Gasta o seu tempo de descanso cobrando mensalidades e tirando dúvidas.",
               },
               {
                 icon: "🧾",
@@ -468,8 +496,8 @@ const Index = () => {
                 text: "Você trabalha duro, mas a falta de organização não passa profissionalismo.",
               },
             ].map((item, i) => (
-              <div key={i} className="flex-none w-[85%] sm:w-[50%] md:w-auto snap-center">
-                <Reveal>
+              <div key={i} className="flex-none w-[85%] sm:w-[50%] md:w-auto snap-center flex flex-col">
+                <Reveal className="flex-1 flex flex-col">
                   <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#f59e0b]/40 transition-all hover:-translate-y-1 h-full text-left flex flex-col">
                     <div className="w-14 h-14 bg-[#f59e0b]/10 text-[#d97706] rounded-xl flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:bg-[#f59e0b]/20 transition-all">
                       {item.icon}
@@ -506,7 +534,14 @@ const Index = () => {
                     } items-center gap-8 md:gap-12`}
                 >
                   <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
-                    <div className="max-w-[240px] md:max-w-[300px] w-full feature-phone">
+                    <div className="max-w-[240px] md:max-w-[300px] w-full feature-phone relative">
+                      {feat.balloonText && (
+                        <WhatsAppBalloon
+                          text={feat.balloonText}
+                          delay={`${0.5 + i * 0.2}s`}
+                          positionClass={i % 2 === 0 ? "-top-4 -left-8 sm:-left-12 md:left-auto md:-right-28 lg:-right-32" : "-top-4 -left-8 sm:-left-12 md:-left-28 lg:-left-32 md:right-auto"}
+                        />
+                      )}
                       <MockupImage
                         src={feat.mockup}
                         alt={feat.alt}
@@ -626,18 +661,18 @@ const Index = () => {
                 Oferta Fundador
               </span>
 
-              <p className="text-xs text-[#f59e0b] font-bold mt-2 mb-6">
+              {/* <p className="text-xs text-[#f59e0b] font-bold mt-2 mb-6">
                 Para os primeiros motoristas
-              </p>
+              </p> */}
 
               <div className="mb-2">
                 <div className="text-[2.8rem] font-black text-[#1a3a5c] leading-none">
                   15 dias grátis
                 </div>
-                <p className="text-[0.9rem] text-slate-400 mt-5">
-                  De{" "}
+                <p className="text-[0.7rem] text-slate-400 mt-5">
+                  Depois, {" "}
                   <span className="line-through">{SubscriptionUtils.formatCurrency(pricing.original)}</span>
-                  {" "}por
+                  {" "}
                 </p>
                 <div className="mt-0">
                   <span className="text-[1.5rem] font-black text-[#f59e0b]">
