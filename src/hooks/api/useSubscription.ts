@@ -123,7 +123,7 @@ export const useSubscriptionPlans = () => {
   const query = useQuery<PlansResponse>({
     queryKey: ["subscription-plans"],
     queryFn: () => subscriptionApi.getPlans(),
-    staleTime: 1000 * 60 * 60, // Plans don't change often (1 hour)
+    staleTime: 0, // Sempre re-busca para garantir preços atualizados (útil no alt-tab)
   });
 
   return {

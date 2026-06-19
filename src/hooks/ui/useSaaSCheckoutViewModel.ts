@@ -60,7 +60,7 @@ export function useSaaSCheckoutViewModel({
   const { createCheckout } = useSubscriptionCheckout();
   const { referral, isLoading: isLoadingReferral, refetch: refetchReferral } = useSubscriptionReferral(user?.id);
 
-  const plans = plansFromProps || plansFromApi;
+  const plans = plansFromApi || plansFromProps;
   const { isReady: isProviderReady, generatePaymentToken } = usePaymentProvider();
 
   const [step, setStep] = useState(1);
