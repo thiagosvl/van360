@@ -11,10 +11,12 @@ export function useSEO({
   noindex = false,
   title,
   description,
+  canonicalUrl,
 }: {
   noindex?: boolean;
   title?: string;
   description?: string;
+  canonicalUrl?: string;
 } = {}) {
   useEffect(() => {
     // Gerenciar meta tag robots
@@ -51,6 +53,16 @@ export function useSEO({
       descMeta.setAttribute("content", description);
     }
 
+    // Gerenciar tag canonical
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement("link");
+      canonicalLink.setAttribute("rel", "canonical");
+      document.head.appendChild(canonicalLink);
+    }
+    const finalCanonical = canonicalUrl || `https://van360.com.br${window.location.pathname}`;
+    canonicalLink.setAttribute("href", finalCanonical);
+
     // Cleanup: remover meta tag robots ao desmontar se foi adicionada
     return () => {
       if (noindex) {
@@ -60,6 +72,6 @@ export function useSEO({
         }
       }
     };
-  }, [noindex, title, description]);
+  }, [noindex, title, description, canonicalUrl]);
 }
 
