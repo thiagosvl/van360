@@ -27,6 +27,7 @@ import {
   RefreshCw,
   Trash2,
   Filter,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -143,6 +144,8 @@ export default function AdminUserDetails() {
     status: "" as string,
     data_vencimento: "",
     trial_ends_at: "",
+    valor_promocional: "",
+    data_fim_promocao: "",
   });
 
   useEffect(() => {
@@ -165,6 +168,8 @@ export default function AdminUserDetails() {
         status: s.status || "",
         data_vencimento: toDateInputValue(s.data_vencimento),
         trial_ends_at: toDateInputValue(s.trial_ends_at),
+        valor_promocional: s.valor_promocional !== null ? moneyMask((Number(s.valor_promocional) * 100).toString()) : "",
+        data_fim_promocao: toDateInputValue(s.data_fim_promocao),
       });
     }
   }, [data]);
@@ -300,6 +305,13 @@ export default function AdminUserDetails() {
 
   const handleSaveSub = () => {
     if (!id) return;
+
+    let valorPromoNum: number | null = null;
+    if (subForm.valor_promocional) {
+      const clean = subForm.valor_promocional.replace(/\D/g, "");
+      if (clean) valorPromoNum = Number(clean) / 100;
+    }
+
     updateSub.mutate({
       id,
       data: {
@@ -310,6 +322,10 @@ export default function AdminUserDetails() {
           : null,
         trial_ends_at: subForm.trial_ends_at
           ? new Date(subForm.trial_ends_at + "T23:59:59").toISOString()
+          : null,
+        valor_promocional: valorPromoNum,
+        data_fim_promocao: subForm.data_fim_promocao
+          ? new Date(subForm.data_fim_promocao + "T23:59:59").toISOString()
           : null,
       },
     });
@@ -631,6 +647,82 @@ export default function AdminUserDetails() {
                           {shortcut.label}
                         </Button>
                       ))}
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-5 pb-2">
+                      <h4 className="text-xs font-black text-[#1a3a5c] uppercase tracking-widest flex items-center gap-2">
+                        Desconto / Promoção Especial
+                        {(() => {
+                          const cleanVal = subForm.valor_promocional.replace(/\D/g, "");
+                          if (!cleanVal || Number(cleanVal) <= 0) return null;
+                          if (!subForm.data_fim_promocao) {
+                            return <span className="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Definitivo</span>;
+                          }
+                          const fim = new Date(subForm.data_fim_promocao + "T23:59:59").getTime();
+                          if (fim >= new Date().getTime()) {
+                            return <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Ativo</span>;
+                          } else {
+                            return <span className="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Expirado</span>;
+                          }
+                        })()}
+                      </h4>
+                      <p className="text-xs text-slate-500 mb-4 mt-1">
+                        Valor Base Atual: <strong className="text-slate-700">{data?.assinatura?.valor_base !== null && data?.assinatura?.valor_base !== undefined ? `R$ ${Number(data.assinatura.valor_base).toFixed(2).replace('.', ',')}` : "Pendente (será copiado na próxima fatura)"}</strong>
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            Valor Promocional (R$)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              placeholder="Deixe em branco p/ cobrar preço base"
+                              value={subForm.valor_promocional}
+                              onChange={(e) => setSubForm(p => ({ ...p, valor_promocional: moneyMask(e.target.value) }))}
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-10"
+                            />
+                            {subForm.valor_promocional && (
+                              <div
+                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setSubForm(p => ({ ...p, valor_promocional: "" }));
+                                }}
+                                title="Limpar valor promocional"
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            Data de Validade
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              type="date"
+                              value={subForm.data_fim_promocao}
+                              onChange={(e) => setSubForm(p => ({ ...p, data_fim_promocao: e.target.value }))}
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-12"
+                            />
+                            {subForm.data_fim_promocao && (
+                              <div
+                                className="absolute right-12 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex bg-slate-50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setSubForm(p => ({ ...p, data_fim_promocao: "" }));
+                                }}
+                                title="Remover data de validade"
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <Button

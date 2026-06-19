@@ -285,6 +285,52 @@ export function useSaaSCheckoutViewModel({
     }
   };
 
+  // LÓGICA DE PRECIFICAÇÃO CENTRALIZADA
+  const annualPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
+  const monthlyPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
+  const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
+  const selectedPlan = isAnual ? annualPlan : monthlyPlan;
+
+  let annualPrice = annualPlan ? SubscriptionUtils.getFinalPrice(annualPlan, isPromotionActive) : 0;
+  let monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
+  let hasOverride = false;
+
+  if (subscription?.plano_id === annualPlan?.id && subscription?.valor_base !== null && subscription?.valor_base !== undefined) {
+    let finalAnnual = Number(subscription.valor_base);
+    if (subscription.valor_promocional !== null && subscription.valor_promocional !== undefined) {
+      if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
+        finalAnnual = Number(subscription.valor_promocional);
+      }
+    }
+    annualPrice = finalAnnual;
+    hasOverride = true;
+  }
+  
+  if (subscription?.plano_id === monthlyPlan?.id && subscription?.valor_base !== null && subscription?.valor_base !== undefined) {
+    let finalMonthly = Number(subscription.valor_base);
+    if (subscription.valor_promocional !== null && subscription.valor_promocional !== undefined) {
+      if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
+        finalMonthly = Number(subscription.valor_promocional);
+      }
+    }
+    monthlyPrice = finalMonthly;
+    hasOverride = true;
+  }
+
+  const hasActiveDiscountLocal = referral?.hasActiveDiscount;
+  const discountPctLocal = referral?.discountPct || 0;
+
+  if (hasActiveDiscountLocal && discountPctLocal > 0) {
+    annualPrice = annualPrice * (1 - discountPctLocal / 100);
+    monthlyPrice = monthlyPrice * (1 - discountPctLocal / 100);
+  }
+
+  const totalPrice = isAnual ? annualPrice : monthlyPrice;
+  const formattedPrice = SubscriptionUtils.formatCurrency(totalPrice);
+  const discountPercent = monthlyPrice > 0 ? Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100) : 0;
+  const totalDiscount = (monthlyPrice * 12) - annualPrice;
+  const freeMonths = monthlyPrice > 0 ? Math.round(totalDiscount / monthlyPrice) : 0;
+
   return {
     step,
     nextStep,
@@ -311,5 +357,19 @@ export function useSaaSCheckoutViewModel({
     hasActiveDiscount: referral?.hasActiveDiscount,
     discountPct: referral?.discountPct,
     isLoadingData: isLoadingReferral || isRefetchingReferral || !plans,
+    
+    // UI Computed Properties
+    annualPlan,
+    monthlyPlan,
+    isAnual,
+    selectedPlan,
+    annualPrice,
+    monthlyPrice,
+    hasOverride,
+    totalPrice,
+    formattedPrice,
+    discountPercent,
+    totalDiscount,
+    freeMonths
   };
 }

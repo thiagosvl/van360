@@ -78,6 +78,9 @@ export interface AdminUserDetailsResponse {
     data_inicio: string;
     data_vencimento: string | null;
     trial_ends_at: string | null;
+    valor_base: number | null;
+    valor_promocional: number | null;
+    data_fim_promocao: string | null;
     metodo_pagamento: string | null;
     created_at: string;
     updated_at: string;
@@ -150,6 +153,8 @@ export interface UpdateSubscriptionPayload {
   status?: string;
   data_vencimento?: string | null;
   trial_ends_at?: string | null;
+  valor_promocional?: number | null;
+  data_fim_promocao?: string | null;
 }
 
 export interface ListUsersParams {

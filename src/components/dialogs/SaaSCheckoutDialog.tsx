@@ -42,13 +42,28 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     activeInvoice,
     cardError,
     handleGenerateCheckout,
+    plans: plansVm,
     isPromotionActive,
+    isProviderReady,
     profile,
     hasActiveDiscount,
     discountPct,
     isLoadingData,
     refetchInvoices,
     refetchStatus,
+    subscription,
+    annualPlan,
+    monthlyPlan,
+    isAnual,
+    selectedPlan,
+    annualPrice,
+    monthlyPrice,
+    hasOverride,
+    totalPrice,
+    formattedPrice,
+    discountPercent,
+    totalDiscount,
+    freeMonths
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
@@ -61,27 +76,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       setPixCopied(false);
     }
   }, [isOpen, step]);
-
-  const annualPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
-  const monthlyPlan = plans.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
-
-  const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
-  const selectedPlan = isAnual ? annualPlan : monthlyPlan;
-
-  let annualPrice = annualPlan ? SubscriptionUtils.getFinalPrice(annualPlan, isPromotionActive) : 0;
-  let monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
-
-  if (hasActiveDiscount && discountPct > 0) {
-    annualPrice = annualPrice * (1 - discountPct / 100);
-    monthlyPrice = monthlyPrice * (1 - discountPct / 100);
-  }
-
-  const totalPrice = isAnual ? annualPrice : monthlyPrice;
-  const formattedPrice = SubscriptionUtils.formatCurrency(totalPrice);
-
-  const discountPercent = monthlyPrice > 0 ? Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100) : 0;
-  const totalDiscount = (monthlyPrice * 12) - annualPrice;
-  const freeMonths = monthlyPrice > 0 ? Math.round(totalDiscount / monthlyPrice) : 0;
 
   const handleCopyPix = () => {
     if (activeInvoice?.pix_copy_paste) {
@@ -229,16 +223,18 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 )}
               >
                 {/* Floating Badge baseada no modelo Meta */}
-                <div
-                  className={cn(
-                    "absolute -top-[13px] left-1/2 -translate-x-1/2 px-4 sm:px-5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-sans font-black uppercase shadow-sm z-10 border whitespace-nowrap transition-all",
-                    isAnual
-                      ? "bg-[#d1fae5] text-[#065f46] border-[#6ee7b7]"
-                      : "bg-slate-200 text-slate-500 border-slate-300"
-                  )}
-                >
-                  {totalDiscount > 0 ? `ECONOMIZE ${SubscriptionUtils.formatCurrency(totalDiscount)}` : `${discountPercent}% OFF`}
-                </div>
+                {!hasOverride && (
+                  <div
+                    className={cn(
+                      "absolute -top-[13px] left-1/2 -translate-x-1/2 px-4 sm:px-5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-sans font-black uppercase shadow-sm z-10 border whitespace-nowrap transition-all",
+                      isAnual
+                        ? "bg-[#d1fae5] text-[#065f46] border-[#6ee7b7]"
+                        : "bg-slate-200 text-slate-500 border-slate-300"
+                    )}
+                  >
+                    {totalDiscount > 0 ? `ECONOMIZE ${SubscriptionUtils.formatCurrency(totalDiscount)}` : `${discountPercent}% OFF`}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
