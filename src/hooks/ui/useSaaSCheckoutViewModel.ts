@@ -55,7 +55,7 @@ export function useSaaSCheckoutViewModel({
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { subscription, refetch: refetchStatus } = useSubscriptionStatus(user?.id);
-  const { isPromotionActive, plans: plansFromApi } = useSubscriptionPlans();
+  const { isPromotionActive, plans: plansFromApi, refetch: refetchPlans } = useSubscriptionPlans();
   const { invoices, refetchInvoices, paymentMethods } = useSubscriptionBilling(user?.id);
   const { createCheckout } = useSubscriptionCheckout();
   const { referral, isLoading: isLoadingReferral, refetch: refetchReferral } = useSubscriptionReferral(user?.id);
@@ -78,13 +78,14 @@ export function useSaaSCheckoutViewModel({
   useEffect(() => {
     if (isOpen && user?.id) {
       setIsRefetchingReferral(true);
-      refetchReferral()
-        .catch((err) => console.error("Erro ao atualizar dados de indicação:", err))
-        .finally(() => {
-          setIsRefetchingReferral(false);
-        });
+      Promise.all([
+        refetchReferral().catch((err) => console.error("Erro ao atualizar dados de indicação:", err)),
+        refetchPlans().catch((err) => console.error("Erro ao atualizar planos:", err))
+      ]).finally(() => {
+        setIsRefetchingReferral(false);
+      });
     }
-  }, [isOpen, user?.id, refetchReferral]);
+  }, [isOpen, user?.id, refetchReferral, refetchPlans]);
 
   const savedCards: PaymentMethod[] = paymentMethods ?? [];
   const defaultCard = savedCards.find(c => c.is_default) ?? savedCards[0] ?? null;
