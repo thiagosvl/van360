@@ -88,15 +88,16 @@ export function useRegisterController() {
       // --- FLUXO DE PÓS-CADASTRO ---
       
       // Disparar evento de conversão para o Google Tag Manager / Ads
-      if (typeof window !== "undefined") {
+      // Apenas em Produção e Apenas no Web (para não sujar métricas com testes locais ou app)
+      const isMobile = isMobilePlatform();
+      
+      if (typeof window !== "undefined" && import.meta.env.PROD && !isMobile) {
         (window as any).dataLayer = (window as any).dataLayer || [];
         (window as any).dataLayer.push({
           event: "generate_lead",
         });
       }
-
       const sessionUser = result.session.user || result.user;
-      const isMobile = isMobilePlatform();
 
       /* 
          [TEMPORÁRIO] Cenário mobile (App OU Nav Mobile) redireciona para Splash Screen.
