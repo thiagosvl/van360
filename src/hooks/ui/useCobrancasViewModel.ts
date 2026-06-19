@@ -19,13 +19,13 @@ export function useCobrancasViewModel() {
     openManualPaymentDialog,
     openReceiptDialog,
   } = useLayout();
-  
+
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
-  
+
   const deleteCobranca = useDeleteCobranca();
   const isActionLoading = deleteCobranca.isPending;
 
@@ -41,7 +41,7 @@ export function useCobrancasViewModel() {
   // Tabs Management
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === CobrancaTab.ARECEBER || tabParam === CobrancaTab.RECEBIDOS) {
+    if (tabParam === CobrancaTab.ARECEBER || tabParam === CobrancaTab.RECEBIDAS) {
       return tabParam as CobrancaTab;
     }
     return CobrancaTab.ARECEBER;

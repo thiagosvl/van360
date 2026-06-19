@@ -45,7 +45,7 @@ export enum PassageiroTab {
 
 export enum CobrancaTab {
   ARECEBER = "areceber",
-  RECEBIDOS = "recebidos",
+  RECEBIDAS = "recebidas",
 }
 
 export enum ContratoTab {

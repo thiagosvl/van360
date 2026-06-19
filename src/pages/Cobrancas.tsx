@@ -57,7 +57,7 @@ export default function Cobrancas() {
   };
 
   const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
-  
+
   let statusLabel = "";
   if (busca) {
     statusLabel = currentCount === 1 ? "ENCONTRADA" : "ENCONTRADAS";
@@ -112,13 +112,13 @@ export default function Cobrancas() {
                   </span>
                 </TabsTrigger>
                 <TabsTrigger
-                  value={CobrancaTab.RECEBIDOS}
+                  value={CobrancaTab.RECEBIDAS}
                   className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                 >
-                  Recebidos
+                  Recebidas
                   <span className={cn(
                     "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                    activeTab === CobrancaTab.RECEBIDOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                    activeTab === CobrancaTab.RECEBIDAS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                   )}>
                     {countRecebidos || 0}
                   </span>
@@ -145,7 +145,7 @@ export default function Cobrancas() {
 
           <div className="flex items-center justify-between px-1">
             <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-              {activeTab === CobrancaTab.ARECEBER ? "Próximos Vencimentos" : "Histórico de Recebimentos"}
+              {activeTab === CobrancaTab.ARECEBER ? "A Receber" : "Recebidas"}
             </h2>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               {currentCount} {statusLabel}
@@ -165,9 +165,9 @@ export default function Cobrancas() {
             />
           </TabsContent>
 
-          <TabsContent value={CobrancaTab.RECEBIDOS} className="mt-1 outline-none">
+          <TabsContent value={CobrancaTab.RECEBIDAS} className="mt-1 outline-none">
             <CobrancasList
-              activeTab={CobrancaTab.RECEBIDOS}
+              activeTab={CobrancaTab.RECEBIDAS}
               cobrancas={cobrancasRecebidas}
               isLoading={isInitialLoading}
               busca={buscaRecebidos}

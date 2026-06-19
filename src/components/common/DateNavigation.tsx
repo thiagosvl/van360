@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { meses } from "@/utils/formatters";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DateNavigationProps {
   mes: number;
@@ -41,12 +40,15 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
         <ChevronLeft className="h-[22px] w-[22px]" />
       </button>
 
-      <div className="text-center select-none px-4">
+      <div className="flex flex-col items-center justify-center select-none px-4">
+        <span className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em] mb-0.5">
+          Mês Selecionado
+        </span>
         <p className={cn(
-          "font-headline font-bold text-[15px] sm:text-[16px] text-white tracking-tight whitespace-nowrap",
+          "font-headline font-bold text-[15px] sm:text-[16px] text-white tracking-tight whitespace-nowrap leading-none",
           disabled && "opacity-50"
         )}>
-          {meses[mes - 1]} {ano}
+          {meses[mes - 1]}/{ano.toString().slice(-2)}
         </p>
       </div>
 
