@@ -23,8 +23,6 @@ interface CadastroFormProps {
 
 export const CadastroForm = ({ form }: CadastroFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [openTermos, setOpenTermos] = useState(false);
-  const [openPolitica, setOpenPolitica] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -188,44 +186,26 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         name="termos_aceitos"
         render={({ field, fieldState }) => (
           <FormItem>
-            <div className="flex items-start gap-2 pt-1 pb-2">
+            <div className="flex items-start gap-3 pt-1">
               <FormControl>
                 <Checkbox
                   id="termos_aceitos"
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  className={`rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] mt-0.5 ${fieldState.error ? "border-red-500" : "border-slate-400"}`}
+                  className={`rounded-md w-5 h-5 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] mt-0.5 flex-shrink-0 ${fieldState.error ? "border-red-500" : "border-slate-400"}`}
                 />
               </FormControl>
               <Label
                 htmlFor="termos_aceitos"
-                className="text-xs sm:text-sm text-slate-500 cursor-pointer select-none leading-relaxed"
+                className="text-xs sm:text-[15px] text-slate-600 cursor-pointer select-none leading-relaxed font-medium"
               >
-                Aceito os{" "}
-                <button
-                  type="button"
-                  onClick={() => setOpenTermos(true)}
-                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none rounded-sm px-0.5"
-                >
-                  Termos de Uso
-                </button>
-                {" "}e a{" "}
-                <button
-                  type="button"
-                  onClick={() => setOpenPolitica(true)}
-                  className="font-bold text-[#1a3a5c] hover:text-[#f59e0b] hover:underline transition-colors focus:outline-none rounded-sm px-0.5"
-                >
-                  Política de Privacidade
-                </button>
+                Declaro que li e concordo com os Termos de Uso e a Política de Privacidade.
               </Label>
             </div>
-            <FormMessage />
+            <FormMessage className="pl-8" />
           </FormItem>
         )}
       />
-
-      <TermosDialog open={openTermos} onOpenChange={setOpenTermos} />
-      <PoliticaPrivacidadeDialog open={openPolitica} onOpenChange={setOpenPolitica} />
     </div>
   );
 };

@@ -10,9 +10,8 @@ const PrivacyPolicyPage = () => {
   });
 
   return (
-    <LegalLayout 
-      title="Política de Privacidade" 
-      subtitle="Última atualização: 01/04/2026 · Em conformidade com a LGPD"
+    <LegalLayout
+      title="Política de Privacidade"
     >
       <PrivacyPolicyContent />
     </LegalLayout>

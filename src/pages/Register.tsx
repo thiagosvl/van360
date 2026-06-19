@@ -91,7 +91,7 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="p-6 sm:p-10 lg:p-12">
+          <div className="p-6 sm:p-10 lg:p-12 lg:pb-6">
             <RegistrationFormStep
               form={form}
               loading={loading}

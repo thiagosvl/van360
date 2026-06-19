@@ -4,6 +4,9 @@ import { SectionTitle, ListItem } from "./Shared";
 export function PrivacyPolicyContent() {
   return (
     <div className="space-y-4">
+      <p className="text-sm font-semibold text-slate-400 mb-6">
+        Última atualização: 19/06/2026 · Em conformidade com a LGPD
+      </p>
       <p className="text-slate-500 leading-relaxed text-[0.95rem]">
         No Van360, levamos a privacidade a sério. Lidamos com dados sensíveis e garantimos total conformidade com a Lei Geral de Proteção de Dados (LGPD).
       </p>
@@ -58,7 +61,7 @@ export function PrivacyPolicyContent() {
         </ListItem>
       </ul>
       <p className="text-slate-500 leading-relaxed mt-3 text-[0.95rem]">
-        Após a solicitação, todos os seus dados pessoais, registros de alunos e histórico financeiro serão removidos permanentemente de nossos servidores em até 7 dias úteis.
+        Após a solicitação, todos os seus dados pessoais, registros de passageiro e histórico financeiro serão removidos permanentemente de nossos servidores em até 7 dias úteis.
       </p>
     </div>
   );

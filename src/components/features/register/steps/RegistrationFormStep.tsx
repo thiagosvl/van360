@@ -15,6 +15,10 @@ interface RegistrationFormStepProps {
   onDismissDuplicateError?: () => void;
 }
 
+import { useState } from "react";
+import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoDialog";
+import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
+
 export function RegistrationFormStep({
   form,
   loading,
@@ -22,6 +26,9 @@ export function RegistrationFormStep({
   duplicateError,
   onDismissDuplicateError,
 }: RegistrationFormStepProps) {
+  const [openTermos, setOpenTermos] = useState(false);
+  const [openPolitica, setOpenPolitica] = useState(false);
+
   return (
     <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Form {...form}>
@@ -55,9 +62,29 @@ export function RegistrationFormStep({
                 <>Criar minha conta</>
               )}
             </Button>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 pt-2">
+              <button
+                type="button"
+                onClick={() => setOpenTermos(true)}
+                className="text-xs font-medium text-slate-500 hover:text-[#1a3a5c] transition-colors focus:outline-none"
+              >
+                Termos de Uso
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpenPolitica(true)}
+                className="text-xs font-medium text-slate-500 hover:text-[#1a3a5c] transition-colors focus:outline-none"
+              >
+                Política de Privacidade
+              </button>
+            </div>
           </div>
         </form>
       </Form>
+
+      <TermosDialog open={openTermos} onOpenChange={setOpenTermos} />
+      <PoliticaPrivacidadeDialog open={openPolitica} onOpenChange={setOpenPolitica} />
     </section>
   );
 }

@@ -12,7 +12,6 @@ const TermsOfUsePage = () => {
   return (
     <LegalLayout 
       title="Termos de Uso" 
-      subtitle="Última atualização: 01/04/2026"
     >
       <TermsOfUseContent />
     </LegalLayout>

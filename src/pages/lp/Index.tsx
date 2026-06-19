@@ -227,7 +227,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "O contrato gerado tem validade jurídica?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Sim. Os contratos são digitais e assinados eletronicamente, com validade legal conforme a legislação brasileira. Servem como documento formal entre você e o responsável do aluno." },
+            "acceptedAnswer": { "@type": "Answer", "text": "Sim. Os contratos são digitais e assinados eletronicamente, com validade legal conforme a legislação brasileira. Servem como documento formal entre você e o responsável do passageiro." },
           },
           {
             "@type": "Question",
@@ -259,25 +259,25 @@ const Index = () => {
 
   const features = [
     {
+      headline: "Veja quem já pagou e quem está devendo.",
+      text: "Registre pagamentos e acompanhe o status de cada mensalidade. Dê baixa na hora — pix, dinheiro, cartão.",
+      mockup: "/assets/lp/mockup-mensalidades.png",
+      alt: "Tela de controle de mensalidades do Van360",
+      balloonText: "A mensalidade do Enzo está atrasada há 3 dias.",
+    },
+    {
       headline: "Cobramos os pais automaticamente por você",
       text: "Chega de se desgastar cobrando mensalidade. O Van360 envia mensagens automáticas no WhatsApp do responsável antes, no dia e depois do vencimento.",
-      mockup: "/assets/lp/mockup-mensalidades.png",
+      mockup: "/assets/lp/mockup-whatsapp.png",
       alt: "Tela de controle de mensalidades do Van360",
       balloonText: "A mensalidade do Enzo vence hoje!",
     },
     {
       headline: "Carteirinha digital e cadastro automático",
-      text: "Mande um link pelo WhatsApp, o pai preenche os dados e o app gera a carteirinha digital do aluno na hora. Mais segurança e zero trabalho pra você.",
+      text: "Mande um link pelo WhatsApp, o pai preenche os dados e o app gera a carteirinha digital do passageiro na hora. Mais segurança e zero trabalho pra você.",
       mockup: "/assets/lp/mockup-carteirinha.png",
       alt: "Carteirinha digital do passageiro no Van360",
       balloonText: "Clique no link e cadastre o seu filho na van.",
-    },
-    {
-      headline: "Veja quem já pagou e quem está devendo.",
-      text: "Registre pagamentos e acompanhe o status de cada mensalidade. Dê baixa na hora — pix, dinheiro, transferência.",
-      mockup: "/assets/lp/mockup-mensalidades.png",
-      alt: "Tela de controle de mensalidades do Van360",
-      balloonText: "A mensalidade do Enzo está atrasada há 3 dias.",
     },
     {
       headline: "Contrato digital com validade jurídica",
@@ -475,7 +475,7 @@ const Index = () => {
               {
                 icon: "⏰",
                 title: "Trabalho Manual",
-                text: "Perde horas cadastrando alunos e conferindo pagamentos um a um na mão.",
+                text: "Perde horas conferindo pagamentos um a um na mão.",
               },
               {
                 icon: "😤",
@@ -533,15 +533,20 @@ const Index = () => {
               <Reveal key={feat.headline}>
                 <div
                   className={`flex flex-col ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                    } items-center gap-8 md:gap-12`}
+                    } items-center gap-6 md:gap-12`}
                 >
+                  <div className="text-center md:hidden w-full px-4">
+                    <h3 className="text-[1.3rem] font-extrabold text-[#1a3a5c] leading-tight">
+                      {feat.headline}
+                    </h3>
+                  </div>
                   <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
                     <div className="max-w-[240px] md:max-w-[300px] w-full feature-phone relative">
                       {feat.balloonText && (
                         <WhatsAppBalloon
                           text={feat.balloonText}
                           delay={`${0.5 + i * 0.2}s`}
-                          positionClass={i % 2 === 0 ? "-top-4 -left-8 sm:-left-12 md:left-auto md:-right-28 lg:-right-32" : "-top-4 -left-8 sm:-left-12 md:-left-28 lg:-left-32 md:right-auto"}
+                          positionClass={i % 2 === 0 ? "-top-2 md:-top-4 -left-8 sm:-left-12 md:left-auto md:-right-28 lg:-right-32" : "-top-2 md:-top-4 -left-8 sm:-left-12 md:-left-28 lg:-left-32 md:right-auto"}
                         />
                       )}
                       <MockupImage
@@ -554,8 +559,8 @@ const Index = () => {
                       />
                     </div>
                   </div>
-                  <div className="text-center md:text-left max-w-[460px] md:max-w-none">
-                    <h3 className="text-[1.3rem] md:text-[1.5rem] font-extrabold text-[#1a3a5c] mb-3 leading-tight">
+                  <div className="text-center md:text-left max-w-[460px] md:max-w-none px-4 md:px-0">
+                    <h3 className="hidden md:block text-[1.5rem] font-extrabold text-[#1a3a5c] mb-3 leading-tight">
                       {feat.headline}
                     </h3>
                     <p className="text-[1rem] text-slate-500 leading-relaxed">
@@ -591,7 +596,7 @@ const Index = () => {
               {
                 n: "1",
                 title: "Crie sua conta grátis",
-                desc: "Sem cartão, sem compromisso. Em 2 minutos você já está dentro.",
+                desc: "Sem cartão, sem compromisso. Em segundos você faz seu cadastro.",
               },
               {
                 n: "2",
@@ -835,7 +840,7 @@ const Index = () => {
             />
             <FaqItem
               q="O contrato gerado tem validade jurídica?"
-              a="Sim. Os contratos são digitais e assinados eletronicamente, com validade legal conforme a legislação brasileira. Servem como documento formal entre você e o responsável do aluno."
+              a="Sim. Os contratos são digitais e assinados eletronicamente, com validade legal conforme a legislação brasileira. Servem como documento formal entre você e o responsável do passageiro."
             />
             <FaqItem
               q="O app é pesado? Preciso baixar?"

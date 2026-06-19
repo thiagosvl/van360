@@ -13,7 +13,6 @@ export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
     <BaseDialog open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Header
         title="Termos de Uso"
-        subtitle="Última atualização: 01/04/2026"
         icon={<FileText className="w-5 h-5" />}
         onClose={() => onOpenChange(false)}
       />
