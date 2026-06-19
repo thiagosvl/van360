@@ -5,6 +5,8 @@ Allow: /login
 Allow: /cadastro
 
 # Bloquear indexação de páginas protegidas e utilitárias
+Disallow: /termos-de-uso
+Disallow: /politica-de-privacidade
 Disallow: /inicio
 Disallow: /passageiros
 Disallow: /mensalidades

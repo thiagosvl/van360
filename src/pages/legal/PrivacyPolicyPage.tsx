@@ -7,6 +7,7 @@ const PrivacyPolicyPage = () => {
   useSEO({
     title: "Política de Privacidade | Van360",
     description: "Saiba como o Van360 protege seus dados e garante sua privacidade conforme a LGPD.",
+    noindex: true,
   });
 
   return (
