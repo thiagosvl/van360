@@ -35,7 +35,9 @@ interface EditarCadastroDialogProps {
 }
 
 const basicSchema = z.object({
-  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  nome: z.string()
+    .min(2, "Deve ter pelo menos 2 caracteres")
+    .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
   apelido: z.string().optional(),
   cpfcnpj: z.string(),
   telefone: phoneSchema,

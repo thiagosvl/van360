@@ -52,11 +52,44 @@ import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/componen
 import { ROUTES } from "@/constants/routes";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { PhoneInput } from "@/components/forms";
+import { emailSchema } from "@/schemas/common";
+import { dateMask as maskDate } from "@/utils/masks";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
   label: detail.label,
 }));
+
+const userSchema = z.object({
+  nome: z.string()
+    .min(2, "Deve ter pelo menos 2 caracteres")
+    .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
+  apelido: z.string().optional(),
+  cpfcnpj: z.string().min(14, "CPF incompleto"),
+  telefone: z.string().min(14, "Telefone incompleto"),
+  email: emailSchema,
+  ativo: z.boolean(),
+  data_nascimento: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!regex.test(val)) return false;
+    return true;
+  }, "Data inválida"),
+});
+
+type UserFormData = z.infer<typeof userSchema>;
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -129,14 +162,17 @@ export default function AdminUserDetails() {
     entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
   });
 
-  const [userForm, setUserForm] = useState({
-    nome: "",
-    apelido: "",
-    email: "",
-    telefone: "",
-    cpfcnpj: "",
-    ativo: true,
-    data_nascimento: "",
+  const userForm = useForm<UserFormData>({
+    resolver: zodResolver(userSchema),
+    defaultValues: {
+      nome: "",
+      apelido: "",
+      email: "",
+      telefone: "",
+      cpfcnpj: "",
+      ativo: true,
+      data_nascimento: "",
+    },
   });
 
   const [subForm, setSubForm] = useState({
@@ -151,14 +187,27 @@ export default function AdminUserDetails() {
   useEffect(() => {
     if (data?.user) {
       const u = data.user;
-      setUserForm({
+      const formatBirth = () => {
+        if (!u.data_nascimento) return "";
+        const clean = u.data_nascimento.trim();
+        if (clean.includes("-")) {
+          const parts = clean.split("-");
+          if (parts.length === 3) {
+            const [y, m, d] = parts;
+            return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+          }
+        }
+        return clean;
+      };
+
+      userForm.reset({
         nome: u.nome || "",
         apelido: u.apelido || "",
         email: u.email || "",
         telefone: phoneMask(u.telefone || ""),
         cpfcnpj: cpfMask(u.cpfcnpj || ""),
         ativo: u.ativo ?? true,
-        data_nascimento: u.data_nascimento || "",
+        data_nascimento: formatBirth(),
       });
     }
     if (data?.assinatura) {
@@ -174,71 +223,30 @@ export default function AdminUserDetails() {
     }
   }, [data]);
 
-  const handleSaveUser = () => {
+  const handleSaveUser = (formData: UserFormData) => {
     if (!id) return;
 
-    const nome = userForm.nome.trim();
-    const email = userForm.email.trim();
-    const cleanCpf = userForm.cpfcnpj.replace(/\D/g, "");
-    const cleanPhone = userForm.telefone.replace(/\D/g, "");
-
-    if (!nome) {
-      toast.error("O nome é obrigatório.");
-      return;
-    }
-
-    if (!email) {
-      toast.error("O e-mail é obrigatório.");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Formato de e-mail inválido.");
-      return;
-    }
-
-    if (!cleanCpf) {
-      toast.error("O CPF é obrigatório.");
-      return;
-    }
-
-    if (!isValidCPF(cleanCpf)) {
-      toast.error("CPF inválido.");
-      return;
-    }
-
-    if (!cleanPhone) {
-      toast.error("O telefone é obrigatório.");
-      return;
-    }
-
-    if (!isValidPhoneFormat(cleanPhone)) {
-      toast.error("Telefone celular inválido. Deve conter DDD e 9 dígitos.");
-      return;
-    }
-
-    if (userForm.data_nascimento) {
-      const birthDate = new Date(userForm.data_nascimento);
-      const today = new Date();
-      if (birthDate > today) {
-        toast.error("A data de nascimento não pode ser uma data futura.");
-        return;
-      }
-    }
+    const nome = formData.nome.trim();
+    const email = formData.email.trim();
+    const cleanCpf = formData.cpfcnpj.replace(/\D/g, "");
+    const cleanPhone = formData.telefone.replace(/\D/g, "");
 
     updateUser.mutate({
       id,
       data: {
         nome,
-        apelido: userForm.apelido.trim() || null,
+        apelido: formData.apelido?.trim() || null,
         email,
         telefone: cleanPhone,
         cpfcnpj: cleanCpf,
-        ativo: userForm.ativo,
-        data_nascimento: userForm.data_nascimento || null,
+        ativo: formData.ativo,
+        data_nascimento: formData.data_nascimento || null,
       },
     });
+  };
+
+  const onUserFormError = () => {
+    toast.error("validacao.formularioComErros");
   };
 
   const handleResetPassword = () => {
@@ -414,102 +422,162 @@ export default function AdminUserDetails() {
                   Dados Cadastrais
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-5 pt-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Nome</Label>
-                    <Input
-                      value={userForm.nome}
-                      onChange={(e) => setUserForm(p => ({ ...p, nome: e.target.value }))}
-                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+              <CardContent className="pt-4">
+                <Form {...userForm}>
+                  <form onSubmit={userForm.handleSubmit(handleSaveUser, onUserFormError)} className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={userForm.control}
+                        name="nome"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Nome</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={userForm.control}
+                        name="apelido"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Apelido</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={userForm.control}
+                        name="cpfcnpj"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                                inputMode="numeric"
+                                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={userForm.control}
+                        name="telefone"
+                        render={({ field }) => (
+                          <PhoneInput
+                            field={field}
+                            label="Telefone"
+                            placeholder="(00) 00000-0000"
+                            labelClassName="text-[11px] font-black text-slate-400 uppercase tracking-widest"
+                            inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                          />
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={userForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="space-y-2">
+                          <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Apelido</Label>
-                    <Input
-                      value={userForm.apelido}
-                      onChange={(e) => setUserForm(p => ({ ...p, apelido: e.target.value }))}
-                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+
+                    <FormField
+                      control={userForm.control}
+                      name="data_nascimento"
+                      render={({ field }) => (
+                        <FormItem className="space-y-2">
+                          <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              inputMode="numeric"
+                              maxLength={10}
+                              onChange={(e) => field.onChange(maskDate(e.target.value))}
+                              placeholder="dd/mm/aaaa"
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF</Label>
-                    <Input
-                      value={userForm.cpfcnpj}
-                      onChange={(e) => setUserForm(p => ({ ...p, cpfcnpj: cpfMask(e.target.value) }))}
-                      inputMode="numeric"
-                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Telefone</Label>
-                    <Input
-                      value={userForm.telefone}
-                      onChange={(e) => setUserForm(p => ({ ...p, telefone: phoneMask(e.target.value) }))}
-                      inputMode="tel"
-                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                    />
-                  </div>
-                </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <FormField
+                        control={userForm.control}
+                        name="ativo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="flex items-center gap-3">
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                                <Label className="text-xs font-bold text-slate-600">
+                                  {field.value ? "Conta Ativa" : "Conta Inativa"}
+                                </Label>
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</Label>
-                  <Input
-                    type="email"
-                    value={userForm.email}
-                    onChange={(e) => setUserForm(p => ({ ...p, email: e.target.value }))}
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                  />
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Button
+                        type="submit"
+                        disabled={updateUser.isPending}
+                        className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
+                      >
+                        {updateUser.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Save className="h-4 w-4 mr-2" />
+                            Salvar
+                          </>
+                        )}
+                      </Button>
 
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</Label>
-                  <Input
-                    type="date"
-                    value={userForm.data_nascimento}
-                    onChange={(e) => setUserForm(p => ({ ...p, data_nascimento: e.target.value }))}
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={userForm.ativo}
-                      onCheckedChange={(val) => setUserForm(p => ({ ...p, ativo: val }))}
-                    />
-                    <Label className="text-xs font-bold text-slate-600">
-                      {userForm.ativo ? "Conta Ativa" : "Conta Inativa"}
-                    </Label>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button
-                    onClick={handleSaveUser}
-                    disabled={updateUser.isPending}
-                    className="w-full h-11 rounded-xl bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
-                  >
-                    {updateUser.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvar
-                      </>
-                    )}
-                  </Button>
-
-                  <Button
-                    onClick={handleResetPassword}
-                    type="button"
-                    variant="outline"
-                    disabled={resetPassword.isPending}
-                    className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-bold uppercase tracking-wider transition-all"
-                  >
+                      <Button
+                        onClick={handleResetPassword}
+                        type="button"
+                        variant="outline"
+                        disabled={resetPassword.isPending}
+                        className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-bold uppercase tracking-wider transition-all"
+                      >
                     {resetPassword.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -537,6 +605,8 @@ export default function AdminUserDetails() {
                     )}
                   </Button>
                 </div>
+                  </form>
+                </Form>
               </CardContent>
             </Card>
 
