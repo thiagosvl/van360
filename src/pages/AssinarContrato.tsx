@@ -9,7 +9,6 @@ import { openBrowserLink } from "@/utils/browser";
 import {
   CheckCircle2,
   Download,
-  FileSignature,
   Loader2,
   PenTool,
   AlertCircle,
@@ -19,7 +18,6 @@ import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
 import { SignatureDialog } from "@/components/dialogs/SignatureDialog";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
 
 // Estilos obrigatórios do react-pdf para evitar erros no console
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -115,8 +113,8 @@ export default function AssinarContrato() {
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
           </div>
           <div>
-            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato</h3>
-            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinautura Digital</p>
+            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato de Transporte</h3>
+            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinatura Digital</p>
           </div>
         </div>
 

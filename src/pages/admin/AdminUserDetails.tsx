@@ -604,26 +604,56 @@ export default function AdminUserDetails() {
                           <Calendar className="h-3 w-3" />
                           Data de Vencimento
                         </Label>
-                        <Input
-                          type="date"
-                          value={subForm.data_vencimento}
-                          onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
-                          disabled={subForm.status === SubscriptionStatus.TRIAL}
-                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] disabled:opacity-50 disabled:cursor-not-allowed"
-                        />
+                        <div className="relative">
+                          <Input
+                            type="date"
+                            value={subForm.data_vencimento}
+                            onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
+                            disabled={subForm.status === SubscriptionStatus.TRIAL}
+                            className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] disabled:opacity-50 disabled:cursor-not-allowed pr-12"
+                          />
+                          {subForm.data_vencimento && subForm.status !== SubscriptionStatus.TRIAL && (
+                            <div
+                              className="absolute right-12 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex bg-slate-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setSubForm(p => ({ ...p, data_vencimento: "" }));
+                              }}
+                              title="Remover data de vencimento"
+                            >
+                              <X className="h-5 w-5" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           Fim do Trial
                         </Label>
-                        <Input
-                          type="date"
-                          value={subForm.trial_ends_at}
-                          onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
-                          disabled={subForm.status !== SubscriptionStatus.TRIAL}
-                          className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] disabled:opacity-50 disabled:cursor-not-allowed"
-                        />
+                        <div className="relative">
+                          <Input
+                            type="date"
+                            value={subForm.trial_ends_at}
+                            onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
+                            disabled={subForm.status !== SubscriptionStatus.TRIAL}
+                            className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] disabled:opacity-50 disabled:cursor-not-allowed pr-12"
+                          />
+                          {subForm.trial_ends_at && subForm.status === SubscriptionStatus.TRIAL && (
+                            <div
+                              className="absolute right-12 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex bg-slate-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setSubForm(p => ({ ...p, trial_ends_at: "" }));
+                              }}
+                              title="Remover fim do trial"
+                            >
+                              <X className="h-5 w-5" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 

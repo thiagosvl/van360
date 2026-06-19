@@ -108,7 +108,7 @@ const SubscriptionPage = () => {
   const isPastDue = subscription?.status === SubscriptionStatus.PAST_DUE;
 
   const trialDaysLeft = (() => {
-    if (!isTrial || !subscription?.trial_ends_at) return 0;
+    if (!isTrial || !subscription?.trial_ends_at) return null;
     return Math.max(0, differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()));
   })();
 
@@ -278,7 +278,13 @@ const SubscriptionPage = () => {
               </div>
             </div>
           ) : isTrial ? (
-            <div className="bg-white rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-slate-200/40 relative overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-0.5 group cursor-pointer border border-slate-200/80" onClick={() => handleSubscribe()}>
+            <div 
+              className={cn(
+                "bg-white rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-slate-200/40 relative overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-0.5 group border border-slate-200/80",
+                trialDaysLeft !== null ? "cursor-pointer" : ""
+              )}
+              onClick={() => trialDaysLeft !== null && handleSubscribe()}
+            >
               <div className="absolute right-0 top-0 w-64 h-64 bg-amber-400/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
               <div className="absolute left-0 bottom-0 w-64 h-64 bg-primary/5 rounded-full -ml-20 -mb-20 blur-3xl"></div>
               <div className="relative z-10 space-y-3">
@@ -288,22 +294,32 @@ const SubscriptionPage = () => {
                   </div>
                   <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">Período de Testes</h3>
-                <p className="text-slate-500 font-medium leading-relaxed">Você tem <span className="text-amber-600 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
+                  {trialDaysLeft !== null ? "Período de Testes" : "Acesso Ilimitado"}
+                </h3>
+                <p className="text-slate-500 font-medium leading-relaxed">
+                  {trialDaysLeft !== null ? (
+                    <>Você tem <span className="text-amber-600 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</>
+                  ) : (
+                    <>Você tem <span className="text-amber-600 font-black">acesso gratuito</span> ilimitado.</>
+                  )}
+                </p>
                 {referral?.hasActiveDiscount && (
                   <div className="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 px-3.5 py-1.5 rounded-xl border border-emerald-200/60 text-emerald-700 font-bold text-[11px] uppercase tracking-wide animate-pulse shadow-sm">
                     🎁 Desconto de {referral.discountPct}% por indicação ativo!
                   </div>
                 )}
               </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                <Button
-                  className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
-                  onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
-                >
-                  Assinar um Plano
-                </Button>
-              </div>
+              {trialDaysLeft !== null && (
+                <div className="mt-8 md:mt-0 relative z-10 shrink-0">
+                  <Button
+                    className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
+                    onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
+                  >
+                    Assinar um Plano
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">

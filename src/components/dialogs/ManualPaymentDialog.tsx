@@ -51,7 +51,7 @@ export default function ManualPaymentDialog({
   dataVencimento,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
-  const { form, openCalendar, setOpenCalendar, handleSubmit, isPending } = useManualPaymentViewModel({
+  const { form, openCalendar, setOpenCalendar, handleSubmit, onFormError, isPending } = useManualPaymentViewModel({
     isOpen,
     onClose,
     cobrancaId,
@@ -92,7 +92,7 @@ export default function ManualPaymentDialog({
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6">
             <FormField
               control={form.control}
               name="valor_pago"
@@ -200,7 +200,7 @@ export default function ManualPaymentDialog({
       </BaseDialog.Body>
       <BaseDialog.Footer>
         <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={isPending} />
-        <BaseDialog.Action label="Registrar" onClick={form.handleSubmit(handleSubmit)} isLoading={isPending} />
+        <BaseDialog.Action label="Registrar" onClick={form.handleSubmit(handleSubmit, onFormError)} isLoading={isPending} />
       </BaseDialog.Footer>
     </BaseDialog>
   );

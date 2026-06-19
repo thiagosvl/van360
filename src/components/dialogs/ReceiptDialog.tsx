@@ -55,7 +55,7 @@ export const ReceiptDialog = ({
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} className="max-w-xl">
       <BaseDialog.Header
-        title="Recibo"
+        title="Recibo de Pagamento"
         icon={<ReceiptText className="h-5 w-5" />}
         onClose={onClose}
       />

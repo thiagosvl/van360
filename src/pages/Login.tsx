@@ -104,8 +104,8 @@ function LoginPlatformSuggestion() {
 
 export default function Login() {
   useSEO({
-    title: "Entrar | Van360 — Você dirige. A gente organiza.",
-    description: "Acesse sua conta Van360 e gerencie passageiros, mensalidades, contratos e recibos da sua van escolar.",
+    title: "Entrar | Van360",
+    description: "Acesse sua conta Van360 e faça a gestão completa da sua van escolar.",
   });
   useAnalyticsInjector({ gtm: true, clarity: true });
   const [showPassword, setShowPassword] = useState(false);

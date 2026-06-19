@@ -10,7 +10,7 @@ import { Wand2 } from "lucide-react";
 
 export default function Register() {
   useSEO({
-    title: "Criar conta grátis | Van360 — Você dirige. A gente organiza.",
+    title: "Criar conta grátis | Van360",
     description: "Crie sua conta e organize passageiros, mensalidades, contratos e recibos da sua van escolar. 15 dias grátis, sem cartão.",
   });
   useAnalyticsInjector({ gtm: true, clarity: true });

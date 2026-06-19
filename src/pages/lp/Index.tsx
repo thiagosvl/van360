@@ -150,8 +150,8 @@ function MockupImage({ src, alt, loading = "lazy", width, height, className }: {
 // ── Main component ──
 const Index = () => {
   useSEO({
-    title: "Van360 — Você dirige. A gente organiza. | App para Motorista Escolar",
-    description: "Organize mensalidades, passageiros contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular. 15 dias grátis.",
+    title: "Van360 — App para Van Escolar e Gestão de Passageiros",
+    description: "Cobre mensalidades automaticamente, envie lembretes aos pais e emita recibos. A gestão completa da sua van escolar na palma da mão. 15 dias grátis!",
   });
   const [termosOpen, setTermosOpen] = useState(false);
   const [privacidadeOpen, setPrivacidadeOpen] = useState(false);
@@ -259,17 +259,17 @@ const Index = () => {
 
   const features = [
     {
-      headline: "Lembretes de cobrança no piloto automático",
+      headline: "Cobramos os pais automaticamente por você",
       text: "Chega de se desgastar cobrando mensalidade. O Van360 envia mensagens automáticas no WhatsApp do responsável antes, no dia e depois do vencimento.",
       mockup: "/assets/lp/mockup-mensalidades.png",
       alt: "Tela de controle de mensalidades do Van360",
       balloonText: "A mensalidade do Enzo vence hoje!",
     },
     {
-      headline: "Todos os seus passageiros em um só lugar",
-      text: "Cadastre alunos e responsáveis — ou mande o link pro pai e ele cadastra o filho direto. Sem você precisar anotar nada.",
-      mockup: "/assets/lp/mockup-passageiros.png",
-      alt: "Tela de gestão de passageiros do Van360",
+      headline: "Carteirinha digital e cadastro automático",
+      text: "Mande um link pelo WhatsApp, o pai preenche os dados e o app gera a carteirinha digital do aluno na hora. Mais segurança e zero trabalho pra você.",
+      mockup: "/assets/lp/mockup-carteirinha.png",
+      alt: "Carteirinha digital do passageiro no Van360",
       balloonText: "Clique no link e cadastre o seu filho na van.",
     },
     {
@@ -437,10 +437,12 @@ const Index = () => {
             <div className="order-2 hidden md:flex justify-end">
               <div className="max-w-[480px] w-full hero-phone relative">
                 <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
-                <img
+                <MockupImage
                   src="/assets/lp/mockup-mensalidades-2.png"
                   alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
                   loading="eager"
+                  width={1080}
+                  height={1400}
                   className="w-full h-auto"
                 />
               </div>
