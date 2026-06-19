@@ -8,12 +8,10 @@ import { ROUTES } from "@/constants/routes";
 import { useSEO } from "@/hooks/useSEO";
 
 import {
+  Check as LucideCheck,
   CheckCircle2,
   ChevronDown,
   Star,
-  Share2,
-  UserPlus,
-  Gift,
 } from "lucide-react";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -111,7 +109,7 @@ const Check = () => (
 );
 
 // ── Inline CTA block (reusado entre seções) ──
-function InlineCta({ label = "Começar grátis — 15 dias sem cartão", to }: { label?: string; to: string }) {
+function InlineCta({ label = "Testar grátis por 15 dias", to }: { label?: string; to: string }) {
   return (
     <Reveal>
       <div className="text-center mt-10">
@@ -167,18 +165,28 @@ const Index = () => {
     const monthlyPlan = SubscriptionUtils.getPlanByPeriod(plans, SubscriptionIdentifer.MONTHLY);
     const yearlyPlan = SubscriptionUtils.getPlanByPeriod(plans, SubscriptionIdentifer.YEARLY);
 
-    // Valor destaque: Mensal equivalente do plano anual (promocional se ativo)
+    // Valor equivalente do plano anual
     const highlightPrice = SubscriptionUtils.getMonthlyEquivalent(yearlyPlan, isPromoActive);
 
-    // Valor original riscado: Plano mensal cheio
-    const originalPrice = monthlyPlan?.valor || 39.90;
+    // Valor do plano mensal considerando promo
+    const originalPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromoActive) : 25.00;
+
+    // Valor total do anual considerando promo
+    const yearlyTotal = yearlyPlan ? SubscriptionUtils.getFinalPrice(yearlyPlan, isPromoActive) : 239.00;
+
+    // Valor normal sem desconto do mensal
+    const monthlyNormalPrice = monthlyPlan?.valor || 39.90;
 
     return {
-      highlight: highlightPrice > 0 ? highlightPrice : 20.75,
+      highlight: highlightPrice > 0 ? highlightPrice : 19.90,
       original: originalPrice,
+      monthlyNormal: monthlyNormalPrice,
+      yearlyTotal: yearlyTotal,
       isPromoActive,
-      highlightFormatted: SubscriptionUtils.formatCurrency(highlightPrice > 0 ? highlightPrice : 20.75).replace("R$", "").trim(),
-      originalFormatted: SubscriptionUtils.formatCurrency(originalPrice).replace("R$", "").trim()
+      highlightFormatted: SubscriptionUtils.formatCurrency(highlightPrice > 0 ? highlightPrice : 19.90).replace("R$", "").trim(),
+      originalFormatted: SubscriptionUtils.formatCurrency(originalPrice).replace("R$", "").trim(),
+      monthlyNormalFormatted: SubscriptionUtils.formatCurrency(monthlyNormalPrice).replace("R$", "").trim(),
+      yearlyTotalFormatted: SubscriptionUtils.formatCurrency(yearlyTotal).replace("R$", "").trim()
     };
   }, [plansData]);
 
@@ -260,36 +268,36 @@ const Index = () => {
 
   const features = [
     {
-      headline: "Veja quem já pagou e quem está devendo.",
-      text: "Registre pagamentos e acompanhe o status de cada mensalidade. Dê baixa na hora — pix, dinheiro, cartão.",
+      headline: "Reduza atrasos e receba com mais previsibilidade",
+      text: "Chega de esquecimentos. Saiba exatamente quem pagou e quem está pendente.",
       mockup: "/assets/lp/mockup-mensalidades.png",
       alt: "Tela de controle de mensalidades do Van360",
       balloonText: "A mensalidade do Enzo está atrasada há 3 dias.",
     },
     {
-      headline: "Cobramos os pais automaticamente por você",
-      text: "Chega de se desgastar cobrando mensalidade. O Van360 envia mensagens automáticas no WhatsApp do responsável antes, no dia e depois do vencimento.",
+      headline: "Pare de cobrar pais manualmente todos os meses",
+      text: "O Van360 envia cobranças automaticamente pelo WhatsApp.",
       mockup: "/assets/lp/mockup-whatsapp.png",
       alt: "Tela de controle de mensalidades do Van360",
       balloonText: "A mensalidade do Enzo vence hoje!",
     },
     {
-      headline: "Carteirinha digital e cadastro automático",
-      text: "Mande um link pelo WhatsApp, o pai preenche os dados e o app gera a carteirinha digital do passageiro na hora. Mais segurança e zero trabalho pra você.",
+      headline: "Nunca mais procure informações em conversas e planilhas",
+      text: "Todos os passageiros organizados em um só lugar.",
       mockup: "/assets/lp/mockup-carteirinha.png",
       alt: "Carteirinha digital do passageiro no Van360",
       balloonText: "Clique no link e cadastre o seu filho na van.",
     },
     {
-      headline: "Contrato digital com validade jurídica",
-      text: "Gere contratos com todos os dados já preenchidos. Assinado digitalmente, com validade legal — protege você e o responsável.",
+      headline: "Menos caderno, mais praticidade",
+      text: "Envie contratos digitais para assinatura online.",
       mockup: "/assets/lp/mockup-contrato.png",
       alt: "Tela de contrato digital do Van360",
       balloonText: "O motorista enviou um contrato para assinatura.",
     },
     {
-      headline: "Recibo gerado na hora, a cada pagamento",
-      text: "Cada pagamento registrado gera um recibo automaticamente. Visualize e compartilhe quando o responsável pedir.",
+      headline: "Recibos gerados automaticamente",
+      text: "Registre pagamentos e gere comprovantes em segundos.",
       mockup: "/assets/lp/mockup-recibo.png",
       alt: "Tela de recibo do Van360",
       balloonText: "Segue abaixo o recibo de pagamento:",
@@ -366,35 +374,16 @@ const Index = () => {
           <div className="flex flex-col md:grid md:grid-cols-[60%_40%] items-center gap-10 md:gap-8">
 
             {/* Texto */}
-            <div className="text-center md:text-left order-1">
+            <div className="text-center md:text-left order-1 flex flex-col">
               <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] text-[#1a3a5c] tracking-tight mb-4">
-                Chega de planilha e caderninho.
+                Sua van organizada em um único aplicativo.
                 <br />
                 <em className="not-italic text-[#f59e0b] underline underline-offset-4 decoration-[#f59e0b]/30">
-                  Sua van organizada
+                  Chega de caderno,
                 </em>{" "}
-                no celular.
+                cobranças manuais e planilhas.
               </h1>
-              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-6 leading-relaxed hidden sm:block">
-                Mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
-              </p>
-
-              {/* Mockup — SÓ MOBILE */}
-              <div className="flex justify-center md:hidden my-6">
-                <div className="max-w-[360px] w-full relative">
-                  <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-2 left-0 sm:-left-4" />
-                  <MockupImage
-                    src="/assets/lp/mockup-mensalidades-2.png"
-                    alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
-                    loading="eager"
-                    width={1080}
-                    height={1400}
-                    className="w-full h-auto"
-                  />
-                </div>
-              </div>
-
-              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-6 leading-relaxed block sm:hidden">
+              <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-8 leading-relaxed">
                 Mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
               </p>
 
@@ -402,33 +391,39 @@ const Index = () => {
               <div className="flex flex-col items-center md:items-start gap-3">
                 <Link
                   to={CTA}
-                  className="lp-cta-glow inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all min-h-[44px]"
+                  className="lp-cta-glow inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-8 py-4 rounded-lg hover:scale-[1.02] hover:-translate-y-0.5 transition-all min-h-[44px] w-full sm:w-auto shadow-lg"
                 >
-                  Começar grátis — 15 dias sem cartão
+                  Testar grátis por 15 dias
                 </Link>
-                {/* <p className="text-[0.82rem] text-slate-400">
-                  Depois, a partir de{" "}
-                  <strong className="text-[#1a3a5c]">R$ {pricing.highlightFormatted}/mês</strong>
-                </p> */}
+              </div>
+
+              {/* Mockup — SÓ MOBILE */}
+              <div className="flex justify-center md:hidden relative mt-10 mb-8">
+                <div className="max-w-[320px] sm:max-w-[360px] w-full relative">
+                  <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-4 left-0 sm:-left-4" />
+                  <MockupImage
+                    src="/assets/lp/mockup-mensalidades-2.png"
+                    alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
+                    loading="eager"
+                    width={1080}
+                    height={1400}
+                    className="w-full h-auto drop-shadow-xl"
+                  />
+                </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 max-[363px]:gap-2 gap-4 max-w-[380px] md:mx-0 mx-auto mt-8">
+              <div className="flex flex-col gap-3 mt-0 md:mt-6 mb-4 md:mb-0 md:mx-0 mx-auto w-fit text-left">
                 {[
-                  { num: "R$ 0", label: "pra começar — sem cartão" },
-                  { num: "5 min", label: "pra você configurar tudo" },
-                  { num: "24/7", label: "acesse de qualquer lugar" },
-                ].map((s) => (
-                  <div key={s.label} className="text-center">
-                    <div
-                      className="max-[363px]:text-xl text-2xl font-black text-[#1a3a5c] leading-none whitespace-nowrap"
-                      style={{ animation: "lp-countUp .6s ease both" }}
-                    >
-                      {s.num}
+                  "Sem necessidade de cartão",
+                  "Configuração em 5 minutos",
+                  "Use no celular ou computador",
+                ].map((label, index) => (
+                  <div key={index} className="flex items-center gap-2.5 text-[0.95rem] text-[#1a3a5c] font-bold" style={{ animation: `lp-countUp .6s ease ${index * 0.15}s both` }}>
+                    <div className="w-5 h-5 rounded-full bg-[#f59e0b]/20 flex items-center justify-center text-[#d97706] shrink-0 border border-[#f59e0b]/30">
+                      <LucideCheck className="w-3 h-3 stroke-[3]" />
                     </div>
-                    <div className="text-[0.75rem] max-[363px]:text-[0.70rem] text-slate-400 mt-1 leading-tight">
-                      {s.label}
-                    </div>
+                    {label}
                   </div>
                 ))}
               </div>
@@ -536,12 +531,7 @@ const Index = () => {
                   className={`flex flex-col ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
                     } items-center gap-6 md:gap-12`}
                 >
-                  <div className="text-center md:hidden w-full px-4">
-                    <h3 className="text-[1.3rem] font-extrabold text-[#1a3a5c] leading-tight">
-                      {feat.headline}
-                    </h3>
-                  </div>
-                  <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
+                  <div className="order-2 md:order-none flex-shrink-0 w-full md:w-auto flex justify-center">
                     <div className="max-w-[240px] md:max-w-[300px] w-full feature-phone relative">
                       {feat.balloonText && (
                         <WhatsAppBalloon
@@ -560,11 +550,11 @@ const Index = () => {
                       />
                     </div>
                   </div>
-                  <div className="text-center md:text-left max-w-[460px] md:max-w-none px-4 md:px-0">
-                    <h3 className="hidden md:block text-[1.5rem] font-extrabold text-[#1a3a5c] mb-3 leading-tight">
+                  <div className="order-1 md:order-none text-center md:text-left max-w-[460px] md:max-w-none px-4 md:px-0">
+                    <h3 className="text-[1.4rem] md:text-[1.8rem] font-extrabold text-[#1a3a5c] mb-3 leading-tight">
                       {feat.headline}
                     </h3>
-                    <p className="text-[1rem] text-slate-500 leading-relaxed">
+                    <p className="text-[1rem] md:text-[1.1rem] text-slate-500 leading-relaxed">
                       {feat.text}
                     </p>
                   </div>
@@ -577,10 +567,119 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ══════════ PRIMEIROS USUÁRIOS ══════════ */}
+      <section className="py-12 md:py-16 bg-gradient-to-b from-white to-[#fff8ed]">
+        <div className="max-w-[800px] mx-auto px-5 text-center">
+          <Reveal>
+            <div className="inline-flex items-center gap-1.5 bg-[#f59e0b]/20 px-3 py-1.5 rounded-full text-[#d97706] font-black text-xs uppercase tracking-wider mb-5 border border-[#f59e0b]/30">
+              <Star className="w-3.5 h-3.5" />
+              Oferta Especial
+            </div>
+            <h2 className="text-[clamp(1.6rem,4vw,2.2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-5 leading-tight">
+              Seja um dos primeiros usuários do Van360
+            </h2>
+            <p className="text-[1.1rem] text-slate-600 leading-relaxed max-w-[650px] mx-auto font-medium">
+              Estamos abrindo as primeiras vagas para transportadores escolares que querem abandonar planilhas e automatizar sua operação. Os primeiros usuários garantem o <strong className="text-[#f59e0b]">menor preço da plataforma para sempre</strong>.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ══════════ PREÇOS ══════════ */}
+      <section id="pricing" className="py-14 md:py-20 bg-[#f9f9f7] scroll-mt-20">
+        <div className="max-w-[480px] mx-auto px-5 text-center">
+          <Reveal>
+            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
+              Comece grátis. Pague só se gostar.
+            </h2>
+            <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
+              15 dias pra testar com seus dados reais. Sem cartão.
+            </p>
+          </Reveal>
+
+          <Reveal>
+            <div className="relative bg-white rounded-2xl p-8 border-2 border-[#f59e0b] shadow-[0_8px_40px_rgba(245,158,11,.15)] text-center">
+              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#f59e0b] text-[#1a1a1a] text-xs font-extrabold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap inline-flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                Oferta Fundador
+              </span>
+
+              <div className="mb-6">
+                <div className="text-[2.6rem] font-black text-[#1a3a5c] leading-none mb-6">
+                  15 dias grátis
+                </div>
+
+                <div className="bg-[#f9f9f7] rounded-xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-[#f59e0b]"></div>
+                  <p className="text-[0.95rem] text-slate-500 font-bold mb-1">
+                    A partir de
+                  </p>
+                  <div className="mb-4 flex flex-col items-center">
+                    {pricing.isPromoActive && pricing.original < pricing.monthlyNormal && (
+                      <span className="text-[1rem] text-slate-400 line-through font-semibold mb-[-4px]">
+                        R$ {pricing.monthlyNormalFormatted}
+                      </span>
+                    )}
+                    <div>
+                      <span className="text-[2.2rem] font-black text-[#f59e0b]">
+                        R$ {pricing.originalFormatted}
+                      </span>
+                      <span className="text-[1.1rem] font-bold text-[#f59e0b]/80">
+                        /mês
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-left space-y-3 mt-4 pt-4 border-t border-slate-200">
+                    <div className="flex justify-between items-center text-[0.9rem]">
+                      <span className="text-slate-500 font-medium">Plano Mensal:</span>
+                      <span className="text-[#1a3a5c] font-bold">R$ {pricing.originalFormatted}/mês</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[0.9rem] flex-wrap gap-1">
+                      <span className="text-slate-500 font-medium">Plano Anual:</span>
+                      <div className="text-right flex-1">
+                        <span className="text-[#1a3a5c] font-bold block">R$ {pricing.yearlyTotalFormatted}/ano</span>
+                        <span className="text-slate-400 font-medium text-[0.75rem] leading-tight block">(equivale a R$ {pricing.highlightFormatted}/mês)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 rounded-xl p-4 mb-8 border border-amber-200 text-left">
+                <p className="text-[0.85rem] text-amber-900 font-medium flex gap-2.5">
+                  <span className="shrink-0 text-amber-600 text-base">🚀</span>
+                  <span className="leading-relaxed"><strong>Garanta o menor preço para sempre.</strong> Entre agora e mantenha este valor vitalício, protegido contra futuros reajustes.</span>
+                </p>
+              </div>
+
+              <ul className="text-left space-y-3 mb-8">
+                {planFeatures.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-[0.92rem] text-slate-600">
+                    <Check /> {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                to={CTA}
+                className="block w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all text-[1.05rem] min-h-[48px] flex items-center justify-center"
+              >
+                Testar grátis por 15 dias
+              </Link>
+
+              <p className="text-[0.8rem] text-slate-400 mt-3 font-medium">
+                Sem cartão · Cancele quando quiser
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ══════════ COMO FUNCIONA ══════════ */}
       <section
         id="como-funciona"
-        className="py-14 md:py-20 bg-[#f9f9f7] scroll-mt-20"
+        className="py-14 md:py-20 bg-white scroll-mt-20"
       >
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
@@ -624,9 +723,7 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Mockup dashboard */}
           <Reveal className="mt-8 flex justify-center">
-            {/* Aumentado o max-w para acomodar o celular deitado/inclinado */}
             <div className="max-w-[360px] md:max-w-[480px] w-full hero-phone">
               <MockupImage
                 src="/assets/lp/mockup-dashboard.png"
@@ -650,183 +747,8 @@ const Index = () => {
         </p>
       </div>
 
-      {/* ══════════ PREÇOS ══════════ */}
-      <section id="pricing" className="py-14 md:py-20 scroll-mt-20">
-        <div className="max-w-[480px] mx-auto px-5 text-center">
-          <Reveal>
-            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Comece grátis. Pague só se gostar.
-            </h2>
-            <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
-              15 dias pra testar com seus dados reais. Sem cartão.
-            </p>
-          </Reveal>
-
-          <Reveal>
-            <div className="relative bg-white rounded-2xl p-8 border-2 border-[#f59e0b] shadow-[0_8px_40px_rgba(245,158,11,.15)] text-center">
-              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#f59e0b] text-[#1a1a1a] text-xs font-extrabold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap inline-flex items-center gap-1">
-                <Star className="w-3 h-3" />
-                Oferta Fundador
-              </span>
-
-              {/* <p className="text-xs text-[#f59e0b] font-bold mt-2 mb-6">
-                Para os primeiros motoristas
-              </p> */}
-
-              <div className="mb-2">
-                <div className="text-[2.8rem] font-black text-[#1a3a5c] leading-none">
-                  15 dias grátis
-                </div>
-
-                {pricing.isPromoActive ? (
-                  <>
-                    <p className="text-[0.7rem] text-slate-400 mt-5">
-                      Depois, {" "}
-                      <span className="line-through">{SubscriptionUtils.formatCurrency(pricing.original)}</span>
-                      {" "}
-                    </p>
-                    <div className="mt-0">
-                      <span className="text-[1.5rem] font-black text-[#f59e0b]">
-                        R$ {pricing.highlightFormatted}
-                      </span>
-                      <span className="text-[0.95rem] font-medium text-[#f59e0b]/80">
-                        /mês
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[0.8rem] text-slate-500 mt-5 font-medium">
-                      Depois, apenas
-                    </p>
-                    <div className="mt-0">
-                      <span className="text-[1.5rem] font-black text-[#f59e0b]">
-                        R$ {pricing.originalFormatted}
-                      </span>
-                      <span className="text-[0.95rem] font-medium text-[#f59e0b]/80">
-                        /mês
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <hr className="my-6 border-slate-200" />
-
-              <ul className="text-left space-y-2.5 mb-6">
-                {planFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[0.92rem]">
-                    <Check /> {f}
-                  </li>
-                ))}
-                <li className="flex items-start gap-2 text-[0.92rem] font-semibold text-[#1a3a5c]">
-                  <Check /> Preço de fundador garantido para sempre
-                </li>
-              </ul>
-
-              <Link
-                to={CTA}
-                className="block w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all text-base min-h-[44px] flex items-center justify-center"
-              >
-                Começar grátis — 15 dias sem cartão
-              </Link>
-
-              <p className="text-[0.8rem] text-slate-400 mt-3">
-                Sem cartão · Cancele quando quiser
-              </p>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
 
-
-      {/* ══════════ INDIQUE E GANHE ══════════ */}
-      <section className="py-14 md:py-20 bg-gradient-to-b from-white to-[#f9f9f7]">
-        <div className="max-w-[1000px] mx-auto px-5">
-          <Reveal>
-            <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1a3a5c] to-[#244c75] p-8 md:p-12 text-white shadow-xl flex flex-col items-center gap-10 border border-white/5 text-center">
-              {/* Background Glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full -ml-32 -mb-32 blur-3xl opacity-50"></div>
-
-              <div className="relative z-10 space-y-4 max-w-[680px]">
-                <div className="inline-flex items-center gap-1.5 bg-amber-500/25 px-3.5 py-1.5 rounded-full border border-amber-500/30 text-amber-300 font-black text-[10px] sm:text-xs uppercase tracking-wider mx-auto">
-                  🎁 Indique e Ganhe
-                </div>
-                <h2 className="text-[clamp(1.4rem,3vw,2.1rem)] font-black leading-tight tracking-tight">
-                  Use o Van360 sem pagar nada convidando colegas
-                </h2>
-                <p className="text-[0.92rem] opacity-80 leading-relaxed">
-                  Indique o Van360 para outros motoristas. É simples e os dois ganham:
-                </p>
-              </div>
-
-              {/* Timeline Grid */}
-              <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-3 gap-8 mt-2">
-                {/* Connecting Line (Desktop) */}
-                <div className="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-0.5 border-t-2 border-dashed border-white/10 -translate-y-1/2 z-0"></div>
-
-                {/* Connecting Line (Mobile) */}
-                <div className="absolute left-1/2 top-[40px] bottom-[40px] w-0.5 border-l-2 border-dashed border-white/10 -translate-x-1/2 z-0 md:hidden"></div>
-
-                {/* Step 1 */}
-                <div className="relative z-10 flex flex-col items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all hover:bg-white/10 hover:scale-[1.02] hover:border-amber-500/30 duration-300 group">
-                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center relative mb-4 border border-white/15 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
-                    <Share2 className="w-6 h-6 text-amber-300 group-hover:text-slate-950 transition-colors" />
-                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center border border-[#1a3a5c] group-hover:bg-white group-hover:text-amber-600 transition-colors">
-                      1
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-white text-base mb-2">Envie seu link</h3>
-                  <p className="text-[0.82rem] text-white/70 leading-relaxed">
-                    Compartilhe seu link exclusivo com outros motoristas de van.
-                  </p>
-                </div>
-
-                {/* Step 2 */}
-                <div className="relative z-10 flex flex-col items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all hover:bg-white/10 hover:scale-[1.02] hover:border-amber-500/30 duration-300 group">
-                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center relative mb-4 border border-white/15 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
-                    <UserPlus className="w-6 h-6 text-amber-300 group-hover:text-slate-950 transition-colors" />
-                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center border border-[#1a3a5c] group-hover:bg-white group-hover:text-amber-600 transition-colors">
-                      2
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-white text-base mb-2">Ele se cadastra</h3>
-                  <p className="text-[0.82rem] text-white/70 leading-relaxed">
-                    Seu colega cria a conta gratuita através do link enviado.
-                  </p>
-                </div>
-
-                {/* Step 3 */}
-                <div className="relative z-10 flex flex-col items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all hover:bg-white/10 hover:scale-[1.02] hover:border-amber-500/30 duration-300 group">
-                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center relative mb-4 border border-white/15 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
-                    <Gift className="w-6 h-6 text-amber-300 group-hover:text-slate-950 transition-colors" />
-                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center border border-[#1a3a5c] group-hover:bg-white group-hover:text-amber-600 transition-colors">
-                      3
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-white text-base mb-2">Ambos ganham!</h3>
-                  <p className="text-[0.82rem] text-white/70 leading-relaxed">
-                    Quando ele assinar, você ganha 1 mensalidade grátis e ele recebe desconto.
-                  </p>
-                </div>
-              </div>
-
-              {/* CTA and Subtext */}
-              <div className="relative z-10 shrink-0 flex flex-col items-center gap-2.5">
-                <Link
-                  to={CTA}
-                  className="w-full md:w-auto inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-slate-950 font-black text-sm px-10 py-4 rounded-xl shadow-lg active:scale-95 hover:-translate-y-0.5 transition-all text-center whitespace-nowrap min-h-[44px]"
-                >
-                  Começar agora
-                </Link>
-                <p className="text-[0.75rem] opacity-60">Benefício mútuo ativado automaticamente</p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ══════════ FAQ ══════════ */}
       <section id="faq" className="py-14 md:py-20 bg-[#f9f9f7] scroll-mt-20">
@@ -875,6 +797,41 @@ const Index = () => {
               a="É muito simples! Dentro do aplicativo, na tela de assinaturas, você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas motoristas pelo WhatsApp. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha mensalidades gratuitas (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na assinatura. Ambos ganham!"
             />
           </div>
+
+          <div className="mt-12">
+            <InlineCta to={CTA} />
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════ INDIQUE E GANHE ══════════ */}
+      <section className="py-10 md:py-12 bg-white">
+        <div className="max-w-[800px] mx-auto px-5">
+          <Reveal>
+            <div className="relative rounded-2xl bg-gradient-to-br from-[#1a3a5c] to-[#244c75] p-6 md:p-8 text-white shadow-md flex flex-col md:flex-row items-center gap-6 md:gap-10 border border-white/5">
+
+              <div className="relative z-10 flex-1 space-y-3 text-center md:text-left">
+                <div className="inline-flex items-center gap-1.5 bg-amber-500/25 px-2.5 py-1 rounded-full border border-amber-500/30 text-amber-300 font-bold text-[10px] uppercase tracking-wider">
+                  🎁 Indique e Ganhe
+                </div>
+                <h2 className="text-[1.2rem] sm:text-[1.4rem] font-bold leading-tight tracking-tight text-white">
+                  Use o Van360 de graça
+                </h2>
+                <p className="text-[0.85rem] text-slate-200 leading-relaxed max-w-[440px] md:mx-0 mx-auto selection:bg-white/20">
+                  Após criar sua conta, convide colegas motoristas com o seu link exclusivo. Eles ganham desconto e você garante mensalidades gratuitas!
+                </p>
+              </div>
+
+              <div className="relative z-10 shrink-0 w-full md:w-auto flex flex-col items-center gap-2">
+                <Link
+                  to={CTA}
+                  className="w-full md:w-auto inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-sm px-7 py-3 rounded-lg active:scale-95 transition-all text-center whitespace-nowrap shadow-md"
+                >
+                  Criar conta e indicar
+                </Link>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -947,12 +904,12 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.5rem,4vw,2.25rem)] font-black leading-tight mb-3">
-              Sua van merece uma gestão profissional.
+              Pare de perder tempo com planilhas e cobranças manuais.
             </h2>
           </Reveal>
           <Reveal>
             <p className="text-[1.05rem] opacity-85 max-w-[520px] mx-auto mb-8">
-              15 dias grátis. Sem cartão. Sem compromisso.
+              Teste grátis por 15 dias. Sem cartão. Sem compromisso.
             </p>
           </Reveal>
           <Reveal>
@@ -960,7 +917,7 @@ const Index = () => {
               to={CTA}
               className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all min-h-[44px]"
             >
-              Começar grátis — 15 dias sem cartão
+              Testar grátis por 15 dias
             </Link>
             <p className="text-[0.85rem] opacity-60 mt-4">
               Depois, a partir de R$ {pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês
