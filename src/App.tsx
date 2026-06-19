@@ -282,6 +282,7 @@ const App = () => {
                     </AppGate>
                   }
                 >
+                  <Route path="/admin" element={<Navigate to={ROUTES.PRIVATE.ADMIN.DASHBOARD} replace />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.DASHBOARD} element={<AdminDashboard />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.USERS} element={<AdminUsers />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.USER_DETAILS} element={<AdminUserDetails />} />

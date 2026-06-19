@@ -22,7 +22,9 @@ export function useAdminStats() {
     queryKey: KEYS.stats,
     queryFn: adminApi.getStats,
     staleTime: 0,
-    refetchOnWindowFocus: false,
+    gcTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 

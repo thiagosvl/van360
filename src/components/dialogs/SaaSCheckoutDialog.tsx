@@ -31,7 +31,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     nextStep,
     prevStep,
     jumpToStep,
-    selectedPeriod,
     setSelectedPeriod,
     paymentMethod,
     setPaymentMethod,
@@ -43,15 +42,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     cardError,
     handleGenerateCheckout,
     plans: plansVm,
-    isPromotionActive,
-    isProviderReady,
     profile,
     hasActiveDiscount,
     discountPct,
     isLoadingData,
     refetchInvoices,
     refetchStatus,
-    subscription,
     annualPlan,
     monthlyPlan,
     isAnual,
@@ -63,7 +59,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     formattedPrice,
     discountPercent,
     totalDiscount,
-    freeMonths
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
@@ -223,7 +218,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 )}
               >
                 {/* Floating Badge baseada no modelo Meta */}
-                {!hasOverride && (
+                {(totalDiscount > 0 || discountPercent > 0) && (
                   <div
                     className={cn(
                       "absolute -top-[13px] left-1/2 -translate-x-1/2 px-4 sm:px-5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-sans font-black uppercase shadow-sm z-10 border whitespace-nowrap transition-all",
