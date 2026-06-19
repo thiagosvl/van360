@@ -275,9 +275,14 @@ export default function Login() {
                     />
                   </div>
                 </div>
-                <h1 className="text-xl font-extrabold tracking-tight sm:text-4xl text-[#1a3a5c] drop-shadow-sm">
-                  Entrar no Van360
-                </h1>
+                <div className="flex flex-col items-center gap-1.5 mt-2">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
+                    Acesse sua conta
+                  </h1>
+                  <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4">
+                    Organize sua van de forma simples.
+                  </p>
+                </div>
               </div>
             </div>
 
