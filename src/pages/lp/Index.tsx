@@ -177,7 +177,8 @@ const Index = () => {
       highlight: highlightPrice > 0 ? highlightPrice : 20.75,
       original: originalPrice,
       isPromoActive,
-      highlightFormatted: SubscriptionUtils.formatCurrency(highlightPrice > 0 ? highlightPrice : 20.75).replace("R$", "").trim()
+      highlightFormatted: SubscriptionUtils.formatCurrency(highlightPrice > 0 ? highlightPrice : 20.75).replace("R$", "").trim(),
+      originalFormatted: SubscriptionUtils.formatCurrency(originalPrice).replace("R$", "").trim()
     };
   }, [plansData]);
 
@@ -222,7 +223,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "O que é a oferta/preço fundador?",
-            "acceptedAnswer": { "@type": "Answer", "text": `É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.highlightFormatted}/mês para sempre, mesmo quando o preço subir.` },
+            "acceptedAnswer": { "@type": "Answer", "text": `É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês para sempre, mesmo quando o preço subir.` },
           },
           {
             "@type": "Question",
@@ -237,7 +238,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "Quanto vou pagar depois dos 15 dias?",
-            "acceptedAnswer": { "@type": "Answer", "text": `Se você entrar agora como fundador, paga a partir de R$ ${pricing.highlightFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.` },
+            "acceptedAnswer": { "@type": "Answer", "text": `Se você entrar agora como fundador, paga a partir de R$ ${pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.` },
           },
         ],
       },
@@ -250,11 +251,11 @@ const Index = () => {
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
   const planFeatures = [
-    "Controle financeiro (Mensalidades, Gastos e Relatórios)",
     "Cobrança automática dos pais via WhatsApp",
-    "Geração de Recibos e Contratos automáticos",
-    "Ilimitado: Passageiros, Escolas e Veículos",
-    "Acesso no App Android, Tablet e Computador",
+    "Geração de recibos automática",
+    "Passageiros ilimitados",
+    "Contratos digitais ilimitados",
+    "Controle de Gastos e Relatórios Financeiros",
   ];
 
   const features = [
@@ -676,19 +677,38 @@ const Index = () => {
                 <div className="text-[2.8rem] font-black text-[#1a3a5c] leading-none">
                   15 dias grátis
                 </div>
-                <p className="text-[0.7rem] text-slate-400 mt-5">
-                  Depois, {" "}
-                  <span className="line-through">{SubscriptionUtils.formatCurrency(pricing.original)}</span>
-                  {" "}
-                </p>
-                <div className="mt-0">
-                  <span className="text-[1.5rem] font-black text-[#f59e0b]">
-                    R$ {pricing.highlightFormatted}
-                  </span>
-                  <span className="text-[0.95rem] font-medium text-[#f59e0b]/80">
-                    /mês
-                  </span>
-                </div>
+
+                {pricing.isPromoActive ? (
+                  <>
+                    <p className="text-[0.7rem] text-slate-400 mt-5">
+                      Depois, {" "}
+                      <span className="line-through">{SubscriptionUtils.formatCurrency(pricing.original)}</span>
+                      {" "}
+                    </p>
+                    <div className="mt-0">
+                      <span className="text-[1.5rem] font-black text-[#f59e0b]">
+                        R$ {pricing.highlightFormatted}
+                      </span>
+                      <span className="text-[0.95rem] font-medium text-[#f59e0b]/80">
+                        /mês
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[0.8rem] text-slate-500 mt-5 font-medium">
+                      Depois, apenas
+                    </p>
+                    <div className="mt-0">
+                      <span className="text-[1.5rem] font-black text-[#f59e0b]">
+                        R$ {pricing.originalFormatted}
+                      </span>
+                      <span className="text-[0.95rem] font-medium text-[#f59e0b]/80">
+                        /mês
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               <hr className="my-6 border-slate-200" />
@@ -836,7 +856,7 @@ const Index = () => {
             />
             <FaqItem
               q="O que é a oferta/preço fundador?"
-              a={`É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.highlightFormatted}/mês para sempre, mesmo quando o preço subir.`}
+              a={`É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês para sempre, mesmo quando o preço subir.`}
             />
             <FaqItem
               q="O contrato gerado tem validade jurídica?"
@@ -848,7 +868,7 @@ const Index = () => {
             />
             <FaqItem
               q="Quanto vou pagar depois dos 15 dias?"
-              a={`Se você entrar agora como fundador, paga a partir de R$ ${pricing.highlightFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.`}
+              a={`Se você entrar agora como fundador, paga a partir de R$ ${pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.`}
             />
             <FaqItem
               q="Como funciona o programa de indicações?"
@@ -943,7 +963,7 @@ const Index = () => {
               Começar grátis — 15 dias sem cartão
             </Link>
             <p className="text-[0.85rem] opacity-60 mt-4">
-              Depois, a partir de R$ {pricing.highlightFormatted}/mês
+              Depois, a partir de R$ {pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês
             </p>
           </Reveal>
         </div>
