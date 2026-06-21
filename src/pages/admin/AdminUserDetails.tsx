@@ -66,6 +66,7 @@ import {
 import { PhoneInput } from "@/components/forms";
 import { emailSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
+import { toPersistenceString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
@@ -145,7 +146,7 @@ export default function AdminUserDetails() {
   const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = toPersistenceString(getNowBR());
   const [logsFilter, setLogsFilter] = useState({
     dataInicio: today,
     dataFim: today,
@@ -283,7 +284,7 @@ export default function AdminUserDetails() {
       : new Date();
 
     const newDate = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000);
-    const newDateStr = newDate.toISOString().split("T")[0];
+    const newDateStr = toPersistenceString(newDate);
 
     setSubForm((p) => ({
       ...p,
@@ -326,14 +327,14 @@ export default function AdminUserDetails() {
         plano_id: subForm.plano_id || undefined,
         status: (subForm.status as SubscriptionStatus) || undefined,
         data_vencimento: subForm.data_vencimento
-          ? new Date(subForm.data_vencimento + "T23:59:59").toISOString()
+          ? toISODateTimeBR(subForm.data_vencimento + "T23:59:59")
           : null,
         trial_ends_at: subForm.trial_ends_at
-          ? new Date(subForm.trial_ends_at + "T23:59:59").toISOString()
+          ? toISODateTimeBR(subForm.trial_ends_at + "T23:59:59")
           : null,
         valor_promocional: valorPromoNum,
         data_fim_promocao: subForm.data_fim_promocao
-          ? new Date(subForm.data_fim_promocao + "T23:59:59").toISOString()
+          ? toISODateTimeBR(subForm.data_fim_promocao + "T23:59:59")
           : null,
       },
     });
