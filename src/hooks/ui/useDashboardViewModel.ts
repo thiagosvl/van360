@@ -87,12 +87,8 @@ export function useDashboardViewModel() {
   }, []);
 
   useEffect(() => {
-    if (profile?.nome) {
-      setPageTitle(`Olá, ${formatFirstName(profile.nome)}`);
-    } else {
-      setPageTitle("home.info.saudacaoPadrao");
-    }
-  }, [profile?.nome, setPageTitle]);
+    setPageTitle("Página Inicial");
+  }, [setPageTitle]);
 
   const handlePullToRefresh = async () => {
     if (!profile?.id) return;
