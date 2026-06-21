@@ -2,6 +2,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 import { CookieConsentGlobal } from "@/components/features/CookieConsentGlobal";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useCookieConsent } from "@/hooks/business/useCookieConsent";
 import { getWhatsAppUrl } from "@/constants";
 import { ROUTES } from "@/constants/routes";
@@ -434,7 +435,7 @@ const Index = () => {
               <div className="max-w-[480px] w-full hero-phone relative">
                 <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
                 <MockupImage
-                  src="/assets/lp/mockup-mensalidades-2.png"
+                  src="/assets/lp/mockup-dashboard.png"
                   alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
                   loading="eager"
                   width={1080}
@@ -996,6 +997,12 @@ const Index = () => {
 
       {/* ══════════ DIALOG — PRIVACIDADE ══════════ */}
       <PoliticaPrivacidadeDialog open={privacidadeOpen} onOpenChange={setPrivacidadeOpen} />
+
+      <VideoCommerce
+        previewUrl="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+        fullUrl="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+        positionClasses="fixed z-40 left-4 sm:left-6 top-[65%] sm:top-auto sm:bottom-10"
+      />
 
       <CookieConsentGlobal />
     </div>
