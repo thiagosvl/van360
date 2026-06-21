@@ -998,11 +998,11 @@ const Index = () => {
       {/* ══════════ DIALOG — PRIVACIDADE ══════════ */}
       <PoliticaPrivacidadeDialog open={privacidadeOpen} onOpenChange={setPrivacidadeOpen} />
 
-      <VideoCommerce
+      {/* <VideoCommerce
         previewUrl="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
         fullUrl="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
         positionClasses="fixed z-40 left-4 sm:left-6 top-[65%] sm:top-auto sm:bottom-10"
-      />
+      /> */}
 
       <CookieConsentGlobal />
     </div>

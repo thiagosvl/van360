@@ -5,7 +5,8 @@ import {
   Users,
   Settings,
   ChevronRight,
-  Calculator
+  Calculator,
+  ShieldAlert
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
@@ -24,6 +25,11 @@ const adminNavItems = [
     title: "Calculadora",
     href: ROUTES.PRIVATE.ADMIN.CALCULATOR,
     icon: Calculator,
+  },
+  {
+    title: "Tentativas de Login",
+    href: ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS,
+    icon: ShieldAlert,
   },
   {
     title: "Configurações",

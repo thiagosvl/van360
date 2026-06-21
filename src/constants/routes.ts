@@ -22,6 +22,7 @@ export const ROUTES = {
       USER_DETAILS: "/admin/usuarios/:id",
       SETTINGS: "/admin/configuracoes",
       CALCULATOR: "/admin/calculadora",
+      LOGIN_ATTEMPTS: "/admin/tentativas-login",
     },
     MOTORISTA: {
       HOME: "/inicio",
