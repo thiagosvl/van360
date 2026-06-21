@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { loadSavedPreferences } from "./useCookieConsent";
+import { isNativeApp } from "../../utils/detectPlatform";
 
 const GTM_ID = "GTM-5VLZKJ66";
 const CLARITY_ID = "w4mjidk4lw";
@@ -55,10 +56,10 @@ export function useAnalyticsInjector({ gtm = false, clarity = false, force = fal
       }
     }
 
-    if (clarity) {
+    if (clarity && !isNativeApp()) {
       if (force || isPending || prefs.clarity) {
         injectClarity();
       }
     }
-  }, []);
+  }, [gtm, clarity, force]);
 }
