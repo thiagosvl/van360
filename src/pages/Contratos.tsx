@@ -66,9 +66,9 @@ const Contratos = () => {
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Gostaria de gerar contratos?</p>
+                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Ative seus contratos digitais</p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Primeiro configure os valores de multa, de juros e também realize a sua assinatura aqui mesmo pelo app.
+                      Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus passageiros.
                     </p>
                   </div>
                 </div>
