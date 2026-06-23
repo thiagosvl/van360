@@ -1,3 +1,4 @@
+import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { KPICard } from "@/components/common/KPICard";
@@ -288,6 +289,21 @@ const Home = () => {
             </h2>
             <ReferAndEarnCard isTrial={subscription?.status === SubscriptionStatus.TRIAL} />
           </section>
+
+          {/* Onboarding em Vídeo (Contextual) */}
+          <VideoCommerce
+            previewUrl="https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-preview.mp4"
+            videoUrls={[
+              "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-1.mp4",
+              "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-2.mp4",
+              "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-3.mp4"
+            ]}
+            tooltipText="Comece por aqui"
+            showCta={false}
+            loop={true}
+            requireScrollOnMobile={false}
+            positionClasses="fixed z-50 left-4 sm:left-6 bottom-[100px] sm:bottom-10"
+          />
         </div>
       </PullToRefreshWrapper>
     </>

@@ -61,7 +61,7 @@ export const QuickStartCard = ({
       {
         id: 3,
         done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
-        label: "Configurar Chave Pix",
+        label: "Cadastrar Chave Pix",
         onAction: openEditarPixDialog,
         icon: Key,
         buttonText: "Configurar",
