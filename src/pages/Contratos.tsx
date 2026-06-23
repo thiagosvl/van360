@@ -66,9 +66,9 @@ const Contratos = () => {
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Você ainda não pode gerar contratos</p>
+                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Gostaria de gerar contratos?</p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Para gerar contratos, antes você precisa configurar os valores de multa, de juros e também a sua assinatura.
+                      Primeiro configure os valores de multa, de juros e também realize a sua assinatura aqui mesmo pelo app.
                     </p>
                   </div>
                 </div>
