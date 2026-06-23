@@ -302,7 +302,7 @@ const Home = () => {
             showCta={false}
             loop={true}
             requireScrollOnMobile={false}
-            positionClasses="fixed z-50 left-4 sm:left-6 bottom-[100px] sm:bottom-10"
+            positionClasses="fixed z-50 left-4 sm:left-6 bottom-[130px] sm:bottom-10"
           />
         </div>
       </PullToRefreshWrapper>
