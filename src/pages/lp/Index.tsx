@@ -272,35 +272,35 @@ const Index = () => {
       headline: "Reduza atrasos e receba com mais previsibilidade",
       text: "Chega de esquecimentos. Saiba exatamente quem pagou e quem está pendente.",
       mockup: "/assets/lp/mockup-mensalidades.png",
-      alt: "Tela de controle de mensalidades do Van360",
+      alt: "App de cobrança de mensalidade para van escolar mostrando painel financeiro",
       balloonText: "A mensalidade do Enzo está atrasada há 3 dias.",
     },
     {
       headline: "Pare de cobrar pais manualmente todos os meses",
       text: "O Van360 envia cobranças automaticamente pelo WhatsApp.",
       mockup: "/assets/lp/mockup-whatsapp.png",
-      alt: "Tela de controle de mensalidades do Van360",
+      alt: "Sistema de cobrança automática via WhatsApp para transporte escolar",
       balloonText: "A mensalidade do Enzo vence hoje!",
     },
     {
       headline: "Nunca mais procure informações em conversas e planilhas",
       text: "Todos os passageiros organizados em um só lugar.",
       mockup: "/assets/lp/mockup-carteirinha.png",
-      alt: "Carteirinha digital do passageiro no Van360",
+      alt: "Lista e cadastro de passageiros no aplicativo de gestão de van escolar",
       balloonText: "Clique no link e cadastre o seu filho na van.",
     },
     {
       headline: "Menos caderno, mais praticidade",
       text: "Envie contratos digitais para assinatura online.",
       mockup: "/assets/lp/mockup-contrato.png",
-      alt: "Tela de contrato digital do Van360",
+      alt: "Gerador de contrato digital e assinatura online para motoristas de van",
       balloonText: "O motorista enviou um contrato para assinatura.",
     },
     {
       headline: "Recibos gerados automaticamente",
       text: "Registre pagamentos e gere comprovantes em segundos.",
       mockup: "/assets/lp/mockup-recibo.png",
-      alt: "Tela de recibo do Van360",
+      alt: "Emissor de recibo de pagamento online para passageiros de van escolar",
       balloonText: "Segue abaixo o recibo de pagamento:",
     },
   ];
@@ -377,7 +377,7 @@ const Index = () => {
             {/* Texto */}
             <div className="text-center md:text-left order-1 flex flex-col">
               <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] text-[#1a3a5c] tracking-tight mb-4">
-                Sua van organizada em um único aplicativo.
+                Aplicativo para Transporte Escolar.
                 <br />
                 <em className="not-italic text-[#f59e0b] underline underline-offset-4 decoration-[#f59e0b]/30">
                   Chega de caderno,
@@ -404,7 +404,7 @@ const Index = () => {
                   <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-4 left-0 sm:-left-4" />
                   <MockupImage
                     src="/assets/lp/mockup-mensalidades-2.png"
-                    alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
+                    alt="App de cobrança de mensalidade para van escolar rodando no celular"
                     loading="eager"
                     width={1080}
                     height={1400}
@@ -436,7 +436,7 @@ const Index = () => {
                 <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
                 <MockupImage
                   src="/assets/lp/mockup-dashboard.png"
-                  alt="Tela de controle de mensalidades do Van360 mostrando status de pagamentos"
+                  alt="Sistema de gestão de transporte escolar rodando no navegador"
                   loading="eager"
                   width={1080}
                   height={1400}
@@ -454,7 +454,7 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-              Já passou por alguma dessas situações?
+              Dificuldades comuns no Transporte Escolar
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
               <span className="md:hidden">Deslize para o lado e veja</span>
@@ -517,7 +517,7 @@ const Index = () => {
           <Reveal>
             <div className="text-center mb-12">
               <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
-                O que o Van360 faz por você
+                O melhor aplicativo de gestão de van escolar
               </h2>
               <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto">
                 Funcionalidades que resolvem o dia a dia da sua van.
@@ -999,10 +999,14 @@ const Index = () => {
       <PoliticaPrivacidadeDialog open={privacidadeOpen} onOpenChange={setPrivacidadeOpen} />
 
       {/* <VideoCommerce
-        previewUrl="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-        fullUrl="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-        positionClasses="fixed z-40 left-4 sm:left-6 top-[65%] sm:top-auto sm:bottom-10"
-      /> */}
+        previewUrl="https://res.cloudinary.com/demo/video/upload/dog.mp4"
+        videoUrls={[
+          "https://res.cloudinary.com/demo/video/upload/dog.mp4",
+          "https://res.cloudinary.com/demo/video/upload/elephants.mp4",
+          "https://www.w3schools.com/html/mov_bbb.mp4"
+        ]}
+        positionClasses="fixed z-40 left-4 sm:left-6 top-[65%] sm:top-auto sm:bottom-10" */}
+      {/* /> */}
 
       <CookieConsentGlobal />
     </div>

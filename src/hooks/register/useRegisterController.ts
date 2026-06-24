@@ -2,7 +2,7 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
-import { isMobilePlatform } from "@/utils/detectPlatform";
+import { isMobilePlatform, isNativeApp } from "@/utils/detectPlatform";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
@@ -88,10 +88,11 @@ export function useRegisterController() {
       // --- FLUXO DE PÓS-CADASTRO ---
       
       // Disparar evento de conversão para o Google Tag Manager / Ads
-      // Apenas em Produção e Apenas no Web (para não sujar métricas com testes locais ou app)
+      // Apenas em Produção e Apenas no Web (para não sujar métricas com o app nativo)
       const isMobile = isMobilePlatform();
+      const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
       
-      if (typeof window !== "undefined" && import.meta.env.PROD && !isMobile) {
+      if (typeof window !== "undefined" && import.meta.env.PROD && !isNative) {
         (window as any).dataLayer = (window as any).dataLayer || [];
         (window as any).dataLayer.push({
           event: "generate_lead",
