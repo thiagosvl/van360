@@ -28,9 +28,9 @@ import {
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
 import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
-import { getNowBR } from "@/utils/dateUtils";
+import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useEffect } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 
 const Home = () => {
   const {
@@ -58,13 +58,10 @@ const Home = () => {
   useEffect(() => {
     if (isLoading || !profile) return;
 
-    const shouldAskChannel = 
-      !profile.canal_aquisicao && 
-      (
-        !onboarding.showOnboarding || 
-        (subscription?.trialDaysLeft !== undefined && subscription.trialDaysLeft <= 12) || 
-        subscription?.status === SubscriptionStatus.ACTIVE 
-      );
+    // Só aciona a partir do 4º dia de uso da conta (3 dias de diferença do cadastro original)
+    const daysSinceCreation = differenceInCalendarDaysBR(getNowBR(), profile.created_at);
+    
+    const shouldAskChannel = !profile.canal_aquisicao && daysSinceCreation >= 3;
 
     if (shouldAskChannel) {
       openAcquisitionChannelDialog();
@@ -72,9 +69,6 @@ const Home = () => {
   }, [
     isLoading, 
     profile, 
-    onboarding.showOnboarding, 
-    subscription?.trialDaysLeft, 
-    subscription?.status, 
     openAcquisitionChannelDialog
   ]);
 
