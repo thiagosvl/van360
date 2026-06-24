@@ -25,4 +25,7 @@ export const usuarioApi = {
     tipo_chave_pix: TipoChavePix | null;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}/pix`, payload).then(res => res.data),
 
+  atualizarCanalAquisicao: (usuarioId: string, canal_aquisicao: string) => 
+    apiClient.patch(`${endpointBase}/${usuarioId}/canal-aquisicao`, { canal_aquisicao }).then(res => res.data),
+
 };

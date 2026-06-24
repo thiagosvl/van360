@@ -16,6 +16,7 @@ export interface Usuario {
   cidade?: string;
   estado?: string;
   cep?: string;
+  canal_aquisicao?: string;
 
   ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
 

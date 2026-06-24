@@ -29,9 +29,12 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
 import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
 import { getNowBR } from "@/utils/dateUtils";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useEffect } from "react";
 
 const Home = () => {
   const {
+    profile,
     subscription,
     plans,
     isLoading,
@@ -49,6 +52,31 @@ const Home = () => {
     openSaaSCheckoutDialog,
     navigateTo,
   } = useDashboardViewModel();
+
+  const { openAcquisitionChannelDialog } = useLayout();
+
+  useEffect(() => {
+    if (isLoading || !profile) return;
+
+    const shouldAskChannel = 
+      !profile.canal_aquisicao && 
+      (
+        !onboarding.showOnboarding || 
+        (subscription?.trialDaysLeft !== undefined && subscription.trialDaysLeft <= 12) || 
+        subscription?.status === SubscriptionStatus.ACTIVE 
+      );
+
+    if (shouldAskChannel) {
+      openAcquisitionChannelDialog();
+    }
+  }, [
+    isLoading, 
+    profile, 
+    onboarding.showOnboarding, 
+    subscription?.trialDaysLeft, 
+    subscription?.status, 
+    openAcquisitionChannelDialog
+  ]);
 
   if (isLoading) {
     return <HomeSkeleton />;

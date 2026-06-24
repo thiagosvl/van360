@@ -158,6 +158,7 @@ export interface LayoutContextType {
   openAlterarSenhaDialog: () => void;
   openEditarCadastroDialog: () => void;
   openEditarPixDialog: () => void;
+  openAcquisitionChannelDialog: () => void;
 
   // Mobile Menu
   isMobileMenuOpen: boolean;

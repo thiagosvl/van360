@@ -11,6 +11,7 @@ import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
+import AcquisitionChannelDialog from "@/components/dialogs/AcquisitionChannelDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
@@ -192,6 +193,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
+  const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
   const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
     open: boolean;
     onSuccess?: (userId: string) => void;
@@ -362,6 +364,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
         openEditarPixDialog: () => setEditarPixDialogOpen(true),
+        openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isHelpOpen,
@@ -633,6 +636,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <EditarPixDialog
           isOpen={editarPixDialogOpen}
           onClose={() => safeCloseDialog(() => setEditarPixDialogOpen(false))}
+        />
+      )}
+
+      {acquisitionChannelDialogOpen && (
+        <AcquisitionChannelDialog
+          isOpen={acquisitionChannelDialogOpen}
+          onClose={() => safeCloseDialog(() => setAcquisitionChannelDialogOpen(false))}
         />
       )}
 
