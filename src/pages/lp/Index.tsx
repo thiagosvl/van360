@@ -416,8 +416,8 @@ const Index = () => {
               {/* Stats */}
               <div className="flex flex-col gap-3 mt-0 md:mt-6 mb-4 md:mb-0 md:mx-0 mx-auto w-fit text-left">
                 {[
-                  "Sem necessidade de cartão",
-                  "Configuração em 5 minutos",
+                  "Passageiros ilimitados",
+                  "Configure em 5 minutos",
                   "Use no celular ou computador",
                 ].map((label, index) => (
                   <div key={index} className="flex items-center gap-2.5 text-[0.95rem] text-[#1a3a5c] font-bold" style={{ animation: `lp-countUp .6s ease ${index * 0.15}s both` }}>
