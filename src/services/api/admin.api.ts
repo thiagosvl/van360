@@ -123,6 +123,10 @@ export interface AdminUserLogItem {
   meta: Record<string, any>;
   ip_address: string | null;
   created_at: string;
+  usuarios?: {
+    nome: string;
+    telefone: string;
+  };
 }
 
 export interface AdminUserLogsResponse {

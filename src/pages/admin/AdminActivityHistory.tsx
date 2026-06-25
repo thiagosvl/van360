@@ -157,6 +157,7 @@ export default function AdminActivityHistory() {
                     <tr className="border-b border-slate-100">
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
+                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Usuário</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Entidade</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
@@ -185,6 +186,16 @@ export default function AdminActivityHistory() {
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
                               {actionLabel}
                             </span>
+                          </td>
+                          <td className="py-4 hidden sm:table-cell">
+                            {log.usuarios ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-xs font-bold text-[#1a3a5c] uppercase">{log.usuarios.nome}</span>
+                                <span className="text-[10px] font-medium text-slate-500">{log.usuarios.telefone}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">—</span>
+                            )}
                           </td>
                           <td className="py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell">
                             {log.entidade_tipo}
@@ -244,6 +255,13 @@ export default function AdminActivityHistory() {
                           {actionLabel}
                         </span>
                       </div>
+
+                      {log.usuarios && (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-bold text-[#1a3a5c] uppercase">{log.usuarios.nome}</span>
+                          <span className="text-[10px] font-medium text-slate-500">{log.usuarios.telefone}</span>
+                        </div>
+                      )}
 
                       <div className="space-y-1">
                         <div className="flex items-center justify-between text-[10px]">
