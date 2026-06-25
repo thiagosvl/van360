@@ -32,6 +32,7 @@ import { lazyLoad } from "@/utils/lazyLoad";
 const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
 const Index = lazyLoad(() => import("./pages/lp/Index"));
+// const TudoQueFaz = lazyLoad(() => import("./pages/lp/TudoQueFaz"));
 const Splash = lazyLoad(() => import("./pages/Splash"));
 const Home = lazyLoad(() => import("./pages/Home"));
 
@@ -63,6 +64,7 @@ const AdminUserDetails = lazyLoad(() => import("./pages/admin/AdminUserDetails")
 const AdminSettings = lazyLoad(() => import("./pages/admin/AdminSettings"));
 const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 const AdminLoginAttempts = lazyLoad(() => import("./pages/admin/AdminLoginAttempts"));
+const AdminActivityHistory = lazyLoad(() => import("./pages/admin/AdminActivityHistory"));
 
 const App = () => {
   const [updating, setUpdating] = useState(false);
@@ -237,6 +239,11 @@ const App = () => {
                   element={<TermsOfUse />}
                 />
 
+                {/* <Route
+                  path={ROUTES.PUBLIC.FEATURES}
+                  element={<TudoQueFaz />}
+                /> */}
+
                 <Route
                   path={ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}
                   element={<ExternalCheckoutBridge />}
@@ -290,6 +297,7 @@ const App = () => {
                   <Route path={ROUTES.PRIVATE.ADMIN.SETTINGS} element={<AdminSettings />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
+                  <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
                 </Route>
 
                 {/* Rotas Protegidas - Motorista */}
