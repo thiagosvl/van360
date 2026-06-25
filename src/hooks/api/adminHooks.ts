@@ -58,6 +58,15 @@ export function useAdminUserLogs(id: string, params?: { page?: number; limit?: n
   });
 }
 
+export function useAdminLogs(params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) {
+  return useQuery({
+    queryKey: ["admin", "logs", params],
+    queryFn: () => adminApi.getLogs(params),
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useUpdateUserAdmin() {
   const qc = useQueryClient();
   return useMutation({

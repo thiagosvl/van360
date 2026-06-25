@@ -179,6 +179,9 @@ export const adminApi = {
   getUserLogs: (id: string, params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string }) =>
     apiClient.get<AdminUserLogsResponse>(`${BASE}/users/${id}/logs`, { params }).then(r => r.data),
 
+  getLogs: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) =>
+    apiClient.get<AdminUserLogsResponse>(`${BASE}/logs`, { params }).then(r => r.data),
+
   updateUser: (id: string, data: UpdateUserPayload) =>
     apiClient.patch(`${BASE}/users/${id}`, data).then(r => r.data),
 

@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  ShieldAlert, 
+import {
+  ShieldAlert,
   Filter,
   RefreshCw,
   CheckCircle2,
   XCircle,
   MonitorSmartphone,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { apiClient } from "@/services/api/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
 import { cpfMask } from "@/utils/masks";
 
@@ -43,11 +46,15 @@ function useDebounce<T>(value: T, delay?: number): T {
 
 export default function AdminLoginAttempts() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-  
+  const [page, setPage] = useState(1);
+  const [limitStr, setLimitStr] = useState("25");
+  const limit = parseInt(limitStr);
+
   const todayStr = toPersistenceString(getNowBR());
+  const yesterdayStr = toPersistenceString(new Date(getNowBR().getTime() - 24 * 60 * 60 * 1000));
 
   const [filters, setFilters] = useState({
-    dataInicio: todayStr,
+    dataInicio: yesterdayStr,
     dataFim: todayStr,
     cpf: "",
   });
@@ -61,13 +68,15 @@ export default function AdminLoginAttempts() {
     isFetching: isFetchingLogs,
     refetch: refetchLogs
   } = useQuery({
-    queryKey: ["admin", "login-attempts", filters.dataInicio, filters.dataFim, debouncedCpf],
+    queryKey: ["admin", "login-attempts", filters.dataInicio, filters.dataFim, debouncedCpf, page],
     queryFn: async () => {
-      const { data } = await apiClient.get<{ data: LoginAttempt[] }>("/admin/login-attempts", {
+      const { data } = await apiClient.get<{ data: LoginAttempt[]; total: number }>("/admin/login-attempts", {
         params: {
+          page,
+          limit,
           data_inicio: filters.dataInicio || undefined,
           data_fim: filters.dataFim || undefined,
-          search_cpf: debouncedCpf ? debouncedCpf.replace(/\D/g, '') : undefined,
+          search_cpf: debouncedCpf || undefined,
         }
       });
       return data;
@@ -77,6 +86,7 @@ export default function AdminLoginAttempts() {
   });
 
   const attemptsData = attemptsResponse?.data || [];
+  const total = attemptsResponse?.total || 0;
 
   return (
     <div className="space-y-6">
@@ -108,7 +118,7 @@ export default function AdminLoginAttempts() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => refetchLogs()}
+                onClick={() => { setPage(1); refetchLogs(); }}
                 disabled={isFetchingLogs}
                 className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
               >
@@ -122,14 +132,12 @@ export default function AdminLoginAttempts() {
         <CardContent className="pt-6">
           <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 ${!isMobileFiltersOpen ? 'hidden md:grid' : ''}`}>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Busca por CPF</Label>
+              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</Label>
               <Input
                 type="text"
-                inputMode="numeric"
-                maxLength={14}
-                placeholder="000.000.000-00"
+                placeholder="CPF, Telefone ou ID..."
                 value={filters.cpf}
-                onChange={(e) => setFilters(p => ({ ...p, cpf: cpfMask(e.target.value) }))}
+                onChange={(e) => { setPage(1); setFilters(p => ({ ...p, cpf: e.target.value })) }}
                 className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
               />
             </div>
@@ -138,7 +146,7 @@ export default function AdminLoginAttempts() {
               <Input
                 type="date"
                 value={filters.dataInicio}
-                onChange={(e) => setFilters(p => ({ ...p, dataInicio: e.target.value }))}
+                onChange={(e) => { setPage(1); setFilters(p => ({ ...p, dataInicio: e.target.value })) }}
                 className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
               />
             </div>
@@ -147,7 +155,7 @@ export default function AdminLoginAttempts() {
               <Input
                 type="date"
                 value={filters.dataFim}
-                onChange={(e) => setFilters(p => ({ ...p, dataFim: e.target.value }))}
+                onChange={(e) => { setPage(1); setFilters(p => ({ ...p, dataFim: e.target.value })) }}
                 className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
               />
             </div>
@@ -218,9 +226,9 @@ export default function AdminLoginAttempts() {
                           {dateFormatted}
                         </td>
                         <td className="py-4">
-                           <span className="text-sm font-bold text-[#1a3a5c]">
-                             {attempt.login_tentado}
-                           </span>
+                          <span className="text-sm font-bold text-[#1a3a5c]">
+                            {attempt.login_tentado}
+                          </span>
                         </td>
                         <td className="py-4 hidden sm:table-cell">
                           <div className="flex items-center gap-2 text-slate-500">
@@ -255,6 +263,51 @@ export default function AdminLoginAttempts() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {total > 0 && attemptsData.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-100 gap-4">
+              <p className="text-xs font-semibold text-slate-400">
+                Página {page} de {Math.max(1, Math.ceil(total / limit))} ({total} tentativas)
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                  <Select value={limitStr} onValueChange={(val) => { setLimitStr(val); setPage(1); }}>
+                    <SelectTrigger className="h-8 rounded-xl bg-slate-50 border-slate-200 text-xs focus-visible:ring-0 w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                      <SelectItem value="250">250</SelectItem>
+                      <SelectItem value="500">500</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page <= 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="rounded-xl border-slate-200"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= Math.ceil(total / limit)}
+                    onClick={() => setPage(p => p + 1)}
+                    className="rounded-xl border-slate-200"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

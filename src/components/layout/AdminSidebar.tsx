@@ -6,7 +6,8 @@ import {
   Settings,
   ChevronRight,
   Calculator,
-  ShieldAlert
+  ShieldAlert,
+  Terminal
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
@@ -30,6 +31,11 @@ const adminNavItems = [
     title: "Tentativas de Login",
     href: ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS,
     icon: ShieldAlert,
+  },
+  {
+    title: "Histórico de Atividades",
+    href: ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY,
+    icon: Terminal,
   },
   {
     title: "Configurações",

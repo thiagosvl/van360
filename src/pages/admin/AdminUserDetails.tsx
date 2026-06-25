@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   useAdminUserDetails,
   useUpdateUserAdmin,
@@ -47,7 +48,7 @@ import {
 import { SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
-import { toast } from "@/utils/notifications/toast";
+import { toast } from "sonner";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 import { ROUTES } from "@/constants/routes";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
@@ -143,12 +144,15 @@ export default function AdminUserDetails() {
   );
 
   const [logsPage, setLogsPage] = useState(1);
+  const [limitStr, setLimitStr] = useState("25");
   const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const today = toPersistenceString(getNowBR());
+  const sevenDaysAgo = toPersistenceString(new Date(getNowBR().getTime() - 7 * 24 * 60 * 60 * 1000));
+
   const [logsFilter, setLogsFilter] = useState({
-    dataInicio: today,
+    dataInicio: sevenDaysAgo,
     dataFim: today,
     acao: "all",
     entidade: "all"
@@ -156,7 +160,7 @@ export default function AdminUserDetails() {
 
   const { data: logsData, isFetching: isFetchingLogs, refetch: refetchLogs } = useAdminUserLogs(id!, {
     page: logsPage,
-    limit: 15,
+    limit: parseInt(limitStr),
     dataInicio: logsFilter.dataInicio || undefined,
     dataFim: logsFilter.dataFim || undefined,
     acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
@@ -409,7 +413,7 @@ export default function AdminUserDetails() {
               value="logs"
               className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
             >
-              Histórico de Logs
+              Histórico de Atividades
             </TabsTrigger>
           </TabsList>
         </div>
@@ -959,7 +963,7 @@ export default function AdminUserDetails() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
                   <Terminal className="h-4 w-4" />
-                  Logs de Atividades
+                  Histórico de Atividades
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1172,30 +1176,47 @@ export default function AdminUserDetails() {
                     })}
                   </div>
 
-                  {logsData.total > logsData.limit && (
-                    <div className="flex items-center justify-between pt-4">
+                  {logsData.total > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-100 gap-4">
                       <p className="text-xs font-semibold text-slate-400">
-                        Página {logsData.page} de {Math.ceil(logsData.total / logsData.limit)} ({logsData.total} logs)
+                        Página {logsData.page} de {Math.max(1, Math.ceil(logsData.total / logsData.limit))} ({logsData.total} logs)
                       </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={logsPage <= 1}
-                          onClick={() => setLogsPage(p => p - 1)}
-                          className="rounded-xl border-slate-200"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
-                          onClick={() => setLogsPage(p => p + 1)}
-                          className="rounded-xl border-slate-200"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                          <Select value={limitStr} onValueChange={(val) => { setLimitStr(val); setLogsPage(1); }}>
+                            <SelectTrigger className="h-8 rounded-xl bg-slate-50 border-slate-200 text-xs focus-visible:ring-0 w-[70px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="25">25</SelectItem>
+                              <SelectItem value="50">50</SelectItem>
+                              <SelectItem value="100">100</SelectItem>
+                              <SelectItem value="250">250</SelectItem>
+                              <SelectItem value="500">500</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={logsPage <= 1}
+                            onClick={() => setLogsPage(p => p - 1)}
+                            className="rounded-xl border-slate-200"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
+                            onClick={() => setLogsPage(p => p + 1)}
+                            className="rounded-xl border-slate-200"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}

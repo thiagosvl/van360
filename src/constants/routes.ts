@@ -8,6 +8,7 @@ export const ROUTES = {
     PRIVACY_POLICY: "/politica-de-privacidade",
     TERMS_OF_USE: "/termos-de-uso",
     EXTERNAL_CHECKOUT_BRIDGE: "/checkout-externo",
+    // FEATURES: "/tudo-que-faz",
   },
   PRIVATE: {
     RESPONSAVEL: {
@@ -23,6 +24,7 @@ export const ROUTES = {
       SETTINGS: "/admin/configuracoes",
       CALCULATOR: "/admin/calculadora",
       LOGIN_ATTEMPTS: "/admin/tentativas-login",
+      ACTIVITY_HISTORY: "/admin/atividades",
     },
     MOTORISTA: {
       HOME: "/inicio",
