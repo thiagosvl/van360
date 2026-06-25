@@ -2,6 +2,7 @@ import { KPICard } from "@/components/common/KPICard";
 import { Progress } from "@/components/ui/progress";
 import { KPICardVariant } from "@/types/enums";
 import { formatCurrency } from "@/utils/formatters";
+import { formatarPlacaExibicao } from "@/utils/domain";
 import { Users } from "lucide-react";
 
 interface RelatoriosOperacionalProps {
@@ -176,7 +177,7 @@ export const RelatoriosOperacional = ({
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
                     <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
-                      {veiculo.placa}
+                      {formatarPlacaExibicao(veiculo.placa)}
                     </span>
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {veiculo.passageiros}{" "}

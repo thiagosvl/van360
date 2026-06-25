@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Passageiro } from "@/types/passageiro";
+import { formatarPlacaExibicao } from "@/utils/domain";
 
 interface QuickStartPassageiroDialogProps {
   isOpen: boolean;
@@ -309,7 +310,7 @@ export function QuickStartPassageiroDialog({
                       </FormControl>
                       <SelectContent>
                         {veiculosList.map((v) => (
-                          <SelectItem key={v.id} value={v.id}>{v.placa}</SelectItem>
+                          <SelectItem key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</SelectItem>
                         ))}
                         <SelectItem
                           value="add-new-vehicle"

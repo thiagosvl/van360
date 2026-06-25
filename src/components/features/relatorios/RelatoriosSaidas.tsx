@@ -48,6 +48,9 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
+  const [expandedVehicles, setExpandedVehicles] = useState<Set<string>>(
+    new Set()
+  );
 
   const toggleCategory = (catName: string) => {
     const newSet = new Set(expandedCategories);
@@ -57,6 +60,16 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
       newSet.add(catName);
     }
     setExpandedCategories(newSet);
+  };
+
+  const toggleVehicle = (vehicleId: string) => {
+    const newSet = new Set(expandedVehicles);
+    if (newSet.has(vehicleId)) {
+      newSet.delete(vehicleId);
+    } else {
+      newSet.add(vehicleId);
+    }
+    setExpandedVehicles(newSet);
   };
 
   const getMargemStatus = (m: number) => {
@@ -196,31 +209,85 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                 Gastos por Veículo
               </h3>
             </div>
-            <div className="p-6 pt-4 space-y-6">
-              {dados.gastosPorVeiculo.map((v, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between items-end">
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
-                        {v.placa !== "-"
-                          ? formatarPlacaExibicao(v.placa)
-                          : v.nome}
-                      </span>
-                      <span className="font-headline font-black text-[#1a3a5c] text-base mt-0.5">
-                        {formatCurrency(v.valor)}
-                      </span>
+            <div className="p-4 space-y-3">
+              {dados.gastosPorVeiculo.map((v, index) => {
+                const vehicleId = v.placa !== "-" ? v.placa : v.nome;
+                const isExpanded = expandedVehicles.has(vehicleId);
+                const hasCategorias = (v as any).categorias && (v as any).categorias.length > 0;
+                
+                return (
+                  <div key={index} className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-50/30">
+                    <div 
+                      className={cn(
+                        "group flex flex-col p-3 cursor-pointer transition-colors hover:bg-slate-50 space-y-2",
+                        isExpanded && "bg-slate-50"
+                      )}
+                      onClick={() => toggleVehicle(vehicleId)}
+                    >
+                      <div className="flex justify-between items-end">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                            {vehicleId === v.placa ? formatarPlacaExibicao(v.placa) : v.nome}
+                          </span>
+                          <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                            {formatCurrency(v.valor)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-slate-400">
+                            {Math.round(v.percentual)}%
+                          </span>
+                          <div className="text-slate-300">
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <Progress
+                        value={Math.max(2, v.percentual)}
+                        className="h-1.5 bg-slate-100 rounded-full"
+                        indicatorClassName="bg-[#1a3a5c] rounded-full"
+                      />
                     </div>
-                    <span className="text-[10px] font-black text-slate-400 mb-1">
-                      {Math.round(v.percentual)}%
-                    </span>
+                    
+                    {isExpanded && hasCategorias && (
+                      <div className="px-3 pb-3 border-t border-slate-100/50 bg-white">
+                        <div className="space-y-1 mt-3">
+                          {(v as any).categorias.map((cat: any, cIndex: number) => {
+                            const Icon = cat.icon;
+                            return (
+                              <div
+                                key={cIndex}
+                                className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50/50"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-100/50">
+                                    <Icon className="h-3.5 w-3.5" />
+                                  </div>
+                                  <span className="text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                                    {cat.nome}
+                                  </span>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-[11px] font-black text-[#1a3a5c]">
+                                    {formatCurrency(cat.valor)}
+                                  </div>
+                                  <div className="text-[9px] font-bold text-slate-300 uppercase">
+                                    {cat.count === 1 ? "1 registro" : `${cat.count} registros`}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <Progress
-                    value={Math.max(2, v.percentual)}
-                    className="h-2 bg-slate-50 rounded-full"
-                    indicatorClassName="bg-[#1a3a5c] rounded-full"
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
