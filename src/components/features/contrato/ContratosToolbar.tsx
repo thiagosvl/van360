@@ -156,12 +156,6 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                         isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
                       )} />
                     )}
-                    {isDesativado && (
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                      </span>
-                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
@@ -212,12 +206,6 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                         "w-5 h-5 transition-colors",
                         isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
                       )} />
-                    )}
-                    {isDesativado && (
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                      </span>
                     )}
                   </Button>
                 </DrawerTrigger>
