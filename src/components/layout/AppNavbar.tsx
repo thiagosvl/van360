@@ -20,6 +20,7 @@ import {
   UserPen,
   Key,
   Rocket,
+  IdCard,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -42,7 +43,14 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
 
-  const currentPage = pagesItems.find(item => item.href === location.pathname);
+  let currentPage = pagesItems.find(item => item.href === location.pathname);
+  if (!currentPage && location.pathname.startsWith("/passageiros/")) {
+    currentPage = {
+      title: "Carteirinha",
+      href: location.pathname,
+      icon: IdCard,
+    };
+  }
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -75,27 +83,27 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   return (
     <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-[calc(4rem+var(--safe-area-top))] sm:h-[calc(5rem+var(--safe-area-top))] pt-[var(--safe-area-top)] transition-all">
       <div className="flex h-full items-center justify-between px-4 sm:px-8 relative">
-        {/* Esquerda: Central de Ajuda (Mobile) / Título (Desktop) */}
-        <div className="flex-1 flex items-center">
-          {/* Botão de Ajuda - Apenas Mobile */}
-          <button
-            onClick={() => setIsHelpOpen(true)}
-            className="md:hidden group flex items-center gap-2 text-slate-400 hover:text-[#1a3a5c] transition-all p-1.5"
-          >
-            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#25D366]/10 group-hover:text-[#25D366] transition-colors">
-              <HelpCircle className="h-5 w-5" />
-            </div>
-          </button>
+        {/* Esquerda: Logo (Mobile) / Título (Desktop) */}
+        <div className="flex-1 flex items-center min-w-0">
+          {/* Logo - Apenas Mobile */}
+          <div className="flex md:hidden shrink-0">
+            <img
+              src="/assets/logo-van360.png"
+              alt="Van360"
+              className="h-7 sm:h-9 w-auto cursor-pointer transition-opacity hover:opacity-80"
+              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
+            />
+          </div>
 
           {/* Título da Página - Apenas Desktop */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 min-w-0">
             {currentPage && (
               <>
-                <div className="h-10 w-10 rounded-xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] border border-[#1a3a5c]/10">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] border border-[#1a3a5c]/10">
                   <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
                 </div>
-                <div className="flex flex-col">
-                  <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
+                <div className="flex flex-col min-w-0">
+                  <h2 className="text-lg font-bold text-[#1a3a5c] tracking-tight leading-none truncate">
                     {currentPage.title}
                   </h2>
                 </div>
@@ -104,18 +112,26 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           </div>
         </div>
 
-        {/* Centro: Logo (Apenas mobile) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden">
-          <img
-            src="/assets/logo-van360.png"
-            alt="Van360"
-            className="h-9 sm:h-12 w-auto cursor-pointer transition-opacity hover:opacity-80"
-            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
-          />
+        {/* Centro: Título da Página (Apenas Mobile) */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden w-[40%] sm:w-[50%]">
+          {currentPage && (
+            <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c] tracking-tight leading-none truncate text-center w-full px-1">
+              {currentPage.title}
+            </h2>
+          )}
         </div>
 
-        {/* Direita: Perfil de Usuário */}
-        <div className="flex-1 flex justify-end items-center">
+        {/* Direita: Ajuda (Mobile) e Perfil de Usuário */}
+        <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2">
+          {/* Botão de Ajuda - Apenas Mobile */}
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="md:hidden group flex items-center justify-center text-slate-400 hover:text-[#1a3a5c] transition-all p-1"
+          >
+            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#25D366]/10 group-hover:text-[#25D366] transition-colors">
+              <HelpCircle className="h-5 w-5" />
+            </div>
+          </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-x-2 outline-none p-1">
