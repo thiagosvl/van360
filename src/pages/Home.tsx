@@ -249,34 +249,16 @@ const Home = () => {
                 variant="indigo"
               />
               <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
-                icon={Users}
-                label="Passageiros"
-                variant="blue"
-              />
-              <ShortcutCard
                 to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
                 variant="sky"
               />
               <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.BILLING}
-                icon={CreditCard}
-                label="Mensalidades"
-                variant="emerald"
-              />
-              <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingDown}
                 label="Gastos"
                 variant="rose"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
-                icon={FileText}
-                label="Contratos"
-                variant="amber"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
