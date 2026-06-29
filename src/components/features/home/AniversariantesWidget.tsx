@@ -73,7 +73,7 @@ export function AniversariantesWidget() {
         Aniversariantes da Semana
       </h2>
       <Card className="w-full h-full flex flex-col shadow-sm border-zinc-200 dark:border-zinc-800">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 px-3">
           <p className="text-[9px] font-bold text-slate-400 uppercase px-1">
             {dataInicio} a {dataFim} de {currentMonthName}
           </p>
