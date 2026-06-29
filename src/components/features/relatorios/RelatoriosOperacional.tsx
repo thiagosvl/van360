@@ -157,58 +157,55 @@ export const RelatoriosOperacional = ({
         </div>
 
         {/* Veículos */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
-          <div className="pt-6 px-6 flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
-              <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+        {dados.veiculos.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
+            <div className="pt-6 px-6 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+                <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  Veículos
+                </h3>
+                <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
+                  Ocupação
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Veículos
-              </h3>
-              <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
-                Ocupação
-              </span>
-            </div>
-          </div>
-          <div className="p-6 pt-6 space-y-6">
-            {dados.veiculos.map((veiculo, index) => (
-              <div key={index} className="space-y-2.5">
-                <div className="flex justify-between items-end">
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
-                      {formatarPlacaExibicao(veiculo.placa)}
-                    </span>
-                    <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
-                      {veiculo.passageiros}{" "}
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        passageiros
+            <div className="p-6 pt-6 space-y-6">
+              {dados.veiculos.map((veiculo, index) => (
+                <div key={index} className="space-y-2.5">
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                        {formatarPlacaExibicao(veiculo.placa)}
                       </span>
-                    </span>
+                      <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                        {veiculo.passageiros}{" "}
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                          passageiros
+                        </span>
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col items-end">
+                      <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                        {formatCurrency(veiculo.valor)}
+                      </span>
+                      <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">
+                        {Math.round(veiculo.percentual)}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right flex flex-col items-end">
-                    <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-                      {formatCurrency(veiculo.valor)}
-                    </span>
-                    <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">
-                      {Math.round(veiculo.percentual)}%
-                    </span>
-                  </div>
+                  <Progress
+                    value={Math.max(2, veiculo.percentual)}
+                    className="h-2 bg-slate-50 rounded-full"
+                    indicatorClassName="bg-[#1a3a5c] rounded-full"
+                  />
                 </div>
-                <Progress
-                  value={Math.max(2, veiculo.percentual)}
-                  className="h-2 bg-slate-50 rounded-full"
-                  indicatorClassName="bg-[#1a3a5c] rounded-full"
-                />
-              </div>
-            ))}
-            {dados.veiculos.length === 0 && (
-              <div className="text-center py-6 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em]">
-                Nenhum veículo vinculado
-              </div>
-            )}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -82,6 +82,7 @@ interface UseRelatoriosCalculationsProps {
     };
     ticket_medio: number;
   };
+  hasVeiculoFilter?: boolean;
 }
 
 export const useRelatoriosCalculations = ({
@@ -92,6 +93,7 @@ export const useRelatoriosCalculations = ({
   veiculosData,
   profile,
   financeiro,
+  hasVeiculoFilter,
 }: UseRelatoriosCalculationsProps) => {
   const dados = useMemo(() => {
     // 1. Safe guards for optional data
@@ -433,7 +435,7 @@ export const useRelatoriosCalculations = ({
         diasContabilizados: diasComGastos,
         custoPorPassageiro,
         topCategorias,
-        gastosPorVeiculo,
+        gastosPorVeiculo: hasVeiculoFilter ? [] : gastosPorVeiculo,
         veiculosCount: veiculosListFull.length,
         temGastosVinculados,
       },
@@ -442,7 +444,7 @@ export const useRelatoriosCalculations = ({
         passageirosAtivosCount,
         escolas,
         periodos,
-        veiculos,
+        veiculos: hasVeiculoFilter ? [] : veiculos,
       },
     };
   }, [
@@ -452,7 +454,8 @@ export const useRelatoriosCalculations = ({
     escolasData,
     veiculosData,
     profile,
-    financeiro
+    financeiro,
+    hasVeiculoFilter
   ]);
 
   return dados;

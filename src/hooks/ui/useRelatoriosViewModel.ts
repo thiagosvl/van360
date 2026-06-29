@@ -3,7 +3,7 @@ import { useCobrancas, useEscolas, useGastos, usePassageiros, useVeiculos } from
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
-import { RelatorioTab } from "@/types/enums";
+import { RelatorioTab, FilterDefaults } from "@/types/enums";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getNowBR } from "@/utils/dateUtils";
@@ -22,6 +22,20 @@ export function useRelatoriosViewModel() {
   const setActiveTab = useCallback((value: string) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("tab", value);
+    setSearchParams(newParams);
+  }, [searchParams, setSearchParams]);
+
+  const veiculoId = useMemo(() => {
+    return searchParams.get("veiculo_id") || undefined;
+  }, [searchParams]);
+
+  const setVeiculoId = useCallback((value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value && value !== FilterDefaults.TODOS) {
+      newParams.set("veiculo_id", value);
+    } else {
+      newParams.delete("veiculo_id");
+    }
     setSearchParams(newParams);
   }, [searchParams, setSearchParams]);
 
@@ -55,7 +69,7 @@ export function useRelatoriosViewModel() {
     data: systemSummary, 
     refetch: refetchSummary, 
     isLoading: isLoadingSummary 
-  } = useUsuarioResumo(usuarioId, { mes, ano });
+  } = useUsuarioResumo(usuarioId, { mes, ano, veiculoId });
 
   // Conditional Fetches based on Active Tab
   const shouldFetchEntradas = activeTab === RelatorioTab.ENTRADAS;
@@ -63,18 +77,18 @@ export function useRelatoriosViewModel() {
   const shouldFetchOperacional = activeTab === RelatorioTab.OPERACIONAL;
 
   const { data: cobrancasData, refetch: refetchCobrancas, isLoading: isLoadingCobrancas } = useCobrancas(
-    { usuarioId, mes, ano },
+    { usuarioId, mes, ano, veiculoId },
     { enabled: !!usuarioId && shouldFetchEntradas }
   );
 
   const { data: gastosData, refetch: refetchGastos, isLoading: isLoadingGastos } = useGastos(
-    { usuarioId, mes, ano },
+    { usuarioId, mes, ano, veiculoId },
     { enabled: !!usuarioId && shouldFetchSaidas }
   );
 
   // Operational Data (Passageiros/Escolas/Veiculos) - Needed for 'Operacional'
   const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
-    { usuarioId },
+    { usuarioId, veiculo: veiculoId },
     { enabled: !!usuarioId && shouldFetchOperacional }
   );
 
@@ -85,7 +99,7 @@ export function useRelatoriosViewModel() {
 
   const { data: veiculosData, refetch: refetchVeiculos, isLoading: isLoadingVeiculos } = useVeiculos(
     { usuarioId },
-    { enabled: !!usuarioId && (shouldFetchOperacional || shouldFetchSaidas) }
+    { enabled: !!usuarioId }
   );
 
   // 4. Data Processing (Calculations)
@@ -97,6 +111,7 @@ export function useRelatoriosViewModel() {
     escolasData: shouldFetchOperacional ? escolasData : undefined,
     veiculosData: (shouldFetchOperacional || shouldFetchSaidas) ? veiculosData : undefined,
     profile,
+    hasVeiculoFilter: !!veiculoId,
   });
 
   const refreshAll = useCallback(async () => {
@@ -123,16 +138,19 @@ export function useRelatoriosViewModel() {
     mes,
     ano,
     activeTab,
+    veiculoId,
     
     // Actions
     setMes,
     setAno,
     handleNavigate,
     setActiveTab,
+    setVeiculoId,
     refreshAll,
     
     // Data
     dados,
+    veiculosList: veiculosData?.list || [],
     
     // Status
     isLoading: isLoadingSummary,

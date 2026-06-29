@@ -50,7 +50,7 @@ export interface SystemSummary {
 
 export const useUsuarioResumo = (
   usuarioId?: string,
-  params?: { mes?: number; ano?: number },
+  params?: { mes?: number; ano?: number; veiculoId?: string },
   options?: { staleTime?: number; refetchOnMount?: boolean | "always"; enabled?: boolean }
 ) => {
   const currentMes = getNowBR().getMonth() + 1;
@@ -58,8 +58,9 @@ export const useUsuarioResumo = (
  
   const mes = params?.mes ?? currentMes;
   const ano = params?.ano ?? currentAno;
+  const veiculoId = params?.veiculoId;
  
-  const queryKey = ["usuario-resumo", usuarioId, mes, ano];
+  const queryKey = ["usuario-resumo", usuarioId, mes, ano, veiculoId];
  
   return useQuery<SystemSummary>({
     queryKey,
@@ -67,7 +68,7 @@ export const useUsuarioResumo = (
       if (!usuarioId) throw new Error("ID de usuário necessário para o resumo");
  
       const response = await apiClient.get<SystemSummary>(`/usuarios/${usuarioId}/resumo`, {
-        params: { mes, ano }
+        params: { mes, ano, veiculo_id: veiculoId }
       });
       return response.data;
     },

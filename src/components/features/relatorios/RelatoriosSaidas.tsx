@@ -189,7 +189,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
 
           {dados.topCategorias.length === 0 && (
             <div className="text-center py-8 text-slate-400 text-xs font-bold uppercase tracking-widest">
-              Nenhuma despesa registrada neste mês.
+              Nenhuma despesa registrada no mês selecionado.
             </div>
           )}
         </div>
@@ -214,10 +214,10 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                 const vehicleId = v.placa !== "-" ? v.placa : v.nome;
                 const isExpanded = expandedVehicles.has(vehicleId);
                 const hasCategorias = (v as any).categorias && (v as any).categorias.length > 0;
-                
+
                 return (
                   <div key={index} className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-50/30">
-                    <div 
+                    <div
                       className={cn(
                         "group flex flex-col p-3 cursor-pointer transition-colors hover:bg-slate-50 space-y-2",
                         isExpanded && "bg-slate-50"
@@ -252,7 +252,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                         indicatorClassName="bg-[#1a3a5c] rounded-full"
                       />
                     </div>
-                    
+
                     {isExpanded && hasCategorias && (
                       <div className="px-3 pb-3 border-t border-slate-100/50 bg-white">
                         <div className="space-y-1 mt-3">

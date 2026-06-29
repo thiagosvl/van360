@@ -8,6 +8,7 @@ export interface UseCobrancasFilters {
   usuarioId?: string;
   mes: number;
   ano: number;
+  veiculoId?: string;
   search?: string;
 }
 
@@ -16,6 +17,7 @@ const buildQueryKey = (filters: UseCobrancasFilters) => [
   filters.usuarioId,
   filters.ano,
   filters.mes,
+  filters.veiculoId || "",
   filters.search || "",
 ];
 
@@ -39,6 +41,7 @@ export function useCobrancas(
         usuarioId: filters.usuarioId,
         mes: String(filters.mes),
         ano: String(filters.ano),
+        veiculoId: filters.veiculoId,
         search: filters.search?.trim() ? filters.search.trim() : undefined,
       });
 
