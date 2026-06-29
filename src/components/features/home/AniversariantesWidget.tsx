@@ -74,7 +74,7 @@ export function AniversariantesWidget() {
       </h2>
       <Card className="w-full h-full flex flex-col shadow-sm border-zinc-200 dark:border-zinc-800">
         <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 px-3 pb-1 pt-3">
-          <p className="text-[9px] font-bold text-slate-400 uppercase px-1">
+          <p className="text-[9px] sm:text-xs font-bold text-slate-400 uppercase px-1">
             {dataInicio} a {dataFim} de {currentMonthName}
           </p>
           <Button variant="ghost" size="sm" className="h-8 text-[11px] sm:text-xs text-primary font-semibold px-2" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ANIVERSARIANTES)}>
