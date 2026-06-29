@@ -78,7 +78,7 @@ export default function AdminCalculator() {
 
         <Tabs defaultValue="base" className="w-full space-y-6">
           <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
-            <TabsList className="flex w-full h-[52px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
+            <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
               <TabsTrigger
                 value="base"
                 className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
@@ -103,19 +103,19 @@ export default function AdminCalculator() {
             </TabsList>
           </div>
 
-          <TabsContent value="base" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+          <TabsContent value="base" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <CalculatorBaseTab calcHook={calcHook} />
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="addon" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+          <TabsContent value="addon" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <CalculatorAddonTab calcHook={calcHook} />
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="consolidado" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+          <TabsContent value="consolidado" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <CalculatorConsolidatedTab calcHook={calcHook} />
             </motion.div>

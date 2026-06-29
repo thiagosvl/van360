@@ -46,7 +46,7 @@ export function CarteirinhaSkeleton() {
         <div className="lg:col-span-4 space-y-6">
           {/* Tabs List Toggle (Mobile context) */}
           <div className="bg-slate-100/50 p-1 rounded-[1.25rem]">
-            <div className="grid grid-cols-2 gap-1 h-[52px]">
+            <div className="grid grid-cols-2 gap-1 min-h-[40px]">
               <Skeleton className="h-full rounded-[1rem] bg-white shadow-sm" />
               <div className="h-full" />
             </div>

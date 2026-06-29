@@ -115,7 +115,7 @@ const Contratos = () => {
               </span>
             </div>
 
-            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
@@ -126,7 +126,7 @@ const Contratos = () => {
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
@@ -137,7 +137,7 @@ const Contratos = () => {
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}

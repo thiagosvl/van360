@@ -396,7 +396,7 @@ export default function AdminUserDetails() {
         className="w-full space-y-6"
       >
         <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
-          <TabsList className="flex w-full h-[52px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
+          <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
             <TabsTrigger
               value="dados"
               className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
@@ -418,7 +418,7 @@ export default function AdminUserDetails() {
           </TabsList>
         </div>
 
-        <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+        <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
               <CardHeader className="pb-2">
@@ -851,7 +851,7 @@ export default function AdminUserDetails() {
           </div>
         </TabsContent>
 
-        <TabsContent value="cobrancas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+        <TabsContent value="cobrancas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
@@ -957,7 +957,7 @@ export default function AdminUserDetails() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none">
+        <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">

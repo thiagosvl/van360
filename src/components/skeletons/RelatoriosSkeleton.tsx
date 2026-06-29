@@ -7,7 +7,7 @@ interface RelatoriosSkeletonProps {
 
 function DateNavigationSkeleton() {
   return (
-    <div className="flex items-center justify-between bg-[#1a3a5c] h-[52px] px-1.5 rounded-[1.25rem] shadow-lg border border-white/5 max-w-md mx-auto w-full md:w-auto">
+    <div className="flex items-center justify-between bg-[#1a3a5c] min-h-[40px] px-1.5 rounded-[1.25rem] shadow-lg border border-white/5 max-w-md mx-auto w-full md:w-auto">
       <div className="w-10 h-10 flex items-center justify-center">
         <Skeleton className="w-5 h-5 rounded-full bg-white/10" />
       </div>
@@ -29,7 +29,7 @@ function TabsBarSkeleton({ activeTab }: { activeTab?: string }) {
 
   return (
     <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-      <div className="flex w-full h-[52px] gap-1">
+      <div className="flex w-full min-h-[40px] gap-1">
         {tabs.map((tab) => {
           const isActive = tab.value === activeTab;
           return (

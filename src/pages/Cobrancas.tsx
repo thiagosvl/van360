@@ -99,7 +99,7 @@ export default function Cobrancas() {
         >
           <div className="flex flex-col gap-5">
             <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-              <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 mt-0">
+              <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
                 <TabsTrigger
                   value={CobrancaTab.ARECEBER}
                   className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
@@ -153,7 +153,7 @@ export default function Cobrancas() {
             </span>
           </div>
 
-          <TabsContent value={CobrancaTab.ARECEBER} className="mt-1 outline-none">
+          <TabsContent value={CobrancaTab.ARECEBER} className="mt-1 outline-none transform-gpu will-change-transform">
             <CobrancasList
               activeTab={CobrancaTab.ARECEBER}
               cobrancas={cobrancasAReceber}
@@ -166,7 +166,7 @@ export default function Cobrancas() {
             />
           </TabsContent>
 
-          <TabsContent value={CobrancaTab.RECEBIDAS} className="mt-1 outline-none">
+          <TabsContent value={CobrancaTab.RECEBIDAS} className="mt-1 outline-none transform-gpu will-change-transform">
             <CobrancasList
               activeTab={CobrancaTab.RECEBIDAS}
               cobrancas={cobrancasRecebidas}

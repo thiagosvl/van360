@@ -11,7 +11,7 @@ export function WhatsappStatusBadge({ status, className }: WhatsappStatusBadgePr
 
   const isConnected = status === WhatsappStatus.CONNECTED || status === WhatsappStatus.OPEN;
   const isConnecting = status === WhatsappStatus.CONNECTING;
-  
+
   let label = "OFF";
   let bgClass = "bg-red-100 text-red-700";
   let dotClass = "bg-red-500";
@@ -27,15 +27,15 @@ export function WhatsappStatusBadge({ status, className }: WhatsappStatusBadgePr
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        "text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider", 
+        "text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider",
         bgClass,
         className
       )}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full", dotClass)} />
-      WPP {label}
+      WahtsApp {label}
     </div>
   );
 }

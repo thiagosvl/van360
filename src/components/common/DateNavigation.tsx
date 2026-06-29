@@ -27,7 +27,7 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
   };
 
   return (
-    <div className="flex items-center justify-between bg-[#1a3a5c] h-[52px] px-1.5 rounded-[1.25rem] shadow-lg border border-white/5 max-w-md mx-auto w-full md:w-auto transition-all duration-300">
+    <div className="flex items-center justify-between bg-[#1a3a5c] min-h-[52px] px-1.5 rounded-[1.25rem] shadow-lg border border-white/5 max-w-md mx-auto w-full md:w-auto transition-all duration-300">
       <button
         disabled={disabled}
         onClick={handlePrevious}

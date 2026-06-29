@@ -31,7 +31,7 @@ export function PlanPeriodSelector({ value, onChange, className, plans, isPromot
         onValueChange={(v) => onChange(v as SubscriptionIdentifer)}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 mt-0">
+        <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
           <TabsTrigger
             value={SubscriptionIdentifer.YEARLY}
             className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] flex flex-col gap-0.5"

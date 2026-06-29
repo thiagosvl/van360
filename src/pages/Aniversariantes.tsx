@@ -115,7 +115,7 @@ const Aniversariantes = () => {
           >
             <div className="flex flex-col gap-5 px-1">
               <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 mt-0">
+                <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
                   <TabsTrigger
                     value="van"
                     className="flex items-center gap-2 justify-center rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-[#16314f] dark:data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 dark:data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c] dark:hover:text-slate-300"
