@@ -194,15 +194,15 @@ const ProfileSummary = ({
   passageiro,
   temCobrancasVencidas,
 }: Pick<CarteirinhaInfoProps, "passageiro" | "temCobrancasVencidas">) => (
-  <div className="flex flex-col items-center -mt-12 mb-4">
-    <div className="h-24 w-24 rounded-[2rem] bg-white p-1.5 shadow-xl">
+  <div className="flex flex-col items-center -mt-12 mb-4 shrink-0">
+    <div className="h-24 w-24 shrink-0 rounded-[2rem] bg-white p-1.5 shadow-xl">
       <div
         className={cn(
-          "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] relative border-2",
+          "h-full w-full min-h-[5rem] min-w-[5rem] rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] relative border-2 shrink-0",
           passageiro.ativo ? "border-emerald-500/20" : "border-rose-500/20",
         )}
       >
-        <User className="h-10 w-10 opacity-20" />
+        <User className="h-10 w-10 opacity-20 shrink-0" />
       </div>
     </div>
 
@@ -444,19 +444,19 @@ export const CarteirinhaDadosPessoais = ({
       {/* Contrato */}
       <div
         className={cn(
-          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato",
+          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato shrink-0",
           contratoConfig.color
         )}
       >
-        <div className="flex items-start gap-3 min-w-0">
-          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5", contratoConfig.iconColor)}>
-            <contratoConfig.icon className="h-5 w-5" />
+        <div className="flex items-start gap-3 w-full overflow-hidden">
+          <div className={cn("w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5", contratoConfig.iconColor)}>
+            <contratoConfig.icon className="h-5 w-5 shrink-0" />
           </div>
-          <div className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug">
+          <div className="flex-1 min-w-0">
+            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug break-words">
               {contratoConfig.title}
             </span>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5 break-words">
               {contratoConfig.desc}
             </p>
           </div>
@@ -470,7 +470,7 @@ export const CarteirinhaDadosPessoais = ({
             contratoConfig.actionColor
           )}
         >
-          <contratoConfig.actionIcon className="h-3.5 w-3.5" />
+          <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
           <span>{contratoConfig.actionLabel}</span>
         </button>
       </div>

@@ -633,16 +633,16 @@ export default function PassageiroCarteirinha() {
                 {/* Abas: Dados Pessoais / Mensalidades — logo na primeira dobra */}
                 <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full">
                   <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                    <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 text-[13px]">
+                    <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
                       <TabsTrigger
                         value="mensalidades"
-                        className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
+                        className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
                       >
                         Mensalidades
                       </TabsTrigger>
                       <TabsTrigger
                         value="dados"
-                        className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
+                        className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
                       >
                         Dados Pessoais
                       </TabsTrigger>
