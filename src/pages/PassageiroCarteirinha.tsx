@@ -649,7 +649,7 @@ export default function PassageiroCarteirinha() {
                     </TabsList>
                   </div>
 
-                  <TabsContent value="dados" className="mt-5 outline-none space-y-5">
+                  <TabsContent value="dados" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     {/* Dados pessoais detalhados */}
                     <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
                       <CarteirinhaDadosPessoais
@@ -669,7 +669,7 @@ export default function PassageiroCarteirinha() {
                     </Suspense>
                   </TabsContent>
 
-                  <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5">
+                  <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
                     </Suspense>

@@ -262,7 +262,7 @@ const CarteirinhaCard = ({
 }) => (
   <div
     className={cn(
-      "bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden transition-all relative",
+      "bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden transition-all relative transform-gpu will-change-transform",
       className,
     )}
   >
@@ -439,7 +439,7 @@ export const CarteirinhaDadosPessoais = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 transform-gpu will-change-transform">
 
       {/* Contrato */}
       <div
