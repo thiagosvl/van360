@@ -150,7 +150,7 @@ export function AniversariantesWidget() {
                   <div className="flex items-center gap-2 text-left">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     <span className="text-xs leading-tight">
-                      <strong>{data.passageirosSemData} passageiros</strong> sem data de nascimento.
+                      <strong>{data.passageirosSemData} {data.passageirosSemData === 1 ? 'passageiro' : 'passageiros'}</strong> sem data de nascimento.
                     </span>
                   </div>
                 </AccordionTrigger>
