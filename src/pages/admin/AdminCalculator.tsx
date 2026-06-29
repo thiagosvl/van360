@@ -21,9 +21,7 @@ export default function AdminCalculator() {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
       <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="flex flex-col md:flex-row md:items-end justify-between gap-4"
         >
           <div>
@@ -74,7 +72,7 @@ export default function AdminCalculator() {
               Salvar Cenário
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         <Tabs defaultValue="base" className="w-full space-y-6">
           <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">

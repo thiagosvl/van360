@@ -42,14 +42,17 @@ export default function AdminActivityHistory() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-headline font-black text-[#1a3a5c] tracking-tight flex items-center gap-2">
-          <Terminal className="h-6 w-6 text-blue-600" />
-          Histórico de Atividades
-        </h1>
-        <p className="text-sm font-medium text-slate-500">
-          Acompanhe todas as atividades registradas no sistema globalmente.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5 text-left">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
+              Histórico de Atividades
+            </h1>
+          </div>
+          <p className="text-sm font-semibold text-slate-400">
+            Acompanhe todas as atividades registradas no sistema globalmente.
+          </p>
+        </div>
       </div>
 
       <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300 bg-white">
@@ -319,27 +322,27 @@ export default function AdminActivityHistory() {
                       </Select>
                     </div>
                     <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={logsPage <= 1}
-                      onClick={() => setLogsPage(p => p - 1)}
-                      className="rounded-xl border-slate-200"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
-                      onClick={() => setLogsPage(p => p + 1)}
-                      className="rounded-xl border-slate-200"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={logsPage <= 1}
+                        onClick={() => setLogsPage(p => p - 1)}
+                        className="rounded-xl border-slate-200"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
+                        onClick={() => setLogsPage(p => p + 1)}
+                        className="rounded-xl border-slate-200"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
               )}
             </>
           )}

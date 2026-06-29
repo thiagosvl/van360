@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
-import { cpfMask } from "@/utils/masks";
 
 export interface LoginAttempt {
   id: string;
@@ -90,14 +89,17 @@ export default function AdminLoginAttempts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-headline font-black text-[#1a3a5c] tracking-tight flex items-center gap-2">
-          <ShieldAlert className="h-6 w-6 text-blue-600" />
-          Tentativas de Login
-        </h1>
-        <p className="text-sm font-medium text-slate-500">
-          Monitore todos os acessos ao sistema, incluindo falhas e bloqueios.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5 text-left">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
+              Tentativas de Login
+            </h1>
+          </div>
+          <p className="text-sm font-semibold text-slate-400">
+            Monitore todos os acessos ao sistema, incluindo falhas e bloqueios.
+          </p>
+        </div>
       </div>
 
       <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300 bg-white">

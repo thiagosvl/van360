@@ -48,9 +48,11 @@ const Aniversariantes = () => {
   const semanasAtuaisEFuturas = data?.semanas.filter(s => s.semana >= semanaAtualNoMes) || [];
   const semanasPassadas = data?.semanas.filter(s => s.semana < semanaAtualNoMes).reverse() || [];
 
-  const defaultOpenWeeks = data?.semanas
-    .filter(s => s.semana === semanaAtualNoMes || s.semana === semanaAtualNoMes - 1)
-    .map(s => `semana-${s.semana}`) || [];
+  const defaultOpenWeeks = isCurrentMonth
+    ? data?.semanas
+        .filter(s => s.semana === semanaAtualNoMes || s.semana === semanaAtualNoMes - 1)
+        .map(s => `semana-${s.semana}`) || []
+    : data?.semanas.map(s => `semana-${s.semana}`) || [];
 
   const renderSemana = (semanaInfo: any, isPast: boolean) => {
     const agrupado = new Map<string, typeof semanaInfo.aniversariantes>();
@@ -141,7 +143,7 @@ const Aniversariantes = () => {
               <Skeleton className="h-32 w-full rounded-xl" />
             </div>
           ) : data?.semanas && data.semanas.length > 0 ? (
-            <div className="space-y-8">
+            <div key={mesAtual} className="space-y-8">
               {semanasAtuaisEFuturas.length > 0 && (
                 <Accordion type="multiple" defaultValue={defaultOpenWeeks} className="space-y-4">
                   {semanasAtuaisEFuturas.map((s) => renderSemana(s, false))}
