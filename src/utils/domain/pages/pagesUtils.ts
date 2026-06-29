@@ -47,7 +47,7 @@ const pagesItems = [
         icon: Cake,
     },
     {
-        title: "Minha Assinatura",
+        title: "Assinatura",
         href: "/assinatura",
         icon: Rocket,
     },

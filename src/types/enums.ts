@@ -17,6 +17,8 @@ export enum WhatsappStatus {
   CONNECTED = "CONNECTED",
   DISCONNECTED = "DISCONNECTED",
   CONNECTING = "CONNECTING",
+  OPEN = "open",
+  CLOSE = "close",
   UNKNOWN = "UNKNOWN",
   NOT_FOUND = "NOT_FOUND"
 }

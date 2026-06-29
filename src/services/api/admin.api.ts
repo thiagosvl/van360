@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { WhatsappStatus } from "@/types/enums";
 
 export interface AdminDashboardStats {
   totalMotoristas: number;
@@ -11,6 +12,7 @@ export interface AdminDashboardStats {
     expired: number;
     canceled: number;
   };
+  whatsappStatus?: WhatsappStatus;
   recentUsers: Array<{
     id: string;
     nome: string;

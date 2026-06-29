@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
+import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
 import { phoneMask } from "@/utils/masks";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -111,9 +112,12 @@ export default function AdminDashboard() {
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1.5 text-left">
-          <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-            Dashboard
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
+              Dashboard
+            </h1>
+            <WhatsappStatusBadge status={stats.whatsappStatus} />
+          </div>
           <p className="text-sm font-semibold text-slate-400">
             Visão macro do ecossistema Van360.
           </p>
