@@ -25,10 +25,9 @@ import {
 import { CobrancaFormData, useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { calculateSafeDueDate, formatLocalDate, getNowBR, parseLocalDate } from "@/utils/dateUtils";
+import { calculateSafeDueDate, formatLocalDate, getNowBR, parseLocalDate, monthNamesInBR as mesesConstants } from "@/utils/dateUtils";
 import {
     anos,
-    meses as mesesConstants,
     tiposPagamento,
 } from "@/utils/formatters";
 import { endOfMonth, startOfMonth } from "date-fns";

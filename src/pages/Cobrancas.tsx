@@ -9,8 +9,9 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel, useLayout } from "@/hooks";
 import { CobrancaTab, KPICardVariant } from "@/types/enums";
-import { formatCurrency, meses } from "@/utils/formatters";
+import { formatCurrency } from "@/utils/formatters";
 import { Cobranca } from "@/types/cobranca";
+import { monthNamesInBR as meses } from "@/utils/dateUtils";
 
 export default function Cobrancas() {
   const {

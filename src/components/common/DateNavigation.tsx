@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { meses } from "@/utils/formatters";
+import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DateNavigationProps {
@@ -41,8 +41,8 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
       </button>
 
       <div className="flex flex-col items-center justify-center select-none px-4">
-        <span className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em] mb-0.5">
-          Mês Selecionado
+        <span className="text-[8px] font-medium text-white/65 uppercase tracking-[0.2em] mb-1">
+          Mês selecionado
         </span>
         <p className={cn(
           "font-headline font-bold text-[15px] sm:text-[16px] text-white tracking-tight whitespace-nowrap leading-none",

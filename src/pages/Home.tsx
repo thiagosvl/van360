@@ -6,6 +6,7 @@ import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard"
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
+import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
@@ -30,7 +31,7 @@ import { KPICardVariant, PassageiroTab } from "@/types/enums";
 import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 import { useLayout } from "@/contexts/LayoutContext";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const Home = () => {
   const {
@@ -60,15 +61,15 @@ const Home = () => {
 
     // Só aciona a partir do 4º dia de uso da conta (3 dias de diferença do cadastro original)
     const daysSinceCreation = differenceInCalendarDaysBR(getNowBR(), profile.created_at);
-    
+
     const shouldAskChannel = !profile.canal_aquisicao && daysSinceCreation >= 3;
 
     if (shouldAskChannel) {
       openAcquisitionChannelDialog();
     }
   }, [
-    isLoading, 
-    profile, 
+    isLoading,
+    profile,
     openAcquisitionChannelDialog
   ]);
 
@@ -222,7 +223,7 @@ const Home = () => {
           </div>
 
           {/* Acessos Rápidos */}
-          <section>
+          <section className="mt-4">
             <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">
               Acesso Rápido
             </h2>
@@ -303,6 +304,13 @@ const Home = () => {
               />
             </div>
           </section>
+
+          {/* Aniversariantes */}
+          {!onboarding.showOnboarding && (
+            <section className="pt-3">
+              <AniversariantesWidget />
+            </section>
+          )}
 
           {/* Indique e Ganhe Banner */}
           <section className="pt-2">

@@ -81,4 +81,9 @@ export const passageiroApi = {
       })
       .then(res => res.data);
   },
+
+  getAniversariantes: (mes: number): Promise<any> =>
+    apiClient
+      .get(`${endpointBase}/aniversariantes`, { params: { mes } })
+      .then(res => res.data),
 };

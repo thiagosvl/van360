@@ -77,7 +77,7 @@ export default function ManualPaymentDialog({
                 getStatusColor(status, dataVencimento)
               )}
             >
-              {status === CobrancaStatus.PAGO ? "PAGO" : getStatusText(status, dataVencimento)}
+              {getStatusText(status, dataVencimento)}
             </span>
           </div>
           <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200/50 shadow-sm">

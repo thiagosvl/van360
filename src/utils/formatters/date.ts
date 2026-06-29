@@ -1,4 +1,4 @@
-import { meses } from "./constants";
+import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import {
   parseLocalDate,
   formatSafeBrazilianDate,

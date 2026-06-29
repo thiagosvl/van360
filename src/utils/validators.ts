@@ -90,10 +90,15 @@ export function isValidDateBr(dateString: string | undefined | null, allowFuture
 
   if (!allowFuture) {
     // Future check: date cannot be in the future (today is valid)
-    // Normalize to start of day for accurate comparison vs today
-    const today = getStartOfDayBR();
-    
-    if (date > today) return false;
+    // We compare Year, Month and Day directly to avoid timezone/hour discrepancies
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
+
+    if (year > currentYear) return false;
+    if (year === currentYear && month > currentMonth) return false;
+    if (year === currentYear && month === currentMonth && day > currentDay) return false;
   }
 
   return true;

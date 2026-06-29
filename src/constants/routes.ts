@@ -8,7 +8,6 @@ export const ROUTES = {
     PRIVACY_POLICY: "/politica-de-privacidade",
     TERMS_OF_USE: "/termos-de-uso",
     EXTERNAL_CHECKOUT_BRIDGE: "/checkout-externo",
-    // FEATURES: "/tudo-que-faz",
   },
   PRIVATE: {
     RESPONSAVEL: {
@@ -37,6 +36,7 @@ export const ROUTES = {
       REPORTS: "/relatorios",
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
+      ANIVERSARIANTES: "/aniversariantes",
     }
   }
 } as const;

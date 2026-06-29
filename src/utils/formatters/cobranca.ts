@@ -1,5 +1,4 @@
 import { CobrancaTipoPagamento } from "@/types/enums";
-import { formatDate } from "./date";
 import { tiposPagamento } from "./constants";
 import { getStartOfDayBR } from "../dateUtils";
 
@@ -17,7 +16,6 @@ export const formatPaymentType = (tipo: string | undefined) => {
 
   return typeMap[tipo] || tipo;
 };
-
 
 export const checkCobrancaEmAtraso = (dataVencimento: string) => {
   const vencimento = getStartOfDayBR(dataVencimento);

@@ -19,6 +19,7 @@ export function useCreatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
@@ -52,6 +53,7 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
 
       // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
       if (variables.data?.escola_id !== undefined) {
@@ -93,6 +95,7 @@ export function useDeletePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
     },
   });
 }
@@ -126,6 +129,7 @@ export function useToggleAtivoPassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
     },
   });
 }
@@ -155,6 +159,7 @@ export function useFinalizePreCadastro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {

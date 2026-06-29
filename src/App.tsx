@@ -46,6 +46,7 @@ const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
 const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
+const Aniversariantes = lazyLoad(() => import("./pages/Aniversariantes"));
 const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
 const ExternalCheckoutBridge = lazyLoad(() => import("./pages/subscription/ExternalCheckoutBridge"));
 const PrivacyPolicy = lazyLoad(() => import("./pages/legal/PrivacyPolicyPage"));
@@ -326,6 +327,7 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.ANIVERSARIANTES} element={<Aniversariantes />} />
                   </Route>
                 </Route>
 

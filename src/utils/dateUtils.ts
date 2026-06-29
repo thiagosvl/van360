@@ -4,7 +4,7 @@
  */
 export const parseLocalDate = (date: Date | string | null | undefined): Date => {
   if (!date) return new Date();
-  
+
   if (typeof date === 'string') {
     // Caso 1: Apenas data YYYY-MM-DD (ex: nascimento, vencimento)
     // Forçamos para o meio do dia (12h) para evitar qualquer oscilação de fuso mudar o dia
@@ -15,9 +15,9 @@ export const parseLocalDate = (date: Date | string | null | undefined): Date => 
     // Caso 2: String ISO completa ou parcial
     const d = new Date(date);
     if (isNaN(d.getTime())) return new Date();
-    return parseLocalDate(d); 
+    return parseLocalDate(d);
   }
-  
+
   // Caso 3: Objeto Date - Extraímos as partes reais segundo o fuso de SP
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Sao_Paulo',
@@ -25,13 +25,13 @@ export const parseLocalDate = (date: Date | string | null | undefined): Date => 
     hour: '2-digit', minute: '2-digit', second: '2-digit',
     hourCycle: 'h23' // h23 garante range 0-23; hour12:false pode retornar "24" à meia-noite em alguns ambientes
   });
-  
+
   const parts = formatter.formatToParts(date instanceof Date ? date : new Date(date));
   const p: Record<string, string> = {};
   parts.forEach(part => {
     p[part.type] = part.value;
   });
-  
+
   return new Date(`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}-03:00`);
 };
 
@@ -116,16 +116,23 @@ export function formatSafeBrazilianDate(date: Date | string | null | undefined):
  */
 export const formatLocalDate = formatSafeBrazilianDate;
 
+export const monthNamesInBR = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
 /**
  * Retorna o nome do mês em português.
  */
 export const getMonthNameBR = (monthNumber?: number): string => {
   if (!monthNumber || monthNumber < 1 || monthNumber > 12) return "";
-  const names = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-  ];
-  return names[monthNumber - 1];
+
+  return monthNamesInBR[monthNumber - 1];
+};
+
+export const getShortWeekDayBR = (date: Date): string => {
+  const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  return days[date.getDay()];
 };
 
 /**
@@ -154,16 +161,16 @@ export const addMonths = (date: Date | string, months: number): Date => {
 export const toISODateTimeBR = (date: Date | string | null | undefined): string | null => {
   if (!date) return null;
   const d = parseLocalDate(date);
-  
+
   const pad = (n: number) => n.toString().padStart(2, '0');
-  
+
   const YYYY = d.getFullYear();
   const MM = pad(d.getMonth() + 1);
   const DD = pad(d.getDate());
   const hh = pad(d.getHours());
   const mm = pad(d.getMinutes());
   const ss = pad(d.getSeconds());
-  
+
   return `${YYYY}-${MM}-${DD}T${hh}:${mm}:${ss}-03:00`;
 };
 
@@ -197,7 +204,7 @@ export const getDaysInMonthBR = (month: number, year: number): number => {
 export const differenceInCalendarDaysBR = (later: Date | string, earlier: Date | string): number => {
   const d1 = getStartOfDayBR(later);
   const d2 = getStartOfDayBR(earlier);
-  
+
   const diffTime = d1.getTime() - d2.getTime();
   return Math.round(diffTime / (1000 * 60 * 60 * 24));
 };
