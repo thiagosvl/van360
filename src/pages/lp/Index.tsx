@@ -384,9 +384,9 @@ const Index = () => {
                 App para motorista escolar
               </div>
               <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] tracking-tight mb-4">
-                <span className="text-[#f59e0b]">Chega de cobrar pai por pai.</span>
+                <span className="text-[#f59e0b]">Chega de planilha e caderno.</span>
                 <br />
-                <span className="text-[#1a3a5c]">Chega de planilha e caderno.</span>
+                <span className="text-[#1a3a5c]">Chega de cobrar pai por pai.</span>
               </h1>
               <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-8 leading-relaxed">
                 O Van360 organiza seus passageiros, cobra automático pelo WhatsApp e emite recibo — tudo num só lugar.
