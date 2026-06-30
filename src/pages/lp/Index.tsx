@@ -260,11 +260,15 @@ const Index = () => {
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
   const planFeatures = [
-    "Lembrete automático de pagamento via WhatsApp",
-    "Geração de recibos automática",
-    "Passageiros ilimitados",
+    "Lembretes de cobrança aos pais via WhatsApp",
+    "Recibos gerados automaticamente",
     "Contratos digitais ilimitados",
-    "Controle de Gastos e Relatórios Financeiros",
+    "Link de cadastro fácil para os pais",
+    "Passageiros e vans sem limite",
+    "Controle de gastos e finanças",
+    "Alerta de aniversariantes",
+    "Acesso no celular e computador",
+    "Suporte direto no WhatsApp",
   ];
 
   const features = [
@@ -574,13 +578,13 @@ const Index = () => {
           <Reveal>
             <div className="inline-flex items-center gap-1.5 bg-[#f59e0b]/20 px-3 py-1.5 rounded-full text-[#d97706] font-black text-xs uppercase tracking-wider mb-5 border border-[#f59e0b]/30">
               <Star className="w-3.5 h-3.5" />
-              Construa com a gente
+              Condição de Lançamento
             </div>
             <h2 className="text-[clamp(1.8rem,4.5vw,2.5rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-5 leading-tight">
-              As primeiras vans ajudam a moldar o app — e ficam com o menor preço pra sempre.
+              Entre agora e garanta o menor<br className="hidden md:block" /> preço da plataforma para sempre.
             </h2>
-            <p className="text-[1.1rem] text-slate-600 leading-relaxed max-w-[650px] mx-auto font-medium">
-              Estamos chamando os primeiros transportadores escolares do Brasil pra usar o Van360 antes de todo mundo. Você testa grátis, dá sua opinião, e <strong className="text-[#f59e0b]">trava o menor preço da plataforma — R$ {pricing.originalFormatted}/mês, pra sempre</strong>, mesmo quando o valor subir pros próximos motoristas.
+            <p className="text-[1.1rem] text-slate-600 leading-relaxed max-w-[550px] mx-auto font-medium">
+              O Van360 acabou de chegar. Você testa grátis por 15 dias e <strong className="text-[#f59e0b]">trava sua mensalidade em R$ {pricing.originalFormatted}/mês</strong>. Sem fidelidade e sem reajustes, para a vida toda.
             </p>
           </Reveal>
         </div>
@@ -613,7 +617,7 @@ const Index = () => {
                 <div className="bg-[#f9f9f7] rounded-xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#f59e0b]"></div>
                   <p className="text-[0.95rem] text-slate-500 font-bold mb-1">
-                    Por apenas
+                    Depois, por apenas
                   </p>
                   <div className="mb-4 flex flex-col items-center">
                     {pricing.isPromoActive && pricing.original < pricing.monthlyNormal && (
@@ -636,11 +640,13 @@ const Index = () => {
                       <span className="text-slate-500 font-medium">Plano Mensal:</span>
                       <span className="text-[#1a3a5c] font-bold">R$ {pricing.originalFormatted}/mês</span>
                     </div>
-                    <div className="flex justify-between items-center text-[0.9rem] flex-wrap gap-1">
-                      <span className="text-slate-500 font-medium">Plano Anual:</span>
-                      <div className="text-right flex-1">
-                        <span className="text-[#1a3a5c] font-bold block">R$ {pricing.yearlyTotalFormatted}/ano</span>
-                        <span className="text-slate-400 font-medium text-[0.75rem] leading-tight block">(equivale a R$ {pricing.highlightFormatted}/mês)</span>
+                    <div className="flex justify-between items-start text-[0.9rem] flex-wrap gap-1 mt-2">
+                      <span className="text-slate-500 font-medium pt-1">Plano Anual:</span>
+                      <div className="flex flex-col items-end">
+                        <span className="text-[#1a3a5c] font-bold">R$ {pricing.yearlyTotalFormatted}/ano</span>
+                        <span className="text-emerald-700 font-bold text-[0.6rem] uppercase tracking-wide bg-emerald-100 px-2 py-0.5 rounded mt-1">
+                          🎁 2 meses grátis
+                        </span>
                       </div>
                     </div>
                   </div>
