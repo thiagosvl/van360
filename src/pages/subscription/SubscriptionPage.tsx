@@ -332,9 +332,15 @@ const SubscriptionPage = () => {
                 <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
                   Plano {subscription?.planos?.nome}
                 </h3>
-                <p className="text-slate-500 font-medium">
-                  Próxima renovação em <span className="text-primary font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
-                </p>
+                {subscription?.data_vencimento ? (
+                  <p className="text-slate-500 text-sm">
+                    Próxima renovação programada para <span className="font-medium text-slate-700">{formatLocalDate(parseLocalDate(subscription.data_vencimento))}</span>.
+                  </p>
+                ) : (
+                  <p className="text-slate-500 text-sm">
+                    Sua conta possui acesso vitalício e não requer renovações.
+                  </p>
+                )}
               </div>
               {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
                 <div className="mt-6 md:mt-0 relative z-10 shrink-0">

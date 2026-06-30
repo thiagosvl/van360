@@ -38,16 +38,8 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
-import { isValidCPF, isValidPhoneFormat } from "@/utils/validators";
 import { toast } from "sonner";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 import { ROUTES } from "@/constants/routes";
@@ -583,33 +575,33 @@ export default function AdminUserDetails() {
                         disabled={resetPassword.isPending}
                         className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-bold uppercase tracking-wider transition-all"
                       >
-                    {resetPassword.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Key className="h-4 w-4 mr-2" />
-                        Resetar Senha
-                      </>
-                    )}
-                  </Button>
+                        {resetPassword.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Key className="h-4 w-4 mr-2" />
+                            Resetar Senha
+                          </>
+                        )}
+                      </Button>
 
-                  <Button
-                    onClick={handleDeleteUser}
-                    type="button"
-                    variant="destructive"
-                    disabled={deleteUser.isPending}
-                    className="w-full h-11 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold uppercase tracking-wider transition-all"
-                  >
-                    {deleteUser.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Excluir
-                      </>
-                    )}
-                  </Button>
-                </div>
+                      <Button
+                        onClick={handleDeleteUser}
+                        type="button"
+                        variant="destructive"
+                        disabled={deleteUser.isPending}
+                        className="w-full h-11 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold uppercase tracking-wider transition-all"
+                      >
+                        {deleteUser.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </form>
                 </Form>
               </CardContent>
