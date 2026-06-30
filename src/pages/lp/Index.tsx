@@ -260,7 +260,7 @@ const Index = () => {
   const LOGIN = ROUTES.PUBLIC.LOGIN;
 
   const planFeatures = [
-    "Cobrança automática dos pais via WhatsApp",
+    "Lembrete automático de pagamento via WhatsApp",
     "Geração de recibos automática",
     "Passageiros ilimitados",
     "Contratos digitais ilimitados",
@@ -269,7 +269,7 @@ const Index = () => {
 
   const features = [
     {
-      headline: "Reduza atrasos e receba com mais previsibilidade",
+      headline: "Pare de correr atrás de quem ainda não pagou",
       text: "Chega de esquecimentos. Saiba exatamente quem pagou e quem está pendente.",
       mockup: "/assets/lp/mockup-mensalidades.png",
       alt: "App de cobrança de mensalidade para van escolar mostrando painel financeiro",
@@ -277,7 +277,7 @@ const Index = () => {
     },
     {
       headline: "Pare de cobrar pais manualmente todos os meses",
-      text: "O Van360 envia cobranças automaticamente pelo WhatsApp.",
+      text: "O Van360 envia lembretes de pagamento automaticamente pelo WhatsApp.",
       mockup: "/assets/lp/mockup-whatsapp.png",
       alt: "Sistema de cobrança automática via WhatsApp para transporte escolar",
       balloonText: "A mensalidade do Enzo vence hoje!",
@@ -290,7 +290,7 @@ const Index = () => {
       balloonText: "Clique no link e cadastre o seu filho na van.",
     },
     {
-      headline: "Menos caderno, mais praticidade",
+      headline: "Menos caderno, menos risco de perder contrato",
       text: "Envie contratos digitais para assinatura online.",
       mockup: "/assets/lp/mockup-contrato.png",
       alt: "Gerador de contrato digital e assinatura online para motoristas de van",
@@ -376,16 +376,16 @@ const Index = () => {
 
             {/* Texto */}
             <div className="text-center md:text-left order-1 flex flex-col">
-              <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] text-[#1a3a5c] tracking-tight mb-4">
-                Aplicativo para Transporte Escolar.
+              <div className="inline-flex items-center justify-center md:justify-start gap-1.5 bg-[#1a3a5c]/5 px-3 py-1.5 rounded-full text-[#1a3a5c] font-bold text-xs uppercase tracking-wider mb-5 mx-auto md:mx-0 border border-[#1a3a5c]/10 w-fit">
+                App para motorista escolar
+              </div>
+              <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] tracking-tight mb-4">
+                <span className="text-[#f59e0b]">Chega de cobrar pai por pai.</span>
                 <br />
-                <em className="not-italic text-[#f59e0b] underline underline-offset-4 decoration-[#f59e0b]/30">
-                  Chega de caderno,
-                </em>{" "}
-                cobranças manuais e planilhas.
+                <span className="text-[#1a3a5c]">Chega de planilha e caderno.</span>
               </h1>
               <p className="text-[clamp(1.05rem,2.5vw,1.2rem)] text-slate-500 max-w-[520px] md:mx-0 mx-auto mb-8 leading-relaxed">
-                Mensalidades, contratos e recibos — tudo em um lugar só. Digital e profissional.
+                O Van360 organiza seus passageiros, cobra automático pelo WhatsApp e emite recibo — tudo num só lugar.
               </p>
 
               {/* CTA */}
@@ -453,7 +453,7 @@ const Index = () => {
       <section className="py-14 md:py-20 bg-[#f9f9f7]">
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
-            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
+            <h2 className="text-[clamp(1.8rem,4.5vw,2.5rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
               Dificuldades comuns no Transporte Escolar
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
@@ -516,7 +516,7 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
+              <h2 className="text-[clamp(1.8rem,4.5vw,2.5rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
                 O melhor aplicativo de gestão de van escolar
               </h2>
               <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto">
@@ -574,13 +574,13 @@ const Index = () => {
           <Reveal>
             <div className="inline-flex items-center gap-1.5 bg-[#f59e0b]/20 px-3 py-1.5 rounded-full text-[#d97706] font-black text-xs uppercase tracking-wider mb-5 border border-[#f59e0b]/30">
               <Star className="w-3.5 h-3.5" />
-              Oferta Especial
+              Construa com a gente
             </div>
-            <h2 className="text-[clamp(1.6rem,4vw,2.2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-5 leading-tight">
-              Seja um dos primeiros usuários do Van360
+            <h2 className="text-[clamp(1.8rem,4.5vw,2.5rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-5 leading-tight">
+              As primeiras vans ajudam a moldar o app — e ficam com o menor preço pra sempre.
             </h2>
             <p className="text-[1.1rem] text-slate-600 leading-relaxed max-w-[650px] mx-auto font-medium">
-              Estamos abrindo as primeiras vagas para transportadores escolares que querem abandonar planilhas e automatizar sua operação. Os primeiros usuários garantem o <strong className="text-[#f59e0b]">menor preço da plataforma para sempre</strong>.
+              Estamos chamando os primeiros transportadores escolares do Brasil pra usar o Van360 antes de todo mundo. Você testa grátis, dá sua opinião, e <strong className="text-[#f59e0b]">trava o menor preço da plataforma — R$ {pricing.originalFormatted}/mês, pra sempre</strong>, mesmo quando o valor subir pros próximos motoristas.
             </p>
           </Reveal>
         </div>
@@ -613,7 +613,7 @@ const Index = () => {
                 <div className="bg-[#f9f9f7] rounded-xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#f59e0b]"></div>
                   <p className="text-[0.95rem] text-slate-500 font-bold mb-1">
-                    A partir de
+                    Por apenas
                   </p>
                   <div className="mb-4 flex flex-col items-center">
                     {pricing.isPromoActive && pricing.original < pricing.monthlyNormal && (
@@ -647,13 +647,6 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="bg-amber-50 rounded-xl p-4 mb-8 border border-amber-200 text-left">
-                <p className="text-[0.85rem] text-amber-900 font-medium flex gap-2.5">
-                  <span className="shrink-0 text-amber-600 text-base">🚀</span>
-                  <span className="leading-relaxed"><strong>Garanta o menor preço para sempre.</strong> Entre agora e mantenha este valor vitalício, protegido contra futuros reajustes.</span>
-                </p>
-              </div>
-
               <ul className="text-left space-y-3 mb-8">
                 {planFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-[0.92rem] text-slate-600">
@@ -661,6 +654,13 @@ const Index = () => {
                   </li>
                 ))}
               </ul>
+
+              <div className="bg-amber-50 rounded-xl p-4 mb-8 border border-amber-200 text-left">
+                <p className="text-[0.85rem] text-amber-900 font-medium flex gap-2.5">
+                  <span className="shrink-0 text-amber-600 text-base">🚀</span>
+                  <span className="leading-relaxed"><strong>Garanta o menor preço para sempre.</strong> Entre agora e mantenha este valor vitalício, protegido contra futuros reajustes.</span>
+                </p>
+              </div>
 
               <Link
                 to={CTA}
@@ -684,7 +684,7 @@ const Index = () => {
       >
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
-            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
+            <h2 className="text-[clamp(1.8rem,4.5vw,2.5rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
               Comece em 5 minutos
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
@@ -744,7 +744,7 @@ const Index = () => {
       {/* ══════════ FAIXA MULTI-DISPOSITIVO ══════════ */}
       <div className="bg-[#1a3a5c] text-white py-4 text-center">
         <p className="text-sm md:text-base font-medium opacity-90">
-          📱 Celular · 💻 Computador · 📲 Tablet — funciona no navegador, sem baixar nada.
+          📱 Celular · 💻 Computador · 📲 Tablet — também funciona no navegador, sem baixar nada.
         </p>
       </div>
 
@@ -755,7 +755,7 @@ const Index = () => {
       <section id="faq" className="py-14 md:py-20 bg-[#f9f9f7] scroll-mt-20">
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
-            <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
+            <h2 className="text-[clamp(1.8rem,4.5vw,2.5rem)] font-extrabold text-[#1a3a5c] tracking-tight mb-2">
               Perguntas frequentes
             </h2>
             <p className="text-[1.05rem] text-slate-500 max-w-[560px] mx-auto mb-10">
@@ -779,7 +779,7 @@ const Index = () => {
             />
             <FaqItem
               q="O que é a oferta/preço fundador?"
-              a={`É um preço especial para os primeiros motoristas que entrarem na plataforma. Quem entra agora paga a partir de R$ ${pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês para sempre, mesmo quando o preço subir.`}
+              a={`É o nosso preço de lançamento para os primeiros transportadores escolares que começarem a usar o Van360. Você paga R$ ${pricing.originalFormatted}/mês e mantém esse valor para sempre — mesmo quando o preço subir para quem entrar depois.`}
             />
             <FaqItem
               q="O contrato gerado tem validade jurídica?"
@@ -791,11 +791,11 @@ const Index = () => {
             />
             <FaqItem
               q="Quanto vou pagar depois dos 15 dias?"
-              a={`Se você entrar agora como fundador, paga a partir de R$ ${pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.`}
+              a={`Se você entrar agora como fundador, paga R$ ${pricing.originalFormatted}/mês — para sempre, sem reajuste. Se preferir não continuar, é só não assinar. Sem multa, sem burocracia.`}
             />
             <FaqItem
               q="Como funciona o programa de indicações?"
-              a="É muito simples! Dentro do aplicativo, na tela de assinaturas, você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas motoristas pelo WhatsApp. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha mensalidades gratuitas (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na assinatura. Ambos ganham!"
+              a="É muito simples! Dentro do aplicativo você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha mensalidades gratuitas (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na assinatura. Ambos ganham!"
             />
           </div>
 
@@ -819,7 +819,7 @@ const Index = () => {
                   Use o Van360 de graça
                 </h2>
                 <p className="text-[0.85rem] text-slate-200 leading-relaxed max-w-[440px] md:mx-0 mx-auto selection:bg-white/20">
-                  Após criar sua conta, convide colegas motoristas com o seu link exclusivo. Eles ganham desconto e você garante mensalidades gratuitas!
+                  Indique outros motoristas escolares com o seu link. A cada indicado que ativar a assinatura, você ganha 1 mês grátis — sem limite de indicações.
                 </p>
               </div>
 
@@ -889,9 +889,9 @@ const Index = () => {
               <div className="flex items-start gap-4 bg-[#f9f9f7] p-5 rounded-xl">
                 <span className="text-2xl flex-shrink-0">💸</span>
                 <div>
-                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Cobrança automática por Pix</h3>
+                  <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">Pagamento via Pix com baixa automática</h3>
                   <p className="text-[0.88rem] text-slate-500 leading-relaxed">
-                    O responsável recebe, paga e o sistema dá baixa sozinho. Você não precisa cobrar ninguém.
+                    O pai paga direto pelo app e o sistema dá baixa sozinho — sem você precisar marcar nada manualmente.
                   </p>
                 </div>
               </div>
@@ -921,7 +921,7 @@ const Index = () => {
               Testar grátis por 15 dias
             </Link>
             <p className="text-[0.85rem] opacity-60 mt-4">
-              Depois, a partir de R$ {pricing.isPromoActive ? pricing.highlightFormatted : pricing.originalFormatted}/mês
+              Depois, R$ {pricing.originalFormatted}/mês ou R$ {pricing.highlightFormatted}/mês (no plano anual)
             </p>
           </Reveal>
         </div>
