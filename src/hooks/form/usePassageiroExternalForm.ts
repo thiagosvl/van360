@@ -12,7 +12,7 @@ import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import {
   convertDateBrToISO,
-  formatFirstName,
+  formatShortName,
   parseCurrencyToNumber
 } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
@@ -150,7 +150,7 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      setMotoristaApelido((data as any).apelido || formatFirstName((data as any).nome));
+      setMotoristaApelido((data as any).apelido || formatShortName((data as any).nome, true));
 
       setLoading(false);
     };
@@ -219,7 +219,7 @@ export function usePassageiroExternalForm() {
           form.setError(field as any, { type: 'manual', message: issue.message });
         });
         toast.error("validacao.formularioComErros");
-        
+
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
