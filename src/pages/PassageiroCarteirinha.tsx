@@ -652,15 +652,17 @@ export default function PassageiroCarteirinha() {
                   <TabsContent value="dados" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     {/* Dados pessoais detalhados */}
                     <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                      <CarteirinhaDadosPessoais
-                        passageiro={passageiro}
-                        isCopiedEndereco={isCopiedEndereco}
-                        isCopiedTelefone={isCopiedTelefone}
-                        onCopyToClipboard={handleCopyToClipboard}
-                        onContractAction={infoProps.onContractAction}
-                        contratosAtivos={infoProps.contratosAtivos}
-                        onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-                      />
+                      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
+                        <CarteirinhaDadosPessoais
+                          passageiro={passageiro}
+                          isCopiedEndereco={isCopiedEndereco}
+                          isCopiedTelefone={isCopiedTelefone}
+                          onCopyToClipboard={handleCopyToClipboard}
+                          onContractAction={infoProps.onContractAction}
+                          contratosAtivos={infoProps.contratosAtivos}
+                          onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                        />
+                      </div>
                     </Suspense>
 
                     {/* Observações no final da aba dados */}

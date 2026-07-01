@@ -35,7 +35,7 @@ export function WhatsappStatusBadge({ status, className }: WhatsappStatusBadgePr
       )}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full", dotClass)} />
-      WahtsApp {label}
+      WhatsApp {label}
     </div>
   );
 }
