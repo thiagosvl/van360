@@ -440,7 +440,7 @@ export default function AdminUserDetails() {
                       
                       return (
                         <>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="mb-4">
                             <FormField
                               control={userForm.control}
                               name="cpfcnpj"
@@ -459,51 +459,33 @@ export default function AdminUserDetails() {
                                 </FormItem>
                               )}
                             />
-
-                            <FormField
-                              control={userForm.control}
-                              name="email"
-                              render={({ field }) => (
-                                <FormItem className="space-y-2">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      type="email"
-                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                           </div>
 
-                            <FormField
-                              control={userForm.control}
-                              name="razao_social"
-                              render={({ field, fieldState, formState }) => (
-                                <FormItem className="space-y-2 mb-4">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                                    Razão Social {isCnpj && <span className="text-red-600">*</span>}
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      value={field.value || ""}
-                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                                      aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                  {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                                    <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
-                                  )}
-                                </FormItem>
-                              )}
-                            />
+                          <FormField
+                            control={userForm.control}
+                            name="razao_social"
+                            render={({ field, fieldState, formState }) => (
+                              <FormItem className="space-y-2 mb-4">
+                                <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                  Razão Social {isCnpj && <span className="text-red-600">*</span>}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                                  <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                                )}
+                              </FormItem>
+                            )}
+                          />
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <FormField
                               control={userForm.control}
                               name="nome"
@@ -542,7 +524,7 @@ export default function AdminUserDetails() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <FormField
                               control={userForm.control}
                               name="telefone"
@@ -556,7 +538,26 @@ export default function AdminUserDetails() {
                                 />
                               )}
                             />
-                            
+                            <FormField
+                              control={userForm.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem className="space-y-2">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="email"
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField
                               control={userForm.control}
                               name="data_nascimento"
