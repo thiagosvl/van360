@@ -13,6 +13,7 @@ export const usuarioApi = {
 
   atualizarUsuario: (usuarioId: string, payload: {
     nome?: string;
+    razao_social?: string;
     apelido?: string;
     telefone?: string;
     assinatura_digital_url?: string;

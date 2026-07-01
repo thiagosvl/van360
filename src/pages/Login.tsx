@@ -8,14 +8,13 @@ import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 
 // Third-party
-import { cpfSchema, emailSchema } from "@/schemas/common";
+import { cpfCnpjSchema, emailSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Lock, Mail, User, Wand2 } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -42,7 +41,7 @@ import {
   PLAY_STORE_URL,
   QR_CODE_PLACEHOLDER,
 } from "@/utils/detectPlatform";
-import { cpfMask } from "@/utils/masks";
+import { cpfCnpjMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaDialog";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
@@ -115,7 +114,7 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(true);
 
   const formMotoristaSchema = z.object({
-    cpfcnpj: cpfSchema,
+    cpfcnpj: cpfCnpjSchema,
     senha: z.string().min(1, "Senha obrigatória"),
   });
 
@@ -299,7 +298,7 @@ export default function Login() {
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel className="text-slate-700 font-medium ml-1">
-                          Seu CPF
+                          Seu CPF ou CNPJ
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -307,8 +306,8 @@ export default function Login() {
                             <Input
                               {...field}
                               inputMode="numeric"
-                              onChange={(e: any) => field.onChange(cpfMask(e.target.value))}
-                              placeholder="000.000.000-00"
+                              onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}
+                              placeholder="CPF ou CNPJ"
                               autoComplete="username"
                               className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
                               aria-invalid={!!fieldState.error}
@@ -376,7 +375,7 @@ export default function Login() {
                       htmlFor="rememberMe"
                       className="text-xs font-medium text-slate-500 cursor-pointer select-none"
                     >
-                      Lembrar meu CPF
+                      Lembrar meu CPF / CNPJ
                     </Label>
                   </div>
 

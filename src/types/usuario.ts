@@ -3,6 +3,7 @@ import { UserType } from "./enums";
 export interface Usuario {
   id: string;
   nome: string;
+  razao_social?: string;
   apelido?: string;
   cpfcnpj: string;
   email: string;

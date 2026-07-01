@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PhoneInput } from "@/components/forms";
-import { cpfSchema, phoneSchema, emailSchema, dateSchema } from "@/schemas/common";
-import { cpfMask as maskCpf, dateMask as maskDate } from "@/utils/masks";
+import { cpfCnpjSchema, dateSchema, emailSchema, phoneSchema } from "@/schemas/common";
+import { cpfCnpjMask as maskCpf, dateMask as maskDate } from "@/utils/masks";
 import { useCreateUserAdmin } from "@/hooks/api/adminHooks";
 import { toast } from "@/utils/notifications/toast";
 
@@ -27,9 +27,19 @@ const createUserSchema = z.object({
   nome: z.string().min(2, "O nome deve ter pelo menos 2 caracteres").max(120),
   email: emailSchema,
   telefone: phoneSchema,
-  cpfcnpj: cpfSchema,
+  cpfcnpj: cpfCnpjSchema,
   data_nascimento: dateSchema(true, false),
   senha: z.string().min(6, "A senha temporária deve ter pelo menos 6 caracteres"),
+  razao_social: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const isCnpj = data.cpfcnpj.replace(/\D/g, "").length > 11;
+  if (isCnpj && (!data.razao_social || data.razao_social.trim() === "")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Razão social é obrigatória para CNPJ",
+      path: ["razao_social"],
+    });
+  }
 });
 
 type FormData = z.infer<typeof createUserSchema>;
@@ -56,6 +66,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
       email: "",
       telefone: "",
       cpfcnpj: "",
+      razao_social: "",
       data_nascimento: "",
       senha: generateTempPassword(),
     },
@@ -68,8 +79,13 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
   const handleCopyAccess = async () => {
     if (!successData) return;
     const cleanedCpf = successData.cpf.replace(/\D/g, "");
-    const maskedCpf = `${cleanedCpf.slice(0, 3)}.${cleanedCpf.slice(3, 4)}**.***-${cleanedCpf.slice(9, 11)}`;
-    const text = `*Seu acesso ao Van360!* 🚀\n\nOlá *${successData.nome}*, sua conta de motorista foi cadastrada no sistema.\n\n*Seus dados de acesso:*\n👤 CPF: ${maskedCpf}\n🔑 Senha temporária: ${successData.senha} (Recomendamos alterá-la no app)\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://van360.com.br/login`;
+    let maskedCpf = "";
+    if (cleanedCpf.length <= 11) {
+      maskedCpf = `${cleanedCpf.slice(0, 3)}.${cleanedCpf.slice(3, 4)}**.***-${cleanedCpf.slice(9, 11)}`;
+    } else {
+      maskedCpf = `${cleanedCpf.slice(0, 2)}.${cleanedCpf.slice(2, 3)}**.***/****-${cleanedCpf.slice(12, 14)}`;
+    }
+    const text = `*Seu acesso ao Van360!* 🚀\n\nOlá *${successData.nome}*, sua conta de motorista foi cadastrada no sistema.\n\n*Seus dados de acesso:*\n👤 Documento: ${maskedCpf}\n🔑 Senha temporária: ${successData.senha} (Recomendamos alterá-la no app)\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://van360.com.br/login`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -85,6 +101,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
     createUserAdmin.mutate(
       {
         nome: data.nome,
+        razao_social: data.razao_social || undefined,
         email: data.email,
         telefone: data.telefone,
         cpfcnpj: data.cpfcnpj.replace(/\D/g, ""),
@@ -108,7 +125,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
           if (respData?.field === "email" || errorMsg.includes("email")) {
             form.setError("email", { message: "Este e-mail já está cadastrado." });
           } else if (respData?.field === "cpfcnpj" || errorMsg.includes("cpf") || errorMsg.includes("cnpj")) {
-            form.setError("cpfcnpj", { message: "Este CPF já está cadastrado." });
+            form.setError("cpfcnpj", { message: "Este CPF/CNPJ já está cadastrado." });
           } else {
             toast.error("Erro ao cadastrar motorista.");
           }
@@ -151,7 +168,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 <p className="text-sm font-bold text-slate-700 mt-0.5">{successData.nome}</p>
               </div>
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF de Login</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF/CNPJ de Login</p>
                 <p className="text-sm font-bold text-slate-700 mt-0.5">{successData.cpf}</p>
               </div>
               <div>
@@ -221,30 +238,37 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
       <BaseDialog.Body>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 mt-1">
-            <FormField
-              control={form.control}
-              name="nome"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome Completo <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        placeholder="Nome completo do motorista"
-                        {...field}
-                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {(() => {
+              const cpfcnpjValue = form.watch("cpfcnpj") || "";
+              const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
+              return (
+                <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cpfcnpj"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      CPF ou CNPJ <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Input
+                          {...field}
+                          maxLength={18}
+                          onChange={(e) => field.onChange(maskCpf(e.target.value))}
+                          placeholder="CPF ou CNPJ"
+                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="email"
@@ -268,32 +292,58 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="cpfcnpj"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      CPF <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          {...field}
-                          maxLength={14}
-                          onChange={(e) => field.onChange(maskCpf(e.target.value))}
-                          placeholder="000.000.000-00"
-                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+
+            <FormField
+              control={form.control}
+              name="razao_social"
+              render={({ field, fieldState, formState }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Razão Social {isCnpj && <span className="text-red-600">*</span>}
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                      <Input
+                        placeholder="Razão social do motorista"
+                        {...field}
+                        value={field.value || ""}
+                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                        aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                  {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                    <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                  )}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Nome Completo <span className="text-red-600">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                      <Input
+                        placeholder="Nome completo do motorista"
+                        {...field}
+                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -378,6 +428,9 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                 </FormItem>
               )}
             />
+                </>
+              );
+            })()}
           </form>
         </Form>
       </BaseDialog.Body>

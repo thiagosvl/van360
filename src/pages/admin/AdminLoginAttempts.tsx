@@ -137,7 +137,7 @@ export default function AdminLoginAttempts() {
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</Label>
               <Input
                 type="text"
-                placeholder="CPF, Telefone ou ID..."
+                placeholder="Documento, Telefone ou ID..."
                 value={filters.cpf}
                 onChange={(e) => { setPage(1); setFilters(p => ({ ...p, cpf: e.target.value })) }}
                 className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
@@ -183,7 +183,7 @@ export default function AdminLoginAttempts() {
                   <tr className="border-b border-slate-100">
                     <th className="pb-4 pl-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                     <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
-                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">CPF Tentado</th>
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Documento Tentado</th>
                     <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Dispositivo</th>
                     <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
                     <th className="pb-4 pr-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Infos</th>

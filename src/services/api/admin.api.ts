@@ -29,6 +29,7 @@ export interface AdminDashboardStats {
 export interface AdminUserListItem {
   id: string;
   nome: string;
+  razao_social: string | null;
   apelido: string | null;
   email: string;
   cpfcnpj: string;
@@ -62,6 +63,7 @@ export interface AdminUserDetailsResponse {
   user: {
     id: string;
     nome: string;
+    razao_social: string | null;
     apelido: string | null;
     email: string;
     cpfcnpj: string;
@@ -146,6 +148,7 @@ export interface AdminConfigItem {
 
 export interface UpdateUserPayload {
   nome?: string;
+  razao_social?: string | null;
   apelido?: string | null;
   email?: string;
   telefone?: string;
@@ -232,6 +235,7 @@ export interface UpdatePlanPayload {
 
 export interface CreateUserPayload {
   nome: string;
+  razao_social?: string;
   email: string;
   telefone: string;
   cpfcnpj: string;

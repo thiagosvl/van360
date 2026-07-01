@@ -49,6 +49,7 @@ export function useRegisterController() {
     defaultValues: {
       nome: "",
       cpfcnpj: "",
+      razao_social: "",
       email: "",
       telefone: "",
       senha: "",
@@ -60,13 +61,14 @@ export function useRegisterController() {
   const handleFillMagic = () => {
     form.reset({
       ...form.getValues(),
+      cpfcnpj: "90.835.525/0001-30",
+      razao_social: "Thiago Barros da Silva",
       nome: "Thiago Barros",
-      cpfcnpj: "395.423.918-38",
-      email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
+      email: "thiago-svl@hotmail.com",
+      data_nascimento: "30/06/1997",
       senha: "Ogaiht+1",
       termos_aceitos: true,
-      data_nascimento: "01/01/1990",
     });
   };
 
@@ -86,12 +88,12 @@ export function useRegisterController() {
       localStorage.removeItem("van360_referral_code");
 
       // --- FLUXO DE PÓS-CADASTRO ---
-      
+
       // Disparar evento de conversão para o Google Tag Manager / Ads
       // Apenas em Produção e Apenas no Web (para não sujar métricas com o app nativo)
       const isMobile = isMobilePlatform();
       const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
-      
+
       if (typeof window !== "undefined" && import.meta.env.PROD && !isNative) {
         (window as any).dataLayer = (window as any).dataLayer || [];
         (window as any).dataLayer.push({
@@ -185,10 +187,10 @@ export function useRegisterController() {
       }
 
       if (isDuplicateCpf) {
-        form.setError("cpfcnpj", { message: "Este CPF já está em uso." });
+        form.setError("cpfcnpj", { message: "Este CPF/CNPJ já está em uso." });
         setDuplicateError({
           field: "cpfcnpj",
-          message: "Este CPF já está cadastrado.",
+          message: "Este CPF/CNPJ já está cadastrado.",
         });
         return;
       }
@@ -224,7 +226,7 @@ export function useRegisterController() {
   };
 
   const handleNextStep = async () => {
-    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
+    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "razao_social", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
     const ok = await form.trigger(fields as any);
     if (!ok) {
       toast.error("validacao.formularioComErros");

@@ -216,7 +216,7 @@ export const messages = {
       login: "Erro ao fazer login. Verifique suas credenciais.",
       senhaIncorreta: "Senha incorreta.",
       usuarioNaoEncontrado: "Usuário não encontrado.",
-      cpfNaoEncontrado: "CPF não encontrado.",
+      cpfNaoEncontrado: "CPF/CNPJ não encontrado.",
       cpfNaoEncontradoDescricao: "Verifique o número informado. Caso tenha dúvidas, fale com o suporte.",
       emailNaoEncontrado: "E-mail não encontrado.",
       sessaoExpirada: "Sua sessão expirou. Faça login novamente.",
@@ -234,11 +234,11 @@ export const messages = {
     },
     recuperacao: {
       titulo: "Recuperar Senha",
-      descricao: "Informe seu CPF para receber um código de validação no WhatsApp.",
+      descricao: "Informe seu CPF/CNPJ para receber um código de validação no WhatsApp.",
     },
     info: {
-      informeCpf: "Informe seu CPF.",
-      informeCpfDescricao: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
+      informeCpf: "Informe seu CPF/CNPJ.",
+      informeCpfDescricao: "Digite o CPF/CNPJ cadastrado para receber o link de redefinição em seu e-mail.",
     },
     labels: {
       login: "Entrar",
@@ -345,7 +345,7 @@ export const messages = {
       criar: "Erro ao cadastrar usuário.",
       atualizar: "Erro ao atualizar usuário.",
       excluir: "Erro ao excluir usuário.",
-      cpfJaExiste: "CPF já existe.",
+      cpfJaExiste: "CPF/CNPJ já existe.",
       emailJaExiste: "Email já existe.",
       invalido: "Usuário selecionado é inválido ou não possui um ID de autenticação.",
       atualizacao: "Erro na Atualização.",

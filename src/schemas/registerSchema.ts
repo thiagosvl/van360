@@ -1,11 +1,12 @@
-import { cpfSchema, emailSchema, phoneSchema } from "@/schemas/common";
+import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { z } from "zod";
 
 export const registerSchema = z.object({
   nome: z.string()
     .min(2, "Deve ter pelo menos 2 caracteres")
     .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
-  cpfcnpj: cpfSchema,
+  razao_social: z.string().optional(),
+  cpfcnpj: cpfCnpjSchema,
   email: emailSchema.min(1, "Campo obrigatório"),
   telefone: phoneSchema,
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
@@ -43,6 +44,15 @@ export const registerSchema = z.object({
 
       return idadeReal >= 18 && idadeReal <= 100;
     }, "Você deve ser maior de 18 anos"),
+}).superRefine((data, ctx) => {
+  const isCnpj = data.cpfcnpj.replace(/\D/g, "").length > 11;
+  if (isCnpj && (!data.razao_social || data.razao_social.trim() === "")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Razão social é obrigatória para CNPJ",
+      path: ["razao_social"],
+    });
+  }
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;

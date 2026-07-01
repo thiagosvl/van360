@@ -89,7 +89,7 @@ export default function AdminActivityHistory() {
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</Label>
               <Input
                 type="text"
-                placeholder="CPF, Telefone ou ID..."
+                placeholder="Documento, Telefone ou ID..."
                 value={logsFilter.search_cpf}
                 onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, search_cpf: e.target.value })) }}
                 className="h-10 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0"

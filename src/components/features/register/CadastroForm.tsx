@@ -9,13 +9,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { cpfMask, dateMask } from "@/utils/masks";
+import { cpfCnpjMask, dateMask } from "@/utils/masks";
 import { Calendar, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { RegisterFormData } from "@/schemas/registerSchema";
-import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoDialog";
-import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 
 interface CadastroFormProps {
   form: UseFormReturn<RegisterFormData>;
@@ -24,8 +22,65 @@ interface CadastroFormProps {
 export const CadastroForm = ({ form }: CadastroFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const cpfcnpjValue = form.watch("cpfcnpj") || "";
+  const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
+
   return (
     <div className="space-y-6">
+      <FormField
+        control={form.control}
+        name="cpfcnpj"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormLabel className="text-slate-700 font-semibold ml-1">CPF ou CNPJ <span className="text-red-600">*</span></FormLabel>
+            <FormControl>
+              <div className="relative">
+                <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                <Input
+                  {...field}
+                  inputMode="numeric"
+                  onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
+                  placeholder="CPF ou CNPJ"
+                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                  aria-invalid={!!fieldState.error}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {isCnpj && (
+        <FormField
+          control={form.control}
+          name="razao_social"
+          render={({ field, fieldState, formState }) => (
+            <FormItem>
+              <FormLabel className="text-slate-700 font-semibold ml-1">
+                Razão Social <span className="text-red-600">*</span>
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                  <Input
+                    placeholder="Digite a razão social"
+                    {...field}
+                    value={field.value || ""}
+                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                    aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+              {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+              )}
+            </FormItem>
+          )}
+        />
+      )}
+
       <FormField
         control={form.control}
         name="nome"
@@ -53,57 +108,19 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <FormField
           control={form.control}
-          name="cpfcnpj"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel className="text-slate-700 font-semibold ml-1">CPF <span className="text-red-600">*</span></FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                  <Input
-                    {...field}
-                    inputMode="numeric"
-                    onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                    placeholder="000.000.000-00"
-                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                    aria-invalid={!!fieldState.error}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          name="telefone"
+          render={({ field }) => (
+            <PhoneInput
+              field={field}
+              label="WhatsApp"
+              required
+              placeholder="(11) 99999-9999"
+              labelClassName="text-slate-700 font-semibold ml-1"
+              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+            />
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="data_nascimento"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel className="text-slate-700 font-semibold ml-1">
-                Data de nascimento <span className="text-red-600">*</span>
-              </FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                  <Input
-                    {...field}
-                    inputMode="numeric"
-                    maxLength={10}
-                    onChange={(e) => field.onChange(dateMask(e.target.value))}
-                    placeholder="dd/mm/aaaa"
-                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                    aria-invalid={!!fieldState.error}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <FormField
           control={form.control}
           name="email"
@@ -127,22 +144,34 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="telefone"
-          render={({ field }) => (
-            <PhoneInput
-              field={field}
-              label="WhatsApp"
-              required
-              placeholder="(11) 99999-9999"
-              labelClassName="text-slate-700 font-semibold ml-1"
-              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-            />
-          )}
-        />
       </div>
+
+      <FormField
+        control={form.control}
+        name="data_nascimento"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormLabel className="text-slate-700 font-semibold ml-1">
+              Data de nascimento <span className="text-red-600">*</span>
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                <Input
+                  {...field}
+                  inputMode="numeric"
+                  maxLength={10}
+                  onChange={(e) => field.onChange(dateMask(e.target.value))}
+                  placeholder="dd/mm/aaaa"
+                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                  aria-invalid={!!fieldState.error}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       <FormField
         control={form.control}

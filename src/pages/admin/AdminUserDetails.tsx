@@ -39,7 +39,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
-import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
+import { cpfCnpjMask as cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { toast } from "sonner";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 import { ROUTES } from "@/constants/routes";
@@ -71,7 +71,7 @@ const userSchema = z.object({
     .min(2, "Deve ter pelo menos 2 caracteres")
     .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
   apelido: z.string().optional(),
-  cpfcnpj: z.string().min(14, "CPF incompleto"),
+  cpfcnpj: z.string().min(14, "CPF/CNPJ incompleto"),
   telefone: z.string().min(14, "Telefone incompleto"),
   email: emailSchema,
   ativo: z.boolean(),
@@ -81,6 +81,16 @@ const userSchema = z.object({
     if (!regex.test(val)) return false;
     return true;
   }, "Data inválida"),
+  razao_social: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const isCnpj = data.cpfcnpj.replace(/\D/g, "").length > 11;
+  if (isCnpj && (!data.razao_social || data.razao_social.trim() === "")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Razão social é obrigatória para CNPJ",
+      path: ["razao_social"],
+    });
+  }
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -199,6 +209,7 @@ export default function AdminUserDetails() {
 
       userForm.reset({
         nome: u.nome || "",
+        razao_social: u.razao_social || "",
         apelido: u.apelido || "",
         email: u.email || "",
         telefone: phoneMask(u.telefone || ""),
@@ -232,6 +243,7 @@ export default function AdminUserDetails() {
       id,
       data: {
         nome,
+        razao_social: formData.razao_social?.trim() || null,
         apelido: formData.apelido?.trim() || null,
         email,
         telefone: cleanPhone,
@@ -422,113 +434,155 @@ export default function AdminUserDetails() {
               <CardContent className="pt-4">
                 <Form {...userForm}>
                   <form onSubmit={userForm.handleSubmit(handleSaveUser, onUserFormError)} className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={userForm.control}
-                        name="nome"
-                        render={({ field }) => (
-                          <FormItem className="space-y-2">
-                            <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Nome</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={userForm.control}
-                        name="apelido"
-                        render={({ field }) => (
-                          <FormItem className="space-y-2">
-                            <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Apelido</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={userForm.control}
-                        name="cpfcnpj"
-                        render={({ field }) => (
-                          <FormItem className="space-y-2">
-                            <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                                inputMode="numeric"
-                                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={userForm.control}
-                        name="telefone"
-                        render={({ field }) => (
-                          <PhoneInput
-                            field={field}
-                            label="Telefone"
-                            placeholder="(00) 00000-0000"
-                            labelClassName="text-[11px] font-black text-slate-400 uppercase tracking-widest"
-                            inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
-                          />
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={userForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="email"
-                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                    {(() => {
+                      const cpfcnpjValue = userForm.watch("cpfcnpj") || "";
+                      const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
+                      
+                      return (
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={userForm.control}
+                              name="cpfcnpj"
+                              render={({ field }) => (
+                                <FormItem className="space-y-2">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF / CNPJ</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                                      inputMode="numeric"
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
-                    <FormField
-                      control={userForm.control}
-                      name="data_nascimento"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              inputMode="numeric"
-                              maxLength={10}
-                              onChange={(e) => field.onChange(maskDate(e.target.value))}
-                              placeholder="dd/mm/aaaa"
-                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                            <FormField
+                              control={userForm.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem className="space-y-2">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="email"
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          </div>
+
+                            <FormField
+                              control={userForm.control}
+                              name="razao_social"
+                              render={({ field, fieldState, formState }) => (
+                                <FormItem className="space-y-2 mb-4">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                    Razão Social {isCnpj && <span className="text-red-600">*</span>}
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                      aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                  {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                                    <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                                  )}
+                                </FormItem>
+                              )}
+                            />
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={userForm.control}
+                              name="nome"
+                              render={({ field }) => (
+                                <FormItem className="space-y-2">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                    Nome
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={userForm.control}
+                              name="apelido"
+                              render={({ field }) => (
+                                <FormItem className="space-y-2">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                    Apelido
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={userForm.control}
+                              name="telefone"
+                              render={({ field }) => (
+                                <PhoneInput
+                                  field={field}
+                                  label="Telefone"
+                                  placeholder="(00) 00000-0000"
+                                  labelClassName="text-[11px] font-black text-slate-400 uppercase tracking-widest"
+                                  inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                />
+                              )}
+                            />
+                            
+                            <FormField
+                              control={userForm.control}
+                              name="data_nascimento"
+                              render={({ field }) => (
+                                <FormItem className="space-y-2">
+                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      inputMode="numeric"
+                                      maxLength={10}
+                                      onChange={(e) => field.onChange(maskDate(e.target.value))}
+                                      placeholder="dd/mm/aaaa"
+                                      className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </>
+                      );
+                    })()}
+
+
 
                     <div className="flex items-center justify-between pt-2">
                       <FormField
@@ -1289,7 +1343,7 @@ export default function AdminUserDetails() {
                   <p className="text-sm font-bold text-slate-700 mt-0.5">{data.user.nome}</p>
                 </div>
                 <div className="mt-3.5">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF de Login</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF / CNPJ de Login</p>
                   <p className="text-sm font-bold text-slate-700 mt-0.5">{cpfMask(data.user.cpfcnpj)}</p>
                 </div>
                 <div className="mt-3.5">
@@ -1305,8 +1359,13 @@ export default function AdminUserDetails() {
             <Button
               onClick={async () => {
                 const cleanedCpf = data.user.cpfcnpj.replace(/\D/g, "");
-                const maskedCpf = `${cleanedCpf.slice(0, 3)}.${cleanedCpf.slice(3, 4)}**.***-${cleanedCpf.slice(9, 11)}`;
-                const text = `*Nova Senha Provisória - Van360!* 🔐\n\nOlá *${data.user.nome}*,\nSua senha foi redefinida pelo administrador do sistema.\n\n*Novos dados de acesso:*\n👤 CPF: ${maskedCpf}\n🔑 Senha temporária: ${resetPasswordData.senha}\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://van360.com.br/login`;
+                let maskedCpf = "";
+                if (cleanedCpf.length <= 11) {
+                  maskedCpf = `${cleanedCpf.slice(0, 3)}.${cleanedCpf.slice(3, 4)}**.***-${cleanedCpf.slice(9, 11)}`;
+                } else {
+                  maskedCpf = `${cleanedCpf.slice(0, 2)}.${cleanedCpf.slice(2, 3)}**.***/****-${cleanedCpf.slice(12, 14)}`;
+                }
+                const text = `*Nova Senha Provisória - Van360!* 🔐\n\nOlá *${data.user.nome}*,\nSua senha foi redefinida pelo administrador do sistema.\n\n*Novos dados de acesso:*\n👤 Documento: ${maskedCpf}\n🔑 Senha temporária: ${resetPasswordData.senha}\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 https://van360.com.br/login`;
                 await navigator.clipboard.writeText(text);
                 toast.success("Dados de acesso copiados!");
               }}
