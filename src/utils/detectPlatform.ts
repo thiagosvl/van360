@@ -36,7 +36,7 @@ export function isMobilePlatform(): boolean {
 }
 
 export const PLAY_STORE_URL =
-  "https://play.google.com/store/apps/details?id=com.van360.app";
+  "https://play.google.com/store/apps/details?id=com.tibis.van360";
 
-export const QR_CODE_PLACEHOLDER =
-  "https://placehold.co/200x200/1a1a2e/ffffff?text=QR+Code+Play+Store";
+export const PLAY_STORE_BADGE_URL =
+  "https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png";

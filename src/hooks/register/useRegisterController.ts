@@ -2,7 +2,7 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
-import { isMobilePlatform, isNativeApp } from "@/utils/detectPlatform";
+import { detectPlatform, isMobilePlatform, isNativeApp } from "@/utils/detectPlatform";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
@@ -62,7 +62,7 @@ export function useRegisterController() {
     form.reset({
       ...form.getValues(),
       cpfcnpj: "90.835.525/0001-30",
-      razao_social: "Thiago Barros da Silva",
+      razao_social: "THIAGO BARROS SOLUCOES",
       nome: "Thiago Barros",
       telefone: "(11) 95118-6951",
       email: "thiago-svl@hotmail.com",
@@ -108,8 +108,8 @@ export function useRegisterController() {
          Objetivo: No futuro, separar isNativeApp() de isMobilePlatform().
       */
 
-      // Mobile (Nativo ou Browser Mobile): setar sessão + mostrar boas-vindas
-      if (isMobile) {
+      // App Nativo: setar sessão + mostrar boas-vindas nativa
+      if (isNative) {
         sessionStorage.setItem("van360_showing_welcome", "true");
         setShowNativeWelcome(true);
 
@@ -130,38 +130,34 @@ export function useRegisterController() {
         return;
       }
 
-      // Desktop: Login direto
-      const { error } = await sessionManager.setSession(
-        result.session.access_token,
-        result.session.refresh_token,
-        sessionUser
-      );
+      // Pós-cadastro baseado na plataforma
+      const platform = detectPlatform();
 
-      if (error) {
-        toast.error("auth.erro.login", {
-          description: "Cadastro realizado, mas não foi possível fazer login automático.",
+      if (platform === "android-web") {
+        // Apenas para Android Web: intercepta para sugerir baixar o app
+        setPostRegisterData({
+          cpf: data.cpfcnpj,
+          accessToken: result.session.access_token,
+          refreshToken: result.session.refresh_token,
+          user: sessionUser,
         });
-        navigate(ROUTES.PUBLIC.LOGIN);
       } else {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+        // Desktop ou iOS Web: loga direto (não há app para eles instalarem de imediato)
+        const { error } = await sessionManager.setSession(
+          result.session.access_token,
+          result.session.refresh_token,
+          sessionUser
+        );
+        
+        if (!error) {
+          navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+        } else {
+          toast.error("auth.erro.login", {
+            description: "Cadastro concluído, mas falha no login automático.",
+          });
+          navigate(ROUTES.PUBLIC.LOGIN);
+        }
       }
-
-      /* 
-      // [LEGADO/PADRÃO] Comentado para quando voltarmos a usar a PostRegisterScreen para web
-      if (isNativeApp()) {
-         ... lógica nativa igual à de cima ...
-         return;
-      }
-
-      // Web Padrão: mostra tela de download/cont em browser (NÃO faz login auto)
-      setPostRegisterData({
-        cpf: data.cpfcnpj,
-        accessToken: result.session.access_token,
-        refreshToken: result.session.refresh_token,
-        user: result.session.user || result.user,
-      });
-      */
     } catch (err: any) {
       const respData = err.response?.data;
       const errorMsg = (respData?.error || err.message || "").toLowerCase();

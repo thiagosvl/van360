@@ -1,13 +1,7 @@
 import { cn } from "@/lib/utils";
-import {
-  CreditCard,
-  FileText,
-  LayoutDashboard,
-  Menu,
-  Users
-} from "lucide-react";
+import { Menu } from "lucide-react";
 import { useLocation, NavLink } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 
 import { useLayout } from "@/contexts/LayoutContext";
 
@@ -15,29 +9,9 @@ export function BottomNavbar() {
   const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
 
-  const navItems = [
-    {
-      title: "Início",
-      href: ROUTES.PRIVATE.MOTORISTA.HOME,
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Passageiros",
-      href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-      icon: Users,
-    },
-    {
-      title: "Mensalidades",
-      href: ROUTES.PRIVATE.MOTORISTA.BILLING,
-      icon: CreditCard,
-    },
-    {
-      title: "Contratos",
-      href: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
-      icon: FileText,
-    },
-  ];
-
+  const navItems = bottomNavHrefs
+    .map(href => pagesItems.find(item => item.href === href))
+    .filter(Boolean) as typeof pagesItems;
   const isMoreActive = !navItems.some(item => location.pathname === item.href);
 
   return (

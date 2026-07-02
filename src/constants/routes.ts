@@ -36,7 +36,7 @@ export const ROUTES = {
       REPORTS: "/relatorios",
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
-      ANIVERSARIANTES: "/aniversariantes",
+      BIRTHDAYS: "/aniversariantes",
     }
   }
 } as const;

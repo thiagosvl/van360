@@ -327,7 +327,7 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ANIVERSARIANTES} element={<Aniversariantes />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS} element={<Aniversariantes />} />
                   </Route>
                 </Route>
 

@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 // Third-party
 import { cpfCnpjSchema, emailSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, Mail, User, Wand2 } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Wand2, Smartphone } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
@@ -35,14 +35,8 @@ import { sessionManager } from "@/services/sessionManager";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
-import {
-  detectPlatform,
-  isNativeApp,
-  PLAY_STORE_URL,
-  QR_CODE_PLACEHOLDER,
-} from "@/utils/detectPlatform";
+import { detectPlatform, isNativeApp, PLAY_STORE_URL, PLAY_STORE_BADGE_URL } from "@/utils/detectPlatform";
 import { cpfCnpjMask } from "@/utils/masks";
-import { toast } from "@/utils/notifications/toast";
 import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaDialog";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 
@@ -51,52 +45,69 @@ import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 function LoginPlatformSuggestion() {
   const platform = detectPlatform();
 
-  // if (platform === "android-web") {
-  //   return (
-  //     <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-  //       <p className="text-xs text-slate-500 mb-2">
-  //         Você também pode acessar pelo app!
-  //       </p>
-  //       <a
-  //         href={PLAY_STORE_URL}
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //         className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors"
-  //       >
-  //         Baixar na Play Store
-  //       </a>
-  //     </div>
-  //   );
-  // }
+  if (isNativeApp()) return null;
 
-  // if (platform === "desktop") {
-  //   return (
-  //     <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-  //       <p className="text-xs text-slate-500 mb-3">
-  //         Para a melhor experiência, baixe o app:
-  //       </p>
-  //       <img
-  //         src={QR_CODE_PLACEHOLDER}
-  //         alt="QR Code para baixar Van360 na Play Store"
-  //         className="w-[120px] h-[120px] mx-auto rounded-lg shadow-sm mb-2"
-  //         loading="lazy"
-  //       />
-  //       <p className="text-[10px] text-slate-400">
-  //         Disponível para Android. App iOS em breve.
-  //       </p>
-  //     </div>
-  //   );
-  // }
+  if (platform === "android-web") {
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
+        <p className="text-[13px] font-medium text-slate-500 mb-3 text-center">
+          Para uma melhor experiência, baixe o app:
+        </p>
+        <a
+          href={PLAY_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center hover:-translate-y-0.5 transition-transform drop-shadow-sm"
+          aria-label="Baixar Van360 na Play Store"
+        >
+          <img
+            src={PLAY_STORE_BADGE_URL}
+            alt="Disponível no Google Play"
+            className="h-14 object-contain"
+          />
+        </a>
+      </div>
+    );
+  }
 
-  // if (platform === "ios-web") {
-  //   return (
-  //     <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-  //       <p className="text-xs text-slate-400">
-  //         App iOS em desenvolvimento. Use o navegador por enquanto.
-  //       </p>
-  //     </div>
-  //   );
-  // }
+  if (platform === "desktop") {
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
+        <p className="text-[13px] font-medium text-slate-500 mb-3 text-center">
+          Para uma melhor experiência, baixe o app:
+        </p>
+        <a
+          href={PLAY_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center hover:-translate-y-0.5 transition-transform drop-shadow-sm mb-2"
+          aria-label="Baixar Van360 na Play Store"
+        >
+          <img
+            src={PLAY_STORE_BADGE_URL}
+            alt="Disponível no Google Play"
+            className="h-12 object-contain"
+          />
+        </a>
+        <p className="text-[11px] font-medium text-slate-400">
+          Disponível para Android. Funciona no iPhone pelo navegador.
+        </p>
+      </div>
+    );
+  }
+
+  if (platform === "ios-web") {
+    return (
+      <div className="mt-6 pt-6 border-t border-slate-100 text-center bg-blue-50/50 rounded-xl p-4">
+        <p className="text-[13px] text-[#1a3a5c] font-bold mb-1 flex items-center justify-center gap-1.5">
+          <Smartphone className="w-4 h-4" /> Funciona no iPhone
+        </p>
+        <p className="text-xs text-slate-500 mt-1">
+          Acesse perfeitamente pelo navegador enquanto o app é preparado.
+        </p>
+      </div>
+    );
+  }
 
   return null;
 }

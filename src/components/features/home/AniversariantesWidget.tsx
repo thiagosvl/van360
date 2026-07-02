@@ -77,7 +77,7 @@ export function AniversariantesWidget() {
           <p className="text-[9px] sm:text-xs font-bold text-slate-400 uppercase px-1">
             {dataInicio} a {dataFim} de {currentMonthName}
           </p>
-          <Button variant="ghost" size="sm" className="h-8 text-[11px] sm:text-xs text-primary font-semibold px-2" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ANIVERSARIANTES)}>
+          <Button variant="ghost" size="sm" className="h-8 text-[11px] sm:text-xs text-primary font-semibold px-2" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS)}>
             Ver todos do mês <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
           </Button>
         </CardHeader>

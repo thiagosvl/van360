@@ -2,7 +2,6 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 import { CookieConsentGlobal } from "@/components/features/CookieConsentGlobal";
-import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useCookieConsent } from "@/hooks/business/useCookieConsent";
 import { getWhatsAppUrl } from "@/constants";
 import { ROUTES } from "@/constants/routes";
@@ -13,6 +12,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Star,
+  Smartphone,
 } from "lucide-react";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -21,6 +21,7 @@ import { usePublicPlans } from "@/hooks/api/usePublicPlans";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { SubscriptionIdentifer } from "@/types/enums";
 import { getNowBR } from "@/utils/dateUtils";
+import { detectPlatform, PLAY_STORE_URL, PLAY_STORE_BADGE_URL } from "@/utils/detectPlatform";
 
 // ── Scroll reveal hook ──
 function useReveal() {
@@ -148,6 +149,7 @@ function MockupImage({ src, alt, loading = "lazy", width, height, className }: {
 
 // ── Main component ──
 const Index = () => {
+  const platform = detectPlatform();
   useSEO({
     title: "Van360 — App para Van Escolar e Gestão de Passageiros",
     description: "Cobre mensalidades automaticamente, envie lembretes aos pais e emita recibos. A gestão completa da sua van escolar na palma da mão. 15 dias grátis!",
@@ -227,7 +229,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "Onde posso usar o Van360?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O app para iPhone está em desenvolvimento, mas a versão web funciona perfeitamente no Safari." },
+            "acceptedAnswer": { "@type": "Answer", "text": "Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O Van360 funciona perfeitamente no iPhone através do navegador, e o app nativo já está em desenvolvimento." },
           },
           {
             "@type": "Question",
@@ -242,7 +244,12 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "O app é pesado? Preciso baixar?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Não precisa baixar nada pra começar. O Van360 funciona direto pelo navegador — no celular, tablet ou computador. Se preferir, tem o app Android que é leve e rápido. Você escolhe como quer usar." },
+            "acceptedAnswer": { "@type": "Answer", "text": "Não precisa baixar nada se não quiser. O Van360 funciona direto pelo navegador — no celular, tablet ou computador. Se preferir, temos o app Android disponível na Play Store, que é leve e rápido." },
+          },
+          {
+            "@type": "Question",
+            "name": "Tem aplicativo para iPhone (iOS)?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Sim, funciona perfeitamente no iPhone! Motoristas com iOS acessam o Van360 com total performance pelo navegador, enquanto o app nativo está sendo desenvolvido para a App Store." },
           },
           {
             "@type": "Question",
@@ -400,6 +407,46 @@ const Index = () => {
                 >
                   Testar grátis por 15 dias
                 </Link>
+
+                {/* Badges / Plataformas - DESKTOP APENAS */}
+                <div className="hidden md:flex flex-col items-start mt-3">
+                  <a
+                    href={PLAY_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex hover:-translate-y-0.5 transition-transform"
+                    aria-label="Baixar Van360 na Play Store"
+                  >
+                    <img
+                      src={PLAY_STORE_BADGE_URL}
+                      alt="Disponível no Google Play"
+                      className="h-14 object-contain"
+                    />
+                  </a>
+                  <div className="flex items-center gap-1.5 mt-1 ml-2 text-slate-400">
+                    <Smartphone className="w-3.5 h-3.5" />
+                    <span className="text-[12px] font-medium">Funciona também no iPhone (pelo navegador)</span>
+                  </div>
+                </div>
+
+                {/* Badge Android - MOBILE APENAS (Antes do Mockup) */}
+                <div className="md:hidden flex justify-center w-full mt-3">
+                  {platform !== "ios-web" && (
+                    <a
+                      href={PLAY_STORE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center hover:scale-105 transition-transform"
+                      aria-label="Baixar Van360 na Play Store"
+                    >
+                      <img
+                        src={PLAY_STORE_BADGE_URL}
+                        alt="Disponível no Google Play"
+                        className="h-12 object-contain"
+                      />
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Mockup — SÓ MOBILE */}
@@ -417,6 +464,7 @@ const Index = () => {
                 </div>
               </div>
 
+
               {/* Stats */}
               <div className="flex flex-col gap-3 mt-0 md:mt-6 mb-4 md:mb-0 md:mx-0 mx-auto w-fit text-left">
                 {[
@@ -432,6 +480,23 @@ const Index = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Badge iOS - MOBILE APENAS */}
+              {platform === "ios-web" && (
+                <div className="md:hidden mt-6 mb-2 bg-blue-50/60 border border-blue-100 px-5 py-4 rounded-2xl text-center flex flex-col items-center gap-2 max-w-[320px] mx-auto">
+                  <div className="p-2 bg-blue-100/80 text-blue-600 rounded-full mb-1">
+                    <Smartphone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-bold text-[#1a3a5c] leading-tight mb-1.5">
+                      Funciona no seu iPhone
+                    </p>
+                    <p className="text-[12px] text-slate-500 leading-snug">
+                      Use o Van360 <b>perfeitamente</b> pelo navegador enquanto o app nativo está sendo preparado. <br className="hidden sm:block" /> É só clicar em testar grátis.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Mockup — SÓ DESKTOP */}
@@ -781,7 +846,7 @@ const Index = () => {
             />
             <FaqItem
               q="Onde posso usar o Van360?"
-              a="Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O app para iPhone está em desenvolvimento, mas a versão web funciona perfeitamente no Safari."
+              a="Em qualquer lugar. Funciona no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, tem o app Android, que é leve e rápido. O Van360 funciona perfeitamente no iPhone através do navegador, e o app nativo já está em desenvolvimento."
             />
             <FaqItem
               q="O que é a oferta/preço fundador?"
@@ -793,7 +858,11 @@ const Index = () => {
             />
             <FaqItem
               q="O app é pesado? Preciso baixar?"
-              a="Não precisa baixar nada pra começar. O Van360 funciona direto pelo navegador — no celular, tablet ou computador. Se preferir, tem o app Android que é leve e rápido. Você escolhe como quer usar."
+              a="Não precisa baixar nada se não quiser. O Van360 funciona direto pelo navegador — no celular, tablet ou computador. Se preferir, temos o app Android disponível na Play Store, que é leve e rápido."
+            />
+            <FaqItem
+              q="Tem aplicativo para iPhone (iOS)?"
+              a="Sim, funciona perfeitamente no iPhone! Motoristas com iOS acessam o Van360 com total performance pelo navegador, enquanto o app nativo está sendo desenvolvido para a App Store."
             />
             <FaqItem
               q="Quanto vou pagar depois dos 15 dias?"
@@ -926,9 +995,34 @@ const Index = () => {
             >
               Testar grátis por 15 dias
             </Link>
-            <p className="text-[0.85rem] opacity-60 mt-4">
-              Depois, R$ {pricing.originalFormatted}/mês ou R$ {pricing.highlightFormatted}/mês (no plano anual)
-            </p>
+
+
+            <div className="flex flex-col items-center mt-5">
+              {platform !== "ios-web" ? (
+                <a
+                  href={PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
+                  aria-label="Baixar Van360 na Play Store"
+                >
+                  <img
+                    src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png"
+                    alt="Disponível no Google Play"
+                    className="h-12 object-contain filter drop-shadow-md"
+                  />
+                </a>
+              ) : (
+                <div className="bg-white/10 border border-white/20 px-4 py-3 rounded-xl text-center max-w-[280px]">
+                  <p className="text-[13px] font-bold text-white mb-0.5 flex items-center justify-center gap-1.5">
+                    <Smartphone className="w-4 h-4" /> Funciona no iPhone
+                  </p>
+                  <p className="text-[11px] text-white/70 leading-snug mt-1">
+                    Acesse pelo navegador enquanto o app é preparado.
+                  </p>
+                </div>
+              )}
+            </div>
           </Reveal>
         </div>
       </section>
@@ -980,6 +1074,21 @@ const Index = () => {
               Termos de uso
             </Link>
           </div>
+          {platform !== "ios-web" && (
+            <a
+              href={PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 hover:opacity-80 transition-opacity"
+              aria-label="Baixar Van360 na Play Store"
+            >
+              <img
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png"
+                alt="Disponível no Google Play"
+                className="h-12 object-contain filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+              />
+            </a>
+          )}
           <div className="text-center text-white/30 text-xs space-y-1">
             <p>© {getNowBR().getFullYear()} Van360. Todos os direitos reservados.</p>
             <p>CNPJ: 52.573.294/0001-44</p>

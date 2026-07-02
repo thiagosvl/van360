@@ -6,6 +6,7 @@ import { BottomNavbar } from "@/components/navigation/BottomNavbar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { HelpSheet } from "@/components/features/HelpSheet";
 import { InitialLoading } from "@/components/auth/InitialLoading";
+
 import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -99,6 +100,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
       {/* Navegação Mobile Inferior (Fixa no rodapé) */}
       <BottomNavbar />
 
+
       {/* Menu Lateral Mobile (Gatilhado pelo botão "Mais") */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent
@@ -118,6 +120,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
             <AppSidebar
               role={role}
               onLinkClick={() => setIsMobileMenuOpen(false)}
+              excludeBottomNavItems
             />
           </div>
         </SheetContent>
