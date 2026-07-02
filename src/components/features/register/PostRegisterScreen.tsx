@@ -49,28 +49,27 @@ export function PostRegisterScreen({
 
             {/* 1. ANDROID */}
             {platform === "android-web" && (
-              <div className="space-y-4">
+              <div className="flex flex-col items-center pt-2">
 
-                <div className="flex justify-center w-full">
-                  <a
-                    href={PLAY_STORE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex hover:scale-[1.03] transition-transform"
-                  >
-                    <img
-                      src={PLAY_STORE_BADGE_URL}
-                      alt="Disponível no Google Play"
-                      className="h-[56px] object-contain drop-shadow-sm"
-                    />
-                  </a>
+                <div className="text-center w-full mb-2">
+                  <p className="text-[16px] font-bold text-[#1a3a5c] mb-1">Baixe nosso app</p>
+                  <p className="text-[13px] text-slate-500 leading-snug">Para uma experiência ainda mais rápida.</p>
                 </div>
 
-                <p className="text-[11.5px] text-slate-500 text-center leading-relaxed px-2">
-                  O aplicativo é opcional, mas recomendamos para ter uma experiência ainda mais rápida.
-                </p>
+                <a
+                  href={PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex hover:scale-[1.03] transition-transform mb-8"
+                >
+                  <img
+                    src={PLAY_STORE_BADGE_URL}
+                    alt="Disponível no Google Play"
+                    className="h-[64px] object-contain drop-shadow-md"
+                  />
+                </a>
 
-                <div className="relative flex items-center py-1">
+                <div className="relative flex items-center w-full mb-4">
                   <div className="flex-grow border-t border-slate-100"></div>
                   <span className="flex-shrink-0 mx-4 text-[11px] text-slate-400 font-bold uppercase tracking-wider">ou se preferir</span>
                   <div className="flex-grow border-t border-slate-100"></div>
@@ -82,7 +81,7 @@ export function PostRegisterScreen({
                   className="w-full h-[52px] bg-white border-2 border-slate-200 hover:border-[#1a3a5c] hover:bg-slate-50 text-[#1a3a5c] rounded-xl font-bold text-[15px] gap-2 shadow-sm transition-all"
                 >
                   <Globe className="w-5 h-5 opacity-70" />
-                  Seguir pelo navegador
+                  Continuar pelo navegador
                 </Button>
 
               </div>
