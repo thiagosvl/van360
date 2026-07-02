@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Star,
   Smartphone,
+  Users,
+  Clock,
 } from "lucide-react";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -387,7 +389,7 @@ const Index = () => {
 
             {/* Texto */}
             <div className="text-center md:text-left order-1 flex flex-col">
-              <div className="inline-flex items-center justify-center md:justify-start gap-1.5 bg-[#1a3a5c]/5 px-3 py-1.5 rounded-full text-[#1a3a5c] font-bold text-xs uppercase tracking-wider mb-5 mx-auto md:mx-0 border border-[#1a3a5c]/10 w-fit">
+              <div className="inline-flex items-center justify-center md:justify-start gap-1.5 bg-[#1a3a5c]/10 px-3.5 py-1 sm:py-1.5 rounded-full text-[#1a3a5c] font-bold text-[11px] sm:text-[11.5px] uppercase tracking-wider mb-5 mx-auto md:mx-0 w-fit">
                 App para motorista escolar
               </div>
               <h1 className="text-[clamp(1.8rem,5vw,3rem)] sm:text-[clamp(1.9rem,5vw,3rem)] font-black leading-[1.12] tracking-tight mb-4">
@@ -409,12 +411,12 @@ const Index = () => {
                 </Link>
 
                 {/* Badges / Plataformas - DESKTOP APENAS */}
-                <div className="hidden md:flex flex-col items-start mt-3">
+                <div className="hidden md:flex flex-row items-center gap-4 mt-3">
                   <a
                     href={PLAY_STORE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex hover:-translate-y-0.5 transition-transform"
+                    className="inline-flex hover:-translate-y-0.5 transition-transform shrink-0"
                     aria-label="Baixar Van360 na Play Store"
                   >
                     <img
@@ -423,9 +425,9 @@ const Index = () => {
                       className="h-14 object-contain"
                     />
                   </a>
-                  <div className="flex items-center gap-1.5 mt-1 ml-2 text-slate-400">
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span className="text-[12px] font-medium">Funciona também no iPhone (pelo navegador)</span>
+                  <div className="flex items-center gap-1.5 text-slate-400 border-l border-slate-200 pl-4 h-10">
+                    <Smartphone className="w-4 h-4" />
+                    <span className="text-[12px] font-medium">Funciona também no iPhone<br />(pelo navegador)</span>
                   </div>
                 </div>
 
@@ -465,20 +467,44 @@ const Index = () => {
               </div>
 
 
-              {/* Stats */}
-              <div className="flex flex-col gap-3 mt-0 md:mt-6 mb-4 md:mb-0 md:mx-0 mx-auto w-fit text-left">
-                {[
-                  "Passageiros ilimitados",
-                  "Configure em 5 minutos",
-                  "Use no celular ou computador",
-                ].map((label, index) => (
-                  <div key={index} className="flex items-center gap-2.5 text-[0.95rem] text-[#1a3a5c] font-bold" style={{ animation: `lp-countUp .6s ease ${index * 0.15}s both` }}>
-                    <div className="w-5 h-5 rounded-full bg-[#f59e0b]/20 flex items-center justify-center text-[#d97706] shrink-0 border border-[#f59e0b]/30">
-                      <LucideCheck className="w-3 h-3 stroke-[3]" />
-                    </div>
-                    {label}
+              {/* Benefícios (Desktop: Horizontal com bolinhas, mais clean) */}
+              <div className="hidden md:flex items-center flex-wrap gap-3 mt-6 text-[#1a3a5c]/80 font-medium text-[13.5px]">
+                <div className="flex items-center gap-1.5">
+                  <LucideCheck className="w-4 h-4 text-[#f59e0b]" />
+                  <span>Passageiros ilimitados</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+                <div className="flex items-center gap-1.5">
+                  <LucideCheck className="w-4 h-4 text-[#f59e0b]" />
+                  <span>Configure em 5 minutos</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+                <div className="flex items-center gap-1.5">
+                  <LucideCheck className="w-4 h-4 text-[#f59e0b]" />
+                  <span>Celular ou computador</span>
+                </div>
+              </div>
+
+              {/* Benefícios (Mobile: Grid de Features Estilo App Store) */}
+              <div className="grid grid-cols-3 gap-2 md:hidden mt-2 mb-8 px-5 w-full max-w-[360px] mx-auto">
+                <div className="flex flex-col items-center text-center gap-1.5">
+                  <div className="w-8 h-8 rounded-full bg-[#f59e0b]/10 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-[#d97706]" />
                   </div>
-                ))}
+                  <span className="text-[10.5px] font-semibold text-[#1a3a5c] leading-[1.15]">Passageiros<br />ilimitados</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-1.5 border-x border-slate-100 px-1">
+                  <div className="w-8 h-8 rounded-full bg-[#f59e0b]/10 flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-[#d97706]" />
+                  </div>
+                  <span className="text-[10.5px] font-bold text-[#1a3a5c] leading-[1.15]">Configure<br />em 5 min</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-1.5">
+                  <div className="w-8 h-8 rounded-full bg-[#f59e0b]/10 flex items-center justify-center">
+                    <Smartphone className="w-4 h-4 text-[#d97706]" />
+                  </div>
+                  <span className="text-[10.5px] font-bold text-[#1a3a5c] leading-[1.15]">Celular ou<br />computador</span>
+                </div>
               </div>
 
               {/* Badge iOS - MOBILE APENAS */}
@@ -566,12 +592,14 @@ const Index = () => {
             ].map((item, i) => (
               <div key={i} className="flex-none w-[85%] sm:w-[50%] md:w-auto snap-center flex flex-col">
                 <Reveal className="flex-1 flex flex-col">
-                  <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#f59e0b]/40 transition-all hover:-translate-y-1 h-full text-left flex flex-col">
-                    <div className="w-14 h-14 bg-[#f59e0b]/10 text-[#d97706] rounded-xl flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:bg-[#f59e0b]/20 transition-all">
+                  <div className="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#f59e0b]/40 transition-all hover:-translate-y-1 h-full text-left flex flex-row items-start gap-4">
+                    <div className="w-12 h-12 shrink-0 bg-[#f59e0b]/10 text-[#d97706] rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-[#f59e0b]/20 transition-all">
                       {item.icon}
                     </div>
-                    <h3 className="text-[#1a3a5c] font-bold text-[1.1rem] mb-2">{item.title}</h3>
-                    <p className="text-slate-500 text-[0.95rem] leading-relaxed flex-1">{item.text}</p>
+                    <div className="flex flex-col flex-1">
+                      <h3 className="text-[#1a3a5c] font-bold text-[1.05rem] mb-1">{item.title}</h3>
+                      <p className="text-slate-500 text-[0.9rem] leading-snug">{item.text}</p>
+                    </div>
                   </div>
                 </Reveal>
               </div>
