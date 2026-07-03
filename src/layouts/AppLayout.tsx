@@ -81,9 +81,9 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="flex h-20 items-center justify-center border-b border-gray-50 bg-slate-50/20">
           <img
-            src="/assets/logo-van360.png"
+            src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-12 w-auto cursor-pointer"
+            className="h-14 w-auto cursor-pointer"
             onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
           />
         </div>

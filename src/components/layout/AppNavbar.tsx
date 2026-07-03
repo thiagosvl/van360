@@ -88,9 +88,9 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           {/* Logo - Apenas Mobile */}
           <div className="flex md:hidden shrink-0">
             <img
-              src="/assets/logo-van360.png"
+              src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-7 sm:h-9 w-auto cursor-pointer transition-opacity hover:opacity-80"
+              className="h-8 sm:h-9 w-auto cursor-pointer transition-opacity hover:opacity-80"
               onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
             />
           </div>

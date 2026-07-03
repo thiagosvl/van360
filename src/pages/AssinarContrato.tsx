@@ -73,9 +73,9 @@ export default function AssinarContrato() {
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
         <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-center z-50 shadow-lg">
           <img
-            src="/assets/logo-van360.png"
+            src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-9 w-auto filter brightness-0 invert opacity-90"
+            className="h-10 w-auto filter brightness-0 invert opacity-90"
           />
         </div>
 
@@ -119,9 +119,9 @@ export default function AssinarContrato() {
         </div>
 
         <img
-          src="/assets/logo-van360.png"
+          src="/assets/logo-van360.webp"
           alt="Van360"
-          className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
+          className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
         />
       </header>
 

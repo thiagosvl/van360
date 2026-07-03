@@ -39,22 +39,22 @@ export default function Splash() {
   const navigate = useNavigate();
 
   return (
-    <main className="h-[100dvh] w-full bg-[#f6f8fb] overflow-hidden flex flex-col justify-between">
+    <main className="h-[100dvh] w-full bg-[#FBF8F9] overflow-hidden flex flex-col justify-between">
 
       {/* ================= CONTEÚDO (TOPO) ================= */}
       <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),2.5rem)] [@media(max-height:750px)]:pt-5 [@media(max-height:580px)]:pt-3 px-6">
 
         <img
-          src="/assets/logo-van360.png"
+          src="/assets/logo-van360.webp"
           alt="Van360"
-          className="h-10 w-auto [@media(max-height:580px)]:h-8"
+          className="h-12 w-auto [@media(max-height:580px)]:h-8"
         />
 
         <div className="mt-8 [@media(max-height:750px)]:mt-4 [@media(max-height:580px)]:mt-2 text-center max-w-[340px]">
           <h1 className="font-bold text-[#081A34] leading-tight text-[2.15rem] [@media(max-height:750px)]:text-[1.85rem] [@media(max-height:580px)]:text-[1.6rem]">
             Bem-vindo ao
             <br />
-            <span className="text-[#0263E0]">
+            <span className="text-[#15469C]">
               Van360
             </span>
           </h1>
@@ -67,7 +67,7 @@ export default function Splash() {
         </div>
 
         {/* Botões */}
-        <div className="w-full max-w-[320px] mt-8 [@media(max-height:750px)]:mt-4 [@media(max-height:580px)]:mt-2">
+        <div className="w-full max-w-[320px] mt-16 [@media(max-height:750px)]:mt-4 [@media(max-height:580px)]:mt-2">
           <button
             onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
             className="
@@ -92,7 +92,7 @@ export default function Splash() {
           <button
             onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
             className="
-              mt-4
+              mt-6  
               [@media(max-height:750px)]:mt-3
               [@media(max-height:580px)]:mt-2
               h-14
@@ -120,14 +120,13 @@ export default function Splash() {
       {/* ================= ILUSTRAÇÃO (BASE) ================= */}
       <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-4 [@media(max-height:750px)]:mt-2 pointer-events-none select-none">
         <SplashIllustration
-          src="/assets/login-splash.png"
+          src="/assets/login-splash.webp"
           alt="Van escolar"
           className="
             absolute
             left-1/2
             -translate-x-1/2
             w-full
-            [@media(max-height:580px)_and_(max-width:340px)]:w-[90%]
             h-auto
             top-auto
             
@@ -137,7 +136,7 @@ export default function Splash() {
             /* Ajustes para telas médias/curtas */
             [@media(max-height:720px)]:bottom-[-80px]
             [@media(max-height:660px)]:bottom-[-100px]
-            [@media(max-height:580px)]:bottom-[-95px]
+            [@media(max-height:580px)]:bottom-[-120px]
           "
         />
       </section>

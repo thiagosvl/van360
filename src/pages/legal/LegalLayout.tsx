@@ -26,9 +26,9 @@ export function LegalLayout({ title, subtitle, children }: LegalLayoutProps) {
           </button>
           <div className="flex-1 flex justify-center mr-10 sm:mr-14">
             <img
-              src="/assets/logo-van360.png"
+              src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-6 sm:h-7 w-auto select-none"
+              className="h-7 sm:h-8 w-auto select-none"
               onClick={() => navigate(ROUTES.PUBLIC.ROOT)}
             />
           </div>

@@ -90,7 +90,7 @@ export default function PassageiroExternalForm() {
             <div className="flex flex-col items-center justify-center border-b border-slate-50">
               <div className="flex items-center gap-3 mb-1">
                 <img
-                  src="/assets/logo-van360.png"
+                  src="/assets/logo-van360.webp"
                   alt="Van360"
                   className="h-12 w-auto select-none drop-shadow-sm"
                 />

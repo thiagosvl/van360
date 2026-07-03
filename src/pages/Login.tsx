@@ -279,7 +279,7 @@ export default function Login() {
                 <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="flex items-center gap-3 mb-4">
                     <img
-                      src="/assets/logo-van360.png"
+                      src="/assets/logo-van360.webp"
                       alt="Van360"
                       className="h-12 w-auto select-none drop-shadow-sm"
                     />

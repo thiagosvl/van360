@@ -356,9 +356,9 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-4 sm:px-6 flex items-center justify-between h-14 md:h-16">
           <div className="flex items-center shrink-0">
             <img
-              src="/assets/logo-van360.png"
+              src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-7 sm:h-8 w-auto select-none"
+              className="h-8 sm:h-9 w-auto select-none"
             />
           </div>
 
@@ -1059,9 +1059,9 @@ const Index = () => {
       <footer className="bg-[#111] text-white/50 py-10 text-[0.85rem]">
         <div className="max-w-[1120px] mx-auto px-5 flex flex-col items-center gap-5">
           <img
-            src="/assets/logo-van360.png"
+            src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-8 w-auto brightness-0 invert select-none"
+            className="h-9 w-auto brightness-0 invert select-none"
           />
           <p className="text-white/70 text-sm font-medium">
             Você dirige. A gente organiza.

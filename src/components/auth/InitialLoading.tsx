@@ -4,7 +4,7 @@ export const InitialLoading = () => (
       <div className="absolute inset-0 scale-125 bg-primary/5 rounded-full animate-pulse" />
       <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping animate-duration-[3s]" />
       <img
-        src="/assets/logo-van360.png"
+        src="/assets/logo-van360.webp"
         alt="Van360"
         className="w-32 h-32 relative z-10 drop-shadow-2xl animate-in zoom-in-50 duration-700 object-contain"
       />
