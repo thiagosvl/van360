@@ -3,11 +3,13 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { KPICardVariant } from "@/types/enums";
 import { formatCurrency } from "@/utils/formatters";
-import { Coins, TrendingUp, CreditCard } from "lucide-react";
+import { Coins, TrendingUp, CreditCard, Wallet } from "lucide-react";
 
 interface RelatoriosEntradasProps {
   dados: {
+    previsto: number;
     realizado: number;
+    pendente: number;
     ticketMedio: number;
     formasPagamento: {
       metodo: string;
@@ -23,11 +25,26 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
     <div className="space-y-4 px-1">
       <div className="grid grid-cols-2 gap-4">
         <KPICard
-          label="Recebido no Mês"
+          label="Faturamento Projetado"
           icon={TrendingUp}
           variant={KPICardVariant.PRIMARY}
+          value={formatCurrency(dados.previsto)}
+          valueClassName={dados.previsto > 0 ? "text-emerald-600" : undefined}
+        />
+        
+        <KPICard
+          label="Recebido no Mês"
+          icon={Coins}
+          variant={KPICardVariant.OUTLINE}
           value={formatCurrency(dados.realizado)}
           valueClassName={dados.realizado > 0 ? "text-emerald-600" : undefined}
+        />
+
+        <KPICard
+          label="Pendente"
+          icon={Wallet}
+          variant={KPICardVariant.OUTLINE}
+          value={formatCurrency(dados.pendente)}
         />
 
         <KPICard

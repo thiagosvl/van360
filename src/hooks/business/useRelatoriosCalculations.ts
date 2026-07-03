@@ -117,7 +117,18 @@ export const useRelatoriosCalculations = ({
       0
     );
     const gasto = financeiro?.saidas.total ?? gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
-    const lucroEstimado = recebido - gasto;
+    const totalPrevisto = financeiro?.receita.prevista ?? cobrancas.reduce(
+      (acc: number, c: any) => acc + Number(c.valor || 0),
+      0
+    );
+
+    // Lucro Estimado considers everything expected to be received minus expenses
+    const lucroEstimado = totalPrevisto - gasto;
+    const lucroAtual = recebido - gasto;
+
+    // Taxa de Recebimento
+    const taxaRecebimento =
+      financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
 
     // A Receber (Vencidos + Pendentes)
     const valorAReceber = financeiro?.receita.pendente ?? cobrancasAbertas.reduce(
@@ -125,14 +136,6 @@ export const useRelatoriosCalculations = ({
       0
     );
     const aReceberCount = cobrancasAbertas.length;
-
-    // Taxa de Recebimento
-    const totalPrevisto = cobrancas.reduce(
-      (acc: number, c: any) => acc + Number(c.valor || 0),
-      0
-    );
-    const taxaRecebimento =
-      financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
 
     // Passageiros
     const passageirosCount = passageirosList.length > 0 ? passageirosList.length : (contadores?.passageiros.total ?? 0);
@@ -428,7 +431,9 @@ export const useRelatoriosCalculations = ({
     return {
       visaoGeral: {
         lucroEstimado,
+        lucroAtual,
         recebido,
+        previsto: totalPrevisto,
         gasto,
         custoPorPassageiro,
         aReceber: {
@@ -440,6 +445,7 @@ export const useRelatoriosCalculations = ({
       entradas: {
         previsto: totalPrevisto,
         realizado: recebido,
+        pendente: valorAReceber,
         ticketMedio,
         passageirosPagantes,
         passageirosPagos,
