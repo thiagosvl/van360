@@ -125,7 +125,7 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
           <label className="text-[12px] font-bold text-slate-800 block mb-2 px-1">
             Seu link de convite
           </label>
-          <div className="flex items-center w-full border border-slate-200 rounded-xl px-3 py-3 bg-white shadow-sm">
+          <div className="flex items-center w-full border border-slate-200 rounded-xl px-3 py-2 bg-white shadow-sm">
             <span className="text-[13px] text-slate-600 truncate flex-1 font-medium">
               {referral?.referralLink || "Gerando link..."}
             </span>

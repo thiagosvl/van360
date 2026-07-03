@@ -32,7 +32,7 @@ export function PassageiroAniversarianteCard({
           )
         )
       }
-      className="flex items-center justify-between p-2 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/80 cursor-pointer transition-colors"
+      className="flex items-center justify-between py-2.5 cursor-pointer transition-colors group border-b border-slate-50 last:border-0"
     >
       <div className="flex flex-col pr-2">
         <span className="font-medium text-slate-800 dark:text-slate-200 text-[13px] truncate leading-tight">
@@ -48,10 +48,10 @@ export function PassageiroAniversarianteCard({
       </div>
 
       <div
-        className={`flex items-center justify-center rounded-md px-2 py-1 shrink-0 ${
+        className={`flex items-center justify-center rounded-full px-2.5 py-1 shrink-0 ${
           isToday
-            ? "bg-primary text-white dark:bg-primary shadow-sm"
-            : "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary"
+            ? "bg-[#1a3a5c] text-white shadow-sm"
+            : "bg-slate-100 text-slate-700"
         }`}
       >
         {isToday ? (

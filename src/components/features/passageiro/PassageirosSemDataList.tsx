@@ -22,19 +22,19 @@ export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListPr
           <div
             key={p.id}
             onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", p.id))}
-            className={`flex items-center justify-between py-2 px-2 hover:bg-orange-100/50 dark:hover:bg-orange-900/30 cursor-pointer transition-colors ${
-              !isLast ? "border-b border-orange-200/40 dark:border-orange-900/40" : ""
+            className={`flex items-center justify-between py-3 px-4 hover:bg-slate-50 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors ${
+              !isLast ? "border-b border-slate-100 dark:border-zinc-800" : ""
             }`}
           >
             <div className="flex flex-col overflow-hidden pr-2">
-              <span className="font-medium text-orange-950 dark:text-orange-200 text-[13px] truncate leading-tight">
+              <span className="font-medium text-[#1a3a5c] dark:text-slate-200 text-[14px] truncate leading-tight">
                 {formatShortName(p.nome, true)}
               </span>
-              <span className="text-[11px] text-orange-700/80 dark:text-orange-400/80 font-medium truncate leading-tight">
+              <span className="text-[12px] text-slate-500 font-medium truncate leading-tight mt-0.5">
                 {p.veiculo ? formatarPlacaExibicao(p.veiculo.placa) : (p.escola?.nome || "Sem vínculo")}
               </span>
             </div>
-            <ChevronRight className="w-4 h-4 text-orange-400/60 shrink-0" />
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
         );
       })}

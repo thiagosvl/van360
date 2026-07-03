@@ -68,10 +68,10 @@ const Aniversariantes = () => {
     });
 
     return (
-      <AccordionItem value={`semana-${semanaInfo.semana}`} key={semanaInfo.semana} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm px-0">
-        <AccordionTrigger className="bg-slate-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-slate-100 dark:border-zinc-800 hover:no-underline rounded-t-xl data-[state=closed]:rounded-b-xl data-[state=closed]:border-b-0">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 text-left">
-            {(semanaInfo.semana - 1) * 7 + 1} a {Math.min(semanaInfo.semana * 7, new Date(new Date().getFullYear(), mesAtual, 0).getDate())} de {currentMonthName} <span className="font-normal text-xs text-slate-500 ml-1">(Semana {semanaInfo.semana})</span>
+      <AccordionItem value={`semana-${semanaInfo.semana}`} key={semanaInfo.semana} className="bg-white dark:bg-zinc-900 rounded-[24px] border border-slate-100 dark:border-zinc-800 shadow-[0_2px_10px_rgba(0,0,0,0.03)] px-0 overflow-hidden mb-4">
+        <AccordionTrigger className="bg-white dark:bg-zinc-800/50 px-5 py-4 border-b border-slate-50 dark:border-zinc-800 hover:no-underline">
+          <h3 className="text-[15px] font-bold text-[#1a3a5c] dark:text-slate-300 text-left">
+            {(semanaInfo.semana - 1) * 7 + 1} a {Math.min(semanaInfo.semana * 7, new Date(new Date().getFullYear(), mesAtual, 0).getDate())} de {currentMonthName} <span className="font-medium text-[13px] text-slate-400 ml-1">(Semana {semanaInfo.semana})</span>
           </h3>
         </AccordionTrigger>
 
@@ -83,7 +83,7 @@ const Aniversariantes = () => {
                 {grupo}
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
                 {lista.map(p => (
                   <PassageiroAniversarianteCard
                     key={p.id}
@@ -174,20 +174,18 @@ const Aniversariantes = () => {
           )}
 
           {data && data.passageirosSemData > 0 && data.passageirosSemDataList && data.passageirosSemDataList.length > 0 && (
-            <Accordion type="single" collapsible className="w-full mt-4">
-              <AccordionItem value="sem-data" className="border-none rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 px-4">
-                <AccordionTrigger className="py-3 hover:no-underline text-orange-800 dark:text-orange-400">
-                  <div className="flex items-center gap-2 text-left">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span className="text-sm">
-                      <strong>{data.passageirosSemData} {data.passageirosSemData === 1 ? 'passageiro' : 'passageiros'}</strong> sem data de nascimento.
+            <Accordion type="single" collapsible className="w-full mt-4 bg-white rounded-[24px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+              <AccordionItem value="sem-data" className="border-none w-full">
+                <AccordionTrigger className="py-3 px-5 bg-[#FFFCEF] hover:no-underline">
+                  <div className="flex items-center gap-2 text-left w-full">
+                    <AlertCircle className="h-[18px] w-[18px] shrink-0 text-orange-500" />
+                    <span className="text-[13px] leading-tight font-medium text-orange-600/90">
+                      <strong className="text-orange-700 font-bold">{data.passageirosSemData} passageiro{data.passageirosSemData === 1 ? '' : 's'}</strong> sem data de nascimento.
                     </span>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="pb-1">
-                  <div className="mt-1">
-                    <PassageirosSemDataList passageiros={data.passageirosSemDataList} />
-                  </div>
+                <AccordionContent className="pb-0 bg-white">
+                  <PassageirosSemDataList passageiros={data.passageirosSemDataList} />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

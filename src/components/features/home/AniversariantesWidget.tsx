@@ -32,12 +32,14 @@ export function AniversariantesWidget() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-[17px] font-bold text-slate-800 px-1">
-          Aniversariantes da Semana
-        </h2>
-        <Card className="w-full">
-          <CardContent className="space-y-4">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-[17px] font-bold text-[#1a3a5c]">
+            Aniversariantes
+          </h2>
+        </div>
+        <Card className="w-full shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 rounded-[24px]">
+          <CardContent className="space-y-4 p-4">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </CardContent>
@@ -68,26 +70,20 @@ export function AniversariantesWidget() {
   });
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-[17px] font-bold text-slate-800 px-1">
-        Aniversariantes da Semana
-      </h2>
-      <Card className="w-full h-full flex flex-col shadow-sm border-zinc-200 dark:border-zinc-800">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 px-3 pb-1 pt-3">
-          <p className="text-[9px] sm:text-xs font-bold text-slate-400 px-1">
-            Semana de
-            <br />
-            {dataInicio} a {dataFim} de {currentMonthName}
-          </p>
-          <Button variant="ghost" size="sm" className="h-8 text-[11px] sm:text-xs text-primary font-semibold px-2" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS)}>
-            Ver todos do mês <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
-          </Button>
-        </CardHeader>
-
-        <CardContent className="flex-1 flex flex-col overflow-hidden px-3 pb-3">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-[17px] font-bold text-[#1a3a5c]">
+          Aniversariantes
+        </h2>
+        <Button variant="ghost" size="sm" className="h-8 text-[13px] text-[#3b82f6] font-medium hover:bg-transparent p-0 hover:text-blue-600" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS)}>
+          Ver todos <ChevronRight className="w-4 h-4 ml-0.5" />
+        </Button>
+      </div>
+      <Card className="w-full h-full flex flex-col shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 rounded-[24px] bg-white overflow-hidden">
+        <CardContent className="flex-1 flex flex-col overflow-hidden p-0">
 
           {aniversariantesDaSemana.length > 0 ? (
-            <div className="flex flex-col h-full space-y-4">
+            <div className="flex flex-col flex-1 min-h-0 space-y-4 px-4 pt-4 pb-2">
               <Tabs
                 value={agrupamento}
                 onValueChange={(v) => v && setAgrupamento(v as any)}
@@ -146,20 +142,18 @@ export function AniversariantesWidget() {
           )}
 
           {data.passageirosSemData > 0 && data.passageirosSemDataList && data.passageirosSemDataList.length > 0 && (
-            <Accordion type="single" collapsible className="w-full mt-4">
-              <AccordionItem value="sem-data" className="border-none rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 px-3">
-                <AccordionTrigger className="py-2.5 hover:no-underline text-orange-800 dark:text-orange-400">
-                  <div className="flex items-center gap-2 text-left">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span className="text-xs leading-tight">
-                      <strong>{data.passageirosSemData} {data.passageirosSemData === 1 ? 'passageiro' : 'passageiros'}</strong> sem data de nascimento.
+            <Accordion type="single" collapsible className="w-full mt-auto">
+              <AccordionItem value="sem-data" className="border-none w-full">
+                <AccordionTrigger className="py-3 px-5 bg-[#FFFCEF] hover:no-underline">
+                  <div className="flex items-center gap-2 text-left w-full">
+                    <AlertCircle className="h-[18px] w-[18px] shrink-0 text-orange-500" />
+                    <span className="text-[13px] leading-tight font-medium text-orange-600/90">
+                      <strong className="text-orange-700 font-bold">{data.passageirosSemData} passageiro{data.passageirosSemData === 1 ? '' : 's'}</strong> sem data de nascimento.
                     </span>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="pb-1">
-                  <div className="mt-1">
-                    <PassageirosSemDataList passageiros={data.passageirosSemDataList} />
-                  </div>
+                <AccordionContent className="pb-0 bg-white">
+                  <PassageirosSemDataList passageiros={data.passageirosSemDataList} />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
