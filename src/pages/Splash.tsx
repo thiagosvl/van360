@@ -42,16 +42,16 @@ export default function Splash() {
     <main className="h-[100dvh] w-full bg-[#FBF8F9] overflow-hidden flex flex-col justify-between">
 
       {/* ================= CONTEÚDO (TOPO) ================= */}
-      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),3.5rem)] [@media(max-height:850px)]:pt-[max(env(safe-area-inset-top),2.5rem)] [@media(max-height:750px)]:pt-6 [@media(max-height:580px)]:pt-3 px-6">
+      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),5rem)] [@media(min-height:751px)_and_(max-height:850px)]:!pt-[max(env(safe-area-inset-top),4rem)] [@media(min-height:681px)_and_(max-height:750px)]:!pt-[max(env(safe-area-inset-top),3.5rem)] [@media(min-height:581px)_and_(max-height:680px)]:!pt-6 [@media(max-height:580px)]:!pt-3 px-6">
 
         <img
           src="/assets/logo-van360.webp"
           alt="Van360"
-          className="h-10 w-auto [@media(max-height:750px)]:h-9 [@media(max-height:580px)]:h-7"
+          className="h-10 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-9 [@media(max-height:580px)]:!h-7"
         />
 
-        <div className="mt-3 [@media(max-height:750px)]:mt-2 text-center max-w-[340px]">
-          <h1 className="font-bold text-[#081A34] leading-tight text-[2.15rem] [@media(max-height:750px)]:text-[1.85rem] [@media(max-height:580px)]:text-[1.6rem]">
+        <div className="mt-3 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2 text-center max-w-[340px]">
+          <h1 className="font-bold text-[#081A34] leading-tight text-[2.15rem] [@media(min-height:581px)_and_(max-height:750px)]:!text-[1.85rem] [@media(max-height:580px)]:!text-[1.6rem]">
             Bem-vindo ao
             <br />
             <span className="text-[#15469C]">
@@ -59,7 +59,7 @@ export default function Splash() {
             </span>
           </h1>
 
-          <p className="mt-3 [@media(max-height:750px)]:mt-2 [@media(max-height:580px)]:mt-1.5 text-[1.05rem] [@media(max-height:750px)]:text-[0.95rem] [@media(max-height:580px)]:text-[0.88rem] leading-7 [@media(max-height:750px)]:leading-6 [@media(max-height:580px)]:leading-5 text-slate-500">
+          <p className="mt-3 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2 [@media(max-height:580px)]:!mt-1.5 text-[1.05rem] [@media(min-height:581px)_and_(max-height:750px)]:!text-[0.95rem] [@media(max-height:580px)]:!text-[0.88rem] leading-7 [@media(min-height:581px)_and_(max-height:750px)]:!leading-6 [@media(max-height:580px)]:!leading-5 text-slate-500">
             Você dirige.
             <br />
             A gente organiza.
@@ -67,7 +67,7 @@ export default function Splash() {
         </div>
 
         {/* Botões */}
-        <div className="w-full max-w-[320px] mt-10 [@media(max-height:850px)]:mt-8 [@media(max-height:750px)]:mt-5 [@media(max-height:580px)]:mt-3">
+        <div className="w-full max-w-[320px] mt-16 [@media(min-height:751px)_and_(max-height:850px)]:!mt-14 [@media(min-height:681px)_and_(max-height:750px)]:!mt-12 [@media(min-height:581px)_and_(max-height:680px)]:!mt-6 [@media(max-height:580px)]:!mt-3">
           <button
             onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
             className="
@@ -142,8 +142,8 @@ export default function Splash() {
             [@media(min-width:341px)_and_(min-height:681px)_and_(max-height:750px)]:!bottom-[-70px]
             
             /* 4. Telas largas e muito curtas como iPhone SE (largura > 340 e altura < 680) */
-            /* Matemática exata: compensa os 106px excedentes de altura distribuindo 53px para cima e 53px para baixo em relação ao S9+ */
-            [@media(min-width:341px)_and_(max-height:680px)]:!bottom-[-100px]
+            /* Subimos um pouco mais (-70px) para exibir melhor a rua abaixo da van */
+            [@media(min-width:341px)_and_(max-height:680px)]:!bottom-[-70px]
           "
         />
       </section>
