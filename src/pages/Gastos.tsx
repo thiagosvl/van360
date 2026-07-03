@@ -81,6 +81,7 @@ export default function Gastos() {
             label="Total de Despesas"
             variant={KPICardVariant.PRIMARY}
             value={formatCurrency(totalGasto)}
+            valueClassName="text-rose-600"
             icon={TrendingDown}
             countLabel="no Mês"
             className="col-span-1"

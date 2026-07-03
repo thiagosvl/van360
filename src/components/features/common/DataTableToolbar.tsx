@@ -82,7 +82,7 @@ export const DataTableToolbar = ({
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
         disabled={disabled}
-        className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
+        className="w-full bg-white border border-gray-100/50 h-14 pl-11 pr-4 rounded-2xl shadow-sm font-medium text-base text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
       />
     </div>
   );
@@ -91,7 +91,7 @@ export const DataTableToolbar = ({
     <Button
        variant="outline"
        className={cn(
-         "bg-white border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest gap-2 h-12 rounded-xl px-5 shadow-diff-shadow hover:bg-gray-50",
+         "bg-white border-slate-100 text-[#1a3a5c] font-bold text-sm gap-2 h-14 rounded-2xl px-5 shadow-sm hover:bg-gray-50",
          isMobile ? "flex-1" : ""
        )}
        disabled={disabled}
