@@ -131,7 +131,7 @@ function InlineCta({ label = "Testar grátis por 15 dias", to }: { label?: strin
   );
 }
 
-// ── Mockup image with WebP fallback ──
+// ── Mockup image ──
 function MockupImage({ src, alt, loading = "lazy", width, height, className }: {
   src: string;
   alt: string;
@@ -140,12 +140,8 @@ function MockupImage({ src, alt, loading = "lazy", width, height, className }: {
   height: number;
   className?: string;
 }) {
-  const webpSrc = src.replace(/\.png$/, ".webp");
   return (
-    <picture>
-      <source srcSet={webpSrc} type="image/webp" />
-      <img src={src} alt={alt} loading={loading} width={width} height={height} className={className} />
-    </picture>
+    <img src={src} alt={alt} loading={loading} width={width} height={height} className={className} />
   );
 }
 
@@ -282,39 +278,50 @@ const Index = () => {
 
   const features = [
     {
-      headline: "Pare de correr atrás de quem ainda não pagou",
-      text: "Chega de esquecimentos. Saiba exatamente quem pagou e quem está pendente.",
-      mockup: "/assets/lp/mockup-mensalidades.png",
-      alt: "App de cobrança de mensalidade para van escolar mostrando painel financeiro",
-      balloonText: "A mensalidade do Enzo está atrasada há 3 dias.",
+      headline: "Pare de cobrar os pais e de passar constrangimento",
+      text: "Chega de ser 'o chato da cobrança'. O Van360 envia lembretes amigáveis pelo WhatsApp automaticamente. Saiba na hora quem pagou e quem está devendo. O dinheiro entra e você só foca na direção.",
+      mockup: "/assets/lp/mockup-mensalidades.webp",
+      alt: "Painel de controle de mensalidades pendentes e pagas da van escolar",
+      balloonText: "A mensalidade da Júlia vence amanhã.",
     },
     {
-      headline: "Pare de cobrar pais manualmente todos os meses",
-      text: "O Van360 envia lembretes de pagamento automaticamente pelo WhatsApp.",
-      mockup: "/assets/lp/mockup-whatsapp.png",
-      alt: "Sistema de cobrança automática via WhatsApp para transporte escolar",
-      balloonText: "A mensalidade do Enzo vence hoje!",
+      headline: "Receba a ficha dos passageiros pronta",
+      text: "Perder horas anotando nome, escola e endereço à mão? Nunca mais. Mande seu link exclusivo pelo WhatsApp e deixe os pais preencherem. Sua lista se organiza sozinha em segundos.",
+      mockup: "/assets/lp/mockup-passageiros.webp",
+      alt: "Lista de passageiros organizados no aplicativo Van360",
+      balloonText: "Pai, segue o link para matricular o aluno na van.",
     },
     {
-      headline: "Nunca mais procure informações em conversas e planilhas",
-      text: "Todos os passageiros organizados em um só lugar.",
-      mockup: "/assets/lp/mockup-carteirinha.png",
-      alt: "Lista e cadastro de passageiros no aplicativo de gestão de van escolar",
-      balloonText: "Clique no link e cadastre o seu filho na van.",
+      headline: "Diga adeus à velha carteirinha de papel",
+      text: "Tenha a ficha completa dos alunos na palma da mão, direto na van. Chega de carimbar carnê ou esquecer o caderno em casa. Segurança para você, profissionalismo para os pais.",
+      mockup: "/assets/lp/mockup-carteirinha.webp",
+      alt: "Carteirinha digital do estudante na van",
     },
     {
-      headline: "Menos caderno, menos risco de perder contrato",
-      text: "Envie contratos digitais para assinatura online.",
-      mockup: "/assets/lp/mockup-contrato.png",
-      alt: "Gerador de contrato digital e assinatura online para motoristas de van",
-      balloonText: "O motorista enviou um contrato para assinatura.",
+      headline: "Envie recibos profissionais com poucos toques",
+      text: "Confirmou o pagamento? O Van360 gera um recibo em PDF impecável e você envia direto no WhatsApp do responsável. Mostre que o seu serviço de transporte é de alto nível.",
+      mockup: "/assets/lp/mockup-recibo.webp",
+      alt: "Recibo de pagamento gerado automaticamente pelo Van360",
+      balloonText: "Seu recibo de pagamento já está disponível.",
     },
     {
-      headline: "Recibos gerados automaticamente",
-      text: "Registre pagamentos e gere comprovantes em segundos.",
-      mockup: "/assets/lp/mockup-recibo.png",
-      alt: "Emissor de recibo de pagamento online para passageiros de van escolar",
-      balloonText: "Segue abaixo o recibo de pagamento:",
+      headline: "Acabou a papelada: Contratos digitais em 1 minuto",
+      text: "Evite dor de cabeça com 'combinados de boca'. Gere contratos com validade jurídica e envie para o responsável assinar na tela do próprio celular dele. 100% seguro e digital.",
+      mockup: "/assets/lp/mockup-contrato.webp",
+      alt: "Assinatura de contrato digital no celular",
+      balloonText: "O contrato de transporte foi assinado com sucesso.",
+    },
+    {
+      headline: "Saiba exatamente para onde vai o seu dinheiro",
+      text: "Combustível, troca de óleo, mecânico... Registre cada centavo gasto com a van. Pare de misturar o dinheiro da sua vida pessoal com o do seu negócio.",
+      mockup: "/assets/lp/mockup-gastos.webp",
+      alt: "Tela de controle de gastos e despesas da van escolar",
+    },
+    {
+      headline: "Descubra se a sua van realmente está dando lucro",
+      text: "Chega de fechar o mês no escuro. Tenha um painel que calcula automaticamente seu faturamento, suas despesas e o lucro líquido real. Comece a pensar como um dono de negócio.",
+      mockup: "/assets/lp/mockup-relatorios.webp",
+      alt: "Relatórios financeiros detalhados para motoristas de van",
     },
   ];
 
@@ -439,7 +446,7 @@ const Index = () => {
                 <div className="max-w-[320px] sm:max-w-[360px] w-full relative">
                   <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-4 left-0 sm:-left-4" />
                   <MockupImage
-                    src="/assets/lp/mockup-dashboard.png"
+                    src="/assets/lp/mockup-home.webp"
                     alt="App de cobrança de mensalidade para van escolar rodando no celular"
                     loading="eager"
                     width={1080}
@@ -532,7 +539,7 @@ const Index = () => {
               <div className="max-w-[480px] w-full hero-phone relative">
                 <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
                 <MockupImage
-                  src="/assets/lp/mockup-dashboard.png"
+                  src="/assets/lp/mockup-3d-mensalidades.webp"
                   alt="Sistema de gestão de transporte escolar rodando no navegador"
                   loading="eager"
                   width={1080}
@@ -828,7 +835,7 @@ const Index = () => {
           <Reveal className="mt-8 flex justify-center">
             <div className="max-w-[360px] md:max-w-[480px] w-full hero-phone">
               <MockupImage
-                src="/assets/lp/mockup-dashboard.png"
+                src="/assets/lp/mockup-3d-home.webp"
                 alt="Dashboard do Van360 com primeiros passos"
                 loading="lazy"
                 width={1080}
@@ -1037,7 +1044,7 @@ const Index = () => {
                   aria-label="Baixar Van360 na Play Store"
                 >
                   <img
-                    src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png"
+                    src={PLAY_STORE_BADGE_URL}
                     alt="Disponível no Google Play"
                     className="h-12 object-contain filter drop-shadow-md"
                   />
@@ -1113,7 +1120,7 @@ const Index = () => {
               aria-label="Baixar Van360 na Play Store"
             >
               <img
-                src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png"
+                src={PLAY_STORE_BADGE_URL}
                 alt="Disponível no Google Play"
                 className="h-12 object-contain filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
               />
