@@ -98,7 +98,7 @@ export const RelatoriosOperacional = ({
             ))}
             {dados.escolas.length === 0 && (
               <div className="text-center py-6 text-slate-500 text-[13px]">
-                Nenhuma escola vinculada
+                Nenhuma escola vinculada.
               </div>
             )}
           </div>
@@ -152,15 +152,14 @@ export const RelatoriosOperacional = ({
             ))}
             {dados.periodos.length === 0 && (
               <div className="text-center py-6 text-slate-500 text-[13px]">
-                Nenhum dado disponível
+                Nenhum dado disponível.
               </div>
             )}
           </div>
         </div>
 
         {/* Veículos */}
-        {dados.veiculos.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
             <div className="pt-6 px-6 flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
                 <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
@@ -205,9 +204,13 @@ export const RelatoriosOperacional = ({
                   />
                 </div>
               ))}
+              {dados.veiculos.length === 0 && (
+                <div className="text-center py-6 text-slate-500 text-[13px]">
+                  Nenhum veículo vinculado.
+                </div>
+              )}
             </div>
           </div>
-        )}
       </div>
     </div>
   );
