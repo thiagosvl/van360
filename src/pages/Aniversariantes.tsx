@@ -83,7 +83,7 @@ const Aniversariantes = () => {
                 {grupo}
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {lista.map(p => (
                   <PassageiroAniversarianteCard
                     key={p.id}

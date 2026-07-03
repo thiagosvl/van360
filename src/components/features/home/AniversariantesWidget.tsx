@@ -117,7 +117,7 @@ export function AniversariantesWidget() {
                         {agrupamento === 'van' ? <Bus className="h-3.5 w-3.5" /> : <School className="h-3.5 w-3.5" />}
                         {grupo}
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         {lista.map(p => (
                           <PassageiroAniversarianteCard
                             key={p.id}

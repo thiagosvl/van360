@@ -123,15 +123,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
 
         {/* Direita: Ajuda (Mobile) e Perfil de Usuário */}
         <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2">
-          {/* Botão de Ajuda - Apenas Mobile */}
-          <button
-            onClick={() => setIsHelpOpen(true)}
-            className="md:hidden group flex items-center justify-center text-slate-400 hover:text-[#1a3a5c] transition-all p-1"
-          >
-            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#25D366]/10 group-hover:text-[#25D366] transition-colors">
-              <HelpCircle className="h-5 w-5" />
-            </div>
-          </button>
+          {/* Perfil de Usuário */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-x-2 outline-none p-1">
@@ -168,6 +160,10 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Key className="h-4 w-4 text-slate-400" />
                 Trocar Chave Pix
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsHelpOpen(true)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+                <HelpCircle className="h-4 w-4 text-slate-400" />
+                Ajuda / Suporte
               </DropdownMenuItem>
               <div className="h-px bg-gray-50 my-1" />
               <DropdownMenuItem

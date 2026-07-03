@@ -32,7 +32,7 @@ export function PassageiroAniversarianteCard({
           )
         )
       }
-      className="flex items-center justify-between py-2.5 cursor-pointer transition-colors group border-b border-slate-50 last:border-0"
+      className="flex items-center justify-between py-2.5 sm:p-3 sm:rounded-xl border-b sm:border border-slate-50 sm:border-slate-100/80 bg-white hover:bg-slate-50 cursor-pointer transition-all group sm:shadow-[0_1px_2px_rgba(0,0,0,0.01)] last:border-b-0 sm:last:border-b"
     >
       <div className="flex flex-col pr-2">
         <span className="font-medium text-slate-800 dark:text-slate-200 text-[13px] truncate leading-tight">
