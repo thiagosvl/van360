@@ -66,12 +66,12 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
       </nav>
 
       {/* Bloco de Download / Plataforma / Indique e Ganhe */}
-      {isNative ? (
-        <div className="mt-auto px-4 pb-4">
+      {isNative || platform === "ios-web" ? (
+        <div className="mt-auto px-4 pb-2 md:pb-4">
           <CompactReferAndEarnCard />
         </div>
       ) : (
-        <div className="mt-auto px-4 pb-4">
+        <div className="mt-auto px-4 pb-2 md:pb-4">
 
           {/* Desktop (Minimalista e objetivo) */}
           {platform === "desktop" && (
@@ -90,43 +90,23 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
             </div>
           )}
 
-          {/* Mobile Web (Completo e Rico) */}
-          {(platform === "android-web" || platform === "ios-web") && (
-            <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3">
-
-              {/* Android Web */}
-              {platform === "android-web" && (
-                <div className="flex flex-col items-center text-center w-full">
-                  <p className="text-[13px] font-bold text-[#1a3a5c] mb-1">Baixe o App Van360!</p>
-                  <p className="text-[11px] text-slate-500 mb-3 leading-tight">
-                    Tenha uma experiência ainda mais rápida no dia a dia.
-                  </p>
-                  <a
-                    href={PLAY_STORE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:scale-[1.03] transition-transform w-full flex justify-center"
-                  >
-                    <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-14 object-contain drop-shadow-sm" />
-                  </a>
-                </div>
-              )}
-
-              {/* iOS Web */}
-              {platform === "ios-web" && (
-                <div className="flex flex-col items-center text-center w-full py-1">
-                  <div className="w-10 h-10 rounded-full bg-[#1a3a5c]/5 flex items-center justify-center mb-2">
-                    <Smartphone className="w-5 h-5 text-[#1a3a5c]" />
-                  </div>
-                  <p className="text-[13px] font-bold text-[#1a3a5c] mb-1">App nativo em breve</p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Aguarde novidades para a App Store.
-                  </p>
-                </div>
-              )}
+          {/* Android Web */}
+          {platform === "android-web" && (
+            <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 flex flex-col items-center text-center w-full">
+              <p className="text-[13px] font-bold text-[#1a3a5c] mb-1">Baixe o App Van360!</p>
+              <p className="text-[11px] text-slate-500 mb-3 leading-tight">
+                Tenha uma experiência ainda mais rápida no dia a dia.
+              </p>
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:scale-[1.03] transition-transform w-full flex justify-center"
+              >
+                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-14 object-contain drop-shadow-sm" />
+              </a>
             </div>
           )}
-
         </div>
       )}
     </div>

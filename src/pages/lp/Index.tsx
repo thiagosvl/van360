@@ -516,7 +516,10 @@ const Index = () => {
 
               {/* Badge Android - MOBILE APENAS (Depois dos Benefícios) */}
               {platform !== "ios-web" && (
-                <div className="md:hidden flex justify-center w-full mt-8 mb-2">
+                <div className="md:hidden flex flex-col items-center justify-center w-full mt-8 mb-2">
+                  <p className="text-[14px] font-bold text-[#1a3a5c] leading-tight mb-2">
+                    Baixe nosso aplicativo
+                  </p>
                   <a
                     href={PLAY_STORE_URL}
                     target="_blank"
@@ -527,7 +530,7 @@ const Index = () => {
                     <img
                       src={PLAY_STORE_BADGE_URL}
                       alt="Disponível no Google Play"
-                      className="h-16 object-contain"
+                      className="h-14 object-contain"
                     />
                   </a>
                 </div>

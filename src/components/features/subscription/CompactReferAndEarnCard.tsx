@@ -10,7 +10,7 @@ export function CompactReferAndEarnCard() {
   const bonusDaysPerReferral = referral?.bonusDays || 30;
 
   return (
-    <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col relative w-full mt-4">
+    <div className="bg-white rounded-[20px] p-4 md:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col relative w-full mt-2 mb-2 md:mb-0">
       <div className="flex flex-col items-center text-center">
         {/* Star Icon */}
         <div className="w-[42px] h-[42px] rounded-full bg-[#fff7ed] flex items-center justify-center mb-3">
