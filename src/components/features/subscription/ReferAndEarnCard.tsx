@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Copy, CheckCircle2, Award, X, HelpCircle, Star, ArrowLeft } from "lucide-react";
+import { Award, X, HelpCircle, Star, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useSubscriptionReferral } from "@/hooks/api/useSubscription";
-import { openBrowserLink } from "@/utils/browser";
 import { phoneMask } from "@/utils/masks";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/business/useSession";
@@ -16,6 +14,7 @@ import {
   DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { ReferralShareBlock } from "./ReferralShareBlock";
 
 interface ReferAndEarnCardProps {
   isTrial: boolean;
@@ -25,18 +24,8 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
   const { user } = useSession();
   const { referral, claimReferral } = useSubscriptionReferral(user?.id);
 
-  const [isCopied, setIsCopied] = useState(false);
   const [isClaimOpen, setIsClaimOpen] = useState(false);
   const [claimPhone, setClaimPhone] = useState("");
-
-  const handleCopyReferral = () => {
-    if (referral?.referralLink) {
-      navigator.clipboard.writeText(referral.referralLink);
-      setIsCopied(true);
-      toast.success("Link copiado!");
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
 
   const handleClaimReferral = async () => {
     const cleanedPhone = claimPhone.replace(/\D/g, "");
@@ -120,39 +109,8 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
           </div>
         </div>
 
-        {/* Link Section */}
-        <div className="w-full text-left mb-4">
-          <label className="text-[12px] font-bold text-slate-800 block mb-2 px-1">
-            Seu link de convite
-          </label>
-          <div className="flex items-center w-full border border-slate-200 rounded-xl px-3 py-2 bg-white shadow-sm">
-            <span className="text-[13px] text-slate-600 truncate flex-1 font-medium">
-              {referral?.referralLink || "Gerando link..."}
-            </span>
-            <button
-              onClick={handleCopyReferral}
-              className="ml-2 text-slate-500 hover:text-slate-800 transition-colors p-1"
-            >
-              {isCopied ? <CheckCircle2 className="w-[18px] h-[18px] text-emerald-500" /> : <Copy className="w-[18px] h-[18px]" />}
-            </button>
-          </div>
-        </div>
-
-        {/* WhatsApp Button */}
-        <Button
-          onClick={() => {
-            if (referral?.referralLink) {
-              const shareText = encodeURIComponent(`Use meu link para se cadastrar no Van360 e ganhe desconto na assinatura! ${referral.referralLink}`);
-              openBrowserLink(`https://wa.me/?text=${shareText}`);
-            } else {
-              handleCopyReferral();
-            }
-          }}
-          className="w-full h-12 bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold text-[14px] shadow-sm flex items-center justify-center gap-2 transition-all"
-        >
-          <WhatsAppIcon className="w-[18px] h-[18px]" />
-          Compartilhar no WhatsApp
-        </Button>
+        {/* Share Block */}
+        <ReferralShareBlock referralLink={referral?.referralLink} variant="default" />
 
         {/* Claim Invite logic for trial users */}
         {isTrial && !referral?.hasIndicator && (

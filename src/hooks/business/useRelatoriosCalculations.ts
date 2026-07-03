@@ -83,6 +83,11 @@ interface UseRelatoriosCalculationsProps {
     ticket_medio: number;
   };
   hasVeiculoFilter?: boolean;
+  contadores?: {
+    passageiros: { ativos: number; total: number; inativos: number };
+    veiculos: { ativos: number; total: number; inativos: number };
+    escolas: { ativos: number; total: number; inativos: number };
+  };
 }
 
 export const useRelatoriosCalculations = ({
@@ -94,6 +99,7 @@ export const useRelatoriosCalculations = ({
   profile,
   financeiro,
   hasVeiculoFilter,
+  contadores,
 }: UseRelatoriosCalculationsProps) => {
   const dados = useMemo(() => {
     // 1. Safe guards for optional data
@@ -129,8 +135,19 @@ export const useRelatoriosCalculations = ({
       financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
 
     // Passageiros
-    const passageirosCount = passageirosList.length;
-    const passageirosAtivosCount = passageirosList.filter((p: any) => p.ativo).length;
+    const passageirosCount = passageirosList.length > 0 ? passageirosList.length : (contadores?.passageiros.total ?? 0);
+    const passageirosAtivosCount = passageirosList.length > 0 
+      ? passageirosList.filter((p: any) => p.ativo).length 
+      : (contadores?.passageiros.ativos ?? 0);
+
+    // Escolas & Veiculos counts
+    const escolasAtivasCount = escolasList.length > 0
+      ? escolasList.filter((e: any) => e.ativo).length
+      : (contadores?.escolas.ativos ?? 0);
+
+    const veiculosAtivosCount = veiculosListFull.length > 0
+      ? veiculosListFull.filter((v: any) => v.ativo).length
+      : (contadores?.veiculos.ativos ?? 0);
 
     // Custo por Passageiro
     const custoPorPassageiro =
@@ -442,6 +459,8 @@ export const useRelatoriosCalculations = ({
       operacional: {
         passageirosCount,
         passageirosAtivosCount,
+        escolasAtivasCount,
+        veiculosAtivosCount,
         escolas,
         periodos,
         veiculos: hasVeiculoFilter ? [] : veiculos,

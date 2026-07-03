@@ -88,6 +88,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
           icon={TrendingDown}
           variant={KPICardVariant.PRIMARY}
           value={formatCurrency(dados.total)}
+          valueClassName="text-rose-600"
         />
 
         <KPICard
@@ -95,7 +96,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
           icon={BarChart3}
           variant={KPICardVariant.OUTLINE}
           value={`${Math.round(dados.margemOperacional)}%`}
-          valueClassName={dados.margemOperacional > 10 ? "text-emerald-600" : "text-rose-600"}
+          valueClassName={dados.margemOperacional > 0 ? "text-emerald-600" : dados.margemOperacional < 0 ? "text-rose-600" : undefined}
         />
       </div>
 
@@ -105,7 +106,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
           <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
             <TrendingDown className="h-5 w-5 opacity-80 group-hover:opacity-100" />
           </div>
-          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          <h3 className="text-[13px] font-bold text-slate-800">
             Categorias de Gasto
           </h3>
         </div>
@@ -118,7 +119,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
             return (
               <div
                 key={index}
-                className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-50/30"
+                className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-100/50"
               >
                 <div
                   className={cn(
@@ -132,7 +133,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                       <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      <span className="text-[12px] font-medium text-slate-600">
                         {cat.nome}
                       </span>
                       <div className="flex items-center gap-1.5 font-headline font-black text-[#1a3a5c] text-sm">
@@ -159,22 +160,22 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                           className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50/50"
                         >
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                            <span className="text-[12px] font-bold text-slate-700">
                               {v.placa !== "-"
                                 ? formatarPlacaExibicao(v.placa)
                                 : v.nome}
                             </span>
                             {v.placa !== "-" && (
-                              <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+                              <span className="text-[10px] font-medium text-slate-400 mt-0.5">
                                 {v.nome}
                               </span>
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="text-[12px] font-black text-[#1a3a5c]">
+                            <div className="font-semibold text-[12px] text-slate-600">
                               {formatCurrency(v.valor)}
                             </div>
-                            <div className="text-[9px] font-bold text-slate-300 uppercase">
+                            <div className="text-[10px] text-slate-400">
                               {v.count === 1 ? "1 registro" : `${v.count} registros`}
                             </div>
                           </div>
@@ -188,7 +189,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
           })}
 
           {dados.topCategorias.length === 0 && (
-            <div className="text-center py-8 text-slate-400 text-xs font-bold uppercase tracking-widest">
+            <div className="text-center py-8 text-slate-500 text-[13px]">
               Nenhuma despesa registrada no mês selecionado.
             </div>
           )}
@@ -198,14 +199,13 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
       {/* Gastos por Veículo */}
       {dados.gastosPorVeiculo &&
         dados.gastosPorVeiculo.length > 0 &&
-        (dados.veiculosCount || 0) > 1 &&
         dados.temGastosVinculados && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
             <div className="pt-6 px-6 flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
                 <Bus className="h-5 w-5 opacity-80 group-hover:opacity-100" />
               </div>
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              <h3 className="text-[13px] font-bold text-slate-800">
                 Gastos por Veículo
               </h3>
             </div>
@@ -226,7 +226,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                     >
                       <div className="flex justify-between items-end">
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                          <span className="text-[12px] font-medium text-slate-600">
                             {vehicleId === v.placa ? formatarPlacaExibicao(v.placa) : v.nome}
                           </span>
                           <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
@@ -267,15 +267,15 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                                   <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-100/50">
                                     <Icon className="h-3.5 w-3.5" />
                                   </div>
-                                  <span className="text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                                  <span className="text-[12px] font-bold text-slate-700">
                                     {cat.nome}
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-[11px] font-black text-[#1a3a5c]">
+                                  <div className="font-semibold text-[12px] text-slate-600">
                                     {formatCurrency(cat.valor)}
                                   </div>
-                                  <div className="text-[9px] font-bold text-slate-300 uppercase">
+                                  <div className="text-[10px] text-slate-400">
                                     {cat.count === 1 ? "1 registro" : `${cat.count} registros`}
                                   </div>
                                 </div>

@@ -78,7 +78,7 @@ export default function Gastos() {
         {/* 2. KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 px-1">
           <KPICard
-            label="Gasto Total"
+            label="Total de Despesas"
             variant={KPICardVariant.PRIMARY}
             value={formatCurrency(totalGasto)}
             icon={TrendingDown}
@@ -93,7 +93,7 @@ export default function Gastos() {
           </h2>
           {(() => {
             const sectionCount = gastos.length;
-            const countLabel = searchTerm || hasActiveFilters 
+            const countLabel = searchTerm || hasActiveFilters
               ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
               : (sectionCount === 1 ? "REGISTRO" : "REGISTROS");
             return sectionCount != null ? (

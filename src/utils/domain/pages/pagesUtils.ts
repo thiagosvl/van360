@@ -38,14 +38,14 @@ const pagesItems = [
         icon: TrendingDown,
     },
     {
-        title: "Relatórios",
-        href: ROUTES.PRIVATE.MOTORISTA.REPORTS,
-        icon: ChartArea,
-    },
-    {
         title: "Aniversários",
         href: ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS,
         icon: Cake,
+    },
+    {
+        title: "Relatórios",
+        href: ROUTES.PRIVATE.MOTORISTA.REPORTS,
+        icon: ChartArea,
     },
     {
         title: "Assinatura",

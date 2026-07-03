@@ -3,6 +3,7 @@ import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
 import { detectPlatform, isNativeApp, PLAY_STORE_URL, PLAY_STORE_BADGE_URL } from "@/utils/detectPlatform";
 import { Smartphone } from "lucide-react";
+import { CompactReferAndEarnCard } from "@/components/features/subscription/CompactReferAndEarnCard";
 
 interface AppSidebarProps {
   role: "motorista";
@@ -64,8 +65,12 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
         ))}
       </nav>
 
-      {/* Bloco de Download / Plataforma */}
-      {!isNative && (
+      {/* Bloco de Download / Plataforma / Indique e Ganhe */}
+      {isNative ? (
+        <div className="mt-auto px-4 pb-4">
+          <CompactReferAndEarnCard />
+        </div>
+      ) : (
         <div className="mt-auto px-4 pb-4">
 
           {/* Desktop (Minimalista e objetivo) */}

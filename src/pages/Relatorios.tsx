@@ -12,6 +12,7 @@ import {
 } from "@/components/skeletons/RelatoriosSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Bus } from "lucide-react";
 import { useRelatoriosViewModel } from "@/hooks/ui/useRelatoriosViewModel";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { RelatorioTab, FilterDefaults } from "@/types/enums";
@@ -48,13 +49,16 @@ export default function Relatorios() {
         {veiculosList.length > 0 && (
           <div className="relative z-10 w-full px-1">
             <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-1">
+              <label className="text-sm font-semibold text-slate-700 ml-1 mb-1.5">
                 Veículo Selecionado
               </label>
               <Select value={veiculoId || FilterDefaults.TODOS} onValueChange={setVeiculoId}>
-                <SelectTrigger className="w-full bg-white rounded-[1.25rem] font-bold text-sm text-[#16314f] border border-slate-100 shadow-sm h-[44px]">
-                  <SelectValue placeholder="Selecione o Veículo" />
-                </SelectTrigger>
+                <div className="relative">
+                  <Bus className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                  <SelectTrigger className="pl-12 h-12 w-full rounded-xl bg-white border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-slate-700 font-medium">
+                    <SelectValue placeholder="Selecione o Veículo" />
+                  </SelectTrigger>
+                </div>
                 <SelectContent className="rounded-2xl border-slate-100">
                   <SelectItem value={FilterDefaults.TODOS} className="font-medium text-sm rounded-xl focus:bg-slate-50 cursor-pointer">
                     Todos os Veículos

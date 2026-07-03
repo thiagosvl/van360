@@ -40,7 +40,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
       <div className="grid grid-cols-2 gap-4">
         {/* Lucro Estimado */}
         <KPICard
-          label="Saldo"
+          label="Lucro estimado"
           icon={Wallet}
           variant={KPICardVariant.PRIMARY}
           value={formatCurrency(dados.lucroEstimado)}
@@ -49,7 +49,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
 
         {/* A Receber */}
         <KPICard
-          label="A Receber"
+          label="Pendente"
           icon={Wallet}
           variant={KPICardVariant.OUTLINE}
           value={formatCurrency(dados.aReceber.valor)}
@@ -80,7 +80,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
             <TrendingUp className="h-5 w-5 opacity-80 group-hover:opacity-100" />
           </div>
           <div className="flex flex-col">
-            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+            <h3 className="text-[13px] font-bold text-slate-800">
               Fluxo do Mês
             </h3>
           </div>
@@ -90,8 +90,8 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
           {/* Entradas progress */}
           <div className="space-y-2.5">
             <div className="flex justify-between items-end">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Entradas</span>
-              <span className="text-[11px] font-headline font-black text-emerald-600">
+              <span className="text-[12px] font-medium text-slate-600">Entradas</span>
+              <span className="font-headline font-black text-sm text-emerald-600">
                 {formatCurrency(dados.recebido)}
               </span>
             </div>
@@ -105,8 +105,8 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
           {/* Saídas progress */}
           <div className="space-y-2.5">
             <div className="flex justify-between items-end">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Saídas</span>
-              <span className="text-[11px] font-headline font-black text-rose-600">
+              <span className="text-[12px] font-medium text-slate-600">Saídas</span>
+              <span className="font-headline font-black text-sm text-rose-600">
                 {formatCurrency(dados.gasto)}
               </span>
             </div>
@@ -120,9 +120,9 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
           {/* Balanço progress */}
           <div className="space-y-2.5">
             <div className="flex justify-between items-end">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Lucro Líquido</span>
+              <span className="text-[12px] font-medium text-slate-600">Lucro Líquido</span>
               <span className={cn(
-                "text-[11px] font-headline font-black",
+                "font-headline font-black text-sm",
                 lucroPositivo ? "text-emerald-600" : "text-rose-600"
               )}>
                 {lucroPositivo ? "+" : ""}{formatCurrency(dados.lucroEstimado)}

@@ -9,6 +9,8 @@ interface RelatoriosOperacionalProps {
   dados: {
     passageirosCount: number;
     passageirosAtivosCount: number;
+    escolasAtivasCount: number;
+    veiculosAtivosCount: number;
     escolas: {
       nome: string;
       valor: number;
@@ -58,11 +60,11 @@ export const RelatoriosOperacional = ({
               <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
             </div>
             <div className="flex flex-col">
-              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <h3 className="text-[13px] font-bold text-slate-800">
                 Escolas
               </h3>
-              <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
-                Distribuição
+              <span className="text-[11px] font-medium text-slate-500 mt-0.5">
+                {dados.escolasAtivasCount} {dados.escolasAtivasCount === 1 ? 'escola ativa' : 'escolas ativas'}
               </span>
             </div>
           </div>
@@ -71,18 +73,18 @@ export const RelatoriosOperacional = ({
               <div key={index} className="space-y-2.5">
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col max-w-[65%]">
-                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider truncate">
+                    <span className="text-[12px] font-medium text-slate-600 truncate">
                       {escola.nome}
                     </span>
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {escola.passageiros}{" "}
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-medium text-slate-400">
                         passageiros
                       </span>
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                    <span className="font-headline font-black text-sm text-[#1a3a5c]">
                       {formatCurrency(escola.valor)}
                     </span>
                   </div>
@@ -95,7 +97,7 @@ export const RelatoriosOperacional = ({
               </div>
             ))}
             {dados.escolas.length === 0 && (
-              <div className="text-center py-6 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em]">
+              <div className="text-center py-6 text-slate-500 text-[13px]">
                 Nenhuma escola vinculada
               </div>
             )}
@@ -109,11 +111,11 @@ export const RelatoriosOperacional = ({
               <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
             </div>
             <div className="flex flex-col">
-              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <h3 className="text-[13px] font-bold text-slate-800">
                 Períodos
               </h3>
-              <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
-                Distribuição
+              <span className="text-[11px] font-medium text-slate-500 mt-0.5">
+                Distribuição por período
               </span>
             </div>
           </div>
@@ -122,21 +124,21 @@ export const RelatoriosOperacional = ({
               <div key={index} className="space-y-2.5">
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                    <span className="text-[12px] font-medium text-slate-600">
                       {periodo.nome}
                     </span>
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {periodo.passageiros}{" "}
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-medium text-slate-400">
                         passageiros
                       </span>
                     </span>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                    <span className="font-headline font-black text-sm text-[#1a3a5c]">
                       {formatCurrency(periodo.valor)}
                     </span>
-                    <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">
                       {Math.round(periodo.percentual)}%
                     </span>
                   </div>
@@ -149,7 +151,7 @@ export const RelatoriosOperacional = ({
               </div>
             ))}
             {dados.periodos.length === 0 && (
-              <div className="text-center py-6 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em]">
+              <div className="text-center py-6 text-slate-500 text-[13px]">
                 Nenhum dado disponível
               </div>
             )}
@@ -164,11 +166,11 @@ export const RelatoriosOperacional = ({
                 <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
               </div>
               <div className="flex flex-col">
-                <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <h3 className="text-[13px] font-bold text-slate-800">
                   Veículos
                 </h3>
-                <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
-                  Ocupação
+                <span className="text-[11px] font-medium text-slate-500 mt-0.5">
+                  {dados.veiculosAtivosCount} {dados.veiculosAtivosCount === 1 ? 'veículo ativo' : 'veículos ativos'}
                 </span>
               </div>
             </div>
@@ -177,21 +179,21 @@ export const RelatoriosOperacional = ({
                 <div key={index} className="space-y-2.5">
                   <div className="flex justify-between items-end">
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      <span className="text-[12px] font-medium text-slate-600">
                         {formatarPlacaExibicao(veiculo.placa)}
                       </span>
                       <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                         {veiculo.passageiros}{" "}
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-[10px] font-medium text-slate-400">
                           passageiros
                         </span>
                       </span>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                      <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                      <span className="font-headline font-black text-sm text-[#1a3a5c]">
                         {formatCurrency(veiculo.valor)}
                       </span>
-                      <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">
+                      <span className="text-[10px] font-medium text-slate-400 mt-1">
                         {Math.round(veiculo.percentual)}%
                       </span>
                     </div>

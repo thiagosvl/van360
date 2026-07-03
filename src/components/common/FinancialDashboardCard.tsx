@@ -19,7 +19,42 @@ export function FinancialDashboardCard({ totalEsperado, recebido, pendente, load
   };
 
   if (loading) {
-    return <div className="h-44 bg-white rounded-3xl animate-pulse shadow-sm" />;
+    return (
+      <div className="bg-white rounded-3xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100/50 flex flex-col gap-5 animate-pulse">
+        {/* Top Row: Total Esperado */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-end mb-1">
+            <div className="h-4 bg-slate-100 rounded w-24"></div>
+            <div className="h-5 bg-slate-100 rounded w-32"></div>
+          </div>
+          {/* Progress Bar Total */}
+          <div className="h-2 w-full bg-slate-100 rounded-full"></div>
+        </div>
+
+        {/* Bottom Row: Recebido and Pendente */}
+        <div className="flex flex-col mt-1">
+          <div className="flex justify-between items-end">
+            {/* Recebido */}
+            <div className="flex flex-col gap-1.5">
+              <div className="h-3.5 bg-slate-100 rounded w-16 mb-0.5"></div>
+              <div className="h-6 bg-slate-100 rounded w-28"></div>
+            </div>
+
+            {/* Pendente */}
+            <div className="flex flex-col items-end gap-1.5">
+              <div className="h-3.5 bg-slate-100 rounded w-16 mb-0.5"></div>
+              <div className="h-6 bg-slate-100 rounded w-28"></div>
+            </div>
+          </div>
+
+          {/* Proportional Bar */}
+          <div className="flex w-full h-1.5 sm:h-2 mt-2 sm:mt-2.5 gap-1">
+            <div className="h-full w-1/3 bg-slate-100 rounded-full"></div>
+            <div className="h-full w-2/3 bg-slate-100 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -113,7 +113,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
         >
           <div className="px-6 pb-4 pt-6 border-b border-gray-50 bg-slate-50/50">
             <SheetTitle className="text-left">
-              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Menu</span>
+              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Menu de Opções</span>
             </SheetTitle>
           </div>
           <div className="p-4 h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">

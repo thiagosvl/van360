@@ -112,6 +112,7 @@ export function useRelatoriosViewModel() {
     veiculosData: (shouldFetchOperacional || shouldFetchSaidas) ? veiculosData : undefined,
     profile,
     hasVeiculoFilter: !!veiculoId,
+    contadores: systemSummary?.contadores,
   });
 
   const refreshAll = useCallback(async () => {
