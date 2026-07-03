@@ -281,7 +281,7 @@ export default function GastoFormDialog({
                               type="button"
                               variant="outline"
                               className={cn(
-                                "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
+                                "w-full pl-12 h-12 text-base rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
                                 !field.value && "text-muted-foreground",
                                 fieldState.error &&
                                 "border-red-500 ring-red-500"
@@ -292,7 +292,7 @@ export default function GastoFormDialog({
                                 format(field.value, "dd/MM/yyyy")
                               ) : (
                                 <span className="text-gray-500">
-                                  Selecione
+                                  Selecione a data
                                 </span>
                               )}
                             </Button>
@@ -328,7 +328,7 @@ export default function GastoFormDialog({
                     label="Valor"
                     className="flex flex-col"
                     labelClassName="text-slate-700 font-semibold ml-1"
-                    inputClassName="pl-12 h-12 text-sm rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                    inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                   />
                 )}
               />
