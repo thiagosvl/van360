@@ -289,7 +289,7 @@ const Home = () => {
           </section>
 
           {/* Onboarding em Vídeo (Contextual) */}
-          {onboarding.showOnboarding && (
+          {/* {onboarding.showOnboarding && (
             <VideoCommerce
               previewUrl="https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-preview.mp4"
               videoUrls={[
@@ -303,7 +303,7 @@ const Home = () => {
               requireScrollOnMobile={false}
               positionClasses="fixed z-50 left-4 sm:left-6 bottom-[130px] sm:bottom-10"
             />
-          )}
+          )} */}
         </div>
       </PullToRefreshWrapper>
     </>
