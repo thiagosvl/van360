@@ -23,7 +23,7 @@ export function BottomNavbar() {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center justify-center gap-1 transition-colors px-2 py-1 rounded-xl",
-              isActive ? "text-[#1a3a5c]" : "text-slate-400"
+              isActive ? "text-primary" : "text-slate-400"
             )
           }
         >
@@ -36,7 +36,7 @@ export function BottomNavbar() {
         onClick={() => setIsMobileMenuOpen(true)}
         className={cn(
           "flex flex-col items-center justify-center gap-1 pl-2 py-1 transition-colors",
-          isMoreActive ? "text-[#1a3a5c]" : "text-slate-400"
+          isMoreActive ? "text-primary" : "text-slate-400"
         )}
       >
         <Menu className="h-5 w-5" />
