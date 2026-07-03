@@ -31,7 +31,7 @@ export function FinancialDashboardCard({ totalEsperado, recebido, pendente, load
           <span className="text-[15px] font-bold text-slate-800">{formatCurrency(totalEsperado)}</span>
         </div>
         {/* Progress Bar Total */}
-        <div className="h-1.5 w-full bg-[#dbeafe] rounded-full overflow-hidden">
+        <div className="h-2 w-full bg-[#dbeafe] rounded-full overflow-hidden">
           <div className="h-full bg-[#3b82f6] rounded-full" style={{ width: `${recebidoPercent}%` }} />
         </div>
       </div>
