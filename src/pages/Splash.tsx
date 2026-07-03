@@ -42,15 +42,15 @@ export default function Splash() {
     <main className="h-[100dvh] w-full bg-[#FBF8F9] overflow-hidden flex flex-col justify-between">
 
       {/* ================= CONTEÚDO (TOPO) ================= */}
-      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),2.5rem)] [@media(max-height:750px)]:pt-5 [@media(max-height:580px)]:pt-3 px-6">
+      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),3.5rem)] [@media(max-height:850px)]:pt-[max(env(safe-area-inset-top),2.5rem)] [@media(max-height:750px)]:pt-6 [@media(max-height:580px)]:pt-3 px-6">
 
         <img
           src="/assets/logo-van360.webp"
           alt="Van360"
-          className="h-12 w-auto [@media(max-height:580px)]:h-8"
+          className="h-10 w-auto [@media(max-height:750px)]:h-9 [@media(max-height:580px)]:h-7"
         />
 
-        <div className="mt-8 [@media(max-height:750px)]:mt-4 [@media(max-height:580px)]:mt-2 text-center max-w-[340px]">
+        <div className="mt-3 [@media(max-height:750px)]:mt-2 text-center max-w-[340px]">
           <h1 className="font-bold text-[#081A34] leading-tight text-[2.15rem] [@media(max-height:750px)]:text-[1.85rem] [@media(max-height:580px)]:text-[1.6rem]">
             Bem-vindo ao
             <br />
@@ -59,7 +59,7 @@ export default function Splash() {
             </span>
           </h1>
 
-          <p className="mt-5 [@media(max-height:750px)]:mt-2.5 [@media(max-height:580px)]:mt-1.5 text-[1.05rem] [@media(max-height:750px)]:text-[0.95rem] [@media(max-height:580px)]:text-[0.88rem] leading-7 [@media(max-height:750px)]:leading-6 [@media(max-height:580px)]:leading-5 text-slate-500">
+          <p className="mt-3 [@media(max-height:750px)]:mt-2 [@media(max-height:580px)]:mt-1.5 text-[1.05rem] [@media(max-height:750px)]:text-[0.95rem] [@media(max-height:580px)]:text-[0.88rem] leading-7 [@media(max-height:750px)]:leading-6 [@media(max-height:580px)]:leading-5 text-slate-500">
             Você dirige.
             <br />
             A gente organiza.
@@ -67,7 +67,7 @@ export default function Splash() {
         </div>
 
         {/* Botões */}
-        <div className="w-full max-w-[320px] mt-16 [@media(max-height:750px)]:mt-4 [@media(max-height:580px)]:mt-2">
+        <div className="w-full max-w-[320px] mt-10 [@media(max-height:850px)]:mt-8 [@media(max-height:750px)]:mt-5 [@media(max-height:580px)]:mt-3">
           <button
             onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
             className="
@@ -92,9 +92,8 @@ export default function Splash() {
           <button
             onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
             className="
-              mt-6  
-              [@media(max-height:750px)]:mt-3
-              [@media(max-height:580px)]:mt-2
+              mt-3
+              [@media(max-height:750px)]:mt-2
               h-14
               [@media(max-height:750px)]:h-12
               [@media(max-height:580px)]:h-10
@@ -118,7 +117,7 @@ export default function Splash() {
       </section>
 
       {/* ================= ILUSTRAÇÃO (BASE) ================= */}
-      <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-4 [@media(max-height:750px)]:mt-2 pointer-events-none select-none">
+      <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-3 [@media(max-height:750px)]:mt-2 pointer-events-none select-none">
         <SplashIllustration
           src="/assets/login-splash.webp"
           alt="Van escolar"
@@ -131,12 +130,20 @@ export default function Splash() {
             top-auto
             
             /* Padrão para telas altas */
-            bottom-[-50px]
+            bottom-[-20px]
             
-            /* Ajustes para telas médias/curtas */
-            [@media(max-height:720px)]:bottom-[-80px]
-            [@media(max-height:660px)]:bottom-[-100px]
-            [@media(max-height:580px)]:bottom-[-120px]
+            /* 1. Telas normais altas */
+            [@media(min-height:751px)_and_(max-height:850px)]:!bottom-[-45px]
+            
+            /* 2. Telas finas como Galaxy S9+ (largura até 340px) ficam perfeitas com -45px independente da altura */
+            [@media(max-width:340px)]:!bottom-[-45px]
+            
+            /* 3. Telas largas e altura média */
+            [@media(min-width:341px)_and_(min-height:681px)_and_(max-height:750px)]:!bottom-[-70px]
+            
+            /* 4. Telas largas e muito curtas como iPhone SE (largura > 340 e altura < 680) */
+            /* Matemática exata: compensa os 106px excedentes de altura distribuindo 53px para cima e 53px para baixo em relação ao S9+ */
+            [@media(min-width:341px)_and_(max-height:680px)]:!bottom-[-100px]
           "
         />
       </section>

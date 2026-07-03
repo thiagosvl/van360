@@ -431,24 +431,7 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* Badge Android - MOBILE APENAS (Antes do Mockup) */}
-                <div className="md:hidden flex justify-center w-full mt-3">
-                  {platform !== "ios-web" && (
-                    <a
-                      href={PLAY_STORE_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center hover:scale-105 transition-transform"
-                      aria-label="Baixar Van360 na Play Store"
-                    >
-                      <img
-                        src={PLAY_STORE_BADGE_URL}
-                        alt="Disponível no Google Play"
-                        className="h-12 object-contain"
-                      />
-                    </a>
-                  )}
-                </div>
+
               </div>
 
               {/* Mockup — SÓ MOBILE */}
@@ -521,6 +504,25 @@ const Index = () => {
                       Use o Van360 <b>perfeitamente</b> pelo navegador enquanto o app nativo está sendo preparado. <br className="hidden sm:block" /> É só clicar em testar grátis.
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Badge Android - MOBILE APENAS (Depois dos Benefícios) */}
+              {platform !== "ios-web" && (
+                <div className="md:hidden flex justify-center w-full mt-8 mb-2">
+                  <a
+                    href={PLAY_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center hover:scale-105 transition-transform"
+                    aria-label="Baixar Van360 na Play Store"
+                  >
+                    <img
+                      src={PLAY_STORE_BADGE_URL}
+                      alt="Disponível no Google Play"
+                      className="h-16 object-contain"
+                    />
+                  </a>
                 </div>
               )}
             </div>
