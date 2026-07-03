@@ -276,11 +276,9 @@ const Home = () => {
           </section>
 
           {/* Aniversariantes */}
-          {!onboarding.showOnboarding && (
-            <section className="pt-3">
-              <AniversariantesWidget />
-            </section>
-          )}
+          <section className="pt-3">
+            <AniversariantesWidget />
+          </section>
 
           {/* Indique e Ganhe Banner */}
           <section className="pt-2">
