@@ -66,6 +66,7 @@ const AdminSettings = lazyLoad(() => import("./pages/admin/AdminSettings"));
 const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 const AdminLoginAttempts = lazyLoad(() => import("./pages/admin/AdminLoginAttempts"));
 const AdminActivityHistory = lazyLoad(() => import("./pages/admin/AdminActivityHistory"));
+const AdminWhatsappInstances = lazyLoad(() => import("./pages/admin/AdminWhatsappInstances"));
 
 const App = () => {
   const [updating, setUpdating] = useState(false);
@@ -299,6 +300,7 @@ const App = () => {
                   <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
+                  <Route path={ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES} element={<AdminWhatsappInstances />} />
                 </Route>
 
                 {/* Rotas Protegidas - Motorista */}

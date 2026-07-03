@@ -190,4 +190,11 @@ export function useDeleteUserAdmin() {
   });
 }
 
-
+export function useAdminWhatsappInstances() {
+  return useQuery({
+    queryKey: ["admin", "whatsapp-instances"],
+    queryFn: adminApi.getWhatsappInstances,
+    staleTime: 1000 * 30, // 30 seconds
+    refetchOnWindowFocus: true,
+  });
+}

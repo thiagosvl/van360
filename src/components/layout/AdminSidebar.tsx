@@ -7,7 +7,8 @@ import {
   ChevronRight,
   Calculator,
   ShieldAlert,
-  Terminal
+  Terminal,
+  MessageSquare
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
@@ -41,6 +42,11 @@ const adminNavItems = [
     title: "Configurações",
     href: ROUTES.PRIVATE.ADMIN.SETTINGS,
     icon: Settings,
+  },
+  {
+    title: "WhatsApp",
+    href: ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES,
+    icon: MessageSquare,
   },
 ];
 

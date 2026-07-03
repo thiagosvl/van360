@@ -1,5 +1,6 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
+import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,8 +9,7 @@ import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel, useLayout } from "@/hooks";
-import { CobrancaTab, KPICardVariant } from "@/types/enums";
-import { formatCurrency } from "@/utils/formatters";
+import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
 
@@ -20,6 +20,7 @@ export default function Cobrancas() {
     handleNavigation,
     totalAReceber,
     totalRecebido,
+    totalPrevisto,
     countAReceber,
     countRecebidos,
     activeTab,
@@ -79,16 +80,12 @@ export default function Cobrancas() {
           onNavigate={handleNavigation}
         />
 
-        <div className="grid grid-cols-2 gap-4 px-1">
-          <KPICard
-            label="A receber no mês"
-            value={formatCurrency(totalAReceber)}
-            variant={KPICardVariant.PRIMARY}
-          />
-          <KPICard
-            label="Total Recebido"
-            value={formatCurrency(totalRecebido)}
-            variant={KPICardVariant.OUTLINE}
+        <div className="px-1">
+          <FinancialDashboardCard
+            totalEsperado={totalPrevisto}
+            recebido={totalRecebido}
+            pendente={totalAReceber}
+            loading={isInitialLoading}
           />
         </div>
 

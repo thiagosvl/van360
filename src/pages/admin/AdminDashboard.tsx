@@ -1,10 +1,11 @@
-import { useAdminStats } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminWhatsappInstances } from "@/hooks/api/adminHooks";
 import { useNavigate } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
 import { phoneMask } from "@/utils/masks";
+import { formatWhatsappPurpose } from "@/utils/whatsapp";
 import { ROUTES } from "@/constants/routes";
 import {
   Users,
@@ -17,6 +18,7 @@ import {
   Clock,
   AlertTriangle,
   XCircle,
+  MessageSquare,
 } from "lucide-react";
 import {
   Card,
@@ -54,6 +56,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
+  const { data: instances, isLoading: isLoadingInstances } = useAdminWhatsappInstances();
 
   useEffect(() => {
     setPageTitle("Dashboard");
@@ -116,7 +119,6 @@ export default function AdminDashboard() {
             <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
               Dashboard
             </h1>
-            <WhatsappStatusBadge status={stats.whatsappStatus} />
           </div>
           <p className="text-sm font-semibold text-slate-400">
             Visão macro do ecossistema Van360.
@@ -149,7 +151,7 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <Card className="lg:col-span-1 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
           <CardHeader className="p-6">
             <div className="space-y-1 text-left">
@@ -178,6 +180,43 @@ export default function AdminDashboard() {
                 </span>
               </div>
             ))}
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-1 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
+          <CardHeader className="flex flex-row items-center justify-between p-6">
+            <div className="space-y-1 text-left">
+              <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                Instâncias WhatsApp
+              </CardTitle>
+              <CardDescription className="text-xs font-semibold text-slate-400">
+                Status das conexões
+              </CardDescription>
+            </div>
+            <MessageSquare className="h-5 w-5 text-slate-300" />
+          </CardHeader>
+          <CardContent className="px-6 flex flex-col gap-3">
+            {isLoadingInstances ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-[#1a3a5c]" />
+              </div>
+            ) : !instances || instances.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center">Nenhuma instância cadastrada.</p>
+            ) : (
+              instances.map((instance) => (
+                <div
+                  key={instance.id}
+                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES)}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 cursor-pointer hover:bg-slate-100/80 transition-colors"
+                >
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-slate-700 truncate">{instance.instance_name}</span>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">{formatWhatsappPurpose(instance.purpose)}</span>
+                  </div>
+                  <WhatsappStatusBadge status={instance.evolution_status} />
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 

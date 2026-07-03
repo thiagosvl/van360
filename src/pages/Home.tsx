@@ -1,6 +1,6 @@
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
-import { FinancialDashboardCard } from "@/components/features/home/FinancialDashboardCard";
+import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { SecondaryKPICard } from "@/components/features/home/SecondaryKPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";

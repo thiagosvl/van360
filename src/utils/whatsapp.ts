@@ -60,3 +60,9 @@ export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
 }
+
+export function formatWhatsappPurpose(purpose: string): string {
+  if (purpose === "BULK") return "Massa (Lento)";
+  if (purpose === "TRANSACTIONAL") return "Transacional (Rápido)";
+  return purpose;
+}
