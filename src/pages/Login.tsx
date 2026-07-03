@@ -140,7 +140,7 @@ export default function Login() {
 
   const handleFillMagic = () => {
     formMotorista.reset({
-      cpfcnpj: "395.423.918-38",
+      cpfcnpj: "90.835.525/0001-30",
       senha: "Ogaiht+1",
     });
   };

@@ -1,7 +1,7 @@
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
-import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
-import { KPICard } from "@/components/common/KPICard";
+import { FinancialDashboardCard } from "@/components/features/home/FinancialDashboardCard";
+import { SecondaryKPICard } from "@/components/features/home/SecondaryKPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
@@ -16,22 +16,21 @@ import { getMesNome } from "@/utils/formatters";
 import {
   Copy,
   CopyCheck,
-  CreditCard,
   FileText,
   Plus,
   TrendingDown,
   UserCheck,
-  Users,
   GraduationCap,
   Car,
   Rocket,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { KPICardVariant, PassageiroTab } from "@/types/enums";
+import { PassageiroTab } from "@/types/enums";
 import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
+import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 
 const Home = () => {
   const {
@@ -178,53 +177,42 @@ const Home = () => {
             </section>
           )}
 
+          {!onboarding.showOnboarding && (
+            <div className="px-1 mb-4">
+              <FinancialDashboardCard
+                totalEsperado={financeiro.aReceber + financeiro.recebido}
+                recebido={financeiro.recebido}
+                pendente={financeiro.aReceber}
+                loading={isLoading}
+              />
+            </div>
+          )}
+
           <div
             className={cn(
               "grid gap-4 px-1",
-              onboarding.showOnboarding
-                ? "grid-cols-1"
-                : "grid-cols-2 lg:grid-cols-4",
+              onboarding.showOnboarding ? "grid-cols-1" : "grid-cols-2",
             )}
           >
-            {!onboarding.showOnboarding && (
-              <>
-                <KPICard
-                  label={`A receber em ${getMesNome(getNowBR().getMonth() + 1)}`}
-                  value={formatCurrency(financeiro.aReceber)}
-                  variant={KPICardVariant.PRIMARY}
-                  loading={isLoading}
-                />
-                <KPICard
-                  label={`Recebido em ${getMesNome(getNowBR().getMonth() + 1)}`}
-                  value={formatCurrency(financeiro.recebido)}
-                  variant={KPICardVariant.OUTLINE}
-                  loading={isLoading}
-                />
-              </>
-            )}
             {contadores.passageirosAtivos > 0 && (
-              <KPICard
+              <SecondaryKPICard
                 label="Passageiros Ativos"
                 value={contadores.passageirosAtivos}
-                icon={Users}
-                variant={KPICardVariant.OUTLINE}
                 loading={isLoading}
               />
             )}
             {!onboarding.showOnboarding && contadores.escolasAtivas > 0 && (
-              <KPICard
+              <SecondaryKPICard
                 label="Escolas Ativas"
                 value={contadores.escolasAtivas}
-                icon={GraduationCap}
-                variant={KPICardVariant.OUTLINE}
                 loading={isLoading}
               />
             )}
           </div>
 
           {/* Acessos Rápidos */}
-          <section className="mt-4">
-            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">
+          <section className="mt-6 px-1">
+            <h2 className="text-[17px] font-bold text-slate-800 mb-4">
               Acesso Rápido
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
@@ -246,43 +234,43 @@ const Home = () => {
                 activeIcon={CopyCheck}
                 label={isCopied ? "Copiado!" : "Link de Cadastro"}
                 isActive={isCopied}
-                variant="indigo"
+                variant="violet"
               />
               <ShortcutCard
                 to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
-                variant="sky"
+                variant="emerald"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingDown}
                 label="Gastos"
-                variant="rose"
+                variant="sky"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
                 icon={FileText}
                 label="Relatórios"
-                variant="orange"
+                variant="slate"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
                 icon={GraduationCap}
                 label="Escolas"
-                variant="violet"
+                variant="white"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.VEHICLES}
                 icon={Car}
                 label="Veículos"
-                variant="slate"
+                variant="amber"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
                 icon={Rocket}
                 label="Minha Assinatura"
-                variant="indigo"
+                variant="orange"
               />
             </div>
           </section>
@@ -296,7 +284,7 @@ const Home = () => {
 
           {/* Indique e Ganhe Banner */}
           <section className="pt-2">
-            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">
+            <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
               Indique e Ganhe
             </h2>
             <ReferAndEarnCard isTrial={subscription?.status === SubscriptionStatus.TRIAL} />

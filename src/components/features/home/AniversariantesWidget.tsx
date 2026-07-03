@@ -33,8 +33,8 @@ export function AniversariantesWidget() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">
-          Aniversariantes da semana
+        <h2 className="text-[17px] font-bold text-slate-800 px-1">
+          Aniversariantes da Semana
         </h2>
         <Card className="w-full">
           <CardContent className="space-y-4">
@@ -69,12 +69,14 @@ export function AniversariantesWidget() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">
+      <h2 className="text-[17px] font-bold text-slate-800 px-1">
         Aniversariantes da Semana
       </h2>
       <Card className="w-full h-full flex flex-col shadow-sm border-zinc-200 dark:border-zinc-800">
         <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 px-3 pb-1 pt-3">
-          <p className="text-[9px] sm:text-xs font-bold text-slate-400 uppercase px-1">
+          <p className="text-[9px] sm:text-xs font-bold text-slate-400 px-1">
+            Semana de
+            <br />
             {dataInicio} a {dataFim} de {currentMonthName}
           </p>
           <Button variant="ghost" size="sm" className="h-8 text-[11px] sm:text-xs text-primary font-semibold px-2" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS)}>
@@ -135,11 +137,11 @@ export function AniversariantesWidget() {
               </ScrollArea>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center py-6 text-muted-foreground">
+            <div className="flex flex-col items-center justify-center h-full text-center py-6 text-gray-400">
               <div className="bg-zinc-100 dark:bg-zinc-800 rounded-full p-3 mb-3">
                 <Cake className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
               </div>
-              <p className="text-sm">Nenhum aniversariante nesta semana.</p>
+              <p className="text-xs sm:text-sm">Nenhum aniversariante nesta semana.</p>
             </div>
           )}
 

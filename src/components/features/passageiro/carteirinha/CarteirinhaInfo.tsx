@@ -111,7 +111,7 @@ const ProfileActions = ({
             `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`
           )
         }
-        className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
+        className="h-11 w-11 rounded-2xl bg-emerald-50 text-[#25D366] hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
       >
         <WhatsAppIcon className="h-4.5 w-4.5" />
       </Button>

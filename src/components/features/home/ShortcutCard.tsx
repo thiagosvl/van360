@@ -9,7 +9,7 @@ interface ShortcutCardProps {
   label: string;
   className?: string;
   isActive?: boolean;
-  variant?: "blue" | "rose" | "violet" | "indigo" | "emerald" | "orange" | "amber" | "sky" | "slate";
+  variant?: "blue" | "rose" | "violet" | "indigo" | "emerald" | "orange" | "amber" | "sky" | "slate" | "white";
 }
 
 export const ShortcutCard = ({
@@ -24,40 +24,37 @@ export const ShortcutCard = ({
 }: ShortcutCardProps) => {
   const DisplayIcon = isActive && ActiveIcon ? ActiveIcon : Icon;
 
-  const variants = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100/50 group-hover:bg-blue-600 group-hover:text-white",
-    rose: "bg-rose-50 text-rose-600 border-rose-100/50 group-hover:bg-rose-600 group-hover:text-white",
-    violet: "bg-violet-50 text-violet-600 border-violet-100/50 group-hover:bg-violet-600 group-hover:text-white",
-    indigo: "bg-indigo-50 text-indigo-600 border-indigo-100/50 group-hover:bg-indigo-600 group-hover:text-white",
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100/50 group-hover:bg-emerald-600 group-hover:text-white",
-    orange: "bg-orange-50 text-orange-600 border-orange-100/50 group-hover:bg-orange-600 group-hover:text-white",
-    amber: "bg-amber-50 text-amber-600 border-amber-100/50 group-hover:bg-amber-600 group-hover:text-white",
-    sky: "bg-sky-50 text-sky-600 border-sky-100/50 group-hover:bg-sky-600 group-hover:text-white",
-    slate: "bg-slate-50 text-slate-600 border-slate-100/50 group-hover:bg-[#1a3a5c] group-hover:text-white",
+  const iconBgVariants = {
+    blue: "bg-[#e0efff]",
+    rose: "bg-[#fce7f3]",
+    violet: "bg-[#f3e8ff]",
+    indigo: "bg-[#e0e7ff]",
+    emerald: "bg-[#dcfce7]",
+    orange: "bg-[#ffedd5]",
+    amber: "bg-[#fef3c7]",
+    sky: "bg-[#ccfbf1]",
+    slate: "bg-[#f3f4f6]",
+    white: "bg-white",
   };
 
-  const activeStyles = "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10";
+  const activeStyles = "ring-2 ring-slate-800 ring-offset-1";
 
   const content = (
     <div
       className={cn(
-        "flex flex-col items-center justify-center p-3.5 max-[320px]:p-2 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-soft-xl hover:-translate-y-1 active:scale-[0.96] h-[104px] max-[320px]:h-[90px] w-full group select-none cursor-pointer relative transform-gpu",
-        isActive ? activeStyles : "hover:border-slate-200",
+        "flex flex-col items-center justify-center p-2.5 rounded-[18px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] h-[100px] max-[320px]:h-[90px] w-full group select-none cursor-pointer",
+        isActive && activeStyles,
         className,
       )}
     >
       <div className={cn(
-        "h-12 w-12 max-[320px]:h-10 max-[320px]:w-10 rounded-2xl flex items-center justify-center mb-3.5 max-[320px]:mb-2 shrink-0 border transition-all duration-500",
-        variants[variant],
-        isActive && "bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-200"
+        "h-[40px] w-[40px] rounded-full flex items-center justify-center mb-2.5 shrink-0 transition-all duration-300 border-[1.5px] border-slate-800",
+        isActive ? "bg-slate-800 text-white" : cn(iconBgVariants[variant], "text-slate-800 group-hover:scale-105")
       )}>
-        <DisplayIcon className={cn(
-          "h-6 w-6 transition-transform duration-500 group-hover:scale-110",
-        )} />
+        <DisplayIcon className="h-5 w-5" strokeWidth={1.75} />
       </div>
       <span className={cn(
-        "text-[10px] max-[320px]:text-[9px] font-headline font-bold uppercase tracking-wider text-center leading-[1.3] px-1 transition-colors duration-300",
-        isActive ? "text-emerald-700" : "text-slate-500 group-hover:text-[#1a3a5c]"
+        "text-[12px] max-[320px]:text-[11px] font-semibold text-slate-800 leading-[1.1] text-center px-0.5",
       )}>
         {label}
       </span>
