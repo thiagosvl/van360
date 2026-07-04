@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
 import { detectPlatform, isNativeApp, PLAY_STORE_URL, PLAY_STORE_BADGE_URL } from "@/utils/detectPlatform";
-import { Smartphone } from "lucide-react";
 import { CompactReferAndEarnCard } from "@/components/features/subscription/CompactReferAndEarnCard";
 
 interface AppSidebarProps {
@@ -67,7 +66,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
       {/* Bloco de Download / Plataforma / Indique e Ganhe */}
       {isNative || platform === "ios-web" ? (
-        <div className="mt-auto px-4 pb-8 md:pb-4 pt-2">
+        <div className="mt-auto px-4 pb-4 pt-2">
           <CompactReferAndEarnCard />
         </div>
       ) : (
@@ -75,7 +74,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
           {/* Desktop (Minimalista e objetivo) */}
           {platform === "desktop" && (
-            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-3">
+            <div className="flex flex-col items-center gap-2 border-t border-white/10">
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"
@@ -92,7 +91,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
           {/* Android Web */}
           {platform === "android-web" && (
-            <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center w-full shadow-sm">
+            <div className="bg-white rounded-2xl p-2 flex flex-col items-center text-center w-full shadow-sm">
               <p className="text-[14px] font-bold text-[#0b1a2e] leading-tight mb-2">
                 Baixe nosso aplicativo
               </p>

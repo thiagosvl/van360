@@ -129,7 +129,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="px-6 pb-6 pt-10 flex items-center gap-4 relative">
+          <div className="px-6 pb-6 pt-[max(2.5rem,env(safe-area-inset-top)+1rem)] flex items-center gap-4 relative">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
             <div className="h-14 w-14 rounded-full bg-white/10 border border-white/5 flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0">
               {userInitial}
@@ -144,12 +144,12 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-[max(1rem,env(safe-area-inset-top)+0.5rem)] right-4 p-2 text-slate-400 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="p-4 h-[calc(100vh-120px)] overflow-y-auto scrollbar-hide">
+          <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom)+1.5rem)] h-[calc(100dvh-140px)] overflow-y-auto scrollbar-hide">
             <AppSidebar
               role={role}
               onLinkClick={() => setIsMobileMenuOpen(false)}
