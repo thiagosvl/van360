@@ -21,12 +21,12 @@ export const PastDueBanner = ({ onRegularize }: PastDueBannerProps) => {
       {onRegularize ? (
         <button
           onClick={onRegularize}
-          className="h-10 px-5 bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-rose-600/90 transition-all shadow-md shadow-rose-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
+          className="h-11 px-4 md:px-5 bg-rose-600 text-white text-[13px] font-bold rounded-xl hover:bg-rose-600/90 transition-all shadow-sm shadow-rose-200/50 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
         >
           Regularizar
         </button>
       ) : (
-        <div className="h-10 px-5 bg-rose-600/50 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shrink-0 opacity-50 w-full sm:w-auto text-center flex justify-center items-center cursor-not-allowed">
+        <div className="h-11 px-4 md:px-5 bg-rose-600/50 text-white text-[13px] font-bold rounded-xl shrink-0 opacity-50 w-full sm:w-auto flex justify-center items-center cursor-not-allowed">
           Regularizar
         </div>
       )}

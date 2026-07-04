@@ -143,24 +143,6 @@ const Home = () => {
             </section>
           )}
 
-          {/* Banner de Trial (SaaS) */}
-          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
-            <TrialBanner
-              daysLeft={subscription.trialDaysLeft}
-              onSubscribe={() => {
-                if (plans && plans.length > 0) {
-                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
-                  openSaaSCheckoutDialog({
-                    plans,
-                    initialPlanId: defaultPlan.id
-                  });
-                } else {
-                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
-                }
-              }}
-            />
-          )}
-
           {/* Notificação de Mensalidades pendentes */}
           {!onboarding.showOnboarding && financeiro.countAtrasos > 0 && (
             <section>
@@ -209,6 +191,24 @@ const Home = () => {
               />
             )}
           </div>
+
+          {/* Banner de Trial (SaaS) */}
+          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
+            <TrialBanner
+              daysLeft={subscription.trialDaysLeft}
+              onSubscribe={() => {
+                if (plans && plans.length > 0) {
+                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
+                  openSaaSCheckoutDialog({
+                    plans,
+                    initialPlanId: defaultPlan.id
+                  });
+                } else {
+                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+                }
+              }}
+            />
+          )}
 
           {/* Acessos Rápidos */}
           <section className="mt-6 px-1">

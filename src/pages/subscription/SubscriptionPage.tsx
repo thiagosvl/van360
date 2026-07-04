@@ -313,7 +313,7 @@ const SubscriptionPage = () => {
               {trialDaysLeft !== null && (
                 <div className="mt-8 md:mt-0 relative z-10 shrink-0">
                   <Button
-                    className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
+                    className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
                     onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
                   >
                     Assinar um Plano
@@ -345,7 +345,7 @@ const SubscriptionPage = () => {
               {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
                 <div className="mt-6 md:mt-0 relative z-10 shrink-0">
                   <Button
-                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
+                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
                     onClick={() => handleSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
                   >
                     Assinar Plano Anual
@@ -411,7 +411,7 @@ const SubscriptionPage = () => {
                           <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
                             {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
                               <button
-                                className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-white hover:bg-primary/90 transition-colors uppercase tracking-[0.1em] bg-primary px-4 py-3 rounded-xl border border-primary-400/40"
+                                className="w-full flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 transition-colors bg-primary px-4 py-3 rounded-xl border border-primary-400/40"
                                 onClick={() => handleCopyPix(inv.pix_copy_paste!)}
                               >
                                 <Copy className="w-4 h-4" />
@@ -419,7 +419,7 @@ const SubscriptionPage = () => {
                               </button>
                             ) : (
                               <button
-                                className="w-full px-4 py-3 bg-primary text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
+                                className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
                                 onClick={() => handleSubscribe()}
                               >
                                 Pagar Agora

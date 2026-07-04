@@ -29,10 +29,10 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors md:py-1.5",
+                "flex items-center gap-3 rounded-xl px-4 py-2 text-[15px] transition-colors",
                 isActive
-                  ? "bg-[#1a3a5c] text-white shadow-[0_12px_35px_-25px_rgba(26,58,92,0.7)]"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-[#1a3a5c]"
+                  ? "bg-white/10 text-white font-bold shadow-sm"
+                  : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
               )
             }
           >
@@ -40,22 +40,22 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
               <>
                 <span
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-base",
-                    isActive ? "bg-white/20 text-white" : "hover:text-[#1a3a5c]"
+                    "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-lg shrink-0",
+                    isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "h-4 w-4",
-                      isActive ? "text-white" : "text-inherit"
+                      "h-5 w-5",
+                      isActive ? "text-white" : "text-slate-400"
                     )}
                   />
                 </span>
-                <span>{item.title}</span>
+                <span className="truncate">{item.title}</span>
 
                 {(item as any).badge !== undefined &&
                   (item as any).badge > 0 && (
-                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#1a3a5c]/10 text-[10px] font-bold text-[#1a3a5c]">
+                    <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold text-white">
                       {(item as any).badge}
                     </span>
                   )}
@@ -75,14 +75,14 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
           {/* Desktop (Minimalista e objetivo) */}
           {platform === "desktop" && (
-            <div className="flex flex-col items-center gap-2 border-t border-slate-100 pt-3">
+            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-3">
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:scale-[1.03] transition-transform"
               >
-                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-12 object-contain drop-shadow-sm" />
+                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-12 object-contain drop-shadow-sm brightness-110" />
               </a>
               <p className="text-[10px] text-slate-400 font-medium text-center leading-tight">
                 Também funciona no iPhone via navegador.
@@ -92,8 +92,8 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
           {/* Android Web */}
           {platform === "android-web" && (
-            <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 flex flex-col items-center text-center w-full">
-              <p className="text-[14px] font-bold text-[#1a3a5c] leading-tight mb-2">
+            <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center w-full shadow-sm">
+              <p className="text-[14px] font-bold text-[#0b1a2e] leading-tight mb-2">
                 Baixe nosso aplicativo
               </p>
               <a

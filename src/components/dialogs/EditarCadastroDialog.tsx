@@ -128,11 +128,9 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
       const telefone = data.telefone.replace(/\D/g, "");
       const data_nascimento = data.data_nascimento;
       await usuarioApi.atualizarUsuario(profile.id, { nome, razao_social, apelido, telefone, data_nascimento });
-      toast.success("cadastro.sucesso.perfilAtualizado", {
-        description: "cadastro.sucesso.perfilAtualizadoDescricao",
-      });
       await refreshProfile();
       onClose();
+      toast.success("cadastro.sucesso.perfilAtualizado");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar as alterações.";
       toast.error("cadastro.erro.atualizar", { description: errorMessage });
@@ -156,138 +154,166 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
-            {(() => {
-              const cpfcnpjValue = form.watch("cpfcnpj") || "";
-              const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
-              return (
-                <>
-                  <div className="mb-4">
-                    <FormField
-                      control={form.control}
-                      name="cpfcnpj"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            CPF ou CNPJ <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              readOnly
-                              className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="razao_social"
-                    render={({ field, fieldState, formState }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Razão Social {isCnpj && <span className="text-red-600">*</span>}
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                            <Input
-                              placeholder="Digite a razão social"
-                              {...field}
-                              value={field.value || ""}
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                              aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                        {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                          <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Nome completo <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                              <Input
-                                placeholder="Digite seu nome completo"
-                                {...field}
-                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="apelido"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Apelido
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                              <Input
-                                placeholder="Ex: Tio Fulano"
-                                {...field}
-                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <FormField
-                      control={form.control}
-                      name="telefone"
-                      render={({ field }) => (
-                        <PhoneInput
-                          field={field}
-                          label="WhatsApp"
-                          placeholder="(00) 00000-0000"
-                          required
-                          labelClassName="text-slate-700 font-semibold ml-1"
-                          inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                        />
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            E-mail <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              {(() => {
+                const cpfcnpjValue = form.watch("cpfcnpj") || "";
+                const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
+                return (
+                  <>
+                    <div className="mb-4">
+                      <FormField
+                        control={form.control}
+                        name="cpfcnpj"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-semibold ml-1">
+                              CPF ou CNPJ <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
                               <Input
                                 {...field}
                                 readOnly
-                                className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                                className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="razao_social"
+                      render={({ field, fieldState, formState }) => (
+                        <FormItem className="mb-4">
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Razão Social {isCnpj && <span className="text-red-600">*</span>}
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                              <Input
+                                placeholder="Digite a razão social"
+                                {...field}
+                                value={field.value || ""}
+                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                          {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                            <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <FormField
+                        control={form.control}
+                        name="nome"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-semibold ml-1">
+                              Nome completo <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  placeholder="Digite seu nome completo"
+                                  {...field}
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="apelido"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-semibold ml-1">
+                              Apelido
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  placeholder="Ex: Tio Fulano"
+                                  {...field}
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <FormField
+                        control={form.control}
+                        name="telefone"
+                        render={({ field }) => (
+                          <PhoneInput
+                            field={field}
+                            label="WhatsApp"
+                            placeholder="(00) 00000-0000"
+                            required
+                            labelClassName="text-slate-700 font-semibold ml-1"
+                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                          />
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-semibold ml-1">
+                              E-mail <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  {...field}
+                                  readOnly
+                                  className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="data_nascimento"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Data de nascimento <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                              <Input
+                                {...field}
+                                inputMode="numeric"
+                                maxLength={10}
+                                onChange={(e) => field.onChange(maskDate(e.target.value))}
+                                placeholder="dd/mm/aaaa"
+                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                aria-invalid={!!fieldState.error}
                               />
                             </div>
                           </FormControl>
@@ -295,37 +321,9 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                         </FormItem>
                       )}
                     />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="data_nascimento"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Data de nascimento <span className="text-red-600">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                            <Input
-                              {...field}
-                              inputMode="numeric"
-                              maxLength={10}
-                              onChange={(e) => field.onChange(maskDate(e.target.value))}
-                              placeholder="dd/mm/aaaa"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                              aria-invalid={!!fieldState.error}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              );
-            })()}
+                  </>
+                );
+              })()}
             </form>
           </Form>
         )}

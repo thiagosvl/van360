@@ -88,7 +88,7 @@ export function QuickRegistrationLink({
               variant="outline"
               size="sm"
               onClick={handleShareWhatsApp}
-              className="flex-1 md:flex-none font-black border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest"
+              className="flex-1 md:flex-none font-bold border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-11 px-4 md:px-5 text-[13px]"
             >
               <WhatsAppIcon className="h-4 w-4 mr-2" />
               Enviar
@@ -97,19 +97,19 @@ export function QuickRegistrationLink({
               variant="outline"
               size="sm"
               onClick={handleCopyLink}
-              className={`flex-1 md:flex-none font-black border-[#1a3a5c]/10 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest ${isCopied
+              className={`flex-1 md:flex-none font-bold border-[#1a3a5c]/10 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 hover:text-[#1a3a5c] transition-all rounded-xl h-11 px-4 md:px-5 text-[13px] ${isCopied
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                 : ""
                 }`}
             >
               {isCopied ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <Check className="h-4 w-4 mr-2 text-emerald-500" />
                   Copiado!
                 </>
               ) : (
                 <>
-                  <Copy className="h-3.5 w-3.5 text-slate-400" />
+                  <Copy className="h-4 w-4 mr-2 text-slate-400" />
                   Copiar
                 </>
               )}

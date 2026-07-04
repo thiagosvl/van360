@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { X } from "lucide-react";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -12,6 +13,10 @@ import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
+import { SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
+import { SubscriptionStatus } from "@/types/enums";
+import { formatShortName } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { Outlet, useNavigate } from "react-router-dom";
 
@@ -21,6 +26,15 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
   const navigate = useNavigate();
   useAnalyticsInjector({ clarity: true, force: true });
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
+  const { subscription } = useSubscriptionStatus(user?.id);
+  const userInitial = profile?.nome?.charAt(0)?.toUpperCase();
+  const displayName = profile?.apelido || formatShortName(profile?.nome, true);
+
+  const statusLabel = subscription?.status 
+    ? SUBSCRIPTION_STATUS_DETAILS[subscription.status as SubscriptionStatus]?.label || "Motorista Parceiro"
+    : "Motorista Parceiro";
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
@@ -78,14 +92,19 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
       <AppNavbar role={role} />
 
       {/* Sidebar fixa apenas para Desktop */}
-      <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        <div className="flex h-20 items-center justify-center border-b border-gray-50 bg-slate-50/20">
-          <img
-            src="/assets/logo-van360.webp"
-            alt="Van360"
-            className="h-14 w-auto cursor-pointer"
-            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
-          />
+      <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <div className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4">
+          <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
+            {userInitial}
+          </div>
+          <div className="flex flex-col min-w-0 pr-2">
+            <span className="text-[15px] font-bold text-white leading-tight truncate mb-1">
+              {displayName}
+            </span>
+            <div className="flex items-center">
+              <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
+            </div>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-6">
           <AppSidebar role={role} />
@@ -106,17 +125,32 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
         <SheetContent
           ref={sheetRef}
           side="right"
-          className="w-[85%] sm:w-80 px-0 border-l border-gray-100 bg-white"
+          className="w-[85%] sm:w-80 px-0 border-l border-[#0b1a2e] bg-[#0b1a2e]"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="px-6 pb-4 pt-6 border-b border-gray-50 bg-slate-50/50">
-            <SheetTitle className="text-left">
-              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Menu de Opções</span>
-            </SheetTitle>
+          <div className="px-6 pb-6 pt-10 flex items-center gap-4 relative">
+            <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
+            <div className="h-14 w-14 rounded-full bg-white/10 border border-white/5 flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0">
+              {userInitial}
+            </div>
+            <div className="flex flex-col min-w-0 pr-6">
+              <span className="text-[17px] font-bold text-white leading-tight truncate mb-1">
+                {displayName}
+              </span>
+              <div className="flex items-center">
+                <span className="text-[13px] text-slate-400 font-medium">{statusLabel}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <div className="p-4 h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">
+          <div className="p-4 h-[calc(100vh-120px)] overflow-y-auto scrollbar-hide">
             <AppSidebar
               role={role}
               onLinkClick={() => setIsMobileMenuOpen(false)}

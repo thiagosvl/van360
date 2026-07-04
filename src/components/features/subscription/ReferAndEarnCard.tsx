@@ -118,9 +118,9 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
             {!isClaimOpen ? (
               <button
                 onClick={() => setIsClaimOpen(true)}
-                className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 w-full"
+                className="text-[13px] font-bold text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1.5 w-full"
               >
-                <Award className="w-3.5 h-3.5" />
+                <Award className="w-4 h-4" />
                 Fui Convidado
               </button>
             ) : (
@@ -133,7 +133,7 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
                 />
                 <div className="flex gap-2">
                   <Button
-                    className="flex-1 h-11 bg-primary text-white font-bold text-[11px] font-headline uppercase rounded-xl hover:bg-primary/90 shadow-md shadow-primary/20"
+                    className="flex-1 h-11 bg-primary text-white font-bold text-[13px] rounded-xl hover:bg-primary/90 shadow-md shadow-primary/20"
                     onClick={handleClaimReferral}
                     disabled={claimReferral.isPending}
                   >
