@@ -20,7 +20,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
   return (
     <div className="flex h-full flex-col gap-4">
-      <nav className="flex-1 space-y-0.5 overflow-y-auto pr-1">
+      <nav className="flex-1 space-y-[clamp(0.125rem,1vh,0.5rem)] md:space-y-0.5 overflow-y-auto pr-1">
         {itemsToRender.map((item) => (
           <NavLink
             key={item.href}
@@ -28,7 +28,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-xl px-3 py-1.5 text-[14px] transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-[clamp(0.375rem,1vh,0.625rem)] md:py-1.5 text-[clamp(15px,2.2vh,22px)] md:text-[14px] transition-colors",
                 isActive
                   ? "bg-white/10 text-white font-bold shadow-sm"
                   : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
@@ -39,13 +39,14 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
               <>
                 <span
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-base shrink-0",
+                    "flex items-center justify-center rounded-lg border border-transparent text-base shrink-0",
+                    "h-[clamp(2.5rem,5.5vh,3.5rem)] w-[clamp(2.5rem,5.5vh,3.5rem)] md:h-8 md:w-8",
                     isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "h-[18px] w-[18px]",
+                      "h-[clamp(20px,3vh,28px)] w-[clamp(20px,3vh,28px)] md:h-[18px] md:w-[18px]",
                       isActive ? "text-white" : "text-slate-400"
                     )}
                   />
