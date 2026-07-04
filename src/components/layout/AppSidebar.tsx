@@ -20,8 +20,8 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
     : pagesItems;
 
   return (
-    <div className="flex h-full flex-col gap-6">
-      <nav className="flex-1 space-y-1 overflow-y-auto pr-1 md:space-y-1">
+    <div className="flex h-full flex-col gap-4">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto pr-1">
         {itemsToRender.map((item) => (
           <NavLink
             key={item.href}
@@ -29,7 +29,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-xl px-4 py-2 text-[15px] transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-1.5 text-[14px] transition-colors",
                 isActive
                   ? "bg-white/10 text-white font-bold shadow-sm"
                   : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
@@ -40,13 +40,13 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
               <>
                 <span
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-lg shrink-0",
+                    "flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-base shrink-0",
                     isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "h-5 w-5",
+                      "h-[18px] w-[18px]",
                       isActive ? "text-white" : "text-slate-400"
                     )}
                   />

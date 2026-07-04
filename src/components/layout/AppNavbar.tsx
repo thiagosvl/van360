@@ -21,6 +21,7 @@ import {
   Key,
   Rocket,
   IdCard,
+  Menu,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -123,18 +124,11 @@ export function AppNavbar({ role }: { role: "motorista" }) {
 
         {/* Direita: Ajuda (Mobile) e Perfil de Usuário */}
         <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2">
-          {/* Perfil de Usuário */}
+          {/* Perfil de Usuário / Menu Hamburger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="group flex items-center gap-x-2 outline-none p-1">
-                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-slate-100 group-hover:text-primary transition-all shadow-sm">
-                  {isLoadingProfile ? (
-                    <Skeleton className="h-full w-full rounded-2xl" />
-                  ) : (
-                    <span>{userInitial}</span>
-                  )}
-                </div>
-                <ChevronDown className="h-4 w-4 hidden sm:block text-slate-400 group-hover:text-slate-600 transition-colors" />
+              <button className="group flex items-center justify-center outline-none h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-white border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 hover:text-primary transition-all shadow-sm">
+                <Menu className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2.5} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-2 rounded-xl p-1 shadow-xl border-gray-100" align="end">

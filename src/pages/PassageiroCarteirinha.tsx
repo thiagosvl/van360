@@ -631,7 +631,7 @@ export default function PassageiroCarteirinha() {
                 </Suspense>
 
                 {/* Abas: Dados Pessoais / Mensalidades — logo na primeira dobra */}
-                <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full">
+                <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full pt-4">
                   <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
                     <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
                       <TabsTrigger

@@ -81,14 +81,14 @@ export const CarteirinhaObservacoes = ({
               <Button
                 onClick={onCancelEdit}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-white border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100 shadow-none active:scale-95"
+                className="flex-1 h-12 rounded-2xl font-bold text-[13px] bg-white border border-slate-100 text-slate-500 hover:text-slate-600 hover:bg-slate-50 shadow-none active:scale-95"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={onSave}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 active:scale-95"
+                className="flex-1 h-12 rounded-2xl font-bold text-[13px] bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 active:scale-95"
               >
                 {isSaving ? (
                   <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
