@@ -66,7 +66,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
       </nav>
 
       {/* Bloco de Download / Plataforma / Indique e Ganhe */}
-      {!isNative || platform === "ios-web" ? (
+      {isNative || platform === "ios-web" ? (
         <div className="mt-auto px-4 pb-2 md:pb-4">
           <CompactReferAndEarnCard />
         </div>
@@ -93,9 +93,8 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
           {/* Android Web */}
           {platform === "android-web" && (
             <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 flex flex-col items-center text-center w-full">
-              <p className="text-[13px] font-bold text-[#1a3a5c] mb-1">Baixe o App Van360!</p>
-              <p className="text-[11px] text-slate-500 mb-3 leading-tight">
-                Tenha uma experiência ainda mais rápida no dia a dia.
+              <p className="text-[14px] font-bold text-[#1a3a5c] leading-tight mb-2">
+                Baixe nosso aplicativo
               </p>
               <a
                 href={PLAY_STORE_URL}

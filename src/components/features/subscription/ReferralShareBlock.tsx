@@ -58,12 +58,11 @@ export function ReferralShareBlock({ referralLink, variant = "default" }: Referr
             handleCopyReferral();
           }
         }}
-        className={`w-full bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold shadow-sm flex items-center justify-center transition-all ${
-          isCompact ? "h-11 text-[13px] gap-1.5" : "h-12 text-[14px] gap-2"
-        }`}
+        className={`w-full bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold shadow-sm flex items-center justify-center transition-all ${isCompact ? "h-11 text-[13px] gap-1.5" : "h-12 text-[14px] gap-2"
+          }`}
       >
         <WhatsAppIcon className={isCompact ? "w-4 h-4" : "w-[18px] h-[18px]"} />
-        {isCompact ? "Compartilhar" : "Compartilhar no WhatsApp"}
+        {isCompact ? "Convidar" : "Convidar pelo WhatsApp"}
       </Button>
     </>
   );

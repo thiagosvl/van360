@@ -19,13 +19,10 @@ export function CompactReferAndEarnCard() {
               <Star className="w-3 h-3 text-white fill-white" strokeWidth={1} />
             </div>
           </div>
-          <h4 className="text-[17px] font-bold text-[#f59e0b] tracking-tight leading-none mt-0.5">
-            Ganhe {bonusDaysPerReferral} dias grátis
+          <h4 className="text-[17px] font-bold text-[#f59e0b] tracking-tight leading-none mt-0.5 mb-2">
+            Indique e Ganhe {bonusDaysPerReferral} dias grátis
           </h4>
         </div>
-        <p className="text-[12px] text-slate-500 leading-snug px-2 mb-4">
-          Quer ganhar mensalidade grátis? Indique para um colega.
-        </p>
 
         {/* Share Block */}
         <ReferralShareBlock referralLink={referral?.referralLink} variant="compact" />

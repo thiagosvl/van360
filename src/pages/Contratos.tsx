@@ -74,7 +74,7 @@ const Contratos = () => {
                 </div>
                 <button
                   onClick={handleOpenContractSetup}
-                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
+                  className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
                 >
                   Configurar Agora
                 </button>
@@ -98,7 +98,7 @@ const Contratos = () => {
                 <button
                   onClick={() => handleToggleContracts(true)}
                   disabled={isToggling}
-                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center disabled:opacity-50"
+                  className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center disabled:opacity-50"
                 >
                   Reativar Contratos
                 </button>

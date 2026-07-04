@@ -92,7 +92,7 @@ export const DashboardStatusCard = ({
         <button
           onClick={onAction}
           className={cn(
-            "h-10 px-5 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-md shrink-0 active:scale-95 flex items-center justify-center gap-1 w-full sm:w-auto",
+            "h-11 px-4 md:px-5 text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shrink-0 active:scale-95 flex items-center justify-center w-full sm:w-auto",
             style.buttonBg
           )}
         >
