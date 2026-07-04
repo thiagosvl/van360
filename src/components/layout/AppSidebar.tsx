@@ -67,7 +67,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
       {/* Bloco de Download / Plataforma / Indique e Ganhe */}
       {isNative || platform === "ios-web" ? (
-        <div className="mt-auto px-4 pb-2 md:pb-4">
+        <div className="mt-auto px-4 pb-8 md:pb-4 pt-2">
           <CompactReferAndEarnCard />
         </div>
       ) : (
