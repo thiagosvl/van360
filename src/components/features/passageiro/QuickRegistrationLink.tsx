@@ -91,7 +91,7 @@ export function QuickRegistrationLink({
               className="flex-1 md:flex-none font-black border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest"
             >
               <WhatsAppIcon className="h-4 w-4 mr-2" />
-              WhatsApp
+              Enviar
             </Button>
             <Button
               variant="outline"
