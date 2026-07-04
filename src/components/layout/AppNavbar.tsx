@@ -127,8 +127,23 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           {/* Perfil de Usuário / Menu Hamburger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="group flex items-center justify-center outline-none h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-white border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 hover:text-primary transition-all shadow-sm">
-                <Menu className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2.5} />
+              <button className="group flex items-center gap-x-1.5 outline-none p-1 sm:p-0">
+                {/* Mobile: Avatar com inicial + seta */}
+                <div className="md:hidden flex items-center gap-x-1.5">
+                  <div className="h-10 w-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm group-hover:bg-slate-50 group-hover:text-primary transition-all shadow-sm">
+                    {isLoadingProfile ? (
+                      <Skeleton className="h-full w-full rounded-2xl" />
+                    ) : (
+                      <span>{userInitial}</span>
+                    )}
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                </div>
+
+                {/* Desktop: Menu Hamburger */}
+                <div className="hidden md:flex items-center justify-center h-12 w-12 rounded-2xl bg-white border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 hover:text-primary transition-all shadow-sm">
+                  <Menu className="h-7 w-7" strokeWidth={2.5} />
+                </div>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-2 rounded-xl p-1 shadow-xl border-gray-100" align="end">

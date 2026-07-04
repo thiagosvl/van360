@@ -23,7 +23,6 @@ import { Outlet, useNavigate } from "react-router-dom";
 const SWIPE_CLOSE_THRESHOLD = 100;
 
 function AppLayoutContent({ role }: { role: "motorista" }) {
-  const navigate = useNavigate();
   useAnalyticsInjector({ clarity: true, force: true });
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
   const { user } = useSession();
@@ -32,9 +31,9 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
   const userInitial = profile?.nome?.charAt(0)?.toUpperCase();
   const displayName = profile?.apelido || formatShortName(profile?.nome, true);
 
-  const statusLabel = subscription?.status 
+  const statusLabel = subscription?.status
     ? SUBSCRIPTION_STATUS_DETAILS[subscription.status as SubscriptionStatus]?.label || "Motorista Parceiro"
-    : "Motorista Parceiro";
+    : "Carregando...";
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);

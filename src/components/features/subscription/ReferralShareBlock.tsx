@@ -28,12 +28,12 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
 
   if (isCompact) {
     return (
-      <div className="flex w-full gap-1.5 mt-1">
+      <div className="flex flex-wrap w-full gap-2 mt-1">
         <Button
           variant="outline"
           onClick={handleCopyReferral}
           className={cn(
-            "flex-1 transition-all rounded-xl h-10 px-1.5 text-[11px] sm:text-[12px] sm:px-2 font-bold border",
+            "flex-1 min-w-[100px] transition-all rounded-xl h-10 px-2 text-[11px] sm:text-[12px] font-bold border",
             darkTheme 
               ? "bg-white text-[#0b1a2e] hover:bg-slate-100 border-white/20"
               : "border-[#1a3a5c]/10 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 hover:text-[#1a3a5c]",
@@ -62,7 +62,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
             }
           }}
           className={cn(
-            "flex-1 rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-10 text-[11px] sm:text-[12px] px-1.5 sm:px-2",
+            "flex-1 min-w-[100px] rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-10 text-[11px] sm:text-[12px] px-2",
             darkTheme
               ? "bg-white text-[#0b1a2e] hover:bg-slate-100"
               : "bg-[#25D366] hover:bg-[#20b858] text-white"
