@@ -148,7 +148,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-2 rounded-xl p-1 shadow-xl border-gray-100" align="end">
               <div className="px-3 py-2.5 border-b border-gray-50 mb-1">
-                <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">Bem-vindo,</p>
+                <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">Bem-vindo (a),</p>
                 {isLoadingProfile ? (
                   <Skeleton className="h-4 w-32 mt-1" />
                 ) : (
