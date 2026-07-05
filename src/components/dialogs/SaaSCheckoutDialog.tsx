@@ -221,10 +221,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 {(totalDiscount > 0 || discountPercent > 0) && (
                   <div
                     className={cn(
-                      "absolute -top-[13px] left-1/2 -translate-x-1/2 px-4 sm:px-5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-sans font-black uppercase shadow-sm z-10 border whitespace-nowrap transition-all",
-                      isAnual
-                        ? "bg-[#d1fae5] text-[#065f46] border-[#6ee7b7]"
-                        : "bg-slate-200 text-slate-500 border-slate-300"
+                      "absolute -top-[13px] left-1/2 -translate-x-1/2 px-4 sm:px-5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-sans font-black uppercase shadow-sm z-10 border whitespace-nowrap transition-all bg-[#d1fae5] text-[#065f46] border-[#6ee7b7]"
                     )}
                   >
                     {totalDiscount > 0 ? `ECONOMIZE ${SubscriptionUtils.formatCurrency(totalDiscount)}` : `${discountPercent}% OFF`}

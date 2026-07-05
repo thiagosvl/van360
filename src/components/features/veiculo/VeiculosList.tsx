@@ -68,18 +68,8 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-          <div className="flex items-center gap-1">
-            <Users2 className="w-3 h-3 text-[#1a3a5c]/40" />
-            <span className="text-[12px] font-black text-[#1a3a5c] leading-none">
-              {veiculo.passageiros_ativos_count ?? 0}
-            </span>
-          </div>
           <StatusBadge
             status={veiculo.ativo}
-            className={cn(
-              "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-              veiculo.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
-            )}
           />
         </div>
       </div>
@@ -122,7 +112,7 @@ export function VeiculosList({
                   Veículo
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Ocupação
+                  Qtd. Passageiros
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Status
@@ -150,23 +140,21 @@ export function VeiculosList({
                     </div>
                   </td>
                   <td className="px-8 py-5 align-middle">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/50 border border-slate-100 w-fit group-hover:bg-white group-hover:border-slate-200 transition-all">
-                      <Users2 className="w-4 h-4 text-[#1a3a5c]/40" />
-                      <span className="text-sm font-semibold text-slate-700">
-                        {veiculo.passageiros_ativos_count ?? 0}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Ativos
-                      </span>
+                    <div className="flex items-center gap-1.5">
+                      <Users2 className="w-4 h-4 text-slate-400" />
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[13px] font-semibold text-slate-700">
+                          {veiculo.passageiros_ativos_count ?? 0}
+                        </span>
+                        <span className="text-xs font-medium text-slate-500">
+                          passageiros
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-8 py-5 align-middle">
                     <StatusBadge
                       status={veiculo.ativo}
-                      className={cn(
-                        "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
-                        veiculo.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
-                      )}
                     />
                   </td>
                   <td className="px-8 py-5 text-right align-middle" onClick={(e) => e.stopPropagation()}>

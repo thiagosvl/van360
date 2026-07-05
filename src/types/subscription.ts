@@ -16,9 +16,11 @@ export interface Subscription {
   data_vencimento: string | null;
   trial_ends_at: string | null;
   gateway_subscription_id: string | null;
-  valor_base?: number | null;
-  valor_promocional?: number | null;
-  data_fim_promocao?: string | null;
+  valor_base_mensal?: number;
+  valor_promocional_mensal?: number;
+  valor_base_anual?: number;
+  valor_promocional_anual?: number;
+  data_fim_promocao?: string;
   created_at: string;
   updated_at: string;
   planos: SaaSPlan;

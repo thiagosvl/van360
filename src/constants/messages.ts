@@ -373,9 +373,9 @@ export const messages = {
       assinar: "Erro ao assinar contrato.",
     },
     sucesso: {
-      gerado: "Contrato gerado com sucesso!",
+      gerado: "Contrato gerado e enviado com sucesso!",
       removido: "Contrato removido com sucesso!",
-      substituido: "Novo contrato gerado com sucesso!",
+      substituido: "Novo contrato gerado e enviado com sucesso!",
       reenviado: "Notificação reenviada com sucesso!",
       cancelado: "Contrato cancelado com sucesso!",
       baixado: "Contrato baixado com sucesso!",

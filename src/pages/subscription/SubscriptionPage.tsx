@@ -14,6 +14,7 @@ import { openBrowserLink } from "@/utils/browser";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
 import {
   Copy,
+  CopyCheck,
   Clock,
   Lock,
   TrendingUp,
@@ -79,6 +80,7 @@ const SubscriptionPage = () => {
 
   const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
+  const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
 
   const cancelSubscription = useCancelSubscription();
 
@@ -180,9 +182,10 @@ const SubscriptionPage = () => {
     });
   };
 
-  const handleCopyPix = (pixCode: string) => {
+  const handleCopyPix = (pixCode: string, invId: string) => {
     navigator.clipboard.writeText(pixCode);
-    toast.success("Código Pix copiado!");
+    setCopiedPixId(invId);
+    setTimeout(() => setCopiedPixId(null), 2000);
   };
 
   if (isLoading) {
@@ -342,7 +345,7 @@ const SubscriptionPage = () => {
                   </p>
                 )}
               </div>
-              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
+              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && subscription?.data_vencimento && (
                 <div className="mt-6 md:mt-0 relative z-10 shrink-0">
                   <Button
                     className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
@@ -363,10 +366,10 @@ const SubscriptionPage = () => {
           <div className="lg:col-span-2 space-y-8">
 
             {/* 1. Histórico de Faturas: PRIORIDADE */}
-            <section className="space-y-3">
-              <div className="flex items-center justify-between px-1">
-                <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Histórico de Cobrança</h4>
-              </div>
+            <section>
+              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                Histórico de Cobrança
+              </h2>
 
               <div className="space-y-3">
                 {invoices && invoices.length > 0 ? (
@@ -410,19 +413,36 @@ const SubscriptionPage = () => {
                         {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
                           <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
                             {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
-                              <button
-                                className="w-full flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 transition-colors bg-primary px-4 py-3 rounded-xl border border-primary-400/40"
-                                onClick={() => handleCopyPix(inv.pix_copy_paste!)}
-                              >
-                                <Copy className="w-4 h-4" />
-                                Copiar código PIX
-                              </button>
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <button
+                                  className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 transition-colors bg-primary px-4 py-3 rounded-xl border border-primary-400/40 transition-all duration-300"
+                                  onClick={() => handleCopyPix(inv.pix_copy_paste!, inv.id)}
+                                >
+                                  {copiedPixId === inv.id ? (
+                                    <>
+                                      <CopyCheck className="w-4 h-4 animate-in zoom-in duration-200" />
+                                      Copiado!
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-4 h-4" />
+                                      Copiar código PIX
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 transition-colors bg-primary/5 px-4 py-3 rounded-xl border border-primary/10"
+                                  onClick={() => handleSubscribe()}
+                                >
+                                  Alterar forma de pagamento
+                                </button>
+                              </div>
                             ) : (
                               <button
                                 className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
                                 onClick={() => handleSubscribe()}
                               >
-                                Pagar Agora
+                                Alterar forma de pagamento
                               </button>
                             )}
                           </div>
@@ -442,10 +462,10 @@ const SubscriptionPage = () => {
 
             {/* 2. Métodos de Pagamento: COMPACTO - Só aparece se houver cartões */}
             {paymentMethods && paymentMethods.length > 0 && (
-              <section className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="flex items-center justify-between px-1">
-                  <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Métodos de Pagamento</h4>
-                </div>
+              <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                  Métodos de Pagamento
+                </h2>
 
                 <div className="space-y-3">
                   {paymentMethods.map((method) => {
@@ -537,10 +557,10 @@ const SubscriptionPage = () => {
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
-          <aside className="lg:col-span-1 space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <h4 className="font-headline font-bold text-lg sm:text-xl text-primary">Indique e Ganhe</h4>
-            </div>
+          <aside className="lg:col-span-1">
+            <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+              Indique e Ganhe
+            </h2>
             <div className="sticky top-24">
               <ReferAndEarnCard isTrial={isTrial} />
             </div>

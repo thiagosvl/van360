@@ -38,7 +38,7 @@ export function InvoiceStatusBadge({ status, className }: InvoiceStatusBadgeProp
     return (
       <span
         className={cn(
-          "inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200/50",
+          "inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-semibold normal-case tracking-normal bg-slate-50 text-slate-500 border border-slate-200/50",
           className
         )}
       >
@@ -50,7 +50,7 @@ export function InvoiceStatusBadge({ status, className }: InvoiceStatusBadgeProp
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border transition-colors",
+        "inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-semibold normal-case tracking-normal border transition-colors",
         badge.className,
         className
       )}

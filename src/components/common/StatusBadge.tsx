@@ -23,25 +23,25 @@ export function StatusBadge({
 
   if (typeof status === "boolean") {
     return status ? (
-      <Badge
-        variant="outline"
+      <span
         className={cn(
-          "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100 font-medium",
+          "inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold normal-case tracking-normal border transition-colors",
+          "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100",
           className
         )}
       >
         {trueLabel}
-      </Badge>
+      </span>
     ) : (
-      <Badge
-        variant="outline"
+      <span
         className={cn(
-          "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 font-medium",
+          "inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold normal-case tracking-normal border transition-colors",
+          "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100",
           className
         )}
       >
         {falseLabel}
-      </Badge>
+      </span>
     );
   }
 
@@ -49,11 +49,14 @@ export function StatusBadge({
   const text = getStatusText(status, dataVencimento ? dataVencimento.toString() : "");
 
   return (
-    <Badge
-      variant="secondary"
-      className={cn("font-medium", colorClass, className)}
+    <span
+      className={cn(
+        "inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold normal-case tracking-normal border transition-colors",
+        colorClass,
+        className
+      )}
     >
       {text}
-    </Badge>
+    </span>
   );
 }

@@ -48,13 +48,13 @@ export function GerarContratoValidadorDialog({
   return (
     <BaseDialog
       open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={onClose}
       maxWidth="md"
       lockClose
     >
       <BaseDialog.Header
-        title="Completar Cadastro"
-        icon={<FileCheck className="w-5 h-5" />}
+        title="Dados do Contrato"
+        icon={<FileCheck className="w-5 h-5 opacity-80" />}
         onClose={onClose}
         leftAction={import.meta.env.DEV && (
           <Button
@@ -87,8 +87,11 @@ export function GerarContratoValidadorDialog({
                   <Info className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[12px] text-amber-900 leading-relaxed font-medium">
-                    Para gerar um contrato válido, precisamos de algumas informações essenciais que estão faltando no cadastro de <strong>{passageiro?.nome?.split(' ')[0]}</strong>.
+                  <h4 className="text-[13px] font-bold text-amber-900 mb-0.5">
+                    Essencial para o Contrato
+                  </h4>
+                  <p className="text-[12px] text-amber-900/90 leading-relaxed font-medium">
+                    Para conseguirmos emitir o contrato agora, preencha as informações que estão faltando no cadastro de <strong>{passageiro?.nome?.split(' ')[0]}. Se você pular, o contrato não será gerado.</strong>
                   </p>
                 </div>
               </div>
@@ -250,7 +253,12 @@ export function GerarContratoValidadorDialog({
 
       <BaseDialog.Footer>
         <BaseDialog.Action
-          label="Salvar"
+          label="Pular (Não gerar)"
+          variant="secondary"
+          onClick={onClose}
+        />
+        <BaseDialog.Action
+          label="Salvar e Gerar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
           isLoading={isSubmitting}
           disabled={isLoadingPassageiro}

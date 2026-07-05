@@ -18,37 +18,36 @@ export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
   const veiculoInfo = veiculoPlaca ? ` • ${formatarPlacaExibicao(veiculoPlaca)}` : (gasto.veiculo?.placa ? ` • ${formatarPlacaExibicao(gasto.veiculo.placa)}` : "");
 
   return (
-    <div className="flex flex-col p-4 bg-gradient-to-br from-white to-slate-50/50 dark:from-zinc-900 dark:to-zinc-950 rounded-[28px] border border-slate-100 dark:border-zinc-800 shadow-sm transition-all text-left">
+    <div className="flex flex-col p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left">
 
       {/* LINHA 1: Overline Categoria + Contexto Veículo */}
-      <div className="flex justify-between items-center mb-1.5">
-        <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest leading-none truncate pr-2">
+      <div className="flex justify-between items-center mb-2">
+        <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wider leading-none truncate pr-2">
           {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}{veiculoInfo}
         </p>
 
-        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-50 text-red-500 dark:bg-red-950/30">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100/60 text-red-600 dark:bg-red-950/30">
           <TrendingDown className="h-3 w-3" />
         </div>
       </div>
 
-      {/* LINHA 2: Título (Descrição ou Categoria) */}
-      <h1 className="text-[19px] font-black text-[#1a3a5c] dark:text-zinc-100 leading-tight tracking-tight truncate capitalize">
+      {/* LINHA 2: Título (Descrição) */}
+      <h1 className="text-[22px] font-semibold text-[#1a3a5c] dark:text-zinc-100 leading-tight truncate capitalize mt-1">
         {gasto.descricao}
       </h1>
 
-      {/* LINHA 3: Footer com Valor e Data */}
-      <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
-        <div className="flex items-center gap-1.5 grayscale-0 opacity-80">
-          <Calendar className="h-3 w-3 text-amber-500" />
-          <span className="text-[10px] font-black text-slate-600 dark:text-zinc-400 uppercase tracking-tighter">
+      {/* LINHA 3: Footer com Data e Valor */}
+      <div className="flex items-end justify-between mt-5 pt-4 border-t border-slate-200/60 dark:border-zinc-800/80">
+        <div className="flex items-center gap-1.5">
+          <Calendar className="h-4 w-4 text-slate-400" />
+          <span className="text-[12px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wide">
             {formatDateToBR(gasto.data)}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <Wallet className="h-3.5 w-3.5 text-red-500 opacity-60" />
-          <span className="text-[14px] font-black text-red-600 dark:text-red-400 tracking-tight leading-none">
-            - {formatCurrency(gasto.valor)}
+        <div className="flex items-center">
+          <span className="text-[20px] font-semibold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
+            {formatCurrency(gasto.valor)}
           </span>
         </div>
       </div>

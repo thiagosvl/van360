@@ -296,22 +296,22 @@ export function useSaaSCheckoutViewModel({
   let monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
   let hasOverride = false;
 
-  if (subscription?.plano_id === annualPlan?.id && subscription?.valor_base !== null && subscription?.valor_base !== undefined) {
-    let finalAnnual = Number(subscription.valor_base);
-    if (subscription.valor_promocional !== null && subscription.valor_promocional !== undefined) {
+  if (subscription?.valor_base_anual !== null && subscription?.valor_base_anual !== undefined) {
+    let finalAnnual = Number(subscription.valor_base_anual);
+    if (subscription.valor_promocional_anual !== null && subscription.valor_promocional_anual !== undefined) {
       if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
-        finalAnnual = Number(subscription.valor_promocional);
+        finalAnnual = Number(subscription.valor_promocional_anual);
       }
     }
     annualPrice = finalAnnual;
     hasOverride = true;
   }
   
-  if (subscription?.plano_id === monthlyPlan?.id && subscription?.valor_base !== null && subscription?.valor_base !== undefined) {
-    let finalMonthly = Number(subscription.valor_base);
-    if (subscription.valor_promocional !== null && subscription.valor_promocional !== undefined) {
+  if (subscription?.valor_base_mensal !== null && subscription?.valor_base_mensal !== undefined) {
+    let finalMonthly = Number(subscription.valor_base_mensal);
+    if (subscription.valor_promocional_mensal !== null && subscription.valor_promocional_mensal !== undefined) {
       if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
-        finalMonthly = Number(subscription.valor_promocional);
+        finalMonthly = Number(subscription.valor_promocional_mensal);
       }
     }
     monthlyPrice = finalMonthly;

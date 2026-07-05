@@ -1,6 +1,5 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
-import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
 
@@ -20,6 +19,16 @@ import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 import { ContratoSummary } from "./ContratoSummary";
+
+const getIconConfig = (isAssinado: boolean, isSemContrato: boolean) => {
+  if (isAssinado) {
+    return { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" };
+  }
+  if (isSemContrato) {
+    return { icon: FileX2, className: "bg-red-50 border-red-100 text-red-500" };
+  }
+  return { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+};
 
 interface ContratosListProps {
   data: any[];
@@ -87,11 +96,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   const nomeExibicao = item.passageiro?.nome || item.nome || "";
   const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "";
 
-  const iconConfig = isAssinado
-    ? { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" }
-    : isSemContrato
-      ? { icon: FileX2, className: "bg-slate-50 border-slate-100 text-slate-400" }
-      : { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+  const iconConfig = getIconConfig(isAssinado, isSemContrato);
 
   const swipeActions = actions.map((action) => ({
     ...action,
@@ -213,16 +218,12 @@ export const ContratosList = memo(function ContratosList({
             {data.map((item) => {
               const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
               const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
-              
+
               const isSemContrato = item.tipo === "passageiro";
               const status = item.status as ContratoStatus | null;
               const isAssinado = status === ContratoStatus.ASSINADO;
 
-              const iconConfig = isAssinado
-                ? { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" }
-                : isSemContrato
-                  ? { icon: FileX2, className: "bg-slate-50 border-slate-100 text-slate-400" }
-                  : { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+              const iconConfig = getIconConfig(isAssinado, isSemContrato);
 
               return (
                 <TableRow
