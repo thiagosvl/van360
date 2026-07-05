@@ -162,7 +162,10 @@ export interface UpdateSubscriptionPayload {
   status?: string;
   data_vencimento?: string | null;
   trial_ends_at?: string | null;
-  valor_promocional?: number | null;
+  valor_base_mensal?: number | null;
+  valor_base_anual?: number | null;
+  valor_promocional_mensal?: number | null;
+  valor_promocional_anual?: number | null;
   data_fim_promocao?: string | null;
 }
 

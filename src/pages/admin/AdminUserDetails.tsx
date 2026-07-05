@@ -187,7 +187,10 @@ export default function AdminUserDetails() {
     status: "" as string,
     data_vencimento: "",
     trial_ends_at: "",
-    valor_promocional: "",
+    valor_base_mensal: "",
+    valor_base_anual: "",
+    valor_promocional_mensal: "",
+    valor_promocional_anual: "",
     data_fim_promocao: "",
   });
 
@@ -225,7 +228,10 @@ export default function AdminUserDetails() {
         status: s.status || "",
         data_vencimento: toDateInputValue(s.data_vencimento),
         trial_ends_at: toDateInputValue(s.trial_ends_at),
-        valor_promocional: s.valor_promocional !== null ? moneyMask((Number(s.valor_promocional) * 100).toString()) : "",
+        valor_base_mensal: s.valor_base_mensal !== null && s.valor_base_mensal !== undefined ? moneyMask((Number(s.valor_base_mensal) * 100).toString()) : "",
+        valor_base_anual: s.valor_base_anual !== null && s.valor_base_anual !== undefined ? moneyMask((Number(s.valor_base_anual) * 100).toString()) : "",
+        valor_promocional_mensal: s.valor_promocional_mensal !== null && s.valor_promocional_mensal !== undefined ? moneyMask((Number(s.valor_promocional_mensal) * 100).toString()) : "",
+        valor_promocional_anual: s.valor_promocional_anual !== null && s.valor_promocional_anual !== undefined ? moneyMask((Number(s.valor_promocional_anual) * 100).toString()) : "",
         data_fim_promocao: toDateInputValue(s.data_fim_promocao),
       });
     }
@@ -323,10 +329,28 @@ export default function AdminUserDetails() {
   const handleSaveSub = () => {
     if (!id) return;
 
-    let valorPromoNum: number | null = null;
-    if (subForm.valor_promocional) {
-      const clean = subForm.valor_promocional.replace(/\D/g, "");
-      if (clean) valorPromoNum = Number(clean) / 100;
+    let valorBaseMensalNum: number | null = null;
+    if (subForm.valor_base_mensal) {
+      const clean = subForm.valor_base_mensal.replace(/\D/g, "");
+      if (clean) valorBaseMensalNum = Number(clean) / 100;
+    }
+
+    let valorBaseAnualNum: number | null = null;
+    if (subForm.valor_base_anual) {
+      const clean = subForm.valor_base_anual.replace(/\D/g, "");
+      if (clean) valorBaseAnualNum = Number(clean) / 100;
+    }
+
+    let valorPromoMensalNum: number | null = null;
+    if (subForm.valor_promocional_mensal) {
+      const clean = subForm.valor_promocional_mensal.replace(/\D/g, "");
+      if (clean) valorPromoMensalNum = Number(clean) / 100;
+    }
+
+    let valorPromoAnualNum: number | null = null;
+    if (subForm.valor_promocional_anual) {
+      const clean = subForm.valor_promocional_anual.replace(/\D/g, "");
+      if (clean) valorPromoAnualNum = Number(clean) / 100;
     }
 
     updateSub.mutate({
@@ -340,7 +364,10 @@ export default function AdminUserDetails() {
         trial_ends_at: subForm.trial_ends_at
           ? toISODateTimeBR(subForm.trial_ends_at + "T23:59:59")
           : null,
-        valor_promocional: valorPromoNum,
+        valor_base_mensal: valorBaseMensalNum,
+        valor_base_anual: valorBaseAnualNum,
+        valor_promocional_mensal: valorPromoMensalNum,
+        valor_promocional_anual: valorPromoAnualNum,
         data_fim_promocao: subForm.data_fim_promocao
           ? toISODateTimeBR(subForm.data_fim_promocao + "T23:59:59")
           : null,
@@ -805,8 +832,9 @@ export default function AdminUserDetails() {
                       <h4 className="text-xs font-black text-[#1a3a5c] uppercase tracking-widest flex items-center gap-2">
                         Desconto / Promoção Especial
                         {(() => {
-                          const cleanVal = subForm.valor_promocional.replace(/\D/g, "");
-                          if (!cleanVal || Number(cleanVal) <= 0) return null;
+                          const cleanValMensal = (subForm.valor_promocional_mensal || "").replace(/\D/g, "");
+                          const cleanValAnual = (subForm.valor_promocional_anual || "").replace(/\D/g, "");
+                          if ((!cleanValMensal || Number(cleanValMensal) <= 0) && (!cleanValAnual || Number(cleanValAnual) <= 0)) return null;
                           if (!subForm.data_fim_promocao) {
                             return <span className="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Definitivo</span>;
                           }
@@ -818,30 +846,110 @@ export default function AdminUserDetails() {
                           }
                         })()}
                       </h4>
-                      <p className="text-xs text-slate-500 mb-4 mt-1">
-                        Valor Base Atual: <strong className="text-slate-700">{data?.assinatura?.valor_base !== null && data?.assinatura?.valor_base !== undefined ? `R$ ${Number(data.assinatura.valor_base).toFixed(2).replace('.', ',')}` : "Pendente (será copiado na próxima fatura)"}</strong>
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
                         <div className="space-y-2">
                           <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            Valor Promocional (R$)
+                            Valor Base (Mensal)
                           </Label>
                           <div className="relative">
                             <Input
-                              placeholder="Deixe em branco p/ cobrar preço base"
-                              value={subForm.valor_promocional}
-                              onChange={(e) => setSubForm(p => ({ ...p, valor_promocional: moneyMask(e.target.value) }))}
+                              placeholder="Pendente"
+                              value={subForm.valor_base_mensal}
+                              onChange={(e) => setSubForm(p => ({ ...p, valor_base_mensal: moneyMask(e.target.value) }))}
                               className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-10"
                             />
-                            {subForm.valor_promocional && (
+                            {subForm.valor_base_mensal && (
                               <div
                                 className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
-                                  setSubForm(p => ({ ...p, valor_promocional: "" }));
+                                  setSubForm(p => ({ ...p, valor_base_mensal: "" }));
                                 }}
-                                title="Limpar valor promocional"
+                                title="Limpar valor base mensal"
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            Valor Base (Anual)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              placeholder="Pendente"
+                              value={subForm.valor_base_anual}
+                              onChange={(e) => setSubForm(p => ({ ...p, valor_base_anual: moneyMask(e.target.value) }))}
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-10"
+                            />
+                            {subForm.valor_base_anual && (
+                              <div
+                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setSubForm(p => ({ ...p, valor_base_anual: "" }));
+                                }}
+                                title="Limpar valor base anual"
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            Valor Promocional (Mensal)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              placeholder="R$ Base"
+                              value={subForm.valor_promocional_mensal}
+                              onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_mensal: moneyMask(e.target.value) }))}
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-10"
+                            />
+                            {subForm.valor_promocional_mensal && (
+                              <div
+                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setSubForm(p => ({ ...p, valor_promocional_mensal: "" }));
+                                }}
+                                title="Limpar valor promocional mensal"
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            Valor Promocional (Anual)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              placeholder="R$ Base"
+                              value={subForm.valor_promocional_anual}
+                              onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_anual: moneyMask(e.target.value) }))}
+                              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-10"
+                            />
+                            {subForm.valor_promocional_anual && (
+                              <div
+                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setSubForm(p => ({ ...p, valor_promocional_anual: "" }));
+                                }}
+                                title="Limpar valor promocional anual"
                               >
                                 <X className="h-5 w-5" />
                               </div>
