@@ -44,7 +44,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
 
-  let currentPage = pagesItems.find(item => item.href === location.pathname);
+  let currentPage: any = pagesItems.find(item => item.href === location.pathname);
   if (!currentPage && location.pathname.startsWith("/passageiros/")) {
     currentPage = {
       title: "Carteirinha",
