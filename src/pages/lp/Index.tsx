@@ -446,7 +446,7 @@ const Index = () => {
                 <div className="max-w-[320px] sm:max-w-[360px] w-full relative">
                   <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-4 left-0 sm:-left-4" />
                   <MockupImage
-                    src="/assets/lp/mockup-home.webp"
+                    src="/assets/lp/mockup-3d-home.webp"
                     alt="App de cobrança de mensalidade para van escolar rodando no celular"
                     loading="eager"
                     width={1080}
