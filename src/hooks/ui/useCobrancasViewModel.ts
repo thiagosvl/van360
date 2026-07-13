@@ -102,7 +102,6 @@ export function useCobrancasViewModel() {
     {
       enabled: !!profile?.id,
       onError: (error) => {
-        console.error("Erro ao carregar mensalidades:", error);
         toast.error("cobranca.erro.carregar");
       },
     }
@@ -117,7 +116,7 @@ export function useCobrancasViewModel() {
 
   // Page Title
   useEffect(() => {
-    setPageTitle("Mensalidades");
+    setPageTitle("Parcelas");
   }, [setPageTitle]);
 
   // KPI Calculations

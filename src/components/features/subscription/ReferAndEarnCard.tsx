@@ -63,7 +63,7 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
           Ganhe {bonusDaysPerReferral} dias grátis
         </h4>
         <p className="text-[13px] text-slate-500 leading-snug px-4 mb-4">
-          Convide outros motoristas. Eles ganham desconto e você ganha mensalidades grátis!
+          Convide outros motoristas. Eles ganham desconto e você ganha +1 mês gratis!
         </p>
 
         <Drawer>

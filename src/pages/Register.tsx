@@ -11,7 +11,8 @@ import { Wand2 } from "lucide-react";
 export default function Register() {
   useSEO({
     title: "Criar conta grátis | Van360",
-    description: "Crie sua conta e organize passageiros, mensalidades, contratos e recibos da sua van escolar. 15 dias grátis, sem cartão.",
+    description:
+      "Crie sua conta grátis e gerencie passageiros, parcelas, contratos e recibos. Automatize a cobrança das mensalidades do transporte escolar. Teste grátis por 15 dias.",
   });
   useAnalyticsInjector({ gtm: true, clarity: true });
 

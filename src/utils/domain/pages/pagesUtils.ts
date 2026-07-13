@@ -8,7 +8,7 @@ const pagesItems = [
         icon: LayoutDashboard,
     },
     {
-        title: "Mensalidades",
+        title: "Parcelas",
         href: ROUTES.PRIVATE.MOTORISTA.BILLING,
         icon: CreditCard,
     },

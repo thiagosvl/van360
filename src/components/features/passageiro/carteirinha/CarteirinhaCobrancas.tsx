@@ -95,7 +95,7 @@ export const CarteirinhaCobrancas = ({
             className="h-10 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white px-4 font-bold shadow-diff-shadow transition-all group text-xs"
           >
             <Plus className="h-4 w-4 mr-1.5" />
-            <span className="hidden sm:block">Registrar Mensalidade</span>
+            <span className="hidden sm:block">Registrar Parcela</span>
             <span className="block sm:hidden">Registrar</span>
           </Button>
         </div>
@@ -107,7 +107,7 @@ export const CarteirinhaCobrancas = ({
           <div className="flex flex-col items-center justify-center p-10 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100">
             <History className="h-8 w-8 text-slate-200 mb-3" />
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
-              Nenhuma mensalidade registrada em {yearFilter}
+              Nenhuma parcela registrada em {yearFilter}
             </p>
           </div>
         ) : (
@@ -246,7 +246,6 @@ const CobrancaItemPassageiro = forwardRef<
       >
         {/* Card — mesmo padrão de CobrancasList mobile */}
         <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50">
-          {/* Status icon (equivalente ao bloco de dia na tela de mensalidades) */}
           <div className={cn(
             "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
             isPaid ? "bg-emerald-500" :

@@ -71,7 +71,7 @@ export function useCobrancaOperations({
   const handleDesfazerPagamento = useCallback(async () => {
     openConfirmationDialog({
       title: "Desfazer pagamento?",
-      description: "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
+      description: "O pagamento será removido e a parcela voltará a ficar pendente. Confirmar?",
       variant: "warning",
       confirmText: "Desfazer",
       onConfirm: async () => {

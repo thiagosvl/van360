@@ -37,7 +37,7 @@ export default function CobrancaDialog({
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Registrar Mensalidade" icon={<PlusCircle className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header title="Registrar Parcela" icon={<PlusCircle className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
 
         <Form {...form}>

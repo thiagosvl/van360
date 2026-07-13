@@ -88,8 +88,8 @@ const Home = () => {
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
               {
                 financeiro.countAtrasos > 0
-                  ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "mensalidade" : "mensalidades"} em atraso`
-                  : `Mensalidades do mês em dia!`
+                  ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
+                  : `Parcelas do mês em dia!`
               }
             </p>
           </div>
@@ -143,17 +143,16 @@ const Home = () => {
             </section>
           )}
 
-          {/* Notificação de Mensalidades pendentes */}
+          {/* Notificação de Parcelas pendentes */}
           {!onboarding.showOnboarding && financeiro.countAtrasos > 0 && (
             <section>
               <DashboardStatusCard
                 type="pending"
-                title="Mensalidades em Atraso"
+                title={`${financeiro.countAtrasos > 1 ? `${financeiro.countAtrasos}` : ""} Parcela${financeiro.countAtrasos > 1 ? "s" : ""} em Atraso`}
                 description={`Você tem ${formatCurrency(
                   financeiro.totalEmAtraso,
-                )} em atraso de ${financeiro.countAtrasos} passageiro${financeiro.countAtrasos != 1 ? "s" : ""
-                  } referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
-                actionLabel="Ver Mensalidades"
+                )} em atraso referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
+                actionLabel="Ver Parcelas"
                 onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
               />
             </section>

@@ -231,7 +231,7 @@ export function CobrancaFormContent({
                         disabled={shouldDisableValue}
                         labelClassName="text-slate-700 font-semibold ml-1"
                         inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
-                        label="Valor da Mensalidade"
+                        label="Valor da Parcela"
                     />
                 )}
             />
@@ -312,7 +312,7 @@ export function CobrancaFormContent({
                             </FormControl>
                             <div className="flex-1 space-y-1 leading-none">
                                 <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
-                                    Esta mensalidade já foi paga?
+                                    Esta parcela já foi paga?
                                 </FormLabel>
                             </div>
                         </div>
@@ -433,7 +433,7 @@ export function CobrancaFormContent({
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                             </>
-                        ) : mode === "create" ? "Registrar Mensalidade" : "Salvar Alterações"}
+                        ) : mode === "create" ? "Registrar Parcela" : "Salvar Alterações"}
                     </Button>
                 </div>
             )}

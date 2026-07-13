@@ -127,7 +127,7 @@ export default function PassageiroExternalForm() {
 
                 <hr className="border-slate-100" />
 
-                {/* MENSALIDADE */}
+                {/* PARCELAS */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
                   <PassageiroFormFinanceiro isExternal editingPassageiro={null} />
                 </section>

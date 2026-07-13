@@ -150,7 +150,7 @@ const Index = () => {
   const platform = detectPlatform();
   useSEO({
     title: "Van360 — App para Van Escolar e Gestão de Passageiros",
-    description: "Cobre mensalidades automaticamente, envie lembretes aos pais e emita recibos. A gestão completa da sua van escolar na palma da mão. 15 dias grátis!",
+    description: "Gerencie passageiros, parcelas, contratos e recibos. Automatize a cobrança de parcelas pelo WhatsApp e organize sua van escolar. Teste grátis por 15 dias.",
   });
   const [termosOpen, setTermosOpen] = useState(false);
   const [privacidadeOpen, setPrivacidadeOpen] = useState(false);
@@ -200,7 +200,7 @@ const Index = () => {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Van360",
-        "description": "Organize passageiros, mensalidades, contratos e recibos da sua van escolar. Tudo digital, tudo pelo celular.",
+        "description": "Organize passageiros, parcelas, contratos e recibos. Automatize a cobrança de parcelas pelo WhatsApp.",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Android, Web",
         "url": "https://van360.com.br",
@@ -217,7 +217,7 @@ const Index = () => {
           {
             "@type": "Question",
             "name": "O que o Van360 faz?",
-            "acceptedAnswer": { "@type": "Answer", "text": "O Van360 organiza a gestão da sua van escolar: cadastro de passageiros, controle de mensalidades, geração de contratos digitais e emissão de recibos. Tudo pelo celular, em um lugar só." },
+            "acceptedAnswer": { "@type": "Answer", "text": "O Van360 organiza a gestão da sua van escolar: cadastro de passageiros, controle de parcelas, cobranças, contratos digitais e recibos, geração de contratos digitais e emissão de recibos. Tudo pelo celular, em um lugar só." },
           },
           {
             "@type": "Question",
@@ -279,10 +279,10 @@ const Index = () => {
   const features = [
     {
       headline: "Pare de cobrar os pais e de passar constrangimento",
-      text: "Chega de ser 'o chato da cobrança'. O Van360 envia lembretes amigáveis pelo WhatsApp automaticamente. Saiba na hora quem pagou e quem está devendo. O dinheiro entra e você só foca na direção.",
+      text: "Chega de ser 'o chato da cobrança'. O Van360 envia lembretes amigáveis pelo WhatsApp automaticamente. Saiba na hora quais parcelas foram pagas e quais ainda estão pendentes. O dinheiro entra e você só foca na direção.",
       mockup: "/assets/lp/mockup-mensalidades.webp",
-      alt: "Painel de controle de mensalidades pendentes e pagas da van escolar",
-      balloonText: "A mensalidade da Júlia vence amanhã.",
+      alt: "Painel de controle de parcelas pendentes e pagas da van escolar",
+      balloonText: "A parcela de julho da Júlia vence amanhã.",
     },
     {
       headline: "Receba a ficha dos passageiros pronta",
@@ -293,7 +293,7 @@ const Index = () => {
     },
     {
       headline: "Diga adeus à velha carteirinha de papel",
-      text: "Tenha a ficha completa dos alunos na palma da mão, direto na van. Chega de carimbar carnê ou esquecer o caderno em casa. Segurança para você, profissionalismo para os pais.",
+      text: "Tenha a ficha completa dos alunos na palma da mão, direto na van. Chega de depender de carnês e fichas de papel. Segurança para você, profissionalismo para os pais.",
       mockup: "/assets/lp/mockup-carteirinha.webp",
       alt: "Carteirinha digital do estudante na van",
     },
@@ -444,10 +444,10 @@ const Index = () => {
               {/* Mockup — SÓ MOBILE */}
               <div className="flex justify-center md:hidden relative mt-10 mb-8">
                 <div className="max-w-[320px] sm:max-w-[360px] w-full relative">
-                  <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1s" positionClass="-top-4 left-0 sm:-left-4" />
+                  <WhatsAppBalloon text="A parcela de julho do Enzo vence hoje." delay="1s" positionClass="-top-4 left-0 sm:-left-4" />
                   <MockupImage
                     src="/assets/lp/mockup-3d-home.webp"
-                    alt="App de cobrança de mensalidade para van escolar rodando no celular"
+                    alt="App para controle de parcelas da van escolar rodando no celular"
                     loading="eager"
                     width={1080}
                     height={1400}
@@ -540,7 +540,7 @@ const Index = () => {
             {/* Mockup — SÓ DESKTOP */}
             <div className="order-2 hidden md:flex justify-end">
               <div className="max-w-[480px] w-full hero-phone relative">
-                <WhatsAppBalloon text="A mensalidade do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
+                <WhatsAppBalloon text="A parcela de julho do Enzo vence hoje." delay="1.2s" positionClass="-top-4 -left-6" />
                 <MockupImage
                   src="/assets/lp/mockup-3d-mensalidades.webp"
                   alt="Sistema de gestão de transporte escolar rodando no navegador"
@@ -589,7 +589,7 @@ const Index = () => {
               {
                 icon: "📱",
                 title: "Sufoco no WhatsApp",
-                text: "Gasta o seu tempo de descanso cobrando mensalidades e tirando dúvidas.",
+                text: "Gasta o seu tempo de descanso cobrando os pais e tirando dúvidas.",
               },
               {
                 icon: "🧾",
@@ -689,7 +689,7 @@ const Index = () => {
               Entre agora e garanta o menor<br className="hidden md:block" /> preço da plataforma para sempre.
             </h2>
             <p className="text-[1.1rem] text-slate-600 leading-relaxed max-w-[550px] mx-auto font-medium">
-              O Van360 acabou de chegar. Você testa grátis por 15 dias e <strong className="text-[#f59e0b]">trava sua mensalidade em R$ {pricing.originalFormatted}/mês</strong>. Sem fidelidade e sem reajustes, para a vida toda.
+              O Van360 acabou de chegar. Você testa grátis por 15 dias e <strong className="text-[#f59e0b]">garante para sempre o valor de R$ {pricing.originalFormatted}/mês</strong>. Sem fidelidade e sem reajustes, para a vida toda.
             </p>
           </Reveal>
         </div>
@@ -818,7 +818,7 @@ const Index = () => {
               {
                 n: "3",
                 title: "Pronto. Tudo organizado.",
-                desc: "Mensalidades, contratos e recibos — no seu celular.",
+                desc: "Parcelas, contratos e recibos — no seu celular.",
               },
             ].map((step) => (
               <Reveal key={step.n}>
@@ -878,7 +878,7 @@ const Index = () => {
           <div className="max-w-[680px] mx-auto">
             <FaqItem
               q="O que o Van360 faz?"
-              a="O Van360 organiza a gestão da sua van escolar: cadastro de passageiros, controle de mensalidades, geração de contratos digitais e emissão de recibos. Tudo pelo celular, em um lugar só."
+              a="O Van360 organiza a gestão da sua van escolar: cadastro de passageiros, controle de parcelas, contratos digitais e emissão de recibos, geração de contratos digitais e emissão de recibos. Tudo pelo celular, em um lugar só."
             />
             <FaqItem
               q="Preciso pagar para começar a utilizar?"
@@ -910,7 +910,7 @@ const Index = () => {
             />
             <FaqItem
               q="Como funciona o programa de indicações?"
-              a="É muito simples! Dentro do aplicativo você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha mensalidades gratuitas (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na assinatura. Ambos ganham!"
+              a="É muito simples! Dentro do aplicativo você terá acesso ao seu link exclusivo de convite. Compartilhe esse link com seus colegas. Quando eles se cadastrarem e efetuarem a primeira assinatura, você ganha meses gratuitos (sem limites de indicações) e o seu amigo indicado ainda recebe um desconto especial na assinatura. Ambos ganham!"
             />
           </div>
 
@@ -994,7 +994,7 @@ const Index = () => {
                 <div>
                   <h3 className="font-bold text-[#1a3a5c] text-[0.95rem] mb-1">App para os pais</h3>
                   <p className="text-[0.88rem] text-slate-500 leading-relaxed">
-                    O responsável acompanha tudo pelo celular — pagamentos, contrato, dados do filho. Menos WhatsApp pra você.
+                    O responsável acompanha tudo pelo celular — parcelas, contrato, dados do filho. Menos WhatsApp pra você.
                   </p>
                 </div>
               </div>
@@ -1020,7 +1020,7 @@ const Index = () => {
         <div className="max-w-[1120px] mx-auto px-5 text-center">
           <Reveal>
             <h2 className="text-[clamp(1.5rem,4vw,2.25rem)] font-black leading-tight mb-3">
-              Pare de perder tempo com planilhas e cobranças manuais.
+              Pare de perder tempo com planilhas, cobranças e controles manuais.
             </h2>
           </Reveal>
           <Reveal>

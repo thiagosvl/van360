@@ -30,7 +30,7 @@ export const ROUTES = {
       HOME: "/inicio",
       PASSENGERS: "/passageiros",
       PASSENGER_DETAILS: "/passageiros/:passageiro_id",
-      BILLING: "/mensalidades",
+      BILLING: "/parcelas",
       SCHOOLS: "/escolas",
       VEHICLES: "/veiculos",
       EXPENSES: "/gastos",

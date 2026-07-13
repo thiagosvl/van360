@@ -24,11 +24,12 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
   const vencimento = formatDateToBR(params.dataVencimento);
 
   const mensagem = [
-    `Oi ${primeiroNomeResp}! Passando para lembrar da mensalidade de *${nomePassageiro}* 🚌`,
+    `🗓️ *Parcela — ${nomePassageiro}*`,
     ``,
-    `📅 *Mês:* ${mesNome}`,
-    `💰 *Valor:* ${valorFormatado}`,
-    `📆 *Vencimento:* ${vencimento}`,
+    `${primeiroNomeResp}, lembrete da parcela do transporte.`,
+    ``,
+    `🔹 Valor: *${valorFormatado}*`,
+    `🔹 Vencimento: *${vencimento}*`,
   ];
 
   if (params.chavePix) {
@@ -52,10 +53,15 @@ export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string
   const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
   const link = params.link;
 
+  const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
+  const primeiroNomePassageiro = formatFirstName(params.nomePassageiro);
+
   const mensagem = [
-    `Segue o link para assinatura do contrato digital:`,
+    `📄 *Contrato de transporte disponível*`,
     ``,
-    `${link}`,
+    `${primeiroNomeResp}, o contrato de *${primeiroNomePassageiro}* está pronto para assinatura digital.`,
+    ``,
+    `👉 Assine aqui: ${link}`,
   ].join("\n");
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;

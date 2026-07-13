@@ -74,20 +74,20 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
   const onEnviarCobranca = telefoneResponsavel
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
-        telefoneResponsavel,
-        nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
-        nomePassageiro: cobranca.passageiro?.nome ?? "",
-        mes: cobranca.mes,
-        valor: cobranca.valor,
-        dataVencimento: cobranca.data_vencimento,
-        chavePix,
-        tipoChavePix,
-      }))
+      telefoneResponsavel,
+      nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+      nomePassageiro: cobranca.passageiro?.nome ?? "",
+      mes: cobranca.mes,
+      valor: cobranca.valor,
+      dataVencimento: cobranca.data_vencimento,
+      chavePix,
+      tipoChavePix,
+    }))
     : undefined;
 
   const actions = useCobrancaActions({
     cobranca,
-    onVerCobranca: () => {},
+    onVerCobranca: () => { },
     onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
     onEditarCobranca: () => onEditarCobranca(cobranca),
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
@@ -118,8 +118,8 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const renderHeader = () => <CobrancaSummary cobranca={cobranca} />;
 
   return (
-    <MobileActionItem 
-      actions={actions} 
+    <MobileActionItem
+      actions={actions}
       className="bg-transparent"
       renderHeader={renderHeader}
     >
@@ -200,66 +200,66 @@ export function CobrancasList({
     return (
       <UnifiedEmptyState
         icon={isPendingTab ? Wallet : DollarSign}
-        title="Nenhuma mensalidade"
-        description="Não há mensalidades para este período."
+        title="Nenhuma parcela"
+        description="Não há parcelas para este período."
       />
     );
   };
 
   return (
     <>
-    <ResponsiveDataList
-      data={cobrancas}
-      isLoading={isLoading}
-      loadingSkeleton={<ListSkeleton count={5} />}
-      emptyState={getEmptyState()}
-      mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(cobranca, index) => (
-        <CobrancaMobileCard
-          key={cobranca.id}
-          cobranca={cobranca}
-          index={index}
-          activeTab={activeTab}
-          chavePix={profile?.chave_pix}
-          tipoChavePix={profile?.tipo_chave_pix}
-          onVerCarteirinha={props.onVerCarteirinha}
-          onEditarCobranca={props.onEditarCobranca}
-          onRegistrarPagamento={props.onRegistrarPagamento}
-          onExcluirCobranca={props.onExcluirCobranca}
-          onDesfazerPagamento={props.onDesfazerPagamento}
-          onVerRecibo={props.onVerRecibo}
-          onActionSuccess={props.onActionSuccess}
-        />
-      )}
-    >
-      <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
-        <Table>
-          <TableHeader className="bg-gray-50/50">
-            <TableRow className="hover:bg-transparent border-b border-gray-100/80">
-              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Passageiro
-              </TableHead>
-              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Valor
-              </TableHead>
-              <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Status
-              </TableHead>
-              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                {isPendingTab ? "Vencimento" : "Pagamento"}
-              </TableHead>
-              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Ações
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {cobrancas.map((cobranca) => {
-              const firstName = formatFirstName(cobranca?.passageiro?.nome_responsavel);
-              
-              const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
-              const onEnviarCobranca = telefoneResponsavel
-                ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
+      <ResponsiveDataList
+        data={cobrancas}
+        isLoading={isLoading}
+        loadingSkeleton={<ListSkeleton count={5} />}
+        emptyState={getEmptyState()}
+        mobileContainerClassName="space-y-3"
+        mobileItemRenderer={(cobranca, index) => (
+          <CobrancaMobileCard
+            key={cobranca.id}
+            cobranca={cobranca}
+            index={index}
+            activeTab={activeTab}
+            chavePix={profile?.chave_pix}
+            tipoChavePix={profile?.tipo_chave_pix}
+            onVerCarteirinha={props.onVerCarteirinha}
+            onEditarCobranca={props.onEditarCobranca}
+            onRegistrarPagamento={props.onRegistrarPagamento}
+            onExcluirCobranca={props.onExcluirCobranca}
+            onDesfazerPagamento={props.onDesfazerPagamento}
+            onVerRecibo={props.onVerRecibo}
+            onActionSuccess={props.onActionSuccess}
+          />
+        )}
+      >
+        <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
+          <Table>
+            <TableHeader className="bg-gray-50/50">
+              <TableRow className="hover:bg-transparent border-b border-gray-100/80">
+                <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  Passageiro
+                </TableHead>
+                <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  Valor
+                </TableHead>
+                <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  Status
+                </TableHead>
+                <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  {isPendingTab ? "Vencimento" : "Pagamento"}
+                </TableHead>
+                <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  Ações
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {cobrancas.map((cobranca) => {
+                const firstName = formatFirstName(cobranca?.passageiro?.nome_responsavel);
+
+                const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+                const onEnviarCobranca = telefoneResponsavel
+                  ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
                     telefoneResponsavel,
                     nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
                     nomePassageiro: cobranca.passageiro?.nome ?? "",
@@ -269,114 +269,114 @@ export function CobrancasList({
                     chavePix: profile?.chave_pix,
                     tipoChavePix: profile?.tipo_chave_pix,
                   }))
-                : undefined;
+                  : undefined;
 
-              return (
-                <TableRow
-                  key={cobranca.id}
-                  onClick={() => setOpenedCobranca(cobranca)}
-                  className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
-                >
-                  <TableCell className="px-8 py-5">
-                    <div className="flex flex-col">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                        {formatShortName(cobranca?.passageiro?.nome, true)}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                        {firstName}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-                      {Number(cobranca?.valor).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </span>
-                  </TableCell>
-
-                  <TableCell className="px-6 py-4 text-center">
-                    <StatusBadge
-                      status={cobranca?.status}
-                      dataVencimento={cobranca?.data_vencimento}
-                      className={cn(
-                        "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
-                        cobranca?.status === CobrancaStatus.PAGO
-                          ? "bg-emerald-50 text-emerald-600"
-                          : checkCobrancaEmAtraso(cobranca?.data_vencimento)
-                            ? "bg-red-50 text-red-600"
-                            : "bg-amber-50 text-amber-600"
-                      )}
-                    />
-                  </TableCell>
-
-                  <TableCell className="px-8 py-5">
-                    <div className="flex flex-col">
-                      <span className={cn(
-                        "text-sm font-bold",
-                        !isPendingTab ? "text-emerald-500" : "text-[#1a3a5c]"
-                      )}>
-                        {isPendingTab
-                          ? formatDateToBR(cobranca?.data_vencimento)
-                          : formatDateToBR(cobranca?.data_pagamento)}
+                return (
+                  <TableRow
+                    key={cobranca.id}
+                    onClick={() => setOpenedCobranca(cobranca)}
+                    className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
+                  >
+                    <TableCell className="px-8 py-5">
+                      <div className="flex flex-col">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                          {formatShortName(cobranca?.passageiro?.nome, true)}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                          {firstName}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right">
+                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+                        {Number(cobranca?.valor).toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
                       </span>
-                      {!isPendingTab && (
-                        <span className="text-[9px] text-gray-400 font-medium">
-                          {formatPaymentType(cobranca?.tipo_pagamento)}
+                    </TableCell>
+
+                    <TableCell className="px-6 py-4 text-center">
+                      <StatusBadge
+                        status={cobranca?.status}
+                        dataVencimento={cobranca?.data_vencimento}
+                        className={cn(
+                          "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
+                          cobranca?.status === CobrancaStatus.PAGO
+                            ? "bg-emerald-50 text-emerald-600"
+                            : checkCobrancaEmAtraso(cobranca?.data_vencimento)
+                              ? "bg-red-50 text-red-600"
+                              : "bg-amber-50 text-amber-600"
+                        )}
+                      />
+                    </TableCell>
+
+                    <TableCell className="px-8 py-5">
+                      <div className="flex flex-col">
+                        <span className={cn(
+                          "text-sm font-bold",
+                          !isPendingTab ? "text-emerald-500" : "text-[#1a3a5c]"
+                        )}>
+                          {isPendingTab
+                            ? formatDateToBR(cobranca?.data_vencimento)
+                            : formatDateToBR(cobranca?.data_pagamento)}
                         </span>
-                      )}
-                    </div>
-                  </TableCell>
+                        {!isPendingTab && (
+                          <span className="text-[9px] text-gray-400 font-medium">
+                            {formatPaymentType(cobranca?.tipo_pagamento)}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
 
-                  <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                    <CobrancaActionsMenu
-                      cobranca={cobranca}
-                      onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
-                      onEditarCobranca={() => props.onEditarCobranca(cobranca)}
-                      onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
-                      onActionSuccess={props.onActionSuccess}
-                      onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
-                      onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
-                      onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined}
-                      onEnviarCobranca={onEnviarCobranca}
-                    />
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
-    </ResponsiveDataList>
+                    <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <CobrancaActionsMenu
+                        cobranca={cobranca}
+                        onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
+                        onEditarCobranca={() => props.onEditarCobranca(cobranca)}
+                        onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
+                        onActionSuccess={props.onActionSuccess}
+                        onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
+                        onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
+                        onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined}
+                        onEnviarCobranca={onEnviarCobranca}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </ResponsiveDataList>
 
-    {/* Desktop-triggered ActionSheet (Quick View) */}
-    {openedCobranca && (
-      <ActionSheetWrapper
-        cobranca={openedCobranca}
-        open={!!openedCobranca}
-        onOpenChange={(open) => !open && setOpenedCobranca(null)}
-        props={props}
-        chavePix={profile?.chave_pix}
-        tipoChavePix={profile?.tipo_chave_pix}
-      />
-    )}
+      {/* Desktop-triggered ActionSheet (Quick View) */}
+      {openedCobranca && (
+        <ActionSheetWrapper
+          cobranca={openedCobranca}
+          open={!!openedCobranca}
+          onOpenChange={(open) => !open && setOpenedCobranca(null)}
+          props={props}
+          chavePix={profile?.chave_pix}
+          tipoChavePix={profile?.tipo_chave_pix}
+        />
+      )}
     </>
   );
 }
 
 // Wrapper to avoid calling useCobrancaActions for all rows upfront
-function ActionSheetWrapper({ 
-  cobranca, 
-  open, 
-  onOpenChange, 
+function ActionSheetWrapper({
+  cobranca,
+  open,
+  onOpenChange,
   props,
   chavePix,
   tipoChavePix,
-}: { 
-  cobranca: Cobranca; 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
+}: {
+  cobranca: Cobranca;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   props: any;
   chavePix?: string | null;
   tipoChavePix?: string | null;
@@ -384,20 +384,20 @@ function ActionSheetWrapper({
   const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
   const onEnviarCobranca = telefoneResponsavel
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
-        telefoneResponsavel,
-        nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
-        nomePassageiro: cobranca.passageiro?.nome ?? "",
-        mes: cobranca.mes,
-        valor: cobranca.valor,
-        dataVencimento: cobranca.data_vencimento,
-        chavePix,
-        tipoChavePix,
-      }))
+      telefoneResponsavel,
+      nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+      nomePassageiro: cobranca.passageiro?.nome ?? "",
+      mes: cobranca.mes,
+      valor: cobranca.valor,
+      dataVencimento: cobranca.data_vencimento,
+      chavePix,
+      tipoChavePix,
+    }))
     : undefined;
 
   const actions = useCobrancaActions({
     cobranca,
-    onVerCobranca: () => {},
+    onVerCobranca: () => { },
     onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id),
     onEditarCobranca: () => props.onEditarCobranca(cobranca),
     onRegistrarPagamento: () => props.onRegistrarPagamento(cobranca),
@@ -409,9 +409,9 @@ function ActionSheetWrapper({
   });
 
   return (
-    <ActionSheet 
-      open={open} 
-      onOpenChange={onOpenChange} 
+    <ActionSheet
+      open={open}
+      onOpenChange={onOpenChange}
       actions={actions.map(a => ({
         ...a,
         onClick: () => {

@@ -9,7 +9,7 @@ Disallow: /termos-de-uso
 Disallow: /politica-de-privacidade
 Disallow: /inicio
 Disallow: /passageiros
-Disallow: /mensalidades
+Disallow: /parcelas
 Disallow: /contratos
 Disallow: /escolas
 Disallow: /veiculos

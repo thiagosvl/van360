@@ -222,8 +222,8 @@ export function usePassageirosViewModel() {
       openConfirmationDialog({
         title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
         description: action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens de passageiros ativos e as mensalidades dele voltarão a ser geradas automaticamente."
-          : "O passageiro ficará inativo e as mensalidades dele não serão mais geradas automaticamente. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {

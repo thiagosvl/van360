@@ -209,7 +209,7 @@ export const generateVencimento = (): string => {
 };
 
 /**
- * Gera um valor de mensalidade aleatório formatado
+ * Gera um valor de parcela aleatório formatado
  */
 export const generateValorCobranca = (): string => {
   const valores = ["150,00", "180,00", "200,00", "220,00", "250,00"];

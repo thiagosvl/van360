@@ -189,12 +189,12 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       {[
         {
           label: "Multa por Atraso",
-          desc: "Aplicada sobre o valor da mensalidade em caso de atraso no pagamento.",
+          desc: "Aplicada sobre o valor da parcela em caso de atraso no pagamento.",
           state: multaAtraso,
           setState: setMultaAtraso,
           icon: Timer,
           iconColor: "text-[#1a3a5c]",
-          simBaseLabel: "Exemplo Mensalidade",
+          simBaseLabel: "Exemplo Parcela",
           simResultLabel: "Total com Atraso",
           simBaseValue: 200,
           simValue:

@@ -25,7 +25,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
       {/* LINHA 1: Overline de Contexto + Badge Minimalista */}
       <div className="flex justify-between items-center mb-2">
         <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wider leading-none">
-          MENSALIDADE • {getMesNome(cobranca.mes)}
+          PARCELA DE {getMesNome(cobranca.mes)}
         </p>
 
         <div className={cn(

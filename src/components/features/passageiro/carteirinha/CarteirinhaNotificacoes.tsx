@@ -69,7 +69,7 @@ export const CarteirinhaNotificacoes = ({
               Lembretes no WhatsApp
             </span>
             <span className="text-[10px] text-slate-500 leading-tight block">
-              Gera a mensalidade e envia notificação no WhatsApp com sua chave Pix por extenso automaticamente.
+              Gera a parcela e envia notificação no WhatsApp com sua chave Pix por extenso automaticamente.
             </span>
           </div>
           <Switch

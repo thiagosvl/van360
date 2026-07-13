@@ -75,7 +75,7 @@ export default function PassageiroCarteirinha() {
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
   const [isDeleting, setIsDeleting] = useState(false);
-  const [mobileTab, setMobileTab] = useState("mensalidades");
+  const [mobileTab, setMobileTab] = useState("financeiro");
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -306,8 +306,8 @@ export default function PassageiroCarteirinha() {
         action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
       description:
         action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens de passageiros ativos e as mensalidades dele voltarão a ser geradas automaticamente."
-          : "O passageiro ficará inativo e as mensalidades dele não serão mais geradas automaticamente. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
       confirmText: action === "ativar" ? "Reativar" : "Desativar",
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
@@ -374,7 +374,7 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: "Desfazer pagamento?",
         description:
-          "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
+          "O pagamento será removido e a parcela voltará a ficar pendente. Confirmar?",
         confirmText: "Desfazer",
         variant: "warning",
         onConfirm: async () => {
@@ -630,15 +630,15 @@ export default function PassageiroCarteirinha() {
                   />
                 </Suspense>
 
-                {/* Abas: Dados Pessoais / Mensalidades — logo na primeira dobra */}
+                {/* Abas: Dados Pessoais / Financeiro — logo na primeira dobra */}
                 <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full pt-4">
                   <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
                     <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
                       <TabsTrigger
-                        value="mensalidades"
+                        value="financeiro"
                         className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
                       >
-                        Mensalidades
+                        Financeiro
                       </TabsTrigger>
                       <TabsTrigger
                         value="dados"
@@ -671,7 +671,7 @@ export default function PassageiroCarteirinha() {
                     </Suspense>
                   </TabsContent>
 
-                  <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                  <TabsContent value="financeiro" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
                     </Suspense>
@@ -692,7 +692,7 @@ export default function PassageiroCarteirinha() {
                   </Suspense>
                 </div>
 
-                {/* Lado Direito: Mensalidades */}
+                {/* Lado Direito: Financeiro */}
                 <div className="lg:col-span-8 space-y-6">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas {...cobrancasProps} />
