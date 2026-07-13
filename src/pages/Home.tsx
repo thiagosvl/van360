@@ -116,9 +116,9 @@ const Home = () => {
             <section className="mb-4">
               <DashboardStatusCard
                 type="info"
-                title={`${contadores.passageirosSolicitacoes} Cadastro${contadores.passageirosSolicitacoes > 1 ? "s" : ""} Pendente${contadores.passageirosSolicitacoes > 1 ? "s" : ""}`}
-                description="Revise os cadastros enviados pelos responsáveis antes de adicioná-los à sua lista de passageiros."
-                actionLabel="Ver Solicitações"
+                title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
+                description={`Revise ${contadores.passageirosSolicitacoes === 1 ? "o cadastro enviado por um responsável" : "os cadastros enviados pelos responsáveis"} antes de ${contadores.passageirosSolicitacoes === 1 ? "adicioná-lo" : "adicioná-los"} à sua lista de passageiros.`}
+                actionLabel={contadores.passageirosSolicitacoes === 1 ? "Revisar Cadastro" : "Revisar Cadastros"}
                 onAction={() =>
                   navigateTo(
                     `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
@@ -144,10 +144,8 @@ const Home = () => {
             <section>
               <DashboardStatusCard
                 type="pending"
-                title={`${financeiro.countAtrasos > 1 ? `${financeiro.countAtrasos}` : ""} Parcela${financeiro.countAtrasos > 1 ? "s" : ""} em Atraso`}
-                description={`Você tem ${formatCurrency(
-                  financeiro.totalEmAtraso,
-                )} em atraso referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
+                title={`${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "Parcela em Atraso" : "Parcelas em Atraso"}`}
+                description={`Você possui ${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela vencida" : "parcelas vencidas"}, totalizando ${formatCurrency(financeiro.totalEmAtraso)}, referentes ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
                 actionLabel="Ver Parcelas"
                 onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
               />

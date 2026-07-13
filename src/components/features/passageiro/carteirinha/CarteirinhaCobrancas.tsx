@@ -84,7 +84,7 @@ export const CarteirinhaCobrancas = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
-            {cobrancas.length} {cobrancas.length === 1 ? "Registro" : "Registros"}
+            {cobrancas.length} {cobrancas.length === 1 ? "Parcela" : "Parcelas"}
           </span>
         </div>
 
@@ -92,11 +92,10 @@ export const CarteirinhaCobrancas = ({
           <Button
             onClick={onOpenCobrancaDialog}
             size="sm"
-            className="h-10 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white px-4 font-bold shadow-diff-shadow transition-all group text-xs"
+            className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-14 rounded-2xl px-5 md:px-6 shadow-md transition-all active:scale-95"
           >
             <Plus className="h-4 w-4 mr-1.5" />
-            <span className="hidden sm:block">Registrar Parcela</span>
-            <span className="block sm:hidden">Registrar</span>
+            <span>Adicionar Parcela</span>
           </Button>
         </div>
       </div>

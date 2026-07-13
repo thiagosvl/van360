@@ -75,7 +75,7 @@ export default function PassageiroCarteirinha() {
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
   const [isDeleting, setIsDeleting] = useState(false);
-  const [mobileTab, setMobileTab] = useState("financeiro");
+  const [mobileTab, setMobileTab] = useState("parcelas");
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -630,15 +630,15 @@ export default function PassageiroCarteirinha() {
                   />
                 </Suspense>
 
-                {/* Abas: Dados Pessoais / Financeiro — logo na primeira dobra */}
+                {/* Abas: Dados Pessoais / Parcelas — logo na primeira dobra */}
                 <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full pt-4">
                   <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
                     <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
                       <TabsTrigger
-                        value="financeiro"
+                        value="parcelas"
                         className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
                       >
-                        Financeiro
+                        Parcelas
                       </TabsTrigger>
                       <TabsTrigger
                         value="dados"
@@ -671,7 +671,7 @@ export default function PassageiroCarteirinha() {
                     </Suspense>
                   </TabsContent>
 
-                  <TabsContent value="financeiro" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                  <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
                     </Suspense>
@@ -692,7 +692,7 @@ export default function PassageiroCarteirinha() {
                   </Suspense>
                 </div>
 
-                {/* Lado Direito: Financeiro */}
+                {/* Lado Direito: Parcelas */}
                 <div className="lg:col-span-8 space-y-6">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas {...cobrancasProps} />
