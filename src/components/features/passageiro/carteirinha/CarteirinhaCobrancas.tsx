@@ -25,6 +25,7 @@ import {
   History,
   Plus,
 } from "lucide-react";
+import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { forwardRef, useCallback, useState } from "react";
 
 interface CarteirinhaCobrancasProps {
@@ -228,33 +229,7 @@ const CobrancaItemPassageiro = forwardRef<
   });
 
   const renderHeader = () => (
-    <div className="flex flex-col gap-2 p-5 bg-white rounded-[28px] border border-slate-100 shadow-sm text-left">
-      <div className="flex justify-between items-center">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-80">
-          {getMesNome(cobranca.mes)} {cobranca.ano}
-        </p>
-        <StatusBadge
-          status={cobranca.status}
-          dataVencimento={cobranca.data_vencimento}
-          className="h-4 px-2 text-[7px] font-bold uppercase tracking-widest rounded-full border-none shadow-none ring-1 ring-inset ring-slate-100"
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-lg font-headline font-bold text-[#1a3a5c] tracking-tighter">
-          {Number(cobranca.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-        </span>
-      </div>
-      <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-        <span className="text-[10px] font-bold text-slate-500">
-          Venc: {formatDateToBR(cobranca.data_vencimento)}
-        </span>
-        {isPaid && cobranca.tipo_pagamento && (
-          <span className="text-[8px] font-bold text-emerald-600/70 uppercase tracking-widest px-1.5 py-0.5 bg-emerald-50/50 rounded-md ring-1 ring-inset ring-emerald-100/50">
-            {getPaymentMethodLabel(cobranca.tipo_pagamento)}
-          </span>
-        )}
-      </div>
-    </div>
+    <CobrancaSummary cobranca={{ ...cobranca, passageiro }} />
   );
 
   return (
