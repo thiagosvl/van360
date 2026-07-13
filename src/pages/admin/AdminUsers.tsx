@@ -169,7 +169,7 @@ export default function AdminUsers() {
                             </span>
                           </td>
                           <td className="py-4">
-                            <SubscriptionStatusBadge status={sub?.status} />
+                            <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} />
                           </td>
                           <td className="py-4 text-right">
                             <Button
@@ -214,7 +214,7 @@ export default function AdminUsers() {
                             </p>
                           )}
                         </div>
-                        <SubscriptionStatusBadge status={sub?.status} />
+                        <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} />
                       </div>
 
                       <div className="flex items-center justify-between text-xs text-slate-500 gap-4">

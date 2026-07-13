@@ -415,7 +415,7 @@ export default function AdminUserDetails() {
           <p className="text-xs font-semibold text-slate-400">
             Cadastrado em {formatDate(data.user.created_at)}
             {sub && (
-              <SubscriptionStatusBadge status={sub.status} className="ml-3" />
+              <SubscriptionStatusBadge status={sub.status} dataVencimento={sub.data_vencimento} className="ml-3" />
             )}
           </p>
         </div>

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface SubscriptionStatusBadgeProps {
   status: SubscriptionStatus | string | null | undefined;
+  dataVencimento?: string | null;
   className?: string;
 }
 
@@ -29,9 +30,23 @@ export const SUBSCRIPTION_STATUS_DETAILS: Record<SubscriptionStatus, { label: st
   },
 };
 
-export function SubscriptionStatusBadge({ status, className }: SubscriptionStatusBadgeProps) {
+export function SubscriptionStatusBadge({ status, dataVencimento, className }: SubscriptionStatusBadgeProps) {
   if (!status) {
     return <span className={cn("text-xs text-slate-400", className)}>—</span>;
+  }
+
+  if (status === SubscriptionStatus.ACTIVE && dataVencimento === null) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors",
+          "bg-purple-100 text-purple-700 hover:bg-purple-100/80",
+          className
+        )}
+      >
+        Vitalício
+      </span>
+    );
   }
 
   const badge = SUBSCRIPTION_STATUS_DETAILS[status as SubscriptionStatus];

@@ -1,5 +1,6 @@
-import { useAdminStats, useAdminWhatsappInstances } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminWhatsappInstances, useAdminLogs } from "@/hooks/api/adminHooks";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
@@ -7,18 +8,18 @@ import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
 import { phoneMask } from "@/utils/masks";
 import { formatWhatsappPurpose } from "@/utils/whatsapp";
 import { ROUTES } from "@/constants/routes";
+import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import {
   Users,
-  Bus,
   DollarSign,
   Activity,
-  ArrowUpRight,
   Loader2,
   ShieldCheck,
   Clock,
   AlertTriangle,
   XCircle,
   MessageSquare,
+  Infinity,
 } from "lucide-react";
 import {
   Card,
@@ -27,15 +28,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { cn } from "@/lib/utils";
 
 function formatCurrency(value: number) {
@@ -57,6 +49,7 @@ export default function AdminDashboard() {
   const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
   const { data: instances, isLoading: isLoadingInstances } = useAdminWhatsappInstances();
+  const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
   useEffect(() => {
     setPageTitle("Dashboard");
@@ -104,6 +97,7 @@ export default function AdminDashboard() {
   ];
 
   const subBreakdown = [
+    { label: "Vitalícios", value: stats.assinaturas.vitalicio || 0, icon: Infinity, color: "text-purple-600", bg: "bg-purple-50" },
     { label: "Trial", value: stats.assinaturas.trial, icon: Clock, color: "text-sky-600", bg: "bg-sky-50" },
     { label: "Ativos", value: stats.assinaturas.active, icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
     { label: "Atrasados", value: stats.assinaturas.past_due, icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50" },
@@ -151,8 +145,37 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <Card className="lg:col-span-1 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* 1. Últimas Atividades */}
+        <Card className="lg:col-span-3 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
+          <CardHeader className="flex flex-row items-center justify-between p-6">
+            <div className="space-y-1 text-left flex-1">
+              <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+                Últimas Atividades
+              </CardTitle>
+              <CardDescription className="text-xs font-semibold text-slate-400">
+                Histórico recente do sistema
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY)}
+                className="text-[10px] font-bold uppercase tracking-wider text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-3 rounded-xl hidden sm:flex"
+              >
+                Ver Todas
+              </Button>
+              <Activity className="h-5 w-5 text-slate-300" />
+            </div>
+          </CardHeader>
+          <CardContent className="px-6 flex flex-col gap-3 overflow-hidden">
+            <ActivityLogsList logs={logsData?.data || []} isLoading={isLoadingLogs} />
+          </CardContent>
+        </Card>
+
+        {/* 2. Assinaturas por Status */}
+        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
           <CardHeader className="p-6">
             <div className="space-y-1 text-left">
               <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
@@ -183,9 +206,10 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-1 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
+        {/* 3. Instâncias WhatsApp */}
+        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
           <CardHeader className="flex flex-row items-center justify-between p-6">
-            <div className="space-y-1 text-left">
+            <div className="space-y-1 text-left flex-1">
               <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
                 Instâncias WhatsApp
               </CardTitle>
@@ -193,7 +217,17 @@ export default function AdminDashboard() {
                 Status das conexões
               </CardDescription>
             </div>
-            <MessageSquare className="h-5 w-5 text-slate-300" />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES)}
+                className="text-[10px] font-bold uppercase tracking-wider text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-3 rounded-xl hidden sm:flex"
+              >
+                Ver Todas
+              </Button>
+              <MessageSquare className="h-5 w-5 text-slate-300" />
+            </div>
           </CardHeader>
           <CardContent className="px-6 flex flex-col gap-3">
             {isLoadingInstances ? (
@@ -220,17 +254,28 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
+        {/* 4. Novos Usuários */}
+        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
           <CardHeader className="flex flex-row items-center justify-between p-6">
-            <div className="space-y-1 text-left">
+            <div className="space-y-1 text-left flex-1">
               <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                Últimos Cadastros
+                Novos Usuários
               </CardTitle>
               <CardDescription className="text-xs font-semibold text-slate-400">
-                Motoristas mais recentes
+                Usuários mais recentes
               </CardDescription>
             </div>
-            <Users className="h-5 w-5 text-slate-300" />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
+                className="text-[10px] font-bold uppercase tracking-wider text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-3 rounded-xl hidden sm:flex"
+              >
+                Ver Todos
+              </Button>
+              <Users className="h-5 w-5 text-slate-300" />
+            </div>
           </CardHeader>
           <CardContent className="px-6 flex flex-col gap-3">
             {stats.recentUsers.length === 0 ? (
@@ -238,7 +283,7 @@ export default function AdminDashboard() {
                 Nenhum cadastro encontrado.
               </p>
             ) : (
-              stats.recentUsers.map((user) => (
+              stats.recentUsers.slice(0, 5).map((user) => (
                 <div
                   key={user.id}
                   onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
@@ -259,7 +304,7 @@ export default function AdminDashboard() {
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap hidden sm:inline">
                       {formatDate(user.created_at)}
                     </span>
-                    <SubscriptionStatusBadge status={user.assinaturas?.[0]?.status} className="text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1" />
+                    <SubscriptionStatusBadge status={user.assinaturas?.[0]?.status} dataVencimento={user.assinaturas?.[0]?.data_vencimento} className="text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1" />
                   </div>
                 </div>
               ))
