@@ -9,7 +9,6 @@ import { ptBR } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Clock,
-  CreditCard,
   Edit,
   FileText,
   MessageSquare,
@@ -18,6 +17,7 @@ import {
   ShieldCheck,
   Trash2,
   AlertCircle,
+  BadgeDollarSign,
 } from "lucide-react";
 
 interface ActivityTimelineProps {
@@ -32,7 +32,7 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
   switch (acao) {
     case AtividadeAcao.PAGAMENTO_MANUAL:
       return {
-        icon: <CreditCard className="w-3.5 h-3.5" />,
+        icon: <BadgeDollarSign className="w-3.5 h-3.5" />,
         color: "text-blue-600 bg-blue-50 border-blue-100",
       };
     case AtividadeAcao.PAGAMENTO_REVERTIDO:

@@ -116,12 +116,8 @@ const Home = () => {
             <section className="mb-4">
               <DashboardStatusCard
                 type="info"
-                title="Solicitações Pendentes"
-                description={
-                  contadores.passageirosSolicitacoes === 1
-                    ? "Você tem 1 solicitação de novo passageiro aguardando aprovação."
-                    : `Você tem ${contadores.passageirosSolicitacoes} solicitações de novos passageiros aguardando aprovação.`
-                }
+                title={`${contadores.passageirosSolicitacoes} Cadastro${contadores.passageirosSolicitacoes > 1 ? "s" : ""} Pendente${contadores.passageirosSolicitacoes > 1 ? "s" : ""}`}
+                description="Revise os cadastros enviados pelos responsáveis antes de adicioná-los à sua lista de passageiros."
                 actionLabel="Ver Solicitações"
                 onAction={() =>
                   navigateTo(

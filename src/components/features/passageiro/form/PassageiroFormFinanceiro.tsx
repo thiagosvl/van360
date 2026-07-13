@@ -21,12 +21,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { CalendarDays, CalendarIcon, CreditCard, X } from "lucide-react";
+import { BadgeDollarSign, CalendarDays, CalendarIcon, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
-import { getNowBR, parseLocalDate, getStartOfDayBR } from "@/utils/dateUtils";
+import { parseLocalDate, getStartOfDayBR } from "@/utils/dateUtils";
 
 interface PassageiroFormFinanceiroProps {
   editingPassageiro: Passageiro | null;
@@ -34,7 +34,6 @@ interface PassageiroFormFinanceiroProps {
 }
 
 export function PassageiroFormFinanceiro({
-  editingPassageiro,
   isExternal = false,
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
@@ -45,7 +44,7 @@ export function PassageiroFormFinanceiro({
     <div className="space-y-6">
       <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-          <CreditCard className="w-5 h-5" />
+          <BadgeDollarSign className="w-5 h-5" />
         </div>
         Parcelas
       </div>
