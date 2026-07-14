@@ -497,7 +497,7 @@ export const CarteirinhaDadosPessoais = ({
                 : "border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow"
             )}
           >
-            <Plus className="w-3 h-3" /> NOVO
+            <Plus className="w-3 h-3" /> Adicionar
           </Button>
         </div>
 
