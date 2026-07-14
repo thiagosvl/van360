@@ -106,8 +106,6 @@ export const messages = {
       criada: "Solicitação enviada com sucesso!",
     },
     info: {
-      dadosMantidos: "Dados mantidos!",
-      dadosMantidosDescricao: "Para agilizar, mantivemos os dados do responsável e endereço. Preencha apenas os dados do novo passageiro.",
       confirmarExclusao: "Excluir solicitação?",
       confirmarExclusaoDescricao: "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
     },

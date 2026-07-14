@@ -38,12 +38,17 @@ export function GerarContratoValidadorDialog({
     setOpenCalendarFim,
     handleFillMock,
     onFormError,
+    isChecking,
   } = useGerarContratoValidadorViewModel({
     isOpen,
     onClose,
     passageiroId,
     onSuccess,
   });
+
+  if (isChecking && isOpen) {
+    return null;
+  }
 
   return (
     <BaseDialog
@@ -258,7 +263,7 @@ export function GerarContratoValidadorDialog({
           onClick={onClose}
         />
         <BaseDialog.Action
-          label="Salvar e Gerar"
+          label="Gerar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
           isLoading={isSubmitting}
           disabled={isLoadingPassageiro}

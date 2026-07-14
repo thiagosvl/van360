@@ -37,6 +37,7 @@ const prePassageiroSchema = z.object({
   observacoes: z.string().optional(),
 
   escola_id: z.string().optional(),
+  turma: z.string().min(1, "Campo obrigatório"),
   periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
   data_nascimento: dateSchema(true),
@@ -122,6 +123,7 @@ export function usePassageiroExternalForm() {
       valor_cobranca: "",
       dia_vencimento: "",
       escola_id: "",
+      turma: "",
       periodo: "",
       modalidade: "",
       data_nascimento: "",
@@ -258,6 +260,7 @@ export function usePassageiroExternalForm() {
 
       nome: "",
       escola_id: "",
+      turma: "",
       periodo: "",
       observacoes: "",
 
@@ -277,10 +280,6 @@ export function usePassageiroExternalForm() {
     ]);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
-
-    toast.info("prePassageiro.info.dadosMantidos", {
-      description: "prePassageiro.info.dadosMantidosDescricao",
-    });
   };
 
   const handleFillMock = () => {

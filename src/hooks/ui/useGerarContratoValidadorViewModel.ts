@@ -4,7 +4,7 @@ import * as z from "zod";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { cpfMask } from "@/utils/masks";
 import { parseLocalDate } from "@/utils/dateUtils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Passageiro } from "@/types/passageiro";
 import { passageiroApi } from "@/services/api/passageiro.api";
 import { usePassageiro } from "@/hooks/api/usePassageiro";
@@ -38,7 +38,7 @@ export interface UseGerarContratoValidadorViewModelProps {
   isOpen: boolean;
   onClose: () => void;
   passageiroId: string | null;
-  onSuccess: (passageiroId: string) => void;
+  onSuccess: (passageiroId: string, bypassed?: boolean) => void;
 }
 
 export function useGerarContratoValidadorViewModel({
@@ -52,6 +52,7 @@ export function useGerarContratoValidadorViewModel({
   const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   const form = useForm<ValidadorFormValues>({
     resolver: zodResolver(validadorSchema),
@@ -62,25 +63,40 @@ export function useGerarContratoValidadorViewModel({
     },
   });
 
+  const onSuccessRef = useRef(onSuccess);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onCloseRef.current = onClose;
+  }, [onSuccess, onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsChecking(true);
+    }
+  }, [isOpen]);
+
   // Check and pre-fill data when passenger is loaded
   useEffect(() => {
-    if (isOpen && passageiro && passageiroId) {
+    if (isOpen && isChecking && passageiro && passageiroId) {
       const hasInicio = !!passageiro.data_inicio_transporte;
       const hasFim = !!passageiro.data_fim_transporte;
       const hasCpf = !!passageiro.cpf_responsavel;
 
       if (hasInicio && hasFim && hasCpf) {
-        onClose();
-        onSuccess(passageiroId);
+        onCloseRef.current();
+        onSuccessRef.current(passageiroId, true);
       } else {
         form.reset({
           data_inicio_transporte: passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "",
           data_fim_transporte: passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "",
           cpf_responsavel: passageiro.cpf_responsavel ? cpfMask(passageiro.cpf_responsavel) : "",
         });
+        setIsChecking(false);
       }
     }
-  }, [isOpen, passageiro, form, passageiroId, onSuccess, onClose]);
+  }, [isOpen, isChecking, passageiro, passageiroId, form]);
 
   const handleSubmit = async (data: ValidadorFormValues) => {
     if (!passageiroId) return;
@@ -95,7 +111,7 @@ export function useGerarContratoValidadorViewModel({
       await passageiroApi.updatePassageiro(passageiroId, payload);
 
       onClose();
-      onSuccess(passageiroId);
+      onSuccess(passageiroId, false);
     } catch (error) {
       toast.error("Erro ao atualizar passageiro", {
         description: "Verifique os dados informados e tente novamente."
@@ -108,7 +124,7 @@ export function useGerarContratoValidadorViewModel({
   const handleFillMock = () => {
     const today = new Date();
     const endOfYear = new Date(today.getFullYear(), 11, 31);
-    
+
     // Formato pt-BR: DD/MM/YYYY
     const start = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
     const end = endOfYear.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -136,5 +152,6 @@ export function useGerarContratoValidadorViewModel({
     setOpenCalendarFim,
     handleFillMock,
     onFormError,
+    isChecking,
   };
 }

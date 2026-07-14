@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import { PrePassageiro } from "@/types/prePassageiro";
 
@@ -20,10 +21,17 @@ export function usePrePassageiros(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery({
+  const onErrorRef = useRef(options?.onError);
+  
+  useEffect(() => {
+    onErrorRef.current = options?.onError;
+  }, [options?.onError]);
+
+  const query = useQuery({
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
-    keepPreviousData: true,
+    staleTime: 0,
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       if (!filters.usuarioId) return [];
 
@@ -34,7 +42,14 @@ export function usePrePassageiros(
 
       return (data as PrePassageiro[]) ?? [];
     },
-    onError: options?.onError,
   });
+
+  useEffect(() => {
+    if (query.isError && onErrorRef.current) {
+      onErrorRef.current(query.error);
+    }
+  }, [query.isError, query.error, query.errorUpdatedAt]);
+
+  return query;
 }
 

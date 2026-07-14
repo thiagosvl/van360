@@ -240,16 +240,20 @@ export function useContratosViewModel() {
   const handleGerarContrato = useCallback((passageiroId: string) => {
     openGerarContratoValidadorDialog({
       passageiroId,
-      onSuccess: (id) => {
-        openConfirmationDialog({
-          title: "Gerar Contrato?",
-          description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
-          confirmText: "Gerar",
-          onConfirm: async () => {
-            await createMutation.mutateAsync({ passageiroId: id });
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        });
+      onSuccess: (id, bypassed) => {
+        if (bypassed) {
+          openConfirmationDialog({
+            title: "Gerar Contrato?",
+            description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
+            confirmText: "Gerar",
+            onConfirm: async () => {
+              await createMutation.mutateAsync({ passageiroId: id });
+              safeCloseDialog(closeConfirmationDialog);
+            }
+          });
+        } else {
+          createMutation.mutateAsync({ passageiroId: id });
+        }
       }
     });
   }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);

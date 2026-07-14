@@ -31,5 +31,6 @@ export interface PrePassageiro {
     genero?: string;
     parentesco_responsavel?: string;
     data_inicio_transporte?: string;
+    turma?: string;
     data_fim_transporte?: string;
 }

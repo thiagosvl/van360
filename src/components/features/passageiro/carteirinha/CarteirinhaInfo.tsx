@@ -45,7 +45,8 @@ import {
   BotOff,
   Lock,
   Phone,
-  IdCard
+  IdCard,
+  BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -477,7 +478,16 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* Linha: Período + Escola */}
+      {/* Linha: Escola (full) */}
+      <div className="grid grid-cols-1 gap-3">
+        <InfoTile
+          label="Escola"
+          value={passageiro.escola?.nome || "-"}
+          icon={<GraduationCap className="h-3.5 w-3.5" />}
+        />
+      </div>
+
+      {/* Linha: Período + Turma */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Período"
@@ -485,9 +495,9 @@ export const CarteirinhaDadosPessoais = ({
           icon={<Clock className="h-3.5 w-3.5" />}
         />
         <InfoTile
-          label="Escola"
-          value={passageiro.escola?.nome || "-"}
-          icon={<GraduationCap className="h-3.5 w-3.5" />}
+          label="Turma"
+          value={passageiro.turma || "-"}
+          icon={<BookOpen className="h-3.5 w-3.5" />}
         />
       </div>
 
@@ -603,7 +613,7 @@ const InfoTile = ({
         {label}
       </span>
     </div>
-    <span className="text-sm font-bold text-[#1a3a5c] leading-tight block ">
+    <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
       {value}
     </span>
   </div>

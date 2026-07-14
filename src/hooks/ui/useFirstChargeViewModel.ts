@@ -103,7 +103,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       if (wantsContract) {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
-          onSuccess: async (id) => {
+          onSuccess: async (id, _bypassed) => {
             await createContrato.mutateAsync({ passageiroId: id });
           }
         });

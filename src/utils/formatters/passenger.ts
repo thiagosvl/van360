@@ -24,8 +24,6 @@ export const formatGenero = (genero: string) => {
       return "Masculino";
     case PassageiroGenero.FEMININO:
       return "Feminino";
-    case PassageiroGenero.PREFIRO_NAO_INFORMAR:
-      return "Prefiro não informar";
     default:
       return genero;
   }

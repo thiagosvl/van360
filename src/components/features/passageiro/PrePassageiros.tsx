@@ -86,7 +86,7 @@ export default function PrePassageiros({
   const prePassageiros =
     (prePassageirosData as PrePassageiro[] | undefined) ?? [];
 
-  const loading = isPrePassageirosLoading || isPrePassageirosFetching;
+  const loading = isPrePassageirosLoading;
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -95,19 +95,6 @@ export default function PrePassageiros({
     return () => clearTimeout(handler);
   }, [externalSearchTerm]);
 
-  const solicitacoesPendentesCount = summary?.contadores?.passageiros?.solicitacoes_pendentes || 0;
-
-  // Track previous count to detect changes coming from the server/socket
-  const prevCountRef = useRef(solicitacoesPendentesCount);
-
-  useEffect(() => {
-    // If the count changed from what we had before, it means an external update happened.
-    // We should refetch the list to match the new count.
-    if (prevCountRef.current !== solicitacoesPendentesCount) {
-      refetchPrePassageiros();
-      prevCountRef.current = solicitacoesPendentesCount;
-    }
-  }, [solicitacoesPendentesCount, refetchPrePassageiros]);
 
   const handleCadastrarRapidoLink = async () => {
     if (!profile?.id) {
@@ -280,7 +267,7 @@ export default function PrePassageiros({
                       </span>
                     </TableCell>
                     <TableCell className="py-4">
-                      <span className="text-sm text-gray-500 uppercase">
+                      <span className="text-sm text-gray-500">
                         {formatRelativeTime(prePassageiro.created_at)}
                       </span>
                     </TableCell>

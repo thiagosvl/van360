@@ -95,7 +95,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           </p>
           <span className="text-[8px] text-gray-400 opacity-40">•</span>
           <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-            {schoolName}
+            {schoolName} {passageiro.turma ? `- ${passageiro.turma}` : ""}
           </p>
         </div>
       </div>
@@ -182,8 +182,8 @@ export function PassageirosList({
                   </TableCell>
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col gap-1">
-                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                        {passageiro.escola?.nome}
+                      <p className="text-[10px] text-gray-400 font-medium tracking-wider break-words whitespace-pre-wrap">
+                        {passageiro.escola?.nome} {passageiro.turma ? `- ${passageiro.turma}` : ""}
                         {passageiro.periodo && (
                           <span
                             className={cn(

@@ -106,7 +106,7 @@ export interface OpenContractSetupDialogProps {
 
 export interface OpenGerarContratoValidadorDialogProps {
   passageiroId: string;
-  onSuccess: (passageiroId: string) => void;
+  onSuccess: (passageiroId: string, bypassed?: boolean) => void;
 }
 
 export interface OpenPixPaymentDialogProps {

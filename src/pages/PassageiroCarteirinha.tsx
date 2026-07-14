@@ -573,25 +573,33 @@ export default function PassageiroCarteirinha() {
       } else {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
-          onSuccess: (id) => {
-            openConfirmationDialog({
-              title: "Gerar contrato?",
-              description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
-              confirmText: "Gerar",
-              onConfirm: async () => {
-                try {
-                  await createContrato.mutateAsync({
-                    passageiroId: id,
-                    valorMensal: passageiro.valor_cobranca,
-                    diaVencimento: passageiro.dia_vencimento
-                  });
-                  safeCloseDialog(closeConfirmationDialog);
-                  refetchPassageiro();
-                } catch (error) {
-                  safeCloseDialog(closeConfirmationDialog);
-                }
-              },
-            });
+          onSuccess: (id, bypassed) => {
+            if (bypassed) {
+              openConfirmationDialog({
+                title: "Gerar contrato?",
+                description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
+                confirmText: "Gerar",
+                onConfirm: async () => {
+                  try {
+                    await createContrato.mutateAsync({
+                      passageiroId: id,
+                      valorMensal: passageiro.valor_cobranca,
+                      diaVencimento: passageiro.dia_vencimento
+                    });
+                    safeCloseDialog(closeConfirmationDialog);
+                    refetchPassageiro();
+                  } catch (error) {
+                    safeCloseDialog(closeConfirmationDialog);
+                  }
+                },
+              });
+            } else {
+              createContrato.mutateAsync({
+                passageiroId: id,
+                valorMensal: passageiro.valor_cobranca,
+                diaVencimento: passageiro.dia_vencimento
+              }).then(() => refetchPassageiro());
+            }
           }
         });
       }

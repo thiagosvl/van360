@@ -198,6 +198,11 @@ export const generatePeriodo = (): string => {
   return periodos[randomNumber(0, periodos.length - 1)];
 };
 
+export const generateTurma = (): string => {
+  const turmas = ["1º ano", "2º ano", "3º ano", "4º ano", "5º ano", "6º ano", "7º ano", "8º ano", "9º ano"];
+  return turmas[randomNumber(0, turmas.length - 1)];
+};
+
 /**
  * Gera um dia de vencimento aleatório (comum)
  */
@@ -288,6 +293,7 @@ export const mockGenerator = {
       observacoes: "é um teste",
 
       // New fields from Schema/Enums
+      turma: generateTurma(),
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),
       parentesco_responsavel: randomEnum(ParentescoResponsavel),

@@ -45,6 +45,7 @@ export const passageiroSchema = z
     observacoes: z.string().optional().nullable().or(z.literal("")),
 
     nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+    turma: z.string().optional().nullable().or(z.literal("")),
     parentesco_responsavel: z.string().optional().nullable().or(z.literal("")),
     cpf_responsavel: z
       .string()
@@ -128,6 +129,7 @@ export function usePassageiroForm({
       estado: "",
       cep: "",
       referencia: "",
+      turma: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
 
@@ -159,6 +161,7 @@ export function usePassageiroForm({
             modalidade: editingPassageiro.modalidade || "",
             data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
             genero: editingPassageiro.genero || "",
+            turma: editingPassageiro.turma || "",
             nome_responsavel: editingPassageiro.nome_responsavel,
             parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
 
@@ -207,6 +210,7 @@ export function usePassageiroForm({
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
           periodo: prePassageiro.periodo || "",
           modalidade: prePassageiro.modalidade || "",
+          turma: prePassageiro.turma || "",
           data_nascimento: prePassageiro.data_nascimento ? formatDateToBR(prePassageiro.data_nascimento) : "",
           genero: prePassageiro.genero || "",
           parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
@@ -272,6 +276,7 @@ export function usePassageiroForm({
           estado: "",
           cep: "",
           referencia: "",
+          turma: "",
           nome_responsavel: "",
           parentesco_responsavel: "",
 
