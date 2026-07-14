@@ -34,12 +34,14 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Bus,
   CalendarIcon,
   Tag,
   TrendingDown,
   Wand2,
+  CalendarRange,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -51,9 +53,39 @@ const gastoSchema = z.object({
   categoria: z.string().min(1, "A categoria é obrigatória."),
   descricao: z.string().optional(),
   veiculo_id: z.string().optional(),
+  parcelado: z.boolean().optional(),
+  parcelas: z.number().int().min(2).max(36).optional(),
 });
 
 type GastoFormData = z.infer<typeof gastoSchema>;
+
+const obterMesesProjetados = (dataInicial: Date | undefined, qtdParcelas: number | undefined): string[] => {
+  if (!dataInicial || !qtdParcelas || qtdParcelas < 2) return [];
+  
+  const nomesMeses = [
+    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+  ];
+  
+  const mesesProjetados: string[] = [];
+  
+  const year = dataInicial.getFullYear();
+  const month = dataInicial.getMonth();
+  const day = dataInicial.getDate();
+  
+  for (let i = 0; i < qtdParcelas; i++) {
+    const targetDate = new Date(year, month + i, 1);
+    const maxDays = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+    const targetDay = Math.min(day, maxDays);
+    targetDate.setDate(targetDay);
+
+    const m = nomesMeses[targetDate.getMonth()];
+    const y = String(targetDate.getFullYear()).slice(-2);
+    mesesProjetados.push(`${m}/${y}`);
+  }
+  
+  return mesesProjetados;
+};
 
 interface GastoFormDialogProps {
   isOpen: boolean;
@@ -91,6 +123,8 @@ export default function GastoFormDialog({
       categoria: "",
       descricao: "",
       veiculo_id: "none",
+      parcelado: false,
+      parcelas: 2,
     },
   });
 
@@ -104,6 +138,8 @@ export default function GastoFormDialog({
           categoria: gastoToEdit.categoria,
           descricao: gastoToEdit.descricao || "",
           veiculo_id: gastoToEdit.veiculo_id || "none",
+          parcelado: false,
+          parcelas: 2,
         });
       } else {
         form.reset({
@@ -112,6 +148,8 @@ export default function GastoFormDialog({
           categoria: "",
           descricao: "",
           veiculo_id: "none",
+          parcelado: false,
+          parcelas: 2,
         });
       }
     }
@@ -128,6 +166,8 @@ export default function GastoFormDialog({
     const formattedData = {
       ...data,
       veiculo_id: data.veiculo_id === "none" || !data.veiculo_id ? null : data.veiculo_id,
+      parcelado: data.parcelado || false,
+      parcelas: data.parcelado ? Number(data.parcelas) : undefined,
     };
 
     if (gastoToEdit) {
@@ -183,7 +223,7 @@ export default function GastoFormDialog({
           <form
             id="gasto-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6 mt-2"
+            className="space-y-4 mt-2"
           >
             <FormField
               control={form.control}
@@ -333,6 +373,100 @@ export default function GastoFormDialog({
                 )}
               />
             </div>
+
+            {!gastoToEdit && (
+              <div className="space-y-4 border-t border-slate-100 pt-4">
+                <FormItem className="flex flex-col">
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Tipo de Lançamento
+                  </FormLabel>
+                  <FormControl>
+                    <Tabs
+                      value={form.watch("parcelado") ? "parcelado" : "unico"}
+                      onValueChange={(val) => {
+                        const isParcelado = val === "parcelado";
+                        form.setValue("parcelado", isParcelado);
+                        if (isParcelado) {
+                          form.setValue("parcelas", 2);
+                        } else {
+                          form.setValue("parcelas", undefined);
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      <TabsList className="grid w-full grid-cols-2 h-11 bg-slate-100/80 p-1 rounded-xl">
+                        <TabsTrigger 
+                          value="unico" 
+                          className="rounded-lg text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                        >
+                          Gasto Único
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="parcelado"
+                          className="rounded-lg text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                        >
+                          Gasto Parcelado
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </FormControl>
+                </FormItem>
+
+                {form.watch("parcelado") && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <FormField
+                      control={form.control}
+                      name="parcelas"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Quantidade de parcelas <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <Select
+                            value={String(field.value || 2)}
+                            onValueChange={(val) => field.onChange(Number(val))}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                <SelectValue placeholder="Selecione o número de parcelas" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-56">
+                              {Array.from({ length: 35 }, (_, i) => i + 2).map((num) => (
+                                <SelectItem key={num} value={String(num)}>
+                                  {num}x
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("data") && (
+                      <div className="space-y-1.5 mt-2 animate-in fade-in duration-200">
+                        <span className="text-slate-500 font-semibold text-xs ml-1 flex items-center gap-1.5">
+                          <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
+                          Meses de lançamento
+                        </span>
+                        <div className="flex flex-wrap gap-1.5 p-1">
+                          {obterMesesProjetados(form.watch("data"), form.watch("parcelas")).map((mes, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-slate-50 text-slate-600 rounded-lg px-2.5 py-1 text-xs font-semibold border border-slate-200/60 shadow-2xs"
+                            >
+                              {mes}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="descricao"

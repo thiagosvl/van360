@@ -14,6 +14,8 @@ export const gastoApi = {
       descricao: cleanString(data.descricao),
       categoria: data.categoria,
       veiculo_id: data.veiculo_id,
+      parcelado: data.parcelado || false,
+      parcelas: data.parcelas || undefined,
     }
 
     return apiClient
