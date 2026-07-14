@@ -56,7 +56,7 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
           <Car className="h-5 w-5 text-white" />
         </div>
 
-        <div className="flex-grow min-w-0 pr-10">
+        <div className="flex-grow min-w-0 pr-6">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight uppercase tracking-tight">
             {formatarPlacaExibicao(veiculo.placa)}
           </p>
@@ -65,12 +65,6 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
               {veiculo.marca} {veiculo.modelo}
             </p>
           </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-          <StatusBadge
-            status={veiculo.ativo}
-          />
         </div>
       </div>
     </MobileActionItem>

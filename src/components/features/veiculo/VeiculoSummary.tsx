@@ -2,7 +2,7 @@ import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { cn } from "@/lib/utils";
 import {
-  User,
+  Users2,
 } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
 
@@ -23,8 +23,7 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
         </p>
 
         <div className={cn(
-          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-          isAtivo ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" : "bg-slate-50 text-slate-500 dark:bg-zinc-800"
+          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
         )}>
           <StatusBadge
             status={veiculo.ativo}
@@ -45,9 +44,9 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
       {/* LINHA 3: Footer com Passageiros */}
       <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-200/60 dark:border-zinc-800/80">
         <div className="flex items-center gap-1.5">
-          <User className="h-4 w-4 text-slate-400" />
+          <Users2 className="h-4 w-4 text-slate-400" />
           <span className="text-[12px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wide">
-            <strong className="text-slate-600 dark:text-zinc-300 font-semibold">{veiculo.passageiros_ativos_count || 0}</strong> PASSAGEIROS VINCULADOS
+            <strong className="text-slate-600 dark:text-zinc-300 font-semibold">{veiculo.passageiros_ativos_count || 0}</strong> PASSAGEIROS ATIVOS
           </span>
         </div>
       </div>

@@ -23,15 +23,7 @@ import { ChevronRight } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
-const getPeriodoSuffix = (periodo?: PassageiroPeriodo) => {
-  const labels: Record<string, string> = {
-    [PassageiroPeriodo.MANHA]: formatPeriodo(PassageiroPeriodo.MANHA),
-    [PassageiroPeriodo.TARDE]: formatPeriodo(PassageiroPeriodo.TARDE),
-    [PassageiroPeriodo.NOITE]: formatPeriodo(PassageiroPeriodo.NOITE),
-    [PassageiroPeriodo.INTEGRAL]: formatPeriodo(PassageiroPeriodo.INTEGRAL),
-  };
-  return labels[periodo || ""];
-};
+
 
 interface PassageirosListProps {
   passageiros: Passageiro[];
@@ -89,14 +81,17 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
         <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight">
           {shortName}
         </p>
-        <div className="flex items-center gap-1 mt-0.5 min-w-0">
-          <p className="text-[10px] text-gray-500 font-medium opacity-60 flex-shrink-0">
-            {respName}
+        <div className="flex flex-col gap-0.5 mt-0.5 min-w-0">
+          <p className="text-[10px] text-gray-500 font-medium line-clamp-1 opacity-60">
+            {schoolName || "Sem vínculo"}
           </p>
-          <span className="text-[8px] text-gray-400 opacity-40">•</span>
-          <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-            {schoolName} {passageiro.turma ? `- ${passageiro.turma}` : ""}
-          </p>
+          {(passageiro.periodo || passageiro.turma) && (
+            <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
+              {passageiro.periodo && <span>{formatPeriodo(passageiro.periodo)}</span>}
+              {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
+              {passageiro.turma && <span>{passageiro.turma}</span>}
+            </p>
+          )}
         </div>
       </div>
 
@@ -181,20 +176,20 @@ export function PassageirosList({
                     />
                   </TableCell>
                   <TableCell className="px-8 py-5 text-left">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-[10px] text-gray-400 font-medium tracking-wider break-words whitespace-pre-wrap">
-                        {passageiro.escola?.nome} {passageiro.turma ? `- ${passageiro.turma}` : ""}
-                        {passageiro.periodo && (
-                          <span
-                            className={cn(
-                              "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
-                              "bg-gray-50/50 text-gray-400 border-gray-100/80"
-                            )}
-                          >
-                            {getPeriodoSuffix(passageiro.periodo)}
-                          </span>
-                        )}
+                    <div className="flex flex-col items-start gap-1">
+                      <p 
+                        className="text-[10px] text-gray-400 font-medium tracking-wider leading-tight break-words"
+                        title={passageiro.escola?.nome || "Sem vínculo"}
+                      >
+                        {passageiro.escola?.nome || "Sem vínculo"}
                       </p>
+                      {(passageiro.periodo || passageiro.turma) && (
+                        <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
+                          {passageiro.periodo && <span>{formatPeriodo(passageiro.periodo)}</span>}
+                          {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
+                          {passageiro.turma && <span>{passageiro.turma}</span>}
+                        </p>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="px-8 py-5">

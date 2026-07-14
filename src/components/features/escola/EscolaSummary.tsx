@@ -23,8 +23,7 @@ export const EscolaSummary = ({ escola }: EscolaSummaryProps) => {
         </p>
 
         <div className={cn(
-          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-          isAtivo ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" : "bg-slate-50 text-slate-500 dark:bg-zinc-800"
+          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
         )}>
           <StatusBadge
             status={escola.ativo}
@@ -33,11 +32,10 @@ export const EscolaSummary = ({ escola }: EscolaSummaryProps) => {
       </div>
 
       {/* LINHA 2: Nome em Destaque */}
-      <div className="flex items-center gap-2 mt-1">
-        <h1 className="text-[22px] font-semibold text-[#1a3a5c] dark:text-zinc-100 leading-tight truncate">
+      <div className="flex items-start gap-2 mt-1">
+        <h1 className="text-[22px] font-semibold text-[#1a3a5c] dark:text-zinc-100 leading-tight line-clamp-3 break-words">
           {escola.nome}
         </h1>
-        <GraduationCap className="h-4 w-4 text-slate-300 dark:text-zinc-700 shrink-0" />
       </div>
 
       {/* Subtítulo: Endereço Resumido */}

@@ -100,7 +100,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           <div className="hidden md:flex items-center gap-3 min-w-0">
             {currentPage && (
               <>
-                <div className="h-10 w-10 shrink-0 rounded-xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] border border-[#1a3a5c]/10">
+                <div className="h-10 w-10 shrink-0 rounded-xl flex items-center justify-center text-[#1a3a5c]">
                   <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col min-w-0">
