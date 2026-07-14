@@ -109,7 +109,6 @@ export function usePassageirosViewModel() {
   const substituirContrato = useSubstituirContrato();
   const createEscola = useCreateEscola();
   const createVeiculo = useCreateVeiculo();
-  const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
 
@@ -133,7 +132,7 @@ export function usePassageirosViewModel() {
   } = usePassageiros(passageiroFilters, {
     enabled: !!profile?.id,
     onError: () =>
-      toast.error("passageiro.erro.excluir", {
+      toast.error("passageiro.erro.carregar", {
         description: "passageiro.erro.carregarDetalhe",
       }),
   });

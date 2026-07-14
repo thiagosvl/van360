@@ -52,4 +52,23 @@ export interface Passageiro {
   data_fim_transporte?: string;
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
+  responsaveis?: PassageiroResponsavel[];
+}
+
+export interface PassageiroResponsavel {
+  id?: string;
+  passageiro_id: string;
+  nome: string;
+  telefone: string;
+  cpf: string;
+  parentesco: ParentescoResponsavel;
+  logradouro?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  referencia?: string;
+  created_at?: string;
+  updated_at?: string;
 }

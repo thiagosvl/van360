@@ -1,7 +1,7 @@
 import { PassageiroFormModes, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
-import { Passageiro } from "@/types/passageiro";
+import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
@@ -12,7 +12,7 @@ import {
 
 export interface OpenConfirmationDialogProps {
   title: string;
-  description: string;
+  description: React.ReactNode;
   onConfirm: () => void | Promise<void>;
   confirmText?: string;
   cancelText?: string;
@@ -124,6 +124,12 @@ export interface OpenSaaSCheckoutDialogProps {
   forcedPeriod?: SubscriptionIdentifer;
 }
 
+export interface OpenResponsavelFormProps {
+  passageiroId: string;
+  editingResponsavel?: PassageiroResponsavel | null;
+  onSuccess?: () => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -137,6 +143,7 @@ export interface LayoutContextType {
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
+  openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;

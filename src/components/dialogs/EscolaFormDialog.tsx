@@ -1,4 +1,4 @@
-import { CepInput } from "@/components/forms";
+import { FormEnderecoFields } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,14 +12,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import {
   useCreateEscola,
   useUpdateEscola,
 } from "@/hooks/api/useEscolaMutations";
@@ -29,7 +21,6 @@ import { cn } from "@/lib/utils";
 import { cepSchema } from "@/schemas/common";
 import { Escola } from "@/types/escola";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { ESTADOS_BRASILEIROS } from "@/constants/defaults";
 
 import { toast } from "@/utils/notifications/toast";
 import { validateEnderecoFields } from "@/utils/validators";
@@ -106,7 +97,6 @@ export default function EscolaFormDialog({
     "dados-escola",
   ]);
   const [keepOpen, setKeepOpen] = useState(false);
-  const [isCepLoading, setIsCepLoading] = useState(false);
   const { user } = useSession();
   const { profile: profileFromHook } = useProfile(
     profileProp ? undefined : isOpen ? user?.id : undefined,
@@ -374,162 +364,7 @@ export default function EscolaFormDialog({
                 </div>
                 Endereço
               </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="cep"
-                    render={({ field }) => (
-                      <div className="md:col-span-2">
-                        <CepInput
-                          field={field}
-                          labelClassName="text-slate-700 font-semibold ml-1"
-                          inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                          onLoadingChange={setIsCepLoading}
-                        />
-                      </div>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="logradouro"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="md:col-span-4">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Logradouro
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
-                            aria-invalid={!!fieldState.error}
-                            disabled={isCepLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="numero"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Número
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
-                            aria-invalid={!!fieldState.error}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="bairro"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="md:col-span-4">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Bairro
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
-                            aria-invalid={!!fieldState.error}
-                            disabled={isCepLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cidade"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="md:col-span-4">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Cidade
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
-                            aria-invalid={!!fieldState.error}
-                            disabled={isCepLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="estado"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Estado
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={cn(
-                                "h-12 rounded-xl bg-gray-50 border-gray-200",
-                                fieldState.error && "border-red-500",
-                              )}
-                              aria-invalid={!!fieldState.error}
-                              disabled={isCepLoading}
-                            >
-                              <SelectValue placeholder="UF" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto rounded-2xl">
-                            {ESTADOS_BRASILEIROS.map((estado) => (
-                              <SelectItem key={estado.value} value={estado.value}>
-                                {estado.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="referencia"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="col-span-1 md:col-span-6">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Referência
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Ex: próximo ao mercado"
-                            {...field}
-                            className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 resize-none font-medium placeholder:text-slate-300 transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            aria-invalid={!!fieldState.error}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+              <FormEnderecoFields />
             </div>
 
             {allowBatchCreation && !editingEscola && (

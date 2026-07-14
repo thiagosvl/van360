@@ -170,3 +170,76 @@ export function useFinalizePreCadastro() {
   });
 }
 
+export function useCreateResponsavelAdicional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ passageiroId, data }: { passageiroId: string; data: any }) =>
+      passageiroApi.addResponsavelAdicional(passageiroId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      toast.success("sucesso.adicionar");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao adicionar responsável", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+export function useUpdateResponsavelAdicional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ responsavelId, passageiroId, data }: { responsavelId: string; passageiroId: string; data: any }) =>
+      passageiroApi.updateResponsavelAdicional(responsavelId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      toast.success("sucesso.atualizar");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao atualizar responsável", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+export function useDeleteResponsavelAdicional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ responsavelId, passageiroId }: { responsavelId: string; passageiroId: string }) =>
+      passageiroApi.deleteResponsavelAdicional(responsavelId),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      toast.success("sucesso.excluir");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir responsável", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+export function useSetPrincipalResponsavel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ passageiroId, responsavelId }: { passageiroId: string; responsavelId: string }) =>
+      passageiroApi.setPrincipalResponsavel(passageiroId, responsavelId),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      toast.success("sucesso.atualizar");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao alterar responsável principal", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+

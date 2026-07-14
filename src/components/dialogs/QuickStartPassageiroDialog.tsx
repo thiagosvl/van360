@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
 import { MoneyInput, PhoneInput } from "@/components/forms";
-import { Car, Rocket, School, User, CalendarDays, Wand2, Info } from "lucide-react";
+import { Car, Rocket, School, User, CalendarDays, Wand2, Info, DollarSign } from "lucide-react";
 import { useEscolasWithFilters, useVeiculosWithFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -88,9 +88,9 @@ export function QuickStartPassageiroDialog({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-5 py-2 px-1"
+            className="space-y-6 py-2 px-1"
           >
-            <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2 flex items-center gap-4 shadow-sm">
+            <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex items-center gap-4 shadow-sm">
               <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
                 <Info className="w-5 h-5" />
               </div>
@@ -99,307 +99,345 @@ export function QuickStartPassageiroDialog({
               </p>
             </div>
 
-            <FormField
-              control={form.control}
-              name="nome"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome Completo <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                      <Input
-                        placeholder="Digite o nome completo"
-                        {...field}
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                        aria-invalid={!!fieldState.error}
+            {/* Seção 1: Identificação (Passageiro e Responsável) */}
+            <section className="space-y-5">
+              <div className="flex items-center gap-3 text-base font-semibold text-slate-800">
+                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+                  <User className="w-4 h-4" />
+                </div>
+                Identificação
+              </div>
+
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                        Nome Completo <span className="text-red-600">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            placeholder="Digite o nome completo"
+                            {...field}
+                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nome_responsavel"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Nome do Responsável <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              placeholder="Ex: Maria Silva"
+                              {...field}
+                              className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                              aria-invalid={!!fieldState.error}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="telefone_responsavel"
+                    render={({ field }) => (
+                      <PhoneInput
+                        field={field}
+                        label="WhatsApp Responsável"
+                        required
+                        labelClassName="text-slate-700 font-semibold ml-1"
+                        inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
                       />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="nome_responsavel"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome do Responsável <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <Input
-                          placeholder="Ex: Maria Silva"
-                          {...field}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                          aria-invalid={!!fieldState.error}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="telefone_responsavel"
-                render={({ field }) => (
-                  <PhoneInput
-                    field={field}
-                    label="WhatsApp Responsável"
-                    required
-                    labelClassName="text-slate-700 font-semibold ml-1"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                    )}
                   />
-                )}
-              />
-            </div>
+                </div>
+              </div>
+            </section>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="valor_cobranca"
-                render={({ field }) => (
-                  <MoneyInput
-                    field={field}
-                    label="Valor"
-                    required
-                    labelClassName="text-slate-700 font-semibold ml-1"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+            <hr className="border-slate-100" />
+
+            {/* Seção 2: Transporte */}
+            <section className="space-y-5">
+              <div className="flex items-center gap-3 text-base font-semibold text-slate-800">
+                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+                  <Car className="w-4 h-4" />
+                </div>
+                Transporte e Escola
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="escola_id"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                        Escola <span className="text-red-600">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(val) => {
+                          if (val === "add-new-school") {
+                            openEscolaFormDialog({
+                              onSuccess: (escola) => {
+                                if (escola?.id) {
+                                  form.setValue("escola_id", escola.id, { shouldValidate: true });
+                                }
+                              }
+                            });
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <div className="relative">
+                            <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <SelectTrigger
+                              className={cn(
+                                "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                                fieldState.error && "border-red-500"
+                              )}
+                              aria-invalid={!!fieldState.error}
+                            >
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </div>
+                        </FormControl>
+                        <SelectContent>
+                          {escolasList.map((e) => (
+                            <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                          ))}
+                          <SelectItem
+                            value="add-new-school"
+                            className="font-semibold text-[#1a3a5c] cursor-pointer"
+                          >
+                            + Cadastrar Escola
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="veiculo_id"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                        Veículo <span className="text-red-600">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(val) => {
+                          if (val === "add-new-vehicle") {
+                            openVeiculoFormDialog({
+                              onSuccess: (veiculo) => {
+                                if (veiculo?.id) {
+                                  form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
+                                }
+                              }
+                            });
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <div className="relative">
+                            <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <SelectTrigger
+                              className={cn(
+                                "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                                fieldState.error && "border-red-500"
+                              )}
+                              aria-invalid={!!fieldState.error}
+                            >
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </div>
+                        </FormControl>
+                        <SelectContent>
+                          {veiculosList.map((v) => (
+                            <SelectItem key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</SelectItem>
+                          ))}
+                          <SelectItem
+                            value="add-new-vehicle"
+                            className="font-semibold text-[#1a3a5c] cursor-pointer"
+                          >
+                            + Cadastrar Veículo
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </section>
+
+            <hr className="border-slate-100" />
+
+            {/* Seção 3: Financeiro */}
+            <section className="space-y-5">
+              <div className="flex items-center gap-3 text-base font-semibold text-slate-800">
+                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+                Financeiro e Vencimento
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="valor_cobranca"
+                    render={({ field }) => (
+                      <MoneyInput
+                        field={field}
+                        label="Valor"
+                        required
+                        labelClassName="text-slate-700 font-semibold ml-1"
+                        inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                      />
+                    )}
                   />
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="dia_vencimento"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Dia do Vencimento <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <div className="relative">
-                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                              fieldState.error && "border-red-500",
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione o dia" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                          <SelectItem key={day} value={day.toString()}>
-                            Dia {day}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="dia_vencimento"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Dia do Vencimento <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <div className="relative">
+                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <SelectTrigger
+                                className={cn(
+                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                  fieldState.error && "border-red-500",
+                                )}
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue placeholder="Selecione o dia" />
+                              </SelectTrigger>
+                            </div>
+                          </FormControl>
+                          <SelectContent className="max-h-60 overflow-y-auto">
+                            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                              <SelectItem key={day} value={day.toString()}>
+                                Dia {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="escola_id"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Escola <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={(val) => {
-                        if (val === "add-new-school") {
-                          openEscolaFormDialog({
-                            onSuccess: (escola) => {
-                              if (escola?.id) {
-                                form.setValue("escola_id", escola.id, { shouldValidate: true });
-                              }
-                            }
-                          });
-                        } else {
-                          field.onChange(val);
-                        }
-                      }}
-                      value={field.value || ""}
-                    >
-                      <FormControl>
-                        <div className="relative">
-                          <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                              fieldState.error && "border-red-500"
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent>
-                        {escolasList.map((e) => (
-                          <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
-                        ))}
-                        <SelectItem
-                          value="add-new-school"
-                          className="font-semibold text-[#1a3a5c] cursor-pointer"
-                        >
-                          + Cadastrar Escola
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="mes_inicio_cobranca"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Mês Início Cobrança <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <div className="relative">
+                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <SelectTrigger
+                                className={cn(
+                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                  fieldState.error && "border-red-500",
+                                )}
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue placeholder="Selecione o mês" />
+                              </SelectTrigger>
+                            </div>
+                          </FormControl>
+                          <SelectContent className="max-h-60 overflow-y-auto">
+                            {monthOptions.map((m) => (
+                              <SelectItem key={m.value} value={m.value}>
+                                {m.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="veiculo_id"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Veículo <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={(val) => {
-                        if (val === "add-new-vehicle") {
-                          openVeiculoFormDialog({
-                            onSuccess: (veiculo) => {
-                              if (veiculo?.id) {
-                                form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
-                              }
-                            }
-                          });
-                        } else {
-                          field.onChange(val);
-                        }
-                      }}
-                      value={field.value || ""}
-                    >
-                      <FormControl>
-                        <div className="relative">
-                          <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                              fieldState.error && "border-red-500"
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent>
-                        {veiculosList.map((v) => (
-                          <SelectItem key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</SelectItem>
-                        ))}
-                        <SelectItem
-                          value="add-new-vehicle"
-                          className="font-semibold text-[#1a3a5c] cursor-pointer"
-                        >
-                          + Cadastrar Veículo
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="mes_inicio_cobranca"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Mês Início Cobrança <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <div className="relative">
-                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                              fieldState.error && "border-red-500",
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione o mês" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {monthOptions.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>
-                            {m.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="mes_fim_cobranca"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Mês Término Cobrança <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <div className="relative">
-                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                              fieldState.error && "border-red-500",
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione o mês" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {monthOptions.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>
-                            {m.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="mes_fim_cobranca"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Mês Término Cobrança <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <div className="relative">
+                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <SelectTrigger
+                                className={cn(
+                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                  fieldState.error && "border-red-500",
+                                )}
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue placeholder="Selecione o mês" />
+                              </SelectTrigger>
+                            </div>
+                          </FormControl>
+                          <SelectContent className="max-h-60 overflow-y-auto">
+                            {monthOptions.map((m) => (
+                              <SelectItem key={m.value} value={m.value}>
+                                {m.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </section>
           </form>
         </Form>
       </BaseDialog.Body>

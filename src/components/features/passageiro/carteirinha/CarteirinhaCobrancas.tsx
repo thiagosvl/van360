@@ -26,6 +26,7 @@ import {
   Plus,
 } from "lucide-react";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
+import { UnifiedEmptyState } from "@/components/empty";
 import { forwardRef, useCallback, useState } from "react";
 
 interface CarteirinhaCobrancasProps {
@@ -103,12 +104,11 @@ export const CarteirinhaCobrancas = ({
       {/* Lista */}
       <div className="space-y-3">
         {cobrancas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-10 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100">
-            <History className="h-8 w-8 text-slate-200 mb-3" />
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
-              Nenhuma parcela registrada em {yearFilter}
-            </p>
-          </div>
+          <UnifiedEmptyState
+            icon={History}
+            title="Nenhuma parcela"
+            description={`Nenhuma parcela registrada em ${yearFilter}`}
+          />
         ) : (
           <AnimatePresence mode="popLayout">
             {cobrancas.map((cobranca, idx) => (

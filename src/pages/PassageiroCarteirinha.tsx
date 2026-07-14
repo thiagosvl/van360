@@ -219,8 +219,8 @@ export default function PassageiroCarteirinha() {
         openConfirmationDialog({
           title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
           description: hasActiveContract
-            ? `Você alterou dados que impactam o contrato de ${firstName}. Deseja emitir um novo contrato com os dados atualizados? O responsável receberá o link para assinatura.`
-            : `Deseja gerar o contrato de prestação de serviços para ${firstName}? O responsável receberá o link para assinatura.`,
+            ? `Você alterou dados importantes do passageiro. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
+            : `Deseja gerar um contrato para ${firstName}? O responsável receberá um link para assiná-lo.`,
           confirmText: hasActiveContract ? "Substituir" : "Gerar",
           cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
           onConfirm: async () => {
@@ -670,6 +670,7 @@ export default function PassageiroCarteirinha() {
                           onContractAction={infoProps.onContractAction}
                           contratosAtivos={infoProps.contratosAtivos}
                           onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                          onEditClick={handleEditClick}
                         />
                       </div>
                     </Suspense>

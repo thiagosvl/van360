@@ -22,6 +22,7 @@ export const messages = {
 
   // ========== SUCESSO GENÉRICO ==========
   sucesso: {
+    adicionar: "Adicionado com sucesso.",
     salvar: "Salvo com sucesso.",
     excluir: "Excluído com sucesso.",
     atualizar: "Atualizado com sucesso.",

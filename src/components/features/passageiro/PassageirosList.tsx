@@ -8,9 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { cn } from "@/lib/utils";
-import { PassageiroPeriodo } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
@@ -38,29 +36,14 @@ interface PassageirosListProps {
 const PassageiroMobileCard = memo(function PassageiroMobileCard({
   passageiro,
   onHistorico,
-  onEdit,
-  onToggleClick,
-  onDeleteClick,
-  onEnviarWhatsApp,
-  usarContratos,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
   "passageiros"
 >) {
-  const actions = usePassageiroActions({
-    passageiro,
-    onHistorico,
-    onEdit,
-    onToggleStatus: onToggleClick,
-    onDelete: onDeleteClick as any,
-    onEnviarWhatsApp,
-    usarContratos,
-  });
 
   const initial = getInitials(passageiro?.nome);
 
   const shortName = formatShortName(passageiro?.nome, true);
-  const respName = formatFirstName(passageiro?.nome_responsavel);
   const schoolName = passageiro.escola?.nome;
 
   return (
@@ -177,7 +160,7 @@ export function PassageirosList({
                   </TableCell>
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col items-start gap-1">
-                      <p 
+                      <p
                         className="text-[10px] text-gray-400 font-medium tracking-wider leading-tight break-words"
                         title={passageiro.escola?.nome || "Sem vínculo"}
                       >

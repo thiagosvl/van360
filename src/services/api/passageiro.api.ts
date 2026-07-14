@@ -86,4 +86,24 @@ export const passageiroApi = {
     apiClient
       .get(`${endpointBase}/aniversariantes`, { params: { mes } })
       .then(res => res.data),
+
+  addResponsavelAdicional: (passageiroId: string, data: any): Promise<any> =>
+    apiClient
+      .post(`${endpointBase}/${passageiroId}/responsaveis`, data)
+      .then(res => res.data),
+
+  updateResponsavelAdicional: (responsavelId: string, data: any): Promise<any> =>
+    apiClient
+      .put(`${endpointBase}/responsaveis/${responsavelId}`, data)
+      .then(res => res.data),
+
+  deleteResponsavelAdicional: (responsavelId: string): Promise<any> =>
+    apiClient
+      .delete(`${endpointBase}/responsaveis/${responsavelId}`)
+      .then(res => res.data),
+
+  setPrincipalResponsavel: (passageiroId: string, responsavelId: string): Promise<any> =>
+    apiClient
+      .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/set-principal`)
+      .then(res => res.data),
 };
