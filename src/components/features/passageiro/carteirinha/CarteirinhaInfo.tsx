@@ -46,7 +46,8 @@ import {
   Lock,
   Phone,
   IdCard,
-  BookOpen
+  BookOpen,
+  MoreHorizontal
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -193,7 +194,7 @@ const CarteirinhaTopCard = ({
               size="icon"
               className="h-12 w-12 rounded-full bg-white text-slate-600 hover:bg-slate-100 transition-all shadow-md hover:shadow-lg"
             >
-              <MoreVertical className="h-5 w-5" />
+              <MoreHorizontal className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
