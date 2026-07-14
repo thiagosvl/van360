@@ -1,20 +1,17 @@
 import { useState, useEffect } from "react";
 import { useLayout } from "@/hooks";
-import { getShortWeekDayBR, monthNamesInBR as MESES } from "@/utils/dateUtils";
+import { monthNamesInBR as MESES } from "@/utils/dateUtils";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Cake, Bus, School, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Cake, Bus, School, AlertCircle } from "lucide-react";
 import { useAniversariantes } from "@/hooks/api/useAniversariantes";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DateNavigation } from "@/components/common/DateNavigation";
-import { formatShortName } from "@/utils/formatters/name";
 import { PassageirosSemDataList } from "@/components/features/passageiro/PassageirosSemDataList";
 import { PassageiroAniversarianteCard } from "@/components/features/passageiro/PassageiroAniversarianteCard";
-import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 
 const Aniversariantes = () => {
@@ -22,7 +19,6 @@ const Aniversariantes = () => {
   const [agrupamento, setAgrupamento] = useState<"van" | "escola">("van");
 
   const { setPageTitle } = useLayout();
-  const navigate = useNavigate();
 
   useEffect(() => {
     setPageTitle("Aniversariantes");
@@ -40,18 +36,24 @@ const Aniversariantes = () => {
   const mesAtualReal = hoje.getMonth() + 1;
   const isCurrentMonth = mesAtual === mesAtualReal;
   const isPastMonth = mesAtual < mesAtualReal;
-  
-  const semanaAtualNoMes = isCurrentMonth 
-    ? Math.min(5, Math.ceil(hoje.getDate() / 7)) 
+
+  const semanaAtualNoMes = isCurrentMonth
+    ? Math.min(5, Math.ceil(hoje.getDate() / 7))
     : isPastMonth ? 6 : 0;
 
   const semanasAtuaisEFuturas = data?.semanas.filter(s => s.semana >= semanaAtualNoMes) || [];
   const semanasPassadas = data?.semanas.filter(s => s.semana < semanaAtualNoMes).reverse() || [];
 
+  const primeiraSemanaAtivaComDados = semanasAtuaisEFuturas.length > 0
+    ? semanasAtuaisEFuturas[0].semana
+    : null;
+
   const defaultOpenWeeks = isCurrentMonth
-    ? data?.semanas
-        .filter(s => s.semana === semanaAtualNoMes || s.semana === semanaAtualNoMes - 1)
-        .map(s => `semana-${s.semana}`) || []
+    ? Array.from(new Set([
+      `semana-${semanaAtualNoMes}`,
+      `semana-${semanaAtualNoMes - 1}`,
+      primeiraSemanaAtivaComDados ? `semana-${primeiraSemanaAtivaComDados}` : ""
+    ])).filter(Boolean)
     : data?.semanas.map(s => `semana-${s.semana}`) || [];
 
   const renderSemana = (semanaInfo: any, isPast: boolean) => {
@@ -149,7 +151,7 @@ const Aniversariantes = () => {
                   {semanasAtuaisEFuturas.map((s) => renderSemana(s, false))}
                 </Accordion>
               )}
-              
+
               {semanasPassadas.length > 0 && (
                 <Accordion type="multiple" defaultValue={defaultOpenWeeks} className="space-y-4">
                   {semanasAtuaisEFuturas.length > 0 && (
