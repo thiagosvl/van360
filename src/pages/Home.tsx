@@ -55,11 +55,11 @@ const Home = () => {
 
   const { openAcquisitionChannelDialog } = useLayout();
 
+  // Só aciona algumas lógicas a partir de N dias de uso da conta
+  const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
+
   useEffect(() => {
     if (isLoading || !profile) return;
-
-    // Só aciona a partir do 4º dia de uso da conta (3 dias de diferença do cadastro original)
-    const daysSinceCreation = differenceInCalendarDaysBR(getNowBR(), profile.created_at);
 
     const shouldAskChannel = !profile.canal_aquisicao && daysSinceCreation >= 3;
 
@@ -185,8 +185,8 @@ const Home = () => {
             )}
           </div>
 
-          {/* Banner de Trial (SaaS) */}
-          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && (
+          {/* Banner de Trial (SaaS) - Oculto nos primeiros 5 dias */}
+          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && daysSinceCreation >= 5 && (
             <TrialBanner
               daysLeft={subscription.trialDaysLeft}
               onSubscribe={() => {
