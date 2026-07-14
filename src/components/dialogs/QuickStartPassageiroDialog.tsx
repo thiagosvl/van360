@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain";
+import { monthOptions } from "@/utils/dateUtils";
 
 interface QuickStartPassageiroDialogProps {
   isOpen: boolean;
@@ -318,6 +319,80 @@ export function QuickStartPassageiroDialog({
                         >
                           + Cadastrar Veículo
                         </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="mes_inicio_cobranca"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Mês Início Cobrança <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <div className="relative">
+                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                              fieldState.error && "border-red-500",
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione o mês" />
+                          </SelectTrigger>
+                        </div>
+                      </FormControl>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {monthOptions.map((m) => (
+                          <SelectItem key={m.value} value={m.value}>
+                            {m.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="mes_fim_cobranca"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Mês Término Cobrança <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <div className="relative">
+                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                              fieldState.error && "border-red-500",
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione o mês" />
+                          </SelectTrigger>
+                        </div>
+                      </FormControl>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {monthOptions.map((m) => (
+                          <SelectItem key={m.value} value={m.value}>
+                            {m.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

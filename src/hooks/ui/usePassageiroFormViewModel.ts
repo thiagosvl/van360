@@ -176,6 +176,12 @@ export function usePassageiroFormViewModel({
       ? convertDateBrToISO(purePayload.data_fim_transporte)
       : null;
 
+    const currentYear = new Date().getFullYear();
+    purePayload.data_inicio_cobranca = `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01`;
+    purePayload.data_fim_cobranca = `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01`;
+    delete purePayload.mes_inicio_cobranca;
+    delete purePayload.mes_fim_cobranca;
+
     purePayload.genero = purePayload.genero || null;
     purePayload.periodo = purePayload.periodo || null;
     purePayload.modalidade = purePayload.modalidade || null;
@@ -207,6 +213,15 @@ export function usePassageiroFormViewModel({
             return 0;
           };
 
+          const cleanString = (val: any) => {
+            if (val === null || val === undefined) return "";
+            return String(val).trim().toLowerCase();
+          };
+
+          const checkStringChange = (formVal: any, dbVal: any) => {
+            return cleanString(formVal) !== cleanString(dbVal);
+          };
+
           const valorForm = moneyToNumber(purePayload.valor_cobranca);
           const vencimentoForm = Number(purePayload.dia_vencimento);
           
@@ -215,7 +230,25 @@ export function usePassageiroFormViewModel({
 
           hasCriticalContractChanges =
             Math.abs(valorForm - valorAtual) > 0.01 ||
-            vencimentoForm !== vencimentoAtual;
+            vencimentoForm !== vencimentoAtual ||
+            checkStringChange(purePayload.nome, editingPassageiro.nome) ||
+            checkStringChange(purePayload.nome_responsavel, editingPassageiro.nome_responsavel) ||
+            checkStringChange(purePayload.parentesco_responsavel, editingPassageiro.parentesco_responsavel) ||
+            checkStringChange(purePayload.cpf_responsavel, editingPassageiro.cpf_responsavel) ||
+            checkStringChange(purePayload.escola_id, editingPassageiro.escola_id) ||
+            checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
+            checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
+            checkStringChange(purePayload.turma, editingPassageiro.turma) ||
+            checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
+            checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
+            checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
+            checkStringChange(purePayload.data_fim_cobranca, editingPassageiro.data_fim_cobranca) ||
+            checkStringChange(purePayload.logradouro, editingPassageiro.logradouro) ||
+            checkStringChange(purePayload.numero, editingPassageiro.numero) ||
+            checkStringChange(purePayload.bairro, editingPassageiro.bairro) ||
+            checkStringChange(purePayload.cidade, editingPassageiro.cidade) ||
+            checkStringChange(purePayload.estado, editingPassageiro.estado) ||
+            checkStringChange(purePayload.cep, editingPassageiro.cep);
         }
 
         onSuccess(responseData, {

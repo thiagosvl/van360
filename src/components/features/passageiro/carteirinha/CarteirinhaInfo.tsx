@@ -551,6 +551,20 @@ export const CarteirinhaDadosPessoais = ({
         />
       </div>
 
+      {/* Linha: Início e Fim da Cobrança */}
+      <div className="grid grid-cols-2 gap-3">
+        <InfoTile
+          label="Início Cobrança"
+          value={passageiro.data_inicio_cobranca ? formatDateToBR(passageiro.data_inicio_cobranca) : "-"}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+        <InfoTile
+          label="Término Cobrança"
+          value={passageiro.data_fim_cobranca ? formatDateToBR(passageiro.data_fim_cobranca) : "-"}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+      </div>
+
       {/* Endereço */}
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
         <div className="flex items-center gap-2">

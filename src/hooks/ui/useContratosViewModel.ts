@@ -227,9 +227,10 @@ export function useContratosViewModel() {
 
   const handleSubstituir = useCallback((id: string) => {
     openConfirmationDialog({
-      title: "Substituir Contrato?",
-      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?",
-      confirmText: "Continuar",
+      title: "Substituir contrato?",
+      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
+      confirmText: "Substituir",
+      cancelText: "Manter atual",
       onConfirm: async () => {
         await substituirMutation.mutateAsync(id);
         safeCloseDialog(closeConfirmationDialog);

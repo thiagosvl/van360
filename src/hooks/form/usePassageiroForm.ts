@@ -17,6 +17,13 @@ import { flushSync } from "react-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+const getMonthFromDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 2) return "";
+  return parseInt(parts[1], 10).toString();
+};
+
 export const passageiroSchema = z
   .object({
     escola_id: z.string().min(1, "Campo obrigatório"),
@@ -66,6 +73,8 @@ export const passageiroSchema = z
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
+    mes_inicio_cobranca: z.string().min(1, "Campo obrigatório"),
+    mes_fim_cobranca: z.string().min(1, "Campo obrigatório"),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
@@ -83,6 +92,16 @@ export const passageiroSchema = z
     {
       message: "Término deve ser maior que o Início",
       path: ["data_fim_transporte"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (!data.mes_inicio_cobranca || !data.mes_fim_cobranca) return true;
+      return parseInt(data.mes_fim_cobranca, 10) >= parseInt(data.mes_inicio_cobranca, 10);
+    },
+    {
+      message: "Término da cobrança deve ser igual ou posterior ao início",
+      path: ["mes_fim_cobranca"],
     }
   );
 
@@ -139,6 +158,8 @@ export function usePassageiroForm({
       dia_vencimento: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
+      mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+      mes_fim_cobranca: "12",
 
       ativo: true,
     },
@@ -179,6 +200,8 @@ export function usePassageiroForm({
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
             data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
+            mes_inicio_cobranca: getMonthFromDate(editingPassageiro.data_inicio_cobranca) || getMonthFromDate(editingPassageiro.data_inicio_transporte) || (new Date().getMonth() + 1).toString(),
+            mes_fim_cobranca: getMonthFromDate(editingPassageiro.data_fim_cobranca) || getMonthFromDate(editingPassageiro.data_fim_transporte) || "12",
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -232,6 +255,8 @@ export function usePassageiroForm({
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
           data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "",
+          mes_inicio_cobranca: getMonthFromDate(prePassageiro.data_inicio_transporte) || (new Date().getMonth() + 1).toString(),
+          mes_fim_cobranca: getMonthFromDate(prePassageiro.data_fim_transporte) || "12",
 
           ativo: true,
         });

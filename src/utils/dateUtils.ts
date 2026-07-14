@@ -121,6 +121,11 @@ export const monthNamesInBR = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
+export const monthOptions = monthNamesInBR.map((name, index) => ({
+  value: (index + 1).toString(),
+  label: name,
+}));
+
 /**
  * Retorna o nome do mês em português.
  */

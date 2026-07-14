@@ -76,7 +76,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
   return (
     <BaseDialog open={isOpen} onOpenChange={() => { }} lockClose>
       <BaseDialog.Header
-        title={showContractStep ? "Contrato e Parcela" : "Registrar Parcela"}
+        title={showContractStep ? "Contrato e Parcela" : "Adicionar Parcela"}
         icon={<Wallet className="w-5 h-5 opacity-80" />}
         showSteps
         currentStep={stepIndex + 1}
@@ -153,12 +153,11 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
             <div className="py-2">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-slate-700">
-                  Registrar parcela?
+                  Adicione a primeira parcela
                 </h2>
                 <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                  Gostaria de registrar a parcela de{" "}
-                  <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para{" "}
-                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
+                  Gostaria de já adicionar a parcela de{" "}
+                  <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong>?
                 </p>
               </div>
             </div>
@@ -177,7 +176,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-bold", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, registrar parcela</p>
+                  <p className={cn("text-[13px] font-bold", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, adicionar parcela</p>
                   <p className="text-xs font-medium text-slate-500 mt-0.5">Já estará visível na carteirinha</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
@@ -199,7 +198,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   <AlertCircle className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-bold", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não registrar parcela</p>
+                  <p className={cn("text-[13px] font-bold", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não adicionar parcela</p>
                   <p className="text-xs font-medium text-slate-500 mt-0.5">Você poderá gerar manualmente depois</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", !wantsMonthlyCharge ? "border-slate-400 bg-slate-400" : "border-slate-300")}>

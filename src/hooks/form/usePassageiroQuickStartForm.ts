@@ -33,6 +33,14 @@ export const quickStartPassageiroSchema = z.object({
   dia_vencimento: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
   escola_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
   veiculo_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  mes_inicio_cobranca: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  mes_fim_cobranca: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+}).refine((data) => {
+  if (!data.mes_inicio_cobranca || !data.mes_fim_cobranca) return true;
+  return parseInt(data.mes_fim_cobranca, 10) >= parseInt(data.mes_inicio_cobranca, 10);
+}, {
+  message: "Término da cobrança deve ser igual ou posterior ao início",
+  path: ["mes_fim_cobranca"],
 });
 
 export type QuickStartPassageiroFormData = z.infer<typeof quickStartPassageiroSchema>;
@@ -56,6 +64,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId }: UsePassage
       dia_vencimento: "",
       escola_id: "",
       veiculo_id: "",
+      mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+      mes_fim_cobranca: "12",
     },
     mode: "onChange",
   });
@@ -64,13 +74,17 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId }: UsePassage
     try {
       setIsSubmitting(true);
 
+      const currentYear = new Date().getFullYear();
       const payload = {
-        ...data,
+        nome: data.nome,
+        nome_responsavel: data.nome_responsavel,
         telefone_responsavel: String(data.telefone_responsavel || "").replace(/\D/g, ""),
         valor_cobranca: moneyToNumber(String(data.valor_cobranca)),
         dia_vencimento: parseInt(String(data.dia_vencimento)),
         escola_id: data.escola_id,
         veiculo_id: data.veiculo_id,
+        data_inicio_cobranca: `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01`,
+        data_fim_cobranca: `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01`,
         ativo: true,
         usuario_id: usuarioId, // se fornecido pelo contexto externo/store de profile
       };
@@ -121,6 +135,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId }: UsePassage
       form.setValue("dia_vencimento", mockPassenger.dia_vencimento);
       form.setValue("escola_id", mockPassenger.escola_id || "");
       form.setValue("veiculo_id", mockPassenger.veiculo_id || "");
+      form.setValue("mes_inicio_cobranca", "2");
+      form.setValue("mes_fim_cobranca", "12");
     }
   };
 

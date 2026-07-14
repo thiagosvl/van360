@@ -50,4 +50,6 @@ export interface Passageiro {
   data_inicio_transporte?: string;
   turma?: string;
   data_fim_transporte?: string;
+  data_inicio_cobranca?: string;
+  data_fim_cobranca?: string;
 }

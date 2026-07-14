@@ -219,9 +219,10 @@ export default function PassageiroCarteirinha() {
         openConfirmationDialog({
           title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
           description: hasActiveContract
-            ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá o link para assinatura.`
-            : `Deseja gerar o contrato para ${firstName}? O responsável receberá o link para assinatura.`,
+            ? `Você alterou dados que impactam o contrato de ${firstName}. Deseja emitir um novo contrato com os dados atualizados? O responsável receberá o link para assinatura.`
+            : `Deseja gerar o contrato de prestação de serviços para ${firstName}? O responsável receberá o link para assinatura.`,
           confirmText: hasActiveContract ? "Substituir" : "Gerar",
+          cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
           onConfirm: async () => {
             try {
               if (updatedPassageiro.contrato_id) {

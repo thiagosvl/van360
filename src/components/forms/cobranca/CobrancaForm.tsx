@@ -433,7 +433,7 @@ export function CobrancaFormContent({
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                             </>
-                        ) : mode === "create" ? "Registrar Parcela" : "Salvar Alterações"}
+                        ) : mode === "create" ? "Adicionar Parcela" : "Salvar Alterações"}
                     </Button>
                 </div>
             )}

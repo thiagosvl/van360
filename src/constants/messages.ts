@@ -148,7 +148,7 @@ export const messages = {
   cobranca: {
     erro: {
       carregar: "Não foi possível carregar as parcelas.",
-      criar: "Erro ao registrar parcela.",
+      criar: "Erro ao adicionar parcela.",
       atualizar: "Erro ao atualizar parcela.",
       excluir: "Erro ao excluir parcela.",
       notificacao: "Erro ao enviar lembrete.",

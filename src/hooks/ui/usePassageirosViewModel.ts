@@ -375,8 +375,9 @@ export function usePassageirosViewModel() {
     (passageiro: Passageiro) => {
       openConfirmationDialog({
         title: "Substituir contrato?",
-        description: "Ao confirmar, o contrato atual será cancelado e um novo será gerado com os dados atuais do passageiro.",
+        description: "Ao confirmar, o contrato atual será cancelado e um novo com os dados atualizados será gerado para o passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
         confirmText: "Substituir",
+        cancelText: "Manter atual",
         variant: "warning",
         onConfirm: async () => {
           try {

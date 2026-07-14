@@ -75,7 +75,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
           {/* Desktop (Minimalista e objetivo) */}
           {platform === "desktop" && (
-            <div className="flex flex-col items-center gap-2 border-t border-white/10">
+            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-3">
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"
