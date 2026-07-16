@@ -44,11 +44,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const fileToBase64 = (file: File): Promise<string> => {
+const compressAndConvertImage = (file: File, maxWidth = 1200, quality = 0.75): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(event.target?.result as string); // Fallback caso canvas falhe
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = (error) => reject(error);
+    };
     reader.onerror = (error) => reject(error);
   });
 };
@@ -229,7 +256,7 @@ export default function AdminBlogPostForm({
       let finalCoverUrl = coverImageUrl;
 
       if (selectedFile) {
-        const base64 = await fileToBase64(selectedFile);
+        const base64 = await compressAndConvertImage(selectedFile);
         const uploadResult = await adminApi.uploadBlogPostCover(base64, selectedFile.name);
         finalCoverUrl = uploadResult.url;
       }
