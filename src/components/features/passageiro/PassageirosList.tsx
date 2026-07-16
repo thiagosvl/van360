@@ -52,12 +52,23 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
       className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4"
     >
       <div className={cn(
-        "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
-        passageiro.ativo ? "bg-[#1a3a5c]" : "bg-slate-400"
+        "rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center transition-all",
+        !passageiro.ativo && "opacity-80"
       )}>
-        <span className="text-white font-headline font-bold text-sm leading-none">
-          {initial}
-        </span>
+        <div className={cn(
+          "rounded-full border flex items-center justify-center transition-colors",
+          passageiro.ativo ? "border-[#1a3a5c]" : "border-slate-300"
+        )}>
+          <div className={cn(
+            "h-8 w-8 rounded-full border-[2px] border-white flex items-center justify-center transition-colors",
+            "bg-slate-200"
+          )}>
+            <User className={cn(
+              "w-4 h-4 fill-current transition-colors",
+              passageiro.ativo ? "text-[#1a3a5c]/80" : "text-slate-400"
+            )} />
+          </div>
+        </div>
       </div>
 
       <div className="flex-grow min-w-0 pr-6">
@@ -140,10 +151,22 @@ export function PassageirosList({
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
-                        <div className="rounded-full border border-[#132a42] flex items-center justify-center">
-                          <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
-                            <User className="w-4 h-4 text-slate-400 fill-current" />
+                      <div className={cn(
+                        "rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center transition-all",
+                        !passageiro.ativo && "opacity-80"
+                      )}>
+                        <div className={cn(
+                          "rounded-full border flex items-center justify-center transition-colors",
+                          passageiro.ativo ? "border-[#1a3a5c]" : "border-slate-300"
+                        )}>
+                          <div className={cn(
+                            "h-8 w-8 rounded-full border-[2px] border-white flex items-center justify-center transition-colors",
+                            "bg-slate-200"
+                          )}>
+                            <User className={cn(
+                              "w-4 h-4 fill-current transition-colors",
+                              passageiro.ativo ? "text-[#1a3a5c]/80" : "text-slate-400"
+                            )} />
                           </div>
                         </div>
                       </div>

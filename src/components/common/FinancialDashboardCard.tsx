@@ -94,10 +94,10 @@ export function FinancialDashboardCard({ totalEsperado, recebido, pendente, load
         {/* Proportional Bar */}
         <div className="flex w-full h-1.5 sm:h-2 mt-2 sm:mt-2.5 gap-1">
           {recebidoPercent > 0 && (
-            <div className="h-full bg-[#86d9a3] rounded-full transition-all duration-500" style={{ width: `${recebidoPercent}%` }} />
+            <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${recebidoPercent}%` }} />
           )}
           {100 - recebidoPercent > 0 && (
-            <div className="h-full bg-[#8db6ef] rounded-full transition-all duration-500" style={{ width: `${100 - recebidoPercent}%` }} />
+            <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${100 - recebidoPercent}%` }} />
           )}
         </div>
       </div>

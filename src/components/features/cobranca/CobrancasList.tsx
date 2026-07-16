@@ -143,11 +143,6 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
             <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
               {firstNomeResponsavel}
             </p>
-            {isAtrasado && (
-              <p className="text-[9px] font-bold text-red-500 uppercase tracking-tight mt-0.5">
-                {formatDiasAtraso(cobranca.data_vencimento)}
-              </p>
-            )}
           </div>
         </div>
 

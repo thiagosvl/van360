@@ -1,11 +1,10 @@
 import { Cobranca } from "@/types/cobranca";
-import { formatCurrency, formatDateToBR, formatFirstName, formatShortName, getMesNome, meses, formatDiasAtraso } from "@/utils/formatters";
+import { formatCurrency, formatDateToBR, formatFirstName, formatShortName, getMesNome, formatDiasAtraso } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import {
   Calendar,
-  Wallet
 } from "lucide-react";
 
 interface CobrancaSummaryProps {
@@ -17,7 +16,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const isPendente = cobranca.status === CobrancaStatus.PENDENTE;
   const isAtrasado = isPendente && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
-  const statusLabel = isPago ? "Pago" : isAtrasado ? "Atrasado" : "Pendente";
+  const statusLabel = isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
 
   return (
     <div className="flex flex-col p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left">
