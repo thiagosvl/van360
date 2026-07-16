@@ -10,6 +10,7 @@ import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
+import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 
 export function useCobrancasViewModel() {
   const {
@@ -130,6 +131,13 @@ export function useCobrancasViewModel() {
     [cobrancasRecebidas]
   );
 
+  const totalAtrasado = useMemo(
+    () => cobrancasAReceber
+      .filter(c => checkCobrancaEmAtraso(c.data_vencimento))
+      .reduce((acc, curr) => acc + Number(curr.valor), 0),
+    [cobrancasAReceber]
+  );
+
   const totalPrevisto = totalAReceber + totalRecebido;
 
   // Handlers
@@ -213,6 +221,7 @@ export function useCobrancasViewModel() {
     handleNavigation,
     totalAReceber,
     totalRecebido,
+    totalAtrasado,
     totalPrevisto,
     countAReceber: cobrancasAReceber.length,
     countRecebidos: cobrancasRecebidas.length,

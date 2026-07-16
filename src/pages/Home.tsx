@@ -158,6 +158,7 @@ const Home = () => {
                 totalEsperado={financeiro.aReceber + financeiro.recebido}
                 recebido={financeiro.recebido}
                 pendente={financeiro.aReceber}
+                atrasado={financeiro.totalEmAtraso}
                 loading={isLoading}
               />
             </div>

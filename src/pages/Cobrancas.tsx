@@ -20,6 +20,7 @@ export default function Cobrancas() {
     handleNavigation,
     totalAReceber,
     totalRecebido,
+    totalAtrasado,
     totalPrevisto,
     countAReceber,
     countRecebidos,
@@ -85,6 +86,7 @@ export default function Cobrancas() {
             totalEsperado={totalPrevisto}
             recebido={totalRecebido}
             pendente={totalAReceber}
+            atrasado={totalAtrasado}
             loading={isInitialLoading}
           />
         </div>

@@ -5,11 +5,14 @@ interface FinancialDashboardCardProps {
   totalEsperado: number;
   recebido: number;
   pendente: number;
+  atrasado?: number;
   loading?: boolean;
 }
 
-export function FinancialDashboardCard({ totalEsperado, recebido, pendente, loading }: FinancialDashboardCardProps) {
+export function FinancialDashboardCard({ totalEsperado, recebido, pendente, atrasado, loading }: FinancialDashboardCardProps) {
   const recebidoPercent = totalEsperado > 0 ? (recebido / totalEsperado) * 100 : 0;
+  const atrasadoPercent = totalEsperado > 0 && atrasado ? (atrasado / totalEsperado) * 100 : 0;
+  const pendentePercent = totalEsperado > 0 ? ((pendente - (atrasado || 0)) / totalEsperado) * 100 : 0;
 
   const getDynamicFontSize = (val: number) => {
     const str = formatCurrency(val);
@@ -88,6 +91,11 @@ export function FinancialDashboardCard({ totalEsperado, recebido, pendente, load
             <span className={cn(getDynamicFontSize(pendente), "font-bold text-slate-800 tracking-tight leading-none")}>
               {formatCurrency(pendente)}
             </span>
+            {atrasado && atrasado > 0 ? (
+              <span className="text-[10px] sm:text-xs font-normal text-red-500 mt-1.5 leading-none">
+                {formatCurrency(atrasado)} em atraso
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -96,8 +104,11 @@ export function FinancialDashboardCard({ totalEsperado, recebido, pendente, load
           {recebidoPercent > 0 && (
             <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${recebidoPercent}%` }} />
           )}
-          {100 - recebidoPercent > 0 && (
-            <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${100 - recebidoPercent}%` }} />
+          {pendentePercent > 0 && (
+            <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${pendentePercent}%` }} />
+          )}
+          {atrasadoPercent > 0 && (
+            <div className="h-full bg-red-500 rounded-full transition-all duration-500" style={{ width: `${atrasadoPercent}%` }} />
           )}
         </div>
       </div>
