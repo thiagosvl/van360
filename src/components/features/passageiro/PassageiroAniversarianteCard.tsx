@@ -5,6 +5,7 @@ import { getShortWeekDayBR } from "@/utils/dateUtils";
 import { ROUTES } from "@/constants/routes";
 import { Aniversariante } from "@/types/passageiro";
 import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PassageiroAniversarianteCardProps {
   passageiro: Aniversariante;
@@ -36,10 +37,21 @@ export function PassageiroAniversarianteCard({
       className="flex items-center justify-between py-2.5 sm:p-3 sm:rounded-xl border-b sm:border border-slate-50 sm:border-slate-100/80 bg-white hover:bg-slate-50 cursor-pointer transition-all group sm:shadow-[0_1px_2px_rgba(0,0,0,0.01)] last:border-b-0 sm:last:border-b"
     >
       <div className="flex items-center gap-3">
-        <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
-          <div className="rounded-full border border-[#132a42] flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
-              <User className="w-4 h-4 text-slate-400 fill-current" />
+        <div className={cn(
+          "rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center transition-all"
+        )}>
+          <div className={cn(
+            "rounded-full border flex items-center justify-center transition-colors",
+            "border-[#1a3a5c]"
+          )}>
+            <div className={cn(
+              "h-8 w-8 rounded-full border-[2px] border-white flex items-center justify-center transition-colors",
+              "bg-slate-200"
+            )}>
+              <User className={cn(
+                "w-4 h-4 fill-current transition-colors",
+                "text-[#1a3a5c]/80"
+              )} />
             </div>
           </div>
         </div>

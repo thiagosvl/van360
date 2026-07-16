@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { formatShortName } from "@/utils/formatters/name";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, User } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { Aniversariante } from "@/types/passageiro";
+import { cn } from "@/lib/utils";
 
 interface PassageirosSemDataListProps {
   passageiros: Omit<Aniversariante, "dia">[];
@@ -26,15 +27,36 @@ export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListPr
               !isLast ? "border-b border-slate-100 dark:border-zinc-800" : ""
             }`}
           >
-            <div className="flex flex-col overflow-hidden pr-2">
-              <span className="font-medium text-[#1a3a5c] dark:text-slate-200 text-[14px] truncate leading-tight">
-                {formatShortName(p.nome, true)}
-              </span>
-              <span className="text-[12px] text-slate-500 font-medium truncate leading-tight mt-0.5">
-                {p.veiculo ? formatarPlacaExibicao(p.veiculo.placa) : (p.escola?.nome || "Sem vínculo")}
-              </span>
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className={cn(
+                "rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center transition-all",
+                p.ativo === false && "opacity-80"
+              )}>
+                <div className={cn(
+                  "rounded-full border flex items-center justify-center transition-colors",
+                  p.ativo !== false ? "border-[#1a3a5c]" : "border-slate-300"
+                )}>
+                  <div className={cn(
+                    "h-8 w-8 rounded-full border-[2px] border-white flex items-center justify-center transition-colors",
+                    "bg-slate-200"
+                  )}>
+                    <User className={cn(
+                      "w-4 h-4 fill-current transition-colors",
+                      p.ativo !== false ? "text-[#1a3a5c]/80" : "text-slate-400"
+                    )} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col overflow-hidden pr-2">
+                <span className="font-medium text-[#1a3a5c] dark:text-slate-200 text-[14px] truncate leading-tight">
+                  {formatShortName(p.nome, true)}
+                </span>
+                <span className="text-[12px] text-slate-500 font-medium truncate leading-tight mt-0.5">
+                  {p.veiculo ? formatarPlacaExibicao(p.veiculo.placa) : (p.escola?.nome || "Sem vínculo")}
+                </span>
+              </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
           </div>
         );
       })}

@@ -1,24 +1,6 @@
 import { passageiroApi } from "@/services/api/passageiro.api";
 import { useQuery } from "@tanstack/react-query";
-
-export interface Aniversariante {
-  id: string;
-  nome: string;
-  dia: number;
-  veiculo?: { id: string; placa: string; modelo?: string };
-  escola?: { id: string; nome: string };
-}
-
-export interface SemanaAniversario {
-  semana: number;
-  aniversariantes: Aniversariante[];
-}
-
-export interface AniversariantesResponse {
-  semanas: SemanaAniversario[];
-  passageirosSemData: number;
-  passageirosSemDataList?: Omit<Aniversariante, "dia">[];
-}
+import { AniversariantesResponse } from "@/types/passageiro";
 
 export function useAniversariantes(mes: number, options?: { enabled?: boolean }) {
   return useQuery({
