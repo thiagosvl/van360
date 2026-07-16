@@ -28,7 +28,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-xl px-3 py-[clamp(6px,calc(3vh-15px),16px)] md:py-1.5 text-[clamp(14px,calc(3vh-7px),22px)] md:text-[14px] transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-[clamp(6px,calc(3vh-15px),16px)] md:py-2.5 text-[clamp(14px,calc(3vh-7px),22px)] md:text-[16px] transition-colors",
                 isActive
                   ? "bg-white/10 text-white font-bold shadow-sm"
                   : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
