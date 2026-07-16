@@ -6,6 +6,7 @@ import {
 } from "@/hooks/api/adminHooks";
 import { BlogPostStatus } from "@/types/enums";
 import { adminApi } from "@/services/api/admin.api";
+import { toast } from "@/utils/notifications/toast";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -219,6 +220,7 @@ export default function AdminBlogPostForm({
             cover_image_url: finalCoverUrl || null,
           },
         });
+        toast.success("Artigo atualizado com sucesso!");
       } else {
         await createMutation.mutateAsync({
           title,
@@ -228,11 +230,12 @@ export default function AdminBlogPostForm({
           status,
           cover_image_url: finalCoverUrl || null,
         });
+        toast.success("Artigo publicado com sucesso!");
       }
       onCancel();
     } catch (err) {
       console.error("Erro ao salvar artigo:", err);
-      alert("Falha ao salvar o artigo. Verifique a conexão com o servidor e tente novamente.");
+      toast.error("Falha ao salvar o artigo. Verifique a conexão com o servidor e tente novamente.");
     }
   };
 

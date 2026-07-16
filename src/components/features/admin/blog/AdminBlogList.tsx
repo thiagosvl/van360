@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAdminBlogPosts, useDeleteBlogPost } from "@/hooks/api/adminHooks";
 import { BlogPostStatus } from "@/types/enums";
 import { useLayout } from "@/contexts/LayoutContext";
+import { toast } from "@/utils/notifications/toast";
 import {
   Search,
   ChevronLeft,
@@ -23,7 +24,7 @@ interface AdminBlogListProps {
 }
 
 export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) {
-  const { openConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const limit = 10;
@@ -50,7 +51,14 @@ export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) 
       title: "Excluir Artigo",
       description: "Tem certeza que deseja excluir este artigo? Esta ação não pode ser desfeita.",
       onConfirm: async () => {
-        await deleteMutation.mutateAsync(id);
+        try {
+          await deleteMutation.mutateAsync(id);
+          closeConfirmationDialog();
+          toast.success("Artigo excluído com sucesso!");
+        } catch (err) {
+          console.error("Erro ao excluir artigo:", err);
+          toast.error("Falha ao excluir o artigo. Tente novamente.");
+        }
       },
     });
   };
@@ -112,7 +120,6 @@ export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) 
                     <tr className="border-b border-slate-100">
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Título</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Tags</th>
-                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Visualizações</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
@@ -142,11 +149,6 @@ export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) 
                               <span className="text-slate-400 text-xs">—</span>
                             )}
                           </div>
-                        </td>
-                        <td className="py-4">
-                          <span className="text-xs font-semibold text-slate-600">
-                            {post.views}
-                          </span>
                         </td>
                         <td className="py-4">
                           {post.status === BlogPostStatus.PUBLISHED ? (
@@ -223,10 +225,6 @@ export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) 
 
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                       <div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Visualizações</span>
-                        <span className="font-semibold text-slate-600">{post.views}</span>
-                      </div>
-                      <div className="text-right">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Data</span>
                         <span className="font-semibold text-slate-600">
                           {new Date(post.created_at).toLocaleDateString("pt-BR")}
