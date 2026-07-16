@@ -28,6 +28,7 @@ import {
   Save,
   Wand2,
   Image as ImageIcon,
+  Code,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,6 +72,8 @@ export default function AdminBlogPostForm({
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const [htmlContent, setHtmlContent] = useState("");
 
   const { data: post, isLoading: isLoadingDetails } = useAdminBlogPostDetails(
     postId ?? ""
@@ -78,6 +81,32 @@ export default function AdminBlogPostForm({
 
   const createMutation = useCreateBlogPost();
   const updateMutation = useUpdateBlogPost();
+
+  useEffect(() => {
+    if (isEdit && post) {
+      setTitle(post.title);
+      setExcerpt(post.excerpt ?? "");
+      setStatus(post.status);
+      setTags(post.tags ?? []);
+      setCoverImageUrl(post.cover_image_url ?? "");
+      setPreviewUrl(post.cover_image_url ?? "");
+      if (editor && !editor.isDestroyed) {
+        editor.commands.setContent(post.content);
+        setHtmlContent(post.content);
+      }
+    }
+  }, [post, isEdit, editor]);
+
+  const toggleHtmlMode = () => {
+    if (!editor) return;
+    if (isHtmlMode) {
+      editor.commands.setContent(htmlContent);
+    } else {
+      const html = editor.getHTML();
+      setHtmlContent(html);
+    }
+    setIsHtmlMode(!isHtmlMode);
+  };
 
   const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -125,20 +154,6 @@ export default function AdminBlogPostForm({
     },
   });
 
-  useEffect(() => {
-    if (isEdit && post) {
-      setTitle(post.title);
-      setExcerpt(post.excerpt ?? "");
-      setStatus(post.status);
-      setTags(post.tags ?? []);
-      setCoverImageUrl(post.cover_image_url ?? "");
-      setPreviewUrl(post.cover_image_url ?? "");
-      if (editor && !editor.isDestroyed) {
-        editor.commands.setContent(post.content);
-      }
-    }
-  }, [post, isEdit, editor]);
-
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -181,23 +196,32 @@ export default function AdminBlogPostForm({
     setPreviewUrl("https://images.unsplash.com/photo-1557223562-6c77ef16210f?w=800&auto=format&fit=crop&q=60");
     setStatus(BlogPostStatus.PUBLISHED);
     if (editor && !editor.isDestroyed) {
-      editor.commands.setContent(
-        `<h2>Como otimizar a sua rotina diária no transporte escolar</h2>
+      const htmlStr = `<h2>Como otimizar a sua rotina diária no transporte escolar</h2>
         <p>Planejar trajetos eficientes é um dos maiores desafios de quem trabalha com transporte escolar. Com o aumento do tráfego urbano e o preço dos combustíveis, a otimização de rotas não é mais um necessidade.</p>
         <h3>1. Agrupe pontos por proximidade geográfica</h3>
         <p>Evite cruzar a cidade desnecessariamente. Tente planejar o trajeto em formato de circuito (anél), minimizando o tempo que a van circula vazia.</p>
         <h3>2. Defina tolerâncias de atraso com os pais</h3>
         <p>A pontualidade é crucial. Alinhe com os responsáveis um limite máximo de tolerância de 2 a 3 minutos em cada parada, de modo que atrasos individuais não prejudiquem toda a rota.</p>
-        <p>Utilize ferramentas como o <strong>Van360</strong> para gerenciar seus passageiros, mensalidades e rotas escolares de forma centralizada e profissional!</p>`
-      );
+        <p>Utilize ferramentas como o <strong>Van360</strong> para gerenciar seus passageiros, mensalidades e rotas escolares de forma centralizada e profissional!</p>`;
+      editor.commands.setContent(htmlStr);
+      setHtmlContent(htmlStr);
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !editor) return;
+    if (!title.trim()) return;
 
-    const content = editor.getHTML();
+    let content = "";
+    if (isHtmlMode) {
+      content = htmlContent;
+      if (editor && !editor.isDestroyed) {
+        editor.commands.setContent(htmlContent);
+      }
+    } else {
+      if (!editor) return;
+      content = editor.getHTML();
+    }
 
     try {
       let finalCoverUrl = coverImageUrl;
@@ -432,6 +456,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleBold().run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bold") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -441,6 +466,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleItalic().run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("italic") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -450,6 +476,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 2 }) ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -459,6 +486,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 3 }) ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -469,6 +497,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleBulletList().run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bulletList") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -478,6 +507,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleOrderedList().run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("orderedList") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -487,6 +517,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={setLink}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("link") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -496,6 +527,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleBlockquote().run()}
                       className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("blockquote") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
                     >
@@ -505,6 +537,7 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode}
                       onClick={addImage}
                       className="h-8 w-8 p-0 rounded-lg text-slate-600 hover:bg-[#1a3a5c]/10"
                     >
@@ -515,8 +548,8 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode || !editor.can().undo()}
                       onClick={() => editor.chain().focus().undo().run()}
-                      disabled={!editor.can().undo()}
                       className="h-8 w-8 p-0 rounded-lg text-slate-600 disabled:opacity-40"
                     >
                       <Undo2 className="h-4 w-4" />
@@ -525,14 +558,35 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      disabled={isHtmlMode || !editor.can().redo()}
                       onClick={() => editor.chain().focus().redo().run()}
-                      disabled={!editor.can().redo()}
                       className="h-8 w-8 p-0 rounded-lg text-slate-600 disabled:opacity-40"
                     >
                       <Redo2 className="h-4 w-4" />
                     </Button>
+                    <span className="w-px h-6 bg-slate-200 mx-1" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleHtmlMode}
+                      className={`h-8 px-2 rounded-lg flex items-center gap-1 text-xs font-semibold ${isHtmlMode ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600 hover:bg-[#1a3a5c]/5"}`}
+                      title={isHtmlMode ? "Alternar para modo Visual" : "Alternar para modo HTML"}
+                    >
+                      <Code className="h-3.5 w-3.5 mr-1" />
+                      <span>{isHtmlMode ? "Visual" : "HTML"}</span>
+                    </Button>
                   </div>
-                  <EditorContent editor={editor} />
+                  {isHtmlMode ? (
+                    <Textarea
+                      value={htmlContent}
+                      onChange={(e) => setHtmlContent(e.target.value)}
+                      placeholder="Cole o código HTML formatado do seu post aqui..."
+                      className="w-full min-h-[350px] font-mono text-xs p-4 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] border-0 rounded-none bg-white resize-y"
+                    />
+                  ) : (
+                    <EditorContent editor={editor} />
+                  )}
                 </div>
               )}
             </div>
