@@ -67,6 +67,7 @@ const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 const AdminLoginAttempts = lazyLoad(() => import("./pages/admin/AdminLoginAttempts"));
 const AdminActivityHistory = lazyLoad(() => import("./pages/admin/AdminActivityHistory"));
 const AdminWhatsappInstances = lazyLoad(() => import("./pages/admin/AdminWhatsappInstances"));
+const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 
 const App = () => {
   const [updating, setUpdating] = useState(false);
@@ -274,8 +275,8 @@ const App = () => {
                       // App nativo → splash (AppGate redireciona para home se já logado)
                       <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
                     ) : (
-                      // Web → mostra página inicial pública (LP)
-                      <Index />
+                      // Web → redireciona para o login do aplicativo (a LP agora está no Astro)
+                      <Navigate to={ROUTES.PUBLIC.LOGIN} replace />
                     )
                   }
                 />
@@ -301,6 +302,7 @@ const App = () => {
                   <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES} element={<AdminWhatsappInstances />} />
+                  <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
                 </Route>
 
                 {/* Rotas Protegidas - Motorista */}

@@ -25,6 +25,7 @@ export const ROUTES = {
       LOGIN_ATTEMPTS: "/admin/tentativas-login",
       ACTIVITY_HISTORY: "/admin/atividades",
       WHATSAPP_INSTANCES: "/admin/whatsapp",
+      BLOG: "/admin/blog",
     },
     MOTORISTA: {
       HOME: "/inicio",

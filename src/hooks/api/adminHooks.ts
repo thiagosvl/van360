@@ -198,3 +198,67 @@ export function useAdminWhatsappInstances() {
     refetchOnWindowFocus: true,
   });
 }
+
+export function useAdminBlogPosts(params?: { page?: number; limit?: number; status?: string }) {
+  return useQuery({
+    queryKey: ["admin", "blog-posts", params],
+    queryFn: () => adminApi.getBlogPosts(params),
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+  });
+}
+
+export function useAdminBlogPostDetails(id: string) {
+  return useQuery({
+    queryKey: ["admin", "blog-posts", id],
+    queryFn: () => adminApi.getBlogPostDetails(id),
+    enabled: !!id,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCreateBlogPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.createBlogPost,
+    onSuccess: () => {
+      toast.success("Artigo criado com sucesso.");
+      qc.invalidateQueries({ queryKey: ["admin", "blog-posts"] });
+    },
+    onError: () => {
+      toast.error("Erro ao criar artigo.");
+    },
+  });
+}
+
+export function useUpdateBlogPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      adminApi.updateBlogPost(id, data),
+    onSuccess: (_, variables) => {
+      toast.success("Artigo atualizado com sucesso.");
+      qc.invalidateQueries({ queryKey: ["admin", "blog-posts", variables.id] });
+      qc.invalidateQueries({ queryKey: ["admin", "blog-posts"] });
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar artigo.");
+    },
+  });
+}
+
+export function useDeleteBlogPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.deleteBlogPost,
+    onSuccess: () => {
+      toast.success("Artigo excluído com sucesso.");
+      qc.invalidateQueries({ queryKey: ["admin", "blog-posts"] });
+    },
+    onError: () => {
+      toast.error("Erro ao excluir artigo.");
+    },
+  });
+}

@@ -1,35 +1,5 @@
-# Permitir indexação apenas das páginas públicas principais
+# Permitir indexação apenas do login e cadastro do aplicativo no subdomínio
 User-agent: *
-Allow: /
 Allow: /login
 Allow: /cadastro
-
-# Bloquear indexação de páginas protegidas e utilitárias
-Disallow: /termos-de-uso
-Disallow: /politica-de-privacidade
-Disallow: /inicio
-Disallow: /passageiros
-Disallow: /parcelas
-Disallow: /contratos
-Disallow: /escolas
-Disallow: /veiculos
-Disallow: /gastos
-Disallow: /relatorios
-Disallow: /responsavel
-Disallow: /nova-senha
-Disallow: /admin
-Disallow: /assinar
-Disallow: /cadastro-passageiro
-Disallow: /splash
-
-# Permitir bots de redes sociais para previews
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-Sitemap: https://van360.com.br/sitemap.xml
+Disallow: /

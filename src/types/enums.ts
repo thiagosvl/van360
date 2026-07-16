@@ -121,6 +121,7 @@ export enum AtividadeEntidadeTipo {
   CONTRATO = "CONTRATO",
   SAAS_ASSINATURA = "SAAS_ASSINATURA",
   SAAS_FATURA = "SAAS_FATURA",
+  BLOG_POST = "BLOG_POST",
 }
 
 export enum AtividadeAcao {
@@ -246,4 +247,15 @@ export enum CanalAquisicao {
   YOUTUBE = "YOUTUBE",
   GOOGLE = "GOOGLE",
   OUTROS = "OUTROS"
+}
+
+export enum BlogPostStatus {
+  DRAFT = "draft",
+  PUBLISHED = "published"
+}
+
+export enum BlogPageView {
+  LIST = "list",
+  CREATE = "create",
+  EDIT = "edit"
 }
