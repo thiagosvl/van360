@@ -59,7 +59,8 @@ export default function AdminBlogPostForm({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   const { data: post, isLoading: isLoadingDetails } = useAdminBlogPostDetails(
     postId ?? ""
@@ -68,36 +69,18 @@ export default function AdminBlogPostForm({
   const createMutation = useCreateBlogPost();
   const updateMutation = useUpdateBlogPost();
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true);
-    try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
-      const filePath = `covers/${fileName}`;
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
 
-      const { error } = await supabase.storage
-        .from("blog-covers")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("blog-covers")
-        .getPublicUrl(filePath);
-
-      setCoverImageUrl(publicUrl);
-    } catch (err) {
-      console.error("Erro ao subir imagem:", err);
-      alert("Falha ao subir imagem. Certifique-se de que o bucket 'blog-covers' existe e está público no console do Supabase.");
-    } finally {
-      setIsUploading(false);
-    }
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setCoverImageUrl("");
   };
 
   const addImage = () => {
@@ -139,6 +122,7 @@ export default function AdminBlogPostForm({
       setStatus(post.status);
       setTags(post.tags ?? []);
       setCoverImageUrl(post.cover_image_url ?? "");
+      setPreviewUrl(post.cover_image_url ?? "");
       if (editor && !editor.isDestroyed) {
         editor.commands.setContent(post.content);
       }
@@ -184,6 +168,7 @@ export default function AdminBlogPostForm({
     );
     setTags(["rotas", "organizacao", "escolar", "economia"]);
     setCoverImageUrl("https://images.unsplash.com/photo-1557223562-6c77ef16210f?w=800&auto=format&fit=crop&q=60");
+    setPreviewUrl("https://images.unsplash.com/photo-1557223562-6c77ef16210f?w=800&auto=format&fit=crop&q=60");
     setStatus(BlogPostStatus.PUBLISHED);
     if (editor && !editor.isDestroyed) {
       editor.commands.setContent(
@@ -205,6 +190,29 @@ export default function AdminBlogPostForm({
     const content = editor.getHTML();
 
     try {
+      let finalCoverUrl = coverImageUrl;
+
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split(".").pop();
+        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+        const filePath = `covers/${fileName}`;
+
+        const { error } = await supabase.storage
+          .from("blog-covers")
+          .upload(filePath, selectedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("blog-covers")
+          .getPublicUrl(filePath);
+
+        finalCoverUrl = publicUrl;
+      }
+
       if (isEdit && postId) {
         await updateMutation.mutateAsync({
           id: postId,
@@ -214,7 +222,7 @@ export default function AdminBlogPostForm({
             excerpt,
             tags,
             status,
-            cover_image_url: coverImageUrl || null,
+            cover_image_url: finalCoverUrl || null,
           },
         });
       } else {
@@ -224,12 +232,13 @@ export default function AdminBlogPostForm({
           excerpt,
           tags,
           status,
-          cover_image_url: coverImageUrl || null,
+          cover_image_url: finalCoverUrl || null,
         });
       }
       onCancel();
     } catch (err) {
-      // Erro tratado pela mutation (toast)
+      console.error("Erro ao salvar artigo:", err);
+      alert("Falha ao salvar o artigo. Se selecionou uma imagem, verifique se o bucket 'blog-covers' foi criado no console do Supabase.");
     }
   };
 
@@ -307,16 +316,16 @@ export default function AdminBlogPostForm({
               </Label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
                 <div className="h-28 aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center relative shrink-0">
-                  {coverImageUrl ? (
+                  {previewUrl ? (
                     <>
                       <img
-                        src={coverImageUrl}
+                        src={previewUrl}
                         alt="Preview da capa"
                         className="w-full h-full object-cover"
                       />
                       <button
                         type="button"
-                        onClick={() => setCoverImageUrl("")}
+                        onClick={handleRemoveImage}
                         className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow transition-colors"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -332,23 +341,17 @@ export default function AdminBlogPostForm({
                       type="file"
                       accept="image/*"
                       id="cover-file-input"
-                      onChange={handleImageUpload}
-                      disabled={isUploading}
+                      onChange={handleImageSelection}
                       className="hidden"
                     />
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => document.getElementById("cover-file-input")?.click()}
-                      disabled={isUploading}
                       className="rounded-xl border-slate-200 text-xs font-bold hover:bg-slate-100 flex items-center gap-1.5"
                     >
-                      {isUploading ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1a3a5c]" />
-                      ) : (
-                        <ImageIcon className="h-4 w-4 text-slate-500" />
-                      )}
-                      {isUploading ? "Enviando..." : "Subir Imagem"}
+                      <ImageIcon className="h-4 w-4 text-slate-500" />
+                      Escolher Imagem
                     </Button>
                     
                     <span className="text-[10px] font-bold text-slate-400 uppercase">ou cole uma URL</span>
@@ -356,7 +359,10 @@ export default function AdminBlogPostForm({
                   <Input
                     placeholder="Cole a URL pública da imagem de destaque..."
                     value={coverImageUrl}
-                    onChange={(e) => setCoverImageUrl(e.target.value)}
+                    onChange={(e) => {
+                      setCoverImageUrl(e.target.value);
+                      setPreviewUrl(e.target.value);
+                    }}
                     className="h-9 rounded-xl bg-white border-slate-200 text-xs focus-visible:ring-0 focus:border-[#1a3a5c]"
                   />
                 </div>
