@@ -1,5 +1,6 @@
 import { FormEnderecoFields, PhoneInput } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -33,6 +34,7 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
+  useSetPrincipalResponsavel,
 } from "@/hooks";
 
 const responsavelSchema = z.object({
@@ -57,6 +59,7 @@ const responsavelSchema = z.object({
   cidade: z.string().min(1, "Cidade é obrigatório"),
   estado: z.string().min(1, "Estado é obrigatório"),
   referencia: z.string().optional().nullable().or(z.literal("")),
+  tornar_principal: z.boolean().optional().default(false),
 });
 
 type ResponsavelFormData = z.infer<typeof responsavelSchema>;
@@ -78,8 +81,9 @@ export default function ResponsavelFormDialog({
 }: ResponsavelFormDialogProps) {
   const createResponsavel = useCreateResponsavelAdicional();
   const updateResponsavel = useUpdateResponsavelAdicional();
+  const setPrincipal = useSetPrincipalResponsavel();
 
-  const isSubmitting = createResponsavel.isPending || updateResponsavel.isPending;
+  const isSubmitting = createResponsavel.isPending || updateResponsavel.isPending || setPrincipal.isPending;
 
   const handleFillMock = () => {
     const mockName = mockGenerator.name();
@@ -105,6 +109,7 @@ export default function ResponsavelFormDialog({
       cidade: mockAddress.cidade,
       estado: mockAddress.estado,
       referencia: mockAddress.referencia || "",
+      tornar_principal: false,
     });
   };
 
@@ -122,6 +127,7 @@ export default function ResponsavelFormDialog({
       estado: "",
       cep: "",
       referencia: "",
+      tornar_principal: false,
     },
   });
 
@@ -140,6 +146,7 @@ export default function ResponsavelFormDialog({
           estado: editingResponsavel.estado || "",
           cep: editingResponsavel.cep ? cepMask(editingResponsavel.cep) : "",
           referencia: editingResponsavel.referencia || "",
+          tornar_principal: false,
         });
       } else {
         form.reset({
@@ -154,6 +161,7 @@ export default function ResponsavelFormDialog({
           estado: "",
           cep: "",
           referencia: "",
+          tornar_principal: false,
         });
       }
     }
@@ -179,23 +187,38 @@ export default function ResponsavelFormDialog({
       if (onSuccess) onSuccess();
     };
 
-    if (editingResponsavel && editingResponsavel.id) {
-      updateResponsavel.mutate(
-        {
+    try {
+      if (editingResponsavel && editingResponsavel.id) {
+        await updateResponsavel.mutateAsync({
           responsavelId: editingResponsavel.id,
           passageiroId,
           data: payload,
-        },
-        { onSuccess: successCallback }
-      );
-    } else {
-      createResponsavel.mutate(
-        {
+        });
+
+        if (data.tornar_principal) {
+          await setPrincipal.mutateAsync({
+            passageiroId,
+            responsavelId: editingResponsavel.id,
+          });
+        }
+        successCallback();
+      } else {
+        const response = await createResponsavel.mutateAsync({
           passageiroId,
           data: payload,
-        },
-        { onSuccess: successCallback }
-      );
+        });
+
+        // Backend should return the created object. Assuming it contains an `id` field.
+        if (data.tornar_principal && response?.id) {
+          await setPrincipal.mutateAsync({
+            passageiroId,
+            responsavelId: response.id,
+          });
+        }
+        successCallback();
+      }
+    } catch (error) {
+      console.error("Erro ao processar responsável:", error);
     }
   };
 
@@ -343,6 +366,27 @@ export default function ResponsavelFormDialog({
               </div>
               <FormEnderecoFields required={true} />
             </section>
+
+            <FormField
+              control={form.control}
+              name="tornar_principal"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
+                  <Checkbox
+                    id="tornar_principal"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-5 w-5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                  />
+                  <FormLabel
+                    htmlFor="tornar_principal"
+                    className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
+                  >
+                    Definir como responsável principal
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
       </BaseDialog.Body>

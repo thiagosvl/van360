@@ -293,7 +293,7 @@ export interface AdminBlogPostItem {
   tags: string[];
   status: BlogPostStatus;
   author_id: string | null;
-  views: number;
+  cover_image_url: string | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -312,6 +312,7 @@ export interface CreateBlogPostPayload {
   excerpt?: string | null;
   tags?: string[];
   status?: BlogPostStatus;
+  cover_image_url?: string | null;
 }
 
 export interface UpdateBlogPostPayload {
@@ -321,5 +322,6 @@ export interface UpdateBlogPostPayload {
   tags?: string[];
   status?: BlogPostStatus;
   published_at?: string | null;
+  cover_image_url?: string | null;
 }
 
