@@ -182,7 +182,7 @@ export function GastosList({
                       </span>
                     </td>
                     <td className="px-8 py-5 align-middle">
-                      <span className="text-sm text-slate-500 max-w-[180px] block truncate">
+                      <span className="text-sm text-slate-600 max-w-[180px] block truncate">
                         {gasto.descricao || "-"}
                       </span>
                     </td>
@@ -190,7 +190,7 @@ export function GastosList({
                       {formatDateToBR(gasto.data)}
                     </td>
                     <td className="px-8 py-5 text-right align-middle">
-                      <span className="font-headline font-black text-[#1a3a5c] text-sm">
+                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
                         {formatCurrency(gasto.valor)}
                       </span>
                     </td>

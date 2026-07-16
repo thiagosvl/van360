@@ -99,7 +99,7 @@ export function EscolasList({
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100/80">
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Escola
+                  Nome
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Qtd. Passageiros
@@ -120,10 +120,19 @@ export function EscolasList({
                   className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                 >
                   <td className="px-8 py-5 align-middle">
-                    <div className="flex flex-col">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm tracking-tight">
-                        {escola.nome}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
+                        <div className="rounded-full border border-[#132a42] flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
+                            <GraduationCap className="w-4 h-4 text-slate-400 fill-current" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm tracking-tight">
+                          {escola.nome}
+                        </p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-8 py-5 align-middle">

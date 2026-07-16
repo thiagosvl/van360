@@ -27,7 +27,7 @@ import {
   formatShortName,
 } from "@/utils/formatters";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
-import { DollarSign, Wallet } from "lucide-react";
+import { DollarSign, Wallet, User } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
 import { openBrowserLink } from "@/utils/browser";
 import { memo, useState } from "react";
@@ -278,13 +278,22 @@ export function CobrancasList({
                     className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
                   >
                     <TableCell className="px-8 py-5">
-                      <div className="flex flex-col">
-                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                          {formatShortName(cobranca?.passageiro?.nome, true)}
-                        </p>
-                        <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                          {firstName}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
+                          <div className="rounded-full border border-[#132a42] flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
+                              <User className="w-4 h-4 text-slate-400 fill-current" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                            {formatShortName(cobranca?.passageiro?.nome, true)}
+                          </p>
+                          <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                            {firstName}
+                          </p>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-4 text-right">
@@ -300,22 +309,14 @@ export function CobrancasList({
                       <StatusBadge
                         status={cobranca?.status}
                         dataVencimento={cobranca?.data_vencimento}
-                        className={cn(
-                          "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
-                          cobranca?.status === CobrancaStatus.PAGO
-                            ? "bg-emerald-50 text-emerald-600"
-                            : checkCobrancaEmAtraso(cobranca?.data_vencimento)
-                              ? "bg-red-50 text-red-600"
-                              : "bg-amber-50 text-amber-600"
-                        )}
                       />
                     </TableCell>
 
                     <TableCell className="px-8 py-5">
                       <div className="flex flex-col">
                         <span className={cn(
-                          "text-sm font-bold",
-                          !isPendingTab ? "text-emerald-500" : "text-[#1a3a5c]"
+                          "text-sm font-medium",
+                          !isPendingTab ? "text-emerald-600" : "text-slate-600"
                         )}>
                           {isPendingTab
                             ? formatDateToBR(cobranca?.data_vencimento)

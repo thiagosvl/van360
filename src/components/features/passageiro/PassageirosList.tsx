@@ -17,7 +17,7 @@ import {
   getInitials,
 } from "@/utils/formatters";
 import { formatPeriodo } from "@/utils/formatters/periodo";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, User } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
@@ -108,19 +108,19 @@ export function PassageirosList({
           <TableHeader className="bg-gray-50/50">
             <TableRow className="hover:bg-transparent border-b border-gray-100/80">
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] w-[350px]">
-                Passageiro
+                Nome
               </TableHead>
               <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Status
+              </TableHead>
+              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                Valor
               </TableHead>
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Escola
               </TableHead>
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Veículo
-              </TableHead>
-              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Valor
               </TableHead>
               <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Ações
@@ -131,7 +131,6 @@ export function PassageirosList({
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome, true);
               const respName = formatFirstName(passageiro?.nome_responsavel);
-              const schoolName = passageiro.escola?.nome;
 
               return (
                 <TableRow
@@ -140,32 +139,43 @@ export function PassageirosList({
                   className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
                 >
                   <TableCell className="px-8 py-5">
-                    <div className="flex flex-col">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                        {shortName}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
-                        {respName}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
+                        <div className="rounded-full border border-[#132a42] flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
+                            <User className="w-4 h-4 text-slate-400 fill-current" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                          {shortName}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
+                          {respName}
+                        </p>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <StatusBadge
-                      status={passageiro.ativo}
-                      className={cn(
-                        "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
-                        passageiro.ativo ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
-                      )}
-                    />
+                    <StatusBadge status={passageiro.ativo} />
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+                      {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </span>
                   </TableCell>
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col items-start gap-1">
-                      <p
-                        className="text-[10px] text-gray-400 font-medium tracking-wider leading-tight break-words"
+                      <span
+                        className="text-sm text-slate-600 max-w-[180px] block truncate"
                         title={passageiro.escola?.nome || "Sem vínculo"}
                       >
                         {passageiro.escola?.nome || "Sem vínculo"}
-                      </p>
+                      </span>
                       {(passageiro.periodo || passageiro.turma) && (
                         <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
                           {passageiro.periodo && <span>{formatPeriodo(passageiro.periodo)}</span>}
@@ -178,7 +188,7 @@ export function PassageirosList({
                   <TableCell className="px-8 py-5">
                     {passageiro.veiculo ? (
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-[#1a3a5c]">
+                        <span className="text-sm font-medium text-slate-600">
                           {formatarPlacaExibicao(passageiro.veiculo.placa)}
                         </span>
                         <span className="text-[10px] text-gray-400 font-medium uppercase truncate w-32">
@@ -186,14 +196,6 @@ export function PassageirosList({
                         </span>
                       </div>
                     ) : "-"}
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-                      {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <PassageiroActionsMenu

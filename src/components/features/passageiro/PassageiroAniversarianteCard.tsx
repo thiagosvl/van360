@@ -4,6 +4,7 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { getShortWeekDayBR } from "@/utils/dateUtils";
 import { ROUTES } from "@/constants/routes";
 import { Aniversariante } from "@/types/passageiro";
+import { User } from "lucide-react";
 
 interface PassageiroAniversarianteCardProps {
   passageiro: Aniversariante;
@@ -34,17 +35,26 @@ export function PassageiroAniversarianteCard({
       }
       className="flex items-center justify-between py-2.5 sm:p-3 sm:rounded-xl border-b sm:border border-slate-50 sm:border-slate-100/80 bg-white hover:bg-slate-50 cursor-pointer transition-all group sm:shadow-[0_1px_2px_rgba(0,0,0,0.01)] last:border-b-0 sm:last:border-b"
     >
-      <div className="flex flex-col pr-2">
-        <span className="font-medium text-slate-800 dark:text-slate-200 text-[13px] truncate leading-tight">
-          {formatShortName(passageiro.nome, true)}
-        </span>
-        <span className="text-[11px] text-slate-500 font-medium leading-tight">
-          {agrupamento === "van"
-            ? passageiro.escola?.nome || "Sem vínculo"
-            : passageiro.veiculo
-            ? formatarPlacaExibicao(passageiro.veiculo.placa)
-            : "Sem veículo"}
-        </span>
+      <div className="flex items-center gap-3">
+        <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
+          <div className="rounded-full border border-[#132a42] flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
+              <User className="w-4 h-4 text-slate-400 fill-current" />
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col pr-2">
+          <span className="font-medium text-slate-800 dark:text-slate-200 text-[13px] truncate leading-tight">
+            {formatShortName(passageiro.nome, true)}
+          </span>
+          <span className="text-[11px] text-slate-500 font-medium leading-tight">
+            {agrupamento === "van"
+              ? passageiro.escola?.nome || "Sem vínculo"
+              : passageiro.veiculo
+              ? formatarPlacaExibicao(passageiro.veiculo.placa)
+              : "Sem veículo"}
+          </span>
+        </div>
       </div>
 
       <div

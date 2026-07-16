@@ -204,7 +204,7 @@ export const ContratosList = memo(function ContratosList({
           <TableHeader className="bg-gray-50/50">
             <TableRow className="hover:bg-transparent border-b border-gray-100/80">
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Passageiro
+                Nome
               </TableHead>
               <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Valor Mensal

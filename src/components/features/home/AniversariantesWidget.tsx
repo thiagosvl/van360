@@ -113,7 +113,7 @@ export function AniversariantesWidget() {
                 <div className="space-y-4 pb-2">
                   {Array.from(agrupado.entries()).map(([grupo, lista]) => (
                     <div key={grupo} className="space-y-2">
-                      <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 ml-1">
+                      <h4 className="text-xs font-bold text-[#1a3a5c]/80 dark:text-blue-300/80 uppercase tracking-wider flex items-center gap-1.5 ml-1">
                         {agrupamento === 'van' ? <Bus className="h-3.5 w-3.5" /> : <School className="h-3.5 w-3.5" />}
                         {grupo}
                       </h4>
