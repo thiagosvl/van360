@@ -571,7 +571,17 @@ export const CarteirinhaDadosPessoais = ({
                       </div>
                       <div className="min-w-0">
                         <p className="text-[12px] font-bold text-slate-800">Notificações WhatsApp</p>
-                        <p className="text-[11px] text-slate-500 leading-normal">Alertas de embarque e desembarque.</p>
+                        <p className="text-[11px] text-slate-500 leading-normal">Lembretes de pagamento e avisos de rota serão enviados apenas para este contato.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 shadow-sm border border-blue-100/10">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-bold text-slate-800">Contratos e Documentos</p>
+                        <p className="text-[11px] text-slate-500 leading-normal">Futuros contratos e documentos gerados utilizarão os dados deste novo responsável.</p>
                       </div>
                     </div>
 
@@ -580,18 +590,8 @@ export const CarteirinhaDadosPessoais = ({
                         <MapPin className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-bold text-slate-800">Endereço do Passageiro</p>
-                        <p className="text-[11px] text-slate-500 leading-normal">Baseado no cadastro deste responsável.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                      <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 shadow-sm border border-blue-100/10">
-                        <IdCard className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[12px] font-bold text-slate-800">Dados Cadastrais</p>
-                        <p className="text-[11px] text-slate-500 leading-normal">Vínculos de faturamento e notas.</p>
+                        <p className="text-[12px] font-bold text-slate-800">Endereço Principal do Passageiro</p>
+                        <p className="text-[11px] text-slate-500 leading-normal">Por padrão, será utilizado o endereço deste responsável para rotas.</p>
                       </div>
                     </div>
                   </div>
