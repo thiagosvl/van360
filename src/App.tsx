@@ -31,8 +31,6 @@ import { lazyLoad } from "@/utils/lazyLoad";
 // Lazy loading de rotas principais
 const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
-const Index = lazyLoad(() => import("./pages/lp/Index"));
-// const TudoQueFaz = lazyLoad(() => import("./pages/lp/TudoQueFaz"));
 const Splash = lazyLoad(() => import("./pages/Splash"));
 const Home = lazyLoad(() => import("./pages/Home"));
 
