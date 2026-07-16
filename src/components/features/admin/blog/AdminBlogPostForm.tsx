@@ -82,6 +82,30 @@ export default function AdminBlogPostForm({
   const createMutation = useCreateBlogPost();
   const updateMutation = useUpdateBlogPost();
 
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-blue-600 underline hover:text-blue-800",
+        },
+      }),
+      TiptapImage.configure({
+        HTMLAttributes: {
+          class: "max-w-full h-auto rounded-2xl my-6 mx-auto block shadow-md",
+        },
+      }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-slate focus:outline-none max-w-none min-h-[350px] px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm leading-relaxed",
+      },
+    },
+  });
+
   useEffect(() => {
     if (isEdit && post) {
       setTitle(post.title);
@@ -130,29 +154,7 @@ export default function AdminBlogPostForm({
     }
   };
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-blue-600 underline hover:text-blue-800",
-        },
-      }),
-      TiptapImage.configure({
-        HTMLAttributes: {
-          class: "max-w-full h-auto rounded-2xl my-6 mx-auto block shadow-md",
-        },
-      }),
-    ],
-    content: "",
-    editorProps: {
-      attributes: {
-        class:
-          "prose prose-slate focus:outline-none max-w-none min-h-[350px] px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm leading-relaxed",
-      },
-    },
-  });
+
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
