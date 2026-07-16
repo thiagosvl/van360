@@ -238,6 +238,9 @@ export const adminApi = {
 
   deleteBlogPost: (id: string) =>
     apiClient.delete(`${BASE}/blog/posts/${id}`).then(r => r.data),
+
+  uploadBlogPostCover: (file: string, filename: string) =>
+    apiClient.post<{ url: string }>(`${BASE}/blog/posts/upload`, { file, filename }).then(r => r.data),
 };
 
 export interface AdminWhatsappInstanceItem {

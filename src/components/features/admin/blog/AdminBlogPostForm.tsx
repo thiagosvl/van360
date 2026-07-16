@@ -5,7 +5,7 @@ import {
   useUpdateBlogPost,
 } from "@/hooks/api/adminHooks";
 import { BlogPostStatus } from "@/types/enums";
-import { supabase } from "@/integrations/supabase/client";
+import { adminApi } from "@/services/api/admin.api";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -41,6 +41,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 interface AdminBlogPostFormProps {
   postId: string | null;
@@ -193,24 +202,9 @@ export default function AdminBlogPostForm({
       let finalCoverUrl = coverImageUrl;
 
       if (selectedFile) {
-        const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
-        const filePath = `covers/${fileName}`;
-
-        const { error } = await supabase.storage
-          .from("blog-covers")
-          .upload(filePath, selectedFile, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (error) throw error;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("blog-covers")
-          .getPublicUrl(filePath);
-
-        finalCoverUrl = publicUrl;
+        const base64 = await fileToBase64(selectedFile);
+        const uploadResult = await adminApi.uploadBlogPostCover(base64, selectedFile.name);
+        finalCoverUrl = uploadResult.url;
       }
 
       if (isEdit && postId) {
@@ -238,7 +232,7 @@ export default function AdminBlogPostForm({
       onCancel();
     } catch (err) {
       console.error("Erro ao salvar artigo:", err);
-      alert("Falha ao salvar o artigo. Se selecionou uma imagem, verifique se o bucket 'blog-covers' foi criado no console do Supabase.");
+      alert("Falha ao salvar o artigo. Verifique a conexão com o servidor e tente novamente.");
     }
   };
 
