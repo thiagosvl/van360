@@ -62,7 +62,7 @@ export function useSEO({
     }
     const currentPath = window.location.pathname;
     const normalizedPath = currentPath === '/' ? currentPath : currentPath.replace(/\/$/, '');
-    const finalCanonical = canonicalUrl || `https://van360.com.br${normalizedPath}`;
+    const finalCanonical = canonicalUrl || `${import.meta.env.VITE_PUBLIC_APP_DOMAIN}${normalizedPath}`;
     canonicalLink.setAttribute("href", finalCanonical);
 
     // Cleanup: remover meta tag robots ao desmontar se foi adicionada
