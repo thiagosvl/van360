@@ -168,7 +168,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Key className="h-4 w-4 text-slate-400" />
-                Trocar Chave Pix
+                Chave Pix
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsHelpOpen(true)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <HelpCircle className="h-4 w-4 text-slate-400" />

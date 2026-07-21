@@ -43,8 +43,7 @@ export default function PassageiroExternalForm() {
             Cadastro Enviado!
           </h2>
           <p className="text-slate-600 mb-8 leading-relaxed text-lg">
-            Muito obrigado! Os dados do passageiro foram enviados para o condutor{" "}
-            <span className="font-bold text-[#1a3a5c]">{motoristaApelido}</span>.
+            Tudo certo! Os dados do passageiro foram enviados com sucesso.
           </p>
           <div className="pt-4 space-y-4">
             <Button
