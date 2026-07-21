@@ -12,6 +12,8 @@ import { useCobrancasViewModel, useLayout } from "@/hooks";
 import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
+import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
+import { useProfile } from "@/hooks/business/useProfile";
 
 export default function Cobrancas() {
   const {
@@ -42,6 +44,8 @@ export default function Cobrancas() {
   } = useCobrancasViewModel();
 
   const { openReceiptDialog } = useLayout();
+
+  const { profile } = useProfile();
 
   const isPending = activeTab === CobrancaTab.ARECEBER;
   const busca = isPending ? buscaAReceber : buscaRecebidos;
@@ -75,6 +79,10 @@ export default function Cobrancas() {
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
+        {!profile?.chave_pix && (
+          <PixNudgeBanner hasPix={false} />
+        )}
+        
         <DateNavigation
           mes={mesFilter}
           ano={anoFilter}

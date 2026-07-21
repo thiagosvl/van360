@@ -107,6 +107,7 @@ export function useSubstituirContrato() {
 export interface PreviewConfig {
   clausulas?: string[];
   multaAtraso?: { valor: number; tipo: "percentual" | "fixo" };
+  jurosAtraso?: { valor: number; tipo: "percentual" | "fixo" };
   multaRescisao?: { valor: number; tipo: "percentual" | "fixo" };
   assinaturaCondutorUrl?: string | null;
 }

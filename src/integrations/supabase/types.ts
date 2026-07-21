@@ -93,6 +93,7 @@ export type Database = {
           nome: string
           numero: string | null
           referencia: string | null
+          complemento: string | null
           logradouro: string | null
           updated_at: string
         }
@@ -107,6 +108,7 @@ export type Database = {
           nome: string
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           updated_at?: string
         }
@@ -121,6 +123,7 @@ export type Database = {
           nome?: string
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           updated_at?: string
         }
@@ -146,6 +149,7 @@ export type Database = {
 
           numero: string | null
           referencia: string | null
+          complemento: string | null
           logradouro: string | null
           telefone_responsavel: string
           updated_at: string
@@ -172,6 +176,7 @@ export type Database = {
           id?: string
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           updated_at?: string
         }
@@ -194,6 +199,7 @@ export type Database = {
 
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           telefone_responsavel?: string
           updated_at?: string

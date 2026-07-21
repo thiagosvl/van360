@@ -5,6 +5,7 @@ import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils"
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 
@@ -54,16 +55,15 @@ export function useDashboardViewModel() {
     const completedStepsCount = [
       contadores.veiculos > 0,
       contadores.escolas > 0,
-      !!profile?.chave_pix && !!profile?.tipo_chave_pix,
       contadores.passageiros > 0,
     ].filter(Boolean).length;
 
     return {
       completedSteps: completedStepsCount,
-      totalSteps: 4,
-      showOnboarding: completedStepsCount < 4,
+      totalSteps: 3,
+      showOnboarding: completedStepsCount < 3,
     };
-  }, [contadores, profile]);
+  }, [contadores]);
 
   const subscriptionView = useMemo(() => {
     if (!subscription) return undefined;
@@ -118,15 +118,18 @@ export function useDashboardViewModel() {
 
   const handleOpenPassageiroDialog = useCallback(() => {
     openQuickStartPassageiroDialog({
+      isOnboarding: onboarding.showOnboarding,
       onSuccess: (passageiro) => {
         queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
         queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-        if (passageiro) {
+        if (passageiro && !onboarding.showOnboarding) {
           openFirstChargeDialog({ passageiro });
+        } else if (passageiro && onboarding.showOnboarding) {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, queryClient]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, queryClient, onboarding.showOnboarding, navigate]);
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({

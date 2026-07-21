@@ -15,6 +15,7 @@ import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoStatus, ContratoTab } from "@/types/enums";
 import { formatFirstName, formatShortName } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
@@ -118,7 +119,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
           </p>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-              {formatFirstName(responsavelExibicao)}
+              {formatNomeResponsavelExibicao(responsavelExibicao)}
             </p>
           </div>
         </div>
@@ -216,8 +217,8 @@ export const ContratosList = memo(function ContratosList({
           </TableHeader>
           <TableBody>
             {data.map((item) => {
-              const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
-              const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
+              const nomePassageiro = item.passageiro?.nome || item.nome;
+              const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel;
 
               const isSemContrato = item.tipo === "passageiro";
               const status = item.status as ContratoStatus | null;
@@ -240,7 +241,7 @@ export const ContratosList = memo(function ContratosList({
                           {formatShortName(nomePassageiro, true)}
                         </p>
                         <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
-                          {formatFirstName(nomeResponsavel)}
+                          {formatNomeResponsavelExibicao(nomeResponsavel)}
                         </p>
                       </div>
                     </div>

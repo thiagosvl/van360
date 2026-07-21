@@ -58,6 +58,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     valor: 10,
     tipo: "fixo",
   });
+  const [jurosAtraso, setJurosAtraso] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
+    valor: 1,
+    tipo: "percentual",
+  });
   const [multaRescisao, setMultaRescisao] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
     valor: 15,
     tipo: "fixo",
@@ -87,6 +91,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       const isDefault = !profile.config_contrato?.usar_contratos;
       if (profile.config_contrato?.multa_atraso) {
         setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: "fixo" } : profile.config_contrato.multa_atraso);
+      }
+      if (profile.config_contrato?.juros_atraso) {
+        setJurosAtraso(isDefault ? { ...profile.config_contrato.juros_atraso, tipo: "percentual" } : profile.config_contrato.juros_atraso);
       }
       if (profile.config_contrato?.multa_rescisao) {
         setMultaRescisao(isDefault ? { ...profile.config_contrato.multa_rescisao, tipo: "fixo" } : profile.config_contrato.multa_rescisao);
@@ -169,6 +176,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         config_contrato: {
           usar_contratos: true,
           multa_atraso: multaAtraso,
+          juros_atraso: jurosAtraso,
           multa_rescisao: multaRescisao,
           clausulas: finalClausulas,
         },
@@ -201,6 +209,22 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             multaAtraso.tipo === "percentual"
               ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+          simColor: "text-[#1a3a5c]",
+        },
+        {
+          label: "Juros por Atraso",
+          desc: "Cobrado sobre a parcela pelo tempo de atraso (geralmente 1% ao mês).",
+          state: jurosAtraso,
+          setState: setJurosAtraso,
+          icon: Timer,
+          iconColor: "text-[#1a3a5c]",
+          simBaseLabel: "Exemplo Parcela",
+          simResultLabel: "Juros",
+          simBaseValue: 200,
+          simValue:
+            jurosAtraso.tipo === "percentual"
+              ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
         },
         {
@@ -408,11 +432,17 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       <div className="text-center space-y-0.5">
         <p className="text-[10px] text-slate-500 italic font-medium px-4 leading-relaxed">Só confirme após revisar as configurações.</p>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
           <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
             {multaAtraso.tipo === "percentual" ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor)}
+          </p>
+        </div>
+        <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Juros Atraso</p>
+          <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
+            {jurosAtraso.tipo === "percentual" ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor)}
           </p>
         </div>
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
@@ -421,7 +451,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             {multaRescisao.tipo === "percentual" ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor)}
           </p>
         </div>
-        <div className="col-span-2 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+        <div className="col-span-3 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
           <p className="text-[10px] font-semibold text-[#1a3a5c] uppercase">{clausulas.filter((c) => c.trim()).length}</p>
         </div>
@@ -436,6 +466,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               const result = await previewMutation.mutateAsync({
                 clausulas,
                 multaAtraso,
+                jurosAtraso,
                 multaRescisao,
                 assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
               });

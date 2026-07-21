@@ -30,6 +30,7 @@ import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
+import { isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -404,12 +405,16 @@ export function usePassageirosViewModel() {
       return;
     }
 
-    const telefone =
+    const telefone = isResponsavelMockTelefone(
       passageiro.telefone_responsavel ||
-      (passageiro as any).dados_contrato?.telefone_responsavel;
+      (passageiro as any).dados_contrato?.telefone_responsavel
+    ) ? undefined : (
+      passageiro.telefone_responsavel ||
+      (passageiro as any).dados_contrato?.telefone_responsavel
+    );
 
     if (!telefone) {
-      toast.error("Telefone do responsável não informado.");
+      toast.error("Telefone do responsável inválido ou não informado.");
       return;
     }
 

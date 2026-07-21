@@ -3,15 +3,14 @@ import { PassageirosList } from "@/components/features/passageiro/PassageirosLis
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
-import { PassengerOnboardingDrawer } from "@/components/features/quickstart/PassengerOnboardingDrawer";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
-import { useState } from "react";
 
 export default function Passageiros() {
   const {
@@ -45,8 +44,6 @@ export default function Passageiros() {
     pullToRefreshReload,
     hasActiveFilters,
   } = usePassageirosViewModel();
-
-  const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
 
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
   const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
@@ -104,7 +101,7 @@ export default function Passageiros() {
 
             <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
               <div className="space-y-6">
-                {(isMainTab ? countPassageiros === 0 : true) && (
+                {(isMainTab ? countPassageiros < 10 : true) && (
                   <QuickRegistrationLink
                     profile={profile}
                     pendingCount={countPrePassageiros}
@@ -159,7 +156,7 @@ export default function Passageiros() {
                         onClick: clearFilters
                       } : {
                         label: "Cadastrar Passageiro",
-                        onClick: () => setIsPassengerDrawerOpen(true)
+                        onClick: handleOpenNewDialog
                       }}
                     />
                   ) : (
@@ -185,13 +182,6 @@ export default function Passageiros() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-
-      <PassengerOnboardingDrawer
-        open={isPassengerDrawerOpen}
-        onOpenChange={setIsPassengerDrawerOpen}
-        onManualRegistration={handleOpenNewDialog}
-        profile={profile}
-      />
     </>
   );
 }

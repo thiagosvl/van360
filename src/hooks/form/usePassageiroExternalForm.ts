@@ -34,6 +34,7 @@ const prePassageiroSchema = z.object({
   estado: z.string().min(1, "Campo obrigatório"),
   cep: cepSchema,
   referencia: z.string().optional(),
+  complemento: z.string().optional(),
   observacoes: z.string().optional(),
 
   escola_id: z.string().optional(),
@@ -119,6 +120,7 @@ export function usePassageiroExternalForm() {
       estado: "",
       cep: "",
       referencia: "",
+      complemento: "",
       observacoes: "",
       valor_cobranca: "",
       dia_vencimento: "",
@@ -257,6 +259,7 @@ export function usePassageiroExternalForm() {
       cidade: currentValues.cidade,
       estado: currentValues.estado,
       referencia: currentValues.referencia,
+      complemento: currentValues.complemento,
 
       nome: "",
       escola_id: "",

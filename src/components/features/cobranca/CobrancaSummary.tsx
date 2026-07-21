@@ -1,5 +1,6 @@
 import { Cobranca } from "@/types/cobranca";
 import { formatCurrency, formatDateToBR, formatFirstName, formatShortName, getMesNome, formatDiasAtraso } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { cn } from "@/lib/utils";
 import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
@@ -45,7 +46,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
       {/* Info Extra de Responsável */}
       {cobranca.passageiro?.nome_responsavel && (
         <p className="text-[13px] font-medium text-slate-500 dark:text-zinc-400 uppercase mt-1 leading-none">
-          {formatFirstName(cobranca.passageiro.nome_responsavel)}
+          {formatNomeResponsavelExibicao(cobranca.passageiro.nome_responsavel)}
         </p>
       )}
 

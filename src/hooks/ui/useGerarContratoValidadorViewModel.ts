@@ -10,6 +10,7 @@ import { passageiroApi } from "@/services/api/passageiro.api";
 import { usePassageiro } from "@/hooks/api/usePassageiro";
 import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
+import { ONBOARDING_MOCK_RESPONSAVEL_NOME } from "@/utils/constants";
 
 const validadorSchema = z.object({
   data_inicio_transporte: z.string().min(1, "Data de início é obrigatória"),
@@ -80,6 +81,14 @@ export function useGerarContratoValidadorViewModel({
   // Check and pre-fill data when passenger is loaded
   useEffect(() => {
     if (isOpen && isChecking && passageiro && passageiroId) {
+      if (passageiro.nome_responsavel === ONBOARDING_MOCK_RESPONSAVEL_NOME) {
+        onCloseRef.current();
+        toast.error("Complete o cadastro", {
+          description: "Edite este passageiro e informe o nome real do responsável antes de gerar o contrato."
+        });
+        return;
+      }
+
       const hasInicio = !!passageiro.data_inicio_transporte;
       const hasFim = !!passageiro.data_fim_transporte;
       const hasCpf = !!passageiro.cpf_responsavel;

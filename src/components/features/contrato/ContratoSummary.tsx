@@ -1,16 +1,17 @@
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
 import { formatCurrency, formatDateToBR, formatFirstName, formatShortName } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
-import { Calendar, Wallet, FileCheck2, FileClock, FileQuestion } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 interface ContratoSummaryProps {
   item: any;
 }
 
 export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
-  const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
-  const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel;
+  const nomePassageiro = item.passageiro?.nome || item.nome;
+  const nomeResponsavel = formatNomeResponsavelExibicao(item.passageiro?.nome_responsavel || item.nome_responsavel);
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
   const isPendente = status === ContratoStatus.PENDENTE;

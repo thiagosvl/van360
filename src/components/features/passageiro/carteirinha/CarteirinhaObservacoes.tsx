@@ -46,12 +46,7 @@ export const CarteirinhaObservacoes = ({
     <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden group">
       <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shadow-sm">
-            <StickyNote className="h-4 w-4" />
-          </div>
-          <h3 className="text-sm font-headline font-black text-[#1a3a5c]">
-            Observações
-          </h3>
+          <h3 className="text-base font-bold text-[#16314f]">Observações</h3>
         </div>
 
         {!isEditing && (

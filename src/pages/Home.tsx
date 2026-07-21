@@ -1,11 +1,13 @@
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
+import confetti from "canvas-confetti";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { SecondaryKPICard } from "@/components/features/home/SecondaryKPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
+import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
@@ -57,6 +59,40 @@ const Home = () => {
 
   // Só aciona algumas lógicas a partir de N dias de uso da conta
   const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
+
+  // Efeito de Confetes na primeira vez que o usuário entra após o cadastro
+  useEffect(() => {
+    if (sessionStorage.getItem("van360_just_registered") === "true") {
+      sessionStorage.removeItem("van360_just_registered");
+
+      const duration = 0.8 * 1000; // 0.8 segundos (rápido e direto)
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ["#1a3a5c", "#f59e0b", "#10b981"],
+          zIndex: 9999
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ["#1a3a5c", "#f59e0b", "#10b981"],
+          zIndex: 9999
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+    }
+  }, []);
 
   useEffect(() => {
     if (isLoading || !profile) return;
@@ -152,8 +188,8 @@ const Home = () => {
             </section>
           )}
 
-          {!onboarding.showOnboarding && (
-            <div className="px-1 mb-4">
+          <div className="px-1 mb-4 relative">
+            <div className={cn("transition-all duration-300 space-y-4", onboarding.showOnboarding && "opacity-40 blur-[2px] pointer-events-none")}>
               <FinancialDashboardCard
                 totalEsperado={financeiro.aReceber + financeiro.recebido}
                 recebido={financeiro.recebido}
@@ -161,30 +197,40 @@ const Home = () => {
                 atrasado={financeiro.totalEmAtraso}
                 loading={isLoading}
               />
-            </div>
-          )}
 
-          <div
-            className={cn(
-              "grid gap-4 px-1",
-              onboarding.showOnboarding ? "grid-cols-1" : "grid-cols-2",
-            )}
-          >
-            {contadores.passageirosAtivos > 0 && (
-              <SecondaryKPICard
-                label="Passageiros Ativos"
-                value={contadores.passageirosAtivos}
-                loading={isLoading}
-              />
-            )}
-            {!onboarding.showOnboarding && contadores.escolasAtivas > 0 && (
-              <SecondaryKPICard
-                label="Escolas Ativas"
-                value={contadores.escolasAtivas}
-                loading={isLoading}
-              />
+              <div className="grid gap-4 grid-cols-2">
+                {(contadores.passageirosAtivos > 0 || onboarding.showOnboarding) && (
+                  <SecondaryKPICard
+                    label="Passageiros Ativos"
+                    value={contadores.passageirosAtivos}
+                    loading={isLoading}
+                  />
+                )}
+                {(contadores.escolasAtivas > 0 || onboarding.showOnboarding) && (
+                  <SecondaryKPICard
+                    label="Escolas Ativas"
+                    value={contadores.escolasAtivas}
+                    loading={isLoading}
+                  />
+                )}
+              </div>
+            </div>
+            {onboarding.showOnboarding && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-xl shadow-sm border border-slate-200/60 max-w-[280px]">
+                  <p className="text-[12px] font-bold text-slate-700">
+                    Complete os primeiros passos para liberar seu painel financeiro e indicadores.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
+
+          {!onboarding.showOnboarding && contadores.passageirosAtivos < 10 && (
+            <div className="px-1 mt-6 mb-2">
+              <QuickRegistrationLink profile={profile} pendingCount={contadores.passageirosSolicitacoes} />
+            </div>
+          )}
 
           {/* Banner de Trial (SaaS) - Oculto nos primeiros 5 dias */}
           {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && daysSinceCreation >= 5 && (

@@ -19,10 +19,13 @@ import {
   CarteirinhaHeader,
   CarteirinhaInfo,
   CarteirinhaObservacoes,
+  CarteirinhaContrato,
 } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
+import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
+import { IncompletePassengerBanner } from "@/components/features/passageiro/IncompletePassengerBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -623,6 +626,12 @@ export default function PassageiroCarteirinha() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
           <div className="space-y-6">
+            {(!passageiro.valor_cobranca || passageiro.valor_cobranca === 0) ? (
+              <IncompletePassengerBanner onEdit={handleEditClick} />
+            ) : !profile?.chave_pix ? (
+              <PixNudgeBanner hasPix={false} />
+            ) : null}
+            
             {/* Mobile Layout: Header fixo + Abas na primeira dobra */}
             {isMobile ? (
               <div className="space-y-5">
@@ -675,7 +684,16 @@ export default function PassageiroCarteirinha() {
                       </div>
                     </Suspense>
 
-                    {/* Observações no final da aba dados */}
+                    {/* Contrato e Observações no final da aba dados */}
+                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                      <CarteirinhaContrato
+                        passageiro={passageiro}
+                        contratosAtivos={infoProps.contratosAtivos}
+                        onContractAction={infoProps.onContractAction}
+                        onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                      />
+                    </Suspense>
+
                     <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
                       <CarteirinhaObservacoes {...observacoesProps} />
                     </Suspense>
@@ -695,6 +713,15 @@ export default function PassageiroCarteirinha() {
                 <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 lg:h-fit">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaInfo {...infoProps} />
+                  </Suspense>
+
+                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                    <CarteirinhaContrato
+                      passageiro={passageiro}
+                      contratosAtivos={infoProps.contratosAtivos}
+                      onContractAction={infoProps.onContractAction}
+                      onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                    />
                   </Suspense>
 
                   <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>

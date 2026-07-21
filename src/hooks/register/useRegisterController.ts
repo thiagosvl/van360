@@ -9,13 +9,6 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-export interface PostRegisterData {
-  cpf: string;
-  accessToken: string;
-  refreshToken: string;
-  user: any;
-}
-
 export interface DuplicateError {
   field: "email" | "cpfcnpj" | "telefone" | "generic";
   message: string;
@@ -25,7 +18,7 @@ export function useRegisterController() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
+
 
   useEffect(() => {
     const refParam = searchParams.get("ref");
@@ -34,15 +27,6 @@ export function useRegisterController() {
     }
   }, [searchParams]);
 
-  /* [TEMPORÁRIO] Usando isMobilePlatform para exibir boas-vindas no mobile browser também */
-  const [showNativeWelcome, setShowNativeWelcome] = useState(
-    () => isMobilePlatform() && sessionStorage.getItem("van360_showing_welcome") === "true"
-  );
-  /* [PADRÃO] No futuro, voltar para:
-  const [showNativeWelcome, setShowNativeWelcome] = useState(
-    () => isNativeApp() && sessionStorage.getItem("van360_showing_welcome") === "true"
-  );
-  */
   const [duplicateError, setDuplicateError] = useState<DuplicateError | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -91,7 +75,6 @@ export function useRegisterController() {
 
       // Disparar evento de conversão para o Google Tag Manager / Ads
       // Apenas em Produção e Apenas no Web (para não sujar métricas com o app nativo)
-      const isMobile = isMobilePlatform();
       const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
 
       if (typeof window !== "undefined" && import.meta.env.PROD && !isNative) {
@@ -102,61 +85,24 @@ export function useRegisterController() {
       }
       const sessionUser = result.session.user || result.user;
 
-      /* 
-         [TEMPORÁRIO] Cenário mobile (App OU Nav Mobile) redireciona para Splash Screen.
-         Desktop faz Log-in direto.
-         Objetivo: No futuro, separar isNativeApp() de isMobilePlatform().
-      */
 
-      // App Nativo: setar sessão + mostrar boas-vindas nativa
-      if (isNative) {
-        sessionStorage.setItem("van360_showing_welcome", "true");
-        setShowNativeWelcome(true);
+      // Define a flag de recém-cadastrado para disparar os confetes na Home
+      sessionStorage.setItem("van360_just_registered", "true");
 
-        const { error } = await sessionManager.setSession(
-          result.session.access_token,
-          result.session.refresh_token,
-          sessionUser
-        );
-
-        if (error) {
-          sessionStorage.removeItem("van360_showing_welcome");
-          setShowNativeWelcome(false);
-          toast.error("auth.erro.login", {
-            description: "Cadastro realizado, mas não foi possível fazer login automático.",
-          });
-          navigate(ROUTES.PUBLIC.LOGIN);
-        }
-        return;
-      }
-
-      // Pós-cadastro baseado na plataforma
-      const platform = detectPlatform();
-
-      if (platform === "android-web") {
-        // Apenas para Android Web: intercepta para sugerir baixar o app
-        setPostRegisterData({
-          cpf: data.cpfcnpj,
-          accessToken: result.session.access_token,
-          refreshToken: result.session.refresh_token,
-          user: sessionUser,
-        });
+      // Loga direto em todas as plataformas
+      const { error } = await sessionManager.setSession(
+        result.session.access_token,
+        result.session.refresh_token,
+        sessionUser
+      );
+      
+      if (!error) {
+        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
       } else {
-        // Desktop ou iOS Web: loga direto (não há app para eles instalarem de imediato)
-        const { error } = await sessionManager.setSession(
-          result.session.access_token,
-          result.session.refresh_token,
-          sessionUser
-        );
-        
-        if (!error) {
-          navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
-        } else {
-          toast.error("auth.erro.login", {
-            description: "Cadastro concluído, mas falha no login automático.",
-          });
-          navigate(ROUTES.PUBLIC.LOGIN);
-        }
+        toast.error("auth.erro.login", {
+          description: "Cadastro concluído, mas falha no login automático.",
+        });
+        navigate(ROUTES.PUBLIC.LOGIN);
       }
     } catch (err: any) {
       const respData = err.response?.data;
@@ -233,26 +179,6 @@ export function useRegisterController() {
     return true;
   };
 
-  const handleContinueInBrowser = async () => {
-    if (!postRegisterData) return;
-
-    const { error } = await sessionManager.setSession(
-      postRegisterData.accessToken,
-      postRegisterData.refreshToken,
-      postRegisterData.user
-    );
-
-    if (error) {
-      toast.error("auth.erro.login", {
-        description: "Não foi possível fazer login. Tente novamente.",
-      });
-      navigate(ROUTES.PUBLIC.LOGIN);
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
-    }
-  };
-
   const clearDuplicateError = () => setDuplicateError(null);
 
   return {
@@ -260,11 +186,7 @@ export function useRegisterController() {
     loading,
     handleNextStep,
     handleFillMagic,
-    postRegisterData,
-    handleContinueInBrowser,
-    showNativeWelcome,
     duplicateError,
     clearDuplicateError,
   };
 }
-

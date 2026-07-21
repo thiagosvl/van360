@@ -72,7 +72,7 @@ export function PassageiroFormResponsavel({
           render={({ field }) => (
             <PhoneInput
               field={field}
-              label="WhatsApp"
+              label="Telefone"
               required
               labelClassName="text-slate-700 font-semibold ml-1"
               inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"

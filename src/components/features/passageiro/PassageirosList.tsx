@@ -16,6 +16,7 @@ import {
   formatShortName,
   getInitials,
 } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatPeriodo } from "@/utils/formatters/periodo";
 import { ChevronRight, User } from "lucide-react";
 import { memo } from "react";
@@ -141,7 +142,7 @@ export function PassageirosList({
           <TableBody>
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome, true);
-              const respName = formatFirstName(passageiro?.nome_responsavel);
+              const respName = formatNomeResponsavelExibicao(passageiro?.nome_responsavel);
 
               return (
                 <TableRow

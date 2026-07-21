@@ -501,6 +501,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={() => safeCloseDialog(() => setQuickStartPassageiroState({ open: false }))}
           onSuccess={quickStartPassageiroState.props?.onSuccess}
+          isOnboarding={quickStartPassageiroState.props?.isOnboarding}
           usuarioId={profile?.id}
         />
       )}

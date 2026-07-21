@@ -88,9 +88,34 @@ export function FormEnderecoFields({ required = false }: FormEnderecoFieldsProps
 
       <FormField
         control={form.control}
+        name="complemento"
+        render={({ field, fieldState }) => (
+          <FormItem className="md:col-span-2">
+            <FormLabel className="text-slate-700 font-semibold ml-1">
+              Complemento
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  {...field}
+                  value={field.value || ""}
+                  placeholder="Ex: Apto 101"
+                  className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                  aria-invalid={!!fieldState.error}
+                  disabled={isCepLoading}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="bairro"
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-4">
+          <FormItem className="md:col-span-2">
             <FormLabel className="text-slate-700 font-semibold ml-1">
               Bairro {required && <span className="text-red-600">*</span>}
             </FormLabel>
@@ -183,6 +208,7 @@ export function FormEnderecoFields({ required = false }: FormEnderecoFieldsProps
               <div className="relative">
                 <Input
                   {...field}
+                  value={field.value || ""}
                   placeholder="Ex: Próximo ao mercado..."
                   className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
                   aria-invalid={!!fieldState.error}

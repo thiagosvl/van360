@@ -35,6 +35,7 @@ export interface Usuario {
   config_contrato?: {
     usar_contratos: boolean;
     multa_atraso: { valor: number; tipo: "percentual" | "fixo" };
+    juros_atraso: { valor: number; tipo: "percentual" | "fixo" };
     multa_rescisao: { valor: number; tipo: "percentual" | "fixo" };
     clausulas: string[];
   };

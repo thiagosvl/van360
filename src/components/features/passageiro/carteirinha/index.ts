@@ -3,4 +3,5 @@ export { CarteirinhaInfo, CarteirinhaHeader, CarteirinhaDadosPessoais } from "./
 export { CarteirinhaObservacoes } from "./CarteirinhaObservacoes";
 export { CarteirinhaResumoFinanceiro } from "./CarteirinhaResumoFinanceiro";
 export { CarteirinhaNotificacoes } from "./CarteirinhaNotificacoes";
+export { CarteirinhaContrato } from "./CarteirinhaContrato";
 export { InfoItem } from "./InfoItem";

@@ -34,6 +34,7 @@ import {
   formatShortName,
   getInitials,
 } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -254,7 +255,7 @@ export default function PrePassageiros({
                             {formatShortName(prePassageiro.nome, true)}
                           </p>
                           <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                            {formatFirstName(prePassageiro.nome_responsavel)}
+                            {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                           </p>
                         </div>
                       </div>
@@ -349,7 +350,7 @@ export default function PrePassageiros({
                           {formatShortName(prePassageiro.nome, true)}
                         </p>
                         <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                          {formatFirstName(prePassageiro.nome_responsavel)}
+                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                         </p>
                       </div>
                     </div>
@@ -368,7 +369,7 @@ export default function PrePassageiros({
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                          {formatFirstName(prePassageiro.nome_responsavel)}
+                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                         </p>
                       </div>
                     </div>

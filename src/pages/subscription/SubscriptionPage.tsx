@@ -567,7 +567,7 @@ const SubscriptionPage = () => {
           </aside>
         </div>
 
-        {!isCanceled && (
+        {!isCanceled && !isTrial && (
           <div className="flex justify-center pt-10">
             <button
               type="button"

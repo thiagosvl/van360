@@ -243,191 +243,191 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
               const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
               return (
                 <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="cpfcnpj"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      CPF ou CNPJ <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          {...field}
-                          maxLength={18}
-                          onChange={(e) => field.onChange(maskCpf(e.target.value))}
-                          placeholder="CPF ou CNPJ"
-                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="cpfcnpj"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            CPF ou CNPJ <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                              <Input
+                                {...field}
+                                maxLength={18}
+                                onChange={(e) => field.onChange(maskCpf(e.target.value))}
+                                placeholder="CPF ou CNPJ"
+                                className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      E-mail <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          type="email"
-                          placeholder="motorista@email.com"
-                          {...field}
-                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            E-mail <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                              <Input
+                                type="email"
+                                placeholder="motorista@email.com"
+                                {...field}
+                                className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-            <FormField
-              control={form.control}
-              name="razao_social"
-              render={({ field, fieldState, formState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Razão Social {isCnpj && <span className="text-red-600">*</span>}
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        placeholder="Razão social do motorista"
-                        {...field}
-                        value={field.value || ""}
-                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                        aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                  {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                    <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
-                  )}
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="nome"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome Completo <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        placeholder="Nome completo do motorista"
-                        {...field}
-                        className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="telefone"
-                render={({ field }) => (
-                  <PhoneInput
-                    field={field}
-                    label="WhatsApp"
-                    labelClassName="text-slate-700 font-semibold ml-1"
-                    placeholder="(00) 00000-0000"
-                    required
-                    inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                  <FormField
+                    control={form.control}
+                    name="razao_social"
+                    render={({ field, fieldState, formState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Razão Social {isCnpj && <span className="text-red-600">*</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                            <Input
+                              placeholder="Razão social do motorista"
+                              {...field}
+                              value={field.value || ""}
+                              className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                              aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                        {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                          <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                        )}
+                      </FormItem>
+                    )}
                   />
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="data_nascimento"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Data de Nascimento <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Calendar className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          {...field}
-                          inputMode="numeric"
-                          maxLength={10}
-                          onChange={(e) => field.onChange(maskDate(e.target.value))}
-                          placeholder="dd/mm/aaaa"
-                          className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
-                          aria-invalid={!!fieldState.error}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="nome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Nome Completo <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                            <Input
+                              placeholder="Nome completo do motorista"
+                              {...field}
+                              className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="senha"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Senha Temporária <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Key className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          {...field}
-                          className="pl-11 pr-10 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="telefone"
+                      render={({ field }) => (
+                        <PhoneInput
+                          field={field}
+                          label="Telefone"
+                          labelClassName="text-slate-700 font-semibold ml-1"
+                          placeholder="(00) 00000-0000"
+                          required
+                          inputClassName="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleRegeneratePassword}
-                        title="Gerar nova senha"
-                        className="w-11 h-11 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="data_nascimento"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Data de Nascimento <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Calendar className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                              <Input
+                                {...field}
+                                inputMode="numeric"
+                                maxLength={10}
+                                onChange={(e) => field.onChange(maskDate(e.target.value))}
+                                placeholder="dd/mm/aaaa"
+                                className="pl-11 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                                aria-invalid={!!fieldState.error}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="senha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Senha Temporária <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <Key className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                {...field}
+                                className="pl-11 pr-10 h-11 rounded-xl bg-slate-50 border-slate-200 text-sm"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                              >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleRegeneratePassword}
+                              title="Gerar nova senha"
+                              className="w-11 h-11 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </>
               );
             })()}

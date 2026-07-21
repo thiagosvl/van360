@@ -1,5 +1,8 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -23,8 +26,12 @@ import {
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
 import { dateMask } from "@/utils/masks";
-import { AlertTriangle, Car, School, Sun, User } from "lucide-react";
+import { AlertTriangle, Car, School, Sun, User, CalendarIcon, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { useState } from "react";
+import { ptBR } from "date-fns/locale";
+import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
+import { parseLocalDate, getStartOfDayBR } from "@/utils/dateUtils";
 
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
@@ -53,12 +60,20 @@ export function PassageiroFormDadosCadastrais({
   } = usePassageiroFormDadosCadastraisViewModel({ escolas, veiculos, isExternal });
 
   const form = useFormContext();
+  const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
+  const [openCalendarFim, setOpenCalendarFim] = useState(false);
 
   return (
     <div className="space-y-8">
       {/* Seção 1: Dados Pessoais */}
       <section className="space-y-6">
-        <div className="grid grid-cols-1 mt-3 md:grid-cols-2 gap-6">
+        <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+            <User className="w-5 h-5" />
+          </div>
+          Identificação
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="nome"
@@ -408,6 +423,129 @@ export function PassageiroFormDadosCadastrais({
                     />
                   </div>
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="data_inicio_transporte"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <FormLabel className="text-slate-700 font-semibold ml-1">
+                  Início do Transporte
+                </FormLabel>
+                <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <div className="relative group">
+                        <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                            !field.value && "text-muted-foreground",
+                            fieldState.error && "border-red-500"
+                          )}
+                        >
+                          {field.value ? field.value : "dd/mm/aaaa"}
+                        </Button>
+                        {field.value && (
+                          <div
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                          >
+                            <X className="h-5 w-5" />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          field.onChange(formatDateToBR(date));
+                          setOpenCalendarInicio(false);
+                        } else {
+                          field.onChange("");
+                        }
+                      }}
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="data_fim_transporte"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <FormLabel className="text-slate-700 font-semibold ml-1">
+                  Término do Transporte
+                </FormLabel>
+                <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <div className="relative group">
+                        <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                            !field.value && "text-muted-foreground",
+                            fieldState.error && "border-red-500"
+                          )}
+                        >
+                          {field.value ? field.value : "dd/mm/aaaa"}
+                        </Button>
+                        {field.value && (
+                          <div
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                          >
+                            <X className="h-5 w-5" />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          field.onChange(formatDateToBR(date));
+                          setOpenCalendarFim(false);
+                        } else {
+                          field.onChange("");
+                        }
+                      }}
+                      disabled={(date) => date < getStartOfDayBR()}
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}

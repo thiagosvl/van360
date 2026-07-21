@@ -1,4 +1,5 @@
 import { Escola } from "@/types/escola";
+import { formatarEnderecoCompleto } from "@/utils/formatters";
 import { GraduationCap, MapPin, Users2, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -10,8 +11,7 @@ interface EscolaSummaryProps {
 export const EscolaSummary = ({ escola }: EscolaSummaryProps) => {
   const isAtivo = escola.ativo;
 
-  const enderecoResumido = escola.endereco ||
-    `${escola.logradouro || ""}${escola.numero ? `, ${escola.numero}` : ""}${escola.bairro ? ` - ${escola.bairro}` : ""}`;
+  const enderecoResumido = escola.endereco || formatarEnderecoCompleto(escola);
 
   return (
     <div className="flex flex-col p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left">

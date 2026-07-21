@@ -16,10 +16,17 @@ export function formatarEnderecoCompleto(obj: any): string {
   const numero = obj.numero;
   const referencia = obj.referencia;
 
-  if (referencia && referencia !== "") {
-    return `${lograoduro}, ${numero} (${referencia}) - ${bairro}, ${cidade} - ${estado}, ${cep}`;
-  }
+  const complemento = obj.complemento;
 
-  return `${lograoduro}, ${numero} - ${bairro}, ${cidade} - ${estado}, ${cep}`;
+  let addressStr = `${lograoduro}, ${numero}`;
+  if (complemento && complemento !== "") {
+    addressStr += ` - ${complemento}`;
+  }
+  
+  if (referencia && referencia !== "") {
+    addressStr += ` (${referencia})`;
+  }
+  
+  return `${addressStr} - ${bairro}, ${cidade} - ${estado}, ${cep}`;
 }
 

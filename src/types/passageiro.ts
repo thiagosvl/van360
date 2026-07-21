@@ -30,6 +30,7 @@ export interface Passageiro {
   ativo?: boolean;
   enviar_notificacoes?: boolean;
   referencia?: string;
+  complemento?: string;
   observacoes?: string;
   escola?: { nome: string };
   veiculo?: { placa: string };
@@ -69,6 +70,7 @@ export interface PassageiroResponsavel {
   estado?: string;
   cep?: string;
   referencia?: string;
+  complemento?: string;
   created_at?: string;
   updated_at?: string;
 }

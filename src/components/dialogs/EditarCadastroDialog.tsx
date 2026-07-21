@@ -263,7 +263,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                         render={({ field }) => (
                           <PhoneInput
                             field={field}
-                            label="WhatsApp"
+                            label="Telefone"
                             placeholder="(00) 00000-0000"
                             required
                             labelClassName="text-slate-700 font-semibold ml-1"

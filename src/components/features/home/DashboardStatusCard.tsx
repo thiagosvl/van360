@@ -84,8 +84,8 @@ export const DashboardStatusCard = ({
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className={cn("text-xs md:text-sm lg:text-base font-bold", style.titleColor)}>{title}</p>
-          <p className={cn("text-[11px] md:text-sm lg:text-sm mt-0.5", style.descColor)}>{description}</p>
+          <p className={cn("text-xs md:text-sm lg:text-sm font-bold", style.titleColor)}>{title}</p>
+          <p className={cn("text-[11px] md:text-xs mt-0.5", style.descColor)}>{description}</p>
         </div>
       </div>
       {actionLabel && (

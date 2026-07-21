@@ -14,6 +14,7 @@ import {
   formatDiasAtraso,
   getMesNome,
 } from "@/utils/formatters";
+import { formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
 import { openBrowserLink } from "@/utils/browser";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
@@ -200,11 +201,11 @@ const CobrancaItemPassageiro = forwardRef<
       ? "bg-red-50 text-red-600"
       : "bg-amber-50 text-amber-600";
 
-  const telefoneResponsavel = passageiro.telefone_responsavel;
+  const telefoneResponsavel = isResponsavelMockTelefone(passageiro.telefone_responsavel) ? undefined : passageiro.telefone_responsavel;
   const onEnviarCobranca = telefoneResponsavel
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
-      nomeResponsavel: passageiro.nome_responsavel,
+      nomeResponsavel: formatNomeResponsavelCompletoExibicao(passageiro.nome_responsavel, ""),
       nomePassageiro: passageiro.nome,
       mes: cobranca.mes,
       valor: cobranca.valor,

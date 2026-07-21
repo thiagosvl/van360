@@ -31,6 +31,7 @@ export interface OpenPassageiroFormProps {
 
 export interface OpenQuickStartPassageiroProps {
   onSuccess?: (passageiro?: Passageiro) => void;
+  isOnboarding?: boolean;
 }
 
 export interface OpenGastoFormProps {

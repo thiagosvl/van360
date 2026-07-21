@@ -11,6 +11,7 @@ import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
+import { isResponsavelMockNome, isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
@@ -48,6 +49,7 @@ export const passageiroSchema = z
         message: "Formato inválido (00000-000)",
       }),
     referencia: z.string().optional().nullable().or(z.literal("")),
+    complemento: z.string().optional().nullable().or(z.literal("")),
 
     observacoes: z.string().optional().nullable().or(z.literal("")),
 
@@ -148,6 +150,7 @@ export function usePassageiroForm({
       estado: "",
       cep: "",
       referencia: "",
+      complemento: "",
       turma: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
@@ -183,13 +186,15 @@ export function usePassageiroForm({
             data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
             genero: editingPassageiro.genero || "",
             turma: editingPassageiro.turma || "",
-            nome_responsavel: editingPassageiro.nome_responsavel,
+            nome_responsavel: isResponsavelMockNome(editingPassageiro.nome_responsavel) 
+              ? "" 
+              : editingPassageiro.nome_responsavel,
             parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
 
             cpf_responsavel: editingPassageiro.cpf_responsavel ? cpfMask(editingPassageiro.cpf_responsavel) : "",
-            telefone_responsavel: phoneMask(
-              editingPassageiro.telefone_responsavel
-            ),
+            telefone_responsavel: isResponsavelMockTelefone(editingPassageiro.telefone_responsavel)
+              ? ""
+              : phoneMask(editingPassageiro.telefone_responsavel),
             valor_cobranca: editingPassageiro.valor_cobranca
               ? moneyMask(
                 String(
@@ -197,11 +202,17 @@ export function usePassageiroForm({
                 )
               )
               : "",
-            dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
+            dia_vencimento: isResponsavelMockNome(editingPassageiro.nome_responsavel) 
+              ? "" 
+              : (editingPassageiro.dia_vencimento?.toString() || ""),
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
             data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
-            mes_inicio_cobranca: getMonthFromDate(editingPassageiro.data_inicio_cobranca) || getMonthFromDate(editingPassageiro.data_inicio_transporte) || (new Date().getMonth() + 1).toString(),
-            mes_fim_cobranca: getMonthFromDate(editingPassageiro.data_fim_cobranca) || getMonthFromDate(editingPassageiro.data_fim_transporte) || "12",
+            mes_inicio_cobranca: isResponsavelMockNome(editingPassageiro.nome_responsavel)
+              ? ""
+              : (getMonthFromDate(editingPassageiro.data_inicio_cobranca) || getMonthFromDate(editingPassageiro.data_inicio_transporte) || (new Date().getMonth() + 1).toString()),
+            mes_fim_cobranca: isResponsavelMockNome(editingPassageiro.nome_responsavel)
+              ? ""
+              : (getMonthFromDate(editingPassageiro.data_fim_cobranca) || getMonthFromDate(editingPassageiro.data_fim_transporte) || "12"),
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -210,6 +221,7 @@ export function usePassageiroForm({
             estado: editingPassageiro.estado || "",
             cep: editingPassageiro.cep ? cepMask(editingPassageiro.cep) : "",
             referencia: editingPassageiro.referencia || "",
+            complemento: editingPassageiro.complemento || "",
             escola_id: editingPassageiro.escola_id || "",
             veiculo_id: editingPassageiro.veiculo_id || "",
 
@@ -244,6 +256,7 @@ export function usePassageiroForm({
           estado: prePassageiro.estado || "",
           cep: prePassageiro.cep || "",
           referencia: prePassageiro.referencia || "",
+          complemento: prePassageiro.complemento || "",
           observacoes: prePassageiro.observacoes || "",
           veiculo_id: prePassageiro.veiculo_id || "",
           escola_id: prePassageiro.escola_id || "",
@@ -301,6 +314,7 @@ export function usePassageiroForm({
           estado: "",
           cep: "",
           referencia: "",
+          complemento: "",
           turma: "",
           nome_responsavel: "",
           parentesco_responsavel: "",

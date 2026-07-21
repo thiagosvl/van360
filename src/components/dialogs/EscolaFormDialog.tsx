@@ -42,6 +42,7 @@ const escolaSchema = z
     estado: z.string().optional(),
     cep: cepSchema.or(z.literal("")).optional(),
     referencia: z.string().optional(),
+    complemento: z.string().optional(),
     ativo: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
@@ -119,6 +120,7 @@ export default function EscolaFormDialog({
       estado: editingEscola?.estado || "",
       cep: editingEscola?.cep ? cepMask(editingEscola.cep) : "",
       referencia: editingEscola?.referencia || "",
+      complemento: editingEscola?.complemento || "",
       ativo: editingEscola?.ativo ?? true,
     },
   });
@@ -145,6 +147,7 @@ export default function EscolaFormDialog({
           estado: editingEscola.estado || "",
           cep: editingEscola.cep ? cepMask(editingEscola.cep) : "",
           referencia: editingEscola.referencia || "",
+          complemento: editingEscola.complemento || "",
           ativo: editingEscola.ativo,
         });
         setOpenAccordionItems(["dados-escola", "endereco"]);
@@ -159,6 +162,7 @@ export default function EscolaFormDialog({
             estado: "",
             cep: "",
             referencia: "",
+            complemento: "",
             ativo: true,
           });
           setOpenAccordionItems(["dados-escola"]);
@@ -185,6 +189,7 @@ export default function EscolaFormDialog({
       estado: mockData.estado,
       cep: mockData.cep,
       referencia: mockData.referencia || "",
+      complemento: mockData.complemento || "",
       ativo: mockData.ativo ?? true,
     });
     setOpenAccordionItems(["dados-escola", "endereco"]);
@@ -227,6 +232,7 @@ export default function EscolaFormDialog({
                 estado: "",
                 cep: "",
                 referencia: "",
+                complemento: "",
                 ativo: true,
               });
 

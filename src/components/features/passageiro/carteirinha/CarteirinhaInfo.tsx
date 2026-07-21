@@ -11,15 +11,11 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import {
-  formatDateToBR,
-  formatFirstName,
-  formatarEnderecoCompleto,
-  formatGenero,
-  formatModalidade,
-  formatParentesco,
-  formatPeriodo,
-} from "@/utils/formatters";
+import { formatFirstName, formatGenero, formatModalidade, formatParentesco, formatPeriodo } from "@/utils/formatters";
+import { formatarEnderecoCompleto } from "@/utils/formatters";
+import { isResponsavelMockTelefone } from "@/utils/formatters/name";
+import { formatDateToBR } from "@/utils/formatters";
+import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { cpfMask, phoneMask } from "@/utils/masks";
 import { openBrowserLink } from "@/utils/browser";
 import { useState, useEffect } from "react";
@@ -130,7 +126,7 @@ const CarteirinhaTopCard = ({
           </h2>
           {passageiro.nome_responsavel && (
             <p className="text-[13px] md:text-sm text-slate-300/90 font-medium mt-0.5">
-              {passageiro.nome_responsavel}
+              {formatNomeResponsavelCompletoExibicao(passageiro.nome_responsavel)}
             </p>
           )}
         </div>
@@ -367,119 +363,14 @@ export const CarteirinhaDadosPessoais = ({
     });
   };
 
-  const isContractActionDisabled =
-    !contratosAtivos &&
-    passageiro.status_contrato !== ContratoStatus.PENDENTE &&
-    passageiro.status_contrato !== ContratoStatus.ASSINADO;
-
-  const getContratoConfig = (status?: ContratoStatus) => {
-    if (status === ContratoStatus.ASSINADO) {
-      return {
-        title: "Contrato Assinado",
-        desc: "Documento oficial assinado eletronicamente",
-        color: "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
-        iconColor: "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-sm",
-        icon: FileCheck2,
-        actionLabel: "Ver Contrato",
-        actionColor: "bg-white border border-[#1a3a5c] text-[#1a3a5c] hover:bg-slate-50 shadow-sm shadow-[#1a3a5c]/5",
-        actionIcon: ExternalLink,
-      };
-    }
-    if (status === ContratoStatus.PENDENTE) {
-      return {
-        title: "Assinatura Pendente",
-        desc: "Aguardando assinatura do responsável",
-        color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
-        iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-sm",
-        icon: Clock,
-        actionLabel: "Reenviar Contrato",
-        actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
-        actionIcon: WhatsAppIcon,
-      };
-    }
-
-    return {
-      title: "Não possui contrato",
-      desc: isContractActionDisabled
-        ? "Você precisa ativar o uso de contratos na sua conta antes de gerar o documento."
-        : "Gere o contrato para assinatura do responsável",
-      color: isContractActionDisabled
-        ? "bg-slate-50/30 border-slate-200/50 opacity-75 cursor-not-allowed"
-        : "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
-      iconColor: isContractActionDisabled
-        ? "text-slate-400 bg-slate-100/80 border border-slate-200/30"
-        : "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-sm",
-      icon: FileX2,
-      actionLabel: "Gerar Contrato",
-      actionColor: isContractActionDisabled
-        ? "bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300/20 font-bold"
-        : "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
-      actionIcon: isContractActionDisabled ? Lock : Plus,
-    };
-  };
-
-  const contratoConfig = getContratoConfig(passageiro.status_contrato);
-
   const getEnderecoFormatado = () => {
     if (!passageiro.logradouro) return "-";
-    return `${passageiro.logradouro}, ${passageiro.numero || "S/N"} - ${passageiro.bairro || ""}`;
+    return formatarEnderecoCompleto(passageiro);
   };
   const enderecoFormatado = getEnderecoFormatado();
 
-  const handleContratoClick = () => {
-    if (isContractActionDisabled) {
-      toast.warning("Ative o uso de Contratos", {
-        description:
-          "Para gerar novos contratos, primeiro ative a funcionalidade acessando a aba 'Contratos'.",
-      });
-      return;
-    }
-
-    if (passageiro.status_contrato === ContratoStatus.PENDENTE && onEnviarWhatsApp) {
-      onEnviarWhatsApp(passageiro);
-      return;
-    }
-
-    onContractAction();
-  };
-
   return (
     <div className="space-y-3 transform-gpu will-change-transform">
-
-      {/* Contrato */}
-      <div
-        className={cn(
-          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato shrink-0",
-          contratoConfig.color
-        )}
-      >
-        <div className="flex items-start gap-3 w-full overflow-hidden">
-          <div className={cn("w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5", contratoConfig.iconColor)}>
-            <contratoConfig.icon className="h-5 w-5 shrink-0" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug break-words">
-              {contratoConfig.title}
-            </span>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5 break-words">
-              {contratoConfig.desc}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleContratoClick}
-          disabled={isContractActionDisabled && passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO}
-          className={cn(
-            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-xl text-[13px] font-bold transition-all duration-200 shadow-sm hover:shadow active:scale-[0.99] shrink-0",
-            contratoConfig.actionColor
-          )}
-        >
-          <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
-          <span>{contratoConfig.actionLabel}</span>
-        </button>
-      </div>
-
       {/* Responsáveis */}
       <div className="space-y-4 pt-4">
         {/* Header da seção */}
@@ -501,29 +392,31 @@ export const CarteirinhaDadosPessoais = ({
           </Button>
         </div>
 
-        <Tabs
-          value={selectedRespId}
-          onValueChange={setSelectedRespId}
-          className="w-full"
-        >
-          <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1">
-            <TabsTrigger
-              value="principal"
-              className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
-            >
-              Principal
-            </TabsTrigger>
-            {responsaveisAdicionais.map((resp) => (
+        {hasMultiple && (
+          <Tabs
+            value={selectedRespId}
+            onValueChange={setSelectedRespId}
+            className="w-full"
+          >
+            <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1">
               <TabsTrigger
-                key={resp.id}
-                value={resp.id!}
+                value="principal"
                 className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
               >
-                {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
+                Principal
               </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+              {responsaveisAdicionais.map((resp) => (
+                <TabsTrigger
+                  key={resp.id}
+                  value={resp.id!}
+                  className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
+                >
+                  {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
 
         {/* Exibição dos dados do responsável selecionado */}
         {(() => {
@@ -542,6 +435,7 @@ export const CarteirinhaDadosPessoais = ({
               estado: passageiro.estado,
               cep: passageiro.cep,
               referencia: passageiro.referencia,
+              complemento: passageiro.complemento,
             }
             : responsaveisAdicionais.find((r) => r.id === selectedRespId);
 
@@ -642,7 +536,7 @@ export const CarteirinhaDadosPessoais = ({
               <div className="flex items-start justify-between gap-4 min-w-0">
                 <div className="min-w-0 flex-1">
                   <h4 className="text-sm font-bold text-[#16314f] break-words leading-tight">
-                    {currentResp.nome}
+                    {formatNomeResponsavelCompletoExibicao(currentResp.nome)}
                   </h4>
                   <div className="flex items-center gap-1.5 mt-1.5">
                     {isPrincipalTab ? (
@@ -722,21 +616,25 @@ export const CarteirinhaDadosPessoais = ({
                       <span className="text-slate-500"><Phone className="h-3.5 w-3.5" /></span>
                       <span className="text-xs font-normal text-slate-500">Telefone</span>
                     </div>
-                    <span className="text-xs font-semibold text-slate-700 leading-tight block truncate">
-                      {phoneMask(currentResp.telefone)}
+                    <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                      {isResponsavelMockTelefone(currentResp.telefone)
+                        ? "Não informado"
+                        : phoneMask(currentResp.telefone)}
                     </span>
                   </div>
-                  <Button
-                    size="icon"
-                    onClick={() => {
-                      const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
-                      const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
-                      openBrowserLink(`https://wa.me/${formattedPhone}`);
-                    }}
-                    className="h-8 w-8 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
-                  >
-                    <WhatsAppIcon className="w-4 h-4" />
-                  </Button>
+                  {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
+                    <Button
+                      size="icon"
+                      onClick={() => {
+                        const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
+                        const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
+                        openBrowserLink(`https://wa.me/${formattedPhone}`);
+                      }}
+                      className="h-8 w-8 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
+                    >
+                      <WhatsAppIcon className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
 
                 {/* CPF Row */}
@@ -745,7 +643,7 @@ export const CarteirinhaDadosPessoais = ({
                     <span className="text-slate-500"><IdCard className="h-3.5 w-3.5" /></span>
                     <span className="text-xs font-normal text-slate-500">CPF</span>
                   </div>
-                  <span className="text-xs font-semibold text-slate-700 leading-tight block truncate">
+                  <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                     {cpfMask(currentResp.cpf) || '-'}
                   </span>
                 </div>
@@ -756,7 +654,7 @@ export const CarteirinhaDadosPessoais = ({
                     <span className="text-slate-500"><MapPin className="h-3.5 w-3.5" /></span>
                     <span className="text-xs font-normal text-slate-500">Endereço</span>
                   </div>
-                  <span className="text-xs font-medium text-slate-600 leading-relaxed block break-words whitespace-pre-wrap">
+                  <span className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                     {respAddress || '-'}
                   </span>
                 </div>
@@ -864,7 +762,7 @@ export const CarteirinhaDadosPessoais = ({
           </span>
         </div>
         <div className="flex items-start justify-between gap-3">
-          <p className="text-xs font-bold text-slate-600 leading-relaxed">
+          <p className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
             {enderecoFormatado}
           </p>
           <Button
@@ -880,14 +778,6 @@ export const CarteirinhaDadosPessoais = ({
             )}
           </Button>
         </div>
-        {passageiro.referencia && (
-          <div className="pt-2 mt-2 border-t border-slate-200">
-            <p className="text-[10px] text-slate-500 leading-relaxed">
-              <span className="font-bold text-slate-600 mr-1">Referência:</span>
-              {passageiro.referencia}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -922,3 +812,4 @@ const InfoTile = ({
     </span>
   </div>
 );
+

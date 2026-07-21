@@ -59,6 +59,7 @@ const responsavelSchema = z.object({
   cidade: z.string().min(1, "Cidade é obrigatório"),
   estado: z.string().min(1, "Estado é obrigatório"),
   referencia: z.string().optional().nullable().or(z.literal("")),
+  complemento: z.string().optional().nullable().or(z.literal("")),
   tornar_principal: z.boolean().optional().default(false),
 });
 
@@ -110,6 +111,7 @@ export default function ResponsavelFormDialog({
       cidade: mockAddress.cidade,
       estado: mockAddress.estado,
       referencia: mockAddress.referencia || "",
+      complemento: mockAddress.complemento || "",
       tornar_principal: false,
     });
   };
@@ -128,6 +130,7 @@ export default function ResponsavelFormDialog({
       estado: "",
       cep: "",
       referencia: "",
+      complemento: "",
       tornar_principal: false,
     },
   });
@@ -147,6 +150,7 @@ export default function ResponsavelFormDialog({
           estado: editingResponsavel.estado || "",
           cep: editingResponsavel.cep ? cepMask(editingResponsavel.cep) : "",
           referencia: editingResponsavel.referencia || "",
+          complemento: editingResponsavel.complemento || "",
           tornar_principal: false,
         });
       } else {
@@ -162,6 +166,7 @@ export default function ResponsavelFormDialog({
           estado: "",
           cep: "",
           referencia: "",
+          complemento: "",
           tornar_principal: false,
         });
       }
@@ -190,6 +195,7 @@ export default function ResponsavelFormDialog({
       estado: data.estado || null,
       cep: data.cep?.replace(/\D/g, "") || null,
       referencia: data.referencia || null,
+      complemento: data.complemento || null,
     };
 
     const successCallback = () => {
@@ -293,7 +299,7 @@ export default function ResponsavelFormDialog({
                 render={({ field }) => (
                   <PhoneInput
                     field={field}
-                    label="WhatsApp"
+                    label="Telefone"
                     required
                     labelClassName="text-slate-700 font-semibold ml-1"
                     inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
@@ -402,7 +408,7 @@ export default function ResponsavelFormDialog({
                       <p className="text-xs font-bold text-slate-800 mb-3">
                         Ao salvar, as seguintes informações serão atualizadas:
                       </p>
-                      
+
                       <div className="space-y-2.5">
                         <div className="flex items-center gap-2.5">
                           <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100/20">

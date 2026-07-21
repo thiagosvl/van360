@@ -1,18 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { openBrowserLink } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import {
   Check,
   Copy,
-  CopyCheck,
-  LinkIcon,
-  MessageCircle
+  Smartphone,
+  Sparkles
 } from "lucide-react";
 import { useState } from "react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { cn } from "@/lib/utils";
 
 interface QuickRegistrationLinkProps {
   profile: any;
@@ -53,70 +51,40 @@ export function QuickRegistrationLink({
   };
 
   return (
-    <Card className="rounded-2xl shadow-sm transition-all duration-300 bg-white border-[#1a3a5c]/10 shadow-[#1a3a5c]/5 overflow-hidden">
-      <CardContent className="p-5 relative z-10">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4 text-center md:text-left w-full md:w-auto relative">
-            <div className="relative shrink-0">
-              <div
-                className={`h-12 w-12 rounded-xl flex items-center justify-center bg-[#1a3a5c]/5 text-[#1a3a5c] shadow-sm transition-transform duration-300 hover:rotate-6`}
-              >
-                <LinkIcon className="h-6 w-6" />
-              </div>
-
-              {pendingCount > 0 && (
-                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white shadow-sm ring-2 ring-white animate-in zoom-in-50 duration-300">
-                  {pendingCount}
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1">
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <h3 className={`text-base font-bold leading-tight text-[#1a3a5c] font-headline`}>
-                  Link de Cadastro Rápido
-                </h3>
-              </div>
-              <p className={`text-xs mt-1 max-w-md text-slate-500 font-medium`}>
-                Envie aos pais para receber novos cadastros automaticamente.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShareWhatsApp}
-              className="flex-1 md:flex-none font-bold border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-11 px-4 md:px-5 text-[13px]"
-            >
-              <WhatsAppIcon className="h-4 w-4 mr-2" />
-              Enviar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyLink}
-              className={`flex-1 md:flex-none font-bold border-[#1a3a5c]/10 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 hover:text-[#1a3a5c] transition-all rounded-xl h-11 px-4 md:px-5 text-[13px] ${isCopied
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : ""
-                }`}
-            >
-              {isCopied ? (
-                <>
-                  <Check className="h-4 w-4 mr-2 text-emerald-500" />
-                  Copiado!
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4 mr-2 text-slate-400" />
-                  Copiar
-                </>
-              )}
-            </Button>
-          </div>
+    <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col lg:flex-row items-start lg:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+      <div className="flex items-center gap-4 flex-1 w-full">
+        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
+          <Smartphone className="h-5 w-5" />
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex-1">
+          <p className="text-xs font-bold text-emerald-900">Deixe os pais preencherem a ficha!</p>
+          <p className="text-[11px] text-emerald-700">
+            Envie este link para os responsáveis. Eles preenchem a ficha e os dados caem prontos no seu aplicativo.
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex gap-2 w-full lg:w-auto shrink-0">
+        <button
+          onClick={handleShareWhatsApp}
+          className="h-11 px-4 bg-emerald-600 text-white text-[13px] font-bold rounded-xl hover:bg-emerald-700/90 transition-all shadow-sm shadow-emerald-200/50 flex-1 lg:flex-none flex justify-center items-center gap-2 active:scale-95"
+        >
+          <WhatsAppIcon className="h-4 w-4 fill-current" />
+          WhatsApp
+        </button>
+        <button
+          onClick={handleCopyLink}
+          className={cn(
+            "h-11 px-4 text-[13px] font-bold rounded-xl transition-all shadow-sm flex-1 lg:flex-none flex justify-center items-center gap-2 active:scale-95",
+            isCopied 
+              ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+              : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
+          )}
+        >
+          {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {isCopied ? "Copiado!" : "Copiar"}
+        </button>
+      </div>
+    </div>
   );
 }

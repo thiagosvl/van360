@@ -12,6 +12,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMemo } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { isResponsavelMockNome } from "@/utils/formatters/name";
 
 interface UseContratoActionsProps {
   item: any;
@@ -53,15 +54,20 @@ export function useContratoActions({
     const isAssinado = status === ContratoStatus.ASSINADO || status === 'assinado' || status === '2';
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
 
-    const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
+    const isMissingResponsible = isResponsavelMockNome(item?.nome_responsavel) || isResponsavelMockNome(item?.passageiro?.nome_responsavel) || (!item?.nome_responsavel && !item?.passageiro?.nome_responsavel);
+
+    const isFeatureDisabled = !!(isDesativado || (usarContratos === false) || isMissingResponsible);
 
     const list: ActionItem[] = [];
 
-    if (onGerarContrato && !hasContract && !isFeatureDisabled) {
+    if (onGerarContrato && !hasContract) {
       list.push({
         label: 'Gerar Contrato',
         icon: <FileText className="h-4 w-4" />,
-        onClick: () => onGerarContrato(tipo === 'passageiro' ? item.id : item.passageiro_id),
+        onClick: () => {
+          if (isFeatureDisabled) return;
+          onGerarContrato(tipo === 'passageiro' ? item.id : item.passageiro_id);
+        },
         disabled: isFeatureDisabled,
         swipeColor: 'bg-blue-600',
         hasSeparatorAfter: true

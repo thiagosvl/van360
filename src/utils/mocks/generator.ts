@@ -214,7 +214,7 @@ export const mockGenerator = {
   cpf: generateCPF,
   name: generateName,
   email: generateEmail,
-  phone: "11951186951",
+  phone: "(11) 95118-6951",
   cep: generateCEP,
   address: generateAddress,
   escola: () => {
@@ -274,7 +274,7 @@ export const mockGenerator = {
       nome_responsavel: generateName(),
 
       cpf_responsavel: generateCPF(),
-      telefone_responsavel: "11951186951",
+      telefone_responsavel: "(11) 95118-6951",
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
       ...address,

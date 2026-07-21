@@ -1,5 +1,4 @@
-import { NativeWelcomeScreen } from "@/components/features/register/NativeWelcomeScreen";
-import { PostRegisterScreen } from "@/components/features/register/PostRegisterScreen";
+
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
 import { Button } from "@/components/ui/button";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
@@ -21,27 +20,13 @@ export default function Register() {
     loading,
     handleNextStep,
     handleFillMagic,
-    postRegisterData,
-    handleContinueInBrowser,
-    showNativeWelcome,
     duplicateError,
     clearDuplicateError,
   } = useRegisterController();
 
-  // Tela de boas-vindas após primeiro cadastro no app nativo
-  if (showNativeWelcome) {
-    return <NativeWelcomeScreen />;
-  }
 
-  // Tela pós-cadastro condicional (somente web)
-  if (postRegisterData) {
-    return (
-      <PostRegisterScreen
-        data={postRegisterData}
-        onContinueInBrowser={handleContinueInBrowser}
-      />
-    );
-  }
+
+
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-[max(1rem,var(--safe-area-top))] pb-[max(1rem,var(--safe-area-bottom))]">

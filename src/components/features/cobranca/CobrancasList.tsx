@@ -26,6 +26,7 @@ import {
   formatPaymentType,
   formatShortName,
 } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet, User } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
@@ -110,7 +111,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
   const shortName = formatShortName(cobranca?.passageiro?.nome, true);
-  const firstNomeResponsavel = formatFirstName(cobranca?.passageiro?.nome_responsavel);
+  const firstNomeResponsavel = formatNomeResponsavelExibicao(cobranca?.passageiro?.nome_responsavel);
 
   const statusColor = isPaid
     ? "bg-emerald-50 text-emerald-600"
@@ -250,13 +251,16 @@ export function CobrancasList({
             </TableHeader>
             <TableBody>
               {cobrancas.map((cobranca) => {
-                const firstName = formatFirstName(cobranca?.passageiro?.nome_responsavel);
+                const firstName = formatNomeResponsavelExibicao(cobranca?.passageiro?.nome_responsavel);
 
-                const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+                const telefoneResponsavel = isResponsavelMockTelefone(cobranca.passageiro?.telefone_responsavel) 
+                  ? undefined 
+                  : cobranca.passageiro?.telefone_responsavel;
+                  
                 const onEnviarCobranca = telefoneResponsavel
                   ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
                     telefoneResponsavel,
-                    nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+                    nomeResponsavel: formatNomeResponsavelCompletoExibicao(cobranca.passageiro?.nome_responsavel, ""),
                     nomePassageiro: cobranca.passageiro?.nome ?? "",
                     mes: cobranca.mes,
                     valor: cobranca.valor,

@@ -21,12 +21,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { BadgeDollarSign, CalendarDays, CalendarIcon, X } from "lucide-react";
+import { BadgeDollarSign, CalendarDays } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
-import { ptBR } from "date-fns/locale";
-import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
-import { parseLocalDate, getStartOfDayBR, monthOptions } from "@/utils/dateUtils";
+import { monthOptions } from "@/utils/dateUtils";
 
 interface PassageiroFormFinanceiroProps {
   editingPassageiro: Passageiro | null;
@@ -37,8 +35,6 @@ export function PassageiroFormFinanceiro({
   isExternal = false,
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
-  const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
-  const [openCalendarFim, setOpenCalendarFim] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -99,127 +95,6 @@ export function PassageiroFormFinanceiro({
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="data_inicio_transporte"
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Início do Transporte
-                </FormLabel>
-                <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <div className="relative group">
-                        <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                            !field.value && "text-muted-foreground",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          {field.value ? field.value : "dd/mm/aaaa"}
-                        </Button>
-                        {field.value && (
-                          <div
-                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              field.onChange("");
-                            }}
-                          >
-                            <X className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
-                      onSelect={(date) => {
-                        if (date) {
-                          field.onChange(formatDateToBR(date));
-                          setOpenCalendarInicio(false);
-                        } else {
-                          field.onChange("");
-                        }
-                      }}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="data_fim_transporte"
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Término do Transporte
-                </FormLabel>
-                <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <div className="relative group">
-                        <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                            !field.value && "text-muted-foreground",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          {field.value ? field.value : "dd/mm/aaaa"}
-                        </Button>
-                        {field.value && (
-                          <div
-                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              field.onChange("");
-                            }}
-                          >
-                            <X className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
-                      onSelect={(date) => {
-                        if (date) {
-                          field.onChange(formatDateToBR(date));
-                          setOpenCalendarFim(false);
-                        } else {
-                          field.onChange("");
-                        }
-                      }}
-                      disabled={(date) => date < getStartOfDayBR()}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -229,7 +104,7 @@ export function PassageiroFormFinanceiro({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Mês Início Cobrança {!isExternal && <span className="text-red-600">*</span>}
+                  Mês de Início da Cobrança {!isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value || undefined}>
                   <FormControl>
@@ -265,7 +140,7 @@ export function PassageiroFormFinanceiro({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Mês Término Cobrança {!isExternal && <span className="text-red-600">*</span>}
+                  Mês de Término da Cobrança {!isExternal && <span className="text-red-600">*</span>}
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value || undefined}>
                   <FormControl>

@@ -2,15 +2,12 @@ import { cn } from "@/lib/utils";
 import {
   Bus,
   CheckCircle2,
-  Lock as LockIcon,
   Rocket,
   School,
   User,
-  Key
+  ArrowRight
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
-import { useLayout } from "@/contexts/LayoutContext";
+import { useMemo, useState, useEffect } from "react";
 
 // Hooks
 import { useProfile } from "@/hooks/business/useProfile";
@@ -27,7 +24,6 @@ export const QuickStartCard = ({
   onOpenPassageiroDialog,
 }: QuickStartCardProps) => {
   const { profile, summary: systemSummary, isLoading: isSummaryLoading } = useProfile();
-  const { openEditarPixDialog } = useLayout();
 
   const loading = isSummaryLoading;
 
@@ -37,176 +33,157 @@ export const QuickStartCard = ({
   const veiculosCount = contadores?.veiculos.total ?? 0;
   const passageirosCount = contadores?.passageiros.total ?? 0;
 
-  const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
-
-
   const steps = useMemo(() => {
-    const defaultSteps = [
+    return [
       {
         id: 1,
         done: veiculosCount > 0,
         label: "Cadastrar um Veículo",
+        description: "Adicione seu primeiro veículo para começar a gestão.",
         onAction: onOpenVeiculoDialog,
         icon: Bus,
-        buttonText: "Cadastrar",
+        buttonText: "Adicionar veículo",
       },
       {
         id: 2,
         done: escolasCount > 0,
         label: "Cadastrar uma Escola",
+        description: "Adicione a primeira escola para organizar suas rotas.",
         onAction: onOpenEscolaDialog,
         icon: School,
-        buttonText: "Cadastrar",
+        buttonText: "Adicionar escola",
       },
       {
         id: 3,
-        done: !!profile?.chave_pix && !!profile?.tipo_chave_pix,
-        label: "Cadastrar Chave Pix",
-        onAction: openEditarPixDialog,
-        icon: Key,
-        buttonText: "Configurar",
-      },
-      {
-        id: 4,
         done: passageirosCount > 0,
         label: "Cadastrar Primeiro Passageiro",
-        onAction: () => setIsPassengerDrawerOpen(true),
+        description: "Adicione seu primeiro aluno para ver o app funcionando.",
+        onAction: onOpenPassageiroDialog,
         icon: User,
-        buttonText: "Cadastrar",
+        buttonText: "Adicionar passageiro",
       },
     ];
-
-    return defaultSteps;
   }, [
     veiculosCount,
     escolasCount,
     passageirosCount,
-    profile?.chave_pix,
-    profile?.tipo_chave_pix,
     onOpenVeiculoDialog,
     onOpenEscolaDialog,
-    openEditarPixDialog
+    onOpenPassageiroDialog,
   ]);
 
   const completedSteps = steps.filter((step) => step.done).length;
   const totalSteps = steps.length;
-  // Use a slight buffer for completed state if needed, or strict done check
   const isComplete = completedSteps === totalSteps;
 
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  // Compute the first pending step
+  const firstPendingId = useMemo(() => steps.find(s => !s.done)?.id || null, [steps]);
+
+  // Auto-expand the first pending step
+  useEffect(() => {
+    setExpandedId(firstPendingId);
+  }, [firstPendingId]);
+
   if (loading) return null;
-  if (isComplete) return null; // Or return a "Success" card version
+  if (isComplete) return null;
 
   return (
-    <>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden relative">
-        <div className="p-4 md:p-5">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-50/50 text-[#1a3a5c] border border-slate-100 shadow-sm">
-                <Rocket className="h-5 w-5 opacity-70" />
-              </div>
-              <div className="flex flex-col">
-                <h3 className="font-headline font-bold text-lg text-[#1a3a5c] leading-tight">
-                  Primeiros Passos
-                </h3>
-                <p className="text-[11px] font-medium text-slate-500 mt-1 opacity-80 leading-relaxed">
-                  Complete as etapas para configurar o seu acesso.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end shrink-0">
-              <span className="text-[10px] font-black text-[#1a3a5c] uppercase tracking-[0.2em]">{completedSteps}/{totalSteps}</span>
-              <div className="h-1 bg-slate-100 rounded-full mt-1.5 w-12 overflow-hidden">
-                <div
-                  className="h-full bg-[#1a3a5c] transition-all duration-700 ease-out"
-                  style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
-                />
-              </div>
-            </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
+      <div className="p-5 md:p-6">
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-2">
+          <div className="text-[#1a3a5c] mt-0.5">
+            <Rocket className="h-8 w-8" strokeWidth={1.5} />
           </div>
-
-          {/* Steps List */}
-          <div className="space-y-3">
-            {steps.map((step, index) => {
-              const isDone = step.done;
-              const previousStepsDone = steps
-                .slice(0, index)
-                .every((s) => s.done);
-              const isCurrent = !isDone && previousStepsDone;
-              const StepIcon = step.icon;
-
-              return (
-                <div
-                  key={step.id}
-                  className={cn(
-                    "flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3.5 rounded-xl border transition-colors duration-200 relative",
-                    isCurrent
-                      ? "bg-slate-50/50 border-slate-200/50 shadow-sm ring-1 ring-[#1a3a5c]/5"
-                      : isDone
-                        ? "bg-slate-50/40 border-slate-100"
-                        : "bg-white border-gray-100/50"
-                  )}
-                >
-                  <div className="flex items-center gap-4 w-full flex-1">
-                    {/* Ícone Indicador */}
-                    <div
-                      className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200",
-                        isDone
-                          ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
-                          : isCurrent
-                            ? "bg-[#1a3a5c] text-white shadow-lg shadow-[#1a3a5c]/20 scale-105"
-                            : "bg-gray-50 text-gray-400 border border-gray-100"
-                      )}
-                    >
-                      {isDone ? (
-                        <CheckCircle2 className="h-4 w-4" />
-                      ) : (
-                        <StepIcon className={cn("h-4 w-4", isCurrent && "animate-pulse")} />
-                      )}
-                    </div>
-
-                    {/* Texto do Passo */}
-                    <div className="flex-1 min-w-0 flex flex-col pointer-events-none">
-                      <span
-                        className={cn(
-                          "text-[13px] font-bold leading-tight",
-                          isDone
-                            ? "text-slate-500 line-through font-medium"
-                            : isCurrent
-                              ? "text-[#1a3a5c]"
-                              : "text-slate-400"
-                        )}
-                      >
-                        {step.label}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Ação */}
-                  {isCurrent && (
-                    <button
-                      onClick={step.onAction}
-                      className="w-full sm:w-auto shrink-0 h-10 sm:h-8 px-4 rounded-lg bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white text-[11px] sm:text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1a3a5c]/10 active:scale-95 transition-all"
-                    >
-                      {step.buttonText}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-
+          <div className="flex-1 pt-1">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-bold text-[#1a3a5c] text-[17px]">Primeiros Passos</h3>
+              <span className="text-[13px] font-bold text-[#1a3a5c]">{completedSteps} / {totalSteps}</span>
+            </div>
+            {/* Progress bar line - outline with rounded caps */}
+            <div className="h-[6px] w-full rounded-full border border-gray-200 bg-gray-50 overflow-hidden">
+              <div
+                className="h-full bg-[#1a3a5c] rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <PassengerOnboardingDrawer
-        open={isPassengerDrawerOpen}
-        onOpenChange={setIsPassengerDrawerOpen}
-        onManualRegistration={onOpenPassageiroDialog}
-        profile={profile}
-      />
-    </>
+        {/* Steps List */}
+        <div className="flex flex-col mt-4">
+          {steps.map((step) => {
+            const isExpanded = expandedId === step.id;
+            const isDone = step.done;
+            const StepIcon = step.icon;
+
+            return (
+              <div
+                key={step.id}
+                className={cn(
+                  "flex flex-col py-4 border-b border-gray-100 last:border-b-0 transition-all duration-300",
+                  !isDone ? "cursor-pointer" : "cursor-default opacity-80"
+                )}
+                onClick={() => !isDone && setExpandedId(isExpanded ? null : step.id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="text-slate-500">
+                      <StepIcon className="h-5 w-5" strokeWidth={1.5} />
+                    </div>
+                    <span
+                      className={cn(
+                        "text-[15px] font-medium transition-colors",
+                        isDone ? "text-slate-400" : "text-[#1a3a5c]"
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+
+                  {/* Status Circle */}
+                  <div className="shrink-0 flex items-center justify-center">
+                    {isDone ? (
+                      <CheckCircle2 className="h-[22px] w-[22px] text-emerald-500" strokeWidth={2} />
+                    ) : (
+                      <div className="h-[22px] w-[22px] rounded-full border-2 border-slate-300 transition-colors" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded Content */}
+                <div
+                  className={cn(
+                    "grid transition-all duration-300 ease-in-out",
+                    isExpanded ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0"
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div className="pl-[34px] pr-2 pt-1 flex flex-col">
+                      <p className="text-[13px] text-slate-500 mb-4 leading-relaxed">
+                        {step.description}
+                      </p>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          step.onAction();
+                        }}
+                        className="self-end flex items-center gap-2 h-9 px-4 rounded-full bg-[#1a3a5c] text-white text-[12px] font-medium hover:bg-[#1a3a5c]/90 transition-colors active:scale-95"
+                      >
+                        {step.buttonText}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 };
