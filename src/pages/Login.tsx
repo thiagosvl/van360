@@ -1,5 +1,5 @@
 // React
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
@@ -8,9 +8,9 @@ import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 
 // Third-party
-import { cpfCnpjSchema, emailSchema } from "@/schemas/common";
+import { cpfCnpjSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, Mail, User, Wand2, Smartphone } from "lucide-react";
+import { Eye, EyeOff, Lock, User, Wand2, Smartphone } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
@@ -114,8 +114,7 @@ function LoginPlatformSuggestion() {
 
 export default function Login() {
   useSEO({
-    title: "Entrar | Van360",
-    description: "Acesse sua conta Van360 e faça a gestão completa da sua van escolar.",
+    title: "Entrar | Van360"
   });
   useAnalyticsInjector({ gtm: true, clarity: true });
   const [showPassword, setShowPassword] = useState(false);
