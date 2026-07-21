@@ -255,13 +255,13 @@ export default function Login() {
                     control={formMotorista.control}
                     name="cpfcnpj"
                     render={({ field, fieldState }) => (
-                      <FormItem className="space-y-0">
+                      <FormItem>
                         <FormControl>
                           <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
                             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
                               <User className="w-5 h-5" />
                             </div>
-                            <div className="flex flex-col flex-1 overflow-hidden">
+                            <div className="flex flex-col flex-1 min-w-0">
                               <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
                                 Seu CPF ou CNPJ
                               </label>
@@ -269,13 +269,13 @@ export default function Login() {
                                 {...field}
                                 inputMode="numeric"
                                 onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}
-                                placeholder="123.456.789-00"
-                                className="h-5 p-0 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
+                                placeholder=""
+                                className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
                               />
                             </div>
                           </div>
                         </FormControl>
-                        <FormMessage className="text-xs mt-1 ml-1" />
+                        <FormMessage className="text-xs ml-1" />
                       </FormItem>
                     )}
                   />
@@ -285,13 +285,13 @@ export default function Login() {
                     control={formMotorista.control}
                     name="senha"
                     render={({ field, fieldState }) => (
-                      <FormItem className="space-y-0">
+                      <FormItem>
                         <FormControl>
                           <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
                             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
                               <Lock className="w-5 h-5" />
                             </div>
-                            <div className="flex flex-col flex-1 overflow-hidden">
+                            <div className="flex flex-col flex-1 min-w-0">
                               <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
                                 Senha
                               </label>
@@ -299,7 +299,7 @@ export default function Login() {
                                 {...field}
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="h-5 p-0 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal"
+                                className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal placeholder:text-slate-300"
                               />
                             </div>
                             <button
@@ -312,7 +312,7 @@ export default function Login() {
                             </button>
                           </div>
                         </FormControl>
-                        <FormMessage className="text-xs mt-1 ml-1" />
+                        <FormMessage className="text-xs ml-1" />
                       </FormItem>
                     )}
                   />
