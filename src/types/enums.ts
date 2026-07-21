@@ -3,6 +3,11 @@ export enum UserType {
   MOTORISTA = "motorista",
 }
 
+export enum ContractMultaTipo {
+  PERCENTUAL = "percentual",
+  FIXO = "fixo"
+}
+
 export enum CobrancaStatus {
   PAGO = "pago",
   PENDENTE = "pendente"

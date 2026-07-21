@@ -1,6 +1,7 @@
 import { getMessage } from "@/constants/messages";
 import { contratoApi } from "@/services/api/contrato.api";
 import { Contrato, CreateContratoDTO } from "@/types/contract";
+import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -101,14 +102,13 @@ export function useSubstituirContrato() {
         error.response?.data?.error || getMessage("contrato.erro.substituir");
       toast.error(message);
     },
-  });
 }
 
 export interface PreviewConfig {
   clausulas?: string[];
-  multaAtraso?: { valor: number; tipo: "percentual" | "fixo" };
-  jurosAtraso?: { valor: number; tipo: "percentual" | "fixo" };
-  multaRescisao?: { valor: number; tipo: "percentual" | "fixo" };
+  multaAtraso?: { valor: number; tipo: ContractMultaTipo };
+  jurosAtraso?: { valor: number; tipo: ContractMultaTipo };
+  multaRescisao?: { valor: number; tipo: ContractMultaTipo };
   assinaturaCondutorUrl?: string | null;
 }
 

@@ -1,4 +1,4 @@
-import { UserType } from "./enums";
+import { UserType, ContractMultaTipo } from "./enums";
 
 export interface Usuario {
   id: string;
@@ -34,9 +34,9 @@ export interface Usuario {
   assinatura_digital_url?: string;
   config_contrato?: {
     usar_contratos: boolean;
-    multa_atraso: { valor: number; tipo: "percentual" | "fixo" };
-    juros_atraso: { valor: number; tipo: "percentual" | "fixo" };
-    multa_rescisao: { valor: number; tipo: "percentual" | "fixo" };
+    multa_atraso: { valor: number; tipo: ContractMultaTipo };
+    juros_atraso: { valor: number; tipo: ContractMultaTipo };
+    multa_rescisao: { valor: number; tipo: ContractMultaTipo };
     clausulas: string[];
   };
 }
