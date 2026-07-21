@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatFirstName,
   formatShortName,
   getInitials,
 } from "@/utils/formatters";
@@ -128,10 +127,10 @@ export function PassageirosList({
               <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Valor
               </TableHead>
-              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] w-[300px]">
                 Escola
               </TableHead>
-              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] w-[140px]">
                 Veículo
               </TableHead>
               <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
@@ -195,7 +194,7 @@ export function PassageirosList({
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col items-start gap-1">
                       <span
-                        className="text-sm text-slate-600 max-w-[180px] block truncate"
+                        className="text-sm text-slate-600 max-w-[280px] block truncate"
                         title={passageiro.escola?.nome || "Sem vínculo"}
                       >
                         {passageiro.escola?.nome || "Sem vínculo"}
