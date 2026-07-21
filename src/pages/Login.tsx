@@ -266,6 +266,7 @@ export default function Login() {
                                 Seu CPF ou CNPJ
                               </label>
                               <Input
+                                autoFocus
                                 {...field}
                                 inputMode="numeric"
                                 onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}

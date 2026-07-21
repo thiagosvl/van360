@@ -112,6 +112,7 @@ export default function Register() {
                                   CPF ou CNPJ <span className="text-red-600">*</span>
                                 </label>
                                 <Input
+                                  autoFocus
                                   {...field}
                                   inputMode="numeric"
                                   onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
