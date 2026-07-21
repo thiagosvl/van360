@@ -47,58 +47,32 @@ function LoginPlatformSuggestion() {
 
   if (isNativeApp()) return null;
 
-  if (platform === "android-web") {
+  if (platform === "android-web" || platform === "desktop") {
     return (
-      <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
-        <p className="text-[13px] font-medium text-slate-500 mb-3 text-center">
+      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center">
+        <p className="text-xs font-medium text-slate-500 mb-3 text-center">
           Para uma melhor experiência, baixe o app:
         </p>
         <a
           href={PLAY_STORE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center hover:-translate-y-0.5 transition-transform drop-shadow-sm"
+          className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
           aria-label="Baixar Van360 na Play Store"
         >
           <img
             src={PLAY_STORE_BADGE_URL}
             alt="Disponível no Google Play"
-            className="h-14 object-contain"
+            className="h-10 object-contain"
           />
         </a>
-      </div>
-    );
-  }
-
-  if (platform === "desktop") {
-    return (
-      <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
-        <p className="text-[13px] font-medium text-slate-500 mb-3 text-center">
-          Para uma melhor experiência, baixe o app:
-        </p>
-        <a
-          href={PLAY_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center hover:-translate-y-0.5 transition-transform drop-shadow-sm mb-2"
-          aria-label="Baixar Van360 na Play Store"
-        >
-          <img
-            src={PLAY_STORE_BADGE_URL}
-            alt="Disponível no Google Play"
-            className="h-12 object-contain"
-          />
-        </a>
-        <p className="text-[11px] font-medium text-slate-400">
-          Disponível para Android. Funciona no iPhone pelo navegador.
-        </p>
       </div>
     );
   }
 
   if (platform === "ios-web") {
     return (
-      <div className="mt-6 pt-6 border-t border-slate-100 text-center bg-blue-50/50 rounded-xl p-4">
+      <div className="mt-8 pt-6 border-t border-slate-100 text-center flex flex-col items-center">
         <p className="text-[13px] text-[#1a3a5c] font-bold mb-1 flex items-center justify-center gap-1.5">
           <Smartphone className="w-4 h-4" /> Funciona no iPhone
         </p>
@@ -128,7 +102,6 @@ export default function Login() {
     senha: z.string().min(1, "Senha obrigatória"),
   });
 
-
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
@@ -143,7 +116,6 @@ export default function Login() {
       senha: "Ogaiht+1",
     });
   };
-
 
   const handleForgotPassword = useCallback(() => {
     setForgotPasswordOpen(true);
@@ -227,9 +199,6 @@ export default function Login() {
       } else if (msg.toLowerCase().includes("usuário não encontrado") || msg.includes("not found")) {
         formMotorista.setError("cpfcnpj", { type: "manual", message: "CPF não encontrado" });
       } else {
-        // toast.error("auth.erro.login", {
-        //   description: msg,
-        // });
         formMotorista.setError("root", {
           type: "manual",
           message: msg,
@@ -239,192 +208,176 @@ export default function Login() {
     }
   };
 
-
   return (
     <>
-      <div className="min-h-screen bg-slate-50 py-4 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-        <div className="max-w-md w-full mx-auto space-y-8">
-
-          {/* Main Card */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-
-            {/* Progress Bar */}
-            <div className="relative h-1.5 bg-gray-100 w-full font-bold">
-              <div
-                className="absolute top-0 left-0 h-full bg-[#1a3a5c] transition-all duration-500 ease-out rounded-r-full"
-                style={{ width: `100%` }}
-              />
-            </div>
-
-            {/* Header */}
-            <div className="text-center p-6 pb-0 relative">
-              {import.meta.env.DEV && (
-                <div className="absolute right-2 top-2 z-10">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
-                    onClick={handleFillMagic}
-                    title="Preencher com dados de teste"
-                  >
-                    <Wand2 className="h-5 w-5" />
-                  </Button>
-                </div>
-              )}
-
-              <div>
-                {/* Logo Section */}
-                <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  <div className="flex items-center gap-3 mb-4">
-                    <img
-                      src="/assets/logo-van360.webp"
-                      alt="Van360"
-                      className="h-12 w-auto select-none drop-shadow-sm"
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 mt-2">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
-                    Acesse sua conta
-                  </h1>
-                  <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4">
-                    Organize sua van de forma simples.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <Form {...formMotorista}>
-
-                <form
-                  onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                  className="space-y-4"
+      <div className="min-h-screen flex flex-col justify-center items-center py-6 px-4 relative overflow-hidden">
+        {/* Background suave */}
+        <div className="absolute inset-0 bg-[#e8ecf1]" />
+        
+        <div className="w-full max-w-[420px] relative z-10">
+          <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 sm:p-10 border border-slate-200">
+            
+            {import.meta.env.DEV && (
+              <div className="absolute right-6 top-6 z-10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                  onClick={handleFillMagic}
+                  title="Preencher com dados de teste"
                 >
+                  <Wand2 className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
+
+            {/* Header / Logo */}
+            <div className="flex flex-col items-center mb-8">
+              <img
+                src="/assets/logo-van360.webp"
+                alt="Van360"
+                className="h-16 w-auto mb-4 drop-shadow-sm select-none"
+              />
+              <h1 className="text-2xl sm:text-[26px] font-extrabold text-[#1a3a5c] tracking-tight mb-1">
+                Acesse sua conta
+              </h1>
+              <p className="text-[13px] sm:text-sm font-medium text-slate-500 text-center">
+                Organize sua van de forma simples.
+              </p>
+            </div>
+
+            <Form {...formMotorista}>
+              <form onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}>
+                <div className="space-y-4">
+                  {/* CPF Field */}
                   <FormField
                     control={formMotorista.control}
                     name="cpfcnpj"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
-                          Seu CPF ou CNPJ
-                        </FormLabel>
+                      <FormItem className="space-y-0">
                         <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <Input
-                              {...field}
-                              inputMode="numeric"
-                              onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}
-                              placeholder="CPF ou CNPJ"
-                              autoComplete="username"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                              aria-invalid={!!fieldState.error}
-                            />
+                          <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
+                              <User className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col flex-1 overflow-hidden">
+                              <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                Seu CPF ou CNPJ
+                              </label>
+                              <Input
+                                {...field}
+                                inputMode="numeric"
+                                onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}
+                                placeholder="123.456.789-00"
+                                className="h-5 p-0 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
+                              />
+                            </div>
                           </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs mt-1 ml-1" />
                       </FormItem>
                     )}
                   />
 
+                  {/* Password Field */}
                   <FormField
                     control={formMotorista.control}
                     name="senha"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
-                          Senha
-                        </FormLabel>
+                      <FormItem className="space-y-0">
                         <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <Input
-                              {...field}
-                              type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              autoComplete="current-password"
-                              className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
-                              aria-invalid={!!fieldState.error}
-                            />
+                          <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
+                              <Lock className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col flex-1 overflow-hidden">
+                              <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                Senha
+                              </label>
+                              <Input
+                                {...field}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                className="h-5 p-0 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal"
+                              />
+                            </div>
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
+                              className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
                               tabIndex={-1}
                             >
-                              {showPassword ? (
-                                <EyeOff className="h-5 w-5 opacity-60" />
-                              ) : (
-                                <Eye className="h-5 w-5 opacity-60" />
-                              )}
+                              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
                           </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs mt-1 ml-1" />
                       </FormItem>
                     )}
                   />
+                </div>
 
-                  {formMotorista.formState.errors.root && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600 animate-in slide-in-from-top-2">
-                      <span className="mt-0.5">⚠️</span>
-                      {formMotorista.formState.errors.root.message}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 pt-1 pb-2">
-                    <Checkbox
-                      id="rememberMe"
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                      className="border-gray-200 rounded-md data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
-                    />
-                    <Label
-                      htmlFor="rememberMe"
-                      className="text-xs font-medium text-slate-500 cursor-pointer select-none"
-                    >
-                      Lembrar meu CPF / CNPJ
-                    </Label>
+                {formMotorista.formState.errors.root && (
+                  <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600">
+                    <span className="mt-0.5">⚠️</span>
+                    {formMotorista.formState.errors.root.message}
                   </div>
+                )}
 
-                  <div className="pt-2">
-                    <Button
-                      type="submit"
-                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-md transition-all"
-                      disabled={loading}
-                    >
-                      {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
-                    </Button>
-                  </div>
+                {/* Remember Me */}
+                <div className="flex items-center gap-2 mt-5 ml-1">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    className="bg-white border-slate-300 shadow-sm rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px]"
+                  />
+                  <Label
+                    htmlFor="rememberMe"
+                    className="text-[13px] font-medium text-slate-600 cursor-pointer select-none"
+                  >
+                    Lembrar meu CPF / CNPJ
+                  </Label>
+                </div>
 
-                  <div className="flex flex-col items-center gap-6 mt-6">
+                {/* Submit Button */}
+                <div className="pt-2 mt-4">
+                  <Button
+                    type="submit"
+                    className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all"
+                    disabled={loading}
+                  >
+                    {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
+                  </Button>
+                </div>
+
+                {/* Links */}
+                <div className="flex flex-col items-center gap-2 mt-6">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-[14px] text-[#2d5a88] hover:text-[#1a3a5c] hover:underline transition-colors font-medium"
+                  >
+                    Esqueci minha senha
+                  </button>
+
+                  <p className="text-[13px] text-slate-500 mt-1">
+                    Não tem uma conta?{" "}
                     <button
                       type="button"
-                      onClick={handleForgotPassword}
-                      className="text-sm text-[#1a3a5c] hover:underline transition-colors font-medium mt-6"
+                      onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
+                      className="text-[#1a3a5c] font-bold hover:underline transition-all"
                     >
-                      Esqueci minha senha
+                      Cadastre-se
                     </button>
+                  </p>
+                </div>
 
-                    <p className="text-sm text-slate-500">
-                      Não tem uma conta?{" "}
-                      <button
-                        type="button"
-                        onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
-                        className="text-[#1a3a5c] font-semibold hover:underline transition-all"
-                      >
-                        Cadastre-se
-                      </button>
-                    </p>
-                  </div>
-
-                  {/* Sugestão de app por dispositivo (somente web) */}
-                  {!isNativeApp() && <LoginPlatformSuggestion />}
-                </form>
-              </Form>
-            </div>
+                {/* Platform Suggestion */}
+                {!isNativeApp() && <LoginPlatformSuggestion />}
+              </form>
+            </Form>
           </div>
         </div>
       </div>
