@@ -102,6 +102,7 @@ export function useSubstituirContrato() {
         error.response?.data?.error || getMessage("contrato.erro.substituir");
       toast.error(message);
     },
+  });
 }
 
 export interface PreviewConfig {

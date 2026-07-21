@@ -4,13 +4,6 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -18,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { queryClient } from "@/services/queryClient";
+import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -54,17 +48,17 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   const [showErrors, setShowErrors] = useState(false);
   const previewMutation = usePreviewContrato();
 
-  const [multaAtraso, setMultaAtraso] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
+  const [multaAtraso, setMultaAtraso] = useState<{ valor: number; tipo: ContractMultaTipo }>({
     valor: 10,
-    tipo: "fixo",
+    tipo: ContractMultaTipo.FIXO,
   });
-  const [jurosAtraso, setJurosAtraso] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
+  const [jurosAtraso, setJurosAtraso] = useState<{ valor: number; tipo: ContractMultaTipo }>({
     valor: 1,
-    tipo: "percentual",
+    tipo: ContractMultaTipo.PERCENTUAL,
   });
-  const [multaRescisao, setMultaRescisao] = useState<{ valor: number; tipo: "percentual" | "fixo" }>({
+  const [multaRescisao, setMultaRescisao] = useState<{ valor: number; tipo: ContractMultaTipo }>({
     valor: 15,
-    tipo: "fixo",
+    tipo: ContractMultaTipo.FIXO,
   });
   const [clausulas, setClausulas] = useState<string[]>([]);
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
@@ -90,13 +84,13 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       setClausulas(profile.config_contrato?.clausulas ?? DEFAULT_CLAUSULAS_CONTRATO);
       const isDefault = !profile.config_contrato?.usar_contratos;
       if (profile.config_contrato?.multa_atraso) {
-        setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: "fixo" } : profile.config_contrato.multa_atraso);
+        setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: ContractMultaTipo.FIXO } : profile.config_contrato.multa_atraso);
       }
       if (profile.config_contrato?.juros_atraso) {
-        setJurosAtraso(isDefault ? { ...profile.config_contrato.juros_atraso, tipo: "percentual" } : profile.config_contrato.juros_atraso);
+        setJurosAtraso(isDefault ? { ...profile.config_contrato.juros_atraso, tipo: ContractMultaTipo.PERCENTUAL } : profile.config_contrato.juros_atraso);
       }
       if (profile.config_contrato?.multa_rescisao) {
-        setMultaRescisao(isDefault ? { ...profile.config_contrato.multa_rescisao, tipo: "fixo" } : profile.config_contrato.multa_rescisao);
+        setMultaRescisao(isDefault ? { ...profile.config_contrato.multa_rescisao, tipo: ContractMultaTipo.FIXO } : profile.config_contrato.multa_rescisao);
       }
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
@@ -206,7 +200,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           simResultLabel: "Total com Atraso",
           simBaseValue: 200,
           simValue:
-            multaAtraso.tipo === "percentual"
+            multaAtraso.tipo === ContractMultaTipo.PERCENTUAL
               ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
@@ -219,10 +213,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           icon: Timer,
           iconColor: "text-[#1a3a5c]",
           simBaseLabel: "Exemplo Parcela",
-          simResultLabel: "Juros",
+          simResultLabel: jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? "Juros p/ mês" : "Juros p/ dia",
           simBaseValue: 200,
           simValue:
-            jurosAtraso.tipo === "percentual"
+            jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
               ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
@@ -238,7 +232,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           simResultLabel: "Multa Rescisória",
           simBaseValue: 2400,
           simValue:
-            multaRescisao.tipo === "percentual"
+            multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
               ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
@@ -263,10 +257,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               <div className="flex bg-slate-100 p-1 rounded-xl w-full border border-slate-200/20">
                 <button
                   type="button"
-                  onClick={() => setState({ ...state, tipo: "fixo" })}
+                  onClick={() => setState({ ...state, tipo: ContractMultaTipo.FIXO })}
                   className={cn(
                     "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
-                    state.tipo === "fixo"
+                    state.tipo === ContractMultaTipo.FIXO
                       ? "bg-white text-[#1a3a5c] shadow-sm"
                       : "text-slate-400 hover:text-slate-600"
                   )}
@@ -275,10 +269,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                 </button>
                 <button
                   type="button"
-                  onClick={() => setState({ ...state, tipo: "percentual" })}
+                  onClick={() => setState({ ...state, tipo: ContractMultaTipo.PERCENTUAL })}
                   className={cn(
                     "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
-                    state.tipo === "percentual"
+                    state.tipo === ContractMultaTipo.PERCENTUAL
                       ? "bg-white text-[#1a3a5c] shadow-sm"
                       : "text-slate-400 hover:text-slate-600"
                   )}
@@ -294,9 +288,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                 <Input
                   type="text"
                   inputMode="numeric"
-                  value={state.tipo === "percentual" ? (state.valor === 0 ? "" : state.valor.toString()) : (state.valor === 0 ? "" : moneyMask(state.valor))}
+                  value={state.tipo === ContractMultaTipo.PERCENTUAL ? (state.valor === 0 ? "" : state.valor.toString()) : (state.valor === 0 ? "" : moneyMask(state.valor))}
                   onChange={(e) => {
-                    if (state.tipo === "percentual") {
+                    if (state.tipo === ContractMultaTipo.PERCENTUAL) {
                       const val = e.target.value.replace(/\D/g, "");
                       const numVal = val === "" ? 0 : Number(val);
                       setState({ ...state, valor: numVal });
@@ -308,11 +302,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                   }}
                   className={cn(
                     "w-full h-12 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 font-black text-base text-[#1a3a5c] pl-4",
-                    state.tipo === "percentual" ? "pr-10 text-left" : "pr-4 text-left"
+                    state.tipo === ContractMultaTipo.PERCENTUAL ? "pr-10 text-left" : "pr-4 text-left"
                   )}
-                  placeholder={state.tipo === "percentual" ? "0" : "R$ 0,00"}
+                  placeholder={state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00"}
                 />
-                {state.tipo === "percentual" && (
+                {state.tipo === ContractMultaTipo.PERCENTUAL && (
                   <span className="absolute right-4 top-3.5 text-sm font-black text-[#1a3a5c]/40">%</span>
                 )}
               </div>
@@ -436,19 +430,19 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
           <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
-            {multaAtraso.tipo === "percentual" ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor)}
+            {multaAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor)}
           </p>
         </div>
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Juros Atraso</p>
           <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
-            {jurosAtraso.tipo === "percentual" ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor)}
+            {jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor)}
           </p>
         </div>
         <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão</p>
           <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
-            {multaRescisao.tipo === "percentual" ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor)}
+            {multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor)}
           </p>
         </div>
         <div className="col-span-3 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
