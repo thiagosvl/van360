@@ -131,10 +131,10 @@ export const GastosList = memo(function GastosList({
                   Categoria
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Veículo
+                  Descrição
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Descrição
+                  Veículo
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Data
@@ -179,13 +179,13 @@ export const GastosList = memo(function GastosList({
                       </div>
                     </td>
                     <td className="px-8 py-5 align-middle">
-                      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg", placa ? "bg-slate-50 border border-slate-100" : "")}>
-                        {placa ? formatarPlacaExibicao(placa) : "-"}
+                      <span className="text-sm text-slate-600 max-w-[180px] block truncate">
+                        {gasto.descricao || "-"}
                       </span>
                     </td>
                     <td className="px-8 py-5 align-middle">
-                      <span className="text-sm text-slate-600 max-w-[180px] block truncate">
-                        {gasto.descricao || "-"}
+                      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg", placa ? "bg-slate-50 border border-slate-100" : "")}>
+                        {placa ? formatarPlacaExibicao(placa) : "-"}
                       </span>
                     </td>
                     <td className="px-8 py-5 align-middle text-sm font-medium text-slate-600">

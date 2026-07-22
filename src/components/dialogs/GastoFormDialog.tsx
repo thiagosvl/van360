@@ -31,7 +31,7 @@ import { getCategoriaMetadata } from "@/utils/domain";
 import { GastoCategoriaForm } from "@/components/features/financeiro/GastoCategoriaForm";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { formatarPlacaExibicao } from "@/utils/domain";
-import { moneyMask } from "@/utils/masks";
+import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -175,7 +175,7 @@ export default function GastoFormDialog({
 
     const formattedData = {
       ...data,
-      valor: Number(data.valor),
+      valor: moneyToNumber(data.valor),
       veiculo_id: data.veiculo_id === "none" || !data.veiculo_id ? null : data.veiculo_id,
       parcelado: data.parcelado || false,
       parcelas: data.parcelado ? Number(data.parcelas) : undefined,
