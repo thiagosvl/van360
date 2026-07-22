@@ -58,8 +58,12 @@ const GastoMobileCard = memo(function GastoMobileCard({
       <div
         className="bg-white p-3 pr-10 rounded-xl shadow-diff-shadow flex items-start gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center mt-0.5">
-          <span className="text-white font-headline font-bold text-sm leading-none">
+        <div className={cn(
+          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center mt-0.5 border border-transparent/10",
+          getCategoriaMetadata(gasto.categoria, categoriasData).bg || "bg-slate-50",
+          getCategoriaMetadata(gasto.categoria, categoriasData).color || "text-[#1a3a5c]"
+        )}>
+          <span className="font-headline font-bold text-sm leading-none">
             {gastoDia}
           </span>
         </div>
@@ -79,10 +83,10 @@ const GastoMobileCard = memo(function GastoMobileCard({
           <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
             {formatCurrency(gasto.valor)}
           </p>
-          <div className="flex flex-col items-end gap-1 opacity-50">
+          <div className="flex flex-col items-end gap-1">
             {/* Data removed here as requested, since it's now in the header block */}
             {placa && (
-              <span className="text-[8px] font-black text-[#1a3a5c]/70 uppercase tracking-tighter">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
                 {formatarPlacaExibicao(placa)}
               </span>
             )}
@@ -168,8 +172,12 @@ export const GastosList = memo(function GastosList({
                   >
                     <td className="px-8 py-5 align-middle">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#1a3a5c]">
-                          <span className="text-white font-headline font-bold text-sm leading-none">
+                        <div className={cn(
+                          "h-10 w-10 rounded-xl flex items-center justify-center border border-transparent/10",
+                          getCategoriaMetadata(gasto.categoria, categoriasData).bg || "bg-slate-50",
+                          getCategoriaMetadata(gasto.categoria, categoriasData).color || "text-[#1a3a5c]"
+                        )}>
+                          <span className="font-headline font-bold text-sm leading-none">
                             {gastoDia}
                           </span>
                         </div>
