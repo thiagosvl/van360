@@ -11,6 +11,7 @@ import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
+import GerenciarCategoriasDialog from "@/components/dialogs/GerenciarCategoriasDialog";
 import AcquisitionChannelDialog from "@/components/dialogs/AcquisitionChannelDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
@@ -104,6 +105,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [gastoFormDialogState, setGastoFormDialogState] = useState<{
     open: boolean;
     props?: OpenGastoFormProps;
+  }>({
+    open: false,
+  });
+
+  // Gerenciar Categorias Dialog State
+  const [gerenciarCategoriasDialogState, setGerenciarCategoriasDialogState] = useState<{
+    open: boolean;
+    props?: { usuarioId?: string };
   }>({
     open: false,
   });
@@ -266,6 +275,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openGerenciarCategoriasDialog = (props?: { usuarioId?: string }) => {
+    setGerenciarCategoriasDialogState({
+      open: true,
+      props,
+    });
+  };
+
   const openResponsavelFormDialog = (props: OpenResponsavelFormProps) => {
     setResponsavelFormDialogState({
       open: true,
@@ -366,6 +382,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openPassageiroFormDialog,
         openQuickStartPassageiroDialog,
         openGastoFormDialog,
+        openGerenciarCategoriasDialog,
         openResponsavelFormDialog,
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
@@ -521,6 +538,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           gastoToEdit={gastoFormDialogState.props?.gastoToEdit}
           veiculos={gastoFormDialogState.props?.veiculos || []}
           usuarioId={gastoFormDialogState.props?.usuarioId || profile?.id}
+        />
+      )}
+
+      {gerenciarCategoriasDialogState.open && (
+        <GerenciarCategoriasDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setGerenciarCategoriasDialogState((prev) => ({ ...prev, open: false }))
+            )
+          }
+          usuarioId={gerenciarCategoriasDialogState.props?.usuarioId || profile?.id}
         />
       )}
 

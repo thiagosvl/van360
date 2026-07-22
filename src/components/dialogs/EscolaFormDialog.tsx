@@ -10,6 +10,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
   useCreateEscola,
@@ -17,7 +23,6 @@ import {
 } from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { cn } from "@/lib/utils";
 import { cepSchema } from "@/schemas/common";
 import { Escola } from "@/types/escola";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -150,7 +155,11 @@ export default function EscolaFormDialog({
           complemento: editingEscola.complemento || "",
           ativo: editingEscola.ativo,
         });
-        setOpenAccordionItems(["dados-escola", "endereco"]);
+        if (editingEscola.logradouro || editingEscola.cep) {
+          setOpenAccordionItems(["dados-escola", "endereco"]);
+        } else {
+          setOpenAccordionItems(["dados-escola"]);
+        }
       } else {
         if (!keepOpen) {
           form.reset({
@@ -363,15 +372,33 @@ export default function EscolaFormDialog({
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                Endereço
-              </div>
-              <FormEnderecoFields />
-            </div>
+            <Accordion
+              type="multiple"
+              value={openAccordionItems}
+              onValueChange={setOpenAccordionItems}
+              className="w-full"
+            >
+              <AccordionItem value="endereco" className="border-none">
+                <AccordionTrigger className="hover:no-underline px-4 py-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 hover:bg-slate-100/50 hover:border-slate-300 transition-all data-[state=open]:border-solid data-[state=open]:border-slate-100 data-[state=open]:bg-white data-[state=open]:shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-500 shadow-sm border border-slate-100">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col items-start justify-center">
+                      <span className="font-semibold text-slate-700 text-[15px] leading-tight">
+                        Adicionar Endereço
+                      </span>
+                      <span className="font-medium text-slate-400 text-[12px] mt-0.5">
+                        Opcional
+                      </span>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-1 pt-6 pb-2">
+                  <FormEnderecoFields />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {allowBatchCreation && !editingEscola && (
               <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100">

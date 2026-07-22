@@ -1,7 +1,7 @@
-import { Gasto, GASTO_CATEGORIA_LABELS } from "@/types/gasto";
-import { GastoCategoria } from "@/types/enums";
+import { Gasto } from "@/types/gasto";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
-import { formatarPlacaExibicao } from "@/utils/domain";
+import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
+import { useGastoCategorias } from "@/hooks";
 import {
   Calendar,
   Wallet,
@@ -14,6 +14,9 @@ interface GastoSummaryProps {
 }
 
 export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
+  const { data: categoriasData } = useGastoCategorias();
+  const metadata = getCategoriaMetadata(gasto.categoria, categoriasData);
+
   // Se o gasto tem veículo, mostramos a placa no contexto superior
   const veiculoInfo = veiculoPlaca ? ` • ${formatarPlacaExibicao(veiculoPlaca)}` : (gasto.veiculo?.placa ? ` • ${formatarPlacaExibicao(gasto.veiculo.placa)}` : "");
 
@@ -23,7 +26,7 @@ export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
       {/* LINHA 1: Overline Categoria + Contexto Veículo */}
       <div className="flex justify-between items-center mb-2">
         <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wider leading-none truncate pr-2">
-          {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}{veiculoInfo}
+          {metadata.label}{veiculoInfo}
         </p>
 
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100/60 text-red-600 dark:bg-red-950/30">

@@ -7,7 +7,6 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
 import { useGastosViewModel } from "@/hooks";
 import { KPICardVariant } from "@/types/enums";
-import { CATEGORIAS_GASTOS } from "@/types/gasto";
 import { formatCurrency } from "@/utils/formatters/currency";
 import {
   TrendingDown,
@@ -32,6 +31,7 @@ export default function Gastos() {
     handleDelete,
     handleOpenForm,
     veiculos,
+    categorias,
     hasActiveFilters,
     clearFilters,
   } = useGastosViewModel();
@@ -67,7 +67,7 @@ export default function Gastos() {
           onRegistrarGasto={() => {
             handleOpenForm();
           }}
-          categorias={CATEGORIAS_GASTOS}
+          categorias={categorias}
           veiculos={veiculos}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}

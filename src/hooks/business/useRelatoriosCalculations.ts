@@ -1,4 +1,4 @@
-import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
 import { periodos as periodosConstants } from "@/utils/formatters/periodo";
 import {
   ClipboardCheck,
@@ -16,6 +16,7 @@ import {
   GastoCategoria,
 
 } from "@/types/enums";
+import { useGastoCategorias } from "@/hooks";
 import { formatPaymentType } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
 
@@ -101,6 +102,8 @@ export const useRelatoriosCalculations = ({
   hasVeiculoFilter,
   contadores,
 }: UseRelatoriosCalculationsProps) => {
+  const { data: categoriasData } = useGastoCategorias();
+
   const dados = useMemo(() => {
     // 1. Safe guards for optional data
     const cobrancas = cobrancasData?.all || [];
@@ -246,7 +249,7 @@ export const useRelatoriosCalculations = ({
     const topCategorias = Object.values(categoriasMap)
       .sort((a, b) => b.valor - a.valor)
       .map((cat) => {
-        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS[GastoCategoria.OUTROS];
+        const iconData = getCategoriaMetadata(cat.nome, categoriasData);
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
           const info = veiculosMap[vId] || { nome: "Geral / Não especificado", placa: "-" };
           return {
@@ -309,7 +312,7 @@ export const useRelatoriosCalculations = ({
         };
 
         const categoriasList = Object.entries(item.categorias).map(([catNome, catData]) => {
-          const iconData = CATEGORIA_ICONS[catNome] || CATEGORIA_ICONS[GastoCategoria.OUTROS];
+          const iconData = getCategoriaMetadata(catNome, categoriasData);
           return {
             nome: iconData.label || catNome,
             valor: catData.valor,
@@ -480,7 +483,8 @@ export const useRelatoriosCalculations = ({
     veiculosData,
     profile,
     financeiro,
-    hasVeiculoFilter
+    hasVeiculoFilter,
+    categoriasData
   ]);
 
   return dados;

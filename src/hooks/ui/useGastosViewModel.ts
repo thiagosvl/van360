@@ -1,5 +1,5 @@
 import { useLayout } from "@/contexts/LayoutContext";
-import { useDeleteGasto, useFilters, useGastos, useVeiculos, safeCloseDialog } from "@/hooks";
+import { useDeleteGasto, useFilters, useGastos, useVeiculos, safeCloseDialog, useGastoCategorias } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { FilterDefaults } from "@/types/enums";
@@ -77,8 +77,13 @@ export function useGastosViewModel() {
     enabled: !!profile?.id,
   });
 
+  const { data: categoriasData } = useGastoCategorias({
+    enabled: !!profile?.id,
+  });
+
   const veiculos = useMemo(() => veiculosData?.list || [], [veiculosData]);
   const veiculosDropdown = useMemo(() => veiculos.map((v) => ({ id: v.id, placa: v.placa })), [veiculos]);
+  const categoriasDropdown = useMemo(() => categoriasData?.map((c) => c.slug) || [], [categoriasData]);
 
   const gastos = gastosRes?.list || [];
 
@@ -163,6 +168,7 @@ export function useGastosViewModel() {
     handleDelete,
     handleOpenForm,
     veiculos: veiculosDropdown,
+    categorias: categoriasDropdown,
     clearFilters,
     hasActiveFilters,
   };

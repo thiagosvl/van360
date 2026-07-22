@@ -44,6 +44,7 @@ const escolas = [
     cidade: "São Paulo",
     estado: "SP",
     referencia: "",
+    complemento: "",
   },
   {
     nome: "Joanna Abraão",
@@ -54,6 +55,7 @@ const escolas = [
     cidade: "São Paulo",
     estado: "SP",
     referencia: "Próximo ao MASP",
+    complemento: "Bloco A",
   },
 ];
 

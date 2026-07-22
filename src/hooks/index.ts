@@ -70,3 +70,7 @@ export {
     useCreateVeiculo, useDeleteVeiculo,
     useToggleAtivoVeiculo, useUpdateVeiculo
 } from "./api/useVeiculoMutations";
+
+export {
+    useGastoCategorias, useCreateGastoCategoria, useUpdateGastoCategoria, useDeleteGastoCategoria
+} from "./api/useGastoCategorias";

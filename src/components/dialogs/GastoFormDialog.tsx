@@ -23,10 +23,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
+import { useCreateGasto, useUpdateGasto, useVeiculos, useGastoCategorias, useCreateGastoCategoria } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { CATEGORIAS_GASTOS, GASTO_CATEGORIA_LABELS, Gasto } from "@/types/gasto";
+import { Gasto } from "@/types/gasto";
 import { GastoCategoria } from "@/types/enums";
+import { getCategoriaMetadata } from "@/utils/domain";
+import { GastoCategoriaForm } from "@/components/features/financeiro/GastoCategoriaForm";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { moneyMask } from "@/utils/masks";
@@ -108,13 +110,21 @@ export default function GastoFormDialog({
   const createGasto = useCreateGasto();
   const updateGasto = useUpdateGasto();
 
+  const [isAddingNewCat, setIsAddingNewCat] = useState(false);
+
   const { data: veiculosData } = useVeiculos({ usuarioId }, {
     enabled: isOpen && veiculosProp.length === 0 && !!usuarioId
   });
 
+  const { data: categoriasData, isLoading: isLoadingCategorias } = useGastoCategorias({
+    enabled: isOpen && !!usuarioId
+  });
+
+  const createCategoriaMutation = useCreateGastoCategoria();
+
   const veiculos = veiculosProp.length > 0 ? veiculosProp : (veiculosData?.list || []);
 
-  const isActionLoading = createGasto.isPending || updateGasto.isPending;
+  const isActionLoading = createGasto.isPending || updateGasto.isPending || createCategoriaMutation.isPending;
 
   const form = useForm<GastoFormData>({
     resolver: zodResolver(gastoSchema),
@@ -165,9 +175,11 @@ export default function GastoFormDialog({
 
     const formattedData = {
       ...data,
+      valor: Number(data.valor),
       veiculo_id: data.veiculo_id === "none" || !data.veiculo_id ? null : data.veiculo_id,
       parcelado: data.parcelado || false,
       parcelas: data.parcelado ? Number(data.parcelas) : undefined,
+      data: data.data ? data.data.toISOString() : undefined,
     };
 
     if (gastoToEdit) {
@@ -189,10 +201,16 @@ export default function GastoFormDialog({
       veiculoId = veiculos[Math.floor(Math.random() * veiculos.length)].id;
     }
     const mockData = mockGenerator.gasto({ veiculo_id: veiculoId });
+    
+    let categoriaMock: string = mockData.categoria;
+    if (categoriasData && categoriasData.length > 0) {
+      categoriaMock = categoriasData[Math.floor(Math.random() * categoriasData.length)].slug;
+    }
+
     form.reset({
       valor: mockData.valor,
       data: mockData.data,
-      categoria: mockData.categoria,
+      categoria: categoriaMock,
       descricao: mockData.descricao,
       veiculo_id: mockData.veiculo_id,
     });
@@ -229,36 +247,73 @@ export default function GastoFormDialog({
               control={form.control}
               name="categoria"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Categoria <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <div className="relative">
-                        <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                        <SelectTrigger
-                          className={cn(
-                            "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                            fieldState.error && "border-red-500"
-                          )}
-                          aria-invalid={!!fieldState.error}
-                        >
-                          <SelectValue placeholder="Selecione a categoria" />
-                        </SelectTrigger>
-                      </div>
-                    </FormControl>
-                    <SelectContent className="max-h-60 overflow-y-auto">
-                      {CATEGORIAS_GASTOS.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {GASTO_CATEGORIA_LABELS[cat as GastoCategoria] || cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <FormItem className="space-y-2">
+                  <div className="flex justify-between items-center ml-1">
+                    <FormLabel className="text-slate-700 font-semibold">
+                      Categoria <span className="text-red-600">*</span>
+                    </FormLabel>
+                    {!isAddingNewCat && (
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="h-auto p-0 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                        onClick={() => setIsAddingNewCat(true)}
+                      >
+                        + Nova Categoria
+                      </Button>
+                    )}
+                  </div>
+
+                  {isAddingNewCat ? (
+                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4 shadow-sm transition-all animate-in fade-in slide-in-from-top-1 duration-200">
+                      <GastoCategoriaForm
+                        onSubmit={async ({ nome, cor }) => {
+                          const novaCat = await createCategoriaMutation.mutateAsync({
+                            nome,
+                            cor,
+                            icone: "Tag"
+                          });
+                          field.onChange(novaCat.slug);
+                          setIsAddingNewCat(false);
+                        }}
+                        onCancel={() => setIsAddingNewCat(false)}
+                        isPending={createCategoriaMutation.isPending}
+                        submitLabel="Salvar"
+                        autoFocus={true}
+                      />
+                    </div>
+                  ) : (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <div className="relative">
+                          <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione a categoria" />
+                          </SelectTrigger>
+                        </div>
+                      </FormControl>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {isLoadingCategorias ? (
+                          <div className="p-4 text-center text-sm text-slate-400">Carregando...</div>
+                        ) : (
+                          categoriasData?.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.slug}>
+                              {cat.nome}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

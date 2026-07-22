@@ -2,14 +2,14 @@ import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
-import { Gasto, GASTO_CATEGORIA_LABELS } from "@/types/gasto";
-import { GastoCategoria } from "@/types/enums";
-import { formatarPlacaExibicao } from "@/utils/domain";
+import { Gasto } from "@/types/gasto";
+import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
 import { GastoSummary } from "./GastoSummary";
 import { cn } from "@/lib/utils";
+import { useGastoCategorias } from "@/hooks";
 
 interface GastosListProps {
   gastos: Gasto[];
@@ -25,6 +25,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onDelete,
   veiculos,
 }: { gasto: Gasto; index: number } & GastosListProps) {
+  const { data: categoriasData } = useGastoCategorias();
 
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
@@ -65,7 +66,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
 
         <div className="flex-grow min-w-0">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight capitalize">
-            {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}
+            {getCategoriaMetadata(gasto.categoria, categoriasData).label}
           </p>
           <div className="">
             <p className="text-[10px] text-gray-500 font-medium opacity-60 break-words line-clamp-2 leading-relaxed">
@@ -92,13 +93,14 @@ const GastoMobileCard = memo(function GastoMobileCard({
   );
 });
 
-export function GastosList({
+export const GastosList = memo(function GastosList({
   gastos,
   onEdit,
   onDelete,
   veiculos = [],
 }: GastosListProps) {
   const [openedGasto, setOpenedGasto] = useState<Gasto | null>(null);
+  const { data: categoriasData } = useGastoCategorias();
 
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
@@ -172,7 +174,7 @@ export function GastosList({
                           </span>
                         </div>
                         <span className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
-                          {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}
+                          {getCategoriaMetadata(gasto.categoria, categoriasData).label}
                         </span>
                       </div>
                     </td>
@@ -221,7 +223,7 @@ export function GastosList({
       )}
     </>
   );
-}
+});
 
 // Wrapper to avoid calling useGastoActions for all rows upfront
 function ActionSheetWrapper({

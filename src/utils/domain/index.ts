@@ -11,3 +11,6 @@ export * from "./cobranca/disableActions";
 // Pages
 export * from "./pages/pagesUtils";
 
+// Gastos
+export * from "./gasto/categoriaUtils";
+

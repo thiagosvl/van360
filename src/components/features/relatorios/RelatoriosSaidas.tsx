@@ -129,8 +129,13 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                   onClick={() => toggleCategory(cat.nome)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
-                      <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+                    <div className={cn(
+                      "w-11 h-11 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:shadow-md",
+                      cat.bg || "bg-slate-50",
+                      cat.color || "text-[#1a3a5c]",
+                      "border-transparent"
+                    )}>
+                      <Icon className="h-5 w-5 opacity-90" />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[12px] font-medium text-slate-600">
@@ -264,7 +269,11 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                                 className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50/50"
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-100/50">
+                                  <div className={cn(
+                                    "w-7 h-7 rounded-lg flex items-center justify-center border border-transparent/10",
+                                    cat.bg || "bg-slate-50",
+                                    cat.color || "text-[#1a3a5c]"
+                                  )}>
                                     <Icon className="h-3.5 w-3.5" />
                                   </div>
                                   <span className="text-[12px] font-bold text-slate-700">

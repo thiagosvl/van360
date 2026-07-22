@@ -144,6 +144,7 @@ export interface LayoutContextType {
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
+  openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;
