@@ -9,43 +9,49 @@ export const DEFAULT_SECOES_CONTRATO: ContractSection[] = [
     id: "secao-objeto",
     titulo: "DO OBJETO",
     clausulas: [
-      "O CONTRATADO compromete-se a prestar serviço de transporte escolar em veículo devidamente autorizado pelos órgãos competentes do DF e equipado com os itens obrigatórios de segurança, seguindo estritamente o calendário escolar oficial."
+      "O serviço contratado consiste no transporte do passageiro acima citado, no trajeto com origem e destino acordado entre as partes."
     ]
   },
   {
     id: "secao-prestacao",
     titulo: "DA PRESTAÇÃO DO SERVIÇO",
     clausulas: [
-      "O transporte será realizado de segunda a sexta-feira. NÃO ATENDEMOS AOS SÁBADOS (reservado para manutenção dos veículos), domingos, feriados, recessos escolares, períodos de recuperação final ou reposição de aula. Não fazemos transporte em horários contrários, passeios ou festas escolares.",
-      "Somente o passageiro CONTRATANTE está autorizado a utilizar o transporte, sendo vedado o acompanhamento de terceiros. É obrigação do responsável manter o aluno no local e horário combinados no embarque e desembarque, não sendo possível o veículo aguardar para evitar atrasos na rota.",
-      "Fica estabelecido que, em caso de mudança no local de origem, destino ou retorno, a CONTRATADA reserva-se o direito de aceitar ou não as alterações devido à modificação de rota, podendo desobrigar-se da prestação do serviço."
+      "Somente o passageiro CONTRATANTE está autorizado a utilizar-se do objeto deste contrato, sendo vedado o passageiro se fazer acompanhar de colegas, parentes, amigos e etc.",
+      "O transporte ora contratado se refere exclusivamente ao horário regular da escola pré-determinado, não sendo de responsabilidade da CONTRATADA o transporte do passageiro em turno diferente do contratado, em horários de atividades extracurriculares ou que por determinação da escola seja alterado.",
+      "O procedimento de retirada e entrega do passageiro na residência ou local combinado deverá ser acordado entre as partes, definindo um responsável para acompanhar o passageiro.",
+      "A partir do momento que for realizada a entrega do passageiro na escola, a CONTRATADA não é mais responsável pela segurança do passageiro, bem como de seus pertences.",
+      "As partes deverão respeitar os horários previamente combinados de saída dos locais de origem e destino, ficando estabelecido que, caso ocorra mudança no local de origem, destino ou retorno, a CONTRATADA reserva-se o direito de aceitar ou não tais alterações, em razão da modificação de rota, podendo, inclusive, ficar desobrigada da prestação dos serviços previstos neste contrato.",
+      "Fica estabelecido que, caso a CONTRATANTE ou algum outro responsável pelo passageiro for buscá-lo no lugar da CONTRATADA, a CONTRATANTE deverá comunicar à CONTRATADA e à escola previamente.",
+      "A CONTRATANTE obriga-se a informar a CONTRATADA com um prazo de até duas horas antes do horário se o passageiro não for comparecer à escola naquele dia."
     ]
   },
   {
     id: "secao-valor",
     titulo: "DO VALOR",
     clausulas: [
-      "A CONTRATANTE pagará o valor mensal acordado na forma e prazo estipulados. As parcelas mensais deverão ser quitadas normalmente mesmo durante os períodos de férias (julho, dezembro e janeiro), recessos, greves ou faltas do aluno.",
-      "CASO O PAGAMENTO NÃO SEJA EFETUADO ATÉ O DIA 20 DO MÊS CORRENTE, O TRANSPORTE ESCOLAR SERÁ SUSPENSO até que o débito seja regularizado, não implicando o fato em quebra de contrato por parte da CONTRATADA."
+      "A CONTRATANTE pagará à CONTRATADA o valor mensal acordado, conforme forma de pagamento e parcelamento previamente acordados entre as partes, sendo o pagamento devido integralmente e de forma regular inclusive durante os períodos de férias dos meses de julho, dezembro e janeiro, bem como em casos de recessos, greves, afastamento temporário do passageiro por motivo de doença, férias, viagens, pandemia ou qualquer outro motivo, inclusive de força maior.",
+      "As parcelas deverão ser pagas até o dia estabelecido nas CONDIÇÕES DE VALOR, durante todo o período de vigência do contrato. Em caso de atraso no pagamento, a CONTRATANTE poderá estar sujeita à multa prevista nas CONDIÇÕES DE VALOR, sendo que, após a notificação do atraso, a CONTRATADA poderá conceder um prazo para regularização. Persistindo o não pagamento da parcela em atraso, a prestação do serviço poderá ser suspensa até que a situação seja regularizada.",
+      "Início do ano terá reajuste da mensalidade e um novo contrato será emitido."
     ]
   },
   {
     id: "secao-rescisao",
     titulo: "DA RESCISÃO",
     clausulas: [
-      "O atraso no pagamento da parcela por 30 (trinta) dias ou mais sujeitará o contrato a rescisão e cobrança judicial/extrajudicial, podendo o nome do responsável ser encaminhado aos órgãos de proteção ao crédito (SPC/Serasa) e protestado em cartório.",
-      "Fica o CONTRATADO autorizado a realizar reajuste suplementar sobre o valor das parcelas não vencidas quando ocorrer majoração nos custos operacionais que repercutam diretamente no transporte.",
-      "Este contrato poderá ser rescindido por qualquer das partes mediante comunicação com antecedência mínima de 30 (trinta) dias, exceto nos meses de junho e novembro. A ausência do aviso prévio sujeitará a parte que rescindir a multa de 01 (uma) parcela em vigor."
+      "Em caso de comportamento inadequado, desobediência às normas de segurança ou atitude antissocial, o passageiro poderá sofrer advertência por escrito e, em caso de reincidência, ocorrerá a rescisão do contrato motivada.",
+      "O contrato pode ser rescindido imotivadamente por qualquer das partes, com aplicação de multa rescisória conforme percentual descrito nas condições de valor sobre as parcelas pendentes, exceto quando a rescisão for motivada."
     ]
   },
   {
     id: "secao-gerais",
     titulo: "DAS DISPOSIÇÕES GERAIS",
     clausulas: [
-      "O passageiro que se portar com desrespeito ou indisciplina para com o motorista, auxiliar ou demais usuários, ou causar danos ao veículo, poderá ser suspenso ou desligado do transporte, respondendo o responsável legal pelos custos dos danos materiais.",
-      "Está proibido o consumo de alimentos no interior do veículo escolar com a finalidade de prevenir acidentes (engasgos), desentendimentos e manter a limpeza do veículo.",
-      "A CONTRATADA não se responsabilizará por objetos de valor, materiais escolares, pertences ou dinheiro eventualmente esquecidos ou trocados no interior do veículo.",
-      "Para dirimir quaisquer dúvidas oriundas deste instrumento, fica eleito o foro de Brasília-DF, reconhecendo as partes o presente contrato como título executivo extrajudicial."
+      "Está proibido o consumo de alimentos no interior do veículo escolar, com a finalidade de evitar e prevenir acidentes, como engasgos, ou constrangimento de outros passageiros, além de manter a limpeza do veículo.",
+      "Para os efeitos deste contrato, o transporte pactuado ficará temporariamente suspenso no caso de o passageiro apresentar doença infectocontagiosa, visando preservar a saúde e a segurança das crianças transportadas e dos prestadores do serviço.",
+      "O veículo passa por duas vistorias anuais (uma em cada semestre), onde nesse dia não haverá transporte e assim visando a segurança do mesmo. Avisaremos com antecedência a data das vistorias.",
+      "É convencionado que a CONTRATADA não será responsabilizada pela vigilância de objetos pessoais, material escolar, dinheiro, joias ou quaisquer pertences eventualmente esquecidos pelo passageiro no veículo ou no estabelecimento escolar.",
+      "As partes reconhecem o presente contrato como título executivo extrajudicial nos termos do artigo 784, XI, do Código de Processo Civil, sem prejuízo da opção pelo processo de conhecimento para obtenção de título executivo judicial, nos termos do artigo 785.",
+      "O serviço do transporte escolar será prestado até a data de término estabelecida nas CONDIÇÕES DO PERÍODO."
     ]
   }
 ];

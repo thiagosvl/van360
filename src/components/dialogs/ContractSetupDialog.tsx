@@ -714,7 +714,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         <div className="p-3 sm:p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-2.5 sm:gap-3 items-start">
           <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
           <p className="text-[10px] sm:text-[11px] text-blue-800 leading-relaxed font-medium">
-            Personalize seu contrato! Use as setas para reorganizar seções e cláusulas facilmente.
+            Não se preocupe! Você poderá editar seu contrato a qualquer momento no futuro.
           </p>
         </div>
       )}
