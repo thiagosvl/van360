@@ -174,7 +174,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <p className={cn("text-[13px] font-bold", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, gerar parcela</p>
-                  <p className="text-xs font-medium text-slate-500 mt-0.5">A parcela será registrada e aparecerá na carteira digital</p>
+                  <p className="text-xs font-medium text-slate-500 mt-0.5">A parcela será registrada e já aparecerá na carteirinha</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
                   {wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
