@@ -1,3 +1,4 @@
+import { ContractSection } from "@/constants/defaults";
 import { getMessage } from "@/constants/messages";
 import { contratoApi } from "@/services/api/contrato.api";
 import { Contrato, CreateContratoDTO } from "@/types/contract";
@@ -107,6 +108,7 @@ export function useSubstituirContrato() {
 
 export interface PreviewConfig {
   clausulas?: string[];
+  secoes?: ContractSection[];
   multaAtraso?: { valor: number; tipo: ContractMultaTipo };
   jurosAtraso?: { valor: number; tipo: ContractMultaTipo };
   multaRescisao?: { valor: number; tipo: ContractMultaTipo };

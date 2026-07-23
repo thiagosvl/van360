@@ -155,7 +155,7 @@ const Contratos = () => {
         isOpen={isPreviewPdfOpen}
         onClose={() => setIsPreviewPdfOpen(false)}
         pdfUrl={pdfUrl}
-        title="Modelo do Contrato"
+        title="Prévia do Contrato"
       />
     </>
   );

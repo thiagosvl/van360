@@ -4,32 +4,34 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
+import { ContractSection, DEFAULT_SECOES_CONTRATO } from "@/constants/defaults";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { queryClient } from "@/services/queryClient";
 import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronUp,
-  DollarSign,
+  Eraser,
   FileText,
+  FolderPlus,
   Loader2,
-  PenTool,
+  Pencil,
   Plus,
-  Trash2,
-  Timer,
   Scale,
+  Timer,
+  Trash2,
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 interface ContractSetupDialogProps {
   isOpen: boolean;
@@ -51,6 +53,29 @@ const SETUP_STEPS = [
   { id: SetupStep.PREVIEW, label: "Revisão" },
 ];
 
+interface ClauseItemUI {
+  id: string;
+  texto: string;
+}
+
+interface ContractSectionUI {
+  id: string;
+  titulo: string;
+  clausulas: ClauseItemUI[];
+}
+
+function toSectionUI(secao: ContractSection, sIdx: number): ContractSectionUI {
+  const secId = secao.id || `secao-${sIdx}-${Math.random().toString(36).substring(2, 7)}`;
+  return {
+    id: secId,
+    titulo: secao.titulo,
+    clausulas: (secao.clausulas || []).map((c, cIdx) => ({
+      id: `clause-${secId}-${cIdx}-${Math.random().toString(36).substring(2, 7)}`,
+      texto: c,
+    })),
+  };
+}
+
 export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: ContractSetupDialogProps) {
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { profile, refreshProfile } = useProfile();
@@ -71,15 +96,19 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     valor: 15,
     tipo: ContractMultaTipo.FIXO,
   });
-  const [clausulas, setClausulas] = useState<string[]>([]);
-  const [expandedClauseIdx, setExpandedClauseIdx] = useState<number | null>(null);
+
+  const [secoes, setSecoes] = useState<ContractSectionUI[]>([]);
+  const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
+  const [expandedClauseKey, setExpandedClauseKey] = useState<string | null>(null);
+  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
+
   const bodyRef = useRef<HTMLDivElement | null>(null);
-  const clauseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const clauseRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const hasConfiguredBefore = Boolean(profile?.assinatura_digital_url);
 
   useLayoutEffect(() => {
-    setExpandedClauseIdx(null);
+    setExpandedClauseKey(null);
     const scrollFn = () => {
       if (bodyRef.current) {
         bodyRef.current.scrollTop = 0;
@@ -90,10 +119,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     return () => clearTimeout(timer);
   }, [step]);
 
+  // Scroll automático suave ao expandir uma cláusula
   useEffect(() => {
-    if (expandedClauseIdx !== null && step === SetupStep.CLAUSES) {
+    if (expandedClauseKey !== null && step === SetupStep.CLAUSES) {
       const scrollFn = () => {
-        const el = clauseRefs.current[expandedClauseIdx];
+        const el = clauseRefs.current[expandedClauseKey];
         const container = bodyRef.current;
         if (el && container) {
           let topOffset = 0;
@@ -102,7 +132,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             topOffset += current.offsetTop;
             current = current.offsetParent as HTMLElement | null;
           }
-          const offsetMargin = hasConfiguredBefore ? 12 : 110;
+          const offsetMargin = hasConfiguredBefore ? 90 : 60;
           container.scrollTo({
             top: Math.max(0, topOffset - offsetMargin),
             behavior: "smooth",
@@ -117,7 +147,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         clearTimeout(timer2);
       };
     }
-  }, [expandedClauseIdx, hasConfiguredBefore]);
+  }, [expandedClauseKey, hasConfiguredBefore, step]);
 
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
   const sigPad = useRef<SignaturePadRef>(null);
@@ -139,7 +169,26 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       return;
     }
     if (isOpen && profile && !initializedRef.current) {
-      setClausulas(profile.config_contrato?.clausulas ?? DEFAULT_CLAUSULAS_CONTRATO);
+      let loadedSecoes: ContractSectionUI[] = [];
+      if (profile.config_contrato?.secoes && profile.config_contrato.secoes.length > 0) {
+        loadedSecoes = profile.config_contrato.secoes.map((s, idx) => toSectionUI(s, idx));
+      } else if (profile.config_contrato?.clausulas && profile.config_contrato.clausulas.length > 0) {
+        loadedSecoes = [
+          toSectionUI(
+            {
+              id: "secao-prestacao",
+              titulo: "DA PRESTAÇÃO DO SERVIÇO",
+              clausulas: profile.config_contrato.clausulas,
+            },
+            0
+          ),
+        ];
+      } else {
+        loadedSecoes = DEFAULT_SECOES_CONTRATO.map((s, idx) => toSectionUI(s, idx));
+      }
+      setSecoes(loadedSecoes);
+      setExpandedSectionId(null);
+
       const isDefault = !profile.config_contrato?.usar_contratos;
       if (profile.config_contrato?.multa_atraso) {
         setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: ContractMultaTipo.FIXO } : profile.config_contrato.multa_atraso);
@@ -153,7 +202,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
       setStep(SetupStep.FEES);
-      setExpandedClauseIdx(null);
+      setExpandedClauseKey(null);
+      setFocusedSectionId(null);
 
       initializedRef.current = true;
     }
@@ -181,20 +231,227 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     return signatureTemp;
   };
 
+  // Handlers para Seções e Cláusulas
+  const handleSectionTitleChange = (sectionId: string, newTitle: string) => {
+    setSecoes((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, titulo: newTitle } : sec)));
+  };
+
+  const handleAddClauseToSection = (sectionId: string) => {
+    const newClauseId = `clause-${sectionId}-${Date.now()}`;
+    setSecoes((prev) =>
+      prev.map((sec) => {
+        if (sec.id === sectionId) {
+          const updatedClauses = [...sec.clausulas, { id: newClauseId, texto: "" }];
+          setExpandedClauseKey(newClauseId);
+          return { ...sec, clausulas: updatedClauses };
+        }
+        return sec;
+      })
+    );
+    setExpandedSectionId(sectionId);
+  };
+
+  const handleClauseChange = (sectionId: string, clauseId: string, text: string) => {
+    setSecoes((prev) =>
+      prev.map((sec) => {
+        if (sec.id === sectionId) {
+          const updated = sec.clausulas.map((c) => (c.id === clauseId ? { ...c, texto: text } : c));
+          return { ...sec, clausulas: updated };
+        }
+        return sec;
+      })
+    );
+  };
+
+  const handleDeleteClause = (sectionId: string, clauseId: string) => {
+    const targetSecao = secoes.find((s) => s.id === sectionId);
+    const clauseItem = targetSecao?.clausulas.find((c) => c.id === clauseId);
+    const text = clauseItem?.texto ?? "";
+
+    const executeDelete = () => {
+      setSecoes((prev) =>
+        prev.map((sec) => {
+          if (sec.id === sectionId) {
+            const updated = sec.clausulas.filter((c) => c.id !== clauseId);
+            return { ...sec, clausulas: updated };
+          }
+          return sec;
+        })
+      );
+      if (expandedClauseKey === clauseId) {
+        setExpandedClauseKey(null);
+      }
+    };
+
+    if (!text.trim()) {
+      executeDelete();
+      return;
+    }
+
+    openConfirmationDialog({
+      title: "Excluir Cláusula?",
+      description: "Tem certeza que deseja excluir esta cláusula? Esta ação não poderá ser desfeita.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: () => {
+        executeDelete();
+        closeConfirmationDialog();
+      },
+    });
+  };
+
+  // Ao clicar em Nova Seção: gera a nova seção com 1 cláusula inicial em branco
+  const handleAddSection = () => {
+    const newSecaoId = `secao-${Date.now()}`;
+    const newClauseId = `clause-${newSecaoId}-0`;
+    const newSecao: ContractSectionUI = {
+      id: newSecaoId,
+      titulo: "",
+      clausulas: [{ id: newClauseId, texto: "" }],
+    };
+    setSecoes((prev) => [...prev, newSecao]);
+    setExpandedSectionId(newSecaoId);
+    setExpandedClauseKey(null);
+    setFocusedSectionId(newSecaoId);
+  };
+
+  const handleDeleteSection = (sectionId: string) => {
+    const targetSecao = secoes.find((s) => s.id === sectionId);
+    const hasContent = targetSecao?.clausulas.some((c) => c.texto.trim() !== "") || Boolean(targetSecao?.titulo.trim());
+
+    const executeDelete = () => {
+      setSecoes((prev) => prev.filter((s) => s.id !== sectionId));
+      if (expandedSectionId === sectionId) {
+        setExpandedSectionId(null);
+      }
+    };
+
+    if (!hasContent) {
+      executeDelete();
+      return;
+    }
+
+    openConfirmationDialog({
+      title: "Excluir Seção Inteira?",
+      description: `Tem certeza que deseja excluir a seção "${targetSecao?.titulo || 'Nova Seção'}" e todas as suas cláusulas?`,
+      confirmText: "Excluir Seção",
+      variant: "destructive",
+      onConfirm: () => {
+        executeDelete();
+        closeConfirmationDialog();
+      },
+    });
+  };
+
+  // --- HANDLERS DE REORDENAÇÃO VIA SETAS ---
+  const handleMoveSectionUp = (sIdx: number) => {
+    if (sIdx <= 0) return;
+    setSecoes((prev) => {
+      const next = [...prev];
+      const temp = next[sIdx];
+      next[sIdx] = next[sIdx - 1];
+      next[sIdx - 1] = temp;
+      return next;
+    });
+  };
+
+  const handleMoveSectionDown = (sIdx: number) => {
+    if (sIdx >= secoes.length - 1) return;
+    setSecoes((prev) => {
+      const next = [...prev];
+      const temp = next[sIdx];
+      next[sIdx] = next[sIdx + 1];
+      next[sIdx + 1] = temp;
+      return next;
+    });
+  };
+
+  const handleMoveClauseUp = (sIdx: number, cIdx: number) => {
+    if (sIdx === 0 && cIdx === 0) return;
+    setSecoes((prev) => {
+      const next = prev.map((s) => ({ ...s, clausulas: [...s.clausulas] }));
+      const currentSec = next[sIdx];
+      const clauseToMove = currentSec.clausulas[cIdx];
+
+      if (cIdx > 0) {
+        // Mover dentro da mesma seção
+        currentSec.clausulas.splice(cIdx, 1);
+        currentSec.clausulas.splice(cIdx - 1, 0, clauseToMove);
+      } else {
+        // Mover para o final da seção anterior
+        const prevSec = next[sIdx - 1];
+        currentSec.clausulas.splice(cIdx, 1);
+        prevSec.clausulas.push(clauseToMove);
+        setExpandedSectionId(prevSec.id);
+      }
+      return next;
+    });
+  };
+
+  const handleMoveClauseDown = (sIdx: number, cIdx: number) => {
+    const currentSec = secoes[sIdx];
+    if (sIdx === secoes.length - 1 && cIdx === currentSec.clausulas.length - 1) return;
+
+    setSecoes((prev) => {
+      const next = prev.map((s) => ({ ...s, clausulas: [...s.clausulas] }));
+      const sec = next[sIdx];
+      const clauseToMove = sec.clausulas[cIdx];
+
+      if (cIdx < sec.clausulas.length - 1) {
+        // Mover dentro da mesma seção
+        sec.clausulas.splice(cIdx, 1);
+        sec.clausulas.splice(cIdx + 1, 0, clauseToMove);
+      } else {
+        // Mover para o início da próxima seção
+        const nextSec = next[sIdx + 1];
+        sec.clausulas.splice(cIdx, 1);
+        nextSec.clausulas.unshift(clauseToMove);
+        setExpandedSectionId(nextSec.id);
+      }
+      return next;
+    });
+  };
+
+  const cleanSecoesDTO: ContractSection[] = secoes
+    .map((sec) => ({
+      id: sec.id,
+      titulo: sec.titulo.trim().toUpperCase(),
+      clausulas: sec.clausulas.map((c) => c.texto.trim()).filter((t) => t !== ""),
+    }))
+    .filter((sec) => sec.clausulas.length > 0);
+
+  const flatClausulas = cleanSecoesDTO.flatMap((sec) => sec.clausulas);
+  const totalClausulas = secoes.reduce((acc, s) => acc + s.clausulas.length, 0);
+
   const handleNext = () => {
     if (step === SetupStep.CLAUSES) {
-      const cleanClausulas = clausulas.filter((c) => c.trim() !== "");
-      if (cleanClausulas.length === 0) {
-        toast.error("validacao.campoObrigatorio");
-        return;
-      }
-      if (clausulas.some((c) => c.trim() === "")) {
+      const emptyTitleSecao = secoes.find((s) => s.titulo.trim() === "");
+      if (emptyTitleSecao) {
         setShowErrors(true);
-        toast.error("validacao.formularioComErros");
+        setExpandedSectionId(emptyTitleSecao.id);
+        setFocusedSectionId(emptyTitleSecao.id);
+        toast.error("Informe o título de todas as seções.");
         return;
       }
+
+      const emptySecao = secoes.find((s) => s.clausulas.length === 0 || !s.clausulas.some((c) => c.texto.trim() !== ""));
+      if (emptySecao) {
+        setShowErrors(true);
+        setExpandedSectionId(emptySecao.id);
+        toast.error(`A seção "${emptySecao.titulo}" precisa ter pelo menos 1 cláusula preenchida.`);
+        return;
+      }
+
+      const hasBlankClause = secoes.some((s) => s.clausulas.some((c) => c.texto.trim() === ""));
+      if (hasBlankClause) {
+        setShowErrors(true);
+        const sectionWithBlank = secoes.find((s) => s.clausulas.some((c) => c.texto.trim() === ""));
+        if (sectionWithBlank) setExpandedSectionId(sectionWithBlank.id);
+        toast.error("Preencha ou remova as cláusulas em branco antes de avançar.");
+        return;
+      }
+
       setShowErrors(false);
-      setClausulas(cleanClausulas);
     }
     if (step === SetupStep.SIGNATURE) {
       const currentSig = captureSignature();
@@ -235,7 +492,28 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           signatureUrl = sigPad.current.toDataURL("image/png");
         }
       }
-      const finalClausulas = clausulas.filter((c) => c.trim() !== "");
+
+      const emptyTitleSecao = secoes.find((s) => s.titulo.trim() === "");
+      if (emptyTitleSecao) {
+        setShowErrors(true);
+        setExpandedSectionId(emptyTitleSecao.id);
+        setFocusedSectionId(emptyTitleSecao.id);
+        toast.error("Informe o título de todas as seções.");
+        setStep(SetupStep.CLAUSES);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const emptySecao = secoes.find((s) => s.clausulas.length === 0 || !s.clausulas.some((c) => c.texto.trim() !== ""));
+      if (emptySecao) {
+        setShowErrors(true);
+        setExpandedSectionId(emptySecao.id);
+        toast.error(`A seção "${emptySecao.titulo}" precisa ter pelo menos 1 cláusula preenchida.`);
+        setStep(SetupStep.CLAUSES);
+        setIsSubmitting(false);
+        return;
+      }
+
       await usuarioApi.atualizarUsuario(profile.id, {
         assinatura_digital_url: signatureUrl,
         config_contrato: {
@@ -243,7 +521,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           multa_atraso: multaAtraso,
           juros_atraso: jurosAtraso,
           multa_rescisao: multaRescisao,
-          clausulas: finalClausulas,
+          secoes: cleanSecoesDTO,
+          clausulas: flatClausulas,
         },
       });
       await refreshProfile();
@@ -256,6 +535,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       setIsSubmitting(false);
     }
   };
+
   const renderFees = () => (
     <div className="space-y-4">
       {[
@@ -414,154 +694,100 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     </div>
   );
 
-  const handleDeleteClausula = (idx: number) => {
-    const isBlank = clausulas[idx]?.trim() === "";
-
-    const executeDelete = () => {
-      const newClausulas = clausulas.filter((_, i) => i !== idx);
-      setClausulas(newClausulas);
-      if (expandedClauseIdx === idx) {
-        setExpandedClauseIdx(newClausulas.length > 0 ? Math.min(idx, newClausulas.length - 1) : null);
-      } else if (expandedClauseIdx !== null && expandedClauseIdx > idx) {
-        setExpandedClauseIdx(expandedClauseIdx - 1);
-      }
-    };
-
-    if (isBlank) {
-      executeDelete();
-      return;
-    }
-
-    openConfirmationDialog({
-      title: "Excluir Cláusula?",
-      description: `Tem certeza que deseja excluir a Cláusula ${idx + 1}? Esta ação não poderá ser desfeita.`,
-      confirmText: "Excluir",
-      variant: "destructive",
-      onConfirm: () => {
-        executeDelete();
-        closeConfirmationDialog();
-      },
-    });
-  };
-
   const renderClauses = () => (
     <div className="space-y-4">
       {hasConfiguredBefore ? (
-        <div className="flex items-center justify-end px-1">
-          <div className="px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/50">
-            {clausulas.length} {clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Estrutura do Contrato
+          </span>
+          <div className="flex gap-1.5">
+            <span className="px-2 py-0.5 sm:px-2.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/50">
+              {secoes.length} {secoes.length === 1 ? "Seção" : "Seções"}
+            </span>
+            <span className="px-2 py-0.5 sm:px-2.5 bg-blue-50 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-widest border border-blue-100">
+              {totalClausulas} {totalClausulas === 1 ? "Cláusula" : "Cláusulas"}
+            </span>
           </div>
         </div>
       ) : (
-        <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-3 items-start">
+        <div className="p-3 sm:p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-2.5 sm:gap-3 items-start">
           <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
-            Não se preocupe! Você poderá editar as cláusulas a qualquer momento.
+          <p className="text-[10px] sm:text-[11px] text-blue-800 leading-relaxed font-medium">
+            Personalize seu contrato! Use as setas para reorganizar seções e cláusulas facilmente.
           </p>
         </div>
       )}
-      <div className="space-y-3">
-        {clausulas.map((clausula, idx) => {
-          const isExpanded = expandedClauseIdx === idx;
-          const hasError = showErrors && clausula.trim() === "";
 
-          return (
-            <motion.div
-              key={idx}
-              ref={(el) => {
-                clauseRefs.current[idx] = el;
-              }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "rounded-3xl border transition-all overflow-hidden shadow-sm scroll-mt-4",
-                hasError
-                  ? "border-red-200 bg-red-50/30"
-                  : isExpanded
-                    ? "border-[#1a3a5c]/30 bg-white ring-2 ring-[#1a3a5c]/5 shadow-md"
-                    : "border-slate-100 bg-white hover:border-slate-200"
-              )}
-            >
-              <div
-                onClick={() => setExpandedClauseIdx(isExpanded ? null : idx)}
-                className="px-5 py-4 cursor-pointer select-none group space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    className={cn(
-                      "text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border shrink-0 transition-colors",
-                      isExpanded
-                        ? "bg-[#1a3a5c] text-white border-[#1a3a5c]"
-                        : "bg-slate-50 text-[#1a3a5c]/70 border-slate-100"
-                    )}
-                  >
-                    CLÁUSULA {idx + 1}
-                  </span>
+      {/* Botão de Visualizar Modelo no topo das Cláusulas */}
+      <Button
+        variant="outline"
+        type="button"
+        className="w-full h-11 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-2xl font-black uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-sm"
+        disabled={previewMutation.isPending}
+        onClick={async () => {
+          try {
+            const result = await previewMutation.mutateAsync({
+              secoes: cleanSecoesDTO,
+              clausulas: flatClausulas,
+              multaAtraso,
+              jurosAtraso,
+              multaRescisao,
+              assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
+            });
+            if (pdfUrlRef.current) window.URL.revokeObjectURL(pdfUrlRef.current);
+            pdfUrlRef.current = result.url;
+            setPdfUrl(result.url);
+            setIsPreviewPdfOpen(true);
+          } catch (err) { }
+        }}
+      >
+        {previewMutation.isPending ? (
+          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        ) : (
+          <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform opacity-70" />
+        )}
+        Visualizar Modelo
+      </Button>
 
-                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={() => setExpandedClauseIdx(isExpanded ? null : idx)}
-                      className="p-1.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-xl transition-all active:scale-95"
-                      title={isExpanded ? "Recolher" : "Expandir para editar"}
-                    >
-                      {isExpanded ? <ChevronUp className="w-4 h-4 text-[#1a3a5c]" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteClausula(idx)}
-                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95"
-                      title="Excluir cláusula"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {!isExpanded && (
-                  <p className="text-xs text-slate-500 font-medium line-clamp-2 italic leading-relaxed pt-0.5">
-                    {clausula.trim() ? clausula : "Cláusula em branco..."}
-                  </p>
-                )}
-              </div>
-
-              {isExpanded && (
-                <div className="px-5 pb-5 pt-1 space-y-3 border-t border-slate-100/60">
-                  <textarea
-                    className={cn(
-                      "w-full p-4 text-xs sm:text-[13px] bg-slate-50/60 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 resize-none leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[300px] sm:min-h-[380px] h-[calc(100dvh-320px)] max-h-[500px]",
-                      hasError ? "text-red-900 border-red-200 placeholder:text-red-300" : "text-slate-700"
-                    )}
-                    value={clausula}
-                    rows={12}
-                    autoFocus={clausula.trim() === ""}
-                    onChange={(e) => {
-                      const newClausulas = [...clausulas];
-                      newClausulas[idx] = e.target.value;
-                      setClausulas(newClausulas);
-                    }}
-                    placeholder="Ex: O transporte será realizado exclusivamente em dias úteis..."
-                  />
-                  {hasError && (
-                    <p className="text-xs text-red-500">Campo obrigatório</p>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-        <Button
-          variant="outline"
-          className="w-full h-14 border-dashed border-2 border-slate-200 text-[#1a3a5c] bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 rounded-[2rem] group transition-all active:scale-[0.98] font-black uppercase text-[10px] tracking-wider"
-          onClick={() => {
-            setClausulas([...clausulas, ""]);
-            setExpandedClauseIdx(clausulas.length);
-          }}
-        >
-          <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform text-[#1a3a5c]/60" />
-          Adicionar Cláusula
-        </Button>
+      {/* Lista de Seções */}
+      <div className="space-y-4">
+        {secoes.map((secao, sIdx) => (
+          <SectionItemCard
+            key={secao.id}
+            secao={secao}
+            sIdx={sIdx}
+            totalSections={secoes.length}
+            showErrors={showErrors}
+            isSectionExpanded={expandedSectionId === secao.id}
+            onToggleExpandSection={() => setExpandedSectionId(expandedSectionId === secao.id ? null : secao.id)}
+            focusedSectionId={focusedSectionId}
+            setFocusedSectionId={setFocusedSectionId}
+            expandedClauseKey={expandedClauseKey}
+            setExpandedClauseKey={setExpandedClauseKey}
+            clauseRefs={clauseRefs}
+            onSectionTitleChange={handleSectionTitleChange}
+            onDeleteSection={handleDeleteSection}
+            onMoveSectionUp={handleMoveSectionUp}
+            onMoveSectionDown={handleMoveSectionDown}
+            onMoveClauseUp={handleMoveClauseUp}
+            onMoveClauseDown={handleMoveClauseDown}
+            onClauseChange={(clauseId, text) => handleClauseChange(secao.id, clauseId, text)}
+            onDeleteClause={(clauseId) => handleDeleteClause(secao.id, clauseId)}
+            onAddClause={() => handleAddClauseToSection(secao.id)}
+          />
+        ))}
       </div>
+
+      {/* Botão de Adicionar Nova Seção */}
+      <button
+        type="button"
+        onClick={handleAddSection}
+        className="w-full py-3 bg-white border-2 border-dashed border-slate-300 hover:bg-blue-50/50 hover:border-blue-400 text-[#1a3a5c] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]"
+      >
+        <FolderPlus className="w-4 h-4 text-blue-600" />
+        Adicionar Nova Seção ao Contrato
+      </button>
     </div>
   );
 
@@ -608,7 +834,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         </div>
         <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
-          <p className="text-sm font-black text-[#1a3a5c] uppercase">{clausulas.filter((c) => c.trim()).length}</p>
+          <p className="text-sm font-black text-[#1a3a5c] uppercase">{flatClausulas.length}</p>
         </div>
       </div>
       <div className="space-y-3 px-2">
@@ -619,7 +845,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           onClick={async () => {
             try {
               const result = await previewMutation.mutateAsync({
-                clausulas,
+                secoes: cleanSecoesDTO,
+                clausulas: flatClausulas,
                 multaAtraso,
                 jurosAtraso,
                 multaRescisao,
@@ -679,7 +906,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                     className={cn(
                       "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-sm shrink-0 whitespace-nowrap",
                       step === s.id
-                        ? "bg-[#1a3a5c] text-white border-[#1a3a5c]"
+                        ? "bg-[#1a3a5c] text-[#ffffff] border-[#1a3a5c]"
                         : isDisabled
                           ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-50"
                           : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
@@ -724,5 +951,341 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         title="Modelo do Contrato"
       />
     </>
+  );
+}
+
+// Componente para a Seção com Reordenação por Setas
+interface SectionItemCardProps {
+  secao: ContractSectionUI;
+  sIdx: number;
+  totalSections: number;
+  showErrors: boolean;
+  isSectionExpanded: boolean;
+  onToggleExpandSection: () => void;
+  focusedSectionId: string | null;
+  setFocusedSectionId: (id: string | null) => void;
+  expandedClauseKey: string | null;
+  setExpandedClauseKey: (key: string | null) => void;
+  clauseRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+  onSectionTitleChange: (sectionId: string, newTitle: string) => void;
+  onDeleteSection: (sectionId: string) => void;
+  onMoveSectionUp: (sIdx: number) => void;
+  onMoveSectionDown: (sIdx: number) => void;
+  onMoveClauseUp: (sIdx: number, cIdx: number) => void;
+  onMoveClauseDown: (sIdx: number, cIdx: number) => void;
+  onClauseChange: (clauseId: string, text: string) => void;
+  onDeleteClause: (clauseId: string) => void;
+  onAddClause: () => void;
+}
+
+function SectionItemCard({
+  secao,
+  sIdx,
+  totalSections,
+  showErrors,
+  isSectionExpanded,
+  onToggleExpandSection,
+  focusedSectionId,
+  setFocusedSectionId,
+  expandedClauseKey,
+  setExpandedClauseKey,
+  clauseRefs,
+  onSectionTitleChange,
+  onDeleteSection,
+  onMoveSectionUp,
+  onMoveSectionDown,
+  onMoveClauseUp,
+  onMoveClauseDown,
+  onClauseChange,
+  onDeleteClause,
+  onAddClause,
+}: SectionItemCardProps) {
+  const isSecaoEmpty = secao.clausulas.length === 0;
+  const isTitleEmpty = secao.titulo.trim() === "";
+
+  return (
+    <div
+      className={cn(
+        "p-3.5 sm:p-4 bg-white rounded-2xl sm:rounded-3xl border shadow-sm space-y-3.5 transition-all",
+        showErrors && (isSecaoEmpty || isTitleEmpty) ? "border-red-300 ring-2 ring-red-100" : "border-slate-200"
+      )}
+    >
+      {/* Header da Seção */}
+      <div className={cn("space-y-1.5", isSectionExpanded ? "border-b border-slate-100 pb-3" : "")}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-1.5 flex-1 min-w-0">
+            {/* Setas de Reordenação da Seção (Empilhadas - apenas quando recolhida) */}
+            {!isSectionExpanded && (
+              <div className="flex flex-col items-center justify-center -space-y-0.5 shrink-0 mt-0.5">
+                <button
+                  type="button"
+                  onClick={() => onMoveSectionUp(sIdx)}
+                  disabled={sIdx === 0}
+                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  title="Subir Seção"
+                >
+                  <ArrowUp className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onMoveSectionDown(sIdx)}
+                  disabled={sIdx === totalSections - 1}
+                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  title="Descer Seção"
+                >
+                  <ArrowDown className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            <span className="text-xs font-black text-[#1a3a5c] shrink-0 mt-1">
+              {sIdx + 1}.
+            </span>
+            <div className="flex-1 min-w-0">
+              <textarea
+                ref={(el) => {
+                  if (el && focusedSectionId === secao.id) {
+                    el.focus();
+                    setFocusedSectionId(null);
+                  }
+                }}
+                rows={1}
+                value={secao.titulo}
+                onChange={(e) => onSectionTitleChange(secao.id, e.target.value)}
+                className={cn(
+                  "font-black text-xs sm:text-sm uppercase tracking-wide bg-transparent border-b border-dashed focus:outline-none px-1 py-0.5 w-full transition-colors resize-none leading-snug break-words",
+                  showErrors && isTitleEmpty
+                    ? "text-red-600 border-red-300 placeholder:text-red-300"
+                    : "text-slate-800 border-slate-200 hover:border-blue-400 focus:border-blue-500"
+                )}
+                placeholder="DIGITE O TÍTULO DA SEÇÃO..."
+                title="Toque para editar o título da seção"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0 mt-0.5">
+            <button
+              type="button"
+              onClick={onToggleExpandSection}
+              className="p-1.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-xl transition-colors"
+              title={isSectionExpanded ? "Recolher Seção" : "Expandir Seção"}
+            >
+              {isSectionExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => onDeleteSection(secao.id)}
+              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+              title="Excluir Seção"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between px-1 text-[9px] sm:text-[10px] text-slate-400 font-medium">
+          <span className={cn(
+            "px-2 py-0.5 rounded-full text-[9px] font-bold cursor-pointer",
+            isSecaoEmpty ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"
+          )} onClick={onToggleExpandSection}>
+            {secao.clausulas.length} {secao.clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
+          </span>
+          <span className="text-[9px] text-slate-400 italic">
+            {isSectionExpanded ? "Toque no título para renomear" : "Toque na seta para ver cláusulas"}
+          </span>
+        </div>
+      </div>
+
+      {/* Conteúdo da Seção (apenas quando expandida) */}
+      {isSectionExpanded && (
+        <>
+          {/* Lista de Cláusulas dentro da Seção */}
+          <div className="space-y-3 pt-1">
+            {secao.clausulas.map((clause, cIdx) => (
+              <ClauseItemCard
+                key={clause.id}
+                clause={clause}
+                cIdx={cIdx}
+                sIdx={sIdx}
+                totalSections={totalSections}
+                totalClausesInSection={secao.clausulas.length}
+                showErrors={showErrors}
+                isExpanded={expandedClauseKey === clause.id}
+                onToggleExpand={() => setExpandedClauseKey(expandedClauseKey === clause.id ? null : clause.id)}
+                clauseRefs={clauseRefs}
+                onMoveClauseUp={onMoveClauseUp}
+                onMoveClauseDown={onMoveClauseDown}
+                onClauseChange={(text) => onClauseChange(clause.id, text)}
+                onDeleteClause={() => onDeleteClause(clause.id)}
+              />
+            ))}
+          </div>
+
+          {/* Botão de Adicionar Cláusula na Seção */}
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={onAddClause}
+              className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]"
+            >
+              <Plus className="w-4 h-4 text-blue-600" />
+              Adicionar Cláusula nesta Seção
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Componente para a Cláusula com Reordenação por Setas
+interface ClauseItemCardProps {
+  clause: ClauseItemUI;
+  cIdx: number;
+  sIdx: number;
+  totalSections: number;
+  totalClausesInSection: number;
+  showErrors: boolean;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  clauseRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+  onMoveClauseUp: (sIdx: number, cIdx: number) => void;
+  onMoveClauseDown: (sIdx: number, cIdx: number) => void;
+  onClauseChange: (text: string) => void;
+  onDeleteClause: () => void;
+}
+
+function ClauseItemCard({
+  clause,
+  cIdx,
+  sIdx,
+  totalSections,
+  totalClausesInSection,
+  showErrors,
+  isExpanded,
+  onToggleExpand,
+  clauseRefs,
+  onMoveClauseUp,
+  onMoveClauseDown,
+  onClauseChange,
+  onDeleteClause,
+}: ClauseItemCardProps) {
+  const isBlank = clause.texto.trim() === "";
+  const isFirstClauseOverall = sIdx === 0 && cIdx === 0;
+  const isLastClauseOverall = sIdx === totalSections - 1 && cIdx === totalClausesInSection - 1;
+
+  return (
+    <div
+      ref={(el: HTMLDivElement | null) => {
+        clauseRefs.current[clause.id] = el;
+      }}
+      className={cn(
+        "rounded-2xl border transition-all overflow-hidden scroll-mt-4",
+        isExpanded
+          ? "border-[#1a3a5c] bg-white shadow-md ring-4 ring-[#1a3a5c]/5"
+          : "border-slate-200 bg-white hover:border-slate-300 shadow-sm"
+      )}
+    >
+      <div
+        onClick={onToggleExpand}
+        className="p-3 cursor-pointer select-none space-y-2"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            {/* Setas de Reordenação da Cláusula (Empilhadas - apenas quando recolhida) */}
+            {!isExpanded && (
+              <div className="flex flex-col items-center justify-center -space-y-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() => onMoveClauseUp(sIdx, cIdx)}
+                  disabled={isFirstClauseOverall}
+                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  title={cIdx === 0 ? "Mover para a seção anterior" : "Subir Cláusula"}
+                >
+                  <ArrowUp className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onMoveClauseDown(sIdx, cIdx)}
+                  disabled={isLastClauseOverall}
+                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  title={cIdx === totalClausesInSection - 1 ? "Mover para a próxima seção" : "Descer Cláusula"}
+                >
+                  <ArrowDown className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            <span className="px-2.5 py-1 bg-slate-100 text-[#1a3a5c] rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0">
+              CLÁUSULA {cIdx + 1}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all border",
+                isExpanded
+                  ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-sm"
+                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-[#1a3a5c]"
+              )}
+            >
+              {isExpanded ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                </>
+              ) : (
+                <>
+                  <Pencil className="w-3 h-3 text-slate-400" />
+                </>
+              )}
+            </button>
+            {isExpanded ? (
+              <button
+                type="button"
+                onClick={() => onClauseChange("")}
+                className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                title="Limpar conteúdo"
+              >
+                <Eraser className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onDeleteClause()}
+                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                title="Excluir Cláusula"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {!isExpanded && (
+          <p className="text-xs text-slate-600 font-normal italic line-clamp-2 leading-relaxed pl-1 flex-1">
+            {clause.texto.trim() ? clause.texto : "Clique em Editar para preencher o texto..."}
+          </p>
+        )}
+      </div>
+
+      {isExpanded && (
+        <div className="px-3 pb-3 pt-0 space-y-2">
+          <textarea
+            autoFocus={isBlank && isExpanded}
+            value={clause.texto}
+            onChange={(e) => onClauseChange(e.target.value)}
+            placeholder="Digite o texto da cláusula..."
+            className={cn(
+              "w-full p-4 text-xs sm:text-sm text-slate-800 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[300px] sm:min-h-[380px] h-[calc(100dvh-320px)] max-h-[500px] resize-y",
+              showErrors && isBlank ? "border-red-300 bg-red-50/20" : ""
+            )}
+          />
+        </div>
+      )}
+    </div>
   );
 }

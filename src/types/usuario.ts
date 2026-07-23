@@ -1,4 +1,5 @@
 import { UserType, ContractMultaTipo } from "./enums";
+import { ContractSection } from "../constants/defaults";
 
 export interface Usuario {
   id: string;
@@ -37,6 +38,7 @@ export interface Usuario {
     multa_atraso: { valor: number; tipo: ContractMultaTipo };
     juros_atraso: { valor: number; tipo: ContractMultaTipo };
     multa_rescisao: { valor: number; tipo: ContractMultaTipo };
-    clausulas: string[];
+    secoes?: ContractSection[];
+    clausulas?: string[];
   };
 }
