@@ -14,7 +14,7 @@ export const IncompletePassengerBanner = ({ onEdit }: IncompletePassengerBannerP
         <div className="flex-1">
           <p className="text-xs font-bold text-amber-900">Cadastro Incompleto</p>
           <p className="text-[11px] text-amber-700">
-            Para que as cobranças automáticas funcionem, finalize o preenchimento dos dados do responsável e o valor da parcela mensal.
+            Para que as cobranças automáticas funcionem, finalize o preenchimento do cadastro do passageiro.
           </p>
         </div>
       </div>
