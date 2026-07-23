@@ -740,16 +740,14 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         </div>
       )}
 
-      {/* Resumo de Totais (Seções e Cláusulas) no Topo */}
+      {/* Resumo de Totais (Seções na esquerda e Cláusulas na direita) */}
       <div className="flex items-center justify-between gap-2 px-0.5 pb-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="px-2.5 py-0.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-600 uppercase tracking-wider border border-slate-200/60">
-            {secoes.length} {secoes.length === 1 ? "Seção" : "Seções"}
-          </span>
-          <span className="px-2.5 py-0.5 bg-blue-50 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-wider border border-blue-100">
-            {totalClausulas} {totalClausulas === 1 ? "Cláusula" : "Cláusulas"}
-          </span>
-        </div>
+        <span className="px-2.5 py-0.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-600 uppercase tracking-wider border border-slate-200/60">
+          {secoes.length} {secoes.length === 1 ? "Seção" : "Seções"}
+        </span>
+        <span className="px-2.5 py-0.5 bg-blue-50 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-wider border border-blue-100">
+          {totalClausulas} {totalClausulas === 1 ? "Cláusula" : "Cláusulas"}
+        </span>
       </div>
 
       {/* Botão Visualizar Modelo 100% de largura no topo */}
