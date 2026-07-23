@@ -26,14 +26,6 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  const isRegistrationMonth = passageiroCreatedAt && !isNaN(passageiroCreatedAt.getTime())
-    ? (passageiroCreatedAt.getMonth() + 1 === cobranca.mes && passageiroCreatedAt.getFullYear() === cobranca.ano)
-    : (cobranca.mes === currentMonth && cobranca.ano === currentYear);
-
-  const projectionText = isRegistrationMonth
-    ? "Mês atual (clique para lançar)"
-    : "Será gerada automaticamente";
-
   return (
     <div className="flex flex-col p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left">
 
@@ -72,7 +64,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
           <div className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4 text-slate-400" />
             <span className="text-[12px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wide">
-              {isProjection ? projectionText : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
+              {`Vence ${formatDateToBR(cobranca.data_vencimento)}`}
             </span>
           </div>
           {isAtrasado && !isProjection && (

@@ -154,7 +154,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
             <div className="py-2">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-slate-700">
-                  Deseja lançar a parcela de <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
+                  Deseja registrar a parcela de <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
                 </h2>
               </div>
             </div>

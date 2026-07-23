@@ -323,18 +323,7 @@ const CobrancaItemPassageiro = forwardRef<
     <CobrancaSummary cobranca={{ ...cobranca, passageiro }} />
   );
 
-  const passageiroCreatedAt = passageiro?.created_at ? new Date(passageiro.created_at) : null;
   const now = getNowBR();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
-
-  const isRegistrationMonth = passageiroCreatedAt && !isNaN(passageiroCreatedAt.getTime())
-    ? (passageiroCreatedAt.getMonth() + 1 === cobranca.mes && passageiroCreatedAt.getFullYear() === cobranca.ano)
-    : (cobranca.mes === currentMonth && cobranca.ano === currentYear);
-
-  const projectionText = isRegistrationMonth
-    ? "Mês atual (clique para lançar)"
-    : "Será gerada automaticamente";
 
   return (
     <motion.div
@@ -345,7 +334,7 @@ const CobrancaItemPassageiro = forwardRef<
     >
       <MobileActionItem
         actions={actions}
-        onClickItem={cobranca.isProjection ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true) : undefined}
+        onClickItem={cobranca.isProjection ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano) : undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
       >
