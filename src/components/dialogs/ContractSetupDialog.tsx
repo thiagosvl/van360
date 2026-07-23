@@ -9,6 +9,7 @@ import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
+import { useLayout } from "@/contexts/LayoutContext";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { queryClient } from "@/services/queryClient";
 import { ContractMultaTipo } from "@/types/enums";
@@ -16,7 +17,9 @@ import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
+  ChevronDown,
   ChevronLeft,
+  ChevronUp,
   DollarSign,
   FileText,
   Loader2,
@@ -26,7 +29,7 @@ import {
   Timer,
   Scale,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 interface ContractSetupDialogProps {
   isOpen: boolean;
@@ -41,7 +44,15 @@ enum SetupStep {
   PREVIEW = 3,
 }
 
+const SETUP_STEPS = [
+  { id: SetupStep.FEES, label: "Multas" },
+  { id: SetupStep.CLAUSES, label: "Cláusulas" },
+  { id: SetupStep.SIGNATURE, label: "Assinatura" },
+  { id: SetupStep.PREVIEW, label: "Revisão" },
+];
+
 export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: ContractSetupDialogProps) {
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { profile, refreshProfile } = useProfile();
   const [step, setStep] = useState<SetupStep>(SetupStep.FEES);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +72,53 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     tipo: ContractMultaTipo.FIXO,
   });
   const [clausulas, setClausulas] = useState<string[]>([]);
+  const [expandedClauseIdx, setExpandedClauseIdx] = useState<number | null>(null);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const clauseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  const hasConfiguredBefore = Boolean(profile?.assinatura_digital_url);
+
+  useLayoutEffect(() => {
+    setExpandedClauseIdx(null);
+    const scrollFn = () => {
+      if (bodyRef.current) {
+        bodyRef.current.scrollTop = 0;
+      }
+    };
+    scrollFn();
+    const timer = setTimeout(scrollFn, 20);
+    return () => clearTimeout(timer);
+  }, [step]);
+
+  useEffect(() => {
+    if (expandedClauseIdx !== null && step === SetupStep.CLAUSES) {
+      const scrollFn = () => {
+        const el = clauseRefs.current[expandedClauseIdx];
+        const container = bodyRef.current;
+        if (el && container) {
+          let topOffset = 0;
+          let current: HTMLElement | null = el;
+          while (current && current !== container && container.contains(current)) {
+            topOffset += current.offsetTop;
+            current = current.offsetParent as HTMLElement | null;
+          }
+          const offsetMargin = hasConfiguredBefore ? 12 : 110;
+          container.scrollTo({
+            top: Math.max(0, topOffset - offsetMargin),
+            behavior: "smooth",
+          });
+        }
+      };
+
+      const timer1 = setTimeout(scrollFn, 20);
+      const timer2 = setTimeout(scrollFn, 180);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }
+  }, [expandedClauseIdx, hasConfiguredBefore]);
+
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
   const sigPad = useRef<SignaturePadRef>(null);
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
@@ -95,10 +153,24 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
       setStep(SetupStep.FEES);
+      setExpandedClauseIdx(null);
 
       initializedRef.current = true;
     }
   }, [isOpen, profile, signatureTemp]);
+
+  const hasDrawing = sigPad.current ? !sigPad.current.isEmpty() : false;
+  const hasSignature = signatureTemp === null
+    ? hasDrawing
+    : Boolean(signatureTemp || profile?.assinatura_digital_url || hasDrawing);
+
+  const handleStepClick = (targetStep: SetupStep) => {
+    if (targetStep === SetupStep.PREVIEW && !hasSignature) {
+      toast.error("validacao.campoObrigatorio");
+      return;
+    }
+    setStep(targetStep);
+  };
 
   const captureSignature = () => {
     if (sigPad.current && !sigPad.current.isEmpty()) {
@@ -125,12 +197,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       setClausulas(cleanClausulas);
     }
     if (step === SetupStep.SIGNATURE) {
-      const hasDrawing = sigPad.current && !sigPad.current.isEmpty();
-      if (!hasDrawing && !profile?.assinatura_digital_url && !signatureTemp) {
+      const currentSig = captureSignature();
+      if (!currentSig) {
         toast.error("validacao.campoObrigatorio");
         return;
       }
-      captureSignature();
     }
     if (step === SetupStep.PREVIEW) {
       handleFinalSubmit();
@@ -175,7 +246,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           clausulas: finalClausulas,
         },
       });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       await refreshProfile();
       if (onSuccess) onSuccess(true);
       onClose();
@@ -287,13 +357,19 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               <div className="relative">
                 <Input
                   type="text"
-                  inputMode="numeric"
-                  value={state.tipo === ContractMultaTipo.PERCENTUAL ? (state.valor === 0 ? "" : state.valor.toString()) : (state.valor === 0 ? "" : moneyMask(state.valor))}
+                  inputMode={state.tipo === ContractMultaTipo.PERCENTUAL ? "decimal" : "numeric"}
+                  value={state.tipo === ContractMultaTipo.PERCENTUAL ? (state.valor === 0 ? "" : state.valor.toString().replace('.', ',')) : (state.valor === 0 ? "" : moneyMask(state.valor))}
                   onChange={(e) => {
                     if (state.tipo === ContractMultaTipo.PERCENTUAL) {
-                      const val = e.target.value.replace(/\D/g, "");
-                      const numVal = val === "" ? 0 : Number(val);
-                      setState({ ...state, valor: numVal });
+                      const val = e.target.value.replace(',', '.').replace(/[^\d.]/g, '');
+                      const parts = val.split('.');
+                      const cleanVal = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : val;
+                      if (cleanVal === '' || cleanVal === '.') {
+                        setState({ ...state, valor: 0 });
+                      } else {
+                        const numVal = parseFloat(cleanVal);
+                        setState({ ...state, valor: isNaN(numVal) ? 0 : numVal });
+                      }
                     } else {
                       const val = moneyMask(e.target.value);
                       const numVal = moneyToNumber(val);
@@ -325,7 +401,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               <div className="text-right">
                 <span className={cn("text-base font-black leading-none", simColor)}>{simValue}</span>
                 <p className="text-[9px] font-bold text-slate-400 mt-1 leading-none">
-                  {state.tipo === "percentual"
+                  {state.tipo === ContractMultaTipo.PERCENTUAL
                     ? `+ ${state.valor}% (${(simBaseValue * (state.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
                     : `+ ${state.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
                   }
@@ -338,64 +414,149 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     </div>
   );
 
+  const handleDeleteClausula = (idx: number) => {
+    const isBlank = clausulas[idx]?.trim() === "";
+
+    const executeDelete = () => {
+      const newClausulas = clausulas.filter((_, i) => i !== idx);
+      setClausulas(newClausulas);
+      if (expandedClauseIdx === idx) {
+        setExpandedClauseIdx(newClausulas.length > 0 ? Math.min(idx, newClausulas.length - 1) : null);
+      } else if (expandedClauseIdx !== null && expandedClauseIdx > idx) {
+        setExpandedClauseIdx(expandedClauseIdx - 1);
+      }
+    };
+
+    if (isBlank) {
+      executeDelete();
+      return;
+    }
+
+    openConfirmationDialog({
+      title: "Excluir Cláusula?",
+      description: `Tem certeza que deseja excluir a Cláusula ${idx + 1}? Esta ação não poderá ser desfeita.`,
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: () => {
+        executeDelete();
+        closeConfirmationDialog();
+      },
+    });
+  };
+
   const renderClauses = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2 text-[#1a3a5c]">
+      {hasConfiguredBefore ? (
+        <div className="flex items-center justify-end px-1">
+          <div className="px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/50">
+            {clausulas.length} {clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
+          </div>
         </div>
-        <div className="px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/50">
-          {clausulas.length} {clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
+      ) : (
+        <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-3 items-start">
+          <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
+            Não se preocupe! Você poderá editar as cláusulas a qualquer momento.
+          </p>
         </div>
-      </div>
-      <div className="space-y-4">
-        {clausulas.map((clausula, idx) => (
-          <motion.div
-            key={idx}
-            layout
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn(
-              "rounded-[2rem] border transition-all overflow-hidden shadow-sm",
-              showErrors && clausula.trim() === "" ? "border-red-200 bg-red-50/30" : "border-slate-100 bg-white"
-            )}
-          >
-            <div className="flex items-center justify-between px-5 pt-5 pb-1">
-              <span className="text-[9px] font-black text-[#1a3a5c]/60 bg-slate-50 px-2 py-0.5 rounded-lg uppercase tracking-wider border border-slate-100/50">
-                CLÁUSULA {idx + 1}
-              </span>
-              <button
-                type="button"
-                onClick={() => setClausulas(clausulas.filter((_, i) => i !== idx))}
-                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-            <textarea
-              className={cn(
-                "w-full px-6 pb-6 pt-2 text-[13px] bg-transparent border-0 focus:outline-none focus:ring-0 resize-none leading-relaxed placeholder:text-slate-300 italic font-medium",
-                showErrors && clausula.trim() === "" ? "text-red-900 placeholder:text-red-300" : "text-slate-600 placeholder:text-slate-200"
-              )}
-              value={clausula}
-              rows={3}
-              onChange={(e) => {
-                const newClausulas = [...clausulas];
-                newClausulas[idx] = e.target.value;
-                setClausulas(newClausulas);
+      )}
+      <div className="space-y-3">
+        {clausulas.map((clausula, idx) => {
+          const isExpanded = expandedClauseIdx === idx;
+          const hasError = showErrors && clausula.trim() === "";
+
+          return (
+            <motion.div
+              key={idx}
+              ref={(el) => {
+                clauseRefs.current[idx] = el;
               }}
-              placeholder="Ex: O transporte será realizado exclusivamente em dias úteis..."
-            />
-            {showErrors && clausula.trim() === "" && (
-              <div className="px-6 pb-4">
-                <p className="text-[9px] text-red-500 font-bold uppercase tracking-wider italic">Campo obrigatório</p>
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={cn(
+                "rounded-3xl border transition-all overflow-hidden shadow-sm scroll-mt-4",
+                hasError
+                  ? "border-red-200 bg-red-50/30"
+                  : isExpanded
+                    ? "border-[#1a3a5c]/30 bg-white ring-2 ring-[#1a3a5c]/5 shadow-md"
+                    : "border-slate-100 bg-white hover:border-slate-200"
+              )}
+            >
+              <div
+                onClick={() => setExpandedClauseIdx(isExpanded ? null : idx)}
+                className="px-5 py-4 cursor-pointer select-none group space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={cn(
+                      "text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border shrink-0 transition-colors",
+                      isExpanded
+                        ? "bg-[#1a3a5c] text-white border-[#1a3a5c]"
+                        : "bg-slate-50 text-[#1a3a5c]/70 border-slate-100"
+                    )}
+                  >
+                    CLÁUSULA {idx + 1}
+                  </span>
+
+                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedClauseIdx(isExpanded ? null : idx)}
+                      className="p-1.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-xl transition-all active:scale-95"
+                      title={isExpanded ? "Recolher" : "Expandir para editar"}
+                    >
+                      {isExpanded ? <ChevronUp className="w-4 h-4 text-[#1a3a5c]" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteClausula(idx)}
+                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95"
+                      title="Excluir cláusula"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {!isExpanded && (
+                  <p className="text-xs text-slate-500 font-medium line-clamp-2 italic leading-relaxed pt-0.5">
+                    {clausula.trim() ? clausula : "Cláusula em branco..."}
+                  </p>
+                )}
               </div>
-            )}
-          </motion.div>
-        ))}
+
+              {isExpanded && (
+                <div className="px-5 pb-5 pt-1 space-y-3 border-t border-slate-100/60">
+                  <textarea
+                    className={cn(
+                      "w-full p-4 text-xs sm:text-[13px] bg-slate-50/60 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 resize-none leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[300px] sm:min-h-[380px] h-[calc(100dvh-320px)] max-h-[500px]",
+                      hasError ? "text-red-900 border-red-200 placeholder:text-red-300" : "text-slate-700"
+                    )}
+                    value={clausula}
+                    rows={12}
+                    autoFocus={clausula.trim() === ""}
+                    onChange={(e) => {
+                      const newClausulas = [...clausulas];
+                      newClausulas[idx] = e.target.value;
+                      setClausulas(newClausulas);
+                    }}
+                    placeholder="Ex: O transporte será realizado exclusivamente em dias úteis..."
+                  />
+                  {hasError && (
+                    <p className="text-xs text-red-500">Campo obrigatório</p>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
         <Button
           variant="outline"
           className="w-full h-14 border-dashed border-2 border-slate-200 text-[#1a3a5c] bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 rounded-[2rem] group transition-all active:scale-[0.98] font-black uppercase text-[10px] tracking-wider"
-          onClick={() => setClausulas([...clausulas, ""])}
+          onClick={() => {
+            setClausulas([...clausulas, ""]);
+            setExpandedClauseIdx(clausulas.length);
+          }}
         >
           <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform text-[#1a3a5c]/60" />
           Adicionar Cláusula
@@ -426,28 +587,28 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       <div className="text-center space-y-0.5">
         <p className="text-[10px] text-slate-500 italic font-medium px-4 leading-relaxed">Só confirme após revisar as configurações.</p>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
-          <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
+          <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
             {multaAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor)}
           </p>
         </div>
-        <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Juros Atraso</p>
-          <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
+        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Juros Atraso</p>
+          <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
             {jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor)}
           </p>
         </div>
-        <div className="p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão</p>
-          <p className="text-xs font-semibold text-[#1a3a5c] tracking-tight">
+        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão</p>
+          <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
             {multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor)}
           </p>
         </div>
-        <div className="col-span-3 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
-          <p className="text-[10px] font-semibold text-[#1a3a5c] uppercase">{clausulas.filter((c) => c.trim()).length}</p>
+        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
+          <p className="text-sm font-black text-[#1a3a5c] uppercase">{clausulas.filter((c) => c.trim()).length}</p>
         </div>
       </div>
       <div className="space-y-3 px-2">
@@ -504,7 +665,32 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           hideCloseButton={false}
           onClose={onClose}
         />
-        <BaseDialog.Body animate animationKey={step} className="min-h-[300px]">
+        <BaseDialog.Body containerRef={bodyRef} className="min-h-[300px]">
+          {hasConfiguredBefore && (
+            <div className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar scrollbar-none pb-2 mb-4 shrink-0">
+              {SETUP_STEPS.map((s) => {
+                const isDisabled = s.id === SetupStep.PREVIEW && !hasSignature;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleStepClick(s.id)}
+                    className={cn(
+                      "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-sm shrink-0 whitespace-nowrap",
+                      step === s.id
+                        ? "bg-[#1a3a5c] text-white border-[#1a3a5c]"
+                        : isDisabled
+                          ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-50"
+                          : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                    )}
+                  >
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {step === SetupStep.FEES && renderFees()}
           {step === SetupStep.CLAUSES && renderClauses()}
           {step === SetupStep.SIGNATURE && renderSignature()}
@@ -524,7 +710,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             label={
               step === SetupStep.PREVIEW
                 ? "Confirmar"
-                : "Continuar"
+                : "Avançar"
             }
             onClick={handleNext}
             isLoading={isSubmitting}

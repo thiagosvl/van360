@@ -666,6 +666,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           valorCobranca={cobrancaFormDialogState.props.valorCobranca}
           diaVencimento={cobrancaFormDialogState.props.diaVencimento}
+          mes={cobrancaFormDialogState.props.mes}
+          ano={cobrancaFormDialogState.props.ano}
+          lockFoiPago={cobrancaFormDialogState.props.lockFoiPago}
+          lockMesAno={cobrancaFormDialogState.props.lockMesAno}
         />
       )}
 

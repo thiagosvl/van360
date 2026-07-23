@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHistoricoByEntidade } from "@/hooks/api/useHistorico";
 import { cn } from "@/lib/utils";
@@ -98,7 +99,14 @@ const getEntityDotColor = (tipo: AtividadeEntidadeTipo | string) => {
 export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, limit }: ActivityTimelineProps) {
   const { data: atividades, isLoading, isError } = useHistoricoByEntidade(entidadeTipo, entidadeId);
 
-  const displayAtividades = limit ? atividades?.slice(0, limit) : atividades;
+  const displayAtividades = useMemo(() => {
+    if (!atividades) return [];
+    // Ordem cronológica: do mais antigo para o mais recente
+    const sorted = [...atividades].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+    return limit ? sorted.slice(0, limit) : sorted;
+  }, [atividades, limit]);
 
   if (isLoading) {
     return (

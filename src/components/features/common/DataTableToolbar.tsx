@@ -91,8 +91,8 @@ export const DataTableToolbar = ({
     <Button
        variant="outline"
        className={cn(
-         "bg-white border-slate-100 text-[#1a3a5c] font-bold text-sm gap-2 h-14 rounded-2xl px-5 shadow-sm hover:bg-gray-50",
-         isMobile ? "flex-1" : ""
+         "bg-white border-slate-100 text-[#1a3a5c] font-bold text-sm gap-2 h-12 md:h-14 rounded-2xl px-3.5 md:px-5 shadow-sm hover:bg-gray-50 shrink-0",
+         isMobile ? "flex-none" : ""
        )}
        disabled={disabled}
     >
@@ -101,7 +101,7 @@ export const DataTableToolbar = ({
           {isMobile ? (
             <Filter
               className={cn(
-                "h-4 w-4 mr-2",
+                "h-4 w-4 mr-1.5",
                 filterConfig.hasActiveFilters && "text-amber-500"
               )}
             />
@@ -129,7 +129,7 @@ export const DataTableToolbar = ({
         {searchPosition === "top" && searchElement}
 
         {/* Buttons logic */}
-        <div className={cn("flex flex-1 items-center gap-3", !isMobile && "flex-none")}>
+        <div className={cn("flex w-full md:w-auto items-center gap-2 md:gap-3")}>
           {filterConfig && (
             <>
               {isMobile ? (

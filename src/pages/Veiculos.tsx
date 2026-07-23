@@ -64,7 +64,11 @@ export default function Veiculos() {
         ) : veiculos.length === 0 ? (
           <UnifiedEmptyState
             icon={Car}
-            title="Nenhum veículo encontrado"
+            title={
+              searchTerm || hasActiveFilters
+                ? "Nenhum veículo encontrado"
+                : "Nenhum veículo cadastrado"
+            }
             description={
               searchTerm || hasActiveFilters
                 ? `Não encontramos veículos com os filtros selecionados.`

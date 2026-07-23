@@ -7,13 +7,12 @@ interface RelatoriosSkeletonProps {
 
 function DateNavigationSkeleton() {
   return (
-    <div className="flex items-center justify-between bg-[#1a3a5c] min-h-[40px] px-1.5 rounded-[1.25rem] shadow-lg border border-white/5 max-w-md mx-auto w-full md:w-auto">
-      <div className="w-10 h-10 flex items-center justify-center">
-        <Skeleton className="w-5 h-5 rounded-full bg-white/10" />
-      </div>
-      <Skeleton className="h-4 w-32 rounded-lg bg-white/10" />
-      <div className="w-10 h-10 flex items-center justify-center">
-        <Skeleton className="w-5 h-5 rounded-full bg-white/10" />
+    <div className="w-full flex items-center gap-2 max-w-full overflow-hidden py-1">
+      <Skeleton className="h-8 w-20 rounded-full shrink-0 bg-slate-200" />
+      <div className="flex gap-2 overflow-hidden w-full">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-8 w-24 rounded-full shrink-0 bg-slate-200" />
+        ))}
       </div>
     </div>
   );

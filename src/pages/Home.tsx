@@ -117,18 +117,20 @@ const Home = () => {
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
         <div className="space-y-6">
           {/* Header Contextual */}
-          <div className="px-1">
-            <p className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
-              {dateContext}
-            </p>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
-              {
-                financeiro.countAtrasos > 0
-                  ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
-                  : `Parcelas do mês em dia!`
-              }
-            </p>
-          </div>
+          {!onboarding.showOnboarding && (
+            <div className="px-1">
+              <p className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
+                {dateContext}
+              </p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
+                {
+                  financeiro.countAtrasos > 0
+                    ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
+                    : `Parcelas do mês em dia!`
+                }
+              </p>
+            </div>
+          )}
 
           {/* Banner de Carência (SaaS) */}
           {subscription?.status === SubscriptionStatus.PAST_DUE && (

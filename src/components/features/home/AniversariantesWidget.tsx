@@ -75,7 +75,7 @@ export function AniversariantesWidget() {
         <h2 className="text-[17px] font-bold text-[#1a3a5c]">
           Aniversariantes
         </h2>
-        <Button variant="ghost" size="sm" className="h-8 text-[13px] text-[#3b82f6] font-medium hover:bg-transparent p-0 hover:text-blue-600" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS)}>
+        <Button variant="ghost" size="sm" className="h-8 text-[13px] text-[#16314f] font-medium hover:bg-transparent p-0 hover:text-blue-600" onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS)}>
           Ver todos <ChevronRight className="w-4 h-4 ml-0.5" />
         </Button>
       </div>

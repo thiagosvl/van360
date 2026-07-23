@@ -76,7 +76,7 @@ const Contratos = () => {
                   onClick={handleOpenContractSetup}
                   className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
                 >
-                  Configurar Agora
+                  Ativar Uso de Contratos
                 </button>
               </div>
             )}

@@ -188,6 +188,7 @@ export const useRelatoriosCalculations = ({
         return {
           metodo: labelData.label,
           valor: dados.valor,
+          count: dados.count,
           percentual: recebido > 0 ? (dados.valor / recebido) * 100 : 0,
           color: labelData.color,
         };

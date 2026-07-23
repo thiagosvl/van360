@@ -92,17 +92,14 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
 
           {/* Android Web */}
           {platform === "android-web" && (
-            <div className="bg-white rounded-2xl p-2 flex flex-col items-center text-center w-full shadow-sm">
-              <p className="text-[14px] font-bold text-[#0b1a2e] leading-tight mb-2">
-                Baixe nosso aplicativo
-              </p>
+            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-3 pb-2 w-full">
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:scale-[1.03] transition-transform w-full flex justify-center"
               >
-                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-14 object-contain drop-shadow-sm" />
+                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-14 object-contain drop-shadow-sm brightness-110" />
               </a>
             </div>
           )}

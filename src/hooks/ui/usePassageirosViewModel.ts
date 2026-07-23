@@ -251,14 +251,19 @@ export function usePassageirosViewModel() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
+    const isFirstPassageiro = (countPassageiros || 0) === 0;
     openQuickStartPassageiroDialog({
+      isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro) => {
-        if (passageiro) {
-          openFirstChargeDialog({ passageiro: passageiro });
+        refetchPassageiros();
+        if (passageiro && isFirstPassageiro) {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+        } else if (passageiro && !isFirstPassageiro) {
+          openFirstChargeDialog({ passageiro });
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog]);
+  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, navigate, refetchPassageiros]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;

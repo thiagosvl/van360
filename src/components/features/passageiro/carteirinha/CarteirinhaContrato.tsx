@@ -12,7 +12,7 @@ interface CarteirinhaContratoProps {
   onEnviarWhatsApp?: (passageiro: Passageiro) => void;
 }
 
-import { isResponsavelMockNome } from "@/utils/formatters/name";
+import { isResponsavelIncompleto } from "@/utils/domain";
 
 export const CarteirinhaContrato = ({
   passageiro,
@@ -20,7 +20,7 @@ export const CarteirinhaContrato = ({
   onContractAction,
   onEnviarWhatsApp,
 }: CarteirinhaContratoProps) => {
-  const isMissingResponsible = isResponsavelMockNome(passageiro.nome_responsavel) || !passageiro.nome_responsavel;
+  const isMissingResponsible = isResponsavelIncompleto(passageiro.nome_responsavel, passageiro.telefone_responsavel);
 
   const isContractActionDisabled =
     (!contratosAtivos || isMissingResponsible) &&

@@ -18,8 +18,6 @@ interface GastosToolbarProps {
   categorias: string[];
   veiculos: { id: string; placa: string }[];
   disabled?: boolean;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
 }
@@ -34,8 +32,6 @@ export const GastosToolbar = memo(function GastosToolbar({
   categorias,
   veiculos,
   disabled,
-  searchTerm,
-  onSearchChange,
   hasActiveFilters: hasActiveFiltersProp,
   onClearFilters,
 }: GastosToolbarProps) {
@@ -77,7 +73,7 @@ export const GastosToolbar = memo(function GastosToolbar({
   };
 
   const hasActiveFilters = hasActiveFiltersProp !== undefined ? hasActiveFiltersProp :
-    (categoriaFilter !== FilterDefaults.TODAS || veiculoFilter !== FilterDefaults.TODOS || !!searchTerm);
+    (categoriaFilter !== FilterDefaults.TODAS || veiculoFilter !== FilterDefaults.TODOS);
 
   const filterChildren = (
     <>
@@ -125,9 +121,6 @@ export const GastosToolbar = memo(function GastosToolbar({
 
   return (
     <DataTableToolbar
-      searchTerm={searchTerm}
-      onSearchChange={onSearchChange}
-      searchPlaceholder="Buscar por descrição..."
       disabled={disabled}
       filterConfig={{
         title: "Filtrar Gastos",
@@ -141,13 +134,13 @@ export const GastosToolbar = memo(function GastosToolbar({
       }}
       filterChildren={filterChildren}
       actions={
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 flex-1 md:flex-initial">
           <Button
             type="button"
             variant="outline"
             onClick={() => openGerenciarCategoriasDialog()}
             disabled={disabled}
-            className="h-14 rounded-2xl px-4 md:px-5 border-gray-200 text-slate-600 hover:bg-slate-50 transition-all active:scale-95 shadow-sm font-semibold text-sm flex gap-2 items-center"
+            className="h-12 md:h-14 w-12 md:w-auto rounded-2xl px-0 md:px-5 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all active:scale-95 shadow-sm font-semibold text-sm flex items-center justify-center shrink-0"
             title="Gerenciar Categorias"
           >
             <Tag className="h-4 w-4" />
@@ -157,9 +150,9 @@ export const GastosToolbar = memo(function GastosToolbar({
           <Button
             onClick={onRegistrarGasto}
             disabled={disabled}
-            className="flex-grow md:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-14 rounded-2xl px-5 md:px-6 shadow-md transition-all active:scale-95"
+            className="flex-1 md:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-1.5 md:mr-2" />
             <span>Registrar</span>
           </Button>
         </div>

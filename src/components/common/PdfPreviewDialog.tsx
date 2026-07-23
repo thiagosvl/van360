@@ -41,15 +41,14 @@ export function PdfPreviewDialog({
   };
 
   return (
-    <BaseDialog 
-      open={isOpen} 
-      onOpenChange={(open) => !open && onClose()} 
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
       className="max-w-4xl max-h-[92vh] h-full"
       description="Visualização de documento em PDF"
     >
       <BaseDialog.Header
         title={title}
-        subtitle="Visualizador do Sistema"
         icon={<FileText className="h-5 w-5" />}
         onClose={onClose}
       />
@@ -70,8 +69,8 @@ export function PdfPreviewDialog({
                 className="flex flex-col items-center px-4"
               >
                 {Array.from(new Array(numPages), (_, index) => (
-                  <div 
-                    key={`prev_page_${index + 1}`} 
+                  <div
+                    key={`prev_page_${index + 1}`}
                     className="mb-8 last:mb-0 shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white border border-slate-200/50"
                   >
                     <Page

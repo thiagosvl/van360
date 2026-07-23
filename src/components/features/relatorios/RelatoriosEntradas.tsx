@@ -14,6 +14,7 @@ interface RelatoriosEntradasProps {
     formasPagamento: {
       metodo: string;
       valor: number;
+      count?: number;
       percentual: number;
       color: string;
     }[];
@@ -31,7 +32,7 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
           value={formatCurrency(dados.previsto)}
           valueClassName={dados.previsto > 0 ? "text-emerald-600" : undefined}
         />
-        
+
         <KPICard
           label="Recebido no Mês"
           icon={Coins}
@@ -79,7 +80,9 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
                     </span>
                   </div>
                   <span className="text-[10px] font-black text-slate-400 mb-1">
-                    {Math.round(forma.percentual)}%
+                    {forma.count !== undefined
+                      ? `${forma.count} ${forma.count === 1 ? "parcela" : "parcelas"} (${Math.round(forma.percentual)}%)`
+                      : `${Math.round(forma.percentual)}%`}
                   </span>
                 </div>
                 <Progress

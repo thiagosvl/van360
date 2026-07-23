@@ -39,14 +39,11 @@ export function usePassageiroActions({
 
   return useMemo(() => {
     const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
-    const isPendente = 
-      statusContrato === ContratoStatus.PENDENTE || 
-      statusContrato === 'pendente' || 
+    const isPendente =
+      statusContrato === ContratoStatus.PENDENTE ||
+      statusContrato === 'pendente' ||
       statusContrato === '1' ||
       (!!passageiro.contrato_id && !passageiro.status_contrato);
-      
-    const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
-    const hasContract = isPendente || isAssinado || !!(passageiro.contrato_id);
 
     const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
 
@@ -90,7 +87,7 @@ export function usePassageiroActions({
         });
       } else {
         actions.push({
-          label: "Copiar Link para Assinatura",
+          label: "Copiar Link para Assinatura do Contrato",
           icon: <Copy className="h-4 w-4" />,
           onClick: () => onEnviarWhatsApp(passageiro),
           disabled: isFeatureDisabled,

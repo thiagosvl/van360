@@ -62,7 +62,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
   return (
-    <aside className="w-72 bg-[#1a3a5c] text-white flex flex-col h-[100dvh] sticky top-0 overflow-y-auto pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)]">
+    <aside className={cn("w-72 text-white flex flex-col h-[100dvh] sticky top-0 overflow-y-auto pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)]", import.meta.env.DEV ? "bg-[#0a0a0a]" : "bg-[#1a3a5c]")}>
       {/* Logo Area */}
       <div className="p-8 pb-4">
         <div className="flex items-center gap-3">
@@ -70,7 +70,7 @@ export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
             <span className="text-[#1a3a5c] font-black text-xl">V</span>
           </div>
           <div>
-            <h1 className="font-headline font-black text-lg tracking-tighter leading-none">VAN360</h1>
+            <h1 className="font-headline font-black text-lg tracking-tighter leading-none">VAN360 - {import.meta.env.DEV ? "DEV" : "PRODUÇÃOS"}</h1>
             <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Painel Admin</span>
           </div>
         </div>

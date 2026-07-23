@@ -8,7 +8,6 @@ interface UseGastosCalculationsProps {
   gastos: Gasto[];
   mesFilter: number;
   anoFilter: number;
-  searchTerm?: string;
   loadingActions: boolean;
 }
 
@@ -16,18 +15,11 @@ export const useGastosCalculations = ({
   gastos,
   mesFilter,
   anoFilter,
-  searchTerm,
   loadingActions,
 }: UseGastosCalculationsProps) => {
   const gastosFiltrados = useMemo(() => {
-    if (!searchTerm) return gastos || [];
-    const lowerSearch = searchTerm.toLowerCase();
-    return (gastos || []).filter(
-      (g) =>
-        g.descricao?.toLowerCase().includes(lowerSearch) ||
-        g.categoria.toLowerCase().includes(lowerSearch)
-    );
-  }, [gastos, searchTerm]);
+    return gastos || [];
+  }, [gastos]);
 
   const { totalGasto, principalCategoriaData, mediaDiaria } = useMemo(() => {
     // Garantir que gastos seja um array válido

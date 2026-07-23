@@ -145,6 +145,10 @@ export const generateName = (): string => {
   return `${nome} ${sobrenome1} ${sobrenome2}`;
 };
 
+export const generatePhone = (): string => {
+  return "(11) 95118-6951";
+}
+
 /**
  * Gera um email aleatório baseado no nome
  */
@@ -216,7 +220,7 @@ export const mockGenerator = {
   cpf: generateCPF,
   name: generateName,
   email: generateEmail,
-  phone: "(11) 95118-6951",
+  phone: generatePhone,
   cep: generateCEP,
   address: generateAddress,
   escola: () => {
@@ -289,7 +293,10 @@ export const mockGenerator = {
       modalidade: randomEnum(PassageiroModalidade),
       parentesco_responsavel: randomEnum(ParentescoResponsavel),
       data_nascimento: generateDate(2010, 2020), // 4-14 years old
-      data_inicio_transporte: generateDate(2024, 2024),
+      data_inicio_transporte: generateDate(2024, 2026),
+      data_fim_transporte: generateDate(2024, 2026),
+      mes_inicio_cobranca: 1,
+      mes_fim_cobranca: 12,
 
       ...overrides
     };

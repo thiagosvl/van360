@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -20,18 +21,14 @@ import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import {
-  formatDateToBR,
-  formatDiasAtraso,
-  formatFirstName,
-  formatPaymentType,
   formatShortName,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
-import { DollarSign, Wallet, User } from "lucide-react";
+import { DollarSign, Wallet, User, CalendarClock, History, Info, CheckCircle2 } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
 import { openBrowserLink } from "@/utils/browser";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { CobrancaSummary } from "./CobrancaSummary";
 interface CobrancasListProps {
   cobrancas: Cobranca[];
@@ -39,6 +36,10 @@ interface CobrancasListProps {
   isLoading: boolean;
   busca: string;
   mesFilter: number;
+  anoFilter?: number;
+  isFutureMonth?: boolean;
+  isPastMonth?: boolean;
+  isCurrentMonth?: boolean;
   meses: string[];
 
   onVerCarteirinha: (passageiroId: string) => void;
@@ -51,10 +52,24 @@ interface CobrancasListProps {
   onClearSearch?: () => void;
 }
 
+import { getNowBR } from "@/utils/dateUtils";
+import { isPassageiroIncompleto } from "@/utils/domain";
+
+function getVencimentoDia(cobranca: Cobranca) {
+  if (cobranca?.isProjection && isPassageiroIncompleto(cobranca?.passageiro)) {
+    return "--";
+  }
+  const dateStr = cobranca?.data_vencimento;
+  if (!dateStr) return "--";
+  const parts = dateStr.split("-");
+  if (parts.length === 3) return parts[2].substring(0, 2);
+  return "--";
+}
+
+
+
 const CobrancaMobileCard = memo(function CobrancaMobileCard({
   cobranca,
-  index,
-  activeTab,
   onVerCarteirinha,
   onEditarCobranca,
   onRegistrarPagamento,
@@ -62,6 +77,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   onDesfazerPagamento,
   onVerRecibo,
   onActionSuccess,
+  onOpenCreateForProjection,
   chavePix,
   tipoChavePix,
 }: {
@@ -70,6 +86,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   activeTab: CobrancaTab;
   chavePix?: string | null;
   tipoChavePix?: string | null;
+  onOpenCreateForProjection?: (cobranca: Cobranca) => void;
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
 
   const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
@@ -86,27 +103,28 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     }))
     : undefined;
 
-  const actions = useCobrancaActions({
-    cobranca,
-    onVerCobranca: () => { },
-    onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
-    onEditarCobranca: () => onEditarCobranca(cobranca),
-    onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
-    onExcluirCobranca: () => onExcluirCobranca(cobranca),
-    onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
-    onEnviarCobranca,
-    onActionSuccess,
-  });
+  const actions = cobranca?.isProjection
+    ? [
+      {
+        label: "Registrar Pagamento",
+        icon: CheckCircle2,
+        onClick: () => onOpenCreateForProjection?.(cobranca),
+      },
+    ]
+    : useCobrancaActions({
+      cobranca,
+      onVerCobranca: () => { },
+      onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
+      onEditarCobranca: () => onEditarCobranca(cobranca),
+      onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
+      onExcluirCobranca: () => onExcluirCobranca(cobranca),
+      onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
+      onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
+      onEnviarCobranca,
+      onActionSuccess,
+    });
 
-  const getVencimentoDia = (dateStr?: string) => {
-    if (!dateStr) return "??";
-    const parts = dateStr.split("-");
-    if (parts.length === 3) return parts[2].substring(0, 2);
-    return "??";
-  };
-
-  const vencDia = getVencimentoDia(cobranca?.data_vencimento);
+  const vencDia = getVencimentoDia(cobranca);
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
@@ -121,27 +139,29 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   return (
     <MobileActionItem
       actions={actions}
+      onClickItem={cobranca?.isProjection ? () => onOpenCreateForProjection?.(cobranca) : undefined}
       className="bg-transparent"
       renderHeader={renderHeader}
     >
       <div
-        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+        className={cn(
+          "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50",
+          cobranca?.isProjection && "cursor-pointer"
+        )}
       >
         <div className={cn(
-          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
+          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
           isPaid ? "bg-emerald-500" : isAtrasado ? "bg-red-500" : "bg-amber-500"
         )}>
-          <span className="text-white font-headline font-bold text-sm leading-none">
-            {vencDia}
-          </span>
+          {vencDia}
         </div>
 
-        <div className="flex-grow min-w-0 pr-8">
+        <div className="flex-grow min-w-0 pr-[88px] sm:pr-24">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {shortName}
           </p>
-          <div className="flex flex-col min-w-0">
-            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+          <div className="flex flex-col min-w-0 mt-0.5">
+            <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
               {firstNomeResponsavel}
             </p>
           </div>
@@ -149,10 +169,12 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
           <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-            {Number(cobranca?.valor).toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}
+            {Number(cobranca?.valor) > 0
+              ? Number(cobranca?.valor).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+              : "R$ --"}
           </p>
           <StatusBadge
             status={cobranca?.status}
@@ -174,13 +196,34 @@ export function CobrancasList({
   isLoading,
   busca,
   onClearSearch,
+  mesFilter,
+  anoFilter,
+  isFutureMonth,
+  isPastMonth,
+  meses,
   ...props
 }: CobrancasListProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { openCobrancaFormDialog } = useLayout();
 
   const [openedCobranca, setOpenedCobranca] = useState<Cobranca | null>(null);
   const isPendingTab = activeTab === CobrancaTab.ARECEBER;
+
+  const handleOpenCreateForProjection = (cobranca: Cobranca) => {
+    openCobrancaFormDialog({
+      passageiroId: cobranca.passageiro_id,
+      passageiroNome: formatShortName(cobranca.passageiro?.nome, true),
+      passageiroResponsavelNome: formatNomeResponsavelExibicao(cobranca.passageiro?.nome_responsavel),
+      valorCobranca: Number(cobranca.valor),
+      diaVencimento: Number(cobranca.passageiro?.dia_vencimento || 10),
+      mes: cobranca.mes,
+      ano: cobranca.ano,
+      lockFoiPago: true,
+      lockMesAno: true,
+      onSuccess: props.onActionSuccess,
+    });
+  };
 
   const getEmptyState = () => {
     if (busca !== "") {
@@ -193,12 +236,115 @@ export function CobrancasList({
         />
       );
     }
+
+    if (isFutureMonth) {
+      const nomeMes = meses?.[mesFilter - 1] || "";
+      return (
+        <UnifiedEmptyState
+          icon={CalendarClock}
+          title="Geração Automática de Parcelas"
+          description={`As parcelas de ${nomeMes}/${anoFilter || 2026} serão geradas automaticamente na virada do mês. Todos os passageiros ativos serão cobrados normalmente.`}
+        />
+      );
+    }
+
+    if (isPastMonth) {
+      return (
+        <UnifiedEmptyState
+          icon={History}
+          title="Sem parcelas neste período"
+          description="Seu cadastro ou contratos de passageiros iniciaram a partir de Julho/2026. Não há histórico de cobranças anteriores a este período."
+        />
+      );
+    }
+
     return (
       <UnifiedEmptyState
         icon={isPendingTab ? Wallet : DollarSign}
         title="Nenhuma parcela"
-        description="Não há parcelas para este período."
+        description="Não há parcelas registradas para este período."
       />
+    );
+  };
+
+  const renderDesktopRow = (cobranca: Cobranca) => {
+    const telefoneResponsavel = isResponsavelMockTelefone(cobranca.passageiro?.telefone_responsavel)
+      ? undefined
+      : cobranca.passageiro?.telefone_responsavel;
+
+    const onEnviarCobranca = telefoneResponsavel
+      ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
+        telefoneResponsavel,
+        nomeResponsavel: formatNomeResponsavelCompletoExibicao(cobranca.passageiro?.nome_responsavel),
+        nomePassageiro: cobranca.passageiro?.nome ?? "",
+        mes: cobranca.mes,
+        valor: cobranca.valor,
+        dataVencimento: cobranca.data_vencimento,
+        chavePix: profile?.chave_pix,
+        tipoChavePix: profile?.tipo_chave_pix,
+      }))
+      : undefined;
+
+    return (
+      <TableRow
+        key={cobranca.id}
+        onClick={() => cobranca?.isProjection ? handleOpenCreateForProjection(cobranca) : setOpenedCobranca(cobranca)}
+        className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
+      >
+        <TableCell className="px-8 py-5">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
+              cobranca?.status === CobrancaStatus.PAGO
+                ? "bg-emerald-500"
+                : checkCobrancaEmAtraso(cobranca?.data_vencimento)
+                  ? "bg-red-500"
+                  : "bg-amber-500"
+            )}>
+              {getVencimentoDia(cobranca)}
+            </div>
+            <div className="flex flex-col">
+              <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                {formatShortName(cobranca?.passageiro?.nome, true)}
+              </p>
+              <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                {formatNomeResponsavelExibicao(cobranca?.passageiro?.nome_responsavel)}
+              </p>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell className="px-6 py-4 text-right">
+          <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+            {Number(cobranca?.valor) > 0
+              ? Number(cobranca?.valor).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+              : "R$ --"}
+          </span>
+        </TableCell>
+
+        <TableCell className="px-6 py-4 text-center">
+          <StatusBadge
+            status={cobranca?.status}
+            dataVencimento={cobranca?.data_vencimento}
+          />
+        </TableCell>
+
+        <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+          <CobrancaActionsMenu
+            cobranca={cobranca}
+            onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
+            onEditarCobranca={() => props.onEditarCobranca(cobranca)}
+            onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
+            onActionSuccess={props.onActionSuccess}
+            onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
+            onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
+            onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined}
+            onEnviarCobranca={onEnviarCobranca}
+          />
+        </TableCell>
+      </TableRow>
     );
   };
 
@@ -225,6 +371,7 @@ export function CobrancasList({
             onDesfazerPagamento={props.onDesfazerPagamento}
             onVerRecibo={props.onVerRecibo}
             onActionSuccess={props.onActionSuccess}
+            onOpenCreateForProjection={handleOpenCreateForProjection}
           />
         )}
       >
@@ -241,126 +388,31 @@ export function CobrancasList({
                 <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Status
                 </TableHead>
-                <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  {isPendingTab ? "Vencimento" : "Pagamento"}
-                </TableHead>
                 <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Ações
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cobrancas.map((cobranca) => {
-                const firstName = formatNomeResponsavelExibicao(cobranca?.passageiro?.nome_responsavel);
-
-                const telefoneResponsavel = isResponsavelMockTelefone(cobranca.passageiro?.telefone_responsavel) 
-                  ? undefined 
-                  : cobranca.passageiro?.telefone_responsavel;
-                  
-                const onEnviarCobranca = telefoneResponsavel
-                  ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
-                    telefoneResponsavel,
-                    nomeResponsavel: formatNomeResponsavelCompletoExibicao(cobranca.passageiro?.nome_responsavel, ""),
-                    nomePassageiro: cobranca.passageiro?.nome ?? "",
-                    mes: cobranca.mes,
-                    valor: cobranca.valor,
-                    dataVencimento: cobranca.data_vencimento,
-                    chavePix: profile?.chave_pix,
-                    tipoChavePix: profile?.tipo_chave_pix,
-                  }))
-                  : undefined;
-
-                return (
-                  <TableRow
-                    key={cobranca.id}
-                    onClick={() => setOpenedCobranca(cobranca)}
-                    className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
-                  >
-                    <TableCell className="px-8 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
-                          <div className="rounded-full border border-[#132a42] flex items-center justify-center">
-                            <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
-                              <User className="w-4 h-4 text-slate-400 fill-current" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                            {formatShortName(cobranca?.passageiro?.nome, true)}
-                          </p>
-                          <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                            {firstName}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-right">
-                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-                        {Number(cobranca?.valor).toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })}
-                      </span>
-                    </TableCell>
-
-                    <TableCell className="px-6 py-4 text-center">
-                      <StatusBadge
-                        status={cobranca?.status}
-                        dataVencimento={cobranca?.data_vencimento}
-                      />
-                    </TableCell>
-
-                    <TableCell className="px-8 py-5">
-                      <div className="flex flex-col">
-                        <span className={cn(
-                          "text-sm font-medium",
-                          !isPendingTab ? "text-emerald-600" : "text-slate-600"
-                        )}>
-                          {isPendingTab
-                            ? formatDateToBR(cobranca?.data_vencimento)
-                            : formatDateToBR(cobranca?.data_pagamento)}
-                        </span>
-                        {!isPendingTab && (
-                          <span className="text-[9px] text-gray-400 font-medium">
-                            {formatPaymentType(cobranca?.tipo_pagamento)}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <CobrancaActionsMenu
-                        cobranca={cobranca}
-                        onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
-                        onEditarCobranca={() => props.onEditarCobranca(cobranca)}
-                        onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
-                        onActionSuccess={props.onActionSuccess}
-                        onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
-                        onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
-                        onVerRecibo={props.onVerRecibo ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined}
-                        onEnviarCobranca={onEnviarCobranca}
-                      />
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+              {cobrancas.map(renderDesktopRow)}
             </TableBody>
           </Table>
         </div>
       </ResponsiveDataList>
 
       {/* Desktop-triggered ActionSheet (Quick View) */}
-      {openedCobranca && (
-        <ActionSheetWrapper
-          cobranca={openedCobranca}
-          open={!!openedCobranca}
-          onOpenChange={(open) => !open && setOpenedCobranca(null)}
-          props={props}
-          chavePix={profile?.chave_pix}
-          tipoChavePix={profile?.tipo_chave_pix}
-        />
-      )}
+      {
+        openedCobranca && (
+          <ActionSheetWrapper
+            cobranca={openedCobranca}
+            open={!!openedCobranca}
+            onOpenChange={(open) => !open && setOpenedCobranca(null)}
+            props={props}
+            chavePix={profile?.chave_pix}
+            tipoChavePix={profile?.tipo_chave_pix}
+          />
+        )
+      }
     </>
   );
 }

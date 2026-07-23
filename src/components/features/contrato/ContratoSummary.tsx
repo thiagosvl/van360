@@ -47,8 +47,8 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
       {/* Subtítulo: Responsável */}
       {nomeResponsavel && (
-        <p className="text-[13px] font-medium text-slate-500 dark:text-zinc-400 uppercase mt-1 leading-none truncate">
-          {formatFirstName(nomeResponsavel)}
+        <p className="text-[13px] font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-none break-words line-clamp-2">
+          {nomeResponsavel}
         </p>
       )}
 

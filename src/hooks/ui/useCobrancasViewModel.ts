@@ -3,14 +3,15 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
-import { useCobrancas, useDeleteCobranca, useFilters } from "@/hooks";
-import { CobrancaTab } from "@/types/enums";
+import { useCobrancas, useDeleteCobranca, useFilters, usePassageiros } from "@/hooks";
+import { CobrancaOrigem, CobrancaStatus, CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
+import { isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
 
 export function useCobrancasViewModel() {
   const {
@@ -39,7 +40,6 @@ export function useCobrancasViewModel() {
     [searchParams, setSearchParams]
   );
 
-  // Tabs Management
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam === CobrancaTab.ARECEBER || tabParam === CobrancaTab.RECEBIDAS) {
@@ -73,7 +73,6 @@ export function useCobrancasViewModel() {
     setFilters({ mes: newMes, ano: newAno });
   }, [setFilters]);
 
-  // Search Debounce
   useEffect(() => {
     const term = activeTab === CobrancaTab.ARECEBER ? buscaAReceber : buscaRecebidos;
     const handler = setTimeout(() => {
@@ -82,13 +81,30 @@ export function useCobrancasViewModel() {
     return () => clearTimeout(handler);
   }, [buscaAReceber, buscaRecebidos, activeTab]);
 
-  // Reset search when date changes
   useEffect(() => {
     setBuscaAReceber("");
     setBuscaRecebidos("");
   }, [mesFilter, anoFilter]);
 
-  // Data Fetching
+  const now = getNowBR();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
+  const isFutureMonth = useMemo(
+    () => anoFilter > currentYear || (anoFilter === currentYear && mesFilter > currentMonth),
+    [anoFilter, mesFilter, currentYear, currentMonth]
+  );
+
+  const isCurrentMonth = useMemo(
+    () => anoFilter === currentYear && mesFilter === currentMonth,
+    [anoFilter, mesFilter, currentYear, currentMonth]
+  );
+
+  const isPastMonth = useMemo(
+    () => anoFilter < currentYear || (anoFilter === currentYear && mesFilter < currentMonth),
+    [anoFilter, mesFilter, currentYear, currentMonth]
+  );
+
   const {
     data: cobrancasData,
     isLoading: isCobrancasLoading,
@@ -102,25 +118,94 @@ export function useCobrancasViewModel() {
     },
     {
       enabled: !!profile?.id,
-      onError: (error) => {
+      onError: () => {
         toast.error("cobranca.erro.carregar");
       },
     }
   );
 
+  const { data: passageirosData } = usePassageiros(
+    { usuarioId: profile?.id, status: "true" },
+    { enabled: !!profile?.id }
+  );
+
+  const activePassageiros = useMemo(() => {
+    if (!passageirosData) return [];
+    return Array.isArray(passageirosData) ? passageirosData : passageirosData.list;
+  }, [passageirosData]);
+
   const cobrancasAReceber = useMemo(() => {
-    const list = cobrancasData?.areceber ?? [];
-    return [...list].reverse();
-  }, [cobrancasData]);
+    const realList = cobrancasData?.areceber ?? [];
+    const realRecebidos = cobrancasData?.recebidos ?? [];
+
+    if (isPastMonth) {
+      return [...realList].reverse();
+    }
+
+    const passageirosComCobranca = new Set([
+      ...realList.map((c) => c.passageiro_id),
+      ...realRecebidos.map((c) => c.passageiro_id),
+    ]);
+
+    const driverCreatedAt = profile?.created_at;
+
+    const projList: Cobranca[] = activePassageiros
+      .filter((p) => {
+        if (!p.id || passageirosComCobranca.has(p.id)) return false;
+        if (isPassageiroIncompleto(p)) return false;
+        return shouldGeneratePassengerProjection({
+          passageiro: p,
+          driverCreatedAt,
+          targetMonth: mesFilter,
+          targetYear: anoFilter,
+        });
+      })
+      .map((p) => {
+        const diaVenc = p.dia_vencimento ? String(p.dia_vencimento).padStart(2, "0") : "10";
+        const mesStr = String(mesFilter).padStart(2, "0");
+        const dataVenc = `${anoFilter}-${mesStr}-${diaVenc}`;
+
+        return {
+          id: `proj_${p.id}_${mesFilter}_${anoFilter}`,
+          passageiro_id: p.id!,
+          mes: mesFilter,
+          ano: anoFilter,
+          valor: Number(p.valor_cobranca),
+          status: CobrancaStatus.PENDENTE,
+          data_vencimento: dataVenc,
+          origem: CobrancaOrigem.AUTOMATICA,
+          isProjection: true,
+          passageiro: p,
+        };
+      });
+
+    const combined = [...realList, ...projList];
+
+    combined.sort((a, b) => {
+      const timeA = a.data_vencimento ? new Date(a.data_vencimento).getTime() : 0;
+      const timeB = b.data_vencimento ? new Date(b.data_vencimento).getTime() : 0;
+      return timeA - timeB;
+    });
+
+    if (debouncedSearchTerm.trim()) {
+      const term = debouncedSearchTerm.toLowerCase();
+      return combined.filter(
+        (c) =>
+          c.passageiro?.nome?.toLowerCase().includes(term) ||
+          c.passageiro?.nome_responsavel?.toLowerCase().includes(term)
+      );
+    }
+
+    return combined;
+  }, [cobrancasData, activePassageiros, isPastMonth, mesFilter, anoFilter, debouncedSearchTerm]);
+
   const cobrancasRecebidas = useMemo(() => cobrancasData?.recebidos ?? [], [cobrancasData]);
   const isInitialLoading = isCobrancasLoading;
 
-  // Page Title
   useEffect(() => {
     setPageTitle("Parcelas");
   }, [setPageTitle]);
 
-  // KPI Calculations
   const totalAReceber = useMemo(
     () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0),
     [cobrancasAReceber]
@@ -133,7 +218,7 @@ export function useCobrancasViewModel() {
 
   const totalAtrasado = useMemo(
     () => cobrancasAReceber
-      .filter(c => checkCobrancaEmAtraso(c.data_vencimento))
+      .filter((c) => !c.isProjection && checkCobrancaEmAtraso(c.data_vencimento))
       .reduce((acc, curr) => acc + Number(curr.valor), 0),
     [cobrancasAReceber]
   );
@@ -209,9 +294,9 @@ export function useCobrancasViewModel() {
     [navigate]
   );
 
-  const pullToRefreshReload = async () => {
+  const pullToRefreshReload = useCallback(async () => {
     await refetchCobrancas();
-  };
+  }, [refetchCobrancas]);
 
   return {
     profile,
@@ -234,9 +319,12 @@ export function useCobrancasViewModel() {
     cobrancasAReceber,
     cobrancasRecebidas,
     isInitialLoading,
-    isActionLoading,
-    pullToRefreshReload,
+    isFutureMonth,
+    isPastMonth,
+    isCurrentMonth,
+    totalPassageirosCount: activePassageiros.length,
     // Actions
+    pullToRefreshReload,
     navigateToPassageiro,
     handleEditCobrancaClick,
     handleDeleteCobrancaClick,

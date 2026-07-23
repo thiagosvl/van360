@@ -35,7 +35,9 @@ export default function Cobrancas() {
     cobrancasAReceber,
     cobrancasRecebidas,
     isInitialLoading,
-    isActionLoading,
+    isFutureMonth,
+    isPastMonth,
+    isCurrentMonth,
     pullToRefreshReload,
     navigateToPassageiro,
     handleEditCobrancaClick,
@@ -82,7 +84,7 @@ export default function Cobrancas() {
         {!profile?.chave_pix && (
           <PixNudgeBanner hasPix={false} />
         )}
-        
+
         <DateNavigation
           mes={mesFilter}
           ano={anoFilter}
@@ -167,6 +169,10 @@ export default function Cobrancas() {
               isLoading={isInitialLoading}
               busca={buscaAReceber}
               mesFilter={mesFilter}
+              anoFilter={anoFilter}
+              isFutureMonth={isFutureMonth}
+              isPastMonth={isPastMonth}
+              isCurrentMonth={isCurrentMonth}
               meses={meses}
               onClearSearch={() => setBusca("")}
               {...actionProps}
@@ -180,6 +186,10 @@ export default function Cobrancas() {
               isLoading={isInitialLoading}
               busca={buscaRecebidos}
               mesFilter={mesFilter}
+              anoFilter={anoFilter}
+              isFutureMonth={isFutureMonth}
+              isPastMonth={isPastMonth}
+              isCurrentMonth={isCurrentMonth}
               meses={meses}
               onClearSearch={() => setBusca("")}
               {...actionProps}

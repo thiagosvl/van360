@@ -166,6 +166,19 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
   } = useCobrancaOperations(props);
 
   return useMemo(() => {
+    if (cobranca.isProjection) {
+      const projActions: ActionItem[] = [];
+      if (onVerCarteirinha) {
+        projActions.push({
+          label: "Ver Carteirinha",
+          icon: <User className="h-4 w-4" />,
+          onClick: onVerCarteirinha,
+          swipeColor: "bg-indigo-600",
+        });
+      }
+      return projActions;
+    }
+
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
 

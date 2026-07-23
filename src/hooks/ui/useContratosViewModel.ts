@@ -155,13 +155,12 @@ export function useContratosViewModel() {
     openContractSetupDialog({
       onSuccess: (usarContratos) => {
         if (usarContratos) {
-          refreshProfile();
           refetchKPIs();
           refetchContratos();
         }
       }
     });
-  }, [openContractSetupDialog, refreshProfile, refetchKPIs, refetchContratos]);
+  }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));

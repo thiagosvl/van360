@@ -21,9 +21,8 @@ import {
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
 import { cn } from "@/lib/utils";
-import { CobrancaStatus } from "@/types/enums";
 import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
-import { getStatusColor, getStatusText } from "@/utils/formatters";
+import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, CreditCard, User, Wallet } from "lucide-react";
@@ -63,36 +62,50 @@ export default function ManualPaymentDialog({
     <BaseDialog open={isOpen} onOpenChange={onClose}>
       <BaseDialog.Header title="Registrar Pagamento" icon={<Wallet className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5">Referência</p>
-              <p className="text-lg font-bold text-gray-900 capitalize leading-tight">
-                {format(parseLocalDate(dataVencimento), "MMMM", { locale: ptBR })}
-              </p>
-            </div>
+        <div className="bg-slate-50/80 rounded-2xl border border-slate-200/60 p-3.5 space-y-2.5 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Parcela de {format(parseLocalDate(dataVencimento), "MMMM", { locale: ptBR })}
+            </span>
             <span
               className={cn(
-                "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm",
+                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-2xs",
                 getStatusColor(status, dataVencimento)
               )}
             >
               {getStatusText(status, dataVencimento)}
             </span>
           </div>
-          <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200/50 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-              <User className="w-5 h-5 text-blue-600" />
+
+          <div className="flex items-center justify-between gap-3 pt-0.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
+                <User className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[#1a3a5c] leading-tight truncate">
+                  {formatShortName(passageiroNome, true)}
+                </p>
+                {responsavelNome && (
+                  <p className="text-[11px] text-slate-500 font-medium leading-tight truncate mt-0.5">
+                    {formatFirstName(responsavelNome)}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900 leading-tight">{passageiroNome}</p>
-              <p className="text-xs text-gray-500 leading-tight mt-0.5">{responsavelNome}</p>
-            </div>
+
+            {valorOriginal > 0 && (
+              <div className="text-right shrink-0">
+                <span className="text-sm font-bold text-[#1a3a5c] tabular-nums leading-none">
+                  {valorOriginal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-4">
             <FormField
               control={form.control}
               name="valor_pago"
@@ -176,7 +189,7 @@ export default function ManualPaymentDialog({
                           )}
                           aria-invalid={!!form.formState.errors.tipo_pagamento}
                         >
-                          <SelectValue placeholder="Selecione a forma de pagamento" />
+                          <SelectValue placeholder="Selecione a forma" />
                         </SelectTrigger>
                       </div>
                     </FormControl>

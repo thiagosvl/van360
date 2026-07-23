@@ -20,12 +20,14 @@ import {
   CarteirinhaInfo,
   CarteirinhaObservacoes,
   CarteirinhaContrato,
+  CarteirinhaResponsaveis,
 } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
 import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { IncompletePassengerBanner } from "@/components/features/passageiro/IncompletePassengerBanner";
+import { isCadastroPassageiroIncompleto } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -476,7 +478,7 @@ export default function PassageiroCarteirinha() {
     yearFilter,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
-    onOpenCobrancaDialog: () => {
+    onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean) => {
       if (!passageiro_id) return;
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
@@ -484,6 +486,10 @@ export default function PassageiroCarteirinha() {
         passageiroResponsavelNome: formatFirstName(passageiro?.nome_responsavel),
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),
+        mes,
+        ano,
+        lockFoiPago,
+        lockMesAno,
         onSuccess: refetchCobrancas,
       });
     },
@@ -626,12 +632,12 @@ export default function PassageiroCarteirinha() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
           <div className="space-y-6">
-            {(!passageiro.valor_cobranca || passageiro.valor_cobranca === 0) ? (
+            {isCadastroPassageiroIncompleto(passageiro) ? (
               <IncompletePassengerBanner onEdit={handleEditClick} />
             ) : !profile?.chave_pix ? (
               <PixNudgeBanner hasPix={false} />
             ) : null}
-            
+
             {/* Mobile Layout: Header fixo + Abas na primeira dobra */}
             {isMobile ? (
               <div className="space-y-5">
@@ -684,6 +690,13 @@ export default function PassageiroCarteirinha() {
                       </div>
                     </Suspense>
 
+                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                      <CarteirinhaResponsaveis
+                        passageiro={passageiro}
+                        onEditClick={handleEditClick}
+                      />
+                    </Suspense>
+
                     {/* Contrato e Observações no final da aba dados */}
                     <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
                       <CarteirinhaContrato
@@ -713,6 +726,13 @@ export default function PassageiroCarteirinha() {
                 <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 lg:h-fit">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaInfo {...infoProps} />
+                  </Suspense>
+
+                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                    <CarteirinhaResponsaveis
+                      passageiro={passageiro}
+                      onEditClick={handleEditClick}
+                    />
                   </Suspense>
 
                   <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>

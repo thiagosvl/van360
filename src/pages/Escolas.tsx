@@ -63,7 +63,11 @@ export default function Escolas() {
         ) : escolas.length === 0 ? (
           <UnifiedEmptyState
             icon={GraduationCap}
-            title="Nenhuma escola encontrada"
+            title={
+              searchTerm || hasActiveFilters
+                ? "Nenhuma escola encontrada"
+                : "Nenhuma escola cadastrada"
+            }
             description={
               searchTerm || hasActiveFilters
                 ? `Não encontramos escolas com os filtros selecionados.`

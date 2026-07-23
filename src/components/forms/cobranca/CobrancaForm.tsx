@@ -65,6 +65,8 @@ export interface CobrancaFormContentProps {
     hideButtons?: boolean;
     onCancel?: () => void;
     isSubmitting?: boolean;
+    lockFoiPago?: boolean;
+    lockMesAno?: boolean;
 }
 
 export function CobrancaFormContent({
@@ -75,6 +77,8 @@ export function CobrancaFormContent({
     hideButtons = false,
     onCancel,
     isSubmitting = false,
+    lockFoiPago = false,
+    lockMesAno = false,
 }: CobrancaFormContentProps) {
     const isPaga = form.watch("foi_pago");
     const mesSelecionado = form.watch("mes");
@@ -152,7 +156,7 @@ export function CobrancaFormContent({
                                 <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Mês <span className="text-red-600">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={lockMesAno}>
                                     <FormControl>
                                         <SelectTrigger
                                             className={cn(
@@ -164,11 +168,17 @@ export function CobrancaFormContent({
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="max-h-60">
-                                        {meses.map((m) => (
-                                            <SelectItem key={m.value} value={m.value}>
-                                                {m.label}
-                                            </SelectItem>
-                                        ))}
+                                        {(() => {
+                                            const filtered = mode === "create" && !lockFoiPago
+                                                ? meses.filter((m) => Number(m.value) < getNowBR().getMonth() + 1)
+                                                : meses;
+                                            const finalOptions = filtered.length > 0 ? filtered : meses;
+                                            return finalOptions.map((m) => (
+                                                <SelectItem key={m.value} value={m.value}>
+                                                    {m.label}
+                                                </SelectItem>
+                                            ));
+                                        })()}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -215,7 +225,7 @@ export function CobrancaFormContent({
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
                     <p className="font-medium leading-snug">
                         <span className="font-bold">Aviso: Mês Futuro.</span>{" "}
-                        Registre agora apenas se for um adiantamento.
+                        Só registre agora caso seja um adiantamento.
                     </p>
                 </div>
             )}
@@ -231,7 +241,7 @@ export function CobrancaFormContent({
                         disabled={shouldDisableValue}
                         labelClassName="text-slate-700 font-semibold ml-1"
                         inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
-                        label="Valor da Parcela"
+                        label={lockFoiPago ? "Valor Pago" : "Valor da Parcela"}
                     />
                 )}
             />
@@ -300,13 +310,14 @@ export function CobrancaFormContent({
                 render={({ field }) => (
                     <FormItem className={cn(
                         "flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0",
-                        mode === "edit" && "hidden"
+                        (mode === "edit" || lockFoiPago) && "hidden"
                     )}>
                         <div className="flex items-center gap-3">
                             <FormControl>
                                 <Checkbox
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
+                                    disabled={lockFoiPago}
                                     className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
                             </FormControl>
@@ -349,7 +360,7 @@ export function CobrancaFormContent({
                                                         fieldState.error && "border-red-500"
                                                     )}
                                                 >
-                                                    {field.value ? formatLocalDate(field.value) : "Selecione"}
+                                                    {field.value ? formatLocalDate(field.value) : "Selecione a data"}
                                                 </Button>
                                             </div>
                                         </FormControl>
@@ -394,7 +405,7 @@ export function CobrancaFormContent({
                                                     fieldState.error && "border-red-500"
                                                 )}
                                             >
-                                                <SelectValue placeholder="Selecione" />
+                                                <SelectValue placeholder="Selecione a forma" />
                                             </SelectTrigger>
                                         </div>
                                     </FormControl>
@@ -433,7 +444,7 @@ export function CobrancaFormContent({
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                             </>
-                        ) : mode === "create" ? "Adicionar Parcela" : "Salvar Alterações"}
+                        ) : mode === "create" ? "Regoistrar Parcela" : "Salvar Alterações"}
                     </Button>
                 </div>
             )}

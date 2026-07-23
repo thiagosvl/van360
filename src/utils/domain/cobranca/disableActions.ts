@@ -9,8 +9,8 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
   return seForPago(cobranca);
 };
 
-export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca);
+export const disableExcluirCobranca = (_cobranca: Cobranca): boolean => {
+  return false;
 };
 
 export const disableEditarCobranca = (cobranca: Cobranca): boolean => {

@@ -81,10 +81,10 @@ export const QuickStartCard = ({
   // Compute the first pending step
   const firstPendingId = useMemo(() => steps.find(s => !s.done)?.id || null, [steps]);
 
-  // Auto-expand the first pending step
+  // Auto-expand the first pending step whenever a step is completed
   useEffect(() => {
     setExpandedId(firstPendingId);
-  }, [firstPendingId]);
+  }, [firstPendingId, completedSteps]);
 
   if (loading) return null;
   if (isComplete) return null;
@@ -126,7 +126,7 @@ export const QuickStartCard = ({
                   "flex flex-col py-4 border-b border-gray-100 last:border-b-0 transition-all duration-300",
                   !isDone ? "cursor-pointer" : "cursor-default opacity-80"
                 )}
-                onClick={() => !isDone && setExpandedId(isExpanded ? null : step.id)}
+                onClick={() => !isDone && !isExpanded && setExpandedId(step.id)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3.5">
@@ -171,7 +171,7 @@ export const QuickStartCard = ({
                           e.stopPropagation();
                           step.onAction();
                         }}
-                        className="self-end flex items-center gap-2 h-9 px-4 rounded-full bg-[#1a3a5c] text-white text-[12px] font-medium hover:bg-[#1a3a5c]/90 transition-colors active:scale-95"
+                        className="w-full sm:w-auto sm:self-end flex items-center justify-center gap-2 h-10 sm:h-9 px-4 rounded-2xl bg-[#1a3a5c] text-white text-[13px] sm:text-[12px] font-medium hover:bg-[#1a3a5c]/90 transition-colors active:scale-95"
                       >
                         {step.buttonText}
                         <ArrowRight className="h-3.5 w-3.5" />

@@ -24,8 +24,6 @@ export function useGastosViewModel() {
   const deleteGasto = useDeleteGasto();
 
   const {
-    searchTerm,
-    setSearchTerm,
     selectedMes: mesFilter = getNowBR().getMonth() + 1,
     setSelectedMes,
     selectedAno: anoFilter = getNowBR().getFullYear(),
@@ -41,17 +39,7 @@ export function useGastosViewModel() {
     anoParam: "ano",
     categoriaParam: "categoria",
     veiculoParam: "veiculo",
-    searchParam: "search",
   });
-
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
 
   const {
     data: gastosRes,
@@ -65,7 +53,6 @@ export function useGastosViewModel() {
       ano: anoFilter,
       categoria: categoriaFilter !== FilterDefaults.TODAS ? categoriaFilter : undefined,
       veiculoId: veiculoFilter !== FilterDefaults.TODOS ? veiculoFilter : undefined,
-      search: debouncedSearchTerm,
     },
     {
       enabled: !!profile?.id,
@@ -91,7 +78,6 @@ export function useGastosViewModel() {
     gastos,
     mesFilter,
     anoFilter,
-    searchTerm,
     loadingActions: isProfileLoading,
   });
 
@@ -139,10 +125,8 @@ export function useGastosViewModel() {
     setFilters({
       categoria: FilterDefaults.TODAS,
       veiculo: FilterDefaults.TODOS,
-      search: ""
     });
-    setSearchTerm("");
-  }, [setFilters, setSearchTerm]);
+  }, [setFilters]);
 
   return {
     profile,
@@ -151,8 +135,6 @@ export function useGastosViewModel() {
     anoFilter,
     categoriaFilter,
     veiculoFilter,
-    searchTerm,
-    setSearchTerm,
     setSelectedMes,
     setSelectedAno,
     setSelectedCategoria,

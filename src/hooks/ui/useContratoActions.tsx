@@ -12,7 +12,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMemo } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
-import { isResponsavelMockNome } from "@/utils/formatters/name";
+import { isResponsavelIncompleto } from "@/utils/domain";
 
 interface UseContratoActionsProps {
   item: any;
@@ -42,7 +42,6 @@ export function useContratoActions({
   onExcluir,
   onSubstituir,
   onGerarContrato,
-  onVisualizarLink,
   onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
   const isMobile = useIsMobile();
@@ -54,7 +53,9 @@ export function useContratoActions({
     const isAssinado = status === ContratoStatus.ASSINADO || status === 'assinado' || status === '2';
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
 
-    const isMissingResponsible = isResponsavelMockNome(item?.nome_responsavel) || isResponsavelMockNome(item?.passageiro?.nome_responsavel) || (!item?.nome_responsavel && !item?.passageiro?.nome_responsavel);
+    const respNome = item?.nome_responsavel || item?.passageiro?.nome_responsavel;
+    const respTelefone = item?.telefone_responsavel || item?.passageiro?.telefone_responsavel;
+    const isMissingResponsible = isResponsavelIncompleto(respNome, respTelefone);
 
     const isFeatureDisabled = !!(isDesativado || (usarContratos === false) || isMissingResponsible);
 

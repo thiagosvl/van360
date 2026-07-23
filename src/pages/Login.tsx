@@ -50,7 +50,7 @@ function LoginPlatformSuggestion() {
   if (platform === "android-web" || platform === "desktop") {
     return (
       <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center">
-        <p className="text-xs font-medium text-slate-500 mb-3 text-center">
+        <p className="max-[320px]:text-[11px] text-xs font-medium text-slate-500 mb-3 text-center">
           Para uma melhor experiência, baixe o app:
         </p>
         <a
@@ -213,10 +213,10 @@ export default function Login() {
       <div className="min-h-screen flex flex-col justify-center items-center py-6 px-4 relative overflow-hidden">
         {/* Background suave */}
         <div className="absolute inset-0 bg-[#e8ecf1]" />
-        
+
         <div className="w-full max-w-[420px] relative z-10">
           <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 sm:p-10 border border-slate-200">
-            
+
             {import.meta.env.DEV && (
               <div className="absolute right-6 top-6 z-10">
                 <Button
@@ -239,7 +239,7 @@ export default function Login() {
                 alt="Van360"
                 className="h-16 w-auto mb-4 drop-shadow-sm select-none"
               />
-              <h1 className="text-2xl sm:text-[26px] font-extrabold text-[#1a3a5c] tracking-tight mb-1">
+              <h1 className="max-[320px]:text-xl text-2xl sm:text-[26px] font-extrabold text-[#1a3a5c] tracking-tight mb-1">
                 Acesse sua conta
               </h1>
               <p className="text-[13px] sm:text-sm font-medium text-slate-500 text-center">

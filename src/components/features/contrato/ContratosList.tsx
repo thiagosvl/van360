@@ -117,8 +117,8 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {formatShortName(nomeExibicao, true)}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+          <div className="flex flex-col min-w-0 mt-0.5">
+            <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
               {formatNomeResponsavelExibicao(responsavelExibicao)}
             </p>
           </div>

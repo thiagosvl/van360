@@ -23,7 +23,7 @@ import { ONBOARDING_MOCK_RESPONSAVEL_NOME, ONBOARDING_MOCK_RESPONSAVEL_TELEFONE 
 
 export const isResponsavelMockNome = (nome?: string | null) => {
   if (!nome) return false;
-  
+
   const normalizedNome = nome
     .trim()
     .toLowerCase()
@@ -42,9 +42,9 @@ export const isResponsavelMockTelefone = (telefone?: string | null) => {
   return telefone.replace(/\D/g, "") === ONBOARDING_MOCK_RESPONSAVEL_TELEFONE;
 };
 
-export const formatNomeResponsavelExibicao = (nome?: string | null) => {
+export const formatNomeResponsavelExibicao = (nome?: string | null, shortName: boolean = false) => {
   if (!nome) return "Não informado";
-  if (isResponsavelMockNome(nome)) return nome;
+  if (isResponsavelMockNome(nome)) return shortName ? formatFirstName(nome) : nome;
   return formatFirstName(nome);
 };
 

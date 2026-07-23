@@ -59,6 +59,10 @@ export interface OpenCobrancaFormProps {
   passageiroResponsavelNome?: string;
   valorCobranca?: number;
   diaVencimento?: number;
+  mes?: number;
+  ano?: number;
+  lockFoiPago?: boolean;
+  lockMesAno?: boolean;
   onSuccess?: () => void;
 }
 

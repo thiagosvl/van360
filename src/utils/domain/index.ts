@@ -14,3 +14,9 @@ export * from "./pages/pagesUtils";
 // Gastos
 export * from "./gasto/categoriaUtils";
 
+// Passageiro
+export * from "./passageiro/passageiroValidation";
+
+// Projeção de Cobranças
+export * from "./cobrancaProjection";
+

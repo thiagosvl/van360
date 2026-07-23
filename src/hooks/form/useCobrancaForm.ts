@@ -42,7 +42,7 @@ export const cobrancaSchema = z
     tipo_pagamento: z.string().optional(),
 
     // Campos auxiliares para UI de Criação (Mês/Ano)
-    mes: z.string().optional(),
+    mes: z.string().min(1, "O mês é obrigatório"),
     ano: z.string().optional(),
 
     // Controle de aviso
@@ -88,7 +88,7 @@ export const cobrancaSchema = z
       return true;
     },
     {
-      message: "Para meses futuros, é obrigatório registrar o pagamento.",
+      message: "Para meses futuros, é obrigatório informar o pagamento.",
       path: ["foi_pago"],
     }
   );
@@ -101,6 +101,9 @@ interface UseCobrancaFormProps {
   passageiroId?: string; // Apenas para create
   diaVencimento?: number; // Apenas para create
   valor?: number; // Apenas para create (default value)
+  mes?: number;
+  ano?: number;
+  lockFoiPago?: boolean;
   onSuccess?: () => void;
 }
 
@@ -110,6 +113,9 @@ export function useCobrancaForm({
   passageiroId,
   diaVencimento = 10,
   valor,
+  mes,
+  ano,
+  lockFoiPago,
   onSuccess,
 }: UseCobrancaFormProps) {
   const { user } = useSession();
@@ -141,25 +147,29 @@ export function useCobrancaForm({
 
     // CREATE Mode
     const today = getNowBR();
-    const currentMonth = (today.getMonth() + 1).toString();
-    const currentYear = today.getFullYear().toString();
+    const parsedMes = (typeof mes === "number" || typeof mes === "string") ? Number(mes) : NaN;
+    const parsedAno = (typeof ano === "number" || typeof ano === "string") ? Number(ano) : NaN;
+
+    const hasExplicitMes = !isNaN(parsedMes) && parsedMes >= 1 && parsedMes <= 12;
+    const targetMonthNum = hasExplicitMes ? parsedMes : today.getMonth() + 1;
+    const targetYearNum = !isNaN(parsedAno) && parsedAno >= 2020 ? parsedAno : today.getFullYear();
 
     const vencimentoInicial = calculateSafeDueDate(
       diaVencimento,
-      today.getMonth(),
-      today.getFullYear()
+      targetMonthNum - 1,
+      targetYearNum
     );
 
     return {
       valor: valor ? moneyMask(String(Math.round(valor * 100))) : "",
       data_vencimento: vencimentoInicial,
-      foi_pago: false,
-      data_pagamento: undefined,
+      foi_pago: lockFoiPago ? true : false,
+      data_pagamento: lockFoiPago ? today : undefined,
       tipo_pagamento: "",
-      mes: currentMonth,
-      ano: currentYear,
+      mes: hasExplicitMes ? targetMonthNum.toString() : "",
+      ano: targetYearNum.toString(),
     };
-  }, [mode, cobranca, diaVencimento, valor]);
+  }, [mode, cobranca, diaVencimento, valor, mes, ano, lockFoiPago]);
 
   const form = useForm<CobrancaFormData>({
     resolver: zodResolver(cobrancaSchema),

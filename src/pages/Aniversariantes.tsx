@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { PassageirosSemDataList } from "@/components/features/passageiro/PassageirosSemDataList";
 import { PassageiroAniversarianteCard } from "@/components/features/passageiro/PassageiroAniversarianteCard";
+import { UnifiedEmptyState } from "@/components/empty";
 import { useNavigate } from "react-router-dom";
 
 const Aniversariantes = () => {
@@ -108,8 +109,9 @@ const Aniversariantes = () => {
         <div className="space-y-6 pb-24">
           <DateNavigation
             mes={mesAtual}
-            ano={new Date().getFullYear()} // Ano não é tão relevante pra essa API, mas required na nav
+            ano={new Date().getFullYear()}
             onNavigate={handleNavigation}
+            showYear={false}
           />
 
           <Tabs
@@ -166,31 +168,33 @@ const Aniversariantes = () => {
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 border-dashed">
-              <div className="bg-slate-50 dark:bg-zinc-800 rounded-full p-4 mb-3">
-                <Cake className="h-6 w-6 text-slate-400 dark:text-slate-500" />
-              </div>
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Sem aniversariantes</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Nenhum passageiro faz aniversário em {currentMonthName}.</p>
+            <div className="px-1">
+              <UnifiedEmptyState
+                icon={Cake}
+                title="Sem aniversariantes"
+                description={`Nenhum passageiro faz aniversário em ${currentMonthName}.`}
+              />
             </div>
           )}
 
           {data && data.passageirosSemData > 0 && data.passageirosSemDataList && data.passageirosSemDataList.length > 0 && (
-            <Accordion type="single" collapsible className="w-full mt-4 bg-white rounded-[24px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
-              <AccordionItem value="sem-data" className="border-none w-full">
-                <AccordionTrigger className="py-3 px-5 bg-[#FFFCEF] hover:no-underline">
-                  <div className="flex items-center gap-2 text-left w-full">
-                    <AlertCircle className="h-[18px] w-[18px] shrink-0 text-orange-500" />
-                    <span className="text-[13px] leading-tight font-medium text-orange-600/90">
-                      <strong className="text-orange-700 font-bold">{data.passageirosSemData} passageiro{data.passageirosSemData === 1 ? '' : 's'}</strong> sem data de nascimento.
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-0 bg-white">
-                  <PassageirosSemDataList passageiros={data.passageirosSemDataList} />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="px-1">
+              <Accordion type="single" collapsible className="w-full mt-4 bg-white rounded-[24px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+                <AccordionItem value="sem-data" className="border-none w-full">
+                  <AccordionTrigger className="py-3 px-5 bg-[#FFFCEF] hover:no-underline">
+                    <div className="flex items-center gap-2 text-left w-full">
+                      <AlertCircle className="h-[18px] w-[18px] shrink-0 text-orange-500" />
+                      <span className="text-[13px] leading-tight font-medium text-orange-600/90">
+                        <strong className="text-orange-700 font-bold">{data.passageirosSemData} passageiro{data.passageirosSemData === 1 ? '' : 's'}</strong> sem data de nascimento.
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-0 bg-white">
+                    <PassageirosSemDataList passageiros={data.passageirosSemDataList} />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
           )}
 
         </div>

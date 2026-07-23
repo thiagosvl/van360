@@ -18,4 +18,5 @@ export interface Cobranca {
   valor_pago?: number;
   data_envio_ultima_notificacao?: string;
   recibo_url?: string;
+  isProjection?: boolean;
 }

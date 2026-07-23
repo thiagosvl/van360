@@ -19,8 +19,6 @@ export default function Gastos() {
     anoFilter,
     categoriaFilter,
     veiculoFilter,
-    searchTerm,
-    setSearchTerm,
     setSelectedCategoria,
     setSelectedVeiculo,
     setFilters,
@@ -69,8 +67,6 @@ export default function Gastos() {
           }}
           categorias={categorias}
           veiculos={veiculos}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
           hasActiveFilters={hasActiveFilters}
           onClearFilters={clearFilters}
         />
@@ -94,7 +90,7 @@ export default function Gastos() {
           </h2>
           {(() => {
             const sectionCount = gastos.length;
-            const countLabel = searchTerm || hasActiveFilters
+            const countLabel = hasActiveFilters
               ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
               : (sectionCount === 1 ? "REGISTRO" : "REGISTROS");
             return sectionCount != null ? (
@@ -120,19 +116,26 @@ export default function Gastos() {
               gastos.length === 0 && (
                 <UnifiedEmptyState
                   icon={Wallet}
-                  title="Nenhum gasto encontrado"
+                  title={
+                    hasActiveFilters
+                      ? "Nenhum gasto encontrado"
+                      : "Nenhum gasto registrado"
+                  }
                   description={
-                    searchTerm
-                      ? `Nenhum gasto encontrado para "${searchTerm}"`
+                    hasActiveFilters
+                      ? "Não encontramos gastos com os filtros selecionados."
                       : "Nenhum gasto registrado no mês indicado."
                   }
                   action={
-                    !searchTerm
+                    hasActiveFilters
                       ? {
+                        label: "Limpar Filtros",
+                        onClick: clearFilters,
+                      }
+                      : {
                         label: "Registrar Gasto",
                         onClick: () => handleOpenForm(),
                       }
-                      : undefined
                   }
                 />
               )}
