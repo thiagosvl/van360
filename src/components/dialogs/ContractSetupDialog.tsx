@@ -231,6 +231,14 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     return signatureTemp;
   };
 
+  const [editTitleDialog, setEditTitleDialog] = useState<{ sectionId: string; currentTitle: string } | null>(null);
+  const [tempTitleInput, setTempTitleInput] = useState("");
+
+  const handleOpenEditTitleDialog = (sectionId: string, currentTitle: string) => {
+    setEditTitleDialog({ sectionId, currentTitle });
+    setTempTitleInput(currentTitle);
+  };
+
   // Handlers para Seções e Cláusulas
   const handleSectionTitleChange = (sectionId: string, newTitle: string) => {
     setSecoes((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, titulo: newTitle } : sec)));
@@ -261,6 +269,32 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         return sec;
       })
     );
+  };
+
+  const handleClearClause = (sectionId: string, clauseId: string) => {
+    const targetSecao = secoes.find((s) => s.id === sectionId);
+    const clauseItem = targetSecao?.clausulas.find((c) => c.id === clauseId);
+    const text = clauseItem?.texto ?? "";
+
+    const executeClear = () => {
+      handleClauseChange(sectionId, clauseId, "");
+    };
+
+    if (!text.trim()) {
+      executeClear();
+      return;
+    }
+
+    openConfirmationDialog({
+      title: "Limpar Cláusula?",
+      description: "Tem certeza que deseja limpar o texto desta cláusula? Todo o conteúdo digitado será removido.",
+      confirmText: "Limpar Texto",
+      variant: "destructive",
+      onConfirm: () => {
+        executeClear();
+        closeConfirmationDialog();
+      },
+    });
   };
 
   const handleDeleteClause = (sectionId: string, clauseId: string) => {
@@ -312,7 +346,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     setSecoes((prev) => [...prev, newSecao]);
     setExpandedSectionId(newSecaoId);
     setExpandedClauseKey(null);
-    setFocusedSectionId(newSecaoId);
+    setEditTitleDialog({ sectionId: newSecaoId, currentTitle: "" });
+    setTempTitleInput("");
   };
 
   const handleDeleteSection = (sectionId: string) => {
@@ -475,7 +510,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   const currentStepTitle = () => {
     switch (step) {
       case SetupStep.FEES: return "Penalidades e Multas";
-      case SetupStep.CLAUSES: return "Cláusulas e Termos";
+      case SetupStep.CLAUSES: return "Cláusulas";
       case SetupStep.SIGNATURE: return "Assinatura Digital";
       case SetupStep.PREVIEW: return "Revisão do Contrato";
       default: return "Configurar Contratos";
@@ -695,23 +730,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   );
 
   const renderClauses = () => (
-    <div className="space-y-4">
-      {hasConfiguredBefore ? (
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Estrutura do Contrato
-          </span>
-          <div className="flex gap-1.5">
-            <span className="px-2 py-0.5 sm:px-2.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/50">
-              {secoes.length} {secoes.length === 1 ? "Seção" : "Seções"}
-            </span>
-            <span className="px-2 py-0.5 sm:px-2.5 bg-blue-50 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-widest border border-blue-100">
-              {totalClausulas} {totalClausulas === 1 ? "Cláusula" : "Cláusulas"}
-            </span>
-          </div>
-        </div>
-      ) : (
-        <div className="p-3 sm:p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-2.5 sm:gap-3 items-start">
+    <div className="space-y-3">
+      {!hasConfiguredBefore && (
+        <div className="p-3 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-2.5 items-start">
           <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
           <p className="text-[10px] sm:text-[11px] text-blue-800 leading-relaxed font-medium">
             Não se preocupe! Você poderá editar seu contrato a qualquer momento no futuro.
@@ -719,11 +740,23 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         </div>
       )}
 
-      {/* Botão de Visualizar Modelo no topo das Cláusulas */}
+      {/* Resumo de Totais (Seções e Cláusulas) no Topo */}
+      <div className="flex items-center justify-between gap-2 px-0.5 pb-0.5">
+        <div className="flex items-center gap-1.5">
+          <span className="px-2.5 py-0.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-600 uppercase tracking-wider border border-slate-200/60">
+            {secoes.length} {secoes.length === 1 ? "Seção" : "Seções"}
+          </span>
+          <span className="px-2.5 py-0.5 bg-blue-50 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-wider border border-blue-100">
+            {totalClausulas} {totalClausulas === 1 ? "Cláusula" : "Cláusulas"}
+          </span>
+        </div>
+      </div>
+
+      {/* Botão Visualizar Modelo 100% de largura no topo */}
       <Button
         variant="outline"
         type="button"
-        className="w-full h-11 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-2xl font-black uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-sm"
+        className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-2xl font-black uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-2xs"
         disabled={previewMutation.isPending}
         onClick={async () => {
           try {
@@ -751,7 +784,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       </Button>
 
       {/* Lista de Seções */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {secoes.map((secao, sIdx) => (
           <SectionItemCard
             key={secao.id}
@@ -766,13 +799,14 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             expandedClauseKey={expandedClauseKey}
             setExpandedClauseKey={setExpandedClauseKey}
             clauseRefs={clauseRefs}
-            onSectionTitleChange={handleSectionTitleChange}
+            onOpenEditTitleDialog={handleOpenEditTitleDialog}
             onDeleteSection={handleDeleteSection}
             onMoveSectionUp={handleMoveSectionUp}
             onMoveSectionDown={handleMoveSectionDown}
             onMoveClauseUp={handleMoveClauseUp}
             onMoveClauseDown={handleMoveClauseDown}
             onClauseChange={(clauseId, text) => handleClauseChange(secao.id, clauseId, text)}
+            onClearClause={(clauseId) => handleClearClause(secao.id, clauseId)}
             onDeleteClause={(clauseId) => handleDeleteClause(secao.id, clauseId)}
             onAddClause={() => handleAddClauseToSection(secao.id)}
           />
@@ -783,7 +817,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       <button
         type="button"
         onClick={handleAddSection}
-        className="w-full py-3 bg-white border-2 border-dashed border-slate-300 hover:bg-blue-50/50 hover:border-blue-400 text-[#1a3a5c] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]"
+        className="w-full py-2.5 bg-white border-2 border-dashed border-slate-300 hover:bg-blue-50/50 hover:border-blue-400 text-[#1a3a5c] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-[0.99]"
       >
         <FolderPlus className="w-4 h-4 text-blue-600" />
         Adicionar Nova Seção ao Contrato
@@ -950,6 +984,63 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         pdfUrl={pdfUrl}
         title="Modelo do Contrato"
       />
+
+      {/* Dialog para Edição de Título de Seção */}
+      <BaseDialog
+        open={Boolean(editTitleDialog)}
+        onOpenChange={(open) => {
+          if (!open) setEditTitleDialog(null);
+        }}
+        maxWidth="sm"
+      >
+        <BaseDialog.Header
+          title="Editar Título da Seção"
+          icon={<Pencil className="w-5 h-5 opacity-80" />}
+          showSteps={false}
+          hideCloseButton={false}
+          onClose={() => setEditTitleDialog(null)}
+        />
+        <BaseDialog.Body className="py-4">
+          <div className="space-y-2">
+            <Label className="text-slate-700 font-semibold ml-1 text-sm flex items-center gap-1">
+              Título da Seção <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              autoFocus
+              value={tempTitleInput}
+              onChange={(e) => setTempTitleInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && tempTitleInput.trim() !== "") {
+                  e.preventDefault();
+                  if (editTitleDialog) {
+                    handleSectionTitleChange(editTitleDialog.sectionId, tempTitleInput);
+                    setEditTitleDialog(null);
+                  }
+                }
+              }}
+              placeholder="Ex: DO OBJETO E DA PRESTAÇÃO..."
+              className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-semibold text-slate-800 text-sm transition-all uppercase"
+            />
+          </div>
+        </BaseDialog.Body>
+        <BaseDialog.Footer>
+          <BaseDialog.Action
+            label="Cancelar"
+            variant="secondary"
+            onClick={() => setEditTitleDialog(null)}
+          />
+          <BaseDialog.Action
+            label="Salvar Título"
+            disabled={!tempTitleInput.trim()}
+            onClick={() => {
+              if (editTitleDialog && tempTitleInput.trim() !== "") {
+                handleSectionTitleChange(editTitleDialog.sectionId, tempTitleInput);
+                setEditTitleDialog(null);
+              }
+            }}
+          />
+        </BaseDialog.Footer>
+      </BaseDialog>
     </>
   );
 }
@@ -967,13 +1058,14 @@ interface SectionItemCardProps {
   expandedClauseKey: string | null;
   setExpandedClauseKey: (key: string | null) => void;
   clauseRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
-  onSectionTitleChange: (sectionId: string, newTitle: string) => void;
+  onOpenEditTitleDialog: (sectionId: string, currentTitle: string) => void;
   onDeleteSection: (sectionId: string) => void;
   onMoveSectionUp: (sIdx: number) => void;
   onMoveSectionDown: (sIdx: number) => void;
   onMoveClauseUp: (sIdx: number, cIdx: number) => void;
   onMoveClauseDown: (sIdx: number, cIdx: number) => void;
   onClauseChange: (clauseId: string, text: string) => void;
+  onClearClause: (clauseId: string) => void;
   onDeleteClause: (clauseId: string) => void;
   onAddClause: () => void;
 }
@@ -990,13 +1082,14 @@ function SectionItemCard({
   expandedClauseKey,
   setExpandedClauseKey,
   clauseRefs,
-  onSectionTitleChange,
+  onOpenEditTitleDialog,
   onDeleteSection,
   onMoveSectionUp,
   onMoveSectionDown,
   onMoveClauseUp,
   onMoveClauseDown,
   onClauseChange,
+  onClearClause,
   onDeleteClause,
   onAddClause,
 }: SectionItemCardProps) {
@@ -1006,22 +1099,49 @@ function SectionItemCard({
   return (
     <div
       className={cn(
-        "p-3.5 sm:p-4 bg-white rounded-2xl sm:rounded-3xl border shadow-sm space-y-3.5 transition-all",
+        "p-3 bg-slate-100/70 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5 transition-all",
         showErrors && (isSecaoEmpty || isTitleEmpty) ? "border-red-300 ring-2 ring-red-100" : "border-slate-200"
       )}
     >
       {/* Header da Seção */}
-      <div className={cn("space-y-1.5", isSectionExpanded ? "border-b border-slate-100 pb-3" : "")}>
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-1.5 flex-1 min-w-0">
-            {/* Setas de Reordenação da Seção (Empilhadas - apenas quando recolhida) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          {/* Título da Seção (Texto limpo sem omissão + botão de lápis para abrir o dialog) */}
+          <div className="flex-1 min-w-0">
+            <div
+              onClick={() => onOpenEditTitleDialog(secao.id, secao.titulo)}
+              className="flex items-center gap-1.5 cursor-pointer group py-0.5 min-w-0"
+              title="Clique para editar o título da seção"
+            >
+              <h3 className={cn(
+                "font-black text-xs sm:text-sm uppercase tracking-wide break-words whitespace-normal leading-snug",
+                showErrors && isTitleEmpty ? "text-red-600" : "text-[#1a3a5c]"
+              )}>
+                {secao.titulo || "SEÇÃO SEM TÍTULO (CLIQUE PARA INFORMAR)"}
+              </h3>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenEditTitleDialog(secao.id, secao.titulo);
+                }}
+                className="p-1 text-slate-400 group-hover:text-[#1a3a5c] hover:bg-slate-200/60 rounded-md transition-colors shrink-0"
+                title="Editar título da seção"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Ações da Seção à Direita (Setas de Reordenação + Lixeira) */}
+          <div className="flex items-center gap-0.5 shrink-0">
             {!isSectionExpanded && (
-              <div className="flex flex-col items-center justify-center -space-y-0.5 shrink-0 mt-0.5">
+              <div className="flex items-center bg-white border border-slate-200/80 rounded-lg p-0.5 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => onMoveSectionUp(sIdx)}
                   disabled={sIdx === 0}
-                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  className="p-1 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
                   title="Subir Seção"
                 >
                   <ArrowUp className="w-3 h-3" />
@@ -1030,53 +1150,17 @@ function SectionItemCard({
                   type="button"
                   onClick={() => onMoveSectionDown(sIdx)}
                   disabled={sIdx === totalSections - 1}
-                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  className="p-1 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
                   title="Descer Seção"
                 >
                   <ArrowDown className="w-3 h-3" />
                 </button>
               </div>
             )}
-
-            <span className="text-xs font-black text-[#1a3a5c] shrink-0 mt-1">
-              {sIdx + 1}.
-            </span>
-            <div className="flex-1 min-w-0">
-              <textarea
-                ref={(el) => {
-                  if (el && focusedSectionId === secao.id) {
-                    el.focus();
-                    setFocusedSectionId(null);
-                  }
-                }}
-                rows={1}
-                value={secao.titulo}
-                onChange={(e) => onSectionTitleChange(secao.id, e.target.value)}
-                className={cn(
-                  "font-black text-xs sm:text-sm uppercase tracking-wide bg-transparent border-b border-dashed focus:outline-none px-1 py-0.5 w-full transition-colors resize-none leading-snug break-words",
-                  showErrors && isTitleEmpty
-                    ? "text-red-600 border-red-300 placeholder:text-red-300"
-                    : "text-slate-800 border-slate-200 hover:border-blue-400 focus:border-blue-500"
-                )}
-                placeholder="DIGITE O TÍTULO DA SEÇÃO..."
-                title="Toque para editar o título da seção"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0 mt-0.5">
-            <button
-              type="button"
-              onClick={onToggleExpandSection}
-              className="p-1.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-xl transition-colors"
-              title={isSectionExpanded ? "Recolher Seção" : "Expandir Seção"}
-            >
-              {isSectionExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
             <button
               type="button"
               onClick={() => onDeleteSection(secao.id)}
-              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               title="Excluir Seção"
             >
               <Trash2 className="w-4 h-4" />
@@ -1084,16 +1168,34 @@ function SectionItemCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between px-1 text-[9px] sm:text-[10px] text-slate-400 font-medium">
-          <span className={cn(
-            "px-2 py-0.5 rounded-full text-[9px] font-bold cursor-pointer",
-            isSecaoEmpty ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"
-          )} onClick={onToggleExpandSection}>
+        {/* Subheader da Seção: Contador de Cláusulas e Botão Prático de Expansão */}
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-full text-[9px] font-bold transition-colors",
+              isSecaoEmpty ? "bg-amber-100 text-amber-700" : "bg-white text-slate-600 border border-slate-200/60"
+            )}
+          >
             {secao.clausulas.length} {secao.clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
           </span>
-          <span className="text-[9px] text-slate-400 italic">
-            {isSectionExpanded ? "Toque no título para renomear" : "Toque na seta para ver cláusulas"}
-          </span>
+
+          <button
+            type="button"
+            onClick={onToggleExpandSection}
+            className="px-2.5 py-1 bg-white hover:bg-slate-200/60 active:bg-slate-300/60 text-[#1a3a5c] border border-slate-200/80 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors shadow-2xs"
+          >
+            {isSectionExpanded ? (
+              <>
+                <ChevronUp className="w-3 h-3 text-slate-500" />
+                <span>Recolher</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3 h-3 text-slate-500" />
+                <span>Ver Cláusulas</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -1101,7 +1203,7 @@ function SectionItemCard({
       {isSectionExpanded && (
         <>
           {/* Lista de Cláusulas dentro da Seção */}
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2.5 pt-1">
             {secao.clausulas.map((clause, cIdx) => (
               <ClauseItemCard
                 key={clause.id}
@@ -1117,19 +1219,20 @@ function SectionItemCard({
                 onMoveClauseUp={onMoveClauseUp}
                 onMoveClauseDown={onMoveClauseDown}
                 onClauseChange={(text) => onClauseChange(clause.id, text)}
+                onClearClause={() => onClearClause(clause.id)}
                 onDeleteClause={() => onDeleteClause(clause.id)}
               />
             ))}
           </div>
 
           {/* Botão de Adicionar Cláusula na Seção */}
-          <div className="pt-1">
+          <div className="pt-0.5">
             <button
               type="button"
               onClick={onAddClause}
-              className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]"
+              className="w-full py-2 bg-white border border-slate-300 hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-[0.99]"
             >
-              <Plus className="w-4 h-4 text-blue-600" />
+              <Plus className="w-3.5 h-3.5 text-blue-600" />
               Adicionar Cláusula nesta Seção
             </button>
           </div>
@@ -1139,7 +1242,7 @@ function SectionItemCard({
   );
 }
 
-// Componente para a Cláusula com Reordenação por Setas
+// Componente para a Cláusula com Reordenação por Setas à Direita
 interface ClauseItemCardProps {
   clause: ClauseItemUI;
   cIdx: number;
@@ -1153,6 +1256,7 @@ interface ClauseItemCardProps {
   onMoveClauseUp: (sIdx: number, cIdx: number) => void;
   onMoveClauseDown: (sIdx: number, cIdx: number) => void;
   onClauseChange: (text: string) => void;
+  onClearClause: () => void;
   onDeleteClause: () => void;
 }
 
@@ -1169,6 +1273,7 @@ function ClauseItemCard({
   onMoveClauseUp,
   onMoveClauseDown,
   onClauseChange,
+  onClearClause,
   onDeleteClause,
 }: ClauseItemCardProps) {
   const isBlank = clause.texto.trim() === "";
@@ -1181,26 +1286,35 @@ function ClauseItemCard({
         clauseRefs.current[clause.id] = el;
       }}
       className={cn(
-        "rounded-2xl border transition-all overflow-hidden scroll-mt-4",
-        isExpanded
-          ? "border-[#1a3a5c] bg-white shadow-md ring-4 ring-[#1a3a5c]/5"
-          : "border-slate-200 bg-white hover:border-slate-300 shadow-sm"
+        "rounded-xl border transition-all overflow-hidden scroll-mt-4",
+        showErrors && isBlank
+          ? "border-red-400 bg-red-50/20 ring-2 ring-red-100 shadow-sm"
+          : isExpanded
+            ? "border-[#1a3a5c] bg-white shadow-sm ring-2 ring-[#1a3a5c]/10"
+            : "border-slate-200 bg-white hover:border-slate-300 shadow-2xs"
       )}
     >
       <div
         onClick={onToggleExpand}
-        className="p-3 cursor-pointer select-none space-y-2"
+        className="p-2.5 cursor-pointer select-none space-y-1.5"
       >
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-1.5">
+          {/* Esquerda: Identificador da Cláusula (Direto sem caixa/borda) */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            {/* Setas de Reordenação da Cláusula (Empilhadas - apenas quando recolhida) */}
+            <span className="font-black text-xs uppercase tracking-wide text-[#1a3a5c] shrink-0">
+              CLÁUSULA {cIdx + 1}
+            </span>
+          </div>
+
+          {/* Direita: Botões de Reordenação + Edição + Exclusão */}
+          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
             {!isExpanded && (
-              <div className="flex flex-col items-center justify-center -space-y-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center bg-slate-100/80 rounded-md p-0.5 shrink-0 border border-slate-200/60">
                 <button
                   type="button"
                   onClick={() => onMoveClauseUp(sIdx, cIdx)}
                   disabled={isFirstClauseOverall}
-                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
                   title={cIdx === 0 ? "Mover para a seção anterior" : "Subir Cláusula"}
                 >
                   <ArrowUp className="w-3 h-3" />
@@ -1209,7 +1323,7 @@ function ClauseItemCard({
                   type="button"
                   onClick={() => onMoveClauseDown(sIdx, cIdx)}
                   disabled={isLastClauseOverall}
-                  className="p-0.5 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                  className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
                   title={cIdx === totalClausesInSection - 1 ? "Mover para a próxima seção" : "Descer Cláusula"}
                 >
                   <ArrowDown className="w-3 h-3" />
@@ -1217,70 +1331,63 @@ function ClauseItemCard({
               </div>
             )}
 
-            <span className="px-2.5 py-1 bg-slate-100 text-[#1a3a5c] rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0">
-              CLÁUSULA {cIdx + 1}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
               onClick={onToggleExpand}
               className={cn(
-                "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all border",
+                "px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all border",
                 isExpanded
-                  ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-sm"
+                  ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-2xs"
                   : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-[#1a3a5c]"
               )}
             >
               {isExpanded ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                </>
+                <Check className="w-3.5 h-3.5" />
               ) : (
-                <>
-                  <Pencil className="w-3 h-3 text-slate-400" />
-                </>
+                <Pencil className="w-3 h-3 text-slate-400" />
               )}
             </button>
             {isExpanded ? (
               <button
                 type="button"
-                onClick={() => onClauseChange("")}
-                className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                onClick={onClearClause}
+                className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
                 title="Limpar conteúdo"
               >
-                <Eraser className="w-4 h-4" />
+                <Eraser className="w-3.5 h-3.5" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => onDeleteClause()}
-                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                 title="Excluir Cláusula"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         </div>
 
         {!isExpanded && (
-          <p className="text-xs text-slate-600 font-normal italic line-clamp-2 leading-relaxed pl-1 flex-1">
+          <p className={cn(
+            "text-[11px] font-normal italic line-clamp-2 leading-relaxed pl-0.5 flex-1",
+            showErrors && isBlank ? "text-red-500 font-bold opacity-90" : "text-slate-600"
+          )}>
             {clause.texto.trim() ? clause.texto : "Clique em Editar para preencher o texto..."}
           </p>
         )}
       </div>
 
       {isExpanded && (
-        <div className="px-3 pb-3 pt-0 space-y-2">
+        <div className="px-2.5 pb-2.5 pt-0 space-y-1.5">
           <textarea
             autoFocus={isBlank && isExpanded}
             value={clause.texto}
             onChange={(e) => onClauseChange(e.target.value)}
             placeholder="Digite o texto da cláusula..."
             className={cn(
-              "w-full p-4 text-xs sm:text-sm text-slate-800 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[300px] sm:min-h-[380px] h-[calc(100dvh-320px)] max-h-[500px] resize-y",
+              "w-full p-3.5 text-xs sm:text-sm text-slate-800 bg-[#fcfcfd] border border-slate-200 rounded-xl focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/5 leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[260px] sm:min-h-[340px] h-[calc(100dvh-300px)] max-h-[480px] resize-y",
               showErrors && isBlank ? "border-red-300 bg-red-50/20" : ""
             )}
           />
