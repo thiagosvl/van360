@@ -124,7 +124,7 @@ export function useCobrancasViewModel() {
     }
   );
 
-  const { data: passageirosData } = usePassageiros(
+  const { data: passageirosData, isLoading: isPassageirosLoading } = usePassageiros(
     { usuarioId: profile?.id, status: "true" },
     { enabled: !!profile?.id }
   );
@@ -135,6 +135,8 @@ export function useCobrancasViewModel() {
   }, [passageirosData]);
 
   const cobrancasAReceber = useMemo(() => {
+    if (!cobrancasData || !passageirosData) return [];
+
     const realList = cobrancasData?.areceber ?? [];
     const realRecebidos = cobrancasData?.recebidos ?? [];
 
@@ -197,10 +199,10 @@ export function useCobrancasViewModel() {
     }
 
     return combined;
-  }, [cobrancasData, activePassageiros, isPastMonth, mesFilter, anoFilter, debouncedSearchTerm]);
+  }, [cobrancasData, passageirosData, activePassageiros, isPastMonth, mesFilter, anoFilter, debouncedSearchTerm, profile?.created_at]);
 
   const cobrancasRecebidas = useMemo(() => cobrancasData?.recebidos ?? [], [cobrancasData]);
-  const isInitialLoading = isCobrancasLoading;
+  const isInitialLoading = isCobrancasLoading || isPassageirosLoading || isProfileLoading || !cobrancasData || !passageirosData;
 
   useEffect(() => {
     setPageTitle("Parcelas");

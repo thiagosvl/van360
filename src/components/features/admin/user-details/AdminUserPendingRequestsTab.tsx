@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Phone, MapPin, School, Calendar, Search, X, MessageSquare, AlertCircle } from "lucide-react";
 import { phoneMask } from "@/utils/masks";
+import { formatShortName } from "@/utils/formatters/name";
 import { openBrowserLink } from "@/utils/browser";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 
@@ -124,7 +125,9 @@ export function AdminUserPendingRequestsTab({ solicitacoes }: AdminUserPendingRe
                       <td className="py-4 px-4">
                         {s.nome_responsavel ? (
                           <div>
-                            <p className="font-medium text-slate-300 truncate">{s.nome_responsavel}</p>
+                            <p className="font-medium text-slate-300 truncate">
+                              {formatShortName(s.nome_responsavel, true)}
+                            </p>
                             {s.telefone_responsavel && (
                               <button
                                 type="button"

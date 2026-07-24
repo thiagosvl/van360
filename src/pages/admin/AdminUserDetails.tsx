@@ -898,45 +898,31 @@ export default function AdminUserDetails() {
                           {formatDate(data.user.created_at)}
                         </span>
                       </div>
-
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Status do Usuário
-                        </span>
-                        <div className="pt-0.5">
-                          <ActiveStatusBadge active={data.user.ativo} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Status da Assinatura
-                        </span>
-                        <div className="pt-0.5">
-                          {data.assinatura ? (
-                            <SubscriptionStatusBadge
-                              status={data.assinatura.status}
-                              dataVencimento={data.assinatura.data_vencimento}
-                            />
-                          ) : (
-                            <span className="text-slate-500 italic">—</span>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* CATEGORIA 4: CONTRATOS DIGITAIS & MINUTA */}
                 {(() => {
-                  const statusConfig =
-                    data.user.assinatura_digital_url
-                      ? data.user.config_contrato?.usar_contratos === true
-                        ? DriverContractConfigStatus.ATIVO
-                        : DriverContractConfigStatus.DESATIVADO
-                      : DriverContractConfigStatus.NAO_CONFIGURADO;
-
                   const config = data.user.config_contrato as Record<string, any> | null;
+                  const hasSignature = !!data.user.assinatura_digital_url;
+                  const hasConfig =
+                    !!config &&
+                    (config.usar_contratos !== undefined ||
+                      (Array.isArray(config.secoes) && config.secoes.length > 0) ||
+                      (Array.isArray(config.clausulas) && config.clausulas.length > 0) ||
+                      !!config.multa_atraso ||
+                      !!config.juros_atraso ||
+                      !!config.multa_rescisao);
+
+                  const statusConfig =
+                    !hasConfig && !hasSignature
+                      ? DriverContractConfigStatus.NAO_CONFIGURADO
+                      : config?.usar_contratos === false
+                      ? DriverContractConfigStatus.DESATIVADO
+                      : DriverContractConfigStatus.ATIVO;
+
+                  const isConfigurado = statusConfig !== DriverContractConfigStatus.NAO_CONFIGURADO;
                   const isAtivo = statusConfig === DriverContractConfigStatus.ATIVO;
 
                   return (
@@ -967,7 +953,7 @@ export default function AdminUserDetails() {
                           )}
                         </div>
 
-                        {isAtivo ? (
+                        {isConfigurado ? (
                           <div className="space-y-3 text-xs">
                             <div>
                               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
@@ -998,29 +984,31 @@ export default function AdminUserDetails() {
                           </div>
                         ) : (
                           <p className="text-xs text-slate-400 font-medium py-3 leading-relaxed">
-                            O módulo de contratos digitais não está ativo para este motorista.
+                            O módulo de contratos digitais não foi configurado por este motorista.
                           </p>
                         )}
                       </div>
 
                       {/* BOTÕES DE PREVIEW DA MINUTA E ASSINATURA */}
                       <div className="pt-3 border-t border-slate-800/80 space-y-2 mt-4">
-                        <Button
-                          type="button"
-                          size="sm"
-                          disabled={previewContrato.isPending}
-                          onClick={handleOpenMinutaPreview}
-                          className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
-                        >
-                          {previewContrato.isPending ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <FileText className="h-3.5 w-3.5" />
-                          )}
-                          <span>Ver Minuta do Contrato</span>
-                        </Button>
+                        {isConfigurado && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={previewContrato.isPending}
+                            onClick={handleOpenMinutaPreview}
+                            className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                          >
+                            {previewContrato.isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <FileText className="h-3.5 w-3.5" />
+                            )}
+                            <span>Ver Minuta do Contrato</span>
+                          </Button>
+                        )}
 
-                        {data.user.assinatura_digital_url && (
+                        {hasSignature && (
                           <Button
                             type="button"
                             size="sm"

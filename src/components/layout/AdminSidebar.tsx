@@ -25,16 +25,6 @@ const adminNavItems = [
     icon: Users,
   },
   {
-    title: "Calculadora",
-    href: ROUTES.PRIVATE.ADMIN.CALCULATOR,
-    icon: Calculator,
-  },
-  {
-    title: "Tentativas de Login",
-    href: ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS,
-    icon: ShieldAlert,
-  },
-  {
     title: "Histórico de Atividades",
     href: ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY,
     icon: Terminal,
@@ -54,6 +44,16 @@ const adminNavItems = [
     href: ROUTES.PRIVATE.ADMIN.BLOG,
     icon: FileText,
   },
+  {
+    title: "Tentativas de Login",
+    href: ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS,
+    icon: ShieldAlert,
+  },
+  {
+    title: "Calculadora",
+    href: ROUTES.PRIVATE.ADMIN.CALCULATOR,
+    icon: Calculator,
+  },
 ];
 
 interface AdminSidebarProps {
@@ -70,7 +70,7 @@ export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
             <span className="text-white font-black text-xl">V</span>
           </div>
           <div>
-            <h1 className="font-headline font-black text-lg tracking-tighter leading-none text-white">VAN360 - {import.meta.env.DEV ? "DEV" : "PRODUÇÃO"}</h1>
+            <h1 className="font-headline font-black text-lg tracking-tighter leading-none text-white">VAN360 - {import.meta.env.DEV ? "DEV" : "PROD"}</h1>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Painel Admin</span>
           </div>
         </div>

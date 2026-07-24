@@ -519,6 +519,49 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
+          {/* NOVOS MOTORISTAS */}
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+              <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
+                NOVOS MOTORISTAS
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
+                className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
+              >
+                Ver Todos
+              </Button>
+            </CardHeader>
+            <CardContent className="p-6 pt-2 space-y-3">
+              {stats.recentUsers.length === 0 ? (
+                <p className="text-xs text-slate-400 py-12 text-center">Nenhum motorista cadastrado recentemente.</p>
+              ) : (
+                stats.recentUsers.slice(0, 5).map((user) => {
+                  const sub = user.assinaturas?.[0];
+
+                  return (
+                    <div
+                      key={user.id}
+                      onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
+                      className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors"
+                    >
+                      <div className="space-y-0.5">
+                        <h4 className="text-sm font-bold text-white">{user.nome}</h4>
+                        <p className="text-[11px] font-semibold text-slate-400">
+                          Registrado: {formatDateBR(user.created_at)}
+                        </p>
+                      </div>
+
+                      <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} className="text-[10px] px-2.5 py-1" />
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
           {/* PROGRAMA DE INDICAÇÕES (REFERRAL) */}
           <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
             <CardHeader className="p-6 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -573,49 +616,6 @@ export default function AdminDashboard() {
                   icon={<Gift className="h-5 w-5" />}
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* NOVOS MOTORISTAS */}
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-              <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                NOVOS MOTORISTAS
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
-                className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
-              >
-                Ver Todos
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6 pt-2 space-y-3">
-              {stats.recentUsers.length === 0 ? (
-                <p className="text-xs text-slate-400 py-12 text-center">Nenhum motorista cadastrado recentemente.</p>
-              ) : (
-                stats.recentUsers.slice(0, 5).map((user) => {
-                  const sub = user.assinaturas?.[0];
-
-                  return (
-                    <div
-                      key={user.id}
-                      onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
-                      className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors"
-                    >
-                      <div className="space-y-0.5">
-                        <h4 className="text-sm font-bold text-white">{user.nome}</h4>
-                        <p className="text-[11px] font-semibold text-slate-400">
-                          Registrado: {formatDateBR(user.created_at)}
-                        </p>
-                      </div>
-
-                      <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} className="text-[10px] px-2.5 py-1" />
-                    </div>
-                  );
-                })
-              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -19,6 +19,7 @@ import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { AdminUserContractItem, AdminUserPassengerItem } from "@/services/api/admin.api";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { formatShortName } from "@/utils/formatters/name";
 import { phoneMask } from "@/utils/masks";
 import { ContratoStatus, DriverContractConfigStatus, ContractMultaTipo } from "@/types/enums";
 
@@ -189,6 +190,7 @@ export function AdminUserContractsTab({
                   <thead>
                     <tr className="border-b border-slate-800/80 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                       <th className="py-3.5 px-6">Passageiro</th>
+                      <th className="py-3.5 px-4">Responsável</th>
                       <th className="py-3.5 px-4">Contrato Emitido em</th>
                       <th className="py-3.5 px-4">Status Contrato</th>
                       <th className="py-3.5 px-6 text-right">Ação</th>
@@ -214,6 +216,22 @@ export function AdminUserContractsTab({
                                 )}
                               </div>
                             </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            {p.nome_responsavel ? (
+                              <div>
+                                <p className="font-medium text-slate-300 truncate">
+                                  {formatShortName(p.nome_responsavel, true)}
+                                </p>
+                                {p.telefone_responsavel && (
+                                  <p className="text-[10px] text-slate-400 font-medium font-mono">
+                                    {phoneMask(p.telefone_responsavel)}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-500 italic text-[11px]">—</span>
+                            )}
                           </td>
                           <td className="py-4 px-4">
                             {contrato ? (
