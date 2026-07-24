@@ -96,6 +96,7 @@ export interface AdminUserPendingRequestItem {
   turma: string | null;
   turno: string | null;
   endereco: string | null;
+  numero?: string | null;
   bairro: string | null;
   cidade: string | null;
   escolas?: { nome: string } | null;
