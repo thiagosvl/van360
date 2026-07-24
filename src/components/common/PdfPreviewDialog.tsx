@@ -1,11 +1,13 @@
-import { BaseDialog } from "@/components/ui/BaseDialog";
+import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { isNativeApp } from "@/utils/detectPlatform";
 import {
   FileText,
   Loader2,
   Minus,
   Plus,
+  Download,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -21,6 +23,7 @@ interface PdfPreviewDialogProps {
   pdfUrl: string | null;
   title?: string;
   fileName?: string;
+  showDownload?: boolean;
 }
 
 export function PdfPreviewDialog({
@@ -28,6 +31,8 @@ export function PdfPreviewDialog({
   onClose,
   pdfUrl,
   title = "Prévia do Documento",
+  fileName,
+  showDownload = false,
 }: PdfPreviewDialogProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [scale, setScale] = useState(1.0);
@@ -75,40 +80,52 @@ export function PdfPreviewDialog({
 
   const handleMouseUp = () => setIsMouseDown(false);
 
+  const handleDownload = () => {
+    if (!pdfUrl) return;
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = fileName || `${title.toLowerCase().replace(/[^a-z0-9]/g, "_")}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Cálculo da largura base e ampliação estritamente proporcional
   const baseWidth = Math.min(window.innerWidth - 48, 720);
   const pageWidth = Math.round(baseWidth * scale);
 
   return (
-    <BaseDialog
+    <AdminBaseDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      className="max-w-5xl max-h-[94vh] h-full"
+      maxWidth="5xl"
       description="Visualização do modelo do contrato em PDF"
     >
-      <BaseDialog.Header
+      <AdminBaseDialog.Header
         title={title}
-        icon={<FileText className="h-5 w-5" />}
+        icon={<FileText className="h-5 w-5 text-blue-400" />}
         onClose={onClose}
       />
 
-      {/* Barra de Ferramentas Centralizada (#1a3a5c) */}
-      <div className="bg-[#1a3a5c] text-white px-3 py-2 flex items-center justify-center shrink-0 select-none shadow-md">
-        <div className="flex items-center gap-2 bg-white/10 p-1 rounded-xl border border-white/15">
+      {/* Barra de Ferramentas Centralizada Dark Mode */}
+      <div className="bg-slate-900 border-y border-slate-800 text-white px-4 py-2 flex items-center justify-between shrink-0 select-none shadow-md">
+        <div className="w-10 sm:w-28" />
+
+        <div className="flex items-center gap-2 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={handleZoomOut}
             disabled={scale <= 0.5}
-            className="h-8 w-8 text-white hover:bg-white/20 rounded-lg disabled:opacity-30 transition-colors"
+            className="h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-colors"
             title="Reduzir Zoom (-)"
           >
             <Minus className="h-4 w-4" />
           </Button>
 
-          {/* Indicador Numérico Discreto (Não clicável, sem hover ou cursor de botão) */}
-          <span className="px-3 text-xs font-bold tracking-wider text-slate-200/90 select-none min-w-[52px] text-center">
+          {/* Indicador Numérico Discreto */}
+          <span className="px-3 text-xs font-bold font-mono tracking-wider text-slate-200 select-none min-w-[52px] text-center">
             {Math.round(scale * 100)}%
           </span>
 
@@ -118,16 +135,32 @@ export function PdfPreviewDialog({
             size="icon"
             onClick={handleZoomIn}
             disabled={scale >= 3.0}
-            className="h-8 w-8 text-white hover:bg-white/20 rounded-lg disabled:opacity-30 transition-colors"
+            className="h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-colors"
             title="Aumentar Zoom (+)"
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
+
+        <div className="w-10 sm:w-28 flex justify-end">
+          {showDownload && !isNativeApp() && pdfUrl && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleDownload}
+              className="h-8 px-2.5 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/30 text-xs font-bold transition-all gap-1.5"
+              title="Baixar Minuta (PDF)"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Baixar PDF</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Área do Documento com Scroll e Pan por Arraste sem truncamento */}
-      <BaseDialog.Body className="bg-slate-200/80 p-0 flex flex-col overflow-hidden relative">
+      <AdminBaseDialog.Body className="bg-[#0b0f19] p-0 flex flex-col overflow-hidden relative">
         <div
           ref={containerRef}
           onMouseDown={handleMouseDown}
@@ -150,8 +183,8 @@ export function PdfPreviewDialog({
                 onLoadSuccess={onDocumentLoadSuccess}
                 loading={
                   <div className="py-24 flex flex-col items-center gap-3">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest animate-pulse">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
                       Carregando documento...
                     </p>
                   </div>
@@ -161,7 +194,7 @@ export function PdfPreviewDialog({
                 {Array.from(new Array(numPages), (_, index) => (
                   <div
                     key={`prev_page_${index + 1}`}
-                    className="mb-6 last:mb-0 shadow-[0_15px_35px_rgba(0,0,0,0.15)] bg-white rounded-sm border border-slate-300 overflow-hidden"
+                    className="mb-6 last:mb-0 shadow-2xl bg-white rounded-sm border border-slate-700/80 overflow-hidden"
                   >
                     <Page
                       pageNumber={index + 1}
@@ -179,8 +212,8 @@ export function PdfPreviewDialog({
             )}
           </div>
         </div>
-      </BaseDialog.Body>
-    </BaseDialog>
+      </AdminBaseDialog.Body>
+    </AdminBaseDialog>
   );
 }
 

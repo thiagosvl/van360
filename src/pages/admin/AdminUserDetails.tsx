@@ -937,6 +937,7 @@ export default function AdminUserDetails() {
                       : DriverContractConfigStatus.NAO_CONFIGURADO;
 
                   const config = data.user.config_contrato as Record<string, any> | null;
+                  const isAtivo = statusConfig === DriverContractConfigStatus.ATIVO;
 
                   return (
                     <div className="space-y-3 bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
@@ -951,59 +952,65 @@ export default function AdminUserDetails() {
 
                           {statusConfig === DriverContractConfigStatus.ATIVO && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
-                              <CheckCircle2 className="h-2.5 w-2.5" /> ATIVO
+                              <CheckCircle2 className="h-2.5 w-2.5" /> MÓDULO ATIVO
                             </span>
                           )}
                           {statusConfig === DriverContractConfigStatus.DESATIVADO && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-rose-500/15 text-rose-400 border border-rose-500/30 shrink-0">
-                              <AlertTriangle className="h-2.5 w-2.5" /> PAUSADO
+                              <AlertTriangle className="h-2.5 w-2.5" /> INATIVO
                             </span>
                           )}
                           {statusConfig === DriverContractConfigStatus.NAO_CONFIGURADO && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
-                              <AlertTriangle className="h-2.5 w-2.5" /> N/A
+                              <AlertTriangle className="h-2.5 w-2.5" /> NÃO CONFIGURADO
                             </span>
                           )}
                         </div>
 
-                        <div className="space-y-3 text-xs">
-                          <div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                              Multa de Atraso
-                            </span>
-                            <span className="font-mono font-medium text-slate-300 block">
-                              {formatarRegraContrato(config?.multa_atraso)}
-                            </span>
-                          </div>
+                        {isAtivo ? (
+                          <div className="space-y-3 text-xs">
+                            <div>
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                                Multa de Atraso
+                              </span>
+                              <span className="font-mono font-medium text-slate-300 block">
+                                {formatarRegraContrato(config?.multa_atraso || { valor: 10, tipo: "fixo" })}
+                              </span>
+                            </div>
 
-                          <div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                              Juros de Atraso
-                            </span>
-                            <span className="font-mono font-medium text-slate-300 block">
-                              {formatarRegraContrato(config?.juros_atraso)}
-                            </span>
-                          </div>
+                            <div>
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                                Juros de Atraso
+                              </span>
+                              <span className="font-mono font-medium text-slate-300 block">
+                                {formatarRegraContrato(config?.juros_atraso || { valor: 1, tipo: "percentual" })}
+                              </span>
+                            </div>
 
-                          <div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                              Multa de Rescisão
-                            </span>
-                            <span className="font-mono font-medium text-slate-300 block">
-                              {formatarRegraContrato(config?.multa_rescisao)}
-                            </span>
+                            <div>
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                                Multa de Rescisão
+                              </span>
+                              <span className="font-mono font-medium text-slate-300 block">
+                                {formatarRegraContrato(config?.multa_rescisao || { valor: 15, tipo: "fixo" })}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <p className="text-xs text-slate-400 font-medium py-3 leading-relaxed">
+                            O módulo de contratos digitais não está ativo para este motorista.
+                          </p>
+                        )}
                       </div>
 
                       {/* BOTÕES DE PREVIEW DA MINUTA E ASSINATURA */}
                       <div className="pt-3 border-t border-slate-800/80 space-y-2 mt-4">
                         <Button
-                          variant="outline"
+                          type="button"
                           size="sm"
                           disabled={previewContrato.isPending}
                           onClick={handleOpenMinutaPreview}
-                          className="w-full rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 h-9 text-xs font-bold flex items-center justify-center gap-1.5"
+                          className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
                         >
                           {previewContrato.isPending ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1015,10 +1022,10 @@ export default function AdminUserDetails() {
 
                         {data.user.assinatura_digital_url && (
                           <Button
-                            variant="outline"
+                            type="button"
                             size="sm"
                             onClick={() => setIsSignatureModalOpen(true)}
-                            className="w-full rounded-xl border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 h-8 text-[11px] font-bold flex items-center justify-center gap-1.5"
+                            className="w-full rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white h-8 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5"
                           >
                             <PenTool className="h-3.5 w-3.5 text-blue-400" />
                             <span>Ver Assinatura Digital</span>
@@ -2035,6 +2042,8 @@ export default function AdminUserDetails() {
         onClose={() => setIsPreviewPdfOpen(false)}
         pdfUrl={previewPdfUrl}
         title={`Minuta do Contrato — ${data.user.nome}`}
+        fileName={`minuta_contrato_${data.user.nome.toLowerCase().replace(/[^a-z0-9]/g, "_")}.pdf`}
+        showDownload={true}
       />
 
       {/* DIÁLOGO DE ASSINATURA DIGITAL DO MOTORISTA */}
