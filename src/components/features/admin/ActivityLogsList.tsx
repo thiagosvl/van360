@@ -8,6 +8,7 @@ import { toast } from "@/utils/notifications/toast";
 import { Loader2 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { phoneMask } from "@/utils/masks";
 
 interface ActivityLogsListProps {
   logs: AdminUserLogItem[];
