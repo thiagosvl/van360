@@ -109,6 +109,5 @@ export default function AdminCalculator() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
-}
+    );
+  }
