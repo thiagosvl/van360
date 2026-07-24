@@ -12,10 +12,10 @@ interface AdminUserSchoolsTabProps {
 
 export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
   return (
-    <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white">
+    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
       <CardHeader className="p-6">
-        <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-[#1a3a5c]" />
+        <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
+          <GraduationCap className="h-4 w-4 text-purple-400" />
           Escolas Atendidas ({escolas.length})
         </CardTitle>
       </CardHeader>
@@ -37,61 +37,61 @@ export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
               return (
                 <div
                   key={e.id}
-                  className="p-5 rounded-2xl bg-slate-50/80 border border-slate-100 flex flex-col justify-between space-y-4"
+                  className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col justify-between space-y-4 text-left"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-xl bg-purple-50 text-purple-600">
+                      <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
                         <GraduationCap className="h-6 w-6" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-headline font-bold text-slate-800 leading-tight">
+                        <h4 className="text-sm font-headline font-bold text-slate-100 leading-tight">
                           {e.nome}
                         </h4>
                         {e.contato_nome && (
-                          <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                            <User className="h-3 w-3 text-slate-400" />
+                          <p className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                            <User className="h-3 w-3 text-slate-500" />
                             Contato: {e.contato_nome}
                           </p>
                         )}
                       </div>
                     </div>
-                    <Badge variant={e.ativo ? "default" : "secondary"} className="text-[9px] uppercase px-2 py-0.5">
+                    <Badge variant={e.ativo ? "default" : "secondary"} className="text-[9px] uppercase px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                       {e.ativo ? "Ativa" : "Inativa"}
                     </Badge>
                   </div>
 
                   {fullAddress && (
-                    <div className="text-xs text-slate-600 flex items-start gap-1.5 pt-2 border-t border-slate-200/60">
-                      <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-300 flex items-start gap-1.5 pt-2 border-t border-slate-800">
+                      <MapPin className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
                       <span>{fullAddress}</span>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-xs">
                     {e.telefone && (
                       <div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Telefone</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Telefone</span>
                         <a
                           href={`tel:${e.telefone}`}
-                          className="font-bold text-slate-700 hover:underline flex items-center gap-1 mt-0.5"
+                          className="font-bold text-slate-200 hover:text-white flex items-center gap-1 mt-0.5"
                         >
-                          <Phone className="h-3 w-3 text-slate-400" />
+                          <Phone className="h-3 w-3 text-slate-500" />
                           {phoneMask(e.telefone)}
                         </a>
                       </div>
                     )}
                     <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-slate-400" /> Horários
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-slate-500" /> Horários
                       </span>
                       {e.horario_entrada_manha && (
-                        <span className="text-[10px] text-slate-600 block">
+                        <span className="text-[10px] text-slate-400 block">
                           Manhã: {e.horario_entrada_manha}h - {e.horario_saida_manha}h
                         </span>
                       )}
                       {e.horario_entrada_tarde && (
-                        <span className="text-[10px] text-slate-600 block">
+                        <span className="text-[10px] text-slate-400 block">
                           Tarde: {e.horario_entrada_tarde}h - {e.horario_saida_tarde}h
                         </span>
                       )}

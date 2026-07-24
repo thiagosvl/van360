@@ -19,23 +19,12 @@ export default function AdminCalculator() {
   }, [setPageTitle]);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-20">
+    <div className="space-y-6 pb-20 text-slate-100">
       <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
-        <div
-          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
-        >
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-              Calculadora
-            </h1>
-            <p className="text-sm font-semibold text-slate-400">
-              Simulações de cenários para o Van360
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="flex justify-end gap-2">
             <Button
-              variant="link"
-              className="text-slate-600"
+              variant="outline"
+              className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
               onClick={() => {
                 openConfirmationDialog({
                   title: 'Resetar Cenário',
@@ -54,7 +43,7 @@ export default function AdminCalculator() {
               Resetar
             </Button>
             <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
+              className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 font-bold"
               onClick={() => {
                 openConfirmationDialog({
                   title: 'Salvar Cenário',
@@ -75,25 +64,25 @@ export default function AdminCalculator() {
         </div>
 
         <Tabs defaultValue="base" className="w-full space-y-6">
-          <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
+          <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
             <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
               <TabsTrigger
                 value="base"
-                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap"
               >
                 <Calculator className="w-4 h-4 mr-2 hidden sm:block" />
                 Base & Custos
               </TabsTrigger>
               <TabsTrigger
                 value="addon"
-                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap"
               >
                 <PlusCircle className="w-4 h-4 mr-2 hidden sm:block" />
                 Add-ons
               </TabsTrigger>
               <TabsTrigger
                 value="consolidado"
-                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap"
               >
                 <LineChart className="w-4 h-4 mr-2 hidden sm:block" />
                 Visão Investidor

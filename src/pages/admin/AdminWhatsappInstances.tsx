@@ -16,24 +16,16 @@ export default function AdminWhatsappInstances() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-1 text-left">
-        <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-          Instâncias WhatsApp
-        </h1>
-        <p className="text-sm font-semibold text-slate-400">
-          Gerencie as conexões ativas do WhatsApp para disparos
-        </p>
-      </div>
 
-      <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardContent className="p-6 space-y-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
+              <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
             </div>
           ) : !instances || instances.length === 0 ? (
             <div className="text-center py-20">
-              <MessageSquare className="h-12 w-12 mx-auto text-slate-300 mb-4" />
+              <MessageSquare className="h-12 w-12 mx-auto text-slate-600 mb-4" />
               <p className="text-sm font-semibold text-slate-400">
                 Nenhuma instância de WhatsApp encontrada.
               </p>
@@ -42,7 +34,7 @@ export default function AdminWhatsappInstances() {
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-slate-100">
+                  <tr className="border-b border-slate-800/80">
                     <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Instância</th>
                     <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Propósito</th>
                     <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Rate Limit</th>
@@ -54,14 +46,14 @@ export default function AdminWhatsappInstances() {
                   {instances.map((instance) => (
                     <tr
                       key={instance.id}
-                      className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                      className="border-b border-slate-800/40 hover:bg-slate-800/50 transition-colors"
                     >
                       <td className="py-4">
                         <div>
-                          <p className="text-sm font-bold text-slate-800">
+                          <p className="text-sm font-bold text-slate-100">
                             {instance.instance_name}
                             {instance.is_default_for_purpose && (
-                              <span className="ml-2 text-[9px] font-black bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full uppercase">
+                              <span className="ml-2 text-[9px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full uppercase">
                                 Padrão
                               </span>
                             )}
@@ -72,27 +64,27 @@ export default function AdminWhatsappInstances() {
                         </div>
                       </td>
                       <td className="py-4">
-                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                           instance.purpose === "BULK" 
-                            ? "bg-purple-100 text-purple-700" 
-                            : "bg-orange-100 text-orange-700"
+                            ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" 
+                            : "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                         }`}>
                           {formatWhatsappPurpose(instance.purpose)}
                         </span>
                       </td>
                       <td className="py-4">
-                        <div className="text-xs text-slate-500">
-                          <span className="font-bold text-slate-700">{instance.rate_limit_max}</span> msgs /{" "}
-                          <span className="font-bold text-slate-700">{instance.rate_limit_duration / 1000}s</span>
+                        <div className="text-xs text-slate-400">
+                          <span className="font-bold text-slate-200">{instance.rate_limit_max}</span> msgs /{" "}
+                          <span className="font-bold text-slate-200">{instance.rate_limit_duration / 1000}s</span>
                         </div>
                       </td>
                       <td className="py-4">
                         {instance.is_active ? (
-                          <div className="flex items-center text-emerald-600 text-xs font-bold">
+                          <div className="flex items-center text-emerald-400 text-xs font-bold">
                             <CheckCircle2 className="w-4 h-4 mr-1" /> Sim
                           </div>
                         ) : (
-                          <div className="flex items-center text-red-600 text-xs font-bold">
+                          <div className="flex items-center text-red-400 text-xs font-bold">
                             <XCircle className="w-4 h-4 mr-1" /> Não
                           </div>
                         )}

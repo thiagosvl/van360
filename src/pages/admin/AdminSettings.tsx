@@ -20,12 +20,6 @@ interface ConfigFieldDef {
   grupo: string;
 }
 
-const GROUP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  "Notificações": Bell,
-  "Financeiro": DollarSign,
-  "Indicações": Gift,
-};
-
 const CONFIG_DEFS: ConfigFieldDef[] = [
   {
     chave: ConfigKey.PASSAGEIRO_DIAS_AVISO_VENCIMENTO,
@@ -102,14 +96,15 @@ const CONFIG_DEFS: ConfigFieldDef[] = [
 
 export default function AdminSettings() {
   const { setPageTitle } = useLayout();
-  const { data: configs, isLoading: isConfigsLoading } = useAdminConfigs();
+  const { data: configs, isLoading: isLoadingConfigs } = useAdminConfigs();
+  const { data: plans, isLoading: isLoadingPlans } = useAdminPlans();
   const updateConfig = useUpdateConfig();
+  const updatePlan = useUpdatePlan();
+
   const [values, setValues] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState<Set<string>>(new Set());
   const [savingConfigs, setSavingConfigs] = useState<Set<string>>(new Set());
 
-  const { data: plans, isLoading: isPlansLoading } = useAdminPlans();
-  const updatePlan = useUpdatePlan();
   const [planValues, setPlanValues] = useState<Record<string, { valor: string; valor_promocional: string }>>({});
   const [planDirty, setPlanDirty] = useState<Set<string>>(new Set());
   const [savingPlans, setSavingPlans] = useState<Set<string>>(new Set());
@@ -120,143 +115,115 @@ export default function AdminSettings() {
 
   useEffect(() => {
     if (configs) {
-      const map: Record<string, string> = {};
-      for (const c of configs) {
-        map[c.chave] = c.valor;
-      }
-      setValues(map);
+      const initial: Record<string, string> = {};
+      configs.forEach((c) => {
+        initial[c.chave] = c.valor;
+      });
+      setValues(initial);
       setDirty(new Set());
     }
   }, [configs]);
 
   useEffect(() => {
     if (plans) {
-      const map: Record<string, { valor: string; valor_promocional: string }> = {};
-      for (const p of plans) {
-        map[p.id] = {
-          valor: moneyMask(p.valor),
-          valor_promocional: p.valor_promocional !== null ? moneyMask(p.valor_promocional) : "",
+      const initial: Record<string, { valor: string; valor_promocional: string }> = {};
+      plans.forEach((p) => {
+        initial[p.id] = {
+          valor: p.valor !== null && p.valor !== undefined ? moneyMask((p.valor * 100).toString()) : "",
+          valor_promocional: p.valor_promocional !== null && p.valor_promocional !== undefined ? moneyMask((p.valor_promocional * 100).toString()) : "",
         };
-      }
-      setPlanValues(map);
+      });
+      setPlanValues(initial);
       setPlanDirty(new Set());
     }
   }, [plans]);
 
-  const handleChange = (chave: string, valor: string) => {
-    setValues(p => ({ ...p, [chave]: valor }));
-    setDirty(p => new Set(p).add(chave));
+  const handleChange = (chave: string, val: string) => {
+    setValues((prev) => ({ ...prev, [chave]: val }));
+    setDirty((prev) => new Set(prev).add(chave));
   };
 
-  const handlePlanChange = (id: string, field: "valor" | "valor_promocional", val: string) => {
-    const formatted = moneyMask(val);
-    setPlanValues(p => ({
-      ...p,
-      [id]: {
-        ...p[id],
-        [field]: formatted,
+  const handlePlanChange = (planId: string, field: "valor" | "valor_promocional", raw: string) => {
+    const masked = moneyMask(raw.replace(/\D/g, ""));
+    setPlanValues((prev) => ({
+      ...prev,
+      [planId]: {
+        ...prev[planId],
+        [field]: masked,
       },
     }));
-    setPlanDirty(p => new Set(p).add(id));
+    setPlanDirty((prev) => new Set(prev).add(planId));
   };
 
-  const handleSave = (chave: string) => {
-    setSavingConfigs(p => new Set(p).add(chave));
-    updateConfig.mutate(
-      { chave, valor: values[chave] },
-      {
-        onSuccess: () => {
-          setDirty(p => {
-            const next = new Set(p);
-            next.delete(chave);
-            return next;
-          });
-        },
-        onSettled: () => {
-          setSavingConfigs(p => {
-            const next = new Set(p);
-            next.delete(chave);
-            return next;
-          });
-        }
-      }
-    );
-  };
-
-  const handleSavePlan = (id: string) => {
-    const vals = planValues[id];
-    const normalVal = moneyToNumber(vals?.valor);
-    if (!vals?.valor || normalVal <= 0) {
-      toast.error("O valor normal do plano é obrigatório e deve ser maior que zero.");
-      return;
-    }
-
-    const promoVal = vals.valor_promocional ? moneyToNumber(vals.valor_promocional) : 0;
-
-    setSavingPlans(p => new Set(p).add(id));
-    updatePlan.mutate(
-      {
-        id,
-        data: {
-          valor: normalVal,
-          valor_promocional: promoVal > 0 ? promoVal : null,
-        },
-      },
-      {
-        onSuccess: () => {
-          setPlanDirty(p => {
-            const next = new Set(p);
-            next.delete(id);
-            return next;
-          });
-        },
-        onSettled: () => {
-          setSavingPlans(p => {
-            const next = new Set(p);
-            next.delete(id);
-            return next;
-          });
-        }
-      }
-    );
-  };
-
-  const handleSaveAll = () => {
-    for (const id of planDirty) {
-      const vals = planValues[id];
-      const normalVal = moneyToNumber(vals?.valor);
-      if (!vals?.valor || normalVal <= 0) {
-        toast.error("O valor normal de todos os planos editados deve ser maior que zero.");
-        return;
-      }
-    }
-
-    for (const chave of dirty) {
-      updateConfig.mutate({ chave, valor: values[chave] });
-    }
-    setDirty(new Set());
-
-    for (const id of planDirty) {
-      const vals = planValues[id];
-      const promoVal = vals.valor_promocional ? moneyToNumber(vals.valor_promocional) : 0;
-      updatePlan.mutate({
-        id,
-        data: {
-          valor: moneyToNumber(vals.valor),
-          valor_promocional: promoVal > 0 ? promoVal : null,
-        },
+  const handleSave = async (chave: string) => {
+    setSavingConfigs((prev) => new Set(prev).add(chave));
+    try {
+      await updateConfig.mutateAsync({ chave, valor: values[chave] ?? "" });
+      setDirty((prev) => {
+        const next = new Set(prev);
+        next.delete(chave);
+        return next;
+      });
+    } catch {
+      // toast error handled by hook
+    } finally {
+      setSavingConfigs((prev) => {
+        const next = new Set(prev);
+        next.delete(chave);
+        return next;
       });
     }
-    setPlanDirty(new Set());
   };
 
-  const totalDirtyCount = dirty.size + planDirty.size;
-  const isPending = updateConfig.isPending || updatePlan.isPending;
-  const isLoading = isConfigsLoading || isPlansLoading;
+  const handleSavePlan = async (planId: string) => {
+    setSavingPlans((prev) => new Set(prev).add(planId));
+    try {
+      const pv = planValues[planId];
+      const valorNum = pv.valor ? moneyToNumber(pv.valor) : 0;
+      const valorPromoNum = pv.valor_promocional ? moneyToNumber(pv.valor_promocional) : null;
 
-  const notificacaoFields = CONFIG_DEFS.filter(f => f.grupo === "Notificações");
-  const indicacaoFields = CONFIG_DEFS.filter(f => f.grupo === "Indicações");
-  const financeiroFields = CONFIG_DEFS.filter(f => f.grupo === "Financeiro" && f.chave !== ConfigKey.SAAS_PROMOCAO_ATIVA);
+      await updatePlan.mutateAsync({
+        id: planId,
+        data: {
+          valor: valorNum,
+          valor_promocional: valorPromoNum,
+        },
+      });
+      setPlanDirty((prev) => {
+        const next = new Set(prev);
+        next.delete(planId);
+        return next;
+      });
+    } catch {
+      // handled
+    } finally {
+      setSavingPlans((prev) => {
+        const next = new Set(prev);
+        next.delete(planId);
+        return next;
+      });
+    }
+  };
+
+  const handleSaveAll = async () => {
+    const configKeysToSave = Array.from(dirty);
+    const planIdsToSave = Array.from(planDirty);
+
+    for (const key of configKeysToSave) {
+      await handleSave(key);
+    }
+    for (const pid of planIdsToSave) {
+      await handleSavePlan(pid);
+    }
+  };
+
+  const isLoading = isLoadingConfigs || isLoadingPlans;
+  const isPending = updateConfig.isPending || updatePlan.isPending;
+  const totalDirtyCount = dirty.size + planDirty.size;
+
+  const financeiroFields = CONFIG_DEFS.filter((d) => d.grupo === "Financeiro" && d.tipo !== "boolean");
+  const notificacaoFields = CONFIG_DEFS.filter((d) => d.grupo === "Notificações");
+  const indicacaoFields = CONFIG_DEFS.filter((d) => d.grupo === "Indicações");
 
   const renderConfigField = (def: ConfigFieldDef) => {
     const currentVal = values[def.chave] ?? "";
@@ -264,9 +231,9 @@ export default function AdminSettings() {
 
     if (def.tipo === "boolean") {
       return (
-        <div key={def.chave} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+        <div key={def.chave} className="flex items-center justify-between py-3 border-b border-slate-800/80 last:border-0">
           <div>
-            <p className="text-xs font-bold text-slate-700">{def.label}</p>
+            <p className="text-xs font-bold text-slate-100">{def.label}</p>
             <p className="text-[10px] text-slate-400 mt-0.5">{def.descricao}</p>
           </div>
           <div className="flex items-center gap-3">
@@ -280,7 +247,7 @@ export default function AdminSettings() {
                 variant="ghost"
                 onClick={() => handleSave(def.chave)}
                 disabled={savingConfigs.has(def.chave)}
-                className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2"
+                className="rounded-lg text-blue-400 hover:bg-blue-500/10 px-2"
               >
                 {savingConfigs.has(def.chave) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               </Button>
@@ -291,21 +258,21 @@ export default function AdminSettings() {
     }
 
     return (
-      <div key={def.chave} className="space-y-2">
-        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-          {def.label}
-        </Label>
-        <p className="text-[10px] text-slate-400 -mt-1">{def.descricao}</p>
+      <div key={def.chave} className="space-y-1.5 text-left">
+        <div>
+          <Label className="text-xs font-bold text-slate-200">{def.label}</Label>
+          <p className="text-[10px] text-slate-400 mt-0.5">{def.descricao}</p>
+        </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Input
               type={def.tipo === "number" ? "number" : "text"}
               value={currentVal}
               onChange={(e) => handleChange(def.chave, e.target.value)}
-              className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] pr-14"
+              className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 pr-14"
             />
             {def.sufixo && (
-              <span className="absolute right-3 top-3 text-[10px] font-bold text-slate-400 uppercase">
+              <span className="absolute right-3 top-3 text-[10px] font-bold text-slate-500 uppercase">
                 {def.sufixo}
               </span>
             )}
@@ -316,7 +283,7 @@ export default function AdminSettings() {
               variant="ghost"
               onClick={() => handleSave(def.chave)}
               disabled={savingConfigs.has(def.chave)}
-              className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-11 px-3"
+              className="rounded-lg text-blue-400 hover:bg-blue-500/10 h-11 px-3"
             >
               {savingConfigs.has(def.chave) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             </Button>
@@ -329,7 +296,7 @@ export default function AdminSettings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
       </div>
     );
   }
@@ -338,7 +305,7 @@ export default function AdminSettings() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1 text-left">
-          <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
+          <h1 className="text-2xl sm:text-3xl font-headline font-black text-white tracking-tight uppercase">
             Configurações
           </h1>
           <p className="text-sm font-semibold text-slate-400">
@@ -349,7 +316,7 @@ export default function AdminSettings() {
           <Button
             onClick={handleSaveAll}
             disabled={isPending}
-            className="rounded-xl h-11 bg-[#1a3a5c] text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#1a3a5c]/20 hover:bg-[#1a3a5c]/95"
+            className="rounded-xl h-11 bg-blue-600 text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/30 hover:bg-blue-500 text-white"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -363,10 +330,10 @@ export default function AdminSettings() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* COLUNA 1 - PLANOS E VALORES */}
-        <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+        <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-              <Landmark className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+              <Landmark className="h-4 w-4 text-blue-400" />
               Planos e Valores
             </CardTitle>
           </CardHeader>
@@ -376,16 +343,16 @@ export default function AdminSettings() {
               const isDirty = planDirty.has(plan.id);
 
               return (
-                <div key={plan.id} className="space-y-3 pb-5 border-b border-slate-100 last:border-0 last:pb-0">
+                <div key={plan.id} className="space-y-3 pb-5 border-b border-slate-800/80 last:border-0 last:pb-0 text-left">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-700">{plan.nome}</p>
+                    <p className="text-xs font-bold text-slate-200">{plan.nome}</p>
                     {isDirty && (
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => handleSavePlan(plan.id)}
                         disabled={savingPlans.has(plan.id)}
-                        className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 h-8 px-2"
+                        className="rounded-lg text-blue-400 hover:bg-blue-500/10 h-8 px-2"
                       >
                         {savingPlans.has(plan.id) ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -405,7 +372,7 @@ export default function AdminSettings() {
                         type="text"
                         value={vals.valor}
                         onChange={(e) => handlePlanChange(plan.id, "valor", e.target.value)}
-                        className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] px-4"
+                        className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 px-4"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -417,7 +384,7 @@ export default function AdminSettings() {
                         value={vals.valor_promocional}
                         placeholder="Sem promoção"
                         onChange={(e) => handlePlanChange(plan.id, "valor_promocional", e.target.value)}
-                        className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] px-4"
+                        className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 px-4"
                       />
                     </div>
                   </div>
@@ -426,9 +393,9 @@ export default function AdminSettings() {
             })}
 
             {configs?.find(c => c.chave === ConfigKey.SAAS_PROMOCAO_ATIVA) && (
-              <div className="pt-2 flex items-center justify-between">
+              <div className="pt-2 flex items-center justify-between text-left">
                 <div>
-                  <p className="text-xs font-bold text-slate-700">Preço Promocional Ativo</p>
+                  <p className="text-xs font-bold text-slate-200">Preço Promocional Ativo</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">
                     Habilita globalmente os preços promocionais configurados acima para novos motoristas.
                   </p>
@@ -444,7 +411,7 @@ export default function AdminSettings() {
                       variant="ghost"
                       onClick={() => handleSave(ConfigKey.SAAS_PROMOCAO_ATIVA)}
                       disabled={savingConfigs.has(ConfigKey.SAAS_PROMOCAO_ATIVA)}
-                      className="rounded-lg text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-2"
+                      className="rounded-lg text-blue-400 hover:bg-blue-500/10 px-2"
                     >
                       {savingConfigs.has(ConfigKey.SAAS_PROMOCAO_ATIVA) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     </Button>
@@ -453,7 +420,7 @@ export default function AdminSettings() {
               </div>
             )}
 
-            <div className="border-t border-slate-100 pt-6 space-y-5">
+            <div className="border-t border-slate-800/80 pt-6 space-y-5">
               {financeiroFields.map(renderConfigField)}
             </div>
           </CardContent>
@@ -461,10 +428,10 @@ export default function AdminSettings() {
 
         {/* COLUNA 2 - NOTIFICAÇÕES E INDICAÇÕES */}
         <div className="space-y-8">
-          <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                <Bell className="h-4 w-4" />
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                <Bell className="h-4 w-4 text-blue-400" />
                 Notificações
               </CardTitle>
             </CardHeader>
@@ -473,10 +440,10 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                <Gift className="h-4 w-4" />
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                <Gift className="h-4 w-4 text-purple-400" />
                 Indicações
               </CardTitle>
             </CardHeader>

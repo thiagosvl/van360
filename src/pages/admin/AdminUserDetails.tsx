@@ -409,110 +409,111 @@ export default function AdminUserDetails() {
     <div className="space-y-8">
       <div className="flex items-center gap-4">
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="rounded-xl"
           onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
+          className="rounded-xl h-10 w-10 border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
         >
-          <ArrowLeft className="h-5 w-5 text-[#1a3a5c]" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div className="flex-1 text-left">
-          <h1 className="text-lg sm:text-2xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-            {data.user.nome}
-          </h1>
-          <p className="text-xs font-semibold text-slate-400">
+        <div className="flex-1 text-left flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-semibold text-slate-400">
             Cadastrado em {formatDate(data.user.created_at)}
-            {sub && (
-              <SubscriptionStatusBadge status={sub.status} dataVencimento={sub.data_vencimento} className="ml-3" />
-            )}
-          </p>
+          </span>
+          {sub && (
+            <SubscriptionStatusBadge status={sub.status} dataVencimento={sub.data_vencimento} />
+          )}
         </div>
       </div>
 
       {/* KPIs do Motorista */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card
           onClick={() => handleTabChange("passageiros")}
-          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+          className="border border-emerald-500/40 shadow-lg shadow-emerald-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden cursor-pointer hover:border-emerald-400 transition-all duration-300"
         >
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-emerald-50">
-                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-6 flex flex-col items-start">
-              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                Passageiros
-              </h3>
-              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                PASSAGEIROS
+              </span>
+              <p className="text-3xl font-headline font-black text-white tracking-tight">
                 {data.kpis?.passageirosCount ?? 0}
               </p>
+              <p className="text-[11px] font-semibold text-slate-400 mt-1">
+                Passageiros cadastrados
+              </p>
             </div>
-          </CardContent>
+            <div className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+              <Users className="h-5 w-5" />
+            </div>
+          </div>
         </Card>
 
         <Card
           onClick={() => handleTabChange("veiculos")}
-          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+          className="border border-blue-500/40 shadow-lg shadow-blue-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden cursor-pointer hover:border-blue-400 transition-all duration-300"
         >
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-blue-50">
-                <Bus className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-6 flex flex-col items-start">
-              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                Veículos
-              </h3>
-              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                VEÍCULOS
+              </span>
+              <p className="text-3xl font-headline font-black text-white tracking-tight">
                 {data.kpis?.veiculosCount ?? 0}
               </p>
+              <p className="text-[11px] font-semibold text-slate-400 mt-1">
+                Veículos na frota
+              </p>
             </div>
-          </CardContent>
+            <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+              <Bus className="h-5 w-5" />
+            </div>
+          </div>
         </Card>
 
         <Card
           onClick={() => handleTabChange("escolas")}
-          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+          className="border border-purple-500/40 shadow-lg shadow-purple-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden cursor-pointer hover:border-purple-400 transition-all duration-300"
         >
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-purple-50">
-                <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-6 flex flex-col items-start">
-              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                Escolas
-              </h3>
-              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                ESCOLAS
+              </span>
+              <p className="text-3xl font-headline font-black text-white tracking-tight">
                 {data.kpis?.escolasCount ?? 0}
               </p>
+              <p className="text-[11px] font-semibold text-slate-400 mt-1">
+                Escolas atendidas
+              </p>
             </div>
-          </CardContent>
+            <div className="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+          </div>
         </Card>
 
         <Card
           onClick={() => handleTabChange("solicitacoes")}
-          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+          className="border border-amber-500/40 shadow-lg shadow-amber-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden cursor-pointer hover:border-amber-400 transition-all duration-300"
         >
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-amber-50">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-6 flex flex-col items-start">
-              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                Solicitações Pendentes
-              </h3>
-              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                SOLICITAÇÕES PENDENTES
+              </span>
+              <p className="text-3xl font-headline font-black text-white tracking-tight">
                 {data.kpis?.solicitacoesPendentesCount ?? 0}
               </p>
+              <p className="text-[11px] font-semibold text-slate-400 mt-1">
+                Aprovações pendentes
+              </p>
             </div>
-          </CardContent>
+            <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
+              <Clock className="h-5 w-5" />
+            </div>
+          </div>
         </Card>
       </div>
 
@@ -521,47 +522,47 @@ export default function AdminUserDetails() {
         onValueChange={handleTabChange}
         className="w-full space-y-6"
       >
-        <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
+        <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
           <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-7">
             <TabsTrigger
               value="passageiros"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Passageiros
             </TabsTrigger>
             <TabsTrigger
               value="veiculos"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Veículos
             </TabsTrigger>
             <TabsTrigger
               value="escolas"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Escolas
             </TabsTrigger>
             <TabsTrigger
               value="solicitacoes"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Solicitações
             </TabsTrigger>
             <TabsTrigger
               value="dados"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Dados e Configurações
             </TabsTrigger>
             <TabsTrigger
               value="cobrancas"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Cobranças
             </TabsTrigger>
             <TabsTrigger
               value="logs"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-3 flex-1 whitespace-nowrap"
             >
               Histórico
             </TabsTrigger>
@@ -586,10 +587,10 @@ export default function AdminUserDetails() {
 
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden">
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100">
               <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
-                  <User className="h-4 w-4" />
+                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                  <User className="h-4 w-4 text-blue-400" />
                   Dados Cadastrais
                 </CardTitle>
               </CardHeader>

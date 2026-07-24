@@ -31,7 +31,6 @@ export interface LoginAttempt {
   created_at: string;
 }
 
-// Hook simples de debounce caso não exista um utilitário global
 function useDebounce<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -89,23 +88,11 @@ export default function AdminLoginAttempts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1.5 text-left">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tight uppercase">
-              Tentativas de Login
-            </h1>
-          </div>
-          <p className="text-sm font-semibold text-slate-400">
-            Monitore todos os acessos ao sistema, incluindo falhas e bloqueios.
-          </p>
-        </div>
-      </div>
 
-      <Card className="border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden animate-in fade-in duration-300 bg-white">
-        <CardHeader className="pb-2 border-b border-slate-50 bg-slate-50/50">
+      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
+        <CardHeader className="pb-2 border-b border-slate-800/80 bg-slate-900/40">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight">
+            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
               Histórico de Acessos
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -113,7 +100,7 @@ export default function AdminLoginAttempts() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileFiltersOpen(p => !p)}
-                className={`md:hidden h-8 rounded-xl px-2 flex items-center gap-1.5 ${isMobileFiltersOpen ? 'bg-[#1a3a5c]/10 text-[#1a3a5c]' : 'text-slate-500 hover:bg-slate-100'}`}
+                className={`md:hidden h-8 rounded-xl px-2 flex items-center gap-1.5 ${isMobileFiltersOpen ? 'bg-blue-500/10 text-blue-400' : 'text-slate-400 hover:bg-slate-800'}`}
               >
                 <Filter className="h-3.5 w-3.5" />
               </Button>
@@ -122,7 +109,7 @@ export default function AdminLoginAttempts() {
                 size="sm"
                 onClick={() => { setPage(1); refetchLogs(); }}
                 disabled={isFetchingLogs}
-                className="h-8 rounded-xl text-[#1a3a5c] hover:bg-[#1a3a5c]/10 px-3 flex items-center gap-1.5"
+                className="h-8 rounded-xl text-blue-400 hover:bg-blue-500/10 px-3 flex items-center gap-1.5"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
                 <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
@@ -133,54 +120,54 @@ export default function AdminLoginAttempts() {
 
         <CardContent className="pt-6">
           <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 ${!isMobileFiltersOpen ? 'hidden md:grid' : ''}`}>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</Label>
               <Input
                 type="text"
                 placeholder="Documento, Telefone ou ID..."
                 value={filters.cpf}
                 onChange={(e) => { setPage(1); setFilters(p => ({ ...p, cpf: e.target.value })) }}
-                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
+                className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Início</Label>
               <Input
                 type="date"
                 value={filters.dataInicio}
                 onChange={(e) => { setPage(1); setFilters(p => ({ ...p, dataInicio: e.target.value })) }}
-                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
+                className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Fim</Label>
               <Input
                 type="date"
                 value={filters.dataFim}
                 onChange={(e) => { setPage(1); setFilters(p => ({ ...p, dataFim: e.target.value })) }}
-                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] transition-colors"
+                className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
 
           {isFetchingLogs ? (
             <div className="flex flex-col items-center justify-center py-24">
-              <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c] mb-4" />
+              <Loader2 className="h-8 w-8 animate-spin text-blue-400 mb-4" />
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Carregando histórico...</p>
             </div>
           ) : attemptsData.length === 0 ? (
             <div className="text-center py-24 space-y-4">
-              <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 border border-slate-100">
-                <ShieldAlert className="h-8 w-8 text-slate-300" />
+              <div className="bg-slate-900/80 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 border border-slate-800">
+                <ShieldAlert className="h-8 w-8 text-slate-500" />
               </div>
-              <p className="text-sm font-bold text-slate-500">Nenhuma tentativa de login encontrada.</p>
-              <p className="text-xs text-slate-400">Tente ajustar os filtros de busca acima.</p>
+              <p className="text-sm font-bold text-slate-400">Nenhuma tentativa de login encontrada.</p>
+              <p className="text-xs text-slate-500">Tente ajustar os filtros de busca acima.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-slate-100">
+                  <tr className="border-b border-slate-800/80">
                     <th className="pb-4 pl-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                     <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
                     <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Documento Tentado</th>
@@ -201,45 +188,45 @@ export default function AdminLoginAttempts() {
                     });
 
                     return (
-                      <tr key={attempt.id} className="border-b border-slate-50 hover:bg-slate-50/80 transition-colors group">
+                      <tr key={attempt.id} className="border-b border-slate-800/40 hover:bg-slate-800/50 transition-colors group">
                         <td className="py-4 pl-4">
                           <div className="flex items-center gap-2">
                             {attempt.sucesso ? (
-                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                 <CheckCircle2 className="h-3.5 w-3.5" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">Sucesso</span>
                               </div>
                             ) : (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-100 cursor-help">
+                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-help">
                                     <XCircle className="h-3.5 w-3.5" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Falha</span>
                                   </div>
                                 </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[250px] p-3 text-xs bg-slate-800 text-white font-medium shadow-xl border-0">
+                                <TooltipContent side="right" className="max-w-[250px] p-3 text-xs bg-slate-900 text-white font-medium shadow-2xl border border-slate-800">
                                   {attempt.motivo_falha || "Motivo desconhecido"}
                                 </TooltipContent>
                               </Tooltip>
                             )}
                           </div>
                         </td>
-                        <td className="py-4 text-xs font-semibold text-slate-600">
+                        <td className="py-4 text-xs font-semibold text-slate-300">
                           {dateFormatted}
                         </td>
                         <td className="py-4">
-                          <span className="text-sm font-bold text-[#1a3a5c]">
+                          <span className="text-sm font-bold text-slate-100">
                             {attempt.login_tentado}
                           </span>
                         </td>
                         <td className="py-4 hidden sm:table-cell">
-                          <div className="flex items-center gap-2 text-slate-500">
-                            <MonitorSmartphone className="h-4 w-4" />
+                          <div className="flex items-center gap-2 text-slate-400">
+                            <MonitorSmartphone className="h-4 w-4 text-slate-500" />
                             <span className="text-xs font-semibold">{attempt.dispositivo || "Desconhecido"}</span>
                           </div>
                         </td>
                         <td className="py-4 hidden md:table-cell">
-                          <code className="text-[10px] bg-white px-2 py-1 rounded-md border border-slate-200 font-mono text-slate-500 shadow-sm">
+                          <code className="text-[10px] bg-slate-950 px-2 py-1 rounded-md border border-slate-800 font-mono text-slate-400">
                             {attempt.ip || "—"}
                           </code>
                         </td>
@@ -249,13 +236,13 @@ export default function AdminLoginAttempts() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 rounded-full text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 opacity-0 group-hover:opacity-100 transition-all"
+                                className="h-8 w-8 rounded-full text-slate-500 hover:text-white hover:bg-slate-800 opacity-0 group-hover:opacity-100 transition-all"
                               >
                                 <span className="text-xs font-bold">UA</span>
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent side="left" className="max-w-[300px] p-3 text-xs break-words font-mono bg-white text-slate-600 border border-slate-200 shadow-xl">
-                              <p className="font-bold text-slate-800 mb-1 font-sans text-[10px] uppercase tracking-widest">User Agent Original</p>
+                            <TooltipContent side="left" className="max-w-[300px] p-3 text-xs break-words font-mono bg-slate-900 text-slate-300 border border-slate-800 shadow-2xl">
+                              <p className="font-bold text-slate-100 mb-1 font-sans text-[10px] uppercase tracking-widest">User Agent Original</p>
                               {attempt.user_agent || "Nenhum agente fornecido"}
                             </TooltipContent>
                           </Tooltip>
@@ -269,7 +256,7 @@ export default function AdminLoginAttempts() {
           )}
 
           {total > 0 && attemptsData.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-100 gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
               <p className="text-xs font-semibold text-slate-400">
                 Página {page} de {Math.max(1, Math.ceil(total / limit))} ({total} tentativas)
               </p>
@@ -277,10 +264,10 @@ export default function AdminLoginAttempts() {
                 <div className="flex items-center gap-2">
                   <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
                   <Select value={limitStr} onValueChange={(val) => { setLimitStr(val); setPage(1); }}>
-                    <SelectTrigger className="h-8 rounded-xl bg-slate-50 border-slate-200 text-xs focus-visible:ring-0 w-[70px]">
+                    <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-slate-200 text-xs focus-visible:ring-0 w-[70px]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
                       <SelectItem value="25">25</SelectItem>
                       <SelectItem value="50">50</SelectItem>
                       <SelectItem value="100">100</SelectItem>
@@ -295,7 +282,7 @@ export default function AdminLoginAttempts() {
                     size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage(p => p - 1)}
-                    className="rounded-xl border-slate-200"
+                    className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -304,7 +291,7 @@ export default function AdminLoginAttempts() {
                     size="sm"
                     disabled={page >= Math.ceil(total / limit)}
                     onClick={() => setPage(p => p + 1)}
-                    className="rounded-xl border-slate-200"
+                    className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

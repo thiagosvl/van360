@@ -66,7 +66,7 @@ const compressAndConvertImage = (file: File, maxWidth = 1200, quality = 0.75): P
 
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          resolve(event.target?.result as string); // Fallback caso canvas falhe
+          resolve(event.target?.result as string);
           return;
         }
 
@@ -115,7 +115,7 @@ export default function AdminBlogPostForm({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-600 underline hover:text-blue-800",
+          class: "text-blue-400 underline hover:text-blue-300",
         },
       }),
       TiptapImage.configure({
@@ -128,7 +128,7 @@ export default function AdminBlogPostForm({
     editorProps: {
       attributes: {
         class:
-          "prose prose-slate focus:outline-none max-w-none min-h-[350px] px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm leading-relaxed",
+          "prose prose-invert focus:outline-none max-w-none min-h-[350px] px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 text-sm leading-relaxed",
       },
     },
   });
@@ -180,8 +180,6 @@ export default function AdminBlogPostForm({
       editor.chain().focus().setImage({ src: url }).run();
     }
   };
-
-
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
@@ -297,7 +295,7 @@ export default function AdminBlogPostForm({
   if (isEdit && isLoadingDetails) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1a3a5c]" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
       </div>
     );
   }
@@ -308,7 +306,7 @@ export default function AdminBlogPostForm({
         <Button
           variant="ghost"
           onClick={onCancel}
-          className="rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center gap-2 self-start"
+          className="rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 self-start"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar para Lista
@@ -318,22 +316,22 @@ export default function AdminBlogPostForm({
             type="button"
             variant="outline"
             onClick={handleMagicFill}
-            className="rounded-xl border-dashed border-purple-300 hover:border-purple-400 text-purple-600 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 font-semibold text-xs uppercase"
+            className="rounded-xl border-dashed border-purple-500/50 hover:border-purple-400 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 flex items-center gap-2 font-semibold text-xs uppercase"
           >
-            <Wand2 className="h-4 w-4 text-purple-500 animate-pulse" />
+            <Wand2 className="h-4 w-4 text-purple-400 animate-pulse" />
             Magic Fill
           </Button>
-          <h2 className="text-xl font-bold text-[#1a3a5c] uppercase font-headline">
+          <h2 className="text-xl font-bold text-white uppercase font-headline">
             {isEdit ? "Editar Artigo" : "Novo Artigo"}
           </h2>
         </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6 text-left">
-        <Card className="border-0 shadow-diff-shadow rounded-[2rem]">
+        <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] bg-[#131b2e]">
           <CardContent className="p-6 space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Label htmlFor="title" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Título do Artigo *
               </Label>
               <Input
@@ -342,12 +340,12 @@ export default function AdminBlogPostForm({
                 placeholder="Ex: Como organizar rotas de vans escolares..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10"
+                className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="excerpt" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Label htmlFor="excerpt" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Resumo Curto (SEO / Excerpt)
               </Label>
               <Textarea
@@ -356,16 +354,16 @@ export default function AdminBlogPostForm({
                 value={excerpt}
                 onChange={(e) => setExcerpt(e.target.value)}
                 rows={3}
-                className="rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 resize-none"
+                className="rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 resize-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Imagem de Capa (Destaque)
               </Label>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
-                <div className="h-28 aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center relative shrink-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-dashed border-slate-800 bg-slate-900/50">
+                <div className="h-28 aspect-video rounded-lg overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center relative shrink-0">
                   {previewUrl ? (
                     <>
                       <img
@@ -376,13 +374,13 @@ export default function AdminBlogPostForm({
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow transition-colors"
+                        className="absolute top-1 right-1 p-1 bg-red-600 hover:bg-red-500 text-white rounded-full shadow transition-colors"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </>
                   ) : (
-                    <ImageIcon className="h-8 w-8 text-slate-300" />
+                    <ImageIcon className="h-8 w-8 text-slate-600" />
                   )}
                 </div>
                 <div className="flex-1 space-y-2 w-full">
@@ -398,13 +396,13 @@ export default function AdminBlogPostForm({
                       type="button"
                       variant="outline"
                       onClick={() => document.getElementById("cover-file-input")?.click()}
-                      className="rounded-xl border-slate-200 text-xs font-bold hover:bg-slate-100 flex items-center gap-1.5"
+                      className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 text-xs font-bold hover:bg-slate-800 hover:text-white flex items-center gap-1.5"
                     >
-                      <ImageIcon className="h-4 w-4 text-slate-500" />
+                      <ImageIcon className="h-4 w-4 text-slate-400" />
                       Escolher Imagem
                     </Button>
                     
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">ou cole uma URL</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">ou cole uma URL</span>
                   </div>
                   <Input
                     placeholder="Cole a URL pública da imagem de destaque..."
@@ -413,7 +411,7 @@ export default function AdminBlogPostForm({
                       setCoverImageUrl(e.target.value);
                       setPreviewUrl(e.target.value);
                     }}
-                    className="h-9 rounded-xl bg-white border-slate-200 text-xs focus-visible:ring-0 focus:border-[#1a3a5c]"
+                    className="h-9 rounded-xl bg-slate-950 border-slate-800 text-slate-200 text-xs focus-visible:ring-0 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -421,17 +419,17 @@ export default function AdminBlogPostForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <Label htmlFor="status" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Status de Publicação
                 </Label>
                 <Select
                   value={status}
                   onValueChange={(val: BlogPostStatus) => setStatus(val)}
                 >
-                  <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-[#1a3a5c]/10">
+                  <SelectTrigger className="h-11 rounded-xl bg-slate-900 border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-0">
                     <SelectValue placeholder="Selecione o status" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 rounded-xl">
                     <SelectItem value={BlogPostStatus.DRAFT} className="rounded-lg">Rascunho</SelectItem>
                     <SelectItem value={BlogPostStatus.PUBLISHED} className="rounded-lg">Publicado</SelectItem>
                   </SelectContent>
@@ -439,7 +437,7 @@ export default function AdminBlogPostForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tags" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <Label htmlFor="tags" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Tags (Pressione Enter ou vírgula para adicionar)
                 </Label>
                 <div className="space-y-2">
@@ -449,20 +447,20 @@ export default function AdminBlogPostForm({
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleAddTag}
-                    className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10"
+                    className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500"
                   />
                   <div className="flex flex-wrap gap-1.5 min-h-[30px] pt-1">
                     {tags.map((tag, idx) => (
                       <Badge
                         key={idx}
                         variant="secondary"
-                        className="text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 bg-slate-100 border border-slate-200 text-slate-700"
+                        className="text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 bg-slate-800 border border-slate-700 text-slate-300"
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(idx)}
-                          className="hover:bg-slate-200 rounded-full p-0.5"
+                          className="hover:bg-slate-700 rounded-full p-0.5"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -474,20 +472,20 @@ export default function AdminBlogPostForm({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Conteúdo do Artigo *
               </Label>
               {editor && (
-                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
+                <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950">
                   {/* Toolbar */}
-                  <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-100 border-b border-slate-200">
+                  <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-900 border-b border-slate-800">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleBold().run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bold") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bold") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <Bold className="h-4 w-4" />
                     </Button>
@@ -497,7 +495,7 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleItalic().run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("italic") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("italic") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <Italic className="h-4 w-4" />
                     </Button>
@@ -507,7 +505,7 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 2 }) ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 2 }) ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <Heading2 className="h-4 w-4" />
                     </Button>
@@ -517,18 +515,18 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 3 }) ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 3 }) ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <Heading3 className="h-4 w-4" />
                     </Button>
-                    <span className="w-px h-6 bg-slate-200 mx-1" />
+                    <span className="w-px h-6 bg-slate-800 mx-1" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleBulletList().run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bulletList") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bulletList") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <List className="h-4 w-4" />
                     </Button>
@@ -538,7 +536,7 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("orderedList") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("orderedList") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <ListOrdered className="h-4 w-4" />
                     </Button>
@@ -548,7 +546,7 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={setLink}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("link") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("link") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <LinkIcon className="h-4 w-4" />
                     </Button>
@@ -558,7 +556,7 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("blockquote") ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600"}`}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("blockquote") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                     >
                       <Quote className="h-4 w-4" />
                     </Button>
@@ -568,18 +566,18 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode}
                       onClick={addImage}
-                      className="h-8 w-8 p-0 rounded-lg text-slate-600 hover:bg-[#1a3a5c]/10"
+                      className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:bg-slate-800"
                     >
                       <ImageIcon className="h-4 w-4" />
                     </Button>
-                    <span className="w-px h-6 bg-slate-200 mx-1" />
+                    <span className="w-px h-6 bg-slate-800 mx-1" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       disabled={isHtmlMode || !editor.can().undo()}
                       onClick={() => editor.chain().focus().undo().run()}
-                      className="h-8 w-8 p-0 rounded-lg text-slate-600 disabled:opacity-40"
+                      className="h-8 w-8 p-0 rounded-lg text-slate-400 disabled:opacity-40"
                     >
                       <Undo2 className="h-4 w-4" />
                     </Button>
@@ -589,17 +587,17 @@ export default function AdminBlogPostForm({
                       size="sm"
                       disabled={isHtmlMode || !editor.can().redo()}
                       onClick={() => editor.chain().focus().redo().run()}
-                      className="h-8 w-8 p-0 rounded-lg text-slate-600 disabled:opacity-40"
+                      className="h-8 w-8 p-0 rounded-lg text-slate-400 disabled:opacity-40"
                     >
                       <Redo2 className="h-4 w-4" />
                     </Button>
-                    <span className="w-px h-6 bg-slate-200 mx-1" />
+                    <span className="w-px h-6 bg-slate-800 mx-1" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={toggleHtmlMode}
-                      className={`h-8 px-2 rounded-lg flex items-center gap-1 text-xs font-semibold ${isHtmlMode ? "bg-[#1a3a5c]/10 text-[#1a3a5c]" : "text-slate-600 hover:bg-[#1a3a5c]/5"}`}
+                      className={`h-8 px-2 rounded-lg flex items-center gap-1 text-xs font-semibold ${isHtmlMode ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
                       title={isHtmlMode ? "Alternar para modo Visual" : "Alternar para modo HTML"}
                     >
                       <Code className="h-3.5 w-3.5 mr-1" />
@@ -611,7 +609,7 @@ export default function AdminBlogPostForm({
                       value={htmlContent}
                       onChange={(e) => setHtmlContent(e.target.value)}
                       placeholder="Cole o código HTML formatado do seu post aqui..."
-                      className="w-full min-h-[350px] font-mono text-xs p-4 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] border-0 rounded-none bg-white resize-y"
+                      className="w-full min-h-[350px] font-mono text-xs p-4 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 border-0 rounded-none bg-slate-950 text-slate-100 resize-y"
                     />
                   ) : (
                     <EditorContent editor={editor} />
@@ -620,19 +618,19 @@ export default function AdminBlogPostForm({
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/80">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onCancel}
-                className="rounded-xl border-slate-200 text-slate-500 font-bold uppercase tracking-wider"
+                className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 font-bold uppercase tracking-wider hover:bg-slate-800"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="rounded-xl bg-[#1a3a5c] text-white hover:bg-[#1a3a5c]/95 font-bold uppercase tracking-wider flex items-center gap-2"
+                className="rounded-xl bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/30 font-bold uppercase tracking-wider flex items-center gap-2"
               >
                 {isSaving ? (
                   <>
