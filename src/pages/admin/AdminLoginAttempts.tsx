@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLayout } from "@/contexts/LayoutContext";
 import {
   ShieldAlert,
   Filter,
@@ -44,6 +45,12 @@ function useDebounce<T>(value: T, delay?: number): T {
 }
 
 export default function AdminLoginAttempts() {
+  const { setPageTitle } = useLayout();
+
+  useEffect(() => {
+    setPageTitle("Tentativas de Login");
+  }, [setPageTitle]);
+
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [limitStr, setLimitStr] = useState("25");

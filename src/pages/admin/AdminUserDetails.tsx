@@ -904,23 +904,14 @@ export default function AdminUserDetails() {
 
                 {/* CATEGORIA 4: CONTRATOS DIGITAIS & MINUTA */}
                 {(() => {
-                  const config = data.user.config_contrato as Record<string, any> | null;
                   const hasSignature = !!data.user.assinatura_digital_url;
-                  const hasConfig =
-                    !!config &&
-                    (config.usar_contratos !== undefined ||
-                      (Array.isArray(config.secoes) && config.secoes.length > 0) ||
-                      (Array.isArray(config.clausulas) && config.clausulas.length > 0) ||
-                      !!config.multa_atraso ||
-                      !!config.juros_atraso ||
-                      !!config.multa_rescisao);
+                  const config = data.user.config_contrato as Record<string, any> | null;
 
-                  const statusConfig =
-                    !hasConfig && !hasSignature
-                      ? DriverContractConfigStatus.NAO_CONFIGURADO
-                      : config?.usar_contratos === false
-                      ? DriverContractConfigStatus.DESATIVADO
-                      : DriverContractConfigStatus.ATIVO;
+                  const statusConfig = !hasSignature
+                    ? DriverContractConfigStatus.NAO_CONFIGURADO
+                    : config?.usar_contratos === false
+                    ? DriverContractConfigStatus.DESATIVADO
+                    : DriverContractConfigStatus.ATIVO;
 
                   const isConfigurado = statusConfig !== DriverContractConfigStatus.NAO_CONFIGURADO;
                   const isAtivo = statusConfig === DriverContractConfigStatus.ATIVO;

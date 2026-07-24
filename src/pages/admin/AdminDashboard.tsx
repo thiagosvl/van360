@@ -773,7 +773,7 @@ export default function AdminDashboard() {
               <AdminKpiCard
                 title="USANDO CONTRATO ATIVO"
                 value={`${motoristasAtivos} Ativos`}
-                subtext={`${motoristasPausados} pausados | ${motoristasNaoConfigurados} sem matriz`}
+                subtext={`${motoristasPausados} pausados | ${motoristasNaoConfigurados} não configurados`}
                 cardBorder="border-purple-500/40 shadow-purple-500/10"
                 iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
                 icon={<CheckCircle2 className="h-5 w-5" />}

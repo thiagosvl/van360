@@ -51,12 +51,11 @@ export function AdminUserContractsTab({
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const statusConfig =
-    user.assinatura_digital_url
-      ? user.config_contrato?.usar_contratos === true
-        ? DriverContractConfigStatus.ATIVO
-        : DriverContractConfigStatus.DESATIVADO
-      : DriverContractConfigStatus.NAO_CONFIGURADO;
+  const statusConfig = !user.assinatura_digital_url
+    ? DriverContractConfigStatus.NAO_CONFIGURADO
+    : user.config_contrato?.usar_contratos === false
+    ? DriverContractConfigStatus.DESATIVADO
+    : DriverContractConfigStatus.ATIVO;
 
   const config = user.config_contrato as Record<string, any> | null;
 

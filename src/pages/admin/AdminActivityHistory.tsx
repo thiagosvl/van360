@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filter, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAdminLogs } from "@/hooks/api/adminHooks";
+import { useLayout } from "@/contexts/LayoutContext";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,12 @@ import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 
 export default function AdminActivityHistory() {
+  const { setPageTitle } = useLayout();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    setPageTitle("Histórico de Atividades");
+  }, [setPageTitle]);
   const [logsPage, setLogsPage] = useState(1);
   const [limit, setLimit] = useState("25");
 
