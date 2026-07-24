@@ -11,8 +11,10 @@ export interface AdminUserLogItem {
   ip_address: string | null;
   created_at: string;
   usuarios?: {
+    id?: string;
     nome: string;
     telefone: string;
+    email?: string;
   };
 }
 

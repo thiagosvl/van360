@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
 
 export interface LoginAttempt {
@@ -156,13 +157,11 @@ export default function AdminLoginAttempts() {
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Carregando histórico...</p>
             </div>
           ) : attemptsData.length === 0 ? (
-            <div className="text-center py-24 space-y-4">
-              <div className="bg-slate-900/80 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 border border-slate-800">
-                <ShieldAlert className="h-8 w-8 text-slate-500" />
-              </div>
-              <p className="text-sm font-bold text-slate-400">Nenhuma tentativa de login encontrada.</p>
-              <p className="text-xs text-slate-500">Tente ajustar os filtros de busca acima.</p>
-            </div>
+            <AdminEmptyState
+              icon={ShieldAlert}
+              title="Nenhuma tentativa de login encontrada"
+              description="Nenhum registro de acesso corresponde aos filtros de busca aplicados."
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -278,20 +277,20 @@ export default function AdminLoginAttempts() {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     disabled={page <= 1}
-                    onClick={() => setPage(p => p - 1)}
-                    className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                    onClick={() => setPage((p) => p - 1)}
+                    className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     disabled={page >= Math.ceil(total / limit)}
-                    onClick={() => setPage(p => p + 1)}
-                    className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                    onClick={() => setPage((p) => p + 1)}
+                    className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

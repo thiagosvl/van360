@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminUsers, useAdminStats } from "@/hooks/api/adminHooks";
+import { SubscriptionStatus } from "@/types/enums";
 import {
   Search,
   ChevronLeft,
@@ -15,6 +16,7 @@ import {
   AlertTriangle,
   Infinity as InfinityIcon,
   XCircle,
+  CalendarOff,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,7 +24,9 @@ import { Card } from "@/components/ui/card";
 import { CardContent } from "@/components/ui/card";
 import { phoneMask } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
-import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
+import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS, ExtendedSubscriptionStatus } from "@/components/ui/SubscriptionStatusBadge";
+import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
+import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { ROUTES } from "@/constants/routes";
 
 const STATUS_FILTERS = [
@@ -59,129 +63,49 @@ export default function AdminUsers() {
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / limit);
 
+  const kpiCards = useMemo(() => {
+    const totalCard = {
+      key: "total",
+      title: "TOTAL DE MOTORISTAS",
+      value: stats?.totalMotoristas ?? total,
+      subtext: "Cadastrados",
+      cardBorder: "border-blue-500/40 shadow-blue-500/10",
+      iconBg: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      icon: <Bus className="h-5 w-5" />,
+    };
+
+    const statusItems: Array<{ status: ExtendedSubscriptionStatus; val: number | undefined; icon: React.ReactNode }> = [
+      { status: SubscriptionStatus.ACTIVE, val: stats?.assinaturas?.active, icon: <ShieldCheck className="h-5 w-5" /> },
+      { status: SubscriptionStatus.TRIAL, val: stats?.assinaturas?.trial, icon: <Clock className="h-5 w-5" /> },
+      { status: "VITALICIO", val: stats?.assinaturas?.vitalicio, icon: <InfinityIcon className="h-5 w-5" /> },
+      { status: SubscriptionStatus.PAST_DUE, val: stats?.assinaturas?.past_due, icon: <AlertTriangle className="h-5 w-5" /> },
+      { status: SubscriptionStatus.EXPIRED, val: stats?.assinaturas?.expired, icon: <CalendarOff className="h-5 w-5" /> },
+      { status: SubscriptionStatus.CANCELED, val: stats?.assinaturas?.canceled, icon: <XCircle className="h-5 w-5" /> },
+    ];
+
+    const statusCards = statusItems.map((item) => {
+      const detail = SUBSCRIPTION_STATUS_DETAILS[item.status];
+      return {
+        key: item.status,
+        title: detail.pluralLabel.toUpperCase(),
+        value: item.val ?? 0,
+        subtext: detail.subtext,
+        cardBorder: detail.cardBorder,
+        iconBg: detail.iconBg,
+        icon: item.icon,
+      };
+    });
+
+    return [totalCard, ...statusCards];
+  }, [stats, total]);
+
   return (
     <div className="space-y-8 text-left">
-      {/* 1. KPIS SUPERIORES PADRONIZADOS DO DASHBOARD (6 CARDS) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {/* TOTAL DE MOTORISTAS */}
-        <Card className="border border-blue-500/40 shadow-lg shadow-blue-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                TOTAL DE MOTORISTAS
-              </span>
-              <p className="text-3xl font-headline font-black text-white tracking-tight">
-                {(stats?.totalMotoristas ?? total).toLocaleString("pt-BR")}
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-1">
-                Cadastrados
-              </p>
-            </div>
-            <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
-              <Bus className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
-
-        {/* VITALÍCIOS */}
-        <Card className="border border-purple-500/40 shadow-lg shadow-purple-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                VITALÍCIOS
-              </span>
-              <p className="text-3xl font-headline font-black text-white tracking-tight">
-                {(stats?.assinaturas?.vitalicio ?? 0).toLocaleString("pt-BR")}
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-1">
-                Acesso ilimitado
-              </p>
-            </div>
-            <div className="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
-              <InfinityIcon className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
-
-        {/* EM TESTES (TRIAL) */}
-        <Card className="border border-sky-500/40 shadow-lg shadow-sky-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                TRIAL
-              </span>
-              <p className="text-3xl font-headline font-black text-white tracking-tight">
-                {(stats?.assinaturas?.trial ?? 0).toLocaleString("pt-BR")}
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-1">
-                Período de avaliação
-              </p>
-            </div>
-            <div className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
-              <Clock className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
-
-        {/* ASSINATURAS ATIVAS */}
-        <Card className="border border-emerald-500/40 shadow-lg shadow-emerald-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                ASSINATURAS ATIVAS
-              </span>
-              <p className="text-3xl font-headline font-black text-white tracking-tight">
-                {(stats?.assinaturas?.active ?? 0).toLocaleString("pt-BR")}
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-1">
-                Motoristas pagantes
-              </p>
-            </div>
-            <div className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
-
-        {/* EM ATRASO */}
-        <Card className="border border-amber-500/40 shadow-lg shadow-amber-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                EM ATRASO
-              </span>
-              <p className="text-3xl font-headline font-black text-white tracking-tight">
-                {(stats?.assinaturas?.past_due ?? 0).toLocaleString("pt-BR")}
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-1">
-                Pendentes de cobrança
-              </p>
-            </div>
-            <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
-              <AlertTriangle className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
-
-        {/* CANCELADOS */}
-        <Card className="border border-red-500/40 shadow-lg shadow-red-500/10 rounded-2xl bg-[#131b2e] p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                CANCELADOS
-              </span>
-              <p className="text-3xl font-headline font-black text-white tracking-tight">
-                {(stats?.assinaturas?.canceled ?? 0).toLocaleString("pt-BR")}
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-1">
-                Assinaturas inativas
-              </p>
-            </div>
-            <div className="p-2.5 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
-              <XCircle className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
+      {/* 1. KPIS SUPERIORES PADRONIZADOS DO DASHBOARD (7 CARDS) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+        {kpiCards.map((card) => (
+          <AdminKpiCard key={card.key} {...card} />
+        ))}
       </div>
 
       {/* BARRA DE AÇÃO SUPERIOR */}
@@ -241,12 +165,15 @@ export default function AdminUsers() {
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-20">
-              <Users className="h-12 w-12 mx-auto text-slate-600 mb-4" />
-              <p className="text-sm font-semibold text-slate-400">
-                Nenhum usuário encontrado.
-              </p>
-            </div>
+            <AdminEmptyState
+              icon={Users}
+              title="Nenhum usuário encontrado"
+              description={
+                search || statusFilter !== ""
+                  ? "Nenhum motorista corresponde à busca ou filtros selecionados."
+                  : "Ainda não há motoristas cadastrados no sistema."
+              }
+            />
           ) : (
             <>
               <div className="hidden md:block overflow-x-auto">
@@ -386,20 +313,20 @@ export default function AdminUsers() {
                   </p>
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       disabled={page <= 1}
-                      onClick={() => setPage(p => p - 1)}
-                      className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                      onClick={() => setPage((p) => p - 1)}
+                      className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       disabled={page >= totalPages}
-                      onClick={() => setPage(p => p + 1)}
-                      className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                      onClick={() => setPage((p) => p + 1)}
+                      className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>

@@ -1,7 +1,7 @@
-import React from "react";
 import { AdminUserVehicleItem } from "@/services/api/admin.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
+import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { Bus } from "lucide-react";
 
 interface AdminUserVehiclesTabProps {
@@ -10,47 +10,47 @@ interface AdminUserVehiclesTabProps {
 
 export function AdminUserVehiclesTab({ veiculos }: AdminUserVehiclesTabProps) {
   return (
-    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-      <CardHeader className="p-6">
-        <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
-          <Bus className="h-4 w-4 text-blue-400" />
-          Frota de Veículos ({veiculos.length})
-        </CardTitle>
+    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left">
+      <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+        <div className="space-y-1">
+          <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <Bus className="h-4 w-4 text-amber-400" />
+            Frota de Veículos ({veiculos.length})
+          </CardTitle>
+          <p className="text-[11px] font-medium text-slate-400">
+            Veículos cadastrados para a realização das rotas escolares.
+          </p>
+        </div>
       </CardHeader>
-      <CardContent className="p-6 pt-0">
+      <CardContent className="p-6">
         {veiculos.length === 0 ? (
-          <p className="text-xs text-slate-400 py-12 text-center">Nenhum veículo cadastrado.</p>
+          <AdminEmptyState
+            icon={Bus}
+            title="Nenhum veículo cadastrado"
+            description="O motorista ainda não cadastrou veículos na frota."
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {veiculos.map((v) => (
               <div
                 key={v.id}
-                className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col justify-between space-y-4 text-left"
+                className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 flex flex-col justify-between space-y-3 hover:border-amber-500/40 transition-colors shadow-lg"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                      <Bus className="h-6 w-6" />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-black text-xs border border-amber-500/20 shrink-0">
+                      <Bus className="h-4 w-4" />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-headline font-bold text-slate-100 uppercase leading-tight">
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-bold text-slate-100 uppercase truncate leading-tight">
                         {v.modelo}
                       </h4>
-                      <p className="text-xs font-mono font-bold text-slate-400 uppercase mt-0.5">
-                        Placa: {v.placa}
+                      <p className="text-[10px] font-mono font-bold text-amber-400 uppercase mt-0.5">
+                        {v.placa}
                       </p>
                     </div>
                   </div>
-                  <Badge variant={v.ativo ? "default" : "secondary"} className="text-[9px] uppercase px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {v.ativo ? "Ativo" : "Inativo"}
-                  </Badge>
-                </div>
-
-                <div className="pt-3 border-t border-slate-800 text-xs">
-                  <div>
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Marca</span>
-                    <span className="font-bold text-slate-200 block">{v.marca || "Não informada"}</span>
-                  </div>
+                  <ActiveStatusBadge active={v.ativo} />
                 </div>
               </div>
             ))}

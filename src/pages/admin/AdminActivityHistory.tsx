@@ -152,20 +152,20 @@ export default function AdminActivityHistory() {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     disabled={logsPage <= 1}
-                    onClick={() => setLogsPage(p => p - 1)}
-                    className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                    onClick={() => setLogsPage((p) => p - 1)}
+                    className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
-                    onClick={() => setLogsPage(p => p + 1)}
-                    className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                    onClick={() => setLogsPage((p) => p + 1)}
+                    className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

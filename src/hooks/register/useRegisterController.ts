@@ -45,7 +45,7 @@ export function useRegisterController() {
   const handleFillMagic = () => {
     form.reset({
       ...form.getValues(),
-      cpfcnpj: "90.835.525/0001-30",
+      cpfcnpj: "395.423.918-38",
       razao_social: "THIAGO BARROS SOLUCOES",
       nome: "Thiago Barros",
       telefone: "(11) 95118-6951",
@@ -95,7 +95,7 @@ export function useRegisterController() {
         result.session.refresh_token,
         sessionUser
       );
-      
+
       if (!error) {
         navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
       } else {

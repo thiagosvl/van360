@@ -7,28 +7,87 @@ interface SubscriptionStatusBadgeProps {
   className?: string;
 }
 
-export const SUBSCRIPTION_STATUS_DETAILS: Record<SubscriptionStatus, { label: string; className: string }> = {
-  [SubscriptionStatus.TRIAL]: {
-    label: "Período de Teste",
-    className: "bg-sky-100 text-sky-700 hover:bg-sky-100/80",
-  },
+export type ExtendedSubscriptionStatus = SubscriptionStatus | "VITALICIO";
+
+export interface SubscriptionStatusDetail {
+  label: string;
+  pluralLabel: string;
+  subtext: string;
+  className: string;
+  color: string;
+  textColor: string;
+  cardBorder: string;
+  iconBg: string;
+}
+
+export const SUBSCRIPTION_STATUS_DETAILS: Record<ExtendedSubscriptionStatus, SubscriptionStatusDetail> = {
   [SubscriptionStatus.ACTIVE]: {
-    label: "Ativo (Em dia)",
-    className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80",
+    label: "Ativa",
+    pluralLabel: "Ativas",
+    subtext: "Motoristas pagantes",
+    className: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+    color: "bg-emerald-500",
+    textColor: "text-emerald-400",
+    cardBorder: "border-emerald-500/40 shadow-emerald-500/10",
+    iconBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  },
+  [SubscriptionStatus.TRIAL]: {
+    label: "Trial",
+    pluralLabel: "Trial",
+    subtext: "Em avaliação",
+    className: "bg-sky-500/15 text-sky-400 border border-sky-500/30",
+    color: "bg-sky-500",
+    textColor: "text-sky-400",
+    cardBorder: "border-sky-500/40 shadow-sky-500/10",
+    iconBg: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+  },
+  VITALICIO: {
+    label: "Vitalício",
+    pluralLabel: "Vitalícios",
+    subtext: "Acesso ilimitado",
+    className: "bg-purple-500/15 text-purple-400 border border-purple-500/30",
+    color: "bg-purple-500",
+    textColor: "text-purple-400",
+    cardBorder: "border-purple-500/40 shadow-purple-500/10",
+    iconBg: "bg-purple-500/10 text-purple-400 border-purple-500/20",
   },
   [SubscriptionStatus.PAST_DUE]: {
-    label: "Atrasado (Carência)",
-    className: "bg-amber-100 text-amber-700 hover:bg-amber-100/80",
+    label: "Em Atraso",
+    pluralLabel: "Em Atraso",
+    subtext: "Prestes a expirar",
+    className: "bg-amber-500/15 text-amber-400 border border-amber-500/30",
+    color: "bg-amber-500",
+    textColor: "text-amber-400",
+    cardBorder: "border-amber-500/40 shadow-amber-500/10",
+    iconBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   },
   [SubscriptionStatus.EXPIRED]: {
-    label: "Bloqueado (Expirado)",
-    className: "bg-red-100 text-red-700 hover:bg-red-100/80",
+    label: "Expirada",
+    pluralLabel: "Expiradas",
+    subtext: "Assinaturas encerradas",
+    className: "bg-orange-500/15 text-orange-400 border border-orange-500/30",
+    color: "bg-orange-500",
+    textColor: "text-orange-400",
+    cardBorder: "border-orange-500/40 shadow-orange-500/10",
+    iconBg: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   },
   [SubscriptionStatus.CANCELED]: {
-    label: "Cancelado",
-    className: "bg-slate-100 text-slate-500 hover:bg-slate-100/80",
+    label: "Cancelada",
+    pluralLabel: "Canceladas",
+    subtext: "Assinaturas inativas",
+    className: "bg-rose-500/15 text-rose-400 border border-rose-500/30",
+    color: "bg-rose-500",
+    textColor: "text-rose-400",
+    cardBorder: "border-rose-500/40 shadow-rose-500/10",
+    iconBg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
   },
 };
+
+export function getSubscriptionStatusDetails(statusKey: string | null | undefined): SubscriptionStatusDetail | null {
+  if (!statusKey) return null;
+  const normalizedKey = statusKey.toUpperCase() as ExtendedSubscriptionStatus;
+  return SUBSCRIPTION_STATUS_DETAILS[normalizedKey] || null;
+}
 
 export function SubscriptionStatusBadge({ status, dataVencimento, className }: SubscriptionStatusBadgeProps) {
   if (!status) {
@@ -36,25 +95,26 @@ export function SubscriptionStatusBadge({ status, dataVencimento, className }: S
   }
 
   if (status === SubscriptionStatus.ACTIVE && dataVencimento === null) {
+    const details = SUBSCRIPTION_STATUS_DETAILS.VITALICIO;
     return (
       <span
         className={cn(
           "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors",
-          "bg-purple-100 text-purple-700 hover:bg-purple-100/80",
+          details.className,
           className
         )}
       >
-        Vitalício
+        {details.label}
       </span>
     );
   }
 
-  const badge = SUBSCRIPTION_STATUS_DETAILS[status as SubscriptionStatus];
+  const badge = getSubscriptionStatusDetails(status);
   if (!badge) {
     return (
       <span
         className={cn(
-          "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-500",
+          "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700",
           className
         )}
       >

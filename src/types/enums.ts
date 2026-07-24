@@ -85,6 +85,12 @@ export enum ContratoStatus {
   SUBSTITUIDO = "substituido"
 }
 
+export enum DriverContractConfigStatus {
+  NAO_CONFIGURADO = "NAO_CONFIGURADO",
+  ATIVO = "ATIVO",
+  DESATIVADO = "DESATIVADO"
+}
+
 export enum PassageiroModalidade {
   IDA_VOLTA = "ida_volta",
   IDA = "ida",
@@ -265,4 +271,37 @@ export enum BlogPageView {
   LIST = "list",
   CREATE = "create",
   EDIT = "edit"
+}
+
+export enum StatusFilter {
+  ALL = "all",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  INCOMPLETE = "incomplete",
+}
+
+export enum AdminUserTab {
+  GERAL = "geral",
+  DADOS = "dados",
+  COBRANCAS = "cobrancas",
+  LOGS = "logs",
+  CADASTROS = "cadastros",
+}
+
+export enum AdminUserSubTab {
+  PASSAGEIROS = "passageiros",
+  VEICULOS = "veiculos",
+  ESCOLAS = "escolas",
+  SOLICITACOES = "solicitacoes",
+  CONTRATOS = "contratos",
+  INDICACOES = "indicacoes",
+}
+
+export enum PixKeyType {
+  CPF = "CPF",
+  CNPJ = "CNPJ",
+  TELEFONE = "TELEFONE",
+  EMAIL = "EMAIL",
+  EVP = "EVP",
+  ALEATORIA = "ALEATORIA",
 }

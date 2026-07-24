@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 
 interface AdminBlogListProps {
   onEdit: (id: string) => void;
@@ -104,12 +105,15 @@ export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) 
               <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="text-center py-20">
-              <FileText className="h-12 w-12 mx-auto text-slate-600 mb-4" />
-              <p className="text-sm font-semibold text-slate-400">
-                Nenhum artigo encontrado.
-              </p>
-            </div>
+            <AdminEmptyState
+              icon={FileText}
+              title="Nenhum artigo encontrado"
+              description={
+                search
+                  ? "Nenhum artigo atende ao título pesquisado."
+                  : "Ainda não há artigos do blog cadastrados no sistema."
+              }
+            />
           ) : (
             <>
               {/* Desktop View */}
@@ -263,20 +267,20 @@ export default function AdminBlogList({ onEdit, onCreate }: AdminBlogListProps) 
                   </p>
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => p - 1)}
-                      className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                      className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => p + 1)}
-                      className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+                      className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>

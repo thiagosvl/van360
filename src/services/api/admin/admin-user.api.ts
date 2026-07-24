@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { WhatsappStatus } from "@/types/enums";
+import { DriverContractConfigStatus, WhatsappStatus } from "@/types/enums";
 
 export interface AdminDashboardStats {
   totalMotoristas: number;
@@ -15,6 +15,30 @@ export interface AdminDashboardStats {
   };
   canaisAquisicao?: Record<string, number>;
   whatsappStatus?: WhatsappStatus;
+  contratosStats?: {
+    totalContratos: number;
+    contratosAssinados: number;
+    contratosPendentes: number;
+    contratosSubstituidos: number;
+    valorTotalContratos: number;
+    motoristasConfigurados?: number;
+    motoristasAtivos?: number;
+    motoristasPausados?: number;
+    motoristasNaoConfigurados?: number;
+    motoristasConfig: {
+      ativo: number;
+      inativo: number;
+      nao_configurado: number;
+    };
+  };
+  indicacoesStats?: {
+    total: number;
+    concluidas: number;
+    pendentes: number;
+    taxaConversao: number;
+    diasBonusConcedidos: number;
+    motoristasIndicados: number;
+  };
   recentUsers: Array<{
     id: string;
     nome: string;
@@ -24,6 +48,7 @@ export interface AdminDashboardStats {
     tipo: string;
     assinaturas?: Array<{
       status: string;
+      data_vencimento?: string | null;
     }>;
   }>;
 }
@@ -140,6 +165,27 @@ export interface AdminUserSchoolItem {
   created_at: string;
 }
 
+export interface AdminUserContractItem {
+  id: string;
+  usuario_id: string;
+  passageiro_id: string;
+  status: string;
+  minuta_url?: string | null;
+  contrato_final_url?: string | null;
+  valor_total?: number | null;
+  valor_parcela?: number | null;
+  qtd_parcelas?: number | null;
+  created_at: string;
+  assinado_em?: string | null;
+  passageiros?: {
+    id: string;
+    nome: string;
+    cpf?: string | null;
+    responsavel_nome?: string | null;
+    responsavel_telefone?: string | null;
+  } | null;
+}
+
 export interface AdminUserDetailsResponse {
   user: {
     id: string;
@@ -154,17 +200,51 @@ export interface AdminUserDetailsResponse {
     created_at: string;
     updated_at: string;
     data_nascimento: string | null;
+    chave_pix?: string | null;
+    chave_pix_tipo?: string | null;
+    canal_aquisicao?: string | null;
+    cep?: string | null;
+    logradouro?: string | null;
+    endereco?: string | null;
+    numero?: string | null;
+    bairro?: string | null;
+    cidade?: string | null;
+    estado?: string | null;
+    uf?: string | null;
+    assinatura_digital_url?: string | null;
+    config_contrato?: {
+      usar_contratos?: boolean;
+      multa_atraso?: { valor: number; tipo: string };
+      multa_rescisao?: { valor: number; tipo: string };
+    } | null;
   };
   kpis?: {
     veiculosCount: number;
     escolasCount: number;
     passageirosCount: number;
     solicitacoesPendentesCount: number;
+    contratosCount?: number;
+    contratosAssinadosCount?: number;
+    contratosPendentesCount?: number;
+    valorTotalContratos?: number;
+    statusConfiguracaoContrato?: DriverContractConfigStatus;
+  };
+  referralSummary?: {
+    total: number;
+    completed: number;
+    pending: number;
+    referralCode: string;
+    referralLink: string;
+    bonusDays: number;
+    discountPct: number;
+    hasActiveDiscount: boolean;
+    hasIndicator: boolean;
   };
   passageiros?: AdminUserPassengerItem[];
   prePassageiros?: AdminUserPendingRequestItem[];
   veiculos?: AdminUserVehicleItem[];
   escolas?: AdminUserSchoolItem[];
+  contratos?: AdminUserContractItem[];
   assinatura: {
     id: string;
     usuario_id: string;
