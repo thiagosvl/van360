@@ -6,27 +6,36 @@ export function formatarCEP(cep: string): string {
   return onlyNumbers.replace(/(\d{5})(\d{3})/, "$1-$2");
 }
 
-export function formatarEnderecoCompleto(obj: any): string {
-  if(!obj.cep) return "";
-  const cep = formatarCEP(obj.cep);
-  const lograoduro = obj.logradouro;
-  const bairro = obj.bairro;
-  const cidade = obj.cidade;
-  const estado = obj.estado;
-  const numero = obj.numero;
-  const referencia = obj.referencia;
+export function formatarEnderecoCompleto(obj: {
+  cep?: string | null;
+  logradouro?: string | null;
+  endereco?: string | null;
+  numero?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  uf?: string | null;
+  complemento?: string | null;
+  referencia?: string | null;
+}): string {
+  if (!obj) return "";
 
-  const complemento = obj.complemento;
+  const logradouro = obj.logradouro || obj.endereco || "";
+  const numero = obj.numero ? `, ${obj.numero}` : "";
+  const complemento = obj.complemento ? ` - ${obj.complemento}` : "";
+  const referencia = obj.referencia ? ` (${obj.referencia})` : "";
+  const bairro = obj.bairro ? ` - ${obj.bairro}` : "";
+  const cidade = obj.cidade ? `, ${obj.cidade}` : "";
+  const estadoUf = obj.estado || obj.uf ? ` - ${obj.estado || obj.uf}` : "";
+  const cepStr = obj.cep ? `, ${formatarCEP(obj.cep)}` : "";
 
-  let addressStr = `${lograoduro}, ${numero}`;
-  if (complemento && complemento !== "") {
-    addressStr += ` - ${complemento}`;
+  const mainAddress = `${logradouro}${numero}${complemento}${referencia}`.trim();
+  if (!mainAddress && !cidade && !bairro) return "";
+
+  if (mainAddress.startsWith(",")) {
+    return `${mainAddress.slice(1).trim()}${bairro}${cidade}${estadoUf}${cepStr}`;
   }
-  
-  if (referencia && referencia !== "") {
-    addressStr += ` (${referencia})`;
-  }
-  
-  return `${addressStr} - ${bairro}, ${cidade} - ${estado}, ${cep}`;
+
+  return `${mainAddress}${bairro}${cidade}${estadoUf}${cepStr}`;
 }
 

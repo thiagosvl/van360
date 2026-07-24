@@ -34,6 +34,10 @@ import {
   Users,
   Clock,
 } from "lucide-react";
+import { AdminUserPassengersTab } from "@/components/features/admin/user-details/AdminUserPassengersTab";
+import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/AdminUserVehiclesTab";
+import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/AdminUserSchoolsTab";
+import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -111,7 +115,7 @@ function toDateInputValue(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
-const ADMIN_USER_TABS = ["dados", "cobrancas", "logs"] as const;
+const ADMIN_USER_TABS = ["passageiros", "veiculos", "escolas", "solicitacoes", "dados", "cobrancas", "logs"] as const;
 type AdminUserTab = (typeof ADMIN_USER_TABS)[number];
 
 export default function AdminUserDetails() {
@@ -137,7 +141,7 @@ export default function AdminUserDetails() {
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab") as AdminUserTab;
     if (tabParam && ADMIN_USER_TABS.includes(tabParam)) return tabParam;
-    return "dados" as AdminUserTab;
+    return "passageiros" as AdminUserTab;
   }, [searchParams]);
 
   const handleTabChange = useCallback(
@@ -427,43 +431,10 @@ export default function AdminUserDetails() {
 
       {/* KPIs do Motorista */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-blue-50">
-                <Bus className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-6 flex flex-col items-start">
-              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                Veículos
-              </h3>
-              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
-                {data.kpis?.veiculosCount ?? 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-purple-50">
-                <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-6 flex flex-col items-start">
-              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                Escolas
-              </h3>
-              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
-                {data.kpis?.escolasCount ?? 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+        <Card
+          onClick={() => handleTabChange("passageiros")}
+          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+        >
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between">
               <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-emerald-50">
@@ -481,7 +452,52 @@ export default function AdminUserDetails() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+        <Card
+          onClick={() => handleTabChange("veiculos")}
+          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+        >
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-blue-50">
+                <Bus className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="mt-4 sm:mt-6 flex flex-col items-start">
+              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                Veículos
+              </h3>
+              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                {data.kpis?.veiculosCount ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          onClick={() => handleTabChange("escolas")}
+          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+        >
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-purple-50">
+                <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+              </div>
+            </div>
+            <div className="mt-4 sm:mt-6 flex flex-col items-start">
+              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                Escolas
+              </h3>
+              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                {data.kpis?.escolasCount ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          onClick={() => handleTabChange("solicitacoes")}
+          className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+        >
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between">
               <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-amber-50">
@@ -506,27 +522,67 @@ export default function AdminUserDetails() {
         className="w-full space-y-6"
       >
         <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
-          <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-3">
+          <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-7">
+            <TabsTrigger
+              value="passageiros"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+            >
+              Passageiros
+            </TabsTrigger>
+            <TabsTrigger
+              value="veiculos"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+            >
+              Veículos
+            </TabsTrigger>
+            <TabsTrigger
+              value="escolas"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+            >
+              Escolas
+            </TabsTrigger>
+            <TabsTrigger
+              value="solicitacoes"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
+            >
+              Solicitações
+            </TabsTrigger>
             <TabsTrigger
               value="dados"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
             >
               Dados e Configurações
             </TabsTrigger>
             <TabsTrigger
               value="cobrancas"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
             >
               Cobranças
             </TabsTrigger>
             <TabsTrigger
               value="logs"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
+              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-3 flex-1 whitespace-nowrap"
             >
-              Histórico de Atividades
+              Histórico
             </TabsTrigger>
           </TabsList>
         </div>
+
+        <TabsContent value="passageiros" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
+          <AdminUserPassengersTab passageiros={data.passageiros || []} />
+        </TabsContent>
+
+        <TabsContent value="veiculos" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
+          <AdminUserVehiclesTab veiculos={data.veiculos || []} />
+        </TabsContent>
+
+        <TabsContent value="escolas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
+          <AdminUserSchoolsTab escolas={data.escolas || []} />
+        </TabsContent>
+
+        <TabsContent value="solicitacoes" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
+          <AdminUserPendingRequestsTab solicitacoes={data.prePassageiros || []} />
+        </TabsContent>
 
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
