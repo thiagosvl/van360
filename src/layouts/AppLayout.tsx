@@ -29,7 +29,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
   const { profile } = useProfile(user?.id);
   const { subscription } = useSubscriptionStatus(user?.id);
   const userInitial = profile?.nome?.charAt(0)?.toUpperCase();
-  const displayName = profile?.apelido || formatShortName(profile?.nome, true);
+  const displayName = profile?.apelido || formatShortName(profile?.nome);
 
   const statusLabel = subscription?.status
     ? SUBSCRIPTION_STATUS_DETAILS[subscription.status as SubscriptionStatus]?.label || "Motorista Parceiro"
