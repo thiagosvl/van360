@@ -100,6 +100,12 @@ const App = () => {
           return;
         }
 
+        const pendingUpdateId = localStorage.getItem("pendingUpdate");
+        if (pendingUpdateId && pendingUpdateId === latest_version) {
+          // A atualização já foi baixada e está aguardando reinicialização
+          return;
+        }
+
         if (force_update) {
           // Mostrar dialog de confirmação primeiro
           setPendingUpdate({ latest_version, url_zip });
@@ -108,11 +114,7 @@ const App = () => {
         }
 
         try {
-          // Toast inicial desativado para não gerar ruído:
-          // toast.info("sistema.info.atualizacaoApp", {
-          //   description: "sistema.info.atualizacaoAppDescricao",
-          // });
-
+          // Atualização opcional 100% silenciosa em background
           const version = await CapacitorUpdater.download({
             version: latest_version,
             url: url_zip,
@@ -120,22 +122,6 @@ const App = () => {
 
           await CapacitorUpdater.next({ id: version.id });
           localStorage.setItem("pendingUpdate", version.id);
-
-          // Toast discreto permitindo reiniciar agora se o usuário desejar
-          toast.info("Nova versão disponível!", {
-            description: "Toque em reiniciar para aplicar as melhorias agora.",
-            action: {
-              label: "Reiniciar",
-              onClick: async () => {
-                try {
-                  await CapacitorUpdater.reload();
-                } catch (e) {
-                  // Fallback silencioso
-                }
-              },
-            },
-            duration: 8000,
-          });
         } catch (err) {
           // Erro em atualização silenciosa - não crítico
         }
@@ -194,10 +180,6 @@ const App = () => {
 
         if (pending && pending === current?.bundle?.id) {
           localStorage.removeItem("pendingUpdate");
-          // Toast de confirmação pós-boot desativado:
-          // toast.success("sistema.info.appAtualizado", {
-          //   description: "sistema.info.appAtualizadoDescricao",
-          // });
         }
 
         await CapacitorUpdater.notifyAppReady();
