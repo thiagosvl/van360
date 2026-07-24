@@ -13,7 +13,6 @@ import {
   AlertCircle,
   DollarSign,
   X,
-  MessageSquare,
 } from "lucide-react";
 import { phoneMask } from "@/utils/masks";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -76,11 +75,10 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
           title="PASSAGEIROS ATIVOS"
           value={ativosCount}
           subtext={`${pctAtivos}% dos passageiros`}
-          cardBorder={`transition-all cursor-pointer ${
-            statusFilter === StatusFilter.ACTIVE
+          cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.ACTIVE
               ? "border-emerald-500 ring-2 ring-emerald-500/30 shadow-emerald-500/20"
               : "border-emerald-500/40 shadow-emerald-500/10 hover:border-emerald-500/70"
-          }`}
+            }`}
           iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           icon={<CheckCircle2 className="h-5 w-5" />}
           onClick={() => setStatusFilter(statusFilter === StatusFilter.ACTIVE ? StatusFilter.ALL : StatusFilter.ACTIVE)}
@@ -90,11 +88,10 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
           title="PASSAGEIROS INATIVOS"
           value={inativosCount}
           subtext={`${pctInativos}% dos passageiros`}
-          cardBorder={`transition-all cursor-pointer ${
-            statusFilter === StatusFilter.INACTIVE
+          cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.INACTIVE
               ? "border-rose-500 ring-2 ring-rose-500/30 shadow-rose-500/20"
               : "border-rose-500/40 shadow-rose-500/10 hover:border-rose-500/70"
-          }`}
+            }`}
           iconBg="bg-rose-500/10 text-rose-400 border-rose-500/20"
           icon={<AlertTriangle className="h-5 w-5" />}
           onClick={() => setStatusFilter(statusFilter === StatusFilter.INACTIVE ? StatusFilter.ALL : StatusFilter.INACTIVE)}
@@ -104,11 +101,10 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
           title="CADASTROS INCOMPLETOS"
           value={semValorCount}
           subtext={`${pctIncompletos}% sem valor de cobrança`}
-          cardBorder={`transition-all cursor-pointer ${
-            statusFilter === StatusFilter.INCOMPLETE
+          cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.INCOMPLETE
               ? "border-amber-500 ring-2 ring-amber-500/30 shadow-amber-500/20"
               : "border-amber-500/40 shadow-amber-500/10 hover:border-amber-500/70"
-          }`}
+            }`}
           iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
           icon={<AlertCircle className="h-5 w-5" />}
           onClick={() => setStatusFilter(statusFilter === StatusFilter.INCOMPLETE ? StatusFilter.ALL : StatusFilter.INCOMPLETE)}
@@ -161,44 +157,40 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.ALL)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
-                statusFilter === StatusFilter.ALL
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.ALL
                   ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
                   : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
+                }`}
             >
               Todos ({totalPassageiros})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.ACTIVE)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
-                statusFilter === StatusFilter.ACTIVE
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.ACTIVE
                   ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
                   : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
+                }`}
             >
               Ativos ({ativosCount})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.INACTIVE)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
-                statusFilter === StatusFilter.INACTIVE
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.INACTIVE
                   ? "bg-rose-600 text-white shadow-md shadow-rose-600/20"
                   : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
+                }`}
             >
               Inativos ({inativosCount})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.INCOMPLETE)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
-                statusFilter === StatusFilter.INCOMPLETE
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.INCOMPLETE
                   ? "bg-amber-600 text-white shadow-md shadow-amber-600/20"
                   : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
+                }`}
             >
               Incompletos ({semValorCount})
             </button>
