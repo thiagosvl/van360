@@ -1,12 +1,12 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { openPdfLink } from "@/utils/browser";
 import {
   Download,
   ExternalLink,
   FileText,
   Loader2,
-  Maximize2,
   Minus,
   Plus,
   Scan,
@@ -36,6 +36,7 @@ export function PdfPreviewDialog({
 }: PdfPreviewDialogProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [scale, setScale] = useState(1.0);
+  const [pinchScale, setPinchScale] = useState<number | null>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
   const touchStartDistRef = useRef<number | null>(null);
@@ -48,6 +49,7 @@ export function PdfPreviewDialog({
     if (isOpen) {
       setNumPages(null);
       setScale(1.0);
+      setPinchScale(null);
     }
   }, [isOpen, pdfUrl]);
 
@@ -58,9 +60,12 @@ export function PdfPreviewDialog({
   // Controles de Zoom
   const handleZoomIn = () => setScale((prev) => Math.min(3.0, Number((prev + 0.2).toFixed(2))));
   const handleZoomOut = () => setScale((prev) => Math.max(0.5, Number((prev - 0.2).toFixed(2))));
-  const handleResetZoom = () => setScale(1.0);
+  const handleResetZoom = () => {
+    setScale(1.0);
+    setPinchScale(null);
+  };
 
-  // Ação de Download do PDF (Compatível com Browser e Capacitor)
+  // Ação de Download do PDF
   const handleDownload = () => {
     if (!pdfUrl) return;
     const a = document.createElement("a");
@@ -72,19 +77,10 @@ export function PdfPreviewDialog({
     document.body.removeChild(a);
   };
 
-  // Ação de Abrir em Nova Aba / Leitor Nativo (Compatível com Browser e Capacitor)
+  // Ação de Abrir em Nova Aba / Leitor Nativo (Usando o helper unificado de Web e Capacitor)
   const handleOpenNewTab = () => {
     if (!pdfUrl) return;
-    const isCapacitor = Boolean((window as any).Capacitor);
-    if (isCapacitor) {
-      const a = document.createElement("a");
-      a.href = pdfUrl;
-      a.target = "_system";
-      a.rel = "noopener noreferrer";
-      a.click();
-    } else {
-      window.open(pdfUrl, "_blank");
-    }
+    openPdfLink(pdfUrl);
   };
 
   // Handlers para Arrastar (Pan) via Mouse
@@ -110,7 +106,7 @@ export function PdfPreviewDialog({
 
   const handleMouseUp = () => setIsMouseDown(false);
 
-  // Handlers para Pinça (Pinch-to-Zoom) no Mobile
+  // Handlers para Pinça (Pinch-to-Zoom) 60fps via GPU no Mobile
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (e.touches.length === 2) {
       const t1 = e.touches[0];
@@ -128,11 +124,15 @@ export function PdfPreviewDialog({
       const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
       const ratio = currentDist / touchStartDistRef.current;
       const newScale = Math.min(3.0, Math.max(0.5, initialScaleRef.current * ratio));
-      setScale(Number(newScale.toFixed(2)));
+      setPinchScale(Number(newScale.toFixed(2)));
     }
   };
 
   const handleTouchEnd = () => {
+    if (pinchScale !== null) {
+      setScale(pinchScale);
+      setPinchScale(null);
+    }
     touchStartDistRef.current = null;
   };
 
@@ -154,9 +154,11 @@ export function PdfPreviewDialog({
     };
   }, [handleWheel]);
 
-  // Cálculo da largura base das páginas para acomodar o viewport
+  // Cálculo da escala e da largura base das páginas
+  const currentScale = pinchScale !== null ? pinchScale : scale;
   const baseWidth = Math.min(window.innerWidth - 48, 720);
-  const pageWidth = Math.round(baseWidth * scale);
+  const pageWidth = Math.round(baseWidth * currentScale);
+  const cssGpuTransform = pinchScale !== null ? pinchScale / scale : 1;
 
   return (
     <BaseDialog
@@ -180,7 +182,7 @@ export function PdfPreviewDialog({
             variant="ghost"
             size="icon"
             onClick={handleZoomOut}
-            disabled={scale <= 0.5}
+            disabled={currentScale <= 0.5}
             className="h-8 w-8 text-slate-200 hover:text-white hover:bg-white/10 rounded-lg disabled:opacity-30 transition-colors"
             title="Reduzir Zoom (-)"
           >
@@ -193,7 +195,7 @@ export function PdfPreviewDialog({
             className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-md text-xs font-black tracking-wide min-w-[56px] text-center border border-white/20 transition-colors"
             title="Clique para redefinir para 100%"
           >
-            {Math.round(scale * 100)}%
+            {Math.round(currentScale * 100)}%
           </button>
 
           <Button
@@ -201,14 +203,14 @@ export function PdfPreviewDialog({
             variant="ghost"
             size="icon"
             onClick={handleZoomIn}
-            disabled={scale >= 3.0}
+            disabled={currentScale >= 3.0}
             className="h-8 w-8 text-slate-200 hover:text-white hover:bg-white/10 rounded-lg disabled:opacity-30 transition-colors"
             title="Aumentar Zoom (+)"
           >
             <Plus className="h-4 w-4" />
           </Button>
 
-          {scale !== 1.0 && (
+          {currentScale !== 1.0 && (
             <Button
               type="button"
               variant="ghost"
@@ -258,7 +260,7 @@ export function PdfPreviewDialog({
         </div>
       </div>
 
-      {/* Área do Documento com Rolo e Pan Fluido para Esquerda/Direita sem Truncamento */}
+      {/* Área do Documento com GPU Scale e Pan Fluido */}
       <BaseDialog.Body className="bg-slate-200/80 p-0 flex flex-col overflow-hidden relative">
         <div
           ref={containerRef}
@@ -271,15 +273,20 @@ export function PdfPreviewDialog({
           onTouchEnd={handleTouchEnd}
           className={cn(
             "flex-1 overflow-auto p-4 sm:p-8 block touch-pan-x touch-pan-y scroll-smooth select-none",
-            scale > 1.0
+            currentScale > 1.0
               ? isMouseDown
                 ? "cursor-grabbing"
                 : "cursor-grab"
               : "cursor-default"
           )}
         >
-          {/* O container w-max mx-auto garante que scrollLeft=0 mostre a extremidade esquerda completa do PDF sem cortes */}
-          <div className="w-max mx-auto flex flex-col items-center py-2 min-h-full">
+          <div
+            className="w-max mx-auto flex flex-col items-center py-2 min-h-full transition-transform duration-75 ease-out origin-top"
+            style={{
+              transform: cssGpuTransform !== 1 ? `scale(${cssGpuTransform})` : undefined,
+              willChange: pinchScale !== null ? "transform" : "auto",
+            }}
+          >
             {pdfUrl ? (
               <Document
                 file={pdfUrl}

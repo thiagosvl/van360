@@ -11,11 +11,7 @@ export const openBrowserLink = async (url: string) => {
   try {
     if (Capacitor.isNativePlatform()) {
       // Melhoria para WhatsApp no Android/iOS:
-      // Se for um link wa.me, tentamos usar o protocolo nativo whatsapp://
-      // Isso evita o diálogo "Abrir com" e resolve problemas de codificação de emojis no WebView.
       if (url.includes('wa.me/')) {
-        // Converte https://wa.me/55119... para whatsapp://send?phone=55119...
-        // E garante que se houver um ?text=, ele vire &text= para ser um parâmetro extra válido.
         const nativeUrl = url
           .replace('https://wa.me/', 'whatsapp://send?phone=')
           .replace('?text=', '&text=');
@@ -37,7 +33,6 @@ export const openBrowserLink = async (url: string) => {
     }
   } catch (error) {
     console.error('Erro ao abrir link:', error);
-    // Fallback de segurança
     try {
       if (Capacitor.isNativePlatform()) {
          window.location.href = url;
@@ -47,5 +42,37 @@ export const openBrowserLink = async (url: string) => {
     } catch (e) {
       window.location.href = url;
     }
+  }
+};
+
+/**
+ * Abre uma URL de PDF (Blob ou HTTP) de forma 100% compatível com Web e Capacitor.
+ */
+export const openPdfLink = async (pdfUrl: string) => {
+  if (!pdfUrl) return;
+
+  try {
+    if (Capacitor.isNativePlatform()) {
+      if (pdfUrl.startsWith('blob:')) {
+        // Converte o Blob em Data URI Base64 para ser legível pelo navegador nativo do Android/iOS
+        const response = await fetch(pdfUrl);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          if (base64data) {
+            await Browser.open({ url: base64data });
+          }
+        };
+        reader.readAsDataURL(blob);
+        return;
+      }
+      await Browser.open({ url: pdfUrl });
+    } else {
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    }
+  } catch (error) {
+    console.error('Erro ao abrir PDF:', error);
+    window.open(pdfUrl, '_blank');
   }
 };
