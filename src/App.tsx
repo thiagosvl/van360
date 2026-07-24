@@ -108,9 +108,10 @@ const App = () => {
         }
 
         try {
-          toast.info("sistema.info.atualizacaoApp", {
-            description: "sistema.info.atualizacaoAppDescricao",
-          });
+          // Toast inicial desativado para não gerar ruído:
+          // toast.info("sistema.info.atualizacaoApp", {
+          //   description: "sistema.info.atualizacaoAppDescricao",
+          // });
 
           const version = await CapacitorUpdater.download({
             version: latest_version,
@@ -120,8 +121,20 @@ const App = () => {
           await CapacitorUpdater.next({ id: version.id });
           localStorage.setItem("pendingUpdate", version.id);
 
-          toast.success("sistema.info.melhoriasProntas", {
-            description: "sistema.info.melhoriasProntasDescricao",
+          // Toast discreto permitindo reiniciar agora se o usuário desejar
+          toast.info("Nova versão disponível!", {
+            description: "Toque em reiniciar para aplicar as melhorias agora.",
+            action: {
+              label: "Reiniciar",
+              onClick: async () => {
+                try {
+                  await CapacitorUpdater.reload();
+                } catch (e) {
+                  // Fallback silencioso
+                }
+              },
+            },
+            duration: 8000,
           });
         } catch (err) {
           // Erro em atualização silenciosa - não crítico
@@ -181,9 +194,10 @@ const App = () => {
 
         if (pending && pending === current?.bundle?.id) {
           localStorage.removeItem("pendingUpdate");
-          toast.success("sistema.info.appAtualizado", {
-            description: "sistema.info.appAtualizadoDescricao",
-          });
+          // Toast de confirmação pós-boot desativado:
+          // toast.success("sistema.info.appAtualizado", {
+          //   description: "sistema.info.appAtualizadoDescricao",
+          // });
         }
 
         await CapacitorUpdater.notifyAppReady();
@@ -341,17 +355,18 @@ const App = () => {
 
         {/* 🔹 Dialog de confirmação de atualização */}
         <AlertDialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-          <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md rounded-3xl p-6 border-none shadow-2xl bg-white">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl">
+              <AlertDialogTitle className="text-xl font-headline font-bold text-[#1a3a5c]">
                 {getMessage("sistema.atualizacao.titulo")}
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-base pt-2">
+              <AlertDialogDescription className="text-sm font-medium text-slate-600 pt-2 leading-relaxed">
                 {getMessage("sistema.atualizacao.descricao")}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="sm:justify-end">
+            <AlertDialogFooter className="pt-4 sm:justify-end">
               <AlertDialogAction
+                className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 rounded-xl px-6 w-full sm:w-auto shadow-md transition-all active:scale-95"
                 onClick={async () => {
                   setShowUpdateDialog(false);
                   if (!pendingUpdate) return;
@@ -385,7 +400,7 @@ const App = () => {
                   }
                 }}
               >
-                OK
+                Atualizar Agora
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
