@@ -6,7 +6,7 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
+import { TrialContractLimitDialog } from "@/components/dialogs/TrialContractLimitDialog";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
@@ -41,8 +41,12 @@ export default function Passageiros() {
     handleToggleClick,
     handleDeleteClick,
     handleEnviarWhatsApp,
+    handleGerarContrato,
     pullToRefreshReload,
     hasActiveFilters,
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    handleGoToSubscription,
   } = usePassageirosViewModel();
 
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
@@ -167,6 +171,7 @@ export default function Passageiros() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
                       onEnviarWhatsApp={handleEnviarWhatsApp}
+                      onGerarContrato={handleGerarContrato}
                       usarContratos={!!profile?.config_contrato?.usar_contratos}
                     />
                   )}
@@ -182,6 +187,12 @@ export default function Passageiros() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
+
+      <TrialContractLimitDialog
+        isOpen={isLimitDialogOpen}
+        onClose={() => setIsLimitDialogOpen(false)}
+        onConfirm={handleGoToSubscription}
+      />
     </>
   );
 }

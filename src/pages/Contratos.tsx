@@ -6,6 +6,7 @@ import { ContratosList } from "@/components/features/contrato/ContratosList";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
 import { AlertCircle } from "lucide-react";
 
+import { TrialContractLimitDialog } from "@/components/dialogs/TrialContractLimitDialog";
 import { useContratosViewModel } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
 
@@ -30,6 +31,9 @@ const Contratos = () => {
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    handleGoToSubscription,
     actions,
   } = useContratosViewModel();
 
@@ -156,6 +160,12 @@ const Contratos = () => {
         onClose={() => setIsPreviewPdfOpen(false)}
         pdfUrl={pdfUrl}
         title="Prévia do Contrato"
+      />
+
+      <TrialContractLimitDialog
+        isOpen={isLimitDialogOpen}
+        onClose={() => setIsLimitDialogOpen(false)}
+        onConfirm={handleGoToSubscription}
       />
     </>
   );

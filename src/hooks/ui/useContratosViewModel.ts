@@ -17,7 +17,7 @@ import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
-import { isResponsavelMockTelefone } from "@/utils/formatters/name";
+import { useContractLimit } from "@/hooks/business/useContractLimit";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -29,6 +29,13 @@ export function useContratosViewModel() {
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const {
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    checkCanCreateContract,
+    handleGoToSubscription,
+  } = useContractLimit();
 
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -245,6 +252,8 @@ export function useContratosViewModel() {
   }, [openConfirmationDialog, substituirMutation, closeConfirmationDialog]);
 
   const handleGerarContrato = useCallback((passageiroId: string) => {
+    if (!checkCanCreateContract()) return;
+
     openGerarContratoValidadorDialog({
       passageiroId,
       onSuccess: (id, bypassed) => {
@@ -318,6 +327,9 @@ export function useContratosViewModel() {
     pdfUrl,
     hasActiveFilters,
     setFilters,
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    handleGoToSubscription,
     actions: {
       onVerPassageiro: handleVerPassageiro,
       onCopiarLink: handleCopiarLink,

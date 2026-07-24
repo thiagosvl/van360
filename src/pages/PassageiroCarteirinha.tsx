@@ -30,6 +30,8 @@ import { IncompletePassengerBanner } from "@/components/features/passageiro/Inco
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrialContractLimitDialog } from "@/components/dialogs/TrialContractLimitDialog";
+import { useContractLimit } from "@/hooks/business/useContractLimit";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -81,6 +83,13 @@ export default function PassageiroCarteirinha() {
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [mobileTab, setMobileTab] = useState("parcelas");
+
+  const {
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    checkCanCreateContract,
+    handleGoToSubscription,
+  } = useContractLimit();
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -581,6 +590,7 @@ export default function PassageiroCarteirinha() {
       if (isAssinado || (isPendente && hasUrl)) {
         openBrowserLink(passageiro.contrato_url || passageiro.minuta_url);
       } else {
+        if (!checkCanCreateContract()) return;
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
           onSuccess: (id, bypassed) => {
@@ -760,6 +770,12 @@ export default function PassageiroCarteirinha() {
           </div>
         </div>
       </PullToRefreshWrapper>
+
+      <TrialContractLimitDialog
+        isOpen={isLimitDialogOpen}
+        onClose={() => setIsLimitDialogOpen(false)}
+        onConfirm={handleGoToSubscription}
+      />
     </>
   );
 }

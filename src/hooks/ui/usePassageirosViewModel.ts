@@ -19,6 +19,7 @@ import {
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useContractLimit } from "@/hooks/business/useContractLimit";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
 import { openBrowserLink } from "@/utils/browser";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
@@ -43,6 +44,13 @@ export function usePassageirosViewModel() {
     openQuickStartPassageiroDialog,
     openFirstChargeDialog,
   } = useLayout();
+
+  const {
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    checkCanCreateContract,
+    handleGoToSubscription,
+  } = useContractLimit();
 
   const { user } = useSession();
   const {
@@ -339,6 +347,7 @@ export function usePassageirosViewModel() {
 
   const handleGerarContrato = useCallback(
     async (passageiro: Passageiro) => {
+      if (!checkCanCreateContract()) return;
       try {
         await createContrato.mutateAsync({
           passageiroId: passageiro.id,
@@ -350,7 +359,7 @@ export function usePassageirosViewModel() {
         // Erro já tratado no hook
       }
     },
-    [createContrato, refetchPassageiros]
+    [checkCanCreateContract, createContrato, refetchPassageiros]
   );
 
   const handleExcluirContrato = useCallback(
@@ -478,5 +487,8 @@ export function usePassageirosViewModel() {
     handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
+    isLimitDialogOpen,
+    setIsLimitDialogOpen,
+    handleGoToSubscription,
   };
 }
