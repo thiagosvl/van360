@@ -8,10 +8,12 @@ export interface AdminDashboardStats {
   assinaturas: {
     trial: number;
     active: number;
+    vitalicio: number;
     past_due: number;
     expired: number;
     canceled: number;
   };
+  canaisAquisicao?: Record<string, number>;
   whatsappStatus?: WhatsappStatus;
   recentUsers: Array<{
     id: string;
@@ -73,6 +75,12 @@ export interface AdminUserDetailsResponse {
     created_at: string;
     updated_at: string;
     data_nascimento: string | null;
+  };
+  kpis?: {
+    veiculosCount: number;
+    escolasCount: number;
+    passageirosCount: number;
+    solicitacoesPendentesCount: number;
   };
   assinatura: {
     id: string;

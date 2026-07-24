@@ -2,13 +2,15 @@ import { useAdminStats, useAdminWhatsappInstances, useAdminLogs } from "@/hooks/
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
 import { phoneMask } from "@/utils/masks";
 import { formatWhatsappPurpose } from "@/utils/whatsapp";
 import { ROUTES } from "@/constants/routes";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { CANAL_AQUISICAO_CONFIG } from "@/utils/acquisition-channel.utils";
 import {
   Users,
   DollarSign,
@@ -20,6 +22,7 @@ import {
   XCircle,
   MessageSquare,
   Infinity,
+  Share2,
 } from "lucide-react";
 import {
   Card,
@@ -44,6 +47,39 @@ function formatDate(iso: string) {
   });
 }
 
+interface TooltipPayloadItem {
+  payload: {
+    key: string;
+    name: string;
+    quantidade: number;
+    porcentagem: number;
+    color: string;
+  };
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+}
+
+function CustomAcquisitionTooltip({ active, payload }: CustomTooltipProps) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-slate-900 text-white p-3 rounded-xl shadow-xl text-xs space-y-1">
+        <p className="font-bold flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: data.color }} />
+          {data.name}
+        </p>
+        <p className="text-slate-300 font-medium">
+          {data.quantidade} motorista{data.quantidade !== 1 ? "s" : ""} ({data.porcentagem}%)
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
@@ -54,6 +90,25 @@ export default function AdminDashboard() {
   useEffect(() => {
     setPageTitle("Dashboard");
   }, [setPageTitle]);
+
+  const canaisChartData = useMemo(() => {
+    if (!stats?.canaisAquisicao) return [];
+    const total = Object.values(stats.canaisAquisicao).reduce((acc, v) => acc + v, 0);
+
+    return Object.entries(stats.canaisAquisicao)
+      .map(([key, count]) => {
+        const cfg = CANAL_AQUISICAO_CONFIG[key as keyof typeof CANAL_AQUISICAO_CONFIG] || { label: key, color: "#64748B" };
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return {
+          key,
+          name: cfg.label,
+          quantidade: count,
+          porcentagem: pct,
+          color: cfg.color,
+        };
+      })
+      .sort((a, b) => b.quantidade - a.quantidade);
+  }, [stats?.canaisAquisicao]);
 
   if (isLoading) {
     return (
@@ -146,6 +201,60 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Origem dos Usuários (Canais de Aquisição) */}
+        <Card className="lg:col-span-3 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
+          <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+            <div className="space-y-1 text-left flex-1">
+              <CardTitle className="text-sm font-headline font-black text-[#1a3a5c] uppercase tracking-tight flex items-center gap-2">
+                <Share2 className="h-4 w-4 text-[#1a3a5c]" />
+                Origem dos Usuários (Canais de Aquisição)
+              </CardTitle>
+              <CardDescription className="text-xs font-semibold text-slate-400">
+                Por onde os motoristas chegaram ao Van360
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="px-6 py-4">
+            {canaisChartData.length === 0 ? (
+              <p className="text-xs text-slate-400 py-8 text-center">Nenhum dado cadastrado.</p>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <div className="lg:col-span-2 h-[440px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={canaisChartData} layout="vertical" margin={{ top: 10, right: 30, left: 20, bottom: 10 }}>
+                      <XAxis type="number" allowDecimals={false} stroke="#94a3b8" fontSize={11} />
+                      <YAxis type="category" dataKey="name" stroke="#475569" fontSize={11} width={150} tickLine={false} />
+                      <Tooltip content={<CustomAcquisitionTooltip />} />
+                      <Bar dataKey="quantidade" radius={[0, 8, 8, 0]} barSize={20}>
+                        {canaisChartData.map((entry, idx) => (
+                          <Cell key={`cell-${idx}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-col gap-2.5 bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-100 min-h-[440px] justify-center">
+                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                    Resumo por Canal
+                  </span>
+                  {canaisChartData.map((item) => (
+                    <div key={item.key} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                        <span className="font-bold text-slate-700 truncate">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 font-mono">
+                        <span className="font-black text-[#1a3a5c]">{item.quantidade}</span>
+                        <span className="text-[10px] text-slate-400 font-bold">({item.porcentagem}%)</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* 1. Últimas Atividades */}
         <Card className="lg:col-span-3 border-0 shadow-diff-shadow rounded-[2rem] overflow-hidden bg-white p-2">
           <CardHeader className="flex flex-row items-center justify-between p-6">

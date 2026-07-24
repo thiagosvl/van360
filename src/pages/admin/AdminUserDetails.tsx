@@ -29,6 +29,10 @@ import {
   Trash2,
   Filter,
   X,
+  Bus,
+  GraduationCap,
+  Users,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -419,6 +423,81 @@ export default function AdminUserDetails() {
             )}
           </p>
         </div>
+      </div>
+
+      {/* KPIs do Motorista */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-blue-50">
+                <Bus className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="mt-4 sm:mt-6 flex flex-col items-start">
+              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                Veículos
+              </h3>
+              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                {data.kpis?.veiculosCount ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-purple-50">
+                <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+              </div>
+            </div>
+            <div className="mt-4 sm:mt-6 flex flex-col items-start">
+              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                Escolas
+              </h3>
+              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                {data.kpis?.escolasCount ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-emerald-50">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
+              </div>
+            </div>
+            <div className="mt-4 sm:mt-6 flex flex-col items-start">
+              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                Passageiros
+              </h3>
+              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                {data.kpis?.passageirosCount ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-diff-shadow rounded-2xl sm:rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-amber-50">
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
+              </div>
+            </div>
+            <div className="mt-4 sm:mt-6 flex flex-col items-start">
+              <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                Solicitações Pendentes
+              </h3>
+              <p className="text-xl sm:text-3xl font-headline font-black text-[#1a3a5c] tracking-tighter">
+                {data.kpis?.solicitacoesPendentesCount ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs

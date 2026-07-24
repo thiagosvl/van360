@@ -244,6 +244,8 @@ export enum ConfigKey {
 }
 
 export enum CanalAquisicao {
+  PLAY_STORE = "PLAY_STORE",
+  APP_STORE = "APP_STORE",
   INDICACAO = "INDICACAO",
   PANFLETO = "PANFLETO",
   INSTAGRAM = "INSTAGRAM",

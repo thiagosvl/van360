@@ -70,7 +70,7 @@ export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
             <span className="text-[#1a3a5c] font-black text-xl">V</span>
           </div>
           <div>
-            <h1 className="font-headline font-black text-lg tracking-tighter leading-none">VAN360 - {import.meta.env.DEV ? "DEV" : "PRODUÇÃOS"}</h1>
+            <h1 className="font-headline font-black text-lg tracking-tighter leading-none">VAN360 - {import.meta.env.DEV ? "DEV" : "PRODUÇÃO"}</h1>
             <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Painel Admin</span>
           </div>
         </div>
