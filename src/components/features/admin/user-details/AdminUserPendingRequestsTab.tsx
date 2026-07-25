@@ -11,6 +11,7 @@ import { openBrowserLink } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { toast } from "sonner";
+import { formatRelativeTime } from "@/utils/formatters/date";
 
 interface AdminUserPendingRequestsTabProps {
   solicitacoes: AdminUserPendingRequestItem[];
@@ -108,7 +109,12 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
             <div className="space-y-1 text-left">
               <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <Clock className="h-4 w-4 text-amber-400" />
-                Solicitações ({filtered.length} de {solicitacoes.length})
+                Solicitações
+                {search.trim() ? (
+                  <span>({filtered.length} de {solicitacoes.length})</span>
+                ) : (
+                  <span>({solicitacoes.length})</span>
+                )}
               </CardTitle>
               <p className="text-[11px] font-medium text-slate-400">
                 Solicitações de pré-cadastro aguardando confirmação do motorista.
@@ -156,8 +162,8 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800/80 bg-slate-900/70 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                      <th className="py-3.5 px-6">Solicitante</th>
-                      <th className="py-3.5 px-4">Responsável / WhatsApp</th>
+                      <th className="py-3.5 px-6">Passageiro</th>
+                      <th className="py-3.5 px-4">Responsável</th>
                       <th className="py-3.5 px-4">Escola</th>
                       <th className="py-3.5 px-4">Data da Solicitação</th>
                       <th className="py-3.5 px-6 text-right">Status</th>
@@ -194,15 +200,9 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                                 {formatShortName(s.nome_responsavel, true)}
                               </p>
                               {s.telefone_responsavel && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenWhatsApp(s.telefone_responsavel!, s.nome_responsavel, s.nome)}
-                                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:underline mt-0.5"
-                                  title="Chamar no WhatsApp"
-                                >
-                                  <MessageSquare className="h-3 w-3 text-emerald-400" />
-                                  <span>{phoneMask(s.telefone_responsavel)}</span>
-                                </button>
+                                <p className="text-[10px] text-slate-400 font-medium font-mono">
+                                  {phoneMask(s.telefone_responsavel)}
+                                </p>
                               )}
                             </div>
                           ) : (
@@ -221,6 +221,10 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                         <td className="py-4 px-4">
                           <span className="font-medium text-slate-300 text-xs">
                             {new Date(s.created_at).toLocaleDateString("pt-BR")}
+
+                            <p className="text-[10px] text-slate-400 font-medium font-mono">
+                              {formatRelativeTime(s.created_at)}
+                            </p>
                           </span>
                         </td>
 
@@ -278,14 +282,9 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                           {s.nome_responsavel || "—"}
                         </span>
                         {s.telefone_responsavel && (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenWhatsApp(s.telefone_responsavel!, s.nome_responsavel, s.nome)}
-                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:underline mt-0.5"
-                          >
-                            <MessageSquare className="h-3 w-3 text-emerald-400" />
-                            <span>{phoneMask(s.telefone_responsavel)}</span>
-                          </button>
+                          <p className="text-[10px] text-slate-400 font-medium font-mono">
+                            {phoneMask(s.telefone_responsavel)}
+                          </p>
                         )}
                       </div>
 

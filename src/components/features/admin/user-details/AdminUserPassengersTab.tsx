@@ -115,7 +115,12 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
             <div className="space-y-1 text-left">
               <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <Users className="h-4 w-4 text-blue-400" />
-                Listagem de Passageiros ({filtered.length} de {totalPassageiros})
+                Listagem de Passageiros
+                {search.trim() || statusFilter !== StatusFilter.ALL ? (
+                  <span>({filtered.length} de {totalPassageiros})</span>
+                ) : (
+                  <span>({totalPassageiros})</span>
+                )}
               </CardTitle>
               <p className="text-[11px] font-medium text-slate-400">
                 Alunos vinculados às rotas deste motorista.

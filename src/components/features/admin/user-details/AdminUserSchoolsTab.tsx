@@ -5,6 +5,7 @@ import { GraduationCap, MapPin, User, Search, X } from "lucide-react";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { Input } from "@/components/ui/input";
 
 interface AdminUserSchoolsTabProps {
   escolas: AdminUserSchoolItem[];
@@ -31,7 +32,12 @@ export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
           <div className="space-y-1">
             <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-purple-400" />
-              Escolas Atendidas ({filtered.length} de {escolas.length})
+              Escolas
+              {search.trim() ? (
+                <span>({filtered.length} de {escolas.length})</span>
+              ) : (
+                <span>({escolas.length})</span>
+              )}
             </CardTitle>
             <p className="text-[11px] font-medium text-slate-400">
               Instituições de ensino cadastradas pelo motorista.

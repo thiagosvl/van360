@@ -15,7 +15,7 @@ export function AdminUserVehiclesTab({ veiculos }: AdminUserVehiclesTabProps) {
         <div className="space-y-1">
           <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
             <Bus className="h-4 w-4 text-amber-400" />
-            Frota de Veículos ({veiculos.length})
+            Veículos ({veiculos.length})
           </CardTitle>
           <p className="text-[11px] font-medium text-slate-400">
             Veículos cadastrados para a realização das rotas escolares.

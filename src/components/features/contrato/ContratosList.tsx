@@ -14,7 +14,7 @@ import {
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoStatus, ContratoTab } from "@/types/enums";
-import { formatFirstName, formatShortName } from "@/utils/formatters";
+import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
 import { memo } from "react";

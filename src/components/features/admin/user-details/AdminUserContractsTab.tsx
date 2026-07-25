@@ -139,7 +139,12 @@ export function AdminUserContractsTab({
             <div className="space-y-1 text-left">
               <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <FileText className="h-4 w-4 text-blue-400" />
-                Status dos Contratos ({filteredPassageiros.length} de {passageiros.length})
+                Status dos Contratos
+                {search.trim() ? (
+                  <span>({filteredPassageiros.length} de {passageiros.length})</span>
+                ) : (
+                  <span>({passageiros.length})</span>
+                )}
               </CardTitle>
               <p className="text-[11px] font-medium text-slate-400">
                 Acompanhamento individual dos contratos de transporte.

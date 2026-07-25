@@ -20,7 +20,6 @@ import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog,
-  useCreatePrePassageiro,
   useDeletePrePassageiro,
   usePrePassageiros,
 } from "@/hooks";
@@ -35,9 +34,6 @@ import {
   getInitials,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
-import { convertDateBrToISO } from "@/utils/formatters/date";
-import { moneyToNumber, phoneMask } from "@/utils/masks";
-import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
   Eye,
@@ -45,7 +41,7 @@ import {
   Trash2,
   Users2
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
@@ -60,13 +56,9 @@ export default function PrePassageiros({
     openFirstChargeDialog,
   } = useLayout();
 
-  const { profile, summary } = useProfile();
+  const { profile } = useProfile();
 
-  const createPrePassageiro = useCreatePrePassageiro();
   const deletePrePassageiro = useDeletePrePassageiro();
-
-  const isActionLoading =
-    createPrePassageiro.isPending || deletePrePassageiro.isPending;
 
   const {
     data: prePassageirosData,
@@ -96,36 +88,6 @@ export default function PrePassageiros({
     return () => clearTimeout(handler);
   }, [externalSearchTerm]);
 
-
-  const handleCadastrarRapidoLink = async () => {
-    if (!profile?.id) {
-      toast.error("auth.erro.sessaoExpirada");
-      return;
-    }
-
-    const mockPassenger = mockGenerator.passenger();
-    const mockEndereco = mockGenerator.address();
-
-    const fakePayload: any = {
-      ...mockPassenger,
-      ...mockEndereco,
-      telefone_responsavel: phoneMask(mockPassenger.telefone_responsavel),
-      usuario_id: profile.id,
-      observacoes: `Solicitação rápida gerada automaticamente`,
-      escola_id: null,
-      referencia: `Perto do ${mockEndereco.bairro}`,
-      data_nascimento: convertDateBrToISO(mockPassenger.data_nascimento),
-      data_inicio_transporte: null,
-      data_fim_transporte: null,
-      data_inicio_cobranca: null,
-      data_fim_cobranca: null,
-      valor_cobranca: null,
-      dia_vencimento: null,
-    };
-
-    createPrePassageiro.mutate(fakePayload);
-  };
-
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     openPassageiroFormDialog({
       mode: PassageiroFormModes.FINALIZE,
@@ -138,7 +100,6 @@ export default function PrePassageiros({
       },
     });
   };
-
 
   const ActionsMenu = ({
     prePassageiro,

@@ -1803,12 +1803,10 @@ export default function AdminUserDetails() {
                 <p className="text-[10px] font-black uppercase text-purple-400 tracking-wider">
                   Módulos do Motorista
                 </p>
-                <p className="text-[11px] font-medium text-slate-400 mt-0.5">
-                  Dados geridos pelo motorista
-                </p>
               </div>
 
               <div className="flex md:flex-col overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden gap-1.5 p-0.5">
+                {/* 1. PASSAGEIROS */}
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("passageiros")}
@@ -1827,42 +1825,7 @@ export default function AdminUserDetails() {
                   )}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleSubTabChange("veiculos")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "veiculos"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-                    }`}
-                >
-                  <Bus className={`h-4 w-4 shrink-0 ${activeSubTab === "veiculos" ? "text-white" : "text-amber-400"}`} />
-                  <span className="flex-1">Veículos</span>
-                  {data.kpis?.veiculosCount !== undefined && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "veiculos" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
-                      }`}>
-                      {data.kpis.veiculosCount}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSubTabChange("escolas")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "escolas"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-                    }`}
-                >
-                  <GraduationCap className={`h-4 w-4 shrink-0 ${activeSubTab === "escolas" ? "text-white" : "text-purple-400"}`} />
-                  <span className="flex-1">Escolas</span>
-                  {data.kpis?.escolasCount !== undefined && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "escolas" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
-                      }`}>
-                      {data.kpis.escolasCount}
-                    </span>
-                  )}
-                </button>
-
+                {/* 2. SOLICITAÇÕES */}
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("solicitacoes")}
@@ -1881,6 +1844,45 @@ export default function AdminUserDetails() {
                   )}
                 </button>
 
+                {/* 3. VEÍCULOS */}
+                <button
+                  type="button"
+                  onClick={() => handleSubTabChange("veiculos")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "veiculos"
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                    }`}
+                >
+                  <Bus className={`h-4 w-4 shrink-0 ${activeSubTab === "veiculos" ? "text-white" : "text-amber-400"}`} />
+                  <span className="flex-1">Veículos</span>
+                  {data.kpis?.veiculosCount !== undefined && (
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "veiculos" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                      }`}>
+                      {data.kpis.veiculosCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* 4. ESCOLAS */}
+                <button
+                  type="button"
+                  onClick={() => handleSubTabChange("escolas")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "escolas"
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                    }`}
+                >
+                  <GraduationCap className={`h-4 w-4 shrink-0 ${activeSubTab === "escolas" ? "text-white" : "text-purple-400"}`} />
+                  <span className="flex-1">Escolas</span>
+                  {data.kpis?.escolasCount !== undefined && (
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "escolas" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                      }`}>
+                      {data.kpis.escolasCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* 5. CONTRATOS */}
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("contratos")}
@@ -1891,8 +1893,13 @@ export default function AdminUserDetails() {
                 >
                   <FileCheck className={`h-4 w-4 shrink-0 ${activeSubTab === "contratos" ? "text-white" : "text-emerald-400"}`} />
                   <span className="flex-1">Contratos</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "contratos" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                    }`}>
+                    {data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
+                  </span>
                 </button>
 
+                {/* 6. INDICAÇÕES */}
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("indicacoes")}
@@ -1903,6 +1910,10 @@ export default function AdminUserDetails() {
                 >
                   <Share2 className={`h-4 w-4 shrink-0 ${activeSubTab === "indicacoes" ? "text-white" : "text-purple-400"}`} />
                   <span className="flex-1">Indicações</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "indicacoes" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                    }`}>
+                    {data.referralSummary?.total ?? 0}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1912,17 +1923,17 @@ export default function AdminUserDetails() {
               {activeSubTab === "passageiros" && (
                 <AdminUserPassengersTab passageiros={data.passageiros || []} />
               )}
-              {activeSubTab === "veiculos" && (
-                <AdminUserVehiclesTab veiculos={data.veiculos || []} />
-              )}
-              {activeSubTab === "escolas" && (
-                <AdminUserSchoolsTab escolas={data.escolas || []} />
-              )}
               {activeSubTab === "solicitacoes" && (
                 <AdminUserPendingRequestsTab
                   solicitacoes={data.prePassageiros || []}
                   userId={data.user.id}
                 />
+              )}
+              {activeSubTab === "veiculos" && (
+                <AdminUserVehiclesTab veiculos={data.veiculos || []} />
+              )}
+              {activeSubTab === "escolas" && (
+                <AdminUserSchoolsTab escolas={data.escolas || []} />
               )}
               {activeSubTab === "contratos" && (
                 <AdminUserContractsTab
