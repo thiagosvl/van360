@@ -300,6 +300,8 @@ export function usePassageiroExternalForm() {
 
     form.reset({
       ...mockData,
+      valor_cobranca: undefined,
+      dia_vencimento: undefined,
     });
 
     setOpenAccordionItems([

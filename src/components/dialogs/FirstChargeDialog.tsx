@@ -113,7 +113,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 {
                   value: false,
                   label: "Não gerar o contrato",
-                  sublabel: "Você poderá gerar manualmente depois",
+                  sublabel: "Você poderá gerar depois",
                   icon: <AlertCircle className="w-6 h-6" />,
                   activeColor: "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200",
                   iconActive: "bg-slate-400 text-white shadow-lg shadow-slate-200",

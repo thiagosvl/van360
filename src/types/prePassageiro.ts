@@ -18,6 +18,7 @@ export interface PrePassageiro {
     estado: string | null;
     cep: string | null;
     referencia: string | null;
+    complemento?: string | null;
     observacoes: string | null;
 
     escola_id: string | null;
@@ -25,7 +26,6 @@ export interface PrePassageiro {
     valor_cobranca: number | null;
     dia_vencimento: number | null;
     
-    // Novos Campos
     modalidade?: string;
     data_nascimento?: string;
     genero?: string;
@@ -33,4 +33,6 @@ export interface PrePassageiro {
     data_inicio_transporte?: string;
     turma?: string;
     data_fim_transporte?: string;
+    data_inicio_cobranca?: string;
+    data_fim_cobranca?: string;
 }

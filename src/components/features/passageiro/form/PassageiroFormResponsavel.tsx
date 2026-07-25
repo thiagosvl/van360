@@ -32,15 +32,15 @@ export function PassageiroFormResponsavel({
   const form = useFormContext();
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-3">
+    <div className="space-y-5">
+      <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
         <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
           <Contact className="w-5 h-5" />
         </div>
         Responsável
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         <FormField
           control={form.control}
           name="nome_responsavel"

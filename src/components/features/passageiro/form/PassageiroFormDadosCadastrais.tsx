@@ -65,16 +65,16 @@ export function PassageiroFormDadosCadastrais({
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       {/* Seção 1: Dados Pessoais */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-3">
+      <section className="space-y-5">
+        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
             <User className="w-5 h-5" />
           </div>
           Identificação
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           <FormField
             control={form.control}
             name="nome"
@@ -239,15 +239,15 @@ export function PassageiroFormDadosCadastrais({
       {!isExternal && <hr className="border-slate-100" />}
 
       {/* Seção 2: Escola e Período */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-3">
+      <section className="space-y-5">
+        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
             <School className="w-5 h-5" />
           </div>
           Veículo e Escola
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {!hideVeiculo && (
             <FormField
               control={form.control}

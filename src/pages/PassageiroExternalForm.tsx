@@ -105,7 +105,7 @@ export default function PassageiroExternalForm() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-4"
+                className="space-y-8"
               >
                 {/* DADOS DO PASSAGEIRO */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500">
