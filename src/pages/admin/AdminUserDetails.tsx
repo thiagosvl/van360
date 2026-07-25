@@ -1919,7 +1919,10 @@ export default function AdminUserDetails() {
                 <AdminUserSchoolsTab escolas={data.escolas || []} />
               )}
               {activeSubTab === "solicitacoes" && (
-                <AdminUserPendingRequestsTab solicitacoes={data.prePassageiros || []} />
+                <AdminUserPendingRequestsTab
+                  solicitacoes={data.prePassageiros || []}
+                  userId={data.user.id}
+                />
               )}
               {activeSubTab === "contratos" && (
                 <AdminUserContractsTab
