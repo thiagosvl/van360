@@ -64,14 +64,29 @@ export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
   return (
     <aside className="w-72 text-slate-100 flex flex-col h-[100dvh] sticky top-0 overflow-y-auto pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)] bg-[#0d1424] border-r border-slate-800/80">
       {/* Logo Area */}
-      <div className="p-8 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="text-white font-black text-xl">V</span>
-          </div>
-          <div>
-            <h1 className="font-headline font-black text-lg tracking-tighter leading-none text-white">VAN360 - {import.meta.env.DEV ? "DEV" : "PROD"}</h1>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Painel Admin</span>
+      <div className="py-6 px-4 border-b border-slate-800/60 flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center gap-3">
+          <img
+            src="/assets/logo-van360.webp"
+            alt="VAN360"
+            className="h-10 sm:h-12 w-auto select-none brightness-0 invert object-contain"
+          />
+
+          <div className="flex items-center justify-center">
+            {import.meta.env.DEV ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] font-black uppercase tracking-widest shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                Ambiente DEV
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                Ambiente Produção
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -102,21 +117,6 @@ export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
           </NavLink>
         ))}
       </nav>
-
-      {/* Footer / User Info Context */}
-      <div className="p-4 mt-auto">
-        <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center font-black text-xs text-white">
-              A
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-200 truncate">Administrador</p>
-              <p className="text-[10px] text-slate-400 truncate">contato@van360.com.br</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }

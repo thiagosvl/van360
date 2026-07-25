@@ -89,7 +89,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { PhoneInput } from "@/components/forms";
-import { emailSchema } from "@/schemas/common";
+import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
 import { toPersistenceString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
@@ -105,8 +105,8 @@ const userSchema = z.object({
     .min(2, "Deve ter pelo menos 2 caracteres")
     .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
   apelido: z.string().optional(),
-  cpfcnpj: z.string().min(14, "CPF/CNPJ incompleto"),
-  telefone: z.string().min(14, "Telefone incompleto"),
+  cpfcnpj: cpfCnpjSchema,
+  telefone: phoneSchema,
   email: emailSchema,
   ativo: z.boolean(),
   data_nascimento: z.string().optional().refine((val) => {
@@ -1000,557 +1000,586 @@ export default function AdminUserDetails() {
 
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                  <User className="h-4 w-4 text-blue-400" />
-                  Dados Cadastrais
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <Form {...userForm}>
-                  <form onSubmit={userForm.handleSubmit(handleSaveUser, onUserFormError)} className="space-y-5">
-                    {(() => {
-                      const cpfcnpjValue = userForm.watch("cpfcnpj") || "";
-                      const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
+            {/* CARD 1: DADOS CADASTRAIS DO MOTORISTA */}
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+              <div>
+                <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
+                      <User className="h-4 w-4 text-blue-400" />
+                      Dados Cadastrais
+                    </CardTitle>
+                  </div>
+                </CardHeader>
 
-                      return (
-                        <>
-                          <div className="mb-4">
-                            <FormField
-                              control={userForm.control}
-                              name="cpfcnpj"
-                              render={({ field }) => (
-                                <FormItem className="space-y-2">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CPF / CNPJ</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                                      inputMode="numeric"
-                                      className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                <CardContent className="p-6 space-y-6">
+                  <Form {...userForm}>
+                    <form id="user-form" onSubmit={userForm.handleSubmit(handleSaveUser, onUserFormError)} className="space-y-6">
+                      {(() => {
+                        const cpfcnpjValue = userForm.watch("cpfcnpj") || "";
+                        const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
 
-                          <FormField
-                            control={userForm.control}
-                            name="razao_social"
-                            render={({ field, fieldState, formState }) => (
-                              <FormItem className="space-y-2 mb-4">
-                                <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                                  Razão Social {isCnpj && <span className="text-red-600">*</span>}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
-                                    aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                                  <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                        return (
+                          <>
+                            {/* SEÇÃO 1: IDENTIFICAÇÃO */}
+                            <div className="space-y-4">
+                              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                Identificação & Documentação
+                              </h4>
+
+                              <FormField
+                                control={userForm.control}
+                                name="cpfcnpj"
+                                render={({ field }) => (
+                                  <FormItem className="space-y-2">
+                                    <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                      CPF ou CNPJ {isCnpj && <span className="text-rose-400">*</span>}
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        maxLength={18}
+                                        onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                                        inputMode="numeric"
+                                        placeholder="Digite o CPF ou CNPJ"
+                                        className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
                                 )}
-                              </FormItem>
-                            )}
-                          />
+                              />
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                            <FormField
-                              control={userForm.control}
-                              name="nome"
-                              render={({ field }) => (
-                                <FormItem className="space-y-2">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                                    Nome
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={userForm.control}
-                              name="apelido"
-                              render={({ field }) => (
-                                <FormItem className="space-y-2">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                                    Apelido
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                              <FormField
+                                control={userForm.control}
+                                name="razao_social"
+                                render={({ field, fieldState, formState }) => (
+                                  <FormItem className="space-y-2">
+                                    <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                      Razão Social {isCnpj && <span className="text-rose-400">*</span>}
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        value={field.value || ""}
+                                        placeholder="Razão social do motorista (obrigatória para CNPJ)"
+                                        className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                        aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                    {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
+                                      <p className="text-xs font-medium text-rose-500 mt-1">Razão social é obrigatória para CNPJ</p>
+                                    )}
+                                  </FormItem>
+                                )}
+                              />
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                            <FormField
-                              control={userForm.control}
-                              name="telefone"
-                              render={({ field }) => (
-                                <PhoneInput
-                                  field={field}
-                                  label="Telefone"
-                                  placeholder="(00) 00000-0000"
-                                  labelClassName="text-[11px] font-black text-slate-400 uppercase tracking-widest"
-                                  inputClassName="pl-11 h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500"
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField
+                                  control={userForm.control}
+                                  name="nome"
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                        Nome Completo <span className="text-rose-400">*</span>
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          placeholder="Nome completo do motorista"
+                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
                                 />
-                              )}
-                            />
-                            <FormField
-                              control={userForm.control}
-                              name="email"
-                              render={({ field }) => (
-                                <FormItem className="space-y-2">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">E-mail</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      type="email"
-                                      className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField
-                              control={userForm.control}
-                              name="data_nascimento"
-                              render={({ field }) => (
-                                <FormItem className="space-y-2">
-                                  <FormLabel className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data de Nascimento</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      inputMode="numeric"
-                                      maxLength={10}
-                                      onChange={(e) => field.onChange(maskDate(e.target.value))}
-                                      placeholder="dd/mm/aaaa"
-                                      className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </>
-                      );
-                    })()}
-
-
-
-                    <div className="flex items-center justify-between pt-2">
-                      <FormField
-                        control={userForm.control}
-                        name="ativo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="flex items-center gap-3">
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
+                                <FormField
+                                  control={userForm.control}
+                                  name="apelido"
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                        Apelido / Nome Fantasia
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          placeholder="Apelido ou nome fantasia"
+                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
                                 />
-                                <Label className="text-xs font-bold text-slate-300">
-                                  {field.value ? "Conta Ativa" : "Conta Inativa"}
-                                </Label>
                               </div>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Button
-                        type="submit"
-                        disabled={updateUser.isPending}
-                        className="w-full h-11 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all"
-                      >
-                        {updateUser.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Save className="h-4 w-4 mr-2" />
-                            Salvar
-                          </>
-                        )}
-                      </Button>
+                            {/* SEÇÃO 2: CONTATO E INFORMAÇÕES PESSOAIS */}
+                            <div className="pt-5 border-t border-slate-800/80 space-y-4">
+                              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                Contato & Informações Pessoais
+                              </h4>
 
-                      <Button
-                        onClick={handleResetPassword}
-                        type="button"
-                        variant="outline"
-                        disabled={resetPassword.isPending}
-                        className="w-full h-11 rounded-xl bg-slate-800/60 border-red-800/60 text-red-400 hover:text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider transition-all"
-                      >
-                        {resetPassword.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Key className="h-4 w-4 mr-2" />
-                            Resetar Senha
-                          </>
-                        )}
-                      </Button>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField
+                                  control={userForm.control}
+                                  name="telefone"
+                                  render={({ field }) => (
+                                    <PhoneInput
+                                      field={field}
+                                      label="Telefone (WhatsApp)"
+                                      placeholder="(00) 00000-0000"
+                                      labelClassName="text-xs sm:text-sm font-semibold text-slate-200"
+                                      inputClassName="pl-11 h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500"
+                                    />
+                                  )}
+                                />
 
-                      <Button
-                        onClick={handleDeleteUser}
-                        type="button"
-                        variant="destructive"
-                        disabled={deleteUser.isPending}
-                        className="w-full h-11 rounded-xl bg-red-600 text-white hover:bg-red-500 text-xs font-bold uppercase tracking-wider transition-all"
-                      >
-                        {deleteUser.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Excluir
+                                <FormField
+                                  control={userForm.control}
+                                  name="email"
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                        E-mail de Acesso <span className="text-rose-400">*</span>
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          type="email"
+                                          placeholder="motorista@email.com"
+                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField
+                                  control={userForm.control}
+                                  name="data_nascimento"
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                        Data de Nascimento
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          inputMode="numeric"
+                                          maxLength={10}
+                                          onChange={(e) => field.onChange(maskDate(e.target.value))}
+                                          placeholder="dd/mm/aaaa"
+                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500 font-mono"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </div>
+
+                            {/* SEÇÃO 3: STATUS DA CONTA */}
+                            <div className="pt-5 border-t border-slate-800/80 flex items-center justify-between">
+                              <FormField
+                                control={userForm.control}
+                                name="ativo"
+                                render={({ field }) => (
+                                  <FormItem className="w-full">
+                                    <FormControl>
+                                      <div className="flex items-center justify-between">
+                                        <Label className="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+                                          Status da Conta
+                                        </Label>
+                                        <div className="flex items-center gap-3">
+                                          <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                          />
+                                          <ActiveStatusBadge active={field.value} />
+                                        </div>
+                                      </div>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
                           </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                        );
+                      })()}
+                    </form>
+                  </Form>
+                </CardContent>
+              </div>
+
+              <CardContent className="p-6 pt-0">
+                <Button
+                  type="submit"
+                  form="user-form"
+                  disabled={updateUser.isPending}
+                  className="w-full h-11 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all"
+                >
+                  {updateUser.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Dados Cadastrais
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                  <ShieldCheck className="h-4 w-4 text-blue-400" />
-                  Assinatura
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5 pt-4">
-                {!sub ? (
-                  <p className="text-sm text-slate-400 py-8 text-center">
-                    Nenhuma assinatura encontrada para este usuário.
-                  </p>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Plano</Label>
-                        <Select
-                          value={subForm.plano_id}
-                          onValueChange={(val) => setSubForm(p => ({ ...p, plano_id: val }))}
-                        >
-                          <SelectTrigger className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus:ring-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {data.planos.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>
-                                {p.nome} — R$ {Number(p.valor).toFixed(2)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</Label>
-                        <Select
-                          value={subForm.status}
-                          onValueChange={(val) => setSubForm(p => ({
-                            ...p,
-                            status: val,
-                            data_vencimento: toDateInputValue(data?.assinatura?.data_vencimento),
-                            trial_ends_at: toDateInputValue(data?.assinatura?.trial_ends_at),
-                          }))}
-                        >
-                          <SelectTrigger className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus:ring-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {STATUS_OPTIONS.map((o) => (
-                              <SelectItem key={o.value} value={o.value}>
-                                {o.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+            {/* CARD 2: ASSINATURA & ACESSO */}
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+              <div>
+                <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-blue-400" />
+                      Assinatura & Acesso
+                    </CardTitle>
+                    {data.assinatura?.status && (
+                      <SubscriptionStatusBadge status={subForm.status || data.assinatura.status} />
+                    )}
+                  </div>
+                </CardHeader>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Data de Vencimento
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            type="date"
-                            value={subForm.data_vencimento}
-                            onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
-                            disabled={subForm.status === SubscriptionStatus.TRIAL}
-                            className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed pr-12"
-                          />
-                          {subForm.data_vencimento && subForm.status !== SubscriptionStatus.TRIAL && (
-                            <div
-                              className="absolute right-12 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                setSubForm(p => ({ ...p, data_vencimento: "" }));
-                              }}
-                              title="Remover data de vencimento"
+                <CardContent className="p-6 space-y-6">
+                  {!sub ? (
+                    <p className="text-sm text-slate-400 py-8 text-center">
+                      Nenhuma assinatura encontrada para este usuário.
+                    </p>
+                  ) : (
+                    <>
+                      {/* SEÇÃO 1: PLANO E VIGÊNCIA */}
+                      <div className="space-y-4">
+                        <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                          Plano & Vigência da Conta
+                        </h4>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Plano Contratado</Label>
+                            <Select
+                              value={subForm.plano_id}
+                              onValueChange={(val) => setSubForm(p => ({ ...p, plano_id: val }))}
                             >
-                              <X className="h-5 w-5" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Fim do Trial
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            type="date"
-                            value={subForm.trial_ends_at}
-                            onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
-                            disabled={subForm.status !== SubscriptionStatus.TRIAL}
-                            className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed pr-12"
-                          />
-                          {subForm.trial_ends_at && subForm.status === SubscriptionStatus.TRIAL && (
-                            <div
-                              className="absolute right-12 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                setSubForm(p => ({ ...p, trial_ends_at: "" }));
-                              }}
-                              title="Remover fim do trial"
+                              <SelectTrigger className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus:ring-0">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {data.planos.map((p) => (
+                                  <SelectItem key={p.id} value={p.id}>
+                                    {p.nome} — R$ {Number(p.valor).toFixed(2)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Status do Plano</Label>
+                            <Select
+                              value={subForm.status}
+                              onValueChange={(val) => setSubForm(p => ({
+                                ...p,
+                                status: val,
+                                data_vencimento: toDateInputValue(data?.assinatura?.data_vencimento),
+                                trial_ends_at: toDateInputValue(data?.assinatura?.trial_ends_at),
+                              }))}
                             >
-                              <X className="h-5 w-5" />
+                              <SelectTrigger className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus:ring-0">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUS_OPTIONS.map((o) => (
+                                  <SelectItem key={o.value} value={o.value}>
+                                    {o.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                              Data de Vencimento
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="date"
+                                value={subForm.data_vencimento}
+                                onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
+                                disabled={subForm.status === SubscriptionStatus.TRIAL}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed pr-12 font-mono"
+                              />
+                              {subForm.data_vencimento && subForm.status !== SubscriptionStatus.TRIAL && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, data_vencimento: "" }));
+                                  }}
+                                  title="Limpar data de vencimento"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 pt-1 pb-3">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Conceder acesso:</span>
-                      {[
-                        { days: 15, label: "+15 dias" },
-                        { days: 30, label: "+1 mês" },
-                        { days: 90, label: "+3 meses" },
-                        { days: 180, label: "+6 meses" },
-                        { days: 365, label: "+1 ano" },
-                      ].map((shortcut) => (
-                        <Button
-                          key={shortcut.days}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAddDays(shortcut.days)}
-                          className="h-7 px-2.5 text-[10px] font-bold rounded-lg bg-slate-800/80 border-slate-700/80 text-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all shadow-sm"
-                        >
-                          {shortcut.label}
-                        </Button>
-                      ))}
-                    </div>
-
-                    <div className="border-t border-slate-800 pt-5 pb-2">
-                      <h4 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        Desconto / Promoção Especial
-                        {(() => {
-                          const cleanValMensal = (subForm.valor_promocional_mensal || "").replace(/\D/g, "");
-                          const cleanValAnual = (subForm.valor_promocional_anual || "").replace(/\D/g, "");
-                          if ((!cleanValMensal || Number(cleanValMensal) <= 0) && (!cleanValAnual || Number(cleanValAnual) <= 0)) return null;
-                          if (!subForm.data_fim_promocao) {
-                            return <span className="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Definitivo</span>;
-                          }
-                          const fim = new Date(subForm.data_fim_promocao + "T23:59:59").getTime();
-                          if (fim >= new Date().getTime()) {
-                            return <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Ativo</span>;
-                          } else {
-                            return <span className="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Expirado</span>;
-                          }
-                        })()}
-                      </h4>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            Valor Base (Mensal)
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              placeholder="Pendente"
-                              value={subForm.valor_base_mensal}
-                              onChange={(e) => setSubForm(p => ({ ...p, valor_base_mensal: moneyMask(e.target.value) }))}
-                              className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10"
-                            />
-                            {subForm.valor_base_mensal && (
-                              <div
-                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  setSubForm(p => ({ ...p, valor_base_mensal: "" }));
-                                }}
-                                title="Limpar valor base mensal"
-                              >
-                                <X className="h-5 w-5" />
-                              </div>
-                            )}
                           </div>
-                        </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            Valor Base (Anual)
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              placeholder="Pendente"
-                              value={subForm.valor_base_anual}
-                              onChange={(e) => setSubForm(p => ({ ...p, valor_base_anual: moneyMask(e.target.value) }))}
-                              className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10"
-                            />
-                            {subForm.valor_base_anual && (
-                              <div
-                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  setSubForm(p => ({ ...p, valor_base_anual: "" }));
-                                }}
-                                title="Limpar valor base anual"
-                              >
-                                <X className="h-5 w-5" />
-                              </div>
-                            )}
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                              Fim do Período Trial
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="date"
+                                value={subForm.trial_ends_at}
+                                onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
+                                disabled={subForm.status !== SubscriptionStatus.TRIAL}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed pr-12 font-mono"
+                              />
+                              {subForm.trial_ends_at && subForm.status === SubscriptionStatus.TRIAL && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, trial_ends_at: "" }));
+                                  }}
+                                  title="Limpar fim do trial"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            Valor Promocional (Mensal)
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              placeholder="R$ Base"
-                              value={subForm.valor_promocional_mensal}
-                              onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_mensal: moneyMask(e.target.value) }))}
-                              className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10"
-                            />
-                            {subForm.valor_promocional_mensal && (
-                              <div
-                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  setSubForm(p => ({ ...p, valor_promocional_mensal: "" }));
-                                }}
-                                title="Limpar valor promocional mensal"
-                              >
-                                <X className="h-5 w-5" />
-                              </div>
-                            )}
+
+                      {/* SEÇÃO 2: CONCEDER ACESSO */}
+                      <div className="pt-5 border-t border-slate-800/80 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5 text-slate-400" />
+                            Conceder Acesso (Cortesia)
+                          </h4>
+                          <span className="text-xs text-slate-400">Prorroga a vigência em 1 clique</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {[
+                            { days: 15, label: "+15 dias" },
+                            { days: 30, label: "+1 mês" },
+                            { days: 90, label: "+3 meses" },
+                            { days: 180, label: "+6 meses" },
+                            { days: 365, label: "+1 ano" },
+                          ].map((shortcut) => (
+                            <Button
+                              key={shortcut.days}
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAddDays(shortcut.days)}
+                              className="h-8 px-3 text-xs font-bold rounded-lg bg-slate-800/80 border-slate-700/80 text-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all shadow-sm"
+                            >
+                              {shortcut.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* SEÇÃO 3: PREÇOS & DESCONTOS */}
+                      <div className="pt-5 border-t border-slate-800/80 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            Desconto / Promoção Especial
+                          </h4>
+                          {(() => {
+                            const cleanValMensal = (subForm.valor_promocional_mensal || "").replace(/\D/g, "");
+                            const cleanValAnual = (subForm.valor_promocional_anual || "").replace(/\D/g, "");
+                            const hasPromo = (cleanValMensal && Number(cleanValMensal) > 0) || (cleanValAnual && Number(cleanValAnual) > 0);
+                            if (!hasPromo) return null;
+                            if (!subForm.data_fim_promocao) {
+                              return <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Definitivo</span>;
+                            }
+                            const fim = new Date(subForm.data_fim_promocao + "T23:59:59").getTime();
+                            if (fim >= new Date().getTime()) {
+                              return <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Ativo</span>;
+                            } else {
+                              return <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Expirado</span>;
+                            }
+                          })()}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Valor Base (Mensal)</Label>
+                            <div className="relative">
+                              <Input
+                                placeholder="Valor base do plano"
+                                value={subForm.valor_base_mensal}
+                                onChange={(e) => setSubForm(p => ({ ...p, valor_base_mensal: moneyMask(e.target.value) }))}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                              />
+                              {subForm.valor_base_mensal && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, valor_base_mensal: "" }));
+                                  }}
+                                  title="Limpar valor base mensal"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Valor Base (Anual)</Label>
+                            <div className="relative">
+                              <Input
+                                placeholder="Valor base do plano"
+                                value={subForm.valor_base_anual}
+                                onChange={(e) => setSubForm(p => ({ ...p, valor_base_anual: moneyMask(e.target.value) }))}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                              />
+                              {subForm.valor_base_anual && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, valor_base_anual: "" }));
+                                  }}
+                                  title="Limpar valor base anual"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            Valor Promocional (Anual)
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              placeholder="R$ Base"
-                              value={subForm.valor_promocional_anual}
-                              onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_anual: moneyMask(e.target.value) }))}
-                              className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10"
-                            />
-                            {subForm.valor_promocional_anual && (
-                              <div
-                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  setSubForm(p => ({ ...p, valor_promocional_anual: "" }));
-                                }}
-                                title="Limpar valor promocional anual"
-                              >
-                                <X className="h-5 w-5" />
-                              </div>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Promo Mensal</Label>
+                            <div className="relative">
+                              <Input
+                                placeholder="R$ Promocional"
+                                value={subForm.valor_promocional_mensal}
+                                onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_mensal: moneyMask(e.target.value) }))}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                              />
+                              {subForm.valor_promocional_mensal && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, valor_promocional_mensal: "" }));
+                                  }}
+                                  title="Limpar valor promocional mensal"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            Data de Validade
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              type="date"
-                              value={subForm.data_fim_promocao}
-                              onChange={(e) => setSubForm(p => ({ ...p, data_fim_promocao: e.target.value }))}
-                              className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-12"
-                            />
-                            {subForm.data_fim_promocao && (
-                              <div
-                                className="absolute right-12 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  setSubForm(p => ({ ...p, data_fim_promocao: "" }));
-                                }}
-                                title="Remover data de validade"
-                              >
-                                <X className="h-5 w-5" />
-                              </div>
-                            )}
+
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Promo Anual</Label>
+                            <div className="relative">
+                              <Input
+                                placeholder="R$ Promocional"
+                                value={subForm.valor_promocional_anual}
+                                onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_anual: moneyMask(e.target.value) }))}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                              />
+                              {subForm.valor_promocional_anual && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, valor_promocional_anual: "" }));
+                                  }}
+                                  title="Limpar valor promocional anual"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Validade da Promoção</Label>
+                            <div className="relative">
+                              <Input
+                                type="date"
+                                value={subForm.data_fim_promocao}
+                                onChange={(e) => setSubForm(p => ({ ...p, data_fim_promocao: e.target.value }))}
+                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-12 font-mono"
+                              />
+                              {subForm.data_fim_promocao && (
+                                <div
+                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setSubForm(p => ({ ...p, data_fim_promocao: "" }));
+                                  }}
+                                  title="Remover data de validade"
+                                >
+                                  <X className="h-4 w-4" />
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </>
+                  )}
+                </CardContent>
+              </div>
 
-                    <Button
-                      onClick={handleSaveSub}
-                      disabled={updateSub.isPending}
-                      className="w-full h-11 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all"
-                    >
-                      {updateSub.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Salvar Assinatura
-                        </>
-                      )}
-                    </Button>
-                  </>
-                )}
-              </CardContent>
+              {sub && (
+                <CardContent className="p-6 pt-0">
+                  <Button
+                    type="button"
+                    onClick={handleSaveSub}
+                    disabled={updateSub.isPending}
+                    className="w-full h-11 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all"
+                  >
+                    {updateSub.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Salvar Configurações da Assinatura
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              )}
             </Card>
           </div>
         </TabsContent>
@@ -1675,8 +1704,8 @@ export default function AdminUserDetails() {
                     size="sm"
                     onClick={() => setIsMobileFiltersOpen(p => !p)}
                     className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
-                        ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                        : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                      ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
+                      : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
                       }`}
                   >
                     <Filter className="h-3.5 w-3.5" />
