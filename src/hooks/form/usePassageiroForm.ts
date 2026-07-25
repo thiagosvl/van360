@@ -209,10 +209,10 @@ export function usePassageiroForm({
             data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
             mes_inicio_cobranca: isResponsavelMockNome(editingPassageiro.nome_responsavel)
               ? ""
-              : (getMonthFromDate(editingPassageiro.data_inicio_cobranca) || getMonthFromDate(editingPassageiro.data_inicio_transporte) || ""),
+              : (getMonthFromDate(editingPassageiro.data_inicio_cobranca) || ""),
             mes_fim_cobranca: isResponsavelMockNome(editingPassageiro.nome_responsavel)
               ? ""
-              : (getMonthFromDate(editingPassageiro.data_fim_cobranca) || getMonthFromDate(editingPassageiro.data_fim_transporte) || ""),
+              : (getMonthFromDate(editingPassageiro.data_fim_cobranca) || ""),
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -268,8 +268,8 @@ export function usePassageiroForm({
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
           data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "",
-          mes_inicio_cobranca: getMonthFromDate(prePassageiro.data_inicio_cobranca) || getMonthFromDate(prePassageiro.data_inicio_transporte) || "",
-          mes_fim_cobranca: getMonthFromDate(prePassageiro.data_fim_cobranca) || getMonthFromDate(prePassageiro.data_fim_transporte) || "",
+          mes_inicio_cobranca: getMonthFromDate(prePassageiro.data_inicio_cobranca) || "",
+          mes_fim_cobranca: getMonthFromDate(prePassageiro.data_fim_cobranca) || "",
 
           ativo: true,
         });

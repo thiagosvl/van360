@@ -115,9 +115,12 @@ export default function PrePassageiros({
       escola_id: null,
       referencia: `Perto do ${mockEndereco.bairro}`,
       data_nascimento: convertDateBrToISO(mockPassenger.data_nascimento),
-      data_inicio_transporte: convertDateBrToISO(mockPassenger.data_inicio_transporte),
-      valor_cobranca: moneyToNumber(mockPassenger.valor_cobranca),
-      dia_vencimento: parseInt(mockPassenger.dia_vencimento),
+      data_inicio_transporte: null,
+      data_fim_transporte: null,
+      data_inicio_cobranca: null,
+      data_fim_cobranca: null,
+      valor_cobranca: null,
+      dia_vencimento: null,
     };
 
     createPrePassageiro.mutate(fakePayload);
