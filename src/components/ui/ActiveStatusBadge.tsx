@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface ActiveStatusBadgeProps {
@@ -15,17 +14,16 @@ export function ActiveStatusBadge({
   className,
 }: ActiveStatusBadgeProps) {
   return (
-    <Badge
-      variant="outline"
+    <span
       className={cn(
-        "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 shrink-0",
+        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors shrink-0 border",
         active
-          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-          : "bg-rose-500/10 text-rose-400 border-rose-500/30",
+          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+          : "bg-rose-500/15 text-rose-400 border-rose-500/30",
         className
       )}
     >
       {active ? activeLabel : inactiveLabel}
-    </Badge>
+    </span>
   );
 }

@@ -254,7 +254,7 @@ const CobrancaItemPassageiro = forwardRef<
     index: number;
     chavePix?: string | null;
     tipoChavePix?: string | null;
-    onOpenCobrancaDialog?: (mes?: number, ano?: number) => void;
+    onOpenCobrancaDialog?: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean) => void;
     onEditCobranca: (c: Cobranca) => void;
     onRegistrarPagamento: (c: Cobranca) => void;
     onExcluirCobranca: (c: Cobranca) => void;
@@ -303,7 +303,7 @@ const CobrancaItemPassageiro = forwardRef<
       {
         label: "Registrar Pagamento",
         icon: <CheckCircle2 className="h-4 w-4" />,
-        onClick: () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano),
+        onClick: () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true),
       },
     ]
     : useCobrancaActions({
@@ -334,7 +334,7 @@ const CobrancaItemPassageiro = forwardRef<
     >
       <MobileActionItem
         actions={actions}
-        onClickItem={cobranca.isProjection ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano) : undefined}
+        onClickItem={cobranca.isProjection ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true) : undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
       >

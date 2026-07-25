@@ -282,7 +282,6 @@ export default function AdminDashboard() {
             <AdminKpiCard
               title="PASSAGEIROS ATIVOS"
               value={stats.totalPassageiros}
-              subtext="Em rotas ativas"
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<Users className="h-5 w-5" />}
@@ -344,7 +343,7 @@ export default function AdminDashboard() {
                             <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
                             {(latestLog.usuario_id || latestLog.usuarios?.id) ? (
                               <Link
-                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}?tab=logs`}
+                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
                                 className="hover:text-blue-400 hover:underline transition-colors"
                               >
                                 {latestLog.usuarios?.nome || latestLog.entidade_tipo}
@@ -389,7 +388,7 @@ export default function AdminDashboard() {
                           <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
                             {(log.usuario_id || log.usuarios?.id) ? (
                               <Link
-                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}?tab=logs`}
+                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
                                 className="hover:text-blue-400 hover:underline transition-colors"
                               >
                                 {log.usuarios?.nome || log.entidade_tipo}

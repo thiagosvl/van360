@@ -88,9 +88,8 @@ export function CobrancaFormContent({
     const [openCalendarVencimento, setOpenCalendarVencimento] = useState(false);
     const paymentDetailsRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to payment details when 'isPaga' is checked
     useEffect(() => {
-        if (isPaga) {
+        if (isPaga && !lockFoiPago) {
             setTimeout(() => {
                 paymentDetailsRef.current?.scrollIntoView({
                     behavior: "smooth",
@@ -98,7 +97,7 @@ export function CobrancaFormContent({
                 });
             }, 100);
         }
-    }, [isPaga]);
+    }, [isPaga, lockFoiPago]);
 
     // --- Logic for Create Mode (Mes/Ano Sync) ---
     const currentYear = getNowBR().getFullYear();

@@ -42,8 +42,8 @@ export const cobrancaSchema = z
     tipo_pagamento: z.string().optional(),
 
     // Campos auxiliares para UI de Criação (Mês/Ano)
-    mes: z.string().min(1, "O mês é obrigatório"),
-    ano: z.string().optional(),
+    mes: z.union([z.string(), z.number()]).optional(),
+    ano: z.union([z.string(), z.number()]).optional(),
 
     // Controle de aviso
     is_future: z.boolean().optional(),
@@ -140,8 +140,8 @@ export function useCobrancaForm({
           ? parseLocalDate(cobranca.data_pagamento)
           : undefined,
         tipo_pagamento: cobranca.tipo_pagamento || "",
-        mes: undefined,
-        ano: undefined,
+        mes: cobranca.mes != null ? String(cobranca.mes) : undefined,
+        ano: cobranca.ano != null ? String(cobranca.ano) : undefined,
       };
     }
 
@@ -198,8 +198,8 @@ export function useCobrancaForm({
 
       const payload = {
         passageiro_id: passageiroId,
-        mes: data.mes || (data.data_vencimento.getMonth() + 1).toString(),
-        ano: data.ano || data.data_vencimento.getFullYear().toString(),
+        mes: data.mes ? String(data.mes) : (data.data_vencimento.getMonth() + 1).toString(),
+        ano: data.ano ? String(data.ano) : data.data_vencimento.getFullYear().toString(),
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,

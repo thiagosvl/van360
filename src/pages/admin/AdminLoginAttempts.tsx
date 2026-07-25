@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
+import { cpfCnpjMask } from "@/utils/masks";
 
 export interface LoginAttempt {
   id: string;
@@ -105,22 +106,26 @@ export default function AdminLoginAttempts() {
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
-                variant="ghost"
+                type="button"
                 size="sm"
                 onClick={() => setIsMobileFiltersOpen(p => !p)}
-                className={`md:hidden h-8 rounded-xl px-2 flex items-center gap-1.5 ${isMobileFiltersOpen ? 'bg-blue-500/10 text-blue-400' : 'text-slate-400 hover:bg-slate-800'}`}
+                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
+                  isMobileFiltersOpen
+                    ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
+                    : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                }`}
               >
                 <Filter className="h-3.5 w-3.5" />
               </Button>
               <Button
-                variant="ghost"
+                type="button"
                 size="sm"
                 onClick={() => { setPage(1); refetchLogs(); }}
                 disabled={isFetchingLogs}
-                className="h-8 rounded-xl text-blue-400 hover:bg-blue-500/10 px-3 flex items-center gap-1.5"
+                className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
-                <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
+                <span className="hidden sm:inline">Atualizar</span>
               </Button>
             </div>
           </div>
@@ -170,95 +175,160 @@ export default function AdminLoginAttempts() {
               description="Nenhum registro de acesso corresponde aos filtros de busca aplicados."
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-slate-800/80">
-                    <th className="pb-4 pl-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
-                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Documento Tentado</th>
-                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Dispositivo</th>
-                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
-                    <th className="pb-4 pr-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Infos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attemptsData.map((attempt) => {
-                    const dateFormatted = new Date(attempt.created_at).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    });
+            <>
+              {/* MOBILE CARDS VIEW */}
+              <div className="md:hidden space-y-3 mb-4 text-left">
+                {attemptsData.map((attempt) => {
+                  const dateFormatted = new Date(attempt.created_at).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
 
-                    return (
-                      <tr key={attempt.id} className="border-b border-slate-800/40 hover:bg-slate-800/50 transition-colors group">
-                        <td className="py-4 pl-4">
-                          <div className="flex items-center gap-2">
-                            {attempt.sucesso ? (
-                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Sucesso</span>
-                              </div>
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-help">
-                                    <XCircle className="h-3.5 w-3.5" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Falha</span>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[250px] p-3 text-xs bg-slate-900 text-white font-medium shadow-2xl border border-slate-800">
-                                  {attempt.motivo_falha || "Motivo desconhecido"}
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
+                  return (
+                    <div
+                      key={attempt.id}
+                      className="p-3.5 bg-[#172136] rounded-2xl border border-slate-700/80 shadow-md space-y-2 text-left"
+                    >
+                      {/* LINHA 1: STATUS & DISPOSITIVO (SEMPRE O DISPOSITIVO!) */}
+                      <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
+                        {attempt.sucesso ? (
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span className="text-[9px] font-black uppercase tracking-wider">Sucesso</span>
                           </div>
-                        </td>
-                        <td className="py-4 text-xs font-semibold text-slate-300">
+                        ) : (
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                            <XCircle className="h-3 w-3" />
+                            <span className="text-[9px] font-black uppercase tracking-wider">Falha</span>
+                          </div>
+                        )}
+                        <span className="text-[10px] font-bold text-slate-300 truncate max-w-[160px]">
+                          {attempt.dispositivo || "Desconhecido"}
+                        </span>
+                      </div>
+
+                      {/* LINHA 2: DOCUMENTO FORMATADO (CPF/CNPJ) & MOTIVO DA FALHA (EM TEXTO PURO) */}
+                      <div className="py-0.5 space-y-1">
+                        <span className="text-xs font-bold font-mono text-slate-100 block break-words">
+                          {cpfCnpjMask(attempt.login_tentado)}
+                        </span>
+                        {!attempt.sucesso && attempt.motivo_falha && (
+                          <p className="text-[11px] font-medium text-rose-400/90 leading-snug break-words">
+                            {attempt.motivo_falha}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* LINHA 3: DATA & HORA (ESQUERDA COM ÊNFASE) & IP (DIREITA) */}
+                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-left">
+                        <span className="text-xs font-bold font-mono text-slate-200">
                           {dateFormatted}
-                        </td>
-                        <td className="py-4">
-                          <span className="text-sm font-bold text-slate-100">
-                            {attempt.login_tentado}
+                        </span>
+                        {attempt.ip && (
+                          <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-400 shrink-0">
+                            {attempt.ip}
                           </span>
-                        </td>
-                        <td className="py-4 hidden sm:table-cell">
-                          <div className="flex items-center gap-2 text-slate-400">
-                            <MonitorSmartphone className="h-4 w-4 text-slate-500" />
-                            <span className="text-xs font-semibold">{attempt.dispositivo || "Desconhecido"}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 hidden md:table-cell">
-                          <code className="text-[10px] bg-slate-950 px-2 py-1 rounded-md border border-slate-800 font-mono text-slate-400">
-                            {attempt.ip || "—"}
-                          </code>
-                        </td>
-                        <td className="py-4 pr-4 text-right">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-full text-slate-500 hover:text-white hover:bg-slate-800 opacity-0 group-hover:opacity-100 transition-all"
-                              >
-                                <span className="text-xs font-bold">UA</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="left" className="max-w-[300px] p-3 text-xs break-words font-mono bg-slate-900 text-slate-300 border border-slate-800 shadow-2xl">
-                              <p className="font-bold text-slate-100 mb-1 font-sans text-[10px] uppercase tracking-widest">User Agent Original</p>
-                              {attempt.user_agent || "Nenhum agente fornecido"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* DESKTOP TABLE VIEW */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-slate-800/80">
+                      <th className="pb-4 pl-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                      <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
+                      <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Documento Tentado</th>
+                      <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Dispositivo</th>
+                      <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">IP</th>
+                      <th className="pb-4 pr-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Infos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attemptsData.map((attempt) => {
+                      const dateFormatted = new Date(attempt.created_at).toLocaleString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      });
+
+                      return (
+                        <tr key={attempt.id} className="border-b border-slate-800/40 hover:bg-slate-800/50 transition-colors group">
+                          <td className="py-4 pl-4">
+                            <div className="flex items-center gap-2">
+                              {attempt.sucesso ? (
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  <span className="text-[10px] font-black uppercase tracking-widest">Sucesso</span>
+                                </div>
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-help">
+                                      <XCircle className="h-3.5 w-3.5" />
+                                      <span className="text-[10px] font-black uppercase tracking-widest">Falha</span>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="max-w-[250px] p-3 text-xs bg-slate-900 text-white font-medium shadow-2xl border border-slate-800">
+                                    {attempt.motivo_falha || "Motivo desconhecido"}
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 text-xs font-semibold text-slate-300">
+                            {dateFormatted}
+                          </td>
+                          <td className="py-4">
+                            <span className="text-sm font-bold text-slate-100 font-mono">
+                              {cpfCnpjMask(attempt.login_tentado)}
+                            </span>
+                          </td>
+                          <td className="py-4 hidden sm:table-cell">
+                            <div className="flex items-center gap-2 text-slate-400">
+                              <MonitorSmartphone className="h-4 w-4 text-slate-500" />
+                              <span className="text-xs font-semibold">{attempt.dispositivo || "Desconhecido"}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 hidden md:table-cell">
+                            <code className="text-[10px] bg-slate-950 px-2 py-1 rounded-md border border-slate-800 font-mono text-slate-400">
+                              {attempt.ip || "—"}
+                            </code>
+                          </td>
+                          <td className="py-4 pr-4 text-right">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full text-slate-500 hover:text-white hover:bg-slate-800 opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                  <span className="text-xs font-bold">UA</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-[300px] p-3 text-xs break-words font-mono bg-slate-900 text-slate-300 border border-slate-800 shadow-2xl">
+                                <p className="font-bold text-slate-100 mb-1 font-sans text-[10px] uppercase tracking-widest">User Agent Original</p>
+                                {attempt.user_agent || "Nenhum agente fornecido"}
+                              </TooltipContent>
+                            </Tooltip>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {total > 0 && attemptsData.length > 0 && (

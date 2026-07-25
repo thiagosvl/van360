@@ -13,6 +13,7 @@ export * from "./pages/pagesUtils";
 
 // Gastos
 export * from "./gasto/categoriaUtils";
+export * from "./gasto/parcelamentoUtils";
 
 // Passageiro
 export * from "./passageiro/passageiroValidation";

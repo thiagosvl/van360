@@ -1,5 +1,6 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
+import GastoDeleteDialog from "@/components/dialogs/GastoDeleteDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
@@ -32,6 +33,10 @@ export default function Gastos() {
     categorias,
     hasActiveFilters,
     clearFilters,
+    gastoToDelete,
+    setGastoToDelete,
+    confirmDelete,
+    isActionLoading,
   } = useGastosViewModel();
 
   return (
@@ -47,41 +52,43 @@ export default function Gastos() {
           disabled={false}
         />
 
-        <GastosToolbar
-          categoriaFilter={categoriaFilter}
-          onCategoriaChange={(val) =>
-            setSelectedCategoria(val)
-          }
-          veiculoFilter={veiculoFilter}
-          onVeiculoChange={(val) =>
-            setSelectedVeiculo(val)
-          }
-          onApplyFilters={(filters) => {
-            setFilters({
-              categoria: filters.categoria,
-              veiculo: filters.veiculo
-            });
-          }}
-          onRegistrarGasto={() => {
-            handleOpenForm();
-          }}
-          categorias={categorias}
-          veiculos={veiculos}
-          hasActiveFilters={hasActiveFilters}
-          onClearFilters={clearFilters}
-        />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+          <div className="order-2 md:order-1 w-full md:w-auto md:min-w-[280px]">
+            <KPICard
+              label="Total de Despesas"
+              variant={KPICardVariant.PRIMARY}
+              value={formatCurrency(totalGasto)}
+              valueClassName="text-rose-600"
+              icon={TrendingDown}
+              countLabel="no Mês"
+            />
+          </div>
 
-        {/* 2. KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 px-1">
-          <KPICard
-            label="Total de Despesas"
-            variant={KPICardVariant.PRIMARY}
-            value={formatCurrency(totalGasto)}
-            valueClassName="text-rose-600"
-            icon={TrendingDown}
-            countLabel="no Mês"
-            className="col-span-1"
-          />
+          <div className="order-1 md:order-2 w-full md:w-auto">
+            <GastosToolbar
+              categoriaFilter={categoriaFilter}
+              onCategoriaChange={(val) =>
+                setSelectedCategoria(val)
+              }
+              veiculoFilter={veiculoFilter}
+              onVeiculoChange={(val) =>
+                setSelectedVeiculo(val)
+              }
+              onApplyFilters={(filters) => {
+                setFilters({
+                  categoria: filters.categoria,
+                  veiculo: filters.veiculo
+                });
+              }}
+              onRegistrarGasto={() => {
+                handleOpenForm();
+              }}
+              categorias={categorias}
+              veiculos={veiculos}
+              hasActiveFilters={hasActiveFilters}
+              onClearFilters={clearFilters}
+            />
+          </div>
         </div>
 
         <div className="flex items-center justify-between px-1">
@@ -141,6 +148,14 @@ export default function Gastos() {
               )}
           </div>
         )}
+
+        <GastoDeleteDialog
+          open={!!gastoToDelete}
+          onOpenChange={(open) => !open && setGastoToDelete(null)}
+          gasto={gastoToDelete}
+          onConfirm={confirmDelete}
+          isLoading={isActionLoading}
+        />
       </div>
     </PullToRefreshWrapper>
   );

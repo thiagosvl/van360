@@ -1,8 +1,8 @@
 import { useLayout } from "@/contexts/LayoutContext";
-import { useDeleteGasto, useFilters, useGastos, useVeiculos, safeCloseDialog, useGastoCategorias } from "@/hooks";
+import { useDeleteGasto, useFilters, useGastos, useVeiculos, useGastoCategorias } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
 import { useProfile } from "@/hooks/business/useProfile";
-import { FilterDefaults } from "@/types/enums";
+import { FilterDefaults, GastoEscopoAcao } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -12,8 +12,6 @@ export function useGastosViewModel() {
   const {
     setPageTitle,
     openGastoFormDialog,
-    openConfirmationDialog,
-    closeConfirmationDialog,
   } = useLayout();
 
   const {
@@ -22,6 +20,7 @@ export function useGastosViewModel() {
   } = useProfile();
 
   const deleteGasto = useDeleteGasto();
+  const [gastoToDelete, setGastoToDelete] = useState<Gasto | null>(null);
 
   const {
     selectedMes: mesFilter = getNowBR().getMonth() + 1,
@@ -86,24 +85,26 @@ export function useGastosViewModel() {
   }, [setPageTitle]);
 
   const handleDelete = useCallback(
-    async (id: string) => {
-      openConfirmationDialog({
-        title: "Excluir gasto?",
-        description:
-          "Tem certeza que deseja excluir este registro de gasto? Essa ação não poderá ser desfeita.",
-        confirmText: "Excluir",
-        variant: "destructive",
-        onConfirm: async () => {
-          try {
-            await deleteGasto.mutateAsync(id);
-            safeCloseDialog(closeConfirmationDialog);
-          } catch (error) {
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        },
-      });
+    (id: string) => {
+      const target = gastos.find((g) => g.id === id);
+      if (target) {
+        setGastoToDelete(target);
+      }
     },
-    [openConfirmationDialog, deleteGasto, closeConfirmationDialog]
+    [gastos]
+  );
+
+  const confirmDelete = useCallback(
+    async (escopo: GastoEscopoAcao) => {
+      if (!gastoToDelete) return;
+      try {
+        await deleteGasto.mutateAsync({ id: gastoToDelete.id, escopo });
+        setGastoToDelete(null);
+      } catch (error) {
+        setGastoToDelete(null);
+      }
+    },
+    [deleteGasto, gastoToDelete]
   );
 
   const handleOpenForm = useCallback(
@@ -146,6 +147,9 @@ export function useGastosViewModel() {
     principalCategoriaData: displayData.principalCategoriaData,
     isLoading: isGastosLoading || isGastosFetching,
     isActionLoading: deleteGasto.isPending,
+    gastoToDelete,
+    setGastoToDelete,
+    confirmDelete,
     handleRefresh,
     handleDelete,
     handleOpenForm,

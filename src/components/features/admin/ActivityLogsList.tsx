@@ -100,7 +100,7 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
                       {log.usuarios ? (
                         userId ? (
                           <Link
-                            to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}?tab=logs`}
+                            to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
                             className="text-xs font-bold text-slate-100 uppercase hover:text-blue-400 hover:underline transition-colors"
                           >
                             {log.usuarios.nome}
@@ -144,7 +144,6 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
             year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
-            second: "2-digit",
           });
 
           const actionLabel = log.acao.replace(/_/g, " ");
@@ -152,46 +151,61 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
           const userId = log.usuario_id || log.usuarios?.id;
 
           return (
-            <div key={log.id} className="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-3 text-left">
-              <div className="flex items-center justify-between gap-2">
+            <div
+              key={log.id}
+              className="p-3.5 bg-[#172136] rounded-2xl border border-slate-700/80 shadow-md space-y-2 text-left"
+            >
+              {/* LINHA 1: AÇÃO */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shrink-0 ${badgeStyle}`}>
                   {actionLabel}
                 </span>
-                <span className="text-[10px] font-bold font-mono text-slate-400 shrink-0">
+              </div>
+
+              {/* LINHA 2: CONTEÚDO (DESCRIÇÃO NA TELA DO USUÁRIO | NOME + DESCRIÇÃO NA GERAL) */}
+              <div className="py-1">
+                {hideUserColumn ? (
+                  <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">
+                    {log.descricao || actionLabel}
+                  </p>
+                ) : (
+                  <div className="space-y-0.5">
+                    {log.usuarios ? (
+                      userId ? (
+                        <Link
+                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
+                          className="text-xs font-bold text-slate-100 uppercase hover:text-blue-400 hover:underline transition-colors block break-words"
+                        >
+                          {log.usuarios.nome}
+                        </Link>
+                      ) : (
+                        <span className="text-xs font-bold text-slate-100 uppercase block break-words">{log.usuarios.nome}</span>
+                      )
+                    ) : (
+                      <span className="text-xs font-bold text-slate-300 uppercase block">Sistema</span>
+                    )}
+                    {log.descricao && (
+                      <p className="text-[11px] font-medium text-slate-400 leading-snug break-words">
+                        {log.descricao}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* LINHA 3: DATA & HORA (ESQUERDA COM ÊNFASE) & BOTÃO OLHINHO (DIREITA) */}
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                <span className="text-xs font-bold font-mono text-slate-200">
                   {dateFormatted}
                 </span>
-              </div>
-
-              {!hideUserColumn && log.usuarios && (
-                <div className="pt-1">
-                  {userId ? (
-                    <Link
-                      to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}?tab=logs`}
-                      className="text-xs font-bold text-slate-100 uppercase hover:text-blue-400 hover:underline transition-colors"
-                    >
-                      {log.usuarios.nome}
-                    </Link>
-                  ) : (
-                    <span className="text-xs font-bold text-slate-100 uppercase">{log.usuarios.nome}</span>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="font-bold text-slate-400 uppercase tracking-wide">
-                  {log.entidade_tipo}
-                </span>
-              </div>
-
-              <div className="pt-2 border-t border-slate-800 flex justify-end">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 rounded-xl text-blue-400 hover:bg-slate-800 hover:text-blue-300 px-3 flex items-center gap-1.5"
+                  className="h-7 w-7 p-0 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm active:scale-95 transition-all shrink-0"
                   onClick={() => setSelectedLog(log)}
+                  title="Inspecionar atividade"
                 >
                   <Eye className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
                 </Button>
               </div>
             </div>
@@ -233,7 +247,7 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
                   <p className="text-sm font-bold text-white uppercase">
                     {(selectedLog.usuario_id || selectedLog.usuarios?.id) ? (
                       <Link
-                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${selectedLog.usuario_id || selectedLog.usuarios?.id}?tab=logs`}
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${selectedLog.usuario_id || selectedLog.usuarios?.id}`}
                         className="hover:text-blue-400 hover:underline transition-colors"
                         onClick={() => setSelectedLog(null)}
                       >

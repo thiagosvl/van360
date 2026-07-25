@@ -3,7 +3,7 @@ import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
 import { Gasto } from "@/types/gasto";
-import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
+import { formatarPlacaExibicao, getCategoriaMetadata, obterDescricaoFormatadaGasto } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
@@ -74,7 +74,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
           </p>
           <div className="">
             <p className="text-[10px] text-gray-500 font-medium opacity-60 break-words line-clamp-2 leading-relaxed">
-              {gasto.descricao || "Sem descrição"}
+              {obterDescricaoFormatadaGasto(gasto)}
             </p>
           </div>
         </div>
@@ -188,7 +188,7 @@ export const GastosList = memo(function GastosList({
                     </td>
                     <td className="px-8 py-5 align-middle">
                       <span className="text-sm text-slate-600 max-w-[180px] block truncate">
-                        {gasto.descricao || "-"}
+                        {obterDescricaoFormatadaGasto(gasto)}
                       </span>
                     </td>
                     <td className="px-8 py-5 align-middle">

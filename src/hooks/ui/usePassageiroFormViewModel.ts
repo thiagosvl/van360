@@ -207,12 +207,6 @@ export function usePassageiroFormViewModel({
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {
-          const moneyToNumber = (v: any) => {
-            if (typeof v === 'number') return v;
-            if (typeof v === 'string') return Number(v.replace(/\D/g, "")) / 100;
-            return 0;
-          };
-
           const cleanString = (val: any) => {
             if (val === null || val === undefined) return "";
             return String(val).trim().toLowerCase();
@@ -222,7 +216,7 @@ export function usePassageiroFormViewModel({
             return cleanString(formVal) !== cleanString(dbVal);
           };
 
-          const valorForm = moneyToNumber(purePayload.valor_cobranca);
+          const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca);
           const vencimentoForm = Number(purePayload.dia_vencimento);
           
           const valorAtual = Number(editingPassageiro.valor_cobranca || 0);

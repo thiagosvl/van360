@@ -39,7 +39,7 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
           <Menu className="h-5 w-5" />
         </button>
         {pageTitle && (
-          <h1 className="text-base sm:text-lg font-headline font-black text-white uppercase tracking-wider">
+          <h1 className="text-base sm:text-base md:text-xl font-bold text-slate-100 tracking-tight truncate max-w-[200px] sm:max-w-none">
             {pageTitle}
           </h1>
         )}

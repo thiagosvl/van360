@@ -158,7 +158,6 @@ export const addMonths = (date: Date | string, months: number): Date => {
   return d;
 };
 
-
 /**
  * Converte um objeto Date para uma string ISO completa com fuso de Brasília (-03:00).
  * ESSENCIAL para colunas TIMESTAMPTZ.
@@ -213,4 +212,3 @@ export const differenceInCalendarDaysBR = (later: Date | string, earlier: Date |
   const diffTime = d1.getTime() - d2.getTime();
   return Math.round(diffTime / (1000 * 60 * 60 * 24));
 };
-

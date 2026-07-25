@@ -520,35 +520,47 @@ export default function AdminUserDetails() {
   return (
     <div className="space-y-6 text-left">
       {/* HEADER DE TOPO STITCH DESIGN */}
-      <div className="p-6 bg-gradient-to-r from-slate-900 via-[#131b2e] to-slate-900 border border-slate-800/80 rounded-[2rem] shadow-2xl space-y-4">
+      <div className="p-5 md:p-6 bg-gradient-to-r from-slate-900 via-[#131b2e] to-slate-900 border border-slate-800/80 rounded-[2rem] shadow-2xl space-y-4 relative">
+        {/* BOTÃO COPIAR ID NO CANTO SUPERIOR DIREITO (APENAS MOBILE) */}
+        <button
+          type="button"
+          onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
+          className="md:hidden absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center"
+          title="Copiar ID do usuário"
+        >
+          <Copy className="h-4 w-4 text-blue-400" />
+        </button>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-start md:items-center gap-4 min-w-0 pr-10 md:pr-0">
             <div className="h-14 w-14 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-black text-xl shrink-0 shadow-inner">
               {data.user.nome.charAt(0).toUpperCase()}
             </div>
 
-            <div className="space-y-1 min-w-0">
+            <div className="space-y-1.5 min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl lg:text-2xl font-headline font-black text-white truncate leading-tight">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-headline font-black text-white leading-tight break-words">
                   {data.user.nome}
                 </h1>
+
+                {/* BOTÃO COPIAR ID AO LADO DO NOME (APENAS DESKTOP) */}
                 <button
                   type="button"
                   onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
-                  className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800/80"
+                  className="hidden md:inline-flex text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-800/80 shrink-0"
                   title="Copiar ID do usuário"
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="h-4 w-4 text-blue-400" />
                 </button>
 
                 {data.user.apelido && (
-                  <span className="text-xs font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/60">
+                  <span className="text-xs font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/60 shrink-0">
                     "{data.user.apelido}"
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400 pt-0.5">
+              <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
                 <ActiveStatusBadge active={data.user.ativo} />
 
                 {data.assinatura && (
@@ -561,23 +573,24 @@ export default function AdminUserDetails() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* BOTÕES DE AÇÃO (RESETAR SENHA & EXCLUIR) */}
+          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 grid grid-cols-2 md:flex items-center gap-2.5 w-full md:w-auto">
             <Button
-              variant="outline"
+              type="button"
               size="sm"
               onClick={handleResetPassword}
-              className="rounded-xl border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold h-9 gap-1.5"
+              className="w-full md:w-auto rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
-              <Key className="h-3.5 w-3.5" />
+              <Key className="h-4 w-4 text-amber-400" />
               <span>Resetar Senha</span>
             </Button>
             <Button
-              variant="outline"
+              type="button"
               size="sm"
               onClick={handleDeleteUser}
-              className="rounded-xl border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 text-xs font-bold h-9 gap-1.5"
+              className="w-full md:w-auto rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4 text-rose-400" />
               <span>Excluir</span>
             </Button>
           </div>
@@ -590,7 +603,10 @@ export default function AdminUserDetails() {
         className="w-full"
       >
         {/* SELETOR MOBILE (DROPDOWN PRINCIPAL < 768px) */}
-        <div className="md:hidden w-full bg-slate-900/90 border border-slate-800/80 p-2 rounded-[1.25rem] shadow-xl mb-6">
+        <div className="md:hidden w-full bg-slate-900/90 border border-slate-800/80 p-3 rounded-[1.25rem] shadow-xl mb-6 space-y-1.5">
+          <label className="text-[10px] font-headline font-black text-slate-400 uppercase tracking-widest block px-1 text-left">
+            Navegação de Seções
+          </label>
           <Select value={activeTab} onValueChange={handleTabChange}>
             <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white font-bold h-12 rounded-[0.85rem] focus:ring-blue-500 text-xs">
               <SelectValue placeholder="Selecione uma visão" />
@@ -719,305 +735,269 @@ export default function AdminUserDetails() {
             />
           </div>
 
-          {/* RESUMO CADASTRAL CATEGORIZADO DO MOTORISTA */}
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100">
-            <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
-              <div className="space-y-1">
+          {/* 4 CARDS AVULSOS DO RESUMO CADASTRAL DO MOTORISTA */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+
+            {/* CATEGORIA 1: DADOS PESSOAIS & IDENTIFICAÇÃO */}
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+              <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
                 <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <User className="h-4 w-4 text-blue-400" />
-                  Resumo Cadastral do Motorista
+                  Identificação
                 </CardTitle>
-                <p className="text-[11px] font-medium text-slate-400">
-                  Visão consolidada dos dados pessoais, de contato, financeiros e contratuais.
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
-                {/* CATEGORIA 1: DADOS PESSOAIS & IDENTIFICAÇÃO */}
-                <div className="space-y-3 bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+              </CardHeader>
+              <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                <div className="space-y-3 text-xs">
                   <div>
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80 mb-3">
-                      <User className="h-4 w-4 text-blue-400" />
-                      <h3 className="text-xs font-headline font-black text-slate-200 uppercase tracking-wider">
-                        Identificação
-                      </h3>
-                    </div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Apelido
+                    </span>
+                    <span className="font-medium text-slate-300 block">
+                      {data.user.apelido || "—"}
+                    </span>
+                  </div>
 
-                    <div className="space-y-3 text-xs">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Apelido
-                        </span>
-                        <span className="font-medium text-slate-300 block">
-                          {data.user.apelido || "—"}
-                        </span>
-                      </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      {data.user.cpfcnpj && data.user.cpfcnpj.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF"}
+                    </span>
+                    <span className="font-mono font-medium text-slate-300 block">
+                      {data.user.cpfcnpj ? cpfCnpjMask(data.user.cpfcnpj) : "—"}
+                    </span>
+                  </div>
 
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          {data.user.cpfcnpj && data.user.cpfcnpj.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF"}
-                        </span>
-                        <span className="font-mono font-medium text-slate-300 block">
-                          {data.user.cpfcnpj ? cpfCnpjMask(data.user.cpfcnpj) : "—"}
-                        </span>
-                      </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Razão Social
+                    </span>
+                    <span className="font-medium text-slate-300 block">
+                      {data.user.razao_social || "—"}
+                    </span>
+                  </div>
 
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Razão Social
-                        </span>
-                        <span className="font-medium text-slate-300 block">
-                          {data.user.razao_social || "—"}
-                        </span>
-                      </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Data de Nascimento
+                    </span>
+                    <span className="font-medium text-slate-300 block">
+                      {formatDate(data.user.data_nascimento)}
+                    </span>
+                  </div>
 
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Data de Nascimento
-                        </span>
-                        <span className="font-medium text-slate-300 block">
-                          {formatDate(data.user.data_nascimento)}
-                        </span>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Tipo de Conta
-                        </span>
-                        <span className="font-semibold text-emerald-400 uppercase block">
-                          {data.user.tipo || "MOTORISTA"}
-                        </span>
-                      </div>
-                    </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Tipo de Conta
+                    </span>
+                    <span className="font-semibold text-emerald-400 uppercase block">
+                      {data.user.tipo || "MOTORISTA"}
+                    </span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* CATEGORIA 2: CONTATO & LOCALIZAÇÃO */}
-                <div className="space-y-3 bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+            {/* CATEGORIA 2: CONTATO & LOCALIZAÇÃO */}
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+              <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
+                <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-purple-400" />
+                  Contato & Endereço
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                <div className="space-y-3 text-xs">
                   <div>
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80 mb-3">
-                      <MapPin className="h-4 w-4 text-purple-400" />
-                      <h3 className="text-xs font-headline font-black text-slate-200 uppercase tracking-wider">
-                        Contato & Endereço
-                      </h3>
-                    </div>
-
-                    <div className="space-y-3 text-xs">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Telefone / WhatsApp
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Telefone
+                    </span>
+                    {data.user.telefone ? (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="font-mono font-medium text-slate-200">
+                          {phoneMask(data.user.telefone)}
                         </span>
-                        {data.user.telefone ? (
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="font-mono font-medium text-slate-200">
-                              {phoneMask(data.user.telefone)}
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(data.user.telefone, "Telefone copiado!")}
+                          className="text-slate-400 hover:text-white transition-colors"
+                          title="Copiar telefone"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-slate-500 italic">—</span>
+                    )}
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      E-mail
+                    </span>
+                    <span className="font-medium text-slate-200 block truncate mt-0.5">
+                      {data.user.email || "—"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Endereço Completo
+                    </span>
+                    <span className="font-medium text-slate-300 block leading-relaxed mt-0.5">
+                      {formattedFullAddress || "—"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* CATEGORIA 3: FINANCEIRO & SISTEMA */}
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+              <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
+                <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-amber-400" />
+                  Financeiro & Sistema
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Chave Pix
+                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="font-mono font-medium text-slate-200">
+                        {formatarChavePix(data.user.chave_pix, data.user.chave_pix_tipo)}
+                      </span>
+                      {data.user.chave_pix && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(data.user.chave_pix!, "Chave Pix copiada!")}
+                          className="text-slate-400 hover:text-white transition-colors"
+                          title="Copiar Chave Pix"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Canal de Aquisição
+                    </span>
+                    <span className="font-medium text-slate-300 block">
+                      {data.user.canal_aquisicao || "—"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Data de Cadastro
+                    </span>
+                    <span className="font-medium text-slate-300 block">
+                      {formatDate(data.user.created_at)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* CATEGORIA 4: CONTRATOS DIGITAIS & MINUTA */}
+            {(() => {
+              const hasSignature = !!data.user.assinatura_digital_url;
+              const config = data.user.config_contrato as Record<string, any> | null;
+
+              const statusConfig = !hasSignature
+                ? DriverContractConfigStatus.NAO_CONFIGURADO
+                : config?.usar_contratos === false
+                  ? DriverContractConfigStatus.DESATIVADO
+                  : DriverContractConfigStatus.ATIVO;
+
+              const isConfigurado = statusConfig !== DriverContractConfigStatus.NAO_CONFIGURADO;
+
+              return (
+                <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+                  <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
+                    <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-400 shrink-0" />
+                      Contratos Digitais
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      {isConfigurado ? (
+                        <div className="space-y-3 text-xs">
+                          <div>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                              Multa de Atraso
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => handleCopy(data.user.telefone, "Telefone copiado!")}
-                              className="text-slate-400 hover:text-white transition-colors"
-                              title="Copiar telefone"
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </button>
+                            <span className="font-mono font-medium text-slate-300 block">
+                              {formatarRegraContrato(config?.multa_atraso || { valor: 10, tipo: "fixo" })}
+                            </span>
                           </div>
-                        ) : (
-                          <span className="text-slate-500 italic">—</span>
-                        )}
-                      </div>
 
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          E-mail de Contato
-                        </span>
-                        <span className="font-medium text-slate-200 block truncate mt-0.5">
-                          {data.user.email || "—"}
-                        </span>
-                      </div>
+                          <div>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                              Juros de Atraso
+                            </span>
+                            <span className="font-mono font-medium text-slate-300 block">
+                              {formatarRegraContrato(config?.juros_atraso || { valor: 1, tipo: "percentual" })}
+                            </span>
+                          </div>
 
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Endereço Completo
-                        </span>
-                        <span className="font-medium text-slate-300 block leading-relaxed mt-0.5">
-                          {formattedFullAddress || "—"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CATEGORIA 3: FINANCEIRO & SISTEMA */}
-                <div className="space-y-3 bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80 mb-3">
-                      <CreditCard className="h-4 w-4 text-amber-400" />
-                      <h3 className="text-xs font-headline font-black text-slate-200 uppercase tracking-wider">
-                        Financeiro & Sistema
-                      </h3>
-                    </div>
-
-                    <div className="space-y-3 text-xs">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Chave Pix
-                        </span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="font-mono font-medium text-slate-200">
-                            {formatarChavePix(data.user.chave_pix, data.user.chave_pix_tipo)}
-                          </span>
-                          {data.user.chave_pix && (
-                            <button
-                              type="button"
-                              onClick={() => handleCopy(data.user.chave_pix!, "Chave Pix copiada!")}
-                              className="text-slate-400 hover:text-white transition-colors"
-                              title="Copiar Chave Pix"
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </button>
-                          )}
+                          <div>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                              Multa de Rescisão
+                            </span>
+                            <span className="font-mono font-medium text-slate-300 block">
+                              {formatarRegraContrato(config?.multa_rescisao || { valor: 15, tipo: "fixo" })}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Canal de Aquisição
-                        </span>
-                        <span className="font-medium text-slate-300 block">
-                          {data.user.canal_aquisicao || "—"}
-                        </span>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                          Data de Cadastro
-                        </span>
-                        <span className="font-medium text-slate-300 block">
-                          {formatDate(data.user.created_at)}
-                        </span>
-                      </div>
+                      ) : (
+                        <p className="text-xs text-slate-400 font-medium py-3 leading-relaxed">
+                          O módulo de contratos digitais não foi configurado por este motorista.
+                        </p>
+                      )}
                     </div>
-                  </div>
-                </div>
 
-                {/* CATEGORIA 4: CONTRATOS DIGITAIS & MINUTA */}
-                {(() => {
-                  const hasSignature = !!data.user.assinatura_digital_url;
-                  const config = data.user.config_contrato as Record<string, any> | null;
-
-                  const statusConfig = !hasSignature
-                    ? DriverContractConfigStatus.NAO_CONFIGURADO
-                    : config?.usar_contratos === false
-                    ? DriverContractConfigStatus.DESATIVADO
-                    : DriverContractConfigStatus.ATIVO;
-
-                  const isConfigurado = statusConfig !== DriverContractConfigStatus.NAO_CONFIGURADO;
-                  const isAtivo = statusConfig === DriverContractConfigStatus.ATIVO;
-
-                  return (
-                    <div className="space-y-3 bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between gap-1 pb-2 border-b border-slate-800/80 mb-3">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <FileText className="h-4 w-4 text-blue-400 shrink-0" />
-                            <h3 className="text-xs font-headline font-black text-slate-200 uppercase tracking-wider truncate">
-                              Contratos Digitais
-                            </h3>
-                          </div>
-
-                          {statusConfig === DriverContractConfigStatus.ATIVO && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
-                              <CheckCircle2 className="h-2.5 w-2.5" /> MÓDULO ATIVO
-                            </span>
+                    {/* BOTÕES DE PREVIEW DA MINUTA E ASSINATURA */}
+                    <div className="pt-3 border-t border-slate-800/80 space-y-2 mt-4">
+                      {isConfigurado && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={previewContrato.isPending}
+                          onClick={handleOpenMinutaPreview}
+                          className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                        >
+                          {previewContrato.isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <FileText className="h-3.5 w-3.5" />
                           )}
-                          {statusConfig === DriverContractConfigStatus.DESATIVADO && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-rose-500/15 text-rose-400 border border-rose-500/30 shrink-0">
-                              <AlertTriangle className="h-2.5 w-2.5" /> INATIVO
-                            </span>
-                          )}
-                          {statusConfig === DriverContractConfigStatus.NAO_CONFIGURADO && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
-                              <AlertTriangle className="h-2.5 w-2.5" /> NÃO CONFIGURADO
-                            </span>
-                          )}
-                        </div>
+                          <span>Ver Minuta do Contrato</span>
+                        </Button>
+                      )}
 
-                        {isConfigurado ? (
-                          <div className="space-y-3 text-xs">
-                            <div>
-                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                                Multa de Atraso
-                              </span>
-                              <span className="font-mono font-medium text-slate-300 block">
-                                {formatarRegraContrato(config?.multa_atraso || { valor: 10, tipo: "fixo" })}
-                              </span>
-                            </div>
-
-                            <div>
-                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                                Juros de Atraso
-                              </span>
-                              <span className="font-mono font-medium text-slate-300 block">
-                                {formatarRegraContrato(config?.juros_atraso || { valor: 1, tipo: "percentual" })}
-                              </span>
-                            </div>
-
-                            <div>
-                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                                Multa de Rescisão
-                              </span>
-                              <span className="font-mono font-medium text-slate-300 block">
-                                {formatarRegraContrato(config?.multa_rescisao || { valor: 15, tipo: "fixo" })}
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs text-slate-400 font-medium py-3 leading-relaxed">
-                            O módulo de contratos digitais não foi configurado por este motorista.
-                          </p>
-                        )}
-                      </div>
-
-                      {/* BOTÕES DE PREVIEW DA MINUTA E ASSINATURA */}
-                      <div className="pt-3 border-t border-slate-800/80 space-y-2 mt-4">
-                        {isConfigurado && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            disabled={previewContrato.isPending}
-                            onClick={handleOpenMinutaPreview}
-                            className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
-                          >
-                            {previewContrato.isPending ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <FileText className="h-3.5 w-3.5" />
-                            )}
-                            <span>Ver Minuta do Contrato</span>
-                          </Button>
-                        )}
-
-                        {hasSignature && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => setIsSignatureModalOpen(true)}
-                            className="w-full rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white h-8 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <PenTool className="h-3.5 w-3.5 text-blue-400" />
-                            <span>Ver Assinatura Digital</span>
-                          </Button>
-                        )}
-                      </div>
+                      {hasSignature && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setIsSignatureModalOpen(true)}
+                          className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                        >
+                          <PenTool className="h-3.5 w-3.5 text-blue-400" />
+                          <span>Ver Assinatura Digital</span>
+                        </Button>
+                      )}
                     </div>
-                  );
-                })()}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
@@ -1693,22 +1673,26 @@ export default function AdminUserDetails() {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="ghost"
+                    type="button"
                     size="sm"
                     onClick={() => setIsMobileFiltersOpen(p => !p)}
-                    className={`md:hidden h-8 rounded-xl px-2 flex items-center gap-1.5 ${isMobileFiltersOpen ? 'bg-blue-500/10 text-blue-400' : 'text-slate-400 hover:bg-slate-800'}`}
+                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
+                      isMobileFiltersOpen
+                        ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
+                        : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                    }`}
                   >
                     <Filter className="h-3.5 w-3.5" />
                   </Button>
                   <Button
-                    variant="ghost"
+                    type="button"
                     size="sm"
                     onClick={() => { setLogsPage(1); refetchLogs(); }}
                     disabled={isFetchingLogs}
-                    className="h-8 rounded-xl text-blue-400 hover:bg-blue-500/10 px-3 flex items-center gap-1.5"
+                    className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
+                    <span className="hidden sm:inline">Atualizar</span>
                   </Button>
                 </div>
               </div>

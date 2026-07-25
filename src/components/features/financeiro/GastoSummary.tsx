@@ -1,6 +1,6 @@
 import { Gasto } from "@/types/gasto";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
-import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
+import { formatarPlacaExibicao, getCategoriaMetadata, obterDescricaoFormatadaGasto } from "@/utils/domain";
 import { useGastoCategorias } from "@/hooks";
 import {
   Calendar,
@@ -36,7 +36,7 @@ export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
 
       {/* LINHA 2: Título (Descrição) */}
       <h1 className="text-[22px] font-semibold text-[#1a3a5c] dark:text-zinc-100 leading-tight truncate capitalize mt-1">
-        {gasto.descricao}
+        {obterDescricaoFormatadaGasto(gasto)}
       </h1>
 
       {/* LINHA 3: Footer com Data e Valor */}

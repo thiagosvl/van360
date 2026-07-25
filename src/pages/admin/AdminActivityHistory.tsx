@@ -53,22 +53,26 @@ export default function AdminActivityHistory() {
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
-                variant="ghost"
+                type="button"
                 size="sm"
                 onClick={() => setIsMobileFiltersOpen(p => !p)}
-                className={`md:hidden h-8 rounded-xl px-2 flex items-center gap-1.5 ${isMobileFiltersOpen ? 'bg-blue-500/10 text-blue-400' : 'text-slate-400 hover:bg-slate-800'}`}
+                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
+                  isMobileFiltersOpen
+                    ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
+                    : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                }`}
               >
                 <Filter className="h-3.5 w-3.5" />
               </Button>
               <Button
-                variant="ghost"
+                type="button"
                 size="sm"
                 onClick={() => { setLogsPage(1); refetchLogs(); }}
                 disabled={isFetchingLogs}
-                className="h-8 rounded-xl text-blue-400 hover:bg-blue-500/10 px-3 flex items-center gap-1.5"
+                className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
-                <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Atualizar</span>
+                <span className="hidden sm:inline">Atualizar</span>
               </Button>
             </div>
           </div>

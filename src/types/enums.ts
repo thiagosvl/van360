@@ -305,3 +305,15 @@ export enum PixKeyType {
   EVP = "EVP",
   ALEATORIA = "ALEATORIA",
 }
+
+export enum GastoTipoCalculoParcela {
+  TOTAL = "total",
+  PARCELA = "parcela",
+}
+
+export enum GastoEscopoAcao {
+  UNICA = "unica",
+  FUTURAS = "futuras",
+  TODAS = "todas",
+}
+
