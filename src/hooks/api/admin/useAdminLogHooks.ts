@@ -7,6 +7,7 @@ export function useAdminUserLogs(id: string, params?: { page?: number; limit?: n
     queryFn: () => adminLogApi.getUserLogs(id, params),
     enabled: !!id,
     staleTime: 0,
+    refetchOnMount: "always",
     refetchOnWindowFocus: false,
   });
 }
@@ -16,6 +17,7 @@ export function useAdminLogs(params?: { page?: number; limit?: number; dataInici
     queryKey: ["admin", "logs", params],
     queryFn: () => adminLogApi.getLogs(params),
     staleTime: 0,
+    refetchOnMount: "always",
     refetchOnWindowFocus: false,
   });
 }

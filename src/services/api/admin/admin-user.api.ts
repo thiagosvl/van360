@@ -103,6 +103,7 @@ export interface AdminUserPassengerItem {
   numero: string | null;
   bairro: string | null;
   cidade: string | null;
+  valor_cobranca?: number | null;
   valor_mensalidade?: number | null;
   dia_vencimento?: number | null;
   ativo: boolean;

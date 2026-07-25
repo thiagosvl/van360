@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Filter, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAdminLogs } from "@/hooks/api/adminHooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
@@ -13,6 +14,7 @@ import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 
 export default function AdminActivityHistory() {
   const { setPageTitle } = useLayout();
+  const queryClient = useQueryClient();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function AdminActivityHistory() {
     search_cpf: "",
   });
 
-  const { data: logsData, isFetching: isFetchingLogs, refetch: refetchLogs } = useAdminLogs({
+  const { data: logsData, isFetching: isFetchingLogs } = useAdminLogs({
     page: logsPage,
     limit: parseInt(limit),
     dataInicio: logsFilter.dataInicio || undefined,
@@ -67,7 +69,10 @@ export default function AdminActivityHistory() {
               <Button
                 type="button"
                 size="sm"
-                onClick={() => { setLogsPage(1); refetchLogs(); }}
+                onClick={() => {
+                  setLogsPage(1);
+                  queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
+                }}
                 disabled={isFetchingLogs}
                 className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
               >

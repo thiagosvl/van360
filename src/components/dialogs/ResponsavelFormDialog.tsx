@@ -282,7 +282,7 @@ export default function ResponsavelFormDialog({
                         <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                         <Input
                           {...field}
-                          placeholder="Nome completo do responsável"
+                          placeholder="Digite o nome completo"
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
                           aria-invalid={!!fieldState.error}
                         />

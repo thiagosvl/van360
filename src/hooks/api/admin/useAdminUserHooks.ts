@@ -53,6 +53,7 @@ export function useUpdateUserAdmin() {
       toast.success("Cadastro atualizado com sucesso.");
       qc.invalidateQueries({ queryKey: KEYS.userDetails(variables.id) });
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: () => {
       toast.error("Erro ao atualizar cadastro.");
@@ -70,6 +71,7 @@ export function useUpdateSubscriptionAdmin() {
       qc.invalidateQueries({ queryKey: KEYS.userDetails(variables.id) });
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
       qc.invalidateQueries({ queryKey: KEYS.stats });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: () => {
       toast.error("Erro ao atualizar assinatura.");
@@ -84,15 +86,18 @@ export function useCreateUserAdmin() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
       qc.invalidateQueries({ queryKey: KEYS.stats });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
   });
 }
 
 export function useResetPasswordAdmin() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => adminUserApi.resetPassword(id),
     onSuccess: () => {
       toast.success("Senha redefinida com sucesso e enviada ao WhatsApp!");
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: () => {
       toast.error("Erro ao redefinir senha do motorista.");
@@ -112,6 +117,7 @@ export function useDeleteUserAdmin() {
           query.queryKey[1] === "users" &&
           typeof query.queryKey[2] !== "string",
       });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: () => {
       toast.error("Erro ao excluir usuário.");

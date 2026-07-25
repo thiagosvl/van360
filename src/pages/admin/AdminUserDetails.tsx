@@ -561,8 +561,6 @@ export default function AdminUserDetails() {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
-                <ActiveStatusBadge active={data.user.ativo} />
-
                 {data.assinatura && (
                   <SubscriptionStatusBadge
                     status={data.assinatura.status}
@@ -1676,11 +1674,10 @@ export default function AdminUserDetails() {
                     type="button"
                     size="sm"
                     onClick={() => setIsMobileFiltersOpen(p => !p)}
-                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
-                      isMobileFiltersOpen
+                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
                         ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
                         : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
-                    }`}
+                      }`}
                   >
                     <Filter className="h-3.5 w-3.5" />
                   </Button>

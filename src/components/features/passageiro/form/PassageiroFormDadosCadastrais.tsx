@@ -26,12 +26,13 @@ import {
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
 import { dateMask } from "@/utils/masks";
-import { AlertTriangle, Car, School, Sun, User, CalendarIcon, X } from "lucide-react";
+import { AlertTriangle, Car, Compass, School, Sun, User, CalendarIcon, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
-import { parseLocalDate, getStartOfDayBR } from "@/utils/dateUtils";
+import { parseLocalDate } from "@/utils/dateUtils";
+import { StitchField } from "@/components/forms";
 
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
@@ -64,64 +65,97 @@ export function PassageiroFormDadosCadastrais({
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* Seção 1: Dados Pessoais */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+      <section className="space-y-4">
+        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-3">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
             <User className="w-5 h-5" />
           </div>
           Identificação
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <FormField
             control={form.control}
             name="nome"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 md:col-span-2">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Nome Completo <span className="text-red-600">*</span>
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                    <Input
-                      placeholder="Digite o nome completo"
-                      {...field}
-                      className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={User} label="Nome Completo" required error={!!fieldState.error}>
+                      <Input
+                        placeholder="Digite o nome completo"
+                        {...field}
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                        aria-invalid={!!fieldState.error}
+                      />
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Nome Completo <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          placeholder="Digite o nome completo"
+                          {...field}
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
-
-
 
           <FormField
             control={form.control}
             name="data_nascimento"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Data de Nascimento {isExternal && <span className="text-red-600">*</span>}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="dd/mm/aaaa"
-                    maxLength={10}
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(dateMask(e.target.value));
-                    }}
-                    className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                  />
-                </FormControl>
-                <FormMessage />
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={CalendarIcon} label="Data de Nascimento" required={isExternal} error={!!fieldState.error}>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="dd/mm/aaaa"
+                        maxLength={10}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(dateMask(e.target.value));
+                        }}
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      />
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Data de Nascimento {isExternal && <span className="text-red-600">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="dd/mm/aaaa"
+                        maxLength={10}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(dateMask(e.target.value));
+                        }}
+                        className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                      />
+                    </FormControl>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
@@ -131,23 +165,36 @@ export function PassageiroFormDadosCadastrais({
             name="genero"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Gênero {isExternal && <span className="text-red-600">*</span>}
-                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || undefined}
                 >
                   <FormControl>
-                    <SelectTrigger
-                      className={cn(
-                        "h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                        fieldState.error && "border-red-500"
-                      )}
-                      aria-invalid={!!fieldState.error}
-                    >
-                      <SelectValue placeholder="Selecione o gênero" />
-                    </SelectTrigger>
+                    {isExternal ? (
+                      <StitchField icon={User} label="Gênero" required={isExternal} error={!!fieldState.error}>
+                        <SelectTrigger
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione o gênero" />
+                        </SelectTrigger>
+                      </StitchField>
+                    ) : (
+                      <>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Gênero {isExternal && <span className="text-red-600">*</span>}
+                        </FormLabel>
+                        <SelectTrigger
+                          className={cn(
+                            "h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                            fieldState.error && "border-red-500"
+                          )}
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione o gênero" />
+                        </SelectTrigger>
+                      </>
+                    )}
                   </FormControl>
                   <SelectContent>
                     {generos.map((option) => (
@@ -157,7 +204,7 @@ export function PassageiroFormDadosCadastrais({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
@@ -189,20 +236,18 @@ export function PassageiroFormDadosCadastrais({
         )}
       </section>
 
-      <hr className="border-slate-100" />
+      {!isExternal && <hr className="border-slate-100" />}
 
       {/* Seção 2: Escola e Período */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+      <section className="space-y-4">
+        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-3">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
             <School className="w-5 h-5" />
           </div>
           Veículo e Escola
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {!hideVeiculo && (
             <FormField
               control={form.control}
@@ -261,9 +306,6 @@ export function PassageiroFormDadosCadastrais({
             name="escola_id"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Escola <span className={cn("text-red-600", isExternal && "hidden")}>*</span>
-                </FormLabel>
                 <Select
                   value={field.value || undefined}
                   onValueChange={(value) => {
@@ -275,18 +317,34 @@ export function PassageiroFormDadosCadastrais({
                   }}
                 >
                   <FormControl>
-                    <div className="relative">
-                      <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                      <SelectTrigger
-                        className={cn(
-                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                          fieldState.error && "border-red-500"
-                        )}
-                        aria-invalid={!!fieldState.error}
-                      >
-                        <SelectValue placeholder="Selecione a escola" />
-                      </SelectTrigger>
-                    </div>
+                    {isExternal ? (
+                      <StitchField icon={School} label="Escola" error={!!fieldState.error}>
+                        <SelectTrigger
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione a escola" />
+                        </SelectTrigger>
+                      </StitchField>
+                    ) : (
+                      <>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Escola <span className={cn("text-red-600", isExternal && "hidden")}>*</span>
+                        </FormLabel>
+                        <div className="relative">
+                          <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione a escola" />
+                          </SelectTrigger>
+                        </div>
+                      </>
+                    )}
                   </FormControl>
                   <SelectContent className="max-h-60 overflow-y-auto">
                     {escolasDisplay.map((escola) => (
@@ -315,13 +373,11 @@ export function PassageiroFormDadosCadastrais({
                   <Alert className="mt-4 bg-amber-50 border-amber-100 text-amber-900 animate-in fade-in slide-in-from-top-1 duration-300">
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
                     <AlertDescription className="text-xs text-amber-700 leading-relaxed font-medium">
-                      Escola não listada? Continue o cadastro. O
-                      condutor será avisado para ajustar
-                      depois.
+                      Escola não listada? Continue o cadastro. O condutor será avisado para ajustar depois.
                     </AlertDescription>
                   </Alert>
                 )}
-                <FormMessage />
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
@@ -331,26 +387,39 @@ export function PassageiroFormDadosCadastrais({
             name="periodo"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Período {isExternal && <span className="text-red-600">*</span>}
-                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || undefined}
                 >
                   <FormControl>
-                    <div className="relative">
-                      <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                      <SelectTrigger
-                        className={cn(
-                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                          fieldState.error && "border-red-500"
-                        )}
-                        aria-invalid={!!fieldState.error}
-                      >
-                        <SelectValue placeholder="Selecione o período" />
-                      </SelectTrigger>
-                    </div>
+                    {isExternal ? (
+                      <StitchField icon={Sun} label="Período" required={isExternal} error={!!fieldState.error}>
+                        <SelectTrigger
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione o período" />
+                        </SelectTrigger>
+                      </StitchField>
+                    ) : (
+                      <>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Período {isExternal && <span className="text-red-600">*</span>}
+                        </FormLabel>
+                        <div className="relative">
+                          <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione o período" />
+                          </SelectTrigger>
+                        </div>
+                      </>
+                    )}
                   </FormControl>
                   <SelectContent>
                     {periodos.map((tipo) => (
@@ -360,7 +429,7 @@ export function PassageiroFormDadosCadastrais({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
@@ -370,25 +439,39 @@ export function PassageiroFormDadosCadastrais({
             name="modalidade"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Modalidade {isExternal && <span className="text-red-600">*</span>}
-                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || undefined}
                 >
                   <FormControl>
-                    <div className="relative"> <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                      <SelectTrigger
-                        className={cn(
-                          "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                          fieldState.error && "border-red-500"
-                        )}
-                        aria-invalid={!!fieldState.error}
-                      >
-                        <SelectValue placeholder="Selecione a modalidade" />
-                      </SelectTrigger>
-                    </div>
+                    {isExternal ? (
+                      <StitchField icon={Compass} label="Modalidade" required={isExternal} error={!!fieldState.error}>
+                        <SelectTrigger
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione a modalidade" />
+                        </SelectTrigger>
+                      </StitchField>
+                    ) : (
+                      <>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Modalidade {isExternal && <span className="text-red-600">*</span>}
+                        </FormLabel>
+                        <div className="relative">
+                          <Compass className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione a modalidade" />
+                          </SelectTrigger>
+                        </div>
+                      </>
+                    )}
                   </FormControl>
                   <SelectContent>
                     {modalidades.map((option) => (
@@ -398,7 +481,7 @@ export function PassageiroFormDadosCadastrais({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
@@ -408,84 +491,121 @@ export function PassageiroFormDadosCadastrais({
             name="turma"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Turma {isExternal && <span className="text-red-600">*</span>}
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                    <Input
-                      placeholder="Ex: 5º Ano A"
-                      {...field}
-                      value={field.value || ""}
-                      className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={School} label="Turma" required={isExternal} error={!!fieldState.error}>
+                      <Input
+                        placeholder="Ex: 5º Ano A"
+                        {...field}
+                        value={field.value || ""}
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                        aria-invalid={!!fieldState.error}
+                      />
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Turma {isExternal && <span className="text-red-600">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          placeholder="Ex: 5º Ano A"
+                          {...field}
+                          value={field.value || ""}
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={form.control}
             name="data_inicio_transporte"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Início do Transporte
-                </FormLabel>
-                <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <div className="relative group">
-                        <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                            !field.value && "text-muted-foreground",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          {field.value ? field.value : "dd/mm/aaaa"}
-                        </Button>
-                        {field.value && (
-                          <div
-                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              field.onChange("");
-                            }}
-                          >
-                            <X className="h-5 w-5" />
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={CalendarIcon} label="Início do Transporte" error={!!fieldState.error}>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="dd/mm/aaaa"
+                        maxLength={10}
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          field.onChange(dateMask(e.target.value));
+                        }}
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      />
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Início do Transporte
+                    </FormLabel>
+                    <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <div className="relative group">
+                            <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                !field.value && "text-muted-foreground",
+                                fieldState.error && "border-red-500"
+                              )}
+                            >
+                              {field.value ? field.value : "dd/mm/aaaa"}
+                            </Button>
+                            {field.value && (
+                              <div
+                                className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  field.onChange("");
+                                }}
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
-                      onSelect={(date) => {
-                        if (date) {
-                          field.onChange(formatDateToBR(date));
-                          setOpenCalendarInicio(false);
-                        } else {
-                          field.onChange("");
-                        }
-                      }}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(formatDateToBR(date));
+                              setOpenCalendarInicio(false);
+                            } else {
+                              field.onChange("");
+                            }
+                          }}
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />
@@ -495,58 +615,78 @@ export function PassageiroFormDadosCadastrais({
             name="data_fim_transporte"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Término do Transporte
-                </FormLabel>
-                <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <div className="relative group">
-                        <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                            !field.value && "text-muted-foreground",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          {field.value ? field.value : "dd/mm/aaaa"}
-                        </Button>
-                        {field.value && (
-                          <div
-                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              field.onChange("");
-                            }}
-                          >
-                            <X className="h-5 w-5" />
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={CalendarIcon} label="Término do Transporte" error={!!fieldState.error}>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="dd/mm/aaaa"
+                        maxLength={10}
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          field.onChange(dateMask(e.target.value));
+                        }}
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      />
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Término do Transporte
+                    </FormLabel>
+                    <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <div className="relative group">
+                            <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                !field.value && "text-muted-foreground",
+                                fieldState.error && "border-red-500"
+                              )}
+                            >
+                              {field.value ? field.value : "dd/mm/aaaa"}
+                            </Button>
+                            {field.value && (
+                              <div
+                                className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  field.onChange("");
+                                }}
+                              >
+                                <X className="h-5 w-5" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
-                      onSelect={(date) => {
-                        if (date) {
-                          field.onChange(formatDateToBR(date));
-                          setOpenCalendarFim(false);
-                        } else {
-                          field.onChange("");
-                        }
-                      }}
-                      disabled={(date) => date < getStartOfDayBR()}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(formatDateToBR(date));
+                              setOpenCalendarFim(false);
+                            } else {
+                              field.onChange("");
+                            }
+                          }}
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
           />

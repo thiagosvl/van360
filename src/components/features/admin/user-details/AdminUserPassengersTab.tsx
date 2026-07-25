@@ -9,7 +9,6 @@ import {
   Search,
   Users,
   CheckCircle2,
-  AlertTriangle,
   AlertCircle,
   DollarSign,
   X,
@@ -24,6 +23,11 @@ interface AdminUserPassengersTabProps {
   passageiros: AdminUserPassengerItem[];
 }
 
+const getValorMensalidade = (p: AdminUserPassengerItem) => {
+  const val = p.valor_cobranca ?? p.valor_mensalidade;
+  return val ? Number(val) : 0;
+};
+
 export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(StatusFilter.ALL);
@@ -31,14 +35,12 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
   const totalPassageiros = passageiros.length;
   const ativosCount = passageiros.filter((p) => p.ativo).length;
   const inativosCount = passageiros.filter((p) => !p.ativo).length;
-  const semValorCount = passageiros.filter((p) => !p.valor_mensalidade || Number(p.valor_mensalidade) <= 0).length;
+  const semValorCount = passageiros.filter((p) => getValorMensalidade(p) <= 0).length;
 
-  const comValorList = passageiros.filter((p) => p.valor_mensalidade && Number(p.valor_mensalidade) > 0);
-  const somaValores = comValorList.reduce((acc, p) => acc + Number(p.valor_mensalidade), 0);
+  const comValorList = passageiros.filter((p) => getValorMensalidade(p) > 0);
+  const somaValores = comValorList.reduce((acc, p) => acc + getValorMensalidade(p), 0);
   const mediaMensalidade = comValorList.length > 0 ? somaValores / comValorList.length : 0;
 
-  const pctAtivos = totalPassageiros > 0 ? Math.round((ativosCount / totalPassageiros) * 100) : 0;
-  const pctInativos = totalPassageiros > 0 ? Math.round((inativosCount / totalPassageiros) * 100) : 0;
   const pctIncompletos = totalPassageiros > 0 ? Math.round((semValorCount / totalPassageiros) * 100) : 0;
 
   const filtered = useMemo(() => {
@@ -54,7 +56,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
 
       if (statusFilter === StatusFilter.ACTIVE) return p.ativo;
       if (statusFilter === StatusFilter.INACTIVE) return !p.ativo;
-      if (statusFilter === StatusFilter.INCOMPLETE) return !p.valor_mensalidade || Number(p.valor_mensalidade) <= 0;
+      if (statusFilter === StatusFilter.INCOMPLETE) return getValorMensalidade(p) <= 0;
 
       return true;
     });
@@ -70,11 +72,11 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
 
   return (
     <div className="space-y-6 text-left">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
           title="PASSAGEIROS ATIVOS"
           value={ativosCount}
-          subtext={`${pctAtivos}% dos passageiros`}
+          subtext={`${inativosCount} ${inativosCount === 1 ? "inativo" : "inativos"}`}
           cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.ACTIVE
               ? "border-emerald-500 ring-2 ring-emerald-500/30 shadow-emerald-500/20"
               : "border-emerald-500/40 shadow-emerald-500/10 hover:border-emerald-500/70"
@@ -82,19 +84,6 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
           iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           icon={<CheckCircle2 className="h-5 w-5" />}
           onClick={() => setStatusFilter(statusFilter === StatusFilter.ACTIVE ? StatusFilter.ALL : StatusFilter.ACTIVE)}
-        />
-
-        <AdminKpiCard
-          title="PASSAGEIROS INATIVOS"
-          value={inativosCount}
-          subtext={`${pctInativos}% dos passageiros`}
-          cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.INACTIVE
-              ? "border-rose-500 ring-2 ring-rose-500/30 shadow-rose-500/20"
-              : "border-rose-500/40 shadow-rose-500/10 hover:border-rose-500/70"
-            }`}
-          iconBg="bg-rose-500/10 text-rose-400 border-rose-500/20"
-          icon={<AlertTriangle className="h-5 w-5" />}
-          onClick={() => setStatusFilter(statusFilter === StatusFilter.INACTIVE ? StatusFilter.ALL : StatusFilter.INACTIVE)}
         />
 
         <AdminKpiCard
@@ -226,7 +215,8 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-xs">
                     {filtered.map((p) => {
-                      const hasValor = p.valor_mensalidade && Number(p.valor_mensalidade) > 0;
+                      const valor = getValorMensalidade(p);
+                      const hasValor = valor > 0;
                       const hasValidVencimento = hasValor && p.dia_vencimento && Number(p.dia_vencimento) > 0;
 
                       return (
@@ -282,7 +272,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                           <td className="py-4 px-4">
                             {hasValor ? (
                               <span className="font-medium text-slate-300">
-                                {formatCurrency(p.valor_mensalidade!)}
+                                {formatCurrency(valor)}
                               </span>
                             ) : (
                               <span className="text-slate-500 italic text-[11px]">—</span>
@@ -311,7 +301,8 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
 
               <div className="md:hidden p-4 space-y-3">
                 {filtered.map((p) => {
-                  const hasValor = p.valor_mensalidade && Number(p.valor_mensalidade) > 0;
+                  const valor = getValorMensalidade(p);
+                  const hasValor = valor > 0;
                   const hasValidVencimento = hasValor && p.dia_vencimento && Number(p.dia_vencimento) > 0;
 
                   return (
@@ -359,7 +350,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                             </span>
                             {hasValor ? (
                               <span className="font-medium text-slate-300 text-xs">
-                                {formatCurrency(p.valor_mensalidade!)}
+                                {formatCurrency(valor)}
                               </span>
                             ) : (
                               <span className="text-slate-500 italic text-[10px]">

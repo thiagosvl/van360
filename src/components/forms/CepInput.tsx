@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ControllerRenderProps, FieldPath, FieldValues, useFormContext } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
+import { StitchField } from "./StitchField";
 
 interface CepInputProps<T extends FieldValues> {
   field: ControllerRenderProps<T, FieldPath<T>>;
@@ -24,6 +25,7 @@ interface CepInputProps<T extends FieldValues> {
   inputClassName?: string;
   nextField?: FieldPath<T>;
   onLoadingChange?: (loading: boolean) => void;
+  isExternal?: boolean;
 }
 
 export function CepInput<T extends FieldValues>({
@@ -36,6 +38,7 @@ export function CepInput<T extends FieldValues>({
   inputClassName,
   nextField = "numero" as FieldPath<T>,
   onLoadingChange,
+  isExternal = false,
 }: CepInputProps<T>) {
   const [loadingCep, setLoadingCep] = useState(false);
 
@@ -79,6 +82,34 @@ export function CepInput<T extends FieldValues>({
     }
   };
 
+  if (isExternal) {
+    return (
+      <FormItem className={className}>
+        <FormControl>
+          <StitchField icon={MapPin} label={label} required={required} error={!!error}>
+            <div className="relative flex items-center">
+              <Input
+                {...field}
+                placeholder="00000-000"
+                maxLength={9}
+                type="text"
+                inputMode="numeric"
+                className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full pr-6"
+                onChange={(e) => handleCepChange(e.target.value)}
+                aria-invalid={!!error}
+              />
+              {loadingCep && (
+                <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#1a3a5c]" />
+                </div>
+              )}
+            </div>
+          </StitchField>
+        </FormControl>
+        <FormMessage className="text-xs ml-1 mt-1 text-red-500" />
+      </FormItem>
+    );
+  }
 
   return (
     <FormItem className={className}>
@@ -109,4 +140,3 @@ export function CepInput<T extends FieldValues>({
     </FormItem>
   );
 }
-

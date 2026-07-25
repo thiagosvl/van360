@@ -362,15 +362,15 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="flex items-center justify-between pt-2.5 border-t border-blue-500/20 gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-200 text-[11px] font-bold font-mono">
-                          <Clock className="h-3.5 w-3.5 text-blue-400" />
+                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 text-xs font-extrabold font-mono shadow-sm shadow-blue-500/10">
+                          <Clock className="h-4 w-4 text-blue-400" />
                           {formatDateTimeBR(latestLog.created_at)}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedLogModal(latestLog)}
-                          className="h-8 px-2.5 bg-blue-600 text-white hover:bg-blue-500 rounded-xl shadow-md flex items-center gap-1.5 shrink-0"
+                          className="h-8 px-3 bg-blue-600 text-white hover:bg-blue-500 rounded-xl shadow-md flex items-center gap-1.5 shrink-0"
                         >
                           <Eye className="h-3.5 w-3.5" />
                           <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">INSPECIONAR</span>
@@ -382,9 +382,14 @@ export default function AdminDashboard() {
                     {remainingLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4 transition-colors hover:bg-slate-900/90"
+                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-3 md:gap-4 transition-colors hover:bg-slate-900/90"
                       >
-                        <div className="space-y-1 md:space-y-0.5 min-w-0 flex-1">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 md:py-1.5 rounded-lg md:rounded-xl border border-slate-800/80 shrink-0">
+                          <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-slate-400" />
+                          {formatDateTimeBR(log.created_at)}
+                        </span>
+
+                        <div className="space-y-1 md:space-y-0.5 min-w-0 flex-1 text-left">
                           <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
                             {(log.usuario_id || log.usuarios?.id) ? (
                               <Link
@@ -402,21 +407,15 @@ export default function AdminDashboard() {
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between md:justify-end gap-2 shrink-0 pt-1.5 md:pt-0 border-t border-slate-800/50 md:border-t-0">
-                          <span className="inline-flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold font-mono text-slate-400 md:text-slate-300 bg-slate-950 px-2.5 py-1 md:py-1.5 rounded-lg md:rounded-xl border border-slate-800/80 shrink-0">
-                            <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-slate-500 md:text-slate-400" />
-                            {formatDateTimeBR(log.created_at)}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedLogModal(log)}
-                            className="h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
-                            title="Ver detalhes da atividade"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedLogModal(log)}
+                          className="h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                          title="Ver detalhes da atividade"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     ))}
                   </div>
