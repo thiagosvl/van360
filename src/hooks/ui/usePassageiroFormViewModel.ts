@@ -177,8 +177,9 @@ export function usePassageiroFormViewModel({
       : null;
 
     const currentYear = new Date().getFullYear();
-    purePayload.data_inicio_cobranca = `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01`;
-    purePayload.data_fim_cobranca = `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01`;
+
+    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
     delete purePayload.mes_inicio_cobranca;
     delete purePayload.mes_fim_cobranca;
 

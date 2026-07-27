@@ -109,6 +109,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       setIsSubmitting(true);
 
       const currentYear = new Date().getFullYear();
+
       const payload = {
         nome: data.nome,
         nome_responsavel: data.nome_responsavel || ONBOARDING_MOCK_RESPONSAVEL_NOME,

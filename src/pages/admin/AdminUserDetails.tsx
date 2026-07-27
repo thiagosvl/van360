@@ -920,7 +920,7 @@ export default function AdminUserDetails() {
                   <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
                     <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                       <FileText className="h-4 w-4 text-blue-400 shrink-0" />
-                      Contratos Digitais
+                      Contratos
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-5 flex-1 flex flex-col justify-between">

@@ -224,7 +224,7 @@ export default function AdminDashboard() {
               <SelectItem value="contratos" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
                 <span className="flex items-center gap-2">
                   <FileCheck className="h-4 w-4 text-emerald-400" />
-                  <span>Contratos Digitais</span>
+                  <span>Contratos</span>
                 </span>
               </SelectItem>
             </SelectContent>
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
               className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
             >
               <FileCheck className="h-4 w-4 text-emerald-300" />
-              <span>Contratos Digitais</span>
+              <span>Contratos</span>
             </TabsTrigger>
           </TabsList>
         </div>
