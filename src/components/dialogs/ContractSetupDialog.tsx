@@ -639,7 +639,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           <div className="space-y-3">
             <div>
               <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Forma de cobrança</Label>
-              <div className="flex bg-slate-100 p-1 rounded-xl w-full border border-slate-200/20">
+              <div className="flex bg-slate-100 p-1 rounded-lg w-full border border-slate-200/20">
                 <button
                   type="button"
                   onClick={() => setState({ ...state, tipo: ContractMultaTipo.FIXO })}
@@ -692,7 +692,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                     }
                   }}
                   className={cn(
-                    "w-full h-12 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 font-black text-base text-[#1a3a5c] pl-4",
+                    "w-full h-12 rounded-lg bg-slate-50/50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 font-black text-base text-[#1a3a5c] pl-4",
                     state.tipo === ContractMultaTipo.PERCENTUAL ? "pr-10 text-left" : "pr-4 text-left"
                   )}
                   placeholder={state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00"}
@@ -739,16 +739,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           </p>
         </div>
       )}
-
-      {/* Resumo de Totais (Seções na esquerda e Cláusulas na direita) */}
-      <div className="flex items-center justify-between gap-2 px-0.5 pb-0.5">
-        <span className="px-2.5 py-0.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-600 uppercase tracking-wider border border-slate-200/60">
-          {secoes.length} {secoes.length === 1 ? "Seção" : "Seções"}
-        </span>
-        <span className="px-2.5 py-0.5 bg-blue-50 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-wider border border-blue-100">
-          {totalClausulas} {totalClausulas === 1 ? "Cláusula" : "Cláusulas"}
-        </span>
-      </div>
 
       {/* Botão Visualizar Modelo 100% de largura no topo */}
       <Button
@@ -818,7 +808,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         className="w-full py-2.5 bg-white border-2 border-dashed border-slate-300 hover:bg-blue-50/50 hover:border-blue-400 text-[#1a3a5c] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-[0.99]"
       >
         <FolderPlus className="w-4 h-4 text-blue-600" />
-        Adicionar Nova Seção ao Contrato
+        Adicionar Nova Seção
       </button>
     </div>
   );
@@ -1017,7 +1007,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                 }
               }}
               placeholder="Ex: DO OBJETO E DA PRESTAÇÃO..."
-              className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-semibold text-slate-800 text-sm transition-all uppercase"
+              className="h-12 rounded-lg bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-semibold text-slate-800 text-sm transition-all uppercase"
             />
           </div>
         </BaseDialog.Body>
@@ -1171,7 +1161,7 @@ function SectionItemCard({
           <span
             className={cn(
               "px-2 py-0.5 rounded-full text-[9px] font-bold transition-colors",
-              isSecaoEmpty ? "bg-amber-100 text-amber-700" : "bg-white text-slate-600 border border-slate-200/60"
+              isSecaoEmpty ? "bg-amber-100 text-amber-700" : " text-slate-600"
             )}
           >
             {secao.clausulas.length} {secao.clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
@@ -1228,10 +1218,10 @@ function SectionItemCard({
             <button
               type="button"
               onClick={onAddClause}
-              className="w-full py-2 bg-white border border-slate-300 hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-[0.99]"
+              className="w-full py-2 bg-white border border-slate-300 hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-[0.99]"
             >
               <Plus className="w-3.5 h-3.5 text-blue-600" />
-              Adicionar Cláusula nesta Seção
+              Adicionar Cláusula
             </button>
           </div>
         </>
@@ -1284,7 +1274,7 @@ function ClauseItemCard({
         clauseRefs.current[clause.id] = el;
       }}
       className={cn(
-        "rounded-xl border transition-all overflow-hidden scroll-mt-4",
+        "rounded-lg border transition-all overflow-hidden scroll-mt-4",
         showErrors && isBlank
           ? "border-red-400 bg-red-50/20 ring-2 ring-red-100 shadow-sm"
           : isExpanded
@@ -1385,7 +1375,7 @@ function ClauseItemCard({
             onChange={(e) => onClauseChange(e.target.value)}
             placeholder="Digite o texto da cláusula..."
             className={cn(
-              "w-full p-3.5 text-xs sm:text-sm text-slate-800 bg-[#fcfcfd] border border-slate-200 rounded-xl focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/5 leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[260px] sm:min-h-[340px] h-[calc(100dvh-300px)] max-h-[480px] resize-y",
+              "w-full p-3.5 text-xs sm:text-sm text-slate-800 bg-[#fcfcfd] border border-slate-200 rounded-lg focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/5 leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[260px] sm:min-h-[340px] h-[calc(100dvh-300px)] max-h-[480px] resize-y",
               showErrors && isBlank ? "border-red-300 bg-red-50/20" : ""
             )}
           />

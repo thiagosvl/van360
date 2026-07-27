@@ -14,6 +14,7 @@ interface AdminBaseDialogProps {
   lockClose?: boolean;
   description?: string;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full";
+  variant?: "admin" | "default";
 }
 
 const maxWidthMap = {
@@ -38,8 +39,10 @@ const AdminBaseDialogRoot = ({
   lockClose = false,
   description,
   maxWidth = "md",
+  variant = "admin",
 }: AdminBaseDialogProps) => {
   const maxWidthClass = maxWidthMap[maxWidth];
+  const isDark = variant === "admin";
 
   return (
     <Dialog
@@ -51,7 +54,10 @@ const AdminBaseDialogRoot = ({
     >
       <DialogContent
         className={cn(
-          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden bg-[#131b2e] rounded-[2rem] border border-slate-800/80 shadow-2xl text-slate-100 flex flex-col max-h-[calc(100dvh-2.5rem)] gap-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-offset-0 outline-none ring-0 ring-offset-0",
+          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden rounded-[2rem] shadow-2xl flex flex-col max-h-[calc(100dvh-2.5rem)] gap-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-offset-0 outline-none ring-0 ring-offset-0",
+          isDark
+            ? "bg-[#131b2e] border border-slate-800/80 text-slate-100"
+            : "bg-white border border-slate-200 text-slate-900",
           maxWidthClass,
           className
         )}
@@ -61,7 +67,7 @@ const AdminBaseDialogRoot = ({
       >
         <div className="sr-only">
           <DialogPrimitive.Description>
-            {description || "Admin Dialog content"}
+            {description || "Dialog content"}
           </DialogPrimitive.Description>
         </div>
         {children}
@@ -77,6 +83,7 @@ interface AdminBaseDialogHeaderProps {
   hideCloseButton?: boolean;
   onClose?: () => void;
   leftAction?: React.ReactNode;
+  variant?: "admin" | "default";
 }
 
 const AdminBaseDialogHeader = ({
@@ -86,24 +93,49 @@ const AdminBaseDialogHeader = ({
   hideCloseButton = false,
   onClose,
   leftAction,
+  variant = "admin",
 }: AdminBaseDialogHeaderProps) => {
+  const isDark = variant === "admin";
+
   return (
-    <div className="p-5 sm:p-6 flex items-center justify-between bg-slate-900/60 border-b border-slate-800/80 shrink-0 text-left">
+    <div
+      className={cn(
+        "p-5 sm:p-6 flex items-center justify-between border-b shrink-0 text-left",
+        isDark ? "bg-slate-900/60 border-slate-800/80" : "bg-slate-50 border-slate-200"
+      )}
+    >
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
         {leftAction ? (
           <div className="shrink-0">{leftAction}</div>
         ) : icon ? (
-          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center shrink-0 bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm">
+          <div
+            className={cn(
+              "h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm",
+              isDark
+                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                : "bg-blue-50 text-blue-600 border-blue-200"
+            )}
+          >
             {icon}
           </div>
         ) : null}
         <div className="flex flex-col min-w-0 flex-1">
-          <DialogTitle className="text-sm sm:text-base font-headline font-black text-white uppercase tracking-tight line-clamp-2 leading-tight">
+          <DialogTitle
+            className={cn(
+              "text-sm sm:text-base font-headline font-black uppercase tracking-tight line-clamp-2 leading-tight",
+              isDark ? "text-white" : "text-slate-900"
+            )}
+          >
             {title}
           </DialogTitle>
 
           {subtitle && (
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
+            <p
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-wider mt-0.5 truncate",
+                isDark ? "text-slate-400" : "text-slate-500"
+              )}
+            >
               {subtitle}
             </p>
           )}
@@ -114,7 +146,12 @@ const AdminBaseDialogHeader = ({
         <button
           type="button"
           onClick={onClose}
-          className="ml-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all active:scale-95 shrink-0"
+          className={cn(
+            "ml-4 p-2 rounded-xl transition-all active:scale-95 shrink-0",
+            isDark
+              ? "text-slate-400 hover:text-white hover:bg-slate-800/80"
+              : "text-slate-400 hover:text-slate-700 hover:bg-slate-200/80"
+          )}
         >
           <X className="w-5 h-5" />
           <span className="sr-only">Fechar</span>

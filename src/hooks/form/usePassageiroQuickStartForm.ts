@@ -98,8 +98,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       dia_vencimento: "",
       escola_id: "",
       veiculo_id: "",
-      mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
-      mes_fim_cobranca: "12",
+      mes_inicio_cobranca: "",
+      mes_fim_cobranca: "",
     },
     mode: "onChange",
   });
@@ -117,10 +117,10 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         dia_vencimento: data.dia_vencimento ? parseInt(String(data.dia_vencimento)) : 1,
         escola_id: data.escola_id,
         veiculo_id: data.veiculo_id,
-        data_inicio_cobranca: `${currentYear}-${String(data.mes_inicio_cobranca || (new Date().getMonth() + 1)).padStart(2, '0')}-01`,
-        data_fim_cobranca: `${currentYear}-${String(data.mes_fim_cobranca || '12').padStart(2, '0')}-01`,
+        data_inicio_cobranca: data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
+        data_fim_cobranca: data.mes_fim_cobranca ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
         ativo: true,
-        usuario_id: usuarioId, // se fornecido pelo contexto externo/store de profile
+        usuario_id: usuarioId,
       };
 
       const response = await apiClient.post("/passageiros", payload);

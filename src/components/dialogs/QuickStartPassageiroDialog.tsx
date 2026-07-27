@@ -71,8 +71,8 @@ export function QuickStartPassageiroDialog({
         dia_vencimento: "",
         escola_id: escolasList?.length === 1 ? escolasList[0].id : "",
         veiculo_id: veiculosList?.length === 1 ? veiculosList[0].id : "",
-        mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
-        mes_fim_cobranca: "12",
+        mes_inicio_cobranca: "",
+        mes_fim_cobranca: "",
       });
     }
   }, [isOpen, form, isOnboarding]);

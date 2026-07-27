@@ -164,6 +164,7 @@ export default function AdminUserDetails() {
     try {
       const config = data.user.config_contrato as Record<string, any> | null;
       const result = await previewContrato.mutateAsync({
+        usuarioId: data.user.id,
         multaAtraso: config?.multa_atraso,
         jurosAtraso: config?.juros_atraso,
         multaRescisao: config?.multa_rescisao,
@@ -2047,6 +2048,7 @@ export default function AdminUserDetails() {
         title={`Minuta do Contrato — ${data.user.nome}`}
         fileName={`minuta_contrato_${data.user.nome.toLowerCase().replace(/[^a-z0-9]/g, "_")}.pdf`}
         showDownload={true}
+        variant="admin"
       />
 
       {/* DIÁLOGO DE ASSINATURA DIGITAL DO MOTORISTA */}

@@ -107,6 +107,7 @@ export function useSubstituirContrato() {
 }
 
 export interface PreviewConfig {
+  usuarioId?: string;
   clausulas?: string[];
   secoes?: ContractSection[];
   multaAtraso?: { valor: number; tipo: ContractMultaTipo };

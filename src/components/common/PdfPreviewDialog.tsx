@@ -24,6 +24,7 @@ interface PdfPreviewDialogProps {
   title?: string;
   fileName?: string;
   showDownload?: boolean;
+  variant?: "default" | "admin";
 }
 
 export function PdfPreviewDialog({
@@ -33,7 +34,9 @@ export function PdfPreviewDialog({
   title = "Prévia do Documento",
   fileName,
   showDownload = false,
+  variant = "default",
 }: PdfPreviewDialogProps) {
+  const isDark = variant === "admin";
   const [numPages, setNumPages] = useState<number | null>(null);
   const [scale, setScale] = useState(1.0);
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -100,32 +103,58 @@ export function PdfPreviewDialog({
       onOpenChange={(open) => !open && onClose()}
       maxWidth="5xl"
       description="Visualização do modelo do contrato em PDF"
+      variant={variant}
     >
       <AdminBaseDialog.Header
         title={title}
-        icon={<FileText className="h-5 w-5 text-blue-400" />}
+        icon={<FileText className={cn("h-5 w-5", isDark ? "text-blue-400" : "text-blue-600")} />}
         onClose={onClose}
+        variant={variant}
       />
 
-      {/* Barra de Ferramentas Centralizada Dark Mode */}
-      <div className="bg-slate-900 border-y border-slate-800 text-white px-4 py-2 flex items-center justify-between shrink-0 select-none shadow-md">
+      {/* Barra de Ferramentas Centralizada */}
+      <div
+        className={cn(
+          "px-4 py-2 flex items-center justify-between shrink-0 select-none shadow-md border-y",
+          isDark
+            ? "bg-slate-900 border-slate-800 text-white"
+            : "bg-slate-100 border-slate-200 text-slate-800"
+        )}
+      >
         <div className="w-10 sm:w-28" />
 
-        <div className="flex items-center gap-2 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+        <div
+          className={cn(
+            "flex items-center gap-2 p-1 rounded-xl border",
+            isDark
+              ? "bg-slate-950/80 border-slate-800"
+              : "bg-white border-slate-200 shadow-sm"
+          )}
+        >
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={handleZoomOut}
             disabled={scale <= 0.5}
-            className="h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-colors"
+            className={cn(
+              "h-8 w-8 rounded-lg disabled:opacity-30 transition-colors",
+              isDark
+                ? "text-slate-300 hover:text-white hover:bg-slate-800"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            )}
             title="Reduzir Zoom (-)"
           >
             <Minus className="h-4 w-4" />
           </Button>
 
           {/* Indicador Numérico Discreto */}
-          <span className="px-3 text-xs font-bold font-mono tracking-wider text-slate-200 select-none min-w-[52px] text-center">
+          <span
+            className={cn(
+              "px-3 text-xs font-bold font-mono tracking-wider select-none min-w-[52px] text-center",
+              isDark ? "text-slate-200" : "text-slate-700"
+            )}
+          >
             {Math.round(scale * 100)}%
           </span>
 
@@ -135,7 +164,12 @@ export function PdfPreviewDialog({
             size="icon"
             onClick={handleZoomIn}
             disabled={scale >= 3.0}
-            className="h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-colors"
+            className={cn(
+              "h-8 w-8 rounded-lg disabled:opacity-30 transition-colors",
+              isDark
+                ? "text-slate-300 hover:text-white hover:bg-slate-800"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            )}
             title="Aumentar Zoom (+)"
           >
             <Plus className="h-4 w-4" />
@@ -149,7 +183,12 @@ export function PdfPreviewDialog({
               variant="ghost"
               size="sm"
               onClick={handleDownload}
-              className="h-8 px-2.5 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/30 text-xs font-bold transition-all gap-1.5"
+              className={cn(
+                "h-8 px-2.5 rounded-lg text-xs font-bold transition-all gap-1.5 border",
+                isDark
+                  ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white border-blue-500/30"
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-200"
+              )}
               title="Baixar Minuta (PDF)"
             >
               <Download className="h-3.5 w-3.5" />
@@ -159,8 +198,13 @@ export function PdfPreviewDialog({
         </div>
       </div>
 
-      {/* Área do Documento com Scroll e Pan por Arraste sem truncamento */}
-      <AdminBaseDialog.Body className="bg-[#0b0f19] p-0 flex flex-col overflow-hidden relative">
+      {/* Área do Documento com Scroll e Pan por Arraste */}
+      <AdminBaseDialog.Body
+        className={cn(
+          "p-0 flex flex-col overflow-hidden relative",
+          isDark ? "bg-[#0b0f19]" : "bg-slate-200/70"
+        )}
+      >
         <div
           ref={containerRef}
           onMouseDown={handleMouseDown}
@@ -183,8 +227,13 @@ export function PdfPreviewDialog({
                 onLoadSuccess={onDocumentLoadSuccess}
                 loading={
                   <div className="py-24 flex flex-col items-center gap-3">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+                    <Loader2 className={cn("h-8 w-8 animate-spin", isDark ? "text-blue-400" : "text-blue-600")} />
+                    <p
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-widest animate-pulse",
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      )}
+                    >
                       Carregando documento...
                     </p>
                   </div>
@@ -194,7 +243,12 @@ export function PdfPreviewDialog({
                 {Array.from(new Array(numPages), (_, index) => (
                   <div
                     key={`prev_page_${index + 1}`}
-                    className="mb-6 last:mb-0 shadow-2xl bg-white rounded-sm border border-slate-700/80 overflow-hidden"
+                    className={cn(
+                      "mb-6 last:mb-0 bg-white rounded-sm overflow-hidden border",
+                      isDark
+                        ? "shadow-2xl border-slate-700/80"
+                        : "shadow-xl border-slate-300"
+                    )}
                   >
                     <Page
                       pageNumber={index + 1}
