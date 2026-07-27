@@ -1,5 +1,6 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
+import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,9 +9,11 @@ import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel, useLayout } from "@/hooks";
-import { CobrancaTab, KPICardVariant } from "@/types/enums";
-import { formatCurrency, meses } from "@/utils/formatters";
+import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
+import { monthNamesInBR as meses } from "@/utils/dateUtils";
+import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
+import { useProfile } from "@/hooks/business/useProfile";
 
 export default function Cobrancas() {
   const {
@@ -19,6 +22,8 @@ export default function Cobrancas() {
     handleNavigation,
     totalAReceber,
     totalRecebido,
+    totalAtrasado,
+    totalPrevisto,
     countAReceber,
     countRecebidos,
     activeTab,
@@ -30,7 +35,9 @@ export default function Cobrancas() {
     cobrancasAReceber,
     cobrancasRecebidas,
     isInitialLoading,
-    isActionLoading,
+    isFutureMonth,
+    isPastMonth,
+    isCurrentMonth,
     pullToRefreshReload,
     navigateToPassageiro,
     handleEditCobrancaClick,
@@ -39,6 +46,8 @@ export default function Cobrancas() {
   } = useCobrancasViewModel();
 
   const { openReceiptDialog } = useLayout();
+
+  const { profile } = useProfile();
 
   const isPending = activeTab === CobrancaTab.ARECEBER;
   const busca = isPending ? buscaAReceber : buscaRecebidos;
@@ -57,37 +66,38 @@ export default function Cobrancas() {
   };
 
   const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
-  
+
   let statusLabel = "";
   if (busca) {
     statusLabel = currentCount === 1 ? "ENCONTRADA" : "ENCONTRADAS";
   } else {
     if (activeTab === CobrancaTab.ARECEBER) {
-      statusLabel = currentCount === 1 ? "PENDENTE" : "PENDENTES";
+      statusLabel = currentCount === 1 ? "PARCELAS" : "PARCELAS";
     } else {
-      statusLabel = currentCount === 1 ? "RECEBIDA" : "RECEBIDAS";
+      statusLabel = currentCount === 1 ? "PARCELAS" : "PARCELAS";
     }
   }
 
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
+        {!profile?.chave_pix && (
+          <PixNudgeBanner hasPix={false} />
+        )}
+
         <DateNavigation
           mes={mesFilter}
           ano={anoFilter}
           onNavigate={handleNavigation}
         />
 
-        <div className="grid grid-cols-2 gap-4 px-1">
-          <KPICard
-            label="A receber no mês"
-            value={formatCurrency(totalAReceber)}
-            variant={KPICardVariant.PRIMARY}
-          />
-          <KPICard
-            label="Total Recebido"
-            value={formatCurrency(totalRecebido)}
-            variant={KPICardVariant.OUTLINE}
+        <div className="px-1">
+          <FinancialDashboardCard
+            totalEsperado={totalPrevisto}
+            recebido={totalRecebido}
+            pendente={totalAReceber}
+            atrasado={totalAtrasado}
+            loading={isInitialLoading}
           />
         </div>
 
@@ -98,7 +108,7 @@ export default function Cobrancas() {
         >
           <div className="flex flex-col gap-5">
             <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-              <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 mt-0">
+              <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
                 <TabsTrigger
                   value={CobrancaTab.ARECEBER}
                   className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
@@ -112,13 +122,13 @@ export default function Cobrancas() {
                   </span>
                 </TabsTrigger>
                 <TabsTrigger
-                  value={CobrancaTab.RECEBIDOS}
+                  value={CobrancaTab.RECEBIDAS}
                   className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                 >
-                  Recebidos
+                  Recebidas
                   <span className={cn(
                     "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                    activeTab === CobrancaTab.RECEBIDOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                    activeTab === CobrancaTab.RECEBIDAS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                   )}>
                     {countRecebidos || 0}
                   </span>
@@ -145,33 +155,41 @@ export default function Cobrancas() {
 
           <div className="flex items-center justify-between px-1">
             <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-              {activeTab === CobrancaTab.ARECEBER ? "Próximos Vencimentos" : "Histórico de Recebimentos"}
+              {activeTab === CobrancaTab.ARECEBER ? "A Receber" : "Recebidas"}
             </h2>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               {currentCount} {statusLabel}
             </span>
           </div>
 
-          <TabsContent value={CobrancaTab.ARECEBER} className="mt-1 outline-none">
+          <TabsContent value={CobrancaTab.ARECEBER} className="mt-1 outline-none transform-gpu will-change-transform">
             <CobrancasList
               activeTab={CobrancaTab.ARECEBER}
               cobrancas={cobrancasAReceber}
               isLoading={isInitialLoading}
               busca={buscaAReceber}
               mesFilter={mesFilter}
+              anoFilter={anoFilter}
+              isFutureMonth={isFutureMonth}
+              isPastMonth={isPastMonth}
+              isCurrentMonth={isCurrentMonth}
               meses={meses}
               onClearSearch={() => setBusca("")}
               {...actionProps}
             />
           </TabsContent>
 
-          <TabsContent value={CobrancaTab.RECEBIDOS} className="mt-1 outline-none">
+          <TabsContent value={CobrancaTab.RECEBIDAS} className="mt-1 outline-none transform-gpu will-change-transform">
             <CobrancasList
-              activeTab={CobrancaTab.RECEBIDOS}
+              activeTab={CobrancaTab.RECEBIDAS}
               cobrancas={cobrancasRecebidas}
               isLoading={isInitialLoading}
               busca={buscaRecebidos}
               mesFilter={mesFilter}
+              anoFilter={anoFilter}
+              isFutureMonth={isFutureMonth}
+              isPastMonth={isPastMonth}
+              isCurrentMonth={isCurrentMonth}
               meses={meses}
               onClearSearch={() => setBusca("")}
               {...actionProps}

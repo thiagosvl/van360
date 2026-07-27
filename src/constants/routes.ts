@@ -22,12 +22,16 @@ export const ROUTES = {
       USER_DETAILS: "/admin/usuarios/:id",
       SETTINGS: "/admin/configuracoes",
       CALCULATOR: "/admin/calculadora",
+      LOGIN_ATTEMPTS: "/admin/tentativas-login",
+      ACTIVITY_HISTORY: "/admin/atividades",
+      WHATSAPP_INSTANCES: "/admin/whatsapp",
+      BLOG: "/admin/blog",
     },
     MOTORISTA: {
       HOME: "/inicio",
       PASSENGERS: "/passageiros",
       PASSENGER_DETAILS: "/passageiros/:passageiro_id",
-      BILLING: "/mensalidades",
+      BILLING: "/parcelas",
       SCHOOLS: "/escolas",
       VEHICLES: "/veiculos",
       EXPENSES: "/gastos",
@@ -38,6 +42,7 @@ export const ROUTES = {
       ROUTE_SETUP: "/rotas/configurar",
       ROUTE_EDIT: "/rotas/configurar/:id",
       ROUTE_ACTIVE: "/rotas/executar/:id",
+      BIRTHDAYS: "/aniversariantes",
     }
   }
 } as const;

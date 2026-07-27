@@ -3,6 +3,11 @@ export enum UserType {
   MOTORISTA = "motorista",
 }
 
+export enum ContractMultaTipo {
+  PERCENTUAL = "percentual",
+  FIXO = "fixo"
+}
+
 export enum CobrancaStatus {
   PAGO = "pago",
   PENDENTE = "pendente"
@@ -17,6 +22,8 @@ export enum WhatsappStatus {
   CONNECTED = "CONNECTED",
   DISCONNECTED = "DISCONNECTED",
   CONNECTING = "CONNECTING",
+  OPEN = "open",
+  CLOSE = "close",
   UNKNOWN = "UNKNOWN",
   NOT_FOUND = "NOT_FOUND"
 }
@@ -45,7 +52,7 @@ export enum PassageiroTab {
 
 export enum CobrancaTab {
   ARECEBER = "areceber",
-  RECEBIDOS = "recebidos",
+  RECEBIDAS = "recebidas",
 }
 
 export enum ContratoTab {
@@ -78,6 +85,12 @@ export enum ContratoStatus {
   SUBSTITUIDO = "substituido"
 }
 
+export enum DriverContractConfigStatus {
+  NAO_CONFIGURADO = "NAO_CONFIGURADO",
+  ATIVO = "ATIVO",
+  DESATIVADO = "DESATIVADO"
+}
+
 export enum PassageiroModalidade {
   IDA_VOLTA = "ida_volta",
   IDA = "ida",
@@ -87,7 +100,6 @@ export enum PassageiroModalidade {
 export enum PassageiroGenero {
   MASCULINO = "masculino",
   FEMININO = "feminino",
-  PREFIRO_NAO_INFORMAR = "prefiro_nao_informar"
 }
 
 export enum ParentescoResponsavel {
@@ -120,6 +132,7 @@ export enum AtividadeEntidadeTipo {
   CONTRATO = "CONTRATO",
   SAAS_ASSINATURA = "SAAS_ASSINATURA",
   SAAS_FATURA = "SAAS_FATURA",
+  BLOG_POST = "BLOG_POST",
 }
 
 export enum AtividadeAcao {
@@ -235,3 +248,81 @@ export enum ConfigKey {
   SAAS_REFERRAL_DISCOUNT_PCT = "SAAS_REFERRAL_DISCOUNT_PCT",
   SAAS_DIAS_ANTECEDENCIA_RENOVACAO = "SAAS_DIAS_ANTECEDENCIA_RENOVACAO",
 }
+
+export enum CanalAquisicao {
+  PLAY_STORE = "PLAY_STORE",
+  APP_STORE = "APP_STORE",
+  INDICACAO = "INDICACAO",
+  PANFLETO = "PANFLETO",
+  INSTAGRAM = "INSTAGRAM",
+  FACEBOOK = "FACEBOOK",
+  TIKTOK = "TIKTOK",
+  YOUTUBE = "YOUTUBE",
+  GOOGLE = "GOOGLE",
+  OUTROS = "OUTROS"
+}
+
+export enum DispositivoCadastro {
+  APP_ANDROID = "APP_ANDROID",
+  APP_IOS = "APP_IOS",
+  WEB_MOBILE_ANDROID = "WEB_MOBILE_ANDROID",
+  WEB_MOBILE_IOS = "WEB_MOBILE_IOS",
+  WEB_DESKTOP = "WEB_DESKTOP",
+}
+
+
+export enum BlogPostStatus {
+  DRAFT = "draft",
+  PUBLISHED = "published"
+}
+
+export enum BlogPageView {
+  LIST = "list",
+  CREATE = "create",
+  EDIT = "edit"
+}
+
+export enum StatusFilter {
+  ALL = "all",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  INCOMPLETE = "incomplete",
+}
+
+export enum AdminUserTab {
+  GERAL = "geral",
+  DADOS = "dados",
+  COBRANCAS = "cobrancas",
+  LOGS = "logs",
+  CADASTROS = "cadastros",
+}
+
+export enum AdminUserSubTab {
+  PASSAGEIROS = "passageiros",
+  VEICULOS = "veiculos",
+  ESCOLAS = "escolas",
+  SOLICITACOES = "solicitacoes",
+  CONTRATOS = "contratos",
+  INDICACOES = "indicacoes",
+}
+
+export enum PixKeyType {
+  CPF = "CPF",
+  CNPJ = "CNPJ",
+  TELEFONE = "TELEFONE",
+  EMAIL = "EMAIL",
+  EVP = "EVP",
+  ALEATORIA = "ALEATORIA",
+}
+
+export enum GastoTipoCalculoParcela {
+  TOTAL = "total",
+  PARCELA = "parcela",
+}
+
+export enum GastoEscopoAcao {
+  UNICA = "unica",
+  FUTURAS = "futuras",
+  TODAS = "todas",
+}
+

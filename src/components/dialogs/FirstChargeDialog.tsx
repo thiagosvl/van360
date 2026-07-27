@@ -16,6 +16,7 @@ import {
   useFirstChargeViewModel,
 } from "@/hooks/ui/useFirstChargeViewModel";
 import { formatFirstName, formatShortName } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { getNowBR } from "@/utils/dateUtils";
 
 export interface FirstChargeDialogProps {
@@ -51,7 +52,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
   const currentMonthName = getNowBR().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
   const firstNamePassageiro = formatShortName(passageiro.nome);
-  const firstNameResponsavel = formatFirstName(passageiro.nome_responsavel);
+  const firstNameResponsavel = formatNomeResponsavelExibicao(passageiro.nome_responsavel);
 
   const totalSteps = showContractStep ? 4 : 3;
   const stepIndex = showContractStep ? STEP_INDEX[step] : STEP_INDEX[step] - 1;
@@ -60,7 +61,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
     if (step === "CONTRACT_CHECK") return wantsContract ? "Gerar e Enviar" : "Próximo";
     if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Confirmar";
     if (step === "PAYMENT_METHOD") return "Confirmar";
-    if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Registrar";
+    if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Confirmar";
     return "Próximo";
   };
 
@@ -76,7 +77,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
   return (
     <BaseDialog open={isOpen} onOpenChange={() => { }} lockClose>
       <BaseDialog.Header
-        title={showContractStep ? "Contrato e Mensalidade" : "Registrar Mensalidade"}
+        title={showContractStep ? "Contrato e Parcela" : "Parcela do Mês"}
         icon={<Wallet className="w-5 h-5 opacity-80" />}
         showSteps
         currentStep={stepIndex + 1}
@@ -93,7 +94,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 </h2>
                 <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                   Gostaria de gerar o contrato para{" "}
-                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong> e já envia-lo automaticamente para o responsável?
+                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong> e já enviá-lo automaticamente para o responsável?
                 </p>
               </div>
             </div>
@@ -101,7 +102,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
               {[
                 {
                   value: true,
-                  label: "Sim, gerar e enviar",
+                  label: "Sim, gerar o contrato",
                   sublabel: "O responsável receberá por WhatsApp",
                   icon: <CheckCircle2 className="w-6 h-6" />,
                   activeColor: "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200",
@@ -111,8 +112,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 },
                 {
                   value: false,
-                  label: "Não, obrigado",
-                  sublabel: "Você poderá gerar manualmente depois",
+                  label: "Não gerar o contrato",
+                  sublabel: "Você poderá gerar depois",
                   icon: <AlertCircle className="w-6 h-6" />,
                   activeColor: "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200",
                   iconActive: "bg-slate-400 text-white shadow-lg shadow-slate-200",
@@ -135,8 +136,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                       {icon}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className={cn("text-[13px] font-black uppercase tracking-tight", isActive ? textActive : "text-[#1a3a5c]")}>{label}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">{sublabel}</p>
+                      <p className={cn("text-[13px] font-bold", isActive ? textActive : "text-[#1a3a5c]")}>{label}</p>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">{sublabel}</p>
                     </div>
                     <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", isActive ? radioActive : "border-slate-300")}>
                       {isActive && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -152,11 +153,9 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
           <div className="space-y-5">
             <div className="py-2">
               <div className="space-y-1">
-                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                  Gostaria de registrar a mensalidade de{" "}
-                  <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para{" "}
-                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
-                </p>
+                <h2 className="text-sm font-semibold text-slate-700">
+                  Deseja registrar a parcela de <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
+                </h2>
               </div>
             </div>
             <div className="space-y-3">
@@ -174,8 +173,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-black uppercase tracking-tight", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, registrar</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Já estará visível na carteirinha</p>
+                  <p className={cn("text-[13px] font-bold", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, gerar parcela</p>
+                  <p className="text-xs font-medium text-slate-500 mt-0.5">A parcela será registrada e já aparecerá na carteirinha</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
                   {wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -196,8 +195,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   <AlertCircle className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-black uppercase tracking-tight", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não, obrigado</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">Você poderá gerar manualmente depois</p>
+                  <p className={cn("text-[13px] font-bold", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não, deixar para depois</p>
+                  <p className="text-xs font-medium text-slate-500 mt-0.5">Você poderá registrar as parcelas manualmente quando quiser</p>
                 </div>
                 <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", !wantsMonthlyCharge ? "border-slate-400 bg-slate-400" : "border-slate-300")}>
                   {!wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -211,7 +210,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
           <div className="space-y-5">
             <div className="py-2">
               <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-700">O responsável já pagou {currentMonthNameCapitalized}?</h3>
+                <h3 className="text-sm font-semibold text-slate-700">A parcela de {currentMonthNameCapitalized} já foi paga?</h3>
               </div>
             </div>
             <div className="space-y-3">
@@ -219,7 +218,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 {
                   value: CobrancaStatus.PAGO,
                   label: "Sim, já recebi",
-                  sublabel: "Marcar como pago agora",
+                  sublabel: "Registrar como paga agora",
                   icon: <CheckCircle2 className="w-6 h-6" />,
                   activeColor: "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200",
                   iconActive: "bg-emerald-500 text-white shadow-lg shadow-emerald-200",
@@ -228,7 +227,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 },
                 {
                   value: CobrancaStatus.PENDENTE,
-                  label: "Não, ainda vai pagar",
+                  label: "Não, ainda vou receber",
                   sublabel: "Registrar como pendente",
                   icon: <AlertCircle className="w-6 h-6" />,
                   activeColor: "border-amber-500 bg-amber-50/50 shadow-lg shadow-amber-500/5 ring-1 ring-amber-200",
@@ -250,8 +249,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                   >
                     <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", isActive ? iconActive : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>{icon}</div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className={cn("text-[13px] font-black uppercase tracking-tight", isActive ? textActive : "text-[#1a3a5c]")}>{label}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">{sublabel}</p>
+                      <p className={cn("text-[13px] font-bold", isActive ? textActive : "text-[#1a3a5c]")}>{label}</p>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">{sublabel}</p>
                     </div>
                     <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", isActive ? radioActive : "border-slate-300")}>
                       {isActive && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -268,14 +267,14 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
             <div className="py-2">
               <div className="space-y-1">
                 <h3 className="text-sm font-semibold text-slate-700">Forma de pagamento</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Como o pagamento foi realizado?</p>
+                <p className="text-xs font-medium text-slate-500 mt-1">Como o pagamento foi realizado?</p>
               </div>
             </div>
             <div className="bg-slate-50/50 rounded-xl border border-slate-100 p-1 shadow-sm">
               <Select onValueChange={setPaymentMethod} value={paymentMethod}>
                 <SelectTrigger
                   className={cn(
-                    "h-11 rounded-lg bg-white border-0 px-3 text-[12px] font-bold uppercase tracking-tight shadow-none hover:bg-white focus:ring-0 focus:ring-offset-0 transition-all outline-none",
+                    "h-11 rounded-lg bg-white border-0 px-3 text-[13px] font-medium shadow-none hover:bg-white focus:ring-0 focus:ring-offset-0 transition-all outline-none",
                     !paymentMethod && "text-slate-400"
                   )}
                 >
@@ -291,11 +290,11 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                     <SelectItem
                       key={method.value}
                       value={method.value}
-                      className="py-2.5 rounded-lg cursor-pointer focus:bg-slate-50 text-slate-600 focus:text-[#1a3a5c] text-[12px] font-bold uppercase"
+                      className="py-2.5 rounded-lg cursor-pointer focus:bg-slate-50 text-slate-600 focus:text-[#1a3a5c] text-[13px] font-medium"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="w-4 h-4 flex items-center justify-center opacity-70 scale-90">{method.icon}</div>
-                        <span className="tracking-tight">{method.label}</span>
+                        <span>{method.label}</span>
                       </div>
                     </SelectItem>
                   ))}

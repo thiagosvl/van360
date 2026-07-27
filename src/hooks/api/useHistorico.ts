@@ -8,7 +8,8 @@ export function useHistoricoByEntidade(entidadeTipo: AtividadeEntidadeTipo | str
     queryKey: ["historico", entidadeTipo, entidadeId],
     queryFn: () => historicoApi.listByEntidade(entidadeTipo, entidadeId),
     enabled: options?.enabled ?? (!!entidadeTipo && !!entidadeId),
-    staleTime: 1000 * 30, // 30 segundos
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
@@ -17,6 +18,7 @@ export function useHistoricoByUsuario(usuarioId: string, options?: { enabled?: b
     queryKey: ["historico", "usuario", usuarioId],
     queryFn: () => historicoApi.listByUsuario(usuarioId),
     enabled: options?.enabled ?? !!usuarioId,
-    staleTime: 1000 * 30,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }

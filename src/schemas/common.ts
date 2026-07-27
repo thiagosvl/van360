@@ -1,8 +1,16 @@
-import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
+import { isValidCEPFormat, isValidCPF, isValidCNPJ } from "@/utils/validators";
 import { z } from "zod";
 
 export const cpfSchema = z.string().refine((val) => isValidCPF(val), {
   message: "CPF inválido",
+});
+
+export const cpfCnpjSchema = z.string().refine((val) => {
+  const cleaned = val.replace(/\D/g, "");
+  if (cleaned.length <= 11) return isValidCPF(cleaned);
+  return isValidCNPJ(cleaned);
+}, {
+  message: "CPF ou CNPJ inválido",
 });
 
 export const phoneSchema = z

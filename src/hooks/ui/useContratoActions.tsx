@@ -12,6 +12,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMemo } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 
 interface UseContratoActionsProps {
   item: any;
@@ -41,7 +42,6 @@ export function useContratoActions({
   onExcluir,
   onSubstituir,
   onGerarContrato,
-  onVisualizarLink,
   onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
   const isMobile = useIsMobile();
@@ -53,24 +53,29 @@ export function useContratoActions({
     const isAssinado = status === ContratoStatus.ASSINADO || status === 'assinado' || status === '2';
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
 
-    const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
+    const respNome = item?.nome_responsavel || item?.passageiro?.nome_responsavel;
+    const respTelefone = item?.telefone_responsavel || item?.passageiro?.telefone_responsavel;
+    const isMissingResponsible = isResponsavelIncompleto(respNome, respTelefone);
+
+    const isFeatureDisabled = !!(isDesativado || (usarContratos === false) || isMissingResponsible);
 
     const list: ActionItem[] = [];
 
-    if (onGerarContrato && !hasContract && !isFeatureDisabled) {
+    if (onGerarContrato && !hasContract) {
       list.push({
         label: 'Gerar Contrato',
         icon: <FileText className="h-4 w-4" />,
-        onClick: () => onGerarContrato(tipo === 'passageiro' ? item.id : item.passageiro_id),
+        onClick: () => {
+          if (isFeatureDisabled) return;
+          onGerarContrato(tipo === 'passageiro' ? item.id : item.passageiro_id);
+        },
         disabled: isFeatureDisabled,
         swipeColor: 'bg-blue-600',
         hasSeparatorAfter: true
       });
     }
 
-    const urlContrato = isPendente
-      ? (item.minuta_url || item.contrato_url)
-      : (item.contrato_final_url || item.contrato_url);
+    const urlContrato = obterUrlDocumentoContrato(item);
 
     if (hasContract) {
       list.push({
@@ -99,7 +104,7 @@ export function useContratoActions({
         list.push({
           label: 'Copiar Link para Assinatura',
           icon: <Copy className="h-4 w-4" />,
-          onClick: () => onEnviarWhatsApp(), // A ViewModel cuidará de copiar no Desktop
+          onClick: () => onEnviarWhatsApp(),
           disabled: isFeatureDisabled,
           swipeColor: 'bg-indigo-600',
           hasSeparatorAfter: true

@@ -12,9 +12,10 @@ import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import {
   convertDateBrToISO,
-  formatFirstName,
+  formatShortName,
   parseCurrencyToNumber
 } from "@/utils/formatters";
+import { parseLocalDate } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -23,10 +24,6 @@ import { getMessage } from "@/constants/messages";
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
   nome_responsavel: z.string().min(2, "Campo obrigatório"),
-  email_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .email("E-mail inválido"),
   cpf_responsavel: cpfSchema,
   telefone_responsavel: phoneSchema,
 
@@ -37,9 +34,12 @@ const prePassageiroSchema = z.object({
   estado: z.string().min(1, "Campo obrigatório"),
   cep: cepSchema,
   referencia: z.string().optional(),
+  complemento: z.string().optional(),
   observacoes: z.string().optional(),
 
   escola_id: z.string().optional(),
+  turma: z.string().min(1, "Campo obrigatório"),
+  nome_professor: z.string().optional().nullable().or(z.literal("")),
   periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
   data_nascimento: dateSchema(true),
@@ -57,7 +57,22 @@ const prePassageiroSchema = z.object({
     }),
   dia_vencimento: z.string().optional(),
   ativo: z.boolean().optional(),
-});
+}).refine(
+  (data) => {
+    if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
+    try {
+      const start = parseLocalDate(convertDateBrToISO(data.data_inicio_transporte)!);
+      const end = parseLocalDate(convertDateBrToISO(data.data_fim_transporte)!);
+      return end > start;
+    } catch {
+      return true;
+    }
+  },
+  {
+    message: "Término deve ser maior que o Início",
+    path: ["data_fim_transporte"],
+  }
+);
 
 export type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
 
@@ -96,7 +111,7 @@ export function usePassageiroExternalForm() {
       nome: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
-      email_responsavel: "",
+
       cpf_responsavel: "",
       telefone_responsavel: "",
       logradouro: "",
@@ -106,16 +121,19 @@ export function usePassageiroExternalForm() {
       estado: "",
       cep: "",
       referencia: "",
+      complemento: "",
       observacoes: "",
       valor_cobranca: "",
       dia_vencimento: "",
       escola_id: "",
+      turma: "",
+      nome_professor: "",
       periodo: "",
       modalidade: "",
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
-      data_fim_transporte: "31/12/" + new Date().getFullYear(),
+      data_fim_transporte: "",
     },
     mode: "onBlur",
   });
@@ -138,7 +156,7 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      setMotoristaApelido((data as any).apelido || formatFirstName((data as any).nome));
+      setMotoristaApelido((data as any).apelido || formatShortName((data as any).nome, true));
 
       setLoading(false);
     };
@@ -207,7 +225,7 @@ export function usePassageiroExternalForm() {
           form.setError(field as any, { type: 'manual', message: issue.message });
         });
         toast.error("validacao.formularioComErros");
-        
+
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
@@ -232,7 +250,7 @@ export function usePassageiroExternalForm() {
     form.reset({
       nome_responsavel: currentValues.nome_responsavel,
       parentesco_responsavel: currentValues.parentesco_responsavel,
-      email_responsavel: currentValues.email_responsavel,
+
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,
 
@@ -243,9 +261,12 @@ export function usePassageiroExternalForm() {
       cidade: currentValues.cidade,
       estado: currentValues.estado,
       referencia: currentValues.referencia,
+      complemento: currentValues.complemento,
 
       nome: "",
       escola_id: "",
+      turma: "",
+      nome_professor: "",
       periodo: "",
       observacoes: "",
 
@@ -265,10 +286,6 @@ export function usePassageiroExternalForm() {
     ]);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
-
-    toast.info("prePassageiro.info.dadosMantidos", {
-      description: "prePassageiro.info.dadosMantidosDescricao",
-    });
   };
 
   const handleFillMock = () => {
@@ -286,6 +303,8 @@ export function usePassageiroExternalForm() {
 
     form.reset({
       ...mockData,
+      valor_cobranca: undefined,
+      dia_vencimento: undefined,
     });
 
     setOpenAccordionItems([

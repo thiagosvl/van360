@@ -1,8 +1,25 @@
-import { UserType } from "./enums";
+import { UserType, ContractMultaTipo, DispositivoCadastro } from "./enums";
+import { ContractSection } from "../constants/defaults";
+
+export interface MetadadosCadastroUtm {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  content?: string;
+  term?: string;
+}
+
+export interface MetadadosCadastroData {
+  ip?: string;
+  user_agent?: string;
+  referrer?: string;
+  utm?: MetadadosCadastroUtm;
+}
 
 export interface Usuario {
   id: string;
   nome: string;
+  razao_social?: string;
   apelido?: string;
   cpfcnpj: string;
   email: string;
@@ -16,6 +33,11 @@ export interface Usuario {
   cidade?: string;
   estado?: string;
   cep?: string;
+  canal_aquisicao?: string;
+  dispositivo_cadastro?: DispositivoCadastro;
+  metadados_cadastro?: MetadadosCadastroData;
+
+
 
   ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
 
@@ -32,8 +54,10 @@ export interface Usuario {
   assinatura_digital_url?: string;
   config_contrato?: {
     usar_contratos: boolean;
-    multa_atraso: { valor: number; tipo: "percentual" | "fixo" };
-    multa_rescisao: { valor: number; tipo: "percentual" | "fixo" };
-    clausulas: string[];
+    multa_atraso: { valor: number; tipo: ContractMultaTipo };
+    juros_atraso: { valor: number; tipo: ContractMultaTipo };
+    multa_rescisao: { valor: number; tipo: ContractMultaTipo };
+    secoes?: ContractSection[];
+    clausulas?: string[];
   };
 }

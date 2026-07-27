@@ -27,8 +27,7 @@ export function SignatureDialog({
       description="Espaço para desenho da assinatura digital do contratante"
     >
       <BaseDialog.Header
-        title="Assinatura"
-        subtitle="Contrato"
+        title="Assine o Contrato"
         icon={<PenTool className="h-5 w-5" />}
         onClose={onClose}
       />
@@ -37,7 +36,7 @@ export function SignatureDialog({
 
         <div className="text-center space-y-2 mb-2">
           <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
-            Sua assinatura aparecerá no final do contrato em PDF de forma automatizada.
+            Sua assinatura aparecerá no final do contrato em PDF automaticamente.
           </p>
         </div>
         <div className="bg-slate-50/50 p-2 rounded-[2rem] border border-slate-100/50">

@@ -7,14 +7,23 @@ import {
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { formatDateToBR } from "@/utils/formatters/date";
+import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
+import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
+import { isResponsavelMockNome, isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+const getMonthFromDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 2) return "";
+  return parseInt(parts[1], 10).toString();
+};
 
 export const passageiroSchema = z
   .object({
@@ -40,16 +49,14 @@ export const passageiroSchema = z
         message: "Formato inválido (00000-000)",
       }),
     referencia: z.string().optional().nullable().or(z.literal("")),
+    complemento: z.string().optional().nullable().or(z.literal("")),
 
     observacoes: z.string().optional().nullable().or(z.literal("")),
 
-    nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+    nome_responsavel: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(2, "Deve ter pelo menos 2 caracteres"),
+    turma: z.string().optional().nullable().or(z.literal("")),
+    nome_professor: z.string().optional().nullable().or(z.literal("")),
     parentesco_responsavel: z.string().optional().nullable().or(z.literal("")),
-    email_responsavel: z
-      .string()
-      .email("E-mail inválido")
-      .optional()
-      .or(z.literal("")),
     cpf_responsavel: z
       .string()
       .optional()
@@ -60,19 +67,46 @@ export const passageiroSchema = z
     telefone_responsavel: phoneSchema,
 
     valor_cobranca: z
-      .string()
+      .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
       .min(1, "Campo obrigatório")
       .refine((val) => {
         const num = moneyToNumber(val);
         return num >= 1;
       }, "O valor deve ser no mínimo R$ 1,00"),
-    dia_vencimento: z.string().min(1, "Campo obrigatório"),
+    dia_vencimento: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
-
+    mes_inicio_cobranca: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+    mes_fim_cobranca: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
-  });
+  })
+  .refine(
+    (data) => {
+      if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
+      try {
+        const start = parseLocalDate(convertDateBrToISO(data.data_inicio_transporte)!);
+        const end = parseLocalDate(convertDateBrToISO(data.data_fim_transporte)!);
+        return end > start;
+      } catch {
+        return true;
+      }
+    },
+    {
+      message: "Término deve ser maior que o Início",
+      path: ["data_fim_transporte"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (!data.mes_inicio_cobranca || !data.mes_fim_cobranca) return true;
+      return parseInt(data.mes_fim_cobranca, 10) >= parseInt(data.mes_inicio_cobranca, 10);
+    },
+    {
+      message: "Término da cobrança deve ser igual ou posterior ao início",
+      path: ["mes_fim_cobranca"],
+    }
+  );
 
 export type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
@@ -117,15 +151,20 @@ export function usePassageiroForm({
       estado: "",
       cep: "",
       referencia: "",
+      complemento: "",
+      turma: "",
+      nome_professor: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
-      email_responsavel: "",
+
       telefone_responsavel: "",
       cpf_responsavel: "",
       valor_cobranca: "",
       dia_vencimento: "",
       data_inicio_transporte: "",
-      data_fim_transporte: "31/12/" + new Date().getFullYear(),
+      data_fim_transporte: "",
+      mes_inicio_cobranca: "",
+      mes_fim_cobranca: "",
 
       ativo: true,
     },
@@ -148,13 +187,17 @@ export function usePassageiroForm({
             modalidade: editingPassageiro.modalidade || "",
             data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
             genero: editingPassageiro.genero || "",
-            nome_responsavel: editingPassageiro.nome_responsavel,
+            turma: editingPassageiro.turma || "",
+            nome_professor: editingPassageiro.nome_professor || "",
+            nome_responsavel: isResponsavelMockNome(editingPassageiro.nome_responsavel) 
+              ? "" 
+              : editingPassageiro.nome_responsavel,
             parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
-            email_responsavel: editingPassageiro.email_responsavel || "",
+
             cpf_responsavel: editingPassageiro.cpf_responsavel ? cpfMask(editingPassageiro.cpf_responsavel) : "",
-            telefone_responsavel: phoneMask(
-              editingPassageiro.telefone_responsavel
-            ),
+            telefone_responsavel: isResponsavelMockTelefone(editingPassageiro.telefone_responsavel)
+              ? ""
+              : phoneMask(editingPassageiro.telefone_responsavel),
             valor_cobranca: editingPassageiro.valor_cobranca
               ? moneyMask(
                 String(
@@ -162,9 +205,17 @@ export function usePassageiroForm({
                 )
               )
               : "",
-            dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
+            dia_vencimento: isResponsavelMockNome(editingPassageiro.nome_responsavel) 
+              ? "" 
+              : (editingPassageiro.dia_vencimento?.toString() || ""),
             data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
-            data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
+            data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
+            mes_inicio_cobranca: isResponsavelMockNome(editingPassageiro.nome_responsavel)
+              ? ""
+              : (getMonthFromDate(editingPassageiro.data_inicio_cobranca) || ""),
+            mes_fim_cobranca: isResponsavelMockNome(editingPassageiro.nome_responsavel)
+              ? ""
+              : (getMonthFromDate(editingPassageiro.data_fim_cobranca) || ""),
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -173,6 +224,7 @@ export function usePassageiroForm({
             estado: editingPassageiro.estado || "",
             cep: editingPassageiro.cep ? cepMask(editingPassageiro.cep) : "",
             referencia: editingPassageiro.referencia || "",
+            complemento: editingPassageiro.complemento || "",
             escola_id: editingPassageiro.escola_id || "",
             veiculo_id: editingPassageiro.veiculo_id || "",
 
@@ -191,11 +243,13 @@ export function usePassageiroForm({
         form.reset({
           nome: prePassageiro.nome,
           nome_responsavel: prePassageiro.nome_responsavel,
-          email_responsavel: prePassageiro.email_responsavel,
+
           cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
           periodo: prePassageiro.periodo || "",
           modalidade: prePassageiro.modalidade || "",
+          turma: prePassageiro.turma || "",
+          nome_professor: prePassageiro.nome_professor || "",
           data_nascimento: prePassageiro.data_nascimento ? formatDateToBR(prePassageiro.data_nascimento) : "",
           genero: prePassageiro.genero || "",
           parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
@@ -206,6 +260,7 @@ export function usePassageiroForm({
           estado: prePassageiro.estado || "",
           cep: prePassageiro.cep || "",
           referencia: prePassageiro.referencia || "",
+          complemento: prePassageiro.complemento || "",
           observacoes: prePassageiro.observacoes || "",
           veiculo_id: prePassageiro.veiculo_id || "",
           escola_id: prePassageiro.escola_id || "",
@@ -216,7 +271,9 @@ export function usePassageiroForm({
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
-          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "31/12/" + new Date().getFullYear(),
+          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "",
+          mes_inicio_cobranca: getMonthFromDate(prePassageiro.data_inicio_cobranca) || "",
+          mes_fim_cobranca: getMonthFromDate(prePassageiro.data_fim_cobranca) || "",
 
           ativo: true,
         });
@@ -232,7 +289,7 @@ export function usePassageiroForm({
           "nome",
           "nome_responsavel",
           "parentesco_responsavel",
-          "email_responsavel",
+
           "telefone_responsavel",
           "cpf_responsavel",
         ]);
@@ -261,15 +318,18 @@ export function usePassageiroForm({
           estado: "",
           cep: "",
           referencia: "",
+          complemento: "",
+          turma: "",
+          nome_professor: "",
           nome_responsavel: "",
           parentesco_responsavel: "",
-          email_responsavel: "",
+
           telefone_responsavel: "",
           cpf_responsavel: "",
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",
-          data_fim_transporte: "31/12/" + new Date().getFullYear(),
+          data_fim_transporte: "",
 
           ativo: true,
         });

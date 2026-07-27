@@ -90,9 +90,7 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
         tipo_chave_pix,
       });
 
-      toast.success("cadastro.sucesso.perfilAtualizado", {
-        description: "cadastro.sucesso.perfilAtualizadoDescricao",
-      });
+      toast.success("cadastro.sucesso.perfilAtualizado");
 
       onClose();
       refreshProfile();

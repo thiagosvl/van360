@@ -93,6 +93,7 @@ export type Database = {
           nome: string
           numero: string | null
           referencia: string | null
+          complemento: string | null
           logradouro: string | null
           updated_at: string
         }
@@ -107,6 +108,7 @@ export type Database = {
           nome: string
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           updated_at?: string
         }
@@ -121,6 +123,7 @@ export type Database = {
           nome?: string
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           updated_at?: string
         }
@@ -143,9 +146,10 @@ export type Database = {
           usuario_id: string
           nome: string
           nome_responsavel: string
-          email_responsavel: string
+
           numero: string | null
           referencia: string | null
+          complemento: string | null
           logradouro: string | null
           telefone_responsavel: string
           updated_at: string
@@ -160,7 +164,7 @@ export type Database = {
           periodo: string
           observacoes?: string | null
           nome_responsavel: string
-          email_responsavel: string
+
           telefone_responsavel: string
           valor_cobranca: number
           ativo?: boolean
@@ -172,6 +176,7 @@ export type Database = {
           id?: string
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           updated_at?: string
         }
@@ -191,9 +196,10 @@ export type Database = {
           usuario_id?: string
           nome?: string
           nome_responsavel?: string
-          email_responsavel?: string
+
           numero?: string | null
           referencia?: string | null
+          complemento?: string | null
           logradouro?: string | null
           telefone_responsavel?: string
           updated_at?: string

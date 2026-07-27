@@ -20,7 +20,6 @@ import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog,
-  useCreatePrePassageiro,
   useDeletePrePassageiro,
   usePrePassageiros,
 } from "@/hooks";
@@ -34,9 +33,7 @@ import {
   formatShortName,
   getInitials,
 } from "@/utils/formatters";
-import { convertDateBrToISO } from "@/utils/formatters/date";
-import { moneyToNumber, phoneMask } from "@/utils/masks";
-import { mockGenerator } from "@/utils/mocks/generator";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { toast } from "@/utils/notifications/toast";
 import {
   Eye,
@@ -44,7 +41,7 @@ import {
   Trash2,
   Users2
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
@@ -59,13 +56,9 @@ export default function PrePassageiros({
     openFirstChargeDialog,
   } = useLayout();
 
-  const { profile, summary } = useProfile();
+  const { profile } = useProfile();
 
-  const createPrePassageiro = useCreatePrePassageiro();
   const deletePrePassageiro = useDeletePrePassageiro();
-
-  const isActionLoading =
-    createPrePassageiro.isPending || deletePrePassageiro.isPending;
 
   const {
     data: prePassageirosData,
@@ -86,7 +79,7 @@ export default function PrePassageiros({
   const prePassageiros =
     (prePassageirosData as PrePassageiro[] | undefined) ?? [];
 
-  const loading = isPrePassageirosLoading || isPrePassageirosFetching;
+  const loading = isPrePassageirosLoading;
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -94,46 +87,6 @@ export default function PrePassageiros({
     }, 400);
     return () => clearTimeout(handler);
   }, [externalSearchTerm]);
-
-  const solicitacoesPendentesCount = summary?.contadores?.passageiros?.solicitacoes_pendentes || 0;
-
-  // Track previous count to detect changes coming from the server/socket
-  const prevCountRef = useRef(solicitacoesPendentesCount);
-
-  useEffect(() => {
-    // If the count changed from what we had before, it means an external update happened.
-    // We should refetch the list to match the new count.
-    if (prevCountRef.current !== solicitacoesPendentesCount) {
-      refetchPrePassageiros();
-      prevCountRef.current = solicitacoesPendentesCount;
-    }
-  }, [solicitacoesPendentesCount, refetchPrePassageiros]);
-
-  const handleCadastrarRapidoLink = async () => {
-    if (!profile?.id) {
-      toast.error("auth.erro.sessaoExpirada");
-      return;
-    }
-
-    const mockPassenger = mockGenerator.passenger();
-    const mockEndereco = mockGenerator.address();
-
-    const fakePayload: any = {
-      ...mockPassenger,
-      ...mockEndereco,
-      telefone_responsavel: phoneMask(mockPassenger.telefone_responsavel),
-      usuario_id: profile.id,
-      observacoes: `Solicitação rápida gerada automaticamente`,
-      escola_id: null,
-      referencia: `Perto do ${mockEndereco.bairro}`,
-      data_nascimento: convertDateBrToISO(mockPassenger.data_nascimento),
-      data_inicio_transporte: convertDateBrToISO(mockPassenger.data_inicio_transporte),
-      valor_cobranca: moneyToNumber(mockPassenger.valor_cobranca),
-      dia_vencimento: parseInt(mockPassenger.dia_vencimento),
-    };
-
-    createPrePassageiro.mutate(fakePayload);
-  };
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     openPassageiroFormDialog({
@@ -147,7 +100,6 @@ export default function PrePassageiros({
       },
     });
   };
-
 
   const ActionsMenu = ({
     prePassageiro,
@@ -267,7 +219,7 @@ export default function PrePassageiros({
                             {formatShortName(prePassageiro.nome, true)}
                           </p>
                           <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                            {formatFirstName(prePassageiro.nome_responsavel)}
+                            {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                           </p>
                         </div>
                       </div>
@@ -280,7 +232,7 @@ export default function PrePassageiros({
                       </span>
                     </TableCell>
                     <TableCell className="py-4">
-                      <span className="text-sm text-gray-500 uppercase">
+                      <span className="text-sm text-gray-500">
                         {formatRelativeTime(prePassageiro.created_at)}
                       </span>
                     </TableCell>
@@ -362,7 +314,7 @@ export default function PrePassageiros({
                           {formatShortName(prePassageiro.nome, true)}
                         </p>
                         <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                          {formatFirstName(prePassageiro.nome_responsavel)}
+                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                         </p>
                       </div>
                     </div>
@@ -381,7 +333,7 @@ export default function PrePassageiros({
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                          {formatFirstName(prePassageiro.nome_responsavel)}
+                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                         </p>
                       </div>
                     </div>

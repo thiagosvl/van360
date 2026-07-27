@@ -1,4 +1,4 @@
-import { meses } from "./constants";
+import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import {
   parseLocalDate,
   formatSafeBrazilianDate,
@@ -27,6 +27,30 @@ export const formatDate = (date: string | Date): Date => {
  */
 export const formatDateToBR = (date: string | Date): string => {
   return formatSafeBrazilianDate(date);
+};
+
+/**
+ * Formata para MM/YYYY (mês e ano).
+ */
+export const formatMonthYearToBR = (date?: string | Date | null): string => {
+  if (!date) return "-";
+  if (typeof date === "string") {
+    const cleanStr = date.trim();
+    if (!cleanStr) return "-";
+    const parts = cleanStr.split("-");
+    if (parts.length >= 2) {
+      const year = parts[0];
+      const month = parts[1];
+      if (year.length === 4 && month.length === 2) {
+        return `${month}/${year}`;
+      }
+    }
+  }
+  const parsed = parseLocalDate(date);
+  if (isNaN(parsed.getTime())) return "-";
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = parsed.getFullYear();
+  return `${month}/${year}`;
 };
 
 /**
@@ -109,7 +133,7 @@ export const formatDiasAtraso = (dataVencimento: string): string => {
   if (dias === 0) return "Vence hoje";
   if (dias === 1) return "Venceu ontem";
   if (dias < 0) return `Vence em ${Math.abs(dias)} dias`;
-  return `Vencido há ${dias} dias`;
+  return `Vencida há ${dias} dias`;
 };
 
 /**

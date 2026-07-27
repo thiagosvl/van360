@@ -1,27 +1,37 @@
 import { cn } from "@/lib/utils";
-import { pagesItems } from "@/utils/domain/pages/pagesUtils";
+import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
+import { detectPlatform, isNativeApp, PLAY_STORE_URL, PLAY_STORE_BADGE_URL } from "@/utils/detectPlatform";
+import { CompactReferAndEarnCard } from "@/components/features/subscription/CompactReferAndEarnCard";
 
 interface AppSidebarProps {
   role: "motorista";
   onLinkClick?: () => void;
+  excludeBottomNavItems?: boolean;
 }
 
-export function AppSidebar({ onLinkClick }: AppSidebarProps) {
+export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarProps) {
+  const platform = detectPlatform();
+  const isNative = isNativeApp();
+
+  const itemsToRender = excludeBottomNavItems
+    ? pagesItems.filter((item) => !(bottomNavHrefs as string[]).includes(item.href))
+    : pagesItems;
+
   return (
-    <div className="flex h-full flex-col gap-6">
-      <nav className="flex-1 space-y-1 overflow-y-auto pr-1 md:space-y-1">
-        {pagesItems.map((item) => (
+    <div className="flex h-full flex-col gap-4">
+      <nav className="flex-1 space-y-[clamp(2px,calc(3vh-19px),12px)] md:space-y-0.5 overflow-y-auto pr-1">
+        {itemsToRender.map((item) => (
           <NavLink
             key={item.href}
             to={item.href}
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors md:py-2.5",
+                "flex items-center gap-3 rounded-xl px-3 py-[clamp(6px,calc(3vh-15px),16px)] md:py-2.5 text-[clamp(14px,calc(3vh-7px),22px)] md:text-[16px] transition-colors",
                 isActive
-                  ? "bg-[#1a3a5c] text-white shadow-[0_12px_35px_-25px_rgba(26,58,92,0.7)]"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-[#1a3a5c]"
+                  ? "bg-white/10 text-white font-bold shadow-sm"
+                  : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
               )
             }
           >
@@ -29,22 +39,23 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
               <>
                 <span
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-base",
-                    isActive ? "bg-white/20 text-white" : "hover:text-[#1a3a5c]"
+                    "flex items-center justify-center rounded-lg border border-transparent text-base shrink-0",
+                    "h-[clamp(36px,calc(7vh-13px),56px)] w-[clamp(36px,calc(7vh-13px),56px)] md:h-8 md:w-8",
+                    isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "h-4 w-4",
-                      isActive ? "text-white" : "text-inherit"
+                      "h-[clamp(18px,calc(4vh-10px),32px)] w-[clamp(18px,calc(4vh-10px),32px)] md:h-[18px] md:w-[18px]",
+                      isActive ? "text-white" : "text-slate-400"
                     )}
                   />
                 </span>
-                <span>{item.title}</span>
+                <span className="truncate">{item.title}</span>
 
                 {(item as any).badge !== undefined &&
                   (item as any).badge > 0 && (
-                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#1a3a5c]/10 text-[10px] font-bold text-[#1a3a5c]">
+                    <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold text-white">
                       {(item as any).badge}
                     </span>
                   )}
@@ -53,6 +64,47 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
           </NavLink>
         ))}
       </nav>
+
+      {/* Bloco de Download / Plataforma / Indique e Ganhe */}
+      {isNative || platform === "ios-web" ? (
+        <div className="mt-auto px-4 pb-4 pt-2">
+          <CompactReferAndEarnCard />
+        </div>
+      ) : (
+        <div className="mt-auto px-4 pb-2 md:pb-4">
+
+          {/* Desktop (Minimalista e objetivo) */}
+          {platform === "desktop" && (
+            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-3">
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:scale-[1.03] transition-transform"
+              >
+                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-12 object-contain drop-shadow-sm brightness-110" />
+              </a>
+              <p className="text-[10px] text-slate-400 font-medium text-center leading-tight">
+                Também funciona no iPhone via navegador.
+              </p>
+            </div>
+          )}
+
+          {/* Android Web */}
+          {platform === "android-web" && (
+            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-3 pb-2 w-full">
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:scale-[1.03] transition-transform w-full flex justify-center"
+              >
+                <img src={PLAY_STORE_BADGE_URL} alt="Google Play" className="h-14 object-contain drop-shadow-sm brightness-110" />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

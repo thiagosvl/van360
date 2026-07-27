@@ -19,6 +19,7 @@ export function useCreatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
@@ -52,6 +53,7 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
 
       // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
       if (variables.data?.escola_id !== undefined) {
@@ -93,6 +95,7 @@ export function useDeletePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
     },
   });
 }
@@ -126,6 +129,7 @@ export function useToggleAtivoPassageiro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
     },
   });
 }
@@ -155,11 +159,85 @@ export function useFinalizePreCadastro() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
       toast.error("passageiro.erro.criar", {
         description: getErrorMessage(error, "passageiro.erro.confirmarDetalhe"),
+      });
+    },
+  });
+}
+
+export function useCreateResponsavelAdicional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ passageiroId, data }: { passageiroId: string; data: any }) =>
+      passageiroApi.addResponsavelAdicional(passageiroId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      toast.success("sucesso.adicionar");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao adicionar responsável", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+export function useUpdateResponsavelAdicional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ responsavelId, passageiroId, data }: { responsavelId: string; passageiroId: string; data: any }) =>
+      passageiroApi.updateResponsavelAdicional(responsavelId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      toast.success("sucesso.atualizar");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao atualizar responsável", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+export function useDeleteResponsavelAdicional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ responsavelId, passageiroId }: { responsavelId: string; passageiroId: string }) =>
+      passageiroApi.deleteResponsavelAdicional(responsavelId),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      toast.success("sucesso.excluir");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir responsável", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+export function useSetPrincipalResponsavel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ passageiroId, responsavelId }: { passageiroId: string; responsavelId: string }) =>
+      passageiroApi.setPrincipalResponsavel(passageiroId, responsavelId),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      toast.success("sucesso.atualizar");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao alterar responsável principal", {
+        description: getErrorMessage(error),
       });
     },
   });

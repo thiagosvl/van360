@@ -11,7 +11,6 @@ export interface UseGastosFilters {
   ano: number;
   categoria?: string;
   veiculoId?: string;
-  search?: string;
 }
 
 const buildQueryKey = (filters: UseGastosFilters) => [
@@ -21,7 +20,6 @@ const buildQueryKey = (filters: UseGastosFilters) => [
   filters.mes,
   filters.categoria || FilterDefaults.TODAS,
   filters.veiculoId || FilterDefaults.TODOS,
-  filters.search || "",
 ];
 
 export function useGastos(
@@ -55,7 +53,6 @@ export function useGastos(
           filters.veiculoId && filters.veiculoId !== FilterDefaults.TODOS
             ? filters.veiculoId
             : undefined,
-        search: filters.search?.trim() ? filters.search.trim() : undefined,
       });
 
       return (data as Gasto[]) ?? [];

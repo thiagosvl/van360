@@ -46,12 +46,7 @@ export const CarteirinhaObservacoes = ({
     <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden group">
       <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shadow-sm">
-            <StickyNote className="h-4 w-4" />
-          </div>
-          <h3 className="text-sm font-headline font-black text-[#1a3a5c]">
-            Observações
-          </h3>
+          <h3 className="text-base font-bold text-[#16314f]">Observações</h3>
         </div>
 
         {!isEditing && (
@@ -81,14 +76,14 @@ export const CarteirinhaObservacoes = ({
               <Button
                 onClick={onCancelEdit}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-white border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100 shadow-none active:scale-95"
+                className="flex-1 h-12 rounded-2xl font-bold text-[13px] bg-white border border-slate-100 text-slate-500 hover:text-slate-600 hover:bg-slate-50 shadow-none active:scale-95"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={onSave}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 active:scale-95"
+                className="flex-1 h-12 rounded-2xl font-bold text-[13px] bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 active:scale-95"
               >
                 {isSaving ? (
                   <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />

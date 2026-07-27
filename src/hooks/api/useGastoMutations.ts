@@ -4,6 +4,7 @@ import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Gasto } from "@/types/gasto";
+import { GastoEscopoAcao } from "@/types/enums";
 
 export function useCreateGasto() {
   const queryClient = useQueryClient();
@@ -27,8 +28,8 @@ export function useUpdateGasto() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Gasto> }) =>
-      gastoApi.updateGasto(id, data),
+    mutationFn: ({ id, data, escopo }: { id: string; data: Partial<Gasto>; escopo?: GastoEscopoAcao }) =>
+      gastoApi.updateGasto(id, data, escopo),
     onError: (error: any) => {
       toast.error("gasto.erro.atualizar", {
         description: getErrorMessage(error, "Não foi possível atualizar o gasto."),
@@ -45,7 +46,8 @@ export function useDeleteGasto() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => gastoApi.deleteGasto(id),
+    mutationFn: ({ id, escopo }: { id: string; escopo?: GastoEscopoAcao }) =>
+      gastoApi.deleteGasto(id, escopo),
     onError: (error: any) => {
       toast.error("gasto.erro.excluir", {
         description: getErrorMessage(error, "Não foi possível excluir o gasto."),

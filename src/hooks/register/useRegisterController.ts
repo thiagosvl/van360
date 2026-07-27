@@ -2,22 +2,16 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
-import { isMobilePlatform } from "@/utils/detectPlatform";
+import { getDispositivoCadastro, isNativeApp } from "@/utils/detectPlatform";
+import { useAttribution, getStoredAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-export interface PostRegisterData {
-  cpf: string;
-  accessToken: string;
-  refreshToken: string;
-  user: any;
-}
-
 export interface DuplicateError {
-  field: "email" | "cpfcnpj" | "generic";
+  field: "email" | "cpfcnpj" | "telefone" | "generic";
   message: string;
 }
 
@@ -25,7 +19,9 @@ export function useRegisterController() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
+
+  // Injetar captura de UTMs e Referrer
+  useAttribution();
 
   useEffect(() => {
     const refParam = searchParams.get("ref");
@@ -34,21 +30,13 @@ export function useRegisterController() {
     }
   }, [searchParams]);
 
-  /* [TEMPORÁRIO] Usando isMobilePlatform para exibir boas-vindas no mobile browser também */
-  const [showNativeWelcome, setShowNativeWelcome] = useState(
-    () => isMobilePlatform() && sessionStorage.getItem("van360_showing_welcome") === "true"
-  );
-  /* [PADRÃO] No futuro, voltar para:
-  const [showNativeWelcome, setShowNativeWelcome] = useState(
-    () => isNativeApp() && sessionStorage.getItem("van360_showing_welcome") === "true"
-  );
-  */
   const [duplicateError, setDuplicateError] = useState<DuplicateError | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "",
       cpfcnpj: "",
+      razao_social: "",
       email: "",
       telefone: "",
       senha: "",
@@ -60,95 +48,75 @@ export function useRegisterController() {
   const handleFillMagic = () => {
     form.reset({
       ...form.getValues(),
-      nome: "Thiago Barros",
       cpfcnpj: "395.423.918-38",
-      email: "thiago-svl@hotmail.com",
+      razao_social: "THIAGO BARROS SOLUCOES",
+      nome: "Thiago Barros",
       telefone: "(11) 95118-6951",
+      email: "thiago-svl@hotmail.com",
+      data_nascimento: "30/06/1997",
       senha: "Ogaiht+1",
       termos_aceitos: true,
-      data_nascimento: "01/01/1990",
     });
   };
 
   const handleFinalRegister = async (data: RegisterFormData) => {
     try {
       setLoading(true);
+      setDuplicateError(null);
       const referralCode = localStorage.getItem("van360_referral_code") || undefined;
+      const attribution = getStoredAttribution();
+      const dispositivo_cadastro = getDispositivoCadastro();
+
       const result = await usuarioApi.registrar({
         ...data,
         cpfcnpj: data.cpfcnpj?.replace(/\D/g, ""),
         telefone: data.telefone?.replace(/\D/g, ""),
         indicador_id: referralCode,
+        dispositivo_cadastro,
+        metadados_cadastro: attribution ? {
+          referrer: attribution.referrer,
+          utm: attribution.utm,
+        } : undefined,
       });
       if (result?.error) throw new Error(result.error);
 
       localStorage.removeItem("van360_referral_code");
+      clearStoredAttribution();
+
 
       // --- FLUXO DE PÓS-CADASTRO ---
 
-      const sessionUser = result.session.user || result.user;
-      const isMobile = isMobilePlatform();
+      // Disparar evento de conversão para o Google Tag Manager / Ads
+      // Apenas em Produção e Apenas no Web (para não sujar métricas com o app nativo)
+      const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
 
-      /* 
-         [TEMPORÁRIO] Cenário mobile (App OU Nav Mobile) redireciona para Splash Screen.
-         Desktop faz Log-in direto.
-         Objetivo: No futuro, separar isNativeApp() de isMobilePlatform().
-      */
-
-      // Mobile (Nativo ou Browser Mobile): setar sessão + mostrar boas-vindas
-      if (isMobile) {
-        sessionStorage.setItem("van360_showing_welcome", "true");
-        setShowNativeWelcome(true);
-
-        const { error } = await sessionManager.setSession(
-          result.session.access_token,
-          result.session.refresh_token,
-          sessionUser
-        );
-
-        if (error) {
-          sessionStorage.removeItem("van360_showing_welcome");
-          setShowNativeWelcome(false);
-          toast.error("auth.erro.login", {
-            description: "Cadastro realizado, mas não foi possível fazer login automático.",
-          });
-          navigate(ROUTES.PUBLIC.LOGIN);
-        }
-        return;
+      if (typeof window !== "undefined" && import.meta.env.PROD && !isNative) {
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({
+          event: "generate_lead",
+        });
       }
+      const sessionUser = result.session.user || result.user;
 
-      // Desktop: Login direto
+
+      // Define a flag de recém-cadastrado para disparar os confetes na Home
+      sessionStorage.setItem("van360_just_registered", "true");
+
+      // Loga direto em todas as plataformas
       const { error } = await sessionManager.setSession(
         result.session.access_token,
         result.session.refresh_token,
         sessionUser
       );
 
-      if (error) {
+      if (!error) {
+        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+      } else {
         toast.error("auth.erro.login", {
-          description: "Cadastro realizado, mas não foi possível fazer login automático.",
+          description: "Cadastro concluído, mas falha no login automático.",
         });
         navigate(ROUTES.PUBLIC.LOGIN);
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
       }
-
-      /* 
-      // [LEGADO/PADRÃO] Comentado para quando voltarmos a usar a PostRegisterScreen para web
-      if (isNativeApp()) {
-         ... lógica nativa igual à de cima ...
-         return;
-      }
-
-      // Web Padrão: mostra tela de download/cont em browser (NÃO faz login auto)
-      setPostRegisterData({
-        cpf: data.cpfcnpj,
-        accessToken: result.session.access_token,
-        refreshToken: result.session.refresh_token,
-        user: result.session.user || result.user,
-      });
-      */
     } catch (err: any) {
       const respData = err.response?.data;
       const errorMsg = (respData?.error || err.message || "").toLowerCase();
@@ -156,12 +124,16 @@ export function useRegisterController() {
       // Detectar erro de duplicidade
       const isDuplicateEmail =
         respData?.field === "email" ||
-        errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já"));
+        (errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
       const isDuplicateCpf =
         respData?.field === "cpfcnpj" ||
         (errorMsg.includes("cpf") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
+      const isDuplicatePhone =
+        respData?.field === "telefone" ||
+        (errorMsg.includes("telefone") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
 
       if (isDuplicateEmail) {
+        form.setError("email", { message: "Este email já está em uso." });
         setDuplicateError({
           field: "email",
           message: "Este email já está cadastrado.",
@@ -170,9 +142,19 @@ export function useRegisterController() {
       }
 
       if (isDuplicateCpf) {
+        form.setError("cpfcnpj", { message: "Este CPF/CNPJ já está em uso." });
         setDuplicateError({
           field: "cpfcnpj",
-          message: "Este CPF já está cadastrado.",
+          message: "Este CPF/CNPJ já está cadastrado.",
+        });
+        return;
+      }
+
+      if (isDuplicatePhone) {
+        form.setError("telefone", { message: "Este telefone já está em uso." });
+        setDuplicateError({
+          field: "telefone",
+          message: "Este telefone já está cadastrado.",
         });
         return;
       }
@@ -181,7 +163,7 @@ export function useRegisterController() {
       if (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate")) {
         setDuplicateError({
           field: "generic",
-          message: "Email ou CPF já cadastrado.",
+          message: "Este cadastro já existe no sistema.",
         });
         return;
       }
@@ -199,7 +181,7 @@ export function useRegisterController() {
   };
 
   const handleNextStep = async () => {
-    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
+    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "razao_social", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
     const ok = await form.trigger(fields as any);
     if (!ok) {
       toast.error("validacao.formularioComErros");
@@ -210,26 +192,6 @@ export function useRegisterController() {
     return true;
   };
 
-  const handleContinueInBrowser = async () => {
-    if (!postRegisterData) return;
-
-    const { error } = await sessionManager.setSession(
-      postRegisterData.accessToken,
-      postRegisterData.refreshToken,
-      postRegisterData.user
-    );
-
-    if (error) {
-      toast.error("auth.erro.login", {
-        description: "Não foi possível fazer login. Tente novamente.",
-      });
-      navigate(ROUTES.PUBLIC.LOGIN);
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
-    }
-  };
-
   const clearDuplicateError = () => setDuplicateError(null);
 
   return {
@@ -237,11 +199,7 @@ export function useRegisterController() {
     loading,
     handleNextStep,
     handleFillMagic,
-    postRegisterData,
-    handleContinueInBrowser,
-    showNativeWelcome,
     duplicateError,
     clearDuplicateError,
   };
 }
-

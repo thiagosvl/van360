@@ -1,12 +1,15 @@
 interface WhatsAppIconProps {
   className?: string;
+  size?: number | string;
 }
 
-export function WhatsAppIcon({ className = "w-6 h-6" }: WhatsAppIconProps) {
+export function WhatsAppIcon({ className = "w-6 h-6", size }: WhatsAppIconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="currentColor"
+      width={size}
+      height={size}
       className={className}
       xmlns="http://www.w3.org/2000/svg"
     >

@@ -1,13 +1,7 @@
 import { cn } from "@/lib/utils";
-import {
-  CreditCard,
-  LayoutDashboard,
-  Menu,
-  Route as RouteIcon,
-  Users
-} from "lucide-react";
+import { Menu } from "lucide-react";
 import { useLocation, NavLink } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 
 import { useLayout } from "@/contexts/LayoutContext";
 
@@ -15,29 +9,9 @@ export function BottomNavbar() {
   const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
 
-  const navItems = [
-    {
-      title: "Início",
-      href: ROUTES.PRIVATE.MOTORISTA.HOME,
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Passageiros",
-      href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-      icon: Users,
-    },
-    {
-      title: "Mensalidades",
-      href: ROUTES.PRIVATE.MOTORISTA.BILLING,
-      icon: CreditCard,
-    },
-    {
-      title: "Rotas",
-      href: ROUTES.PRIVATE.MOTORISTA.ROUTES,
-      icon: RouteIcon,
-    },
-  ];
-
+  const navItems = bottomNavHrefs
+    .map(href => pagesItems.find(item => item.href === href))
+    .filter(Boolean) as typeof pagesItems;
   const isMoreActive = !navItems.some(item => location.pathname === item.href);
 
   return (
@@ -49,7 +23,7 @@ export function BottomNavbar() {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center justify-center gap-1 transition-colors px-2 py-1 rounded-xl",
-              isActive ? "text-[#1a3a5c]" : "text-slate-400"
+              isActive ? "text-primary" : "text-slate-400"
             )
           }
         >
@@ -62,7 +36,7 @@ export function BottomNavbar() {
         onClick={() => setIsMobileMenuOpen(true)}
         className={cn(
           "flex flex-col items-center justify-center gap-1 pl-2 py-1 transition-colors",
-          isMoreActive ? "text-[#1a3a5c]" : "text-slate-400"
+          isMoreActive ? "text-primary" : "text-slate-400"
         )}
       >
         <Menu className="h-5 w-5" />

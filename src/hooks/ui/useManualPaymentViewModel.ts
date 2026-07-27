@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { parseCurrencyToNumber } from "@/utils/formatters";
+import { toast } from "@/utils/notifications/toast";
 
 interface ManualPaymentViewModelProps {
   isOpen: boolean;
@@ -63,11 +64,16 @@ export function useManualPaymentViewModel({
     );
   }, [cobrancaId, registrarPagamento, onPaymentRecorded, onClose]);
 
+  const onFormError = useCallback(() => {
+    toast.error("validacao.formularioComErros");
+  }, []);
+
   return {
     form,
     openCalendar,
     setOpenCalendar,
     handleSubmit,
+    onFormError,
     isPending: registrarPagamento.isPending,
   };
 }

@@ -11,16 +11,20 @@ import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
+import GerenciarCategoriasDialog from "@/components/dialogs/GerenciarCategoriasDialog";
+import AcquisitionChannelDialog from "@/components/dialogs/AcquisitionChannelDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import ResponsavelFormDialog from "@/components/dialogs/ResponsavelFormDialog";
 
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps } from "./LayoutContext";
+import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenResponsavelFormProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -105,6 +109,22 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  // Gerenciar Categorias Dialog State
+  const [gerenciarCategoriasDialogState, setGerenciarCategoriasDialogState] = useState<{
+    open: boolean;
+    props?: { usuarioId?: string };
+  }>({
+    open: false,
+  });
+
+  // Responsavel Form Dialog State
+  const [responsavelFormDialogState, setResponsavelFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenResponsavelFormProps;
+  }>({
+    open: false,
+  });
+
   const { user } = useSession();
   const {
     isLoading: isProfileLoading,
@@ -181,9 +201,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [gerarContratoValidadorDialogState, setGerarContratoValidadorDialogState] = useState<{
+    open: boolean;
+    props?: OpenGerarContratoValidadorDialogProps;
+  }>({
+    open: false,
+  });
+
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
+  const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
   const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
     open: boolean;
     onSuccess?: (userId: string) => void;
@@ -207,7 +235,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const closeConfirmationDialog = () => {
-    setConfirmationDialogState((prev) => ({ ...prev, open: false }));
+    safeCloseDialog(() =>
+      setConfirmationDialogState((prev) => ({ ...prev, open: false }))
+    );
   };
 
   const openEscolaFormDialog = (props?: OpenEscolaFormProps) => {
@@ -245,6 +275,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openGerenciarCategoriasDialog = (props?: { usuarioId?: string }) => {
+    setGerenciarCategoriasDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const openResponsavelFormDialog = (props: OpenResponsavelFormProps) => {
+    setResponsavelFormDialogState({
+      open: true,
+      props,
+    });
+  };
+
   const openCobrancaDeleteDialog = (props: OpenCobrancaDeleteDialogProps) => {
     setCobrancaDeleteDialogState({
       open: true,
@@ -253,7 +297,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const closeCobrancaDeleteDialog = () => {
-    setCobrancaDeleteDialogState((prev) => ({ ...prev, open: false }));
+    safeCloseDialog(() =>
+      setCobrancaDeleteDialogState((prev) => ({ ...prev, open: false }))
+    );
   };
 
   const openCobrancaEditDialog = (props: OpenCobrancaEditDialogProps) => {
@@ -318,6 +364,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminCreateUserDialogState({ open: true, onSuccess });
   };
 
+  const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
+    setGerarContratoValidadorDialogState({ open: true, props });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -332,6 +382,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openPassageiroFormDialog,
         openQuickStartPassageiroDialog,
         openGastoFormDialog,
+        openGerenciarCategoriasDialog,
+        openResponsavelFormDialog,
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
@@ -343,12 +395,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openPixPaymentDialog,
         openSaaSCheckoutDialog,
         openAdminCreateUserDialog,
+        openGerarContratoValidadorDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
         openEditarPixDialog: () => setEditarPixDialogOpen(true),
+        openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isHelpOpen,
@@ -439,10 +493,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               innerOnSuccess(data, metadata);
             }
             // Depois fecha o diálogo
-            setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
+            safeCloseDialog(() =>
+              setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
+            );
           }}
           onClose={() => {
-            setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
+            safeCloseDialog(() =>
+              setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
+            );
           }}
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null
@@ -458,8 +516,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {quickStartPassageiroState.open && (
         <QuickStartPassageiroDialog
           isOpen={true}
-          onClose={() => setQuickStartPassageiroState({ open: false })}
+          onClose={() => safeCloseDialog(() => setQuickStartPassageiroState({ open: false }))}
           onSuccess={quickStartPassageiroState.props?.onSuccess}
+          isOnboarding={quickStartPassageiroState.props?.isOnboarding}
           usuarioId={profile?.id}
         />
       )}
@@ -482,6 +541,37 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {gerenciarCategoriasDialogState.open && (
+        <GerenciarCategoriasDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setGerenciarCategoriasDialogState((prev) => ({ ...prev, open: false }))
+            )
+          }
+          usuarioId={gerenciarCategoriasDialogState.props?.usuarioId || profile?.id}
+        />
+      )}
+
+      {responsavelFormDialogState.open && responsavelFormDialogState.props && (
+        <ResponsavelFormDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setResponsavelFormDialogState((prev) => ({ ...prev, open: false })),
+            )
+          }
+          passageiroId={responsavelFormDialogState.props.passageiroId}
+          editingResponsavel={responsavelFormDialogState.props.editingResponsavel || null}
+          onSuccess={() => {
+            safeCloseDialog(() =>
+              setResponsavelFormDialogState((prev) => ({ ...prev, open: false }))
+            );
+            responsavelFormDialogState.props?.onSuccess?.();
+          }}
+        />
+      )}
+
       {cobrancaEditDialogState.open && cobrancaEditDialogState.props && (
         <CobrancaEditDialog
           isOpen={true}
@@ -491,10 +581,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             )
           }
           cobranca={cobrancaEditDialogState.props.cobranca}
-          onCobrancaUpdated={() => {
-            cobrancaEditDialogState.props?.onSuccess?.();
-            setCobrancaEditDialogState((prev) => ({ ...prev, open: false }));
-          }}
+          onCobrancaUpdated={() =>
+            safeCloseDialog(() => {
+              cobrancaEditDialogState.props?.onSuccess?.();
+              setCobrancaEditDialogState((prev) => ({ ...prev, open: false }));
+            })
+          }
         />
       )}
 
@@ -561,10 +653,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               setCobrancaFormDialogState((prev) => ({ ...prev, open: false })),
             )
           }
-          onCobrancaAdded={() => {
-            cobrancaFormDialogState.props?.onSuccess?.();
-            setCobrancaFormDialogState((prev) => ({ ...prev, open: false }));
-          }}
+          onCobrancaAdded={() =>
+            safeCloseDialog(() => {
+              cobrancaFormDialogState.props?.onSuccess?.();
+              setCobrancaFormDialogState((prev) => ({ ...prev, open: false }));
+            })
+          }
           passageiroId={cobrancaFormDialogState.props.passageiroId}
           passageiroNome={cobrancaFormDialogState.props.passageiroNome}
           passageiroResponsavelNome={
@@ -572,6 +666,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           valorCobranca={cobrancaFormDialogState.props.valorCobranca}
           diaVencimento={cobrancaFormDialogState.props.diaVencimento}
+          mes={cobrancaFormDialogState.props.mes}
+          ano={cobrancaFormDialogState.props.ano}
+          lockFoiPago={cobrancaFormDialogState.props.lockFoiPago}
+          lockMesAno={cobrancaFormDialogState.props.lockMesAno}
         />
       )}
 
@@ -586,10 +684,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {firstChargeDialogState.open && firstChargeDialogState.props && (
         <FirstChargeDialog
           isOpen={true}
-          onClose={() => {
-            setFirstChargeDialogState((prev) => ({ ...prev, open: false }));
-            firstChargeDialogState.props?.onSuccess?.();
-          }}
+          onClose={() =>
+            safeCloseDialog(() => {
+              setFirstChargeDialogState((prev) => ({ ...prev, open: false }));
+              firstChargeDialogState.props?.onSuccess?.();
+            })
+          }
           passageiro={firstChargeDialogState.props.passageiro}
         />
       )}
@@ -597,9 +697,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {contractSetupDialogState.open && (
         <ContractSetupDialog
           isOpen={true}
-          onClose={() => setContractSetupDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setContractSetupDialogState({ open: false }))}
           onSuccess={contractSetupDialogState.props?.onSuccess}
-          skipWelcome={contractSetupDialogState.props?.skipWelcome}
         />
       )}
 
@@ -624,10 +723,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {acquisitionChannelDialogOpen && (
+        <AcquisitionChannelDialog
+          isOpen={acquisitionChannelDialogOpen}
+          onClose={() => safeCloseDialog(() => setAcquisitionChannelDialogOpen(false))}
+        />
+      )}
+
       {pixPaymentDialogState.open && pixPaymentDialogState.props && (
         <PixPaymentDialog
           isOpen={true}
-          onClose={() => setPixPaymentDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setPixPaymentDialogState({ open: false }))}
           {...pixPaymentDialogState.props}
         />
       )}
@@ -635,7 +741,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {saasCheckoutDialogState.open && saasCheckoutDialogState.props && (
         <SaaSCheckoutDialog
           isOpen={true}
-          onClose={() => setSaasCheckoutDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setSaasCheckoutDialogState({ open: false }))}
           plans={saasCheckoutDialogState.props.plans}
           initialPlanId={saasCheckoutDialogState.props.initialPlanId}
           onSuccess={saasCheckoutDialogState.props.onSuccess}
@@ -646,7 +752,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {receiptDialogState.open && receiptDialogState.props && (
         <ReceiptDialog
           isOpen={true}
-          onClose={() => setReceiptDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setReceiptDialogState({ open: false }))}
           receiptUrl={receiptDialogState.props.receiptUrl}
           cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
         />
@@ -655,8 +761,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {adminCreateUserDialogState.open && (
         <AdminCreateUserDialog
           isOpen={true}
-          onClose={() => setAdminCreateUserDialogState({ open: false })}
+          onClose={() => safeCloseDialog(() => setAdminCreateUserDialogState({ open: false }))}
           onSuccess={adminCreateUserDialogState.onSuccess}
+        />
+      )}
+
+      {gerarContratoValidadorDialogState.open && gerarContratoValidadorDialogState.props && (
+        <GerarContratoValidadorDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setGerarContratoValidadorDialogState({ open: false }))}
+          passageiroId={gerarContratoValidadorDialogState.props.passageiroId}
+          onSuccess={gerarContratoValidadorDialogState.props.onSuccess}
         />
       )}
 

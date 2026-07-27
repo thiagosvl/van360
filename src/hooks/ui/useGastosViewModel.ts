@@ -1,8 +1,8 @@
 import { useLayout } from "@/contexts/LayoutContext";
-import { useDeleteGasto, useFilters, useGastos, useVeiculos, safeCloseDialog } from "@/hooks";
+import { useDeleteGasto, useFilters, useGastos, useVeiculos, useGastoCategorias } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
 import { useProfile } from "@/hooks/business/useProfile";
-import { FilterDefaults } from "@/types/enums";
+import { FilterDefaults, GastoEscopoAcao } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -12,8 +12,6 @@ export function useGastosViewModel() {
   const {
     setPageTitle,
     openGastoFormDialog,
-    openConfirmationDialog,
-    closeConfirmationDialog,
   } = useLayout();
 
   const {
@@ -22,10 +20,9 @@ export function useGastosViewModel() {
   } = useProfile();
 
   const deleteGasto = useDeleteGasto();
+  const [gastoToDelete, setGastoToDelete] = useState<Gasto | null>(null);
 
   const {
-    searchTerm,
-    setSearchTerm,
     selectedMes: mesFilter = getNowBR().getMonth() + 1,
     setSelectedMes,
     selectedAno: anoFilter = getNowBR().getFullYear(),
@@ -41,17 +38,7 @@ export function useGastosViewModel() {
     anoParam: "ano",
     categoriaParam: "categoria",
     veiculoParam: "veiculo",
-    searchParam: "search",
   });
-
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
 
   const {
     data: gastosRes,
@@ -65,7 +52,6 @@ export function useGastosViewModel() {
       ano: anoFilter,
       categoria: categoriaFilter !== FilterDefaults.TODAS ? categoriaFilter : undefined,
       veiculoId: veiculoFilter !== FilterDefaults.TODOS ? veiculoFilter : undefined,
-      search: debouncedSearchTerm,
     },
     {
       enabled: !!profile?.id,
@@ -77,8 +63,13 @@ export function useGastosViewModel() {
     enabled: !!profile?.id,
   });
 
+  const { data: categoriasData } = useGastoCategorias({
+    enabled: !!profile?.id,
+  });
+
   const veiculos = useMemo(() => veiculosData?.list || [], [veiculosData]);
   const veiculosDropdown = useMemo(() => veiculos.map((v) => ({ id: v.id, placa: v.placa })), [veiculos]);
+  const categoriasDropdown = useMemo(() => categoriasData?.map((c) => c.slug) || [], [categoriasData]);
 
   const gastos = gastosRes?.list || [];
 
@@ -86,7 +77,6 @@ export function useGastosViewModel() {
     gastos,
     mesFilter,
     anoFilter,
-    searchTerm,
     loadingActions: isProfileLoading,
   });
 
@@ -95,24 +85,26 @@ export function useGastosViewModel() {
   }, [setPageTitle]);
 
   const handleDelete = useCallback(
-    async (id: string) => {
-      openConfirmationDialog({
-        title: "Excluir gasto?",
-        description:
-          "Tem certeza que deseja excluir este registro de gasto? Essa ação não poderá ser desfeita.",
-        confirmText: "Excluir",
-        variant: "destructive",
-        onConfirm: async () => {
-          try {
-            await deleteGasto.mutateAsync(id);
-            safeCloseDialog(closeConfirmationDialog);
-          } catch (error) {
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        },
-      });
+    (id: string) => {
+      const target = gastos.find((g) => g.id === id);
+      if (target) {
+        setGastoToDelete(target);
+      }
     },
-    [openConfirmationDialog, deleteGasto, closeConfirmationDialog]
+    [gastos]
+  );
+
+  const confirmDelete = useCallback(
+    async (escopo: GastoEscopoAcao) => {
+      if (!gastoToDelete) return;
+      try {
+        await deleteGasto.mutateAsync({ id: gastoToDelete.id, escopo });
+        setGastoToDelete(null);
+      } catch (error) {
+        setGastoToDelete(null);
+      }
+    },
+    [deleteGasto, gastoToDelete]
   );
 
   const handleOpenForm = useCallback(
@@ -134,10 +126,8 @@ export function useGastosViewModel() {
     setFilters({
       categoria: FilterDefaults.TODAS,
       veiculo: FilterDefaults.TODOS,
-      search: ""
     });
-    setSearchTerm("");
-  }, [setFilters, setSearchTerm]);
+  }, [setFilters]);
 
   return {
     profile,
@@ -146,8 +136,6 @@ export function useGastosViewModel() {
     anoFilter,
     categoriaFilter,
     veiculoFilter,
-    searchTerm,
-    setSearchTerm,
     setSelectedMes,
     setSelectedAno,
     setSelectedCategoria,
@@ -159,10 +147,14 @@ export function useGastosViewModel() {
     principalCategoriaData: displayData.principalCategoriaData,
     isLoading: isGastosLoading || isGastosFetching,
     isActionLoading: deleteGasto.isPending,
+    gastoToDelete,
+    setGastoToDelete,
+    confirmDelete,
     handleRefresh,
     handleDelete,
     handleOpenForm,
     veiculos: veiculosDropdown,
+    categorias: categoriasDropdown,
     clearFilters,
     hasActiveFilters,
   };

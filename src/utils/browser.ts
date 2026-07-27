@@ -11,15 +11,11 @@ export const openBrowserLink = async (url: string) => {
   try {
     if (Capacitor.isNativePlatform()) {
       // Melhoria para WhatsApp no Android/iOS:
-      // Se for um link wa.me, tentamos usar o protocolo nativo whatsapp://
-      // Isso evita o diálogo "Abrir com" e resolve problemas de codificação de emojis no WebView.
       if (url.includes('wa.me/')) {
-        // Converte https://wa.me/55119... para whatsapp://send?phone=55119...
-        // E garante que se houver um ?text=, ele vire &text= para ser um parâmetro extra válido.
         const nativeUrl = url
           .replace('https://wa.me/', 'whatsapp://send?phone=')
           .replace('?text=', '&text=');
-        
+
         window.location.href = nativeUrl;
         return;
       }
@@ -37,12 +33,11 @@ export const openBrowserLink = async (url: string) => {
     }
   } catch (error) {
     console.error('Erro ao abrir link:', error);
-    // Fallback de segurança
     try {
       if (Capacitor.isNativePlatform()) {
-         window.location.href = url;
+        window.location.href = url;
       } else {
-         window.open(url, '_blank', 'noopener,noreferrer');
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     } catch (e) {
       window.location.href = url;

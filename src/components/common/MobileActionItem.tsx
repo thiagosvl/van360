@@ -34,6 +34,8 @@ interface MobileActionItemProps {
   className?: string;
   /** Optional header content to show in the Action Sheet */
   renderHeader?: () => ReactNode;
+  /** Custom direct click handler for the item (bypasses ActionSheet drawer) */
+  onClickItem?: () => void;
 }
 
 export function MobileActionItem({
@@ -41,13 +43,14 @@ export function MobileActionItem({
   actions,
   className,
   renderHeader,
+  onClickItem,
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Filter out any hidden actions if they exist
   const visibleActions = actions.filter((a: any) => !a.hidden);
 
-  if (visibleActions.length === 0) {
+  if (visibleActions.length === 0 && !onClickItem) {
     return <div className={cn("relative", className)}>{children}</div>;
   }
 
@@ -56,7 +59,14 @@ export function MobileActionItem({
       {/* Foreground Content - Clickable area */}
       <div 
         className="relative z-10 cursor-pointer touch-manipulation"
-        onClick={() => setIsSheetOpen(true)}
+        onClick={(e) => {
+          if (onClickItem) {
+            e.stopPropagation();
+            onClickItem();
+          } else {
+            setIsSheetOpen(true);
+          }
+        }}
       >
         {children}
       </div>
@@ -64,9 +74,16 @@ export function MobileActionItem({
       {/* Trigger Button - Discrete MoreVertical indicator */}
       <div
         className={cn(
-          "absolute top-1/2 -translate-y-1/2 right-1.5 h-6 w-6 z-20 flex items-center justify-center pointer-events-none transition-opacity",
-          "text-zinc-400 opacity-30 dark:text-zinc-500"
+          "absolute top-1/2 -translate-y-1/2 right-1.5 h-6 w-6 z-20 flex items-center justify-center transition-opacity",
+          "text-zinc-400 opacity-30 dark:text-zinc-500",
+          onClickItem ? "cursor-pointer pointer-events-auto" : "pointer-events-none"
         )}
+        onClick={(e) => {
+          if (onClickItem) {
+            e.stopPropagation();
+            onClickItem();
+          }
+        }}
       >
         <MoreVertical className="h-4 w-4" />
       </div>
@@ -92,4 +109,3 @@ export function MobileActionItem({
     </div>
   );
 }
-

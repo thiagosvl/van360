@@ -42,28 +42,25 @@ export default function CobrancaDeleteDialog({
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Header
-        title="Deseja mesmo excluir?"
+        title="Excluir parcela"
         icon={<Trash2 className="w-5 h-5 opacity-80" />}
         onClose={() => onOpenChange(false)}
       />
       <BaseDialog.Body>
-        <div className="space-y-6 pt-2">
-          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex gap-4 shadow-sm">
-            <div className="bg-white h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm transition-all duration-500">
-              <AlertCircle className="w-5 h-5 text-[#1a3a5c]" />
-            </div>
-            <div className="space-y-1 pt-0.5 flex-1">
-              <p className="font-black text-[#1a3a5c] text-[13px] uppercase tracking-tight">Editar pode ser melhor!</p>
-              <p className="text-slate-500 text-[13px] leading-relaxed font-medium">
-                Se você deseja apenas corrigir o <strong className="text-[#1a3a5c]">valor</strong> ou a{" "}
-                <strong className="text-[#1a3a5c]">data</strong>, não é necessário excluir. Basta editar!
+        <div className="space-y-6">
+          <p className="text-slate-500 text-sm font-medium leading-relaxed">
+            Esta ação é irreversível. Tem certeza que deseja excluir esta parcela?
+          </p>
+
+          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">Alternativa sugerida</p>
+              <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
+                Se você precisa corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
               </p>
             </div>
           </div>
-
-          <p className="text-slate-500 text-sm text-center font-medium px-4">
-            A exclusão é irreversível. O que você prefere fazer agora?
-          </p>
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>

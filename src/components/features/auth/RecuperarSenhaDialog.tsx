@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
-import { cpfMask } from "@/utils/masks"
+import { cpfCnpjMask } from "@/utils/masks"
 
 interface RecuperarSenhaDialogProps {
   open: boolean
@@ -58,7 +58,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
   // Pré-preencher CPF caso venha da tela de login
   useEffect(() => {
     if (open && initialCpf && !formStep1.getValues("cpf")) {
-      formStep1.setValue("cpf", cpfMask(initialCpf))
+      formStep1.setValue("cpf", cpfCnpjMask(initialCpf))
     }
   }, [open, initialCpf, formStep1])
 
@@ -72,7 +72,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                 <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
                   <Fingerprint className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
                   <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    Informe seu CPF para iniciarmos o processo de recuperação da sua conta.
+                    Informe seu CPF ou CNPJ para iniciarmos o processo de recuperação da sua conta.
                   </p>
                 </div>
 
@@ -82,7 +82,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-medium ml-1">
-                        Seu CPF
+                        Seu CPF ou CNPJ
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -90,8 +90,8 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                           <Input
                             {...field}
                             inputMode="numeric"
-                            placeholder="000.000.000-00"
-                            onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                            placeholder="CPF ou CNPJ"
+                            onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
                             className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
                           />
                         </div>

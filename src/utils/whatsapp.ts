@@ -1,3 +1,4 @@
+import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { formatDateToBR, formatFirstName, formatShortName, getMesNome } from "./formatters";
 
 interface CobrancaWhatsAppParams {
@@ -7,6 +8,8 @@ interface CobrancaWhatsAppParams {
   mes: number;
   valor: number;
   dataVencimento: string;
+  chavePix?: string | null;
+  tipoChavePix?: string | null;
 }
 
 export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string {
@@ -21,14 +24,22 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
   const vencimento = formatDateToBR(params.dataVencimento);
 
   const mensagem = [
-    `Oi ${primeiroNomeResp}! Passando para lembrar da mensalidade de *${nomePassageiro}* 🚌`,
+    `🗓️ *Parcela — ${nomePassageiro}*`,
     ``,
-    `📅 *Mês:* ${mesNome}`,
-    `💰 *Valor:* ${valorFormatado}`,
-    `📆 *Vencimento:* ${vencimento}`,
-  ].join("\n");
+    `${primeiroNomeResp}, lembrete da parcela do transporte.`,
+    ``,
+    `🔹 Valor: *${valorFormatado}*`,
+    `🔹 Vencimento: *${vencimento}*`,
+  ];
 
-  return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+  if (params.chavePix) {
+    const labelTipo = params.tipoChavePix ? TIPOS_CHAVE_PIX_LABEL[params.tipoChavePix as TipoChavePix] || params.tipoChavePix : "Chave";
+    mensagem.push(``);
+    mensagem.push(`💳 *Pix para pagamento:*`);
+    mensagem.push(`Chave (${labelTipo}): ${params.chavePix}`);
+  }
+
+  return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem.join("\n"))}`;
 }
 
 interface ContratoWhatsAppParams {
@@ -42,11 +53,22 @@ export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string
   const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
   const link = params.link;
 
+  const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
+  const primeiroNomePassageiro = formatFirstName(params.nomePassageiro);
+
   const mensagem = [
-    `Segue o link para visualização e assinatura do contrato digital:`,
+    `📄 *Contrato de transporte disponível*`,
     ``,
-    `${link}`,
+    `${primeiroNomeResp}, o contrato de *${primeiroNomePassageiro}* está pronto para assinatura digital.`,
+    ``,
+    `👉 Assine aqui: ${link}`,
   ].join("\n");
 
   return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+}
+
+export function formatWhatsappPurpose(purpose: string): string {
+  if (purpose === "BULK") return "Massa (Lento)";
+  if (purpose === "TRANSACTIONAL") return "Transacional (Rápido)";
+  return purpose;
 }

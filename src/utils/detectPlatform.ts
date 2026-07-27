@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { DispositivoCadastro } from "@/types/enums";
 
 export type PlatformType =
   | "android"      // app nativo Android (Capacitor)
@@ -27,6 +28,30 @@ export function detectPlatform(): PlatformType {
   return "desktop"; // fallback
 }
 
+export function getDispositivoCadastro(): DispositivoCadastro {
+  const platform = Capacitor.getPlatform();
+
+  if (platform === "android") return DispositivoCadastro.APP_ANDROID;
+  if (platform === "ios") return DispositivoCadastro.APP_IOS;
+
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isIpadOS = typeof navigator !== "undefined" && navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  const isIos = /iPhone|iPad/i.test(navigator.userAgent) || isIpadOS;
+
+  const isMobile =
+    window.matchMedia("(max-width: 768px)").matches ||
+    isAndroid ||
+    isIos;
+
+  if (!isMobile) return DispositivoCadastro.WEB_DESKTOP;
+
+  if (isAndroid) return DispositivoCadastro.WEB_MOBILE_ANDROID;
+  if (isIos) return DispositivoCadastro.WEB_MOBILE_IOS;
+
+  return DispositivoCadastro.WEB_DESKTOP;
+}
+
+
 export function isNativeApp(): boolean {
   return Capacitor.getPlatform() !== "web";
 }
@@ -36,7 +61,7 @@ export function isMobilePlatform(): boolean {
 }
 
 export const PLAY_STORE_URL =
-  "https://play.google.com/store/apps/details?id=com.van360.app";
+  "https://play.google.com/store/apps/details?id=com.tibis.van360";
 
-export const QR_CODE_PLACEHOLDER =
-  "https://placehold.co/200x200/1a1a2e/ffffff?text=QR+Code+Play+Store";
+export const PLAY_STORE_BADGE_URL =
+  "https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png";

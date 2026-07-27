@@ -1,7 +1,7 @@
 import { PassageiroFormModes, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
-import { Passageiro } from "@/types/passageiro";
+import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
@@ -12,7 +12,7 @@ import {
 
 export interface OpenConfirmationDialogProps {
   title: string;
-  description: string;
+  description: React.ReactNode;
   onConfirm: () => void | Promise<void>;
   confirmText?: string;
   cancelText?: string;
@@ -31,6 +31,7 @@ export interface OpenPassageiroFormProps {
 
 export interface OpenQuickStartPassageiroProps {
   onSuccess?: (passageiro?: Passageiro) => void;
+  isOnboarding?: boolean;
 }
 
 export interface OpenGastoFormProps {
@@ -58,6 +59,10 @@ export interface OpenCobrancaFormProps {
   passageiroResponsavelNome?: string;
   valorCobranca?: number;
   diaVencimento?: number;
+  mes?: number;
+  ano?: number;
+  lockFoiPago?: boolean;
+  lockMesAno?: boolean;
   onSuccess?: () => void;
 }
 
@@ -101,8 +106,12 @@ export interface OpenCobrancaHistoryProps {
 
 export interface OpenContractSetupDialogProps {
   forceOpen?: boolean;
-  skipWelcome?: boolean;
   onSuccess?: (usarContratos?: boolean) => void;
+}
+
+export interface OpenGerarContratoValidadorDialogProps {
+  passageiroId: string;
+  onSuccess: (passageiroId: string, bypassed?: boolean) => void;
 }
 
 export interface OpenPixPaymentDialogProps {
@@ -120,6 +129,12 @@ export interface OpenSaaSCheckoutDialogProps {
   forcedPeriod?: SubscriptionIdentifer;
 }
 
+export interface OpenResponsavelFormProps {
+  passageiroId: string;
+  editingResponsavel?: PassageiroResponsavel | null;
+  onSuccess?: () => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -133,6 +148,8 @@ export interface LayoutContextType {
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
+  openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
+  openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
@@ -148,11 +165,13 @@ export interface LayoutContextType {
   isFirstChargeDialogOpen: boolean;
 
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
+  openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
   openEditarCadastroDialog: () => void;
   openEditarPixDialog: () => void;
+  openAcquisitionChannelDialog: () => void;
 
   // Mobile Menu
   isMobileMenuOpen: boolean;

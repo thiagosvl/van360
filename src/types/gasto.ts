@@ -14,6 +14,9 @@ export interface Gasto {
     id: string;
     placa: string;
   } | null;
+  parcelamento_id?: string | null;
+  numero_parcela?: number | null;
+  total_parcelas?: number | null;
 };
 
 export const GASTO_CATEGORIA_LABELS: Record<GastoCategoria, string> = {

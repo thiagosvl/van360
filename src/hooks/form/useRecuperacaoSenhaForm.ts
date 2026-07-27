@@ -6,13 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '@/services/api/client';
 import { sessionManager } from '@/services/sessionManager';
 import { toast } from '@/utils/notifications/toast';
-import { cpfSchema } from '@/schemas/common';
-import { getMessage } from '@/constants/messages';
+import { cpfCnpjSchema } from '@/schemas/common';
 import { ROUTES } from '@/constants/routes';
 import { UserType } from '@/types/enums';
 
 const step1Schema = z.object({
-  cpf: cpfSchema,
+  cpf: cpfCnpjSchema,
 });
 
 const step2Schema = z.object({
@@ -66,7 +65,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
       setTelefoneMascarado(response.data.telefoneMascarado || null);
       setStep(2);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || "CPF não encontrado ou inválido.";
+      const errorMsg = err.response?.data?.error || "CPF/CNPJ não encontrado ou inválido.";
       formStep1.setError("cpf", { type: "manual", message: errorMsg });
     } finally {
       setLoading(false);
@@ -75,12 +74,12 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
 
   const handleValidar = async (data: Step2Data) => {
     if (data.codigo.length < 6) return;
-    
+
     // Garantir que temos o CPF, pegando do formStep1 se necessário
     const currentCpf = cpf || formStep1.getValues("cpf");
-    
+
     if (!currentCpf) {
-      toast.error("CPF é obrigatório para validar o código.");
+      toast.error("CPF ou CNPJ é obrigatório para validar o código.");
       return;
     }
 

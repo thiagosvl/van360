@@ -32,10 +32,8 @@ export const cobrancaApi = {
             .get(`${endpointBase}/passageiro/${passageiroId}`, { params: { ano } })
             .then(res => res.data),
 
-    listCobrancasWithFilters: (filtros: { mes?: string; ano?: string; passageiroId?: string; usuarioId?: string; status?: string; search?: string }) =>
-        apiClient
-            .get(`${endpointBase}`, { params: filtros })
-            .then(res => res.data),
+    listCobrancasWithFilters: (filtros: { mes?: string; ano?: string; passageiroId?: string; usuarioId?: string; status?: string; search?: string; veiculoId?: string }) =>
+        apiClient.get(`${endpointBase}`, { params: filtros }).then(res => res.data),
 
     countByPassageiro: (passageiroId: string) =>
         apiClient.get(`${endpointBase}/passageiro/${passageiroId}/count`).then(res => res.data.count),

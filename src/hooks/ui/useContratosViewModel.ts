@@ -17,14 +17,14 @@ import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
+import { isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { queryClient } from "@/services/queryClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function useContratosViewModel() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openGerarContratoValidadorDialog } = useLayout();
   const { user } = useSession();
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,7 +58,7 @@ export function useContratosViewModel() {
     searchParam: "search",
   });
 
-  const activeTab = (searchParams.get("tab") as ContratoTab) || ContratoTab.PENDENTES;
+  const activeTab = (searchParams.get("tab") as ContratoTab) || ContratoTab.SEM_CONTRATO;
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
@@ -155,13 +155,12 @@ export function useContratosViewModel() {
     openContractSetupDialog({
       onSuccess: (usarContratos) => {
         if (usarContratos) {
-          refreshProfile();
           refetchKPIs();
           refetchContratos();
         }
       }
     });
-  }, [openContractSetupDialog, refreshProfile, refetchKPIs, refetchContratos]);
+  }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
@@ -205,14 +204,20 @@ export function useContratosViewModel() {
       return;
     }
 
-    const telefone = 
-      item.passageiro?.telefone_responsavel || 
-      item.telefone_responsavel || 
+    const telefone = isResponsavelMockTelefone(
+      item.passageiro?.telefone_responsavel ||
+      item.telefone_responsavel ||
       item.dados_contrato?.telefone_responsavel ||
-      item.dados_contrato?.telefoneResponsavel;
+      item.dados_contrato?.telefoneResponsavel
+    ) ? undefined : (
+      item.passageiro?.telefone_responsavel ||
+      item.telefone_responsavel ||
+      item.dados_contrato?.telefone_responsavel ||
+      item.dados_contrato?.telefoneResponsavel
+    );
 
     if (!telefone) {
-      toast.error("Telefone do responsável não informado.");
+      toast.error("Telefone do responsável inválido ou não informado.");
       return;
     }
 
@@ -228,9 +233,10 @@ export function useContratosViewModel() {
 
   const handleSubstituir = useCallback((id: string) => {
     openConfirmationDialog({
-      title: "Substituir Contrato?",
-      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?",
-      confirmText: "Continuar",
+      title: "Substituir contrato?",
+      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
+      confirmText: "Substituir",
+      cancelText: "Manter atual",
       onConfirm: async () => {
         await substituirMutation.mutateAsync(id);
         safeCloseDialog(closeConfirmationDialog);
@@ -239,16 +245,25 @@ export function useContratosViewModel() {
   }, [openConfirmationDialog, substituirMutation, closeConfirmationDialog]);
 
   const handleGerarContrato = useCallback((passageiroId: string) => {
-    openConfirmationDialog({
-      title: "Gerar Contrato?",
-      description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
-      confirmText: "Gerar",
-      onConfirm: async () => {
-        await createMutation.mutateAsync({ passageiroId });
-        safeCloseDialog(closeConfirmationDialog);
+    openGerarContratoValidadorDialog({
+      passageiroId,
+      onSuccess: (id, bypassed) => {
+        if (bypassed) {
+          openConfirmationDialog({
+            title: "Gerar Contrato?",
+            description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
+            confirmText: "Gerar",
+            onConfirm: async () => {
+              await createMutation.mutateAsync({ passageiroId: id });
+              safeCloseDialog(closeConfirmationDialog);
+            }
+          });
+        } else {
+          createMutation.mutateAsync({ passageiroId: id });
+        }
       }
     });
-  }, [openConfirmationDialog, createMutation, closeConfirmationDialog]);
+  }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
   const handleOpenPreview = useCallback(async () => {
     if (!isContratoConfigurado) {

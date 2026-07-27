@@ -1,4 +1,4 @@
-import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
 import { periodos as periodosConstants } from "@/utils/formatters/periodo";
 import {
   ClipboardCheck,
@@ -16,6 +16,7 @@ import {
   GastoCategoria,
 
 } from "@/types/enums";
+import { useGastoCategorias } from "@/hooks";
 import { formatPaymentType } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
 
@@ -82,6 +83,12 @@ interface UseRelatoriosCalculationsProps {
     };
     ticket_medio: number;
   };
+  hasVeiculoFilter?: boolean;
+  contadores?: {
+    passageiros: { ativos: number; total: number; inativos: number };
+    veiculos: { ativos: number; total: number; inativos: number };
+    escolas: { ativos: number; total: number; inativos: number };
+  };
 }
 
 export const useRelatoriosCalculations = ({
@@ -92,7 +99,11 @@ export const useRelatoriosCalculations = ({
   veiculosData,
   profile,
   financeiro,
+  hasVeiculoFilter,
+  contadores,
 }: UseRelatoriosCalculationsProps) => {
+  const { data: categoriasData } = useGastoCategorias();
+
   const dados = useMemo(() => {
     // 1. Safe guards for optional data
     const cobrancas = cobrancasData?.all || [];
@@ -109,7 +120,18 @@ export const useRelatoriosCalculations = ({
       0
     );
     const gasto = financeiro?.saidas.total ?? gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
-    const lucroEstimado = recebido - gasto;
+    const totalPrevisto = financeiro?.receita.prevista ?? cobrancas.reduce(
+      (acc: number, c: any) => acc + Number(c.valor || 0),
+      0
+    );
+
+    // Lucro Estimado considers everything expected to be received minus expenses
+    const lucroEstimado = totalPrevisto - gasto;
+    const lucroAtual = recebido - gasto;
+
+    // Taxa de Recebimento
+    const taxaRecebimento =
+      financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
 
     // A Receber (Vencidos + Pendentes)
     const valorAReceber = financeiro?.receita.pendente ?? cobrancasAbertas.reduce(
@@ -118,17 +140,20 @@ export const useRelatoriosCalculations = ({
     );
     const aReceberCount = cobrancasAbertas.length;
 
-    // Taxa de Recebimento
-    const totalPrevisto = cobrancas.reduce(
-      (acc: number, c: any) => acc + Number(c.valor || 0),
-      0
-    );
-    const taxaRecebimento =
-      financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
-
     // Passageiros
-    const passageirosCount = passageirosList.length;
-    const passageirosAtivosCount = passageirosList.filter((p: any) => p.ativo).length;
+    const passageirosCount = passageirosList.length > 0 ? passageirosList.length : (contadores?.passageiros.total ?? 0);
+    const passageirosAtivosCount = passageirosList.length > 0 
+      ? passageirosList.filter((p: any) => p.ativo).length 
+      : (contadores?.passageiros.ativos ?? 0);
+
+    // Escolas & Veiculos counts
+    const escolasAtivasCount = escolasList.length > 0
+      ? escolasList.filter((e: any) => e.ativo).length
+      : (contadores?.escolas.ativos ?? 0);
+
+    const veiculosAtivosCount = veiculosListFull.length > 0
+      ? veiculosListFull.filter((v: any) => v.ativo).length
+      : (contadores?.veiculos.ativos ?? 0);
 
     // Custo por Passageiro
     const custoPorPassageiro =
@@ -163,6 +188,7 @@ export const useRelatoriosCalculations = ({
         return {
           metodo: labelData.label,
           valor: dados.valor,
+          count: dados.count,
           percentual: recebido > 0 ? (dados.valor / recebido) * 100 : 0,
           color: labelData.color,
         };
@@ -224,7 +250,7 @@ export const useRelatoriosCalculations = ({
     const topCategorias = Object.values(categoriasMap)
       .sort((a, b) => b.valor - a.valor)
       .map((cat) => {
-        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS[GastoCategoria.OUTROS];
+        const iconData = getCategoriaMetadata(cat.nome, categoriasData);
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
           const info = veiculosMap[vId] || { nome: "Geral / Não especificado", placa: "-" };
           return {
@@ -254,18 +280,29 @@ export const useRelatoriosCalculations = ({
     // Gastos por Veículo
     const gastosPorVeiculoMap: Record<
       string,
-      { valor: number; count: number; veiculoId: string }
+      { valor: number; count: number; veiculoId: string; categorias: Record<string, {valor: number, count: number}> }
     > = {};
+
+    veiculosListFull.forEach((v: any) => {
+      gastosPorVeiculoMap[v.id] = { valor: 0, count: 0, veiculoId: v.id, categorias: {} };
+    });
 
     gastos.forEach((g: any) => {
       const veiculoId = g.veiculo_id || VEICULO_OUTROS;
+      const cat = g.categoria || GastoCategoria.OUTROS;
       const valor = Number(g.valor || 0);
 
       if (!gastosPorVeiculoMap[veiculoId]) {
-        gastosPorVeiculoMap[veiculoId] = { valor: 0, count: 0, veiculoId };
+        gastosPorVeiculoMap[veiculoId] = { valor: 0, count: 0, veiculoId, categorias: {} };
       }
       gastosPorVeiculoMap[veiculoId].valor += valor;
       gastosPorVeiculoMap[veiculoId].count += 1;
+
+      if (!gastosPorVeiculoMap[veiculoId].categorias[cat]) {
+        gastosPorVeiculoMap[veiculoId].categorias[cat] = { valor: 0, count: 0 };
+      }
+      gastosPorVeiculoMap[veiculoId].categorias[cat].valor += valor;
+      gastosPorVeiculoMap[veiculoId].categorias[cat].count += 1;
     });
 
     const gastosPorVeiculo = Object.values(gastosPorVeiculoMap)
@@ -274,11 +311,25 @@ export const useRelatoriosCalculations = ({
           nome: "Geral / Não especificado",
           placa: "-",
         };
+
+        const categoriasList = Object.entries(item.categorias).map(([catNome, catData]) => {
+          const iconData = getCategoriaMetadata(catNome, categoriasData);
+          return {
+            nome: iconData.label || catNome,
+            valor: catData.valor,
+            count: catData.count,
+            icon: iconData.icon,
+            color: iconData.color,
+            bg: iconData.bg
+          };
+        }).sort((a, b) => b.valor - a.valor);
+
         return {
           ...item,
           nome: info.nome,
           placa: info.placa,
           percentual: gasto > 0 ? (item.valor / gasto) * 100 : 0,
+          categorias: categoriasList
         };
       })
       .sort((a, b) => {
@@ -287,9 +338,7 @@ export const useRelatoriosCalculations = ({
         return b.valor - a.valor;
       });
 
-    const temGastosVinculados = gastosPorVeiculo.some(
-      (v) => v.veiculoId !== VEICULO_OUTROS && v.placa !== "-"
-    );
+    const temGastosVinculados = veiculosListFull.length > 0;
 
     // --- OPERATIONAL DATA (METADATA - Visible even if restricted) ---
 
@@ -386,7 +435,9 @@ export const useRelatoriosCalculations = ({
     return {
       visaoGeral: {
         lucroEstimado,
+        lucroAtual,
         recebido,
+        previsto: totalPrevisto,
         gasto,
         custoPorPassageiro,
         aReceber: {
@@ -398,6 +449,7 @@ export const useRelatoriosCalculations = ({
       entradas: {
         previsto: totalPrevisto,
         realizado: recebido,
+        pendente: valorAReceber,
         ticketMedio,
         passageirosPagantes,
         passageirosPagos,
@@ -410,16 +462,18 @@ export const useRelatoriosCalculations = ({
         diasContabilizados: diasComGastos,
         custoPorPassageiro,
         topCategorias,
-        gastosPorVeiculo,
+        gastosPorVeiculo: hasVeiculoFilter ? [] : gastosPorVeiculo,
         veiculosCount: veiculosListFull.length,
         temGastosVinculados,
       },
       operacional: {
         passageirosCount,
         passageirosAtivosCount,
+        escolasAtivasCount,
+        veiculosAtivosCount,
         escolas,
         periodos,
-        veiculos,
+        veiculos: hasVeiculoFilter ? [] : veiculos,
       },
     };
   }, [
@@ -429,7 +483,9 @@ export const useRelatoriosCalculations = ({
     escolasData,
     veiculosData,
     profile,
-    financeiro
+    financeiro,
+    hasVeiculoFilter,
+    categoriasData
   ]);
 
   return dados;

@@ -19,10 +19,15 @@ import {
   CarteirinhaHeader,
   CarteirinhaInfo,
   CarteirinhaObservacoes,
+  CarteirinhaContrato,
+  CarteirinhaResponsaveis,
 } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
+import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
+import { IncompletePassengerBanner } from "@/components/features/passageiro/IncompletePassengerBanner";
+import { isCadastroPassageiroIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -70,11 +75,12 @@ export default function PassageiroCarteirinha() {
     openCobrancaFormDialog,
     openManualPaymentDialog,
     openReceiptDialog,
+    openGerarContratoValidadorDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
   const [isDeleting, setIsDeleting] = useState(false);
-  const [mobileTab, setMobileTab] = useState("mensalidades");
+  const [mobileTab, setMobileTab] = useState("parcelas");
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -218,9 +224,10 @@ export default function PassageiroCarteirinha() {
         openConfirmationDialog({
           title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
           description: hasActiveContract
-            ? `Deseja substituir o contrato atual por um novo para ${firstName}? O responsável receberá o link para assinatura.`
-            : `Deseja gerar o contrato para ${firstName}? O responsável receberá o link para assinatura.`,
+            ? `Você alterou dados importantes do passageiro. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
+            : `Deseja gerar um contrato para ${firstName}? O responsável receberá um link para assiná-lo.`,
           confirmText: hasActiveContract ? "Substituir" : "Gerar",
+          cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
           onConfirm: async () => {
             try {
               if (updatedPassageiro.contrato_id) {
@@ -305,8 +312,8 @@ export default function PassageiroCarteirinha() {
         action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
       description:
         action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens de passageiros ativos e as mensalidades dele voltarão a ser geradas automaticamente."
-          : "O passageiro ficará inativo e as mensalidades dele não serão mais geradas automaticamente. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
       confirmText: action === "ativar" ? "Reativar" : "Desativar",
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
@@ -373,7 +380,7 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: "Desfazer pagamento?",
         description:
-          "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
+          "O pagamento será removido e a parcela voltará a ficar pendente. Confirmar?",
         confirmText: "Desfazer",
         variant: "warning",
         onConfirm: async () => {
@@ -471,7 +478,7 @@ export default function PassageiroCarteirinha() {
     yearFilter,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
-    onOpenCobrancaDialog: () => {
+    onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean) => {
       if (!passageiro_id) return;
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
@@ -479,6 +486,10 @@ export default function PassageiroCarteirinha() {
         passageiroResponsavelNome: formatFirstName(passageiro?.nome_responsavel),
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),
+        mes,
+        ano,
+        lockFoiPago,
+        lockMesAno,
         onSuccess: refetchCobrancas,
       });
     },
@@ -564,29 +575,43 @@ export default function PassageiroCarteirinha() {
         statusContrato === '1' ||
         (!!passageiro.contrato_id && !passageiro.status_contrato);
 
-      const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
-      const hasUrl = passageiro.contrato_url || passageiro.minuta_url;
+      const urlContrato = obterUrlDocumentoContrato(passageiro);
 
-      if (isAssinado || (isPendente && hasUrl)) {
-        openBrowserLink(passageiro.contrato_url || passageiro.minuta_url);
+      if (isAssinado || (isPendente && urlContrato)) {
+        if (urlContrato) {
+          openBrowserLink(urlContrato);
+        }
       } else {
-        openConfirmationDialog({
-          title: "Gerar contrato?",
-          description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
-          confirmText: "Gerar",
-          onConfirm: async () => {
-            try {
-              await createContrato.mutateAsync({
-                passageiroId: passageiro.id!,
+        openGerarContratoValidadorDialog({
+          passageiroId: passageiro.id!,
+          onSuccess: (id, bypassed) => {
+            if (bypassed) {
+              openConfirmationDialog({
+                title: "Gerar contrato?",
+                description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
+                confirmText: "Gerar",
+                onConfirm: async () => {
+                  try {
+                    await createContrato.mutateAsync({
+                      passageiroId: id,
+                      valorMensal: passageiro.valor_cobranca,
+                      diaVencimento: passageiro.dia_vencimento
+                    });
+                    safeCloseDialog(closeConfirmationDialog);
+                    refetchPassageiro();
+                  } catch (error) {
+                    safeCloseDialog(closeConfirmationDialog);
+                  }
+                },
+              });
+            } else {
+              createContrato.mutateAsync({
+                passageiroId: id,
                 valorMensal: passageiro.valor_cobranca,
                 diaVencimento: passageiro.dia_vencimento
-              });
-              safeCloseDialog(closeConfirmationDialog);
-              refetchPassageiro();
-            } catch (error) {
-              safeCloseDialog(closeConfirmationDialog);
+              }).then(() => refetchPassageiro());
             }
-          },
+          }
         });
       }
     },
@@ -608,6 +633,12 @@ export default function PassageiroCarteirinha() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
           <div className="space-y-6">
+            {isCadastroPassageiroIncompleto(passageiro) ? (
+              <IncompletePassengerBanner onEdit={handleEditClick} />
+            ) : !profile?.chave_pix ? (
+              <PixNudgeBanner hasPix={false} />
+            ) : null}
+
             {/* Mobile Layout: Header fixo + Abas na primeira dobra */}
             {isMobile ? (
               <div className="space-y-5">
@@ -624,45 +655,65 @@ export default function PassageiroCarteirinha() {
                   />
                 </Suspense>
 
-                {/* Abas: Dados Pessoais / Mensalidades — logo na primeira dobra */}
-                <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full">
+                {/* Abas: Dados Pessoais / Parcelas — logo na primeira dobra */}
+                <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full pt-4">
                   <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                    <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 text-[13px]">
+                    <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
                       <TabsTrigger
-                        value="mensalidades"
-                        className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
+                        value="parcelas"
+                        className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
                       >
-                        Mensalidades
+                        Parcelas
                       </TabsTrigger>
                       <TabsTrigger
                         value="dados"
-                        className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
+                        className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
                       >
                         Dados Pessoais
                       </TabsTrigger>
                     </TabsList>
                   </div>
 
-                  <TabsContent value="dados" className="mt-5 outline-none space-y-5">
+                  <TabsContent value="dados" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     {/* Dados pessoais detalhados */}
                     <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                      <CarteirinhaDadosPessoais
+                      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
+                        <CarteirinhaDadosPessoais
+                          passageiro={passageiro}
+                          isCopiedEndereco={isCopiedEndereco}
+                          isCopiedTelefone={isCopiedTelefone}
+                          onCopyToClipboard={handleCopyToClipboard}
+                          onContractAction={infoProps.onContractAction}
+                          contratosAtivos={infoProps.contratosAtivos}
+                          onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                          onEditClick={handleEditClick}
+                        />
+                      </div>
+                    </Suspense>
+
+                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                      <CarteirinhaResponsaveis
                         passageiro={passageiro}
-                        isCopiedEndereco={isCopiedEndereco}
-                        isCopiedTelefone={isCopiedTelefone}
-                        onCopyToClipboard={handleCopyToClipboard}
-                        onContractAction={infoProps.onContractAction}
-                        contratosAtivos={infoProps.contratosAtivos}
+                        onEditClick={handleEditClick}
                       />
                     </Suspense>
 
-                    {/* Observações no final da aba dados */}
+                    {/* Contrato e Observações no final da aba dados */}
+                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                      <CarteirinhaContrato
+                        passageiro={passageiro}
+                        contratosAtivos={infoProps.contratosAtivos}
+                        onContractAction={infoProps.onContractAction}
+                        onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                      />
+                    </Suspense>
+
                     <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
                       <CarteirinhaObservacoes {...observacoesProps} />
                     </Suspense>
                   </TabsContent>
 
-                  <TabsContent value="mensalidades" className="mt-5 outline-none space-y-5">
+                  <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                       <CarteirinhaCobrancas {...cobrancasProps} />
                     </Suspense>
@@ -678,12 +729,28 @@ export default function PassageiroCarteirinha() {
                     <CarteirinhaInfo {...infoProps} />
                   </Suspense>
 
+                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                    <CarteirinhaResponsaveis
+                      passageiro={passageiro}
+                      onEditClick={handleEditClick}
+                    />
+                  </Suspense>
+
+                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                    <CarteirinhaContrato
+                      passageiro={passageiro}
+                      contratosAtivos={infoProps.contratosAtivos}
+                      onContractAction={infoProps.onContractAction}
+                      onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                    />
+                  </Suspense>
+
                   <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
                     <CarteirinhaObservacoes {...observacoesProps} />
                   </Suspense>
                 </div>
 
-                {/* Lado Direito: Mensalidades */}
+                {/* Lado Direito: Parcelas */}
                 <div className="lg:col-span-8 space-y-6">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas {...cobrancasProps} />

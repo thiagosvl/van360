@@ -2,14 +2,14 @@ import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
-import { Gasto, GASTO_CATEGORIA_LABELS } from "@/types/gasto";
-import { GastoCategoria } from "@/types/enums";
-import { formatarPlacaExibicao } from "@/utils/domain";
+import { Gasto } from "@/types/gasto";
+import { formatarPlacaExibicao, getCategoriaMetadata, obterDescricaoFormatadaGasto } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
 import { GastoSummary } from "./GastoSummary";
 import { cn } from "@/lib/utils";
+import { useGastoCategorias } from "@/hooks";
 
 interface GastosListProps {
   gastos: Gasto[];
@@ -25,6 +25,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onDelete,
   veiculos,
 }: { gasto: Gasto; index: number } & GastosListProps) {
+  const { data: categoriasData } = useGastoCategorias();
 
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
@@ -57,19 +58,23 @@ const GastoMobileCard = memo(function GastoMobileCard({
       <div
         className="bg-white p-3 pr-10 rounded-xl shadow-diff-shadow flex items-start gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center mt-0.5">
-          <span className="text-white font-headline font-bold text-sm leading-none">
+        <div className={cn(
+          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center mt-0.5 border border-transparent/10",
+          getCategoriaMetadata(gasto.categoria, categoriasData).bg || "bg-slate-50",
+          getCategoriaMetadata(gasto.categoria, categoriasData).color || "text-[#1a3a5c]"
+        )}>
+          <span className="font-headline font-bold text-sm leading-none">
             {gastoDia}
           </span>
         </div>
 
         <div className="flex-grow min-w-0">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight capitalize">
-            {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}
+            {getCategoriaMetadata(gasto.categoria, categoriasData).label}
           </p>
           <div className="">
             <p className="text-[10px] text-gray-500 font-medium opacity-60 break-words line-clamp-2 leading-relaxed">
-              {gasto.descricao || "Sem descrição"}
+              {obterDescricaoFormatadaGasto(gasto)}
             </p>
           </div>
         </div>
@@ -78,10 +83,10 @@ const GastoMobileCard = memo(function GastoMobileCard({
           <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
             {formatCurrency(gasto.valor)}
           </p>
-          <div className="flex flex-col items-end gap-1 opacity-50">
+          <div className="flex flex-col items-end gap-1">
             {/* Data removed here as requested, since it's now in the header block */}
             {placa && (
-              <span className="text-[8px] font-black text-[#1a3a5c]/70 uppercase tracking-tighter">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
                 {formatarPlacaExibicao(placa)}
               </span>
             )}
@@ -92,13 +97,14 @@ const GastoMobileCard = memo(function GastoMobileCard({
   );
 });
 
-export function GastosList({
+export const GastosList = memo(function GastosList({
   gastos,
   onEdit,
   onDelete,
   veiculos = [],
 }: GastosListProps) {
   const [openedGasto, setOpenedGasto] = useState<Gasto | null>(null);
+  const { data: categoriasData } = useGastoCategorias();
 
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
@@ -129,10 +135,10 @@ export function GastosList({
                   Categoria
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Veículo
+                  Descrição
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Descrição
+                  Veículo
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Data
@@ -166,31 +172,35 @@ export function GastosList({
                   >
                     <td className="px-8 py-5 align-middle">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#1a3a5c]">
-                          <span className="text-white font-headline font-bold text-sm leading-none">
+                        <div className={cn(
+                          "h-10 w-10 rounded-xl flex items-center justify-center border border-transparent/10",
+                          getCategoriaMetadata(gasto.categoria, categoriasData).bg || "bg-slate-50",
+                          getCategoriaMetadata(gasto.categoria, categoriasData).color || "text-[#1a3a5c]"
+                        )}>
+                          <span className="font-headline font-bold text-sm leading-none">
                             {gastoDia}
                           </span>
                         </div>
                         <span className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
-                          {GASTO_CATEGORIA_LABELS[gasto.categoria as GastoCategoria] || gasto.categoria}
+                          {getCategoriaMetadata(gasto.categoria, categoriasData).label}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-8 py-5 align-middle">
+                      <span className="text-sm text-slate-600 max-w-[180px] block truncate">
+                        {obterDescricaoFormatadaGasto(gasto)}
+                      </span>
                     </td>
                     <td className="px-8 py-5 align-middle">
                       <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg", placa ? "bg-slate-50 border border-slate-100" : "")}>
                         {placa ? formatarPlacaExibicao(placa) : "-"}
                       </span>
                     </td>
-                    <td className="px-8 py-5 align-middle">
-                      <span className="text-sm text-slate-500 max-w-[180px] block truncate">
-                        {gasto.descricao || "-"}
-                      </span>
-                    </td>
                     <td className="px-8 py-5 align-middle text-sm font-medium text-slate-600">
                       {formatDateToBR(gasto.data)}
                     </td>
                     <td className="px-8 py-5 text-right align-middle">
-                      <span className="font-headline font-black text-[#1a3a5c] text-sm">
+                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
                         {formatCurrency(gasto.valor)}
                       </span>
                     </td>
@@ -221,7 +231,7 @@ export function GastosList({
       )}
     </>
   );
-}
+});
 
 // Wrapper to avoid calling useGastoActions for all rows upfront
 function ActionSheetWrapper({

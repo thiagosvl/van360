@@ -32,3 +32,5 @@ tests-e2e
 *.njsproj
 *.sln
 *.sw?
+
+documentacoes

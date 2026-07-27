@@ -31,7 +31,7 @@ export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobran
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Editar Mensalidade" icon={<Pencil className="w-5 h-5" />} onClose={onClose} />
+      <BaseDialog.Header title="Editar" icon={<Pencil className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
 
         <Form {...form}>

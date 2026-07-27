@@ -17,7 +17,7 @@ export interface Passageiro {
   cep: string;
   periodo: PassageiroPeriodo;
   nome_responsavel: string;
-  email_responsavel: string;
+
   telefone_responsavel: string;
   cpf_responsavel: string;
   valor_cobranca: number;
@@ -30,6 +30,7 @@ export interface Passageiro {
   ativo?: boolean;
   enviar_notificacoes?: boolean;
   referencia?: string;
+  complemento?: string;
   observacoes?: string;
   latitude?: number;
   longitude?: number;
@@ -50,5 +51,49 @@ export interface Passageiro {
   genero?: PassageiroGenero;
   parentesco_responsavel?: ParentescoResponsavel;
   data_inicio_transporte?: string;
+  turma?: string;
+  nome_professor?: string;
   data_fim_transporte?: string;
+  data_inicio_cobranca?: string;
+  data_fim_cobranca?: string;
+  responsaveis?: PassageiroResponsavel[];
+}
+
+export interface PassageiroResponsavel {
+  id?: string;
+  passageiro_id: string;
+  nome: string;
+  telefone: string;
+  cpf: string;
+  parentesco: ParentescoResponsavel;
+  logradouro?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  referencia?: string;
+  complemento?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Aniversariante {
+  id: string;
+  nome: string;
+  dia: number;
+  veiculo?: { id: string; placa: string; modelo?: string };
+  escola?: { id: string; nome: string };
+  ativo?: boolean;
+}
+
+export interface SemanaAniversario {
+  semana: number;
+  aniversariantes: Aniversariante[];
+}
+
+export interface AniversariantesResponse {
+  semanas: SemanaAniversario[];
+  passageirosSemData: number;
+  passageirosSemDataList?: Omit<Aniversariante, "dia">[];
 }

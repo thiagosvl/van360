@@ -3,11 +3,11 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
-import { 
-  calculateSafeDueDate, 
-  getNowBR, 
-  parseLocalDate, 
-  toPersistenceString, 
+import {
+  calculateSafeDueDate,
+  getNowBR,
+  parseLocalDate,
+  toPersistenceString,
   toISODateTimeBR
 } from "@/utils/dateUtils";
 import {
@@ -35,16 +35,16 @@ export const cobrancaSchema = z
     data_vencimento: z.date({
       required_error: "A data de vencimento é obrigatória.",
     }),
-    
+
     // Status / Pagamento
     foi_pago: z.boolean().default(false),
     data_pagamento: z.date().optional(),
     tipo_pagamento: z.string().optional(),
 
     // Campos auxiliares para UI de Criação (Mês/Ano)
-    mes: z.string().optional(),
-    ano: z.string().optional(),
-    
+    mes: z.union([z.string(), z.number()]).optional(),
+    ano: z.union([z.string(), z.number()]).optional(),
+
     // Controle de aviso
     is_future: z.boolean().optional(),
   })
@@ -65,14 +65,14 @@ export const cobrancaSchema = z
   .refine(
     (data) => {
       // Validação de data de pagamento futura
-       if (data.foi_pago && data.data_pagamento) {
-           // Zera as horas para comparar apenas os dias, evitando problemas de timezone/horários
-           const pagDate = new Date(data.data_pagamento.getFullYear(), data.data_pagamento.getMonth(), data.data_pagamento.getDate());
-           const now = new Date();
-           const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-           return pagDate.getTime() <= today.getTime();
-       }
-       return true;
+      if (data.foi_pago && data.data_pagamento) {
+        // Zera as horas para comparar apenas os dias, evitando problemas de timezone/horários
+        const pagDate = new Date(data.data_pagamento.getFullYear(), data.data_pagamento.getMonth(), data.data_pagamento.getDate());
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return pagDate.getTime() <= today.getTime();
+      }
+      return true;
     },
     {
       message: "A data de pagamento não pode ser futura.",
@@ -88,7 +88,7 @@ export const cobrancaSchema = z
       return true;
     },
     {
-      message: "Para meses futuros, é obrigatório indicar o pagamento.",
+      message: "Para meses futuros, é obrigatório informar o pagamento.",
       path: ["foi_pago"],
     }
   );
@@ -101,6 +101,9 @@ interface UseCobrancaFormProps {
   passageiroId?: string; // Apenas para create
   diaVencimento?: number; // Apenas para create
   valor?: number; // Apenas para create (default value)
+  mes?: number;
+  ano?: number;
+  lockFoiPago?: boolean;
   onSuccess?: () => void;
 }
 
@@ -110,6 +113,9 @@ export function useCobrancaForm({
   passageiroId,
   diaVencimento = 10,
   valor,
+  mes,
+  ano,
+  lockFoiPago,
   onSuccess,
 }: UseCobrancaFormProps) {
   const { user } = useSession();
@@ -125,7 +131,7 @@ export function useCobrancaForm({
     if (mode === "edit" && cobranca) {
       const isPago = cobranca.status === CobrancaStatus.PAGO;
       const valorCentavos = Math.round(Number(cobranca.valor) * 100);
-      
+
       return {
         valor: moneyMask(String(valorCentavos)),
         data_vencimento: parseLocalDate(cobranca.data_vencimento),
@@ -134,32 +140,36 @@ export function useCobrancaForm({
           ? parseLocalDate(cobranca.data_pagamento)
           : undefined,
         tipo_pagamento: cobranca.tipo_pagamento || "",
-        mes: undefined, 
-        ano: undefined,
+        mes: cobranca.mes != null ? String(cobranca.mes) : undefined,
+        ano: cobranca.ano != null ? String(cobranca.ano) : undefined,
       };
     }
 
     // CREATE Mode
     const today = getNowBR();
-    const currentMonth = (today.getMonth() + 1).toString();
-    const currentYear = today.getFullYear().toString();
+    const parsedMes = (typeof mes === "number" || typeof mes === "string") ? Number(mes) : NaN;
+    const parsedAno = (typeof ano === "number" || typeof ano === "string") ? Number(ano) : NaN;
+
+    const hasExplicitMes = !isNaN(parsedMes) && parsedMes >= 1 && parsedMes <= 12;
+    const targetMonthNum = hasExplicitMes ? parsedMes : today.getMonth() + 1;
+    const targetYearNum = !isNaN(parsedAno) && parsedAno >= 2020 ? parsedAno : today.getFullYear();
 
     const vencimentoInicial = calculateSafeDueDate(
-        diaVencimento,
-        today.getMonth(),
-        today.getFullYear()
+      diaVencimento,
+      targetMonthNum - 1,
+      targetYearNum
     );
 
     return {
       valor: valor ? moneyMask(String(Math.round(valor * 100))) : "",
       data_vencimento: vencimentoInicial,
-      foi_pago: false,
-      data_pagamento: undefined,
+      foi_pago: lockFoiPago ? true : false,
+      data_pagamento: lockFoiPago ? today : undefined,
       tipo_pagamento: "",
-      mes: currentMonth,
-      ano: currentYear,
+      mes: hasExplicitMes ? targetMonthNum.toString() : "",
+      ano: targetYearNum.toString(),
     };
-  }, [mode, cobranca, diaVencimento, valor]);
+  }, [mode, cobranca, diaVencimento, valor, mes, ano, lockFoiPago]);
 
   const form = useForm<CobrancaFormData>({
     resolver: zodResolver(cobrancaSchema),
@@ -173,12 +183,12 @@ export function useCobrancaForm({
 
   const onSubmit = async (data: CobrancaFormData) => {
     if (!profile?.id) {
-       toast.error("sistema.erro.sessaoExpirada");
-       return;
+      toast.error("sistema.erro.sessaoExpirada");
+      return;
     }
 
     const valorNumerico = typeof data.valor === 'string' ? parseCurrencyToNumber(data.valor) : data.valor;
-    
+
     // Persistência segura em Brasília
     const dataVencimentoStr = toPersistenceString(data.data_vencimento);
     const dataPagamentoStr = toISODateTimeBR(data.data_pagamento);
@@ -188,8 +198,8 @@ export function useCobrancaForm({
 
       const payload = {
         passageiro_id: passageiroId,
-        mes: data.mes || (data.data_vencimento.getMonth() + 1).toString(),
-        ano: data.ano || data.data_vencimento.getFullYear().toString(),
+        mes: data.mes ? String(data.mes) : (data.data_vencimento.getMonth() + 1).toString(),
+        ano: data.ano ? String(data.ano) : data.data_vencimento.getFullYear().toString(),
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
@@ -208,30 +218,30 @@ export function useCobrancaForm({
       });
 
     } else if (mode === "edit" && cobranca) {
-        const updatePayload: any = {
-            valor: valorNumerico,
-            data_vencimento: dataVencimentoStr,
-            tipo_pagamento: data.foi_pago ? data.tipo_pagamento : undefined,
-            status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
-            pagamento_manual: data.foi_pago,
-        };
+      const updatePayload: any = {
+        valor: valorNumerico,
+        data_vencimento: dataVencimentoStr,
+        tipo_pagamento: data.foi_pago ? data.tipo_pagamento : undefined,
+        status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
+        pagamento_manual: data.foi_pago,
+      };
 
-        if (data.foi_pago) {
-            updatePayload.data_pagamento = dataPagamentoStr;
-        } else {
-            updatePayload.data_pagamento = null;
+      if (data.foi_pago) {
+        updatePayload.data_pagamento = dataPagamentoStr;
+      } else {
+        updatePayload.data_pagamento = null;
+      }
+
+      updateCobranca.mutate({
+        id: cobranca.id,
+        data: updatePayload,
+        cobrancaOriginal: cobranca
+      }, {
+        onSuccess: () => {
+          onSuccess?.();
+          form.reset();
         }
-
-        updateCobranca.mutate({
-            id: cobranca.id,
-            data: updatePayload,
-            cobrancaOriginal: cobranca
-        }, {
-            onSuccess: () => {
-                onSuccess?.();
-                form.reset();
-            }
-        });
+      });
     }
   };
 

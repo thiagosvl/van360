@@ -9,7 +9,6 @@ import { openBrowserLink } from "@/utils/browser";
 import {
   CheckCircle2,
   Download,
-  FileSignature,
   Loader2,
   PenTool,
   AlertCircle,
@@ -19,7 +18,6 @@ import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
 import { SignatureDialog } from "@/components/dialogs/SignatureDialog";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
 
 // Estilos obrigatórios do react-pdf para evitar erros no console
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -75,9 +73,9 @@ export default function AssinarContrato() {
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
         <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-center z-50 shadow-lg">
           <img
-            src="/assets/logo-van360.png"
+            src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-9 w-auto filter brightness-0 invert opacity-90"
+            className="h-10 w-auto filter brightness-0 invert opacity-90"
           />
         </div>
 
@@ -115,15 +113,15 @@ export default function AssinarContrato() {
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
           </div>
           <div>
-            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato</h3>
-            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinautura Digital</p>
+            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato de Transporte</h3>
+            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinatura Digital</p>
           </div>
         </div>
 
         <img
-          src="/assets/logo-van360.png"
+          src="/assets/logo-van360.webp"
           alt="Van360"
-          className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
+          className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
         />
       </header>
 

@@ -62,25 +62,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
         {/* Tabs - Estilo Corretor */}
         <div className="bg-slate-200/50 p-1 rounded-[1.25rem] w-full sm:w-fit overflow-x-auto scrollbar-hide">
-          <TabsList className="bg-transparent h-[52px] p-0 gap-1 border-0 w-max sm:w-auto">
-            <TabsTrigger
-              value={ContratoTab.PENDENTES}
-              className={cn(
-                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
-                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
-                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              )}
-            >
-              Pendentes
-              {countPendentes !== undefined && (
-                <span className={cn(
-                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                  activeTab === ContratoTab.PENDENTES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                )}>
-                  {countPendentes}
-                </span>
-              )}
-            </TabsTrigger>
+          <TabsList className="bg-transparent min-h-[40px] p-0 gap-1 border-0 w-max sm:w-auto">
             <TabsTrigger
               value={ContratoTab.SEM_CONTRATO}
               className={cn(
@@ -96,6 +78,24 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                   activeTab === ContratoTab.SEM_CONTRATO ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                 )}>
                   {countSemContrato}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value={ContratoTab.PENDENTES}
+              className={cn(
+                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
+                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
+                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+              )}
+            >
+              Pendentes
+              {countPendentes !== undefined && (
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                  activeTab === ContratoTab.PENDENTES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                )}>
+                  {countPendentes}
                 </span>
               )}
             </TabsTrigger>
@@ -156,12 +156,6 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                         isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
                       )} />
                     )}
-                    {isDesativado && (
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                      </span>
-                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
@@ -212,12 +206,6 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                         "w-5 h-5 transition-colors",
                         isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
                       )} />
-                    )}
-                    {isDesativado && (
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                      </span>
                     )}
                   </Button>
                 </DrawerTrigger>

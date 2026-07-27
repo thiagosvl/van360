@@ -18,6 +18,11 @@ const config: CapacitorConfig = {
       shakeMenu: false,
     },
   },
+  server: {
+    hostname: 'app.van360.com.br',
+    androidScheme: 'https',
+    iosScheme: 'https'
+  }
 };
 
 export default config;

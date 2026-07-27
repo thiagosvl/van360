@@ -3,15 +3,18 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { KPICardVariant } from "@/types/enums";
 import { formatCurrency } from "@/utils/formatters";
-import { Coins, TrendingUp, CreditCard } from "lucide-react";
+import { Coins, TrendingUp, CreditCard, Wallet } from "lucide-react";
 
 interface RelatoriosEntradasProps {
   dados: {
+    previsto: number;
     realizado: number;
+    pendente: number;
     ticketMedio: number;
     formasPagamento: {
       metodo: string;
       valor: number;
+      count?: number;
       percentual: number;
       color: string;
     }[];
@@ -23,10 +26,26 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
     <div className="space-y-4 px-1">
       <div className="grid grid-cols-2 gap-4">
         <KPICard
-          label="Receita no Mês"
+          label="Faturamento Projetado"
           icon={TrendingUp}
           variant={KPICardVariant.PRIMARY}
+          value={formatCurrency(dados.previsto)}
+          valueClassName={dados.previsto > 0 ? "text-emerald-600" : undefined}
+        />
+
+        <KPICard
+          label="Recebido no Mês"
+          icon={Coins}
+          variant={KPICardVariant.OUTLINE}
           value={formatCurrency(dados.realizado)}
+          valueClassName={dados.realizado > 0 ? "text-emerald-600" : undefined}
+        />
+
+        <KPICard
+          label="Pendente"
+          icon={Wallet}
+          variant={KPICardVariant.OUTLINE}
+          value={formatCurrency(dados.pendente)}
         />
 
         <KPICard
@@ -43,7 +62,7 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
           <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
             <CreditCard className="h-5 w-5 opacity-80 group-hover:opacity-100" />
           </div>
-          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          <h3 className="text-[13px] font-bold text-slate-800">
             Formas de Pagamento
           </h3>
         </div>
@@ -53,15 +72,17 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
               <div key={index} className="space-y-2">
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                    <span className="text-[12px] font-medium text-slate-600">
                       {forma.metodo}
                     </span>
-                    <span className="font-headline font-black text-[#1a3a5c] text-base mt-0.5">
+                    <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {formatCurrency(forma.valor)}
                     </span>
                   </div>
                   <span className="text-[10px] font-black text-slate-400 mb-1">
-                    {Math.round(forma.percentual)}%
+                    {forma.count !== undefined
+                      ? `${forma.count} ${forma.count === 1 ? "parcela" : "parcelas"} (${Math.round(forma.percentual)}%)`
+                      : `${Math.round(forma.percentual)}%`}
                   </span>
                 </div>
                 <Progress
@@ -73,8 +94,8 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
             ))}
 
             {dados.formasPagamento.length === 0 && (
-              <div className="text-center py-8 text-slate-400 text-xs font-bold uppercase tracking-widest">
-                Nenhum pagamento registrado neste mês.
+              <div className="text-center py-8 text-slate-500 text-[13px]">
+                Nenhum pagamento registrado no mês selecionado.
               </div>
             )}
           </div>

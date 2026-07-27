@@ -153,16 +153,18 @@ interface BaseDialogBodyProps {
   className?: string
   animate?: boolean
   animationKey?: any
+  containerRef?: React.Ref<HTMLDivElement>
 }
 
 const BaseDialogBody = ({
   children,
   className,
   animate = false,
-  animationKey
+  animationKey,
+  containerRef
 }: BaseDialogBodyProps) => {
   const content = (
-    <div className={cn("p-6 pt-2 flex-1 overflow-y-auto min-h-[100px]", className)}>
+    <div ref={containerRef} className={cn("p-6 pt-2 flex-1 overflow-y-auto min-h-[100px] [overflow-anchor:none]", className)}>
       {children}
     </div>
   )

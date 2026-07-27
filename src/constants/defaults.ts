@@ -1,21 +1,89 @@
-export const DEFAULT_CLAUSULAS_CONTRATO = [
-  "O serviço contratado consiste no transporte do passageiro acima citado, no trajeto com origem e destino acordado entre as partes.",
-  "Somente o passageiro CONTRATANTE está autorizado a utilizar-se do objeto deste contrato, sendo vedado o passageiro se fazer acompanhar de colegas, parentes, amigos e etc.",
-  "O transporte ora contratado se refere exclusivamente ao horário regular da escola pré-determinado, não sendo de responsabilidade da CONTRATADA o transporte do passageiro em turno diferente do contratado, em horários de atividades extracurriculares ou que por determinação da escola seja alterado.",
-  "O procedimento de retirada e entrega do passageiro na residência ou local combinado deverá ser acordado entre as partes, definindo um responsável para acompanhar o passageiro.",
-  "A partir do momento que for realizada a entrega do passageiro na escola, a CONTRATADA não é mais responsável pela segurança do passageiro, bem como de seus pertences.",
-  "As partes deverão respeitar os horários previamente combinados de saída dos locais de origem e destino, ficando estabelecido que, caso ocorra mudança no local de origem, destino ou retorno, a CONTRATADA reserva-se o direito de aceitar ou não tais alterações, em razão da modificação de rota, podendo, inclusive, ficar desobrigada da prestação dos serviços previstos neste contrato.",
-  "Fica estabelecido que, caso a CONTRATANTE ou algum outro responsável pelo passageiro for buscá-lo no lugar da CONTRATADA, a CONTRATANTE deverá comunicar à CONTRATADA e à escola previamente.",
-  "A CONTRATANTE obriga-se a informar a CONTRATADA com um prazo de até duas horas antes do horário se o passageiro não for comparecer à escola naquele dia.",
-  "Está proibido o consumo de alimentos no interior do veículo escolar, com a finalidade de evitar e prevenir acidentes, como engasgos, ou constrangimento de outros passageiros, além de manter a limpeza do veículo.",
-  "Para os efeitos deste contrato, o transporte pactuado ficará temporariamente suspenso no caso de o passageiro apresentar doença infectocontagiosa, visando preservar a saúde e a segurança das crianças transportadas e dos prestadores do serviço.",
-  "O veículo passa por duas vistorias anuais (uma em cada semestre), onde nesse dia não haverá transporte e assim visando a segurança do mesmo. Avisaremos com antecedência a data das vistorias.",
-  "A CONTRATANTE pagará à CONTRATADA o valor mensal acordado, conforme forma de pagamento e parcelamento previamente acordados entre as partes, sendo o pagamento devido integralmente e de forma regular inclusive durante os períodos de férias dos meses de julho, dezembro e janeiro, bem como em casos de recessos, greves, afastamento temporário do passageiro por motivo de doença, férias, viagens, pandemia ou qualquer outro motivo, inclusive de força maior.",
-  "As parcelas deverão ser pagas até o dia estabelecido nas CONDIÇÕES DE VALOR, durante todo o período de vigência do contrato. Em caso de atraso no pagamento, a CONTRATANTE poderá estar sujeita à multa prevista nas CONDIÇÕES DE VALOR.",
-  "Início do ano terá reajuste da mensalidade e um novo contrato será emitido.",
-  "Em caso de comportamento inadequado, desobediência às normas de segurança ou atitude antissocial, o passageiro poderá sofrer advertência por escrito e, em caso de reincidência, ocorrerá a rescisão do contrato motivada.",
-  "O contrato pode ser rescindido imotivadamente por qualquer das partes, com aplicação de multa rescisória conforme percentual descrito nas condições de valor sobre as parcelas pendentes, exceto quando a rescisão for motivada.",
-  "É convencionado que a CONTRATADA não será responsabilizada pela vigilância de objetos pessoais, material escolar, dinheiro, joias ou quaisquer pertences eventualmente esquecidos pelo passageiro no veículo ou no estabelecimento escolar.",
-  "As partes reconhecem o presente contrato como título executivo extrajudicial nos termos do artigo 784, XI, do Código de Processo Civil.",
-  "O serviço do transporte escolar será prestado até a data de término estabelecida nas CONDIÇÕES DO PERÍODO."
+export interface ContractSection {
+  id: string;
+  titulo: string;
+  clausulas: string[];
+}
+
+export const DEFAULT_SECOES_CONTRATO: ContractSection[] = [
+  {
+    id: "secao-objeto",
+    titulo: "DO OBJETO",
+    clausulas: [
+      "O serviço contratado consiste no transporte do passageiro acima citado, no trajeto com origem e destino acordado entre as partes."
+    ]
+  },
+  {
+    id: "secao-prestacao",
+    titulo: "DA PRESTAÇÃO DO SERVIÇO",
+    clausulas: [
+      "Somente o passageiro CONTRATANTE está autorizado a utilizar-se do objeto deste contrato, sendo vedado o passageiro se fazer acompanhar de colegas, parentes, amigos e etc.",
+      "O transporte ora contratado se refere exclusivamente ao horário regular da escola pré-determinado, não sendo de responsabilidade da CONTRATADA o transporte do passageiro em turno diferente do contratado, em horários de atividades extracurriculares ou que por determinação da escola seja alterado.",
+      "O procedimento de retirada e entrega do passageiro na residência ou local combinado deverá ser acordado entre as partes, definindo um responsável para acompanhar o passageiro.",
+      "A partir do momento que for realizada a entrega do passageiro na escola, a CONTRATADA não é mais responsável pela segurança do passageiro, bem como de seus pertences.",
+      "As partes deverão respeitar os horários previamente combinados de saída dos locais de origem e destino, ficando estabelecido que, caso ocorra mudança no local de origem, destino ou retorno, a CONTRATADA reserva-se o direito de aceitar ou não tais alterações, em razão da modificação de rota, podendo, inclusive, ficar desobrigada da prestação dos serviços previstos neste contrato.",
+      "Fica estabelecido que, caso a CONTRATANTE ou algum outro responsável pelo passageiro for buscá-lo no lugar da CONTRATADA, a CONTRATANTE deverá comunicar à CONTRATADA e à escola previamente.",
+      "A CONTRATANTE obriga-se a informar a CONTRATADA com um prazo de até duas horas antes do horário se o passageiro não for comparecer à escola naquele dia."
+    ]
+  },
+  {
+    id: "secao-valor",
+    titulo: "DO VALOR",
+    clausulas: [
+      "A CONTRATANTE pagará à CONTRATADA o valor mensal acordado, conforme forma de pagamento e parcelamento previamente acordados entre as partes, sendo o pagamento devido integralmente e de forma regular inclusive durante os períodos de férias dos meses de julho, dezembro e janeiro, bem como em casos de recessos, greves, afastamento temporário do passageiro por motivo de doença, férias, viagens, pandemia ou qualquer outro motivo, inclusive de força maior.",
+      "As parcelas deverão ser pagas até o dia estabelecido nas CONDIÇÕES DE VALOR, durante todo o período de vigência do contrato. Em caso de atraso no pagamento, a CONTRATANTE poderá estar sujeita à multa prevista nas CONDIÇÕES DE VALOR, sendo que, após a notificação do atraso, a CONTRATADA poderá conceder um prazo para regularização. Persistindo o não pagamento da parcela em atraso, a prestação do serviço poderá ser suspensa até que a situação seja regularizada.",
+      "Início do ano terá reajuste da mensalidade e um novo contrato será emitido."
+    ]
+  },
+  {
+    id: "secao-rescisao",
+    titulo: "DA RESCISÃO",
+    clausulas: [
+      "Em caso de comportamento inadequado, desobediência às normas de segurança ou atitude antissocial, o passageiro poderá sofrer advertência por escrito e, em caso de reincidência, ocorrerá a rescisão do contrato motivada.",
+      "O contrato pode ser rescindido imotivadamente por qualquer das partes, com aplicação de multa rescisória conforme percentual descrito nas condições de valor sobre as parcelas pendentes, exceto quando a rescisão for motivada."
+    ]
+  },
+  {
+    id: "secao-gerais",
+    titulo: "DAS DISPOSIÇÕES GERAIS",
+    clausulas: [
+      "Está proibido o consumo de alimentos no interior do veículo escolar, com a finalidade de evitar e prevenir acidentes, como engasgos, ou constrangimento de outros passageiros, além de manter a limpeza do veículo.",
+      "Para os efeitos deste contrato, o transporte pactuado ficará temporariamente suspenso no caso de o passageiro apresentar doença infectocontagiosa, visando preservar a saúde e a segurança das crianças transportadas e dos prestadores do serviço.",
+      "O veículo passa por duas vistorias anuais (uma em cada semestre), onde nesse dia não haverá transporte e assim visando a segurança do mesmo. Avisaremos com antecedência a data das vistorias.",
+      "É convencionado que a CONTRATADA não será responsabilizada pela vigilância de objetos pessoais, material escolar, dinheiro, joias ou quaisquer pertences eventualmente esquecidos pelo passageiro no veículo ou no estabelecimento escolar.",
+      "As partes reconhecem o presente contrato como título executivo extrajudicial nos termos do artigo 784, XI, do Código de Processo Civil, sem prejuízo da opção pelo processo de conhecimento para obtenção de título executivo judicial, nos termos do artigo 785.",
+      "O serviço do transporte escolar será prestado até a data de término estabelecida nas CONDIÇÕES DO PERÍODO."
+    ]
+  }
+];
+
+export const DEFAULT_CLAUSULAS_CONTRATO = DEFAULT_SECOES_CONTRATO.flatMap((s) => s.clausulas);
+
+export const ESTADOS_BRASILEIROS = [
+  { value: "AC", label: "Acre" },
+  { value: "AL", label: "Alagoas" },
+  { value: "AP", label: "Amapá" },
+  { value: "AM", label: "Amazonas" },
+  { value: "BA", label: "Bahia" },
+  { value: "CE", label: "Ceará" },
+  { value: "DF", label: "Distrito Federal" },
+  { value: "ES", label: "Espírito Santo" },
+  { value: "GO", label: "Goiás" },
+  { value: "MA", label: "Maranhão" },
+  { value: "MT", label: "Mato Grosso" },
+  { value: "MS", label: "Mato Grosso do Sul" },
+  { value: "MG", label: "Minas Gerais" },
+  { value: "PA", label: "Pará" },
+  { value: "PB", label: "Paraíba" },
+  { value: "PR", label: "Paraná" },
+  { value: "PE", label: "Pernambuco" },
+  { value: "PI", label: "Piauí" },
+  { value: "RJ", label: "Rio de Janeiro" },
+  { value: "RN", label: "Rio Grande do Norte" },
+  { value: "RS", label: "Rio Grande do Sul" },
+  { value: "RO", label: "Rondônia" },
+  { value: "RR", label: "Roraima" },
+  { value: "SC", label: "Santa Catarina" },
+  { value: "SP", label: "São Paulo" },
+  { value: "SE", label: "Sergipe" },
+  { value: "TO", label: "Tocantins" },
 ];

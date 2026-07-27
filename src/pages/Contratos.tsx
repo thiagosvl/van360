@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -20,12 +19,10 @@ const Contratos = () => {
     kpis,
     contratos,
     isLoading,
-    isActionLoading,
     isContratoAtivo,
     isContratoConfigurado,
     handleRefresh,
     handleOpenContractSetup,
-    handleActivateContracts,
     handleToggleContracts,
     isToggling,
     handleOpenPreview,
@@ -40,8 +37,6 @@ const Contratos = () => {
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
-
-
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -71,17 +66,17 @@ const Contratos = () => {
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Você ainda não configurou os contratos</p>
+                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Ative seus contratos digitais</p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Ative e configure essa funcionalidade para gerar contratos em PDF automaticamente para seus passageiros.
+                      Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus passageiros.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleOpenContractSetup}
-                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center"
+                  className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
                 >
-                  Configurar Agora
+                  Ativar Uso de Contratos
                 </button>
               </div>
             )}
@@ -96,14 +91,14 @@ const Contratos = () => {
                   <div className="flex-1">
                     <p className="text-xs font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</p>
                     <p className="text-[11px] text-slate-700 leading-relaxed">
-                      A emissão e o gerenciamento de contratos em PDF para seus passageiros estão desativados. Reative para voltar a utilizar.
+                      Reative para voltar a gerar contratos para os passageiros.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleToggleContracts(true)}
                   disabled={isToggling}
-                  className="h-10 px-5 bg-[#1a3a5c] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1a3a5c]/90 transition-all shadow-md shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto text-center flex justify-center items-center disabled:opacity-50"
+                  className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center disabled:opacity-50"
                 >
                   Reativar Contratos
                 </button>
@@ -112,15 +107,15 @@ const Contratos = () => {
 
             <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" :
-                  activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Sem Contrato"}
+                {activeTab === ContratoTab.PENDENTES ? "Pendentes" :
+                  activeTab === ContratoTab.ASSINADOS ? "Assinados" : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                 {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
               </span>
             </div>
 
-            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
@@ -131,7 +126,7 @@ const Contratos = () => {
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
@@ -142,7 +137,7 @@ const Contratos = () => {
               />
             </TabsContent>
 
-            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
                 isLoading={isLoading}
@@ -160,7 +155,7 @@ const Contratos = () => {
         isOpen={isPreviewPdfOpen}
         onClose={() => setIsPreviewPdfOpen(false)}
         pdfUrl={pdfUrl}
-        title="Modelo do Contrato"
+        title="Prévia do Contrato"
       />
     </>
   );

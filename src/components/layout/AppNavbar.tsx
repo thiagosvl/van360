@@ -20,6 +20,8 @@ import {
   UserPen,
   Key,
   Rocket,
+  IdCard,
+  Menu,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -42,7 +44,14 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
 
-  const currentPage = pagesItems.find(item => item.href === location.pathname);
+  let currentPage: any = pagesItems.find(item => item.href === location.pathname);
+  if (!currentPage && location.pathname.startsWith("/passageiros/")) {
+    currentPage = {
+      title: "Carteirinha",
+      href: location.pathname,
+      icon: IdCard,
+    };
+  }
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -75,27 +84,27 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   return (
     <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-[calc(4rem+var(--safe-area-top))] sm:h-[calc(5rem+var(--safe-area-top))] pt-[var(--safe-area-top)] transition-all">
       <div className="flex h-full items-center justify-between px-4 sm:px-8 relative">
-        {/* Esquerda: Central de Ajuda (Mobile) / Título (Desktop) */}
-        <div className="flex-1 flex items-center">
-          {/* Botão de Ajuda - Apenas Mobile */}
-          <button
-            onClick={() => setIsHelpOpen(true)}
-            className="md:hidden group flex items-center gap-2 text-slate-400 hover:text-[#1a3a5c] transition-all p-1.5"
-          >
-            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#25D366]/10 group-hover:text-[#25D366] transition-colors">
-              <HelpCircle className="h-5 w-5" />
-            </div>
-          </button>
+        {/* Esquerda: Logo (Mobile) / Título (Desktop) */}
+        <div className="flex-1 flex items-center min-w-0">
+          {/* Logo - Apenas Mobile */}
+          <div className="flex md:hidden shrink-0">
+            <img
+              src="/assets/logo-van360.webp"
+              alt="Van360"
+              className="h-8 sm:h-9 w-auto cursor-pointer transition-opacity hover:opacity-80"
+              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
+            />
+          </div>
 
           {/* Título da Página - Apenas Desktop */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 min-w-0">
             {currentPage && (
               <>
-                <div className="h-10 w-10 rounded-xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] border border-[#1a3a5c]/10">
+                <div className="h-10 w-10 shrink-0 rounded-xl flex items-center justify-center text-[#1a3a5c]">
                   <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
                 </div>
-                <div className="flex flex-col">
-                  <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
+                <div className="flex flex-col min-w-0">
+                  <h2 className="text-lg font-bold text-[#1a3a5c] tracking-tight leading-none truncate">
                     {currentPage.title}
                   </h2>
                 </div>
@@ -104,34 +113,42 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           </div>
         </div>
 
-        {/* Centro: Logo (Apenas mobile) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden">
-          <img
-            src="/assets/logo-van360.png"
-            alt="Van360"
-            className="h-9 sm:h-12 w-auto cursor-pointer transition-opacity hover:opacity-80"
-            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
-          />
+        {/* Centro: Título da Página (Apenas Mobile) */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden w-[40%] sm:w-[50%]">
+          {currentPage && (
+            <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c] tracking-tight leading-none truncate text-center w-full px-1">
+              {currentPage.title}
+            </h2>
+          )}
         </div>
 
-        {/* Direita: Perfil de Usuário */}
-        <div className="flex-1 flex justify-end items-center">
+        {/* Direita: Ajuda (Mobile) e Perfil de Usuário */}
+        <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2">
+          {/* Perfil de Usuário / Menu Hamburger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="group flex items-center gap-x-2 outline-none p-1">
-                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-slate-100 group-hover:text-primary transition-all shadow-sm">
-                  {isLoadingProfile ? (
-                    <Skeleton className="h-full w-full rounded-2xl" />
-                  ) : (
-                    <span>{userInitial}</span>
-                  )}
+              <button className="group flex items-center gap-x-1.5 outline-none p-1 sm:p-0">
+                {/* Mobile: Avatar com inicial + seta */}
+                <div className="md:hidden flex items-center gap-x-1.5">
+                  <div className="h-10 w-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm group-hover:bg-slate-50 group-hover:text-primary transition-all shadow-sm">
+                    {isLoadingProfile ? (
+                      <Skeleton className="h-full w-full rounded-2xl" />
+                    ) : (
+                      <span>{userInitial}</span>
+                    )}
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 </div>
-                <ChevronDown className="h-4 w-4 hidden sm:block text-slate-400 group-hover:text-slate-600 transition-colors" />
+
+                {/* Desktop: Menu Hamburger */}
+                <div className="hidden md:flex items-center justify-center h-12 w-12 rounded-2xl bg-white border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 hover:text-primary transition-all shadow-sm">
+                  <Menu className="h-7 w-7" strokeWidth={2.5} />
+                </div>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-2 rounded-xl p-1 shadow-xl border-gray-100" align="end">
               <div className="px-3 py-2.5 border-b border-gray-50 mb-1">
-                <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">Bem-vindo,</p>
+                <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">Bem-vindo (a),</p>
                 {isLoadingProfile ? (
                   <Skeleton className="h-4 w-32 mt-1" />
                 ) : (
@@ -151,7 +168,11 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Key className="h-4 w-4 text-slate-400" />
-                Trocar Chave Pix
+                Chave Pix
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsHelpOpen(true)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+                <HelpCircle className="h-4 w-4 text-slate-400" />
+                Ajuda / Suporte
               </DropdownMenuItem>
               <div className="h-px bg-gray-50 my-1" />
               <DropdownMenuItem

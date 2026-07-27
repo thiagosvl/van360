@@ -1,57 +1,70 @@
-import { Car, ChartArea, CreditCard, FileText, GraduationCap, LayoutDashboard, Receipt, TrendingDown, Users, Rocket, Route } from "lucide-react";
+import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, Cake, BadgeDollarSign, Route } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
 
 const pagesItems = [
     {
         title: "Início",
-        href: "/inicio",
+        href: ROUTES.PRIVATE.MOTORISTA.HOME,
         icon: LayoutDashboard,
     },
     {
         title: "Rotas",
-        href: "/rotas",
+        href: ROUTES.PRIVATE.MOTORISTA.ROUTES,
         icon: Route,
     },
     {
-        title: "Mensalidades",
-        href: "/mensalidades",
-        icon: CreditCard,
+        title: "Parcelas",
+        href: ROUTES.PRIVATE.MOTORISTA.BILLING,
+        icon: BadgeDollarSign,
     },
     {
         title: "Passageiros",
-        href: "/passageiros",
+        href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
         icon: Users,
     },
     {
         title: "Contratos",
-        href: "/contratos",
+        href: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
         icon: FileText,
     },
     {
         title: "Escolas",
-        href: "/escolas",
+        href: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,
         icon: GraduationCap,
     },
     {
         title: "Veículos",
-        href: "/veiculos",
+        href: ROUTES.PRIVATE.MOTORISTA.VEHICLES,
         icon: Car,
     },
     {
         title: "Gastos",
-        href: "/gastos",
+        href: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
         icon: TrendingDown,
     },
     {
+        title: "Aniversários",
+        href: ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS,
+        icon: Cake,
+    },
+    {
         title: "Relatórios",
-        href: "/relatorios",
+        href: ROUTES.PRIVATE.MOTORISTA.REPORTS,
         icon: ChartArea,
     },
     {
-        title: "Minha Assinatura",
-        href: "/assinatura",
+        title: "Assinatura",
+        href: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
         icon: Rocket,
     },
 ];
 
-export { pagesItems };
+// Centraliza a configuração dos itens que aparecem no rodapé mobile
+const bottomNavHrefs = [
+    ROUTES.PRIVATE.MOTORISTA.HOME,
+    ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
+    ROUTES.PRIVATE.MOTORISTA.BILLING,
+    ROUTES.PRIVATE.MOTORISTA.ROUTES,
+];
 
+export { pagesItems, bottomNavHrefs };

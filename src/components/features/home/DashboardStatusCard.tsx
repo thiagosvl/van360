@@ -85,14 +85,14 @@ export const DashboardStatusCard = ({
         </div>
         <div className="flex-1">
           <p className={cn("text-xs font-bold", style.titleColor)}>{title}</p>
-          <p className={cn("text-[11px]", style.descColor)}>{description}</p>
+          <p className={cn("text-[11px] mt-0.5", style.descColor)}>{description}</p>
         </div>
       </div>
       {actionLabel && (
         <button
           onClick={onAction}
           className={cn(
-            "h-10 px-5 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-md shrink-0 active:scale-95 flex items-center justify-center gap-1 w-full sm:w-auto",
+            "h-11 px-4 md:px-5 text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shrink-0 active:scale-95 flex items-center justify-center w-full sm:w-auto",
             style.buttonBg
           )}
         >

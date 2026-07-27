@@ -3,15 +3,14 @@ import { PassageirosList } from "@/components/features/passageiro/PassageirosLis
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
-import { PassengerOnboardingDrawer } from "@/components/features/quickstart/PassengerOnboardingDrawer";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
-import { useState } from "react";
 
 export default function Passageiros() {
   const {
@@ -46,8 +45,6 @@ export default function Passageiros() {
     hasActiveFilters,
   } = usePassageirosViewModel();
 
-  const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
-
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
   const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
   const sectionCount = isMainTab ? passageiros.length : countPrePassageiros;
@@ -74,7 +71,7 @@ export default function Passageiros() {
             className="w-full space-y-6"
           >
             <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-              <TabsList className="grid grid-cols-2 w-full h-[52px] bg-transparent p-0 gap-1 mt-0">
+              <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
                 <TabsTrigger
                   value={PassageiroTab.PASSAGEIROS}
                   className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
@@ -102,9 +99,9 @@ export default function Passageiros() {
               </TabsList>
             </div>
 
-            <TabsContent value={activeTab} className="space-y-6 mt-0">
+            <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
               <div className="space-y-6">
-                {(isMainTab ? countPassageiros === 0 : true) && (
+                {(isMainTab ? countPassageiros < 10 : true) && (
                   <QuickRegistrationLink
                     profile={profile}
                     pendingCount={countPrePassageiros}
@@ -159,7 +156,7 @@ export default function Passageiros() {
                         onClick: clearFilters
                       } : {
                         label: "Cadastrar Passageiro",
-                        onClick: () => setIsPassengerDrawerOpen(true)
+                        onClick: handleOpenNewDialog
                       }}
                     />
                   ) : (
@@ -185,13 +182,6 @@ export default function Passageiros() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-
-      <PassengerOnboardingDrawer
-        open={isPassengerDrawerOpen}
-        onOpenChange={setIsPassengerDrawerOpen}
-        onManualRegistration={handleOpenNewDialog}
-        profile={profile}
-      />
     </>
   );
 }

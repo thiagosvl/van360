@@ -22,7 +22,6 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { subscriptionApi } from "@/services/api/subscription.api";
-import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "sonner";
 
@@ -56,12 +55,12 @@ export function useSaaSCheckoutViewModel({
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { subscription, refetch: refetchStatus } = useSubscriptionStatus(user?.id);
-  const { isPromotionActive, plans: plansFromApi } = useSubscriptionPlans();
+  const { isPromotionActive, plans: plansFromApi, refetch: refetchPlans } = useSubscriptionPlans();
   const { invoices, refetchInvoices, paymentMethods } = useSubscriptionBilling(user?.id);
   const { createCheckout } = useSubscriptionCheckout();
   const { referral, isLoading: isLoadingReferral, refetch: refetchReferral } = useSubscriptionReferral(user?.id);
 
-  const plans = plansFromProps || plansFromApi;
+  const plans = plansFromApi || plansFromProps;
   const { isReady: isProviderReady, generatePaymentToken } = usePaymentProvider();
 
   const [step, setStep] = useState(1);
@@ -79,13 +78,14 @@ export function useSaaSCheckoutViewModel({
   useEffect(() => {
     if (isOpen && user?.id) {
       setIsRefetchingReferral(true);
-      refetchReferral()
-        .catch((err) => console.error("Erro ao atualizar dados de indicação:", err))
-        .finally(() => {
-          setIsRefetchingReferral(false);
-        });
+      Promise.all([
+        refetchReferral().catch((err) => console.error("Erro ao atualizar dados de indicação:", err)),
+        refetchPlans().catch((err) => console.error("Erro ao atualizar planos:", err))
+      ]).finally(() => {
+        setIsRefetchingReferral(false);
+      });
     }
-  }, [isOpen, user?.id, refetchReferral]);
+  }, [isOpen, user?.id, refetchReferral, refetchPlans]);
 
   const savedCards: PaymentMethod[] = paymentMethods ?? [];
   const defaultCard = savedCards.find(c => c.is_default) ?? savedCards[0] ?? null;
@@ -286,6 +286,52 @@ export function useSaaSCheckoutViewModel({
     }
   };
 
+  // LÓGICA DE PRECIFICAÇÃO CENTRALIZADA
+  const annualPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
+  const monthlyPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
+  const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
+  const selectedPlan = isAnual ? annualPlan : monthlyPlan;
+
+  let annualPrice = annualPlan ? SubscriptionUtils.getFinalPrice(annualPlan, isPromotionActive) : 0;
+  let monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
+  let hasOverride = false;
+
+  if (subscription?.valor_base_anual !== null && subscription?.valor_base_anual !== undefined) {
+    let finalAnnual = Number(subscription.valor_base_anual);
+    if (subscription.valor_promocional_anual !== null && subscription.valor_promocional_anual !== undefined) {
+      if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
+        finalAnnual = Number(subscription.valor_promocional_anual);
+      }
+    }
+    annualPrice = finalAnnual;
+    hasOverride = true;
+  }
+  
+  if (subscription?.valor_base_mensal !== null && subscription?.valor_base_mensal !== undefined) {
+    let finalMonthly = Number(subscription.valor_base_mensal);
+    if (subscription.valor_promocional_mensal !== null && subscription.valor_promocional_mensal !== undefined) {
+      if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
+        finalMonthly = Number(subscription.valor_promocional_mensal);
+      }
+    }
+    monthlyPrice = finalMonthly;
+    hasOverride = true;
+  }
+
+  const hasActiveDiscountLocal = referral?.hasActiveDiscount;
+  const discountPctLocal = referral?.discountPct || 0;
+
+  if (hasActiveDiscountLocal && discountPctLocal > 0) {
+    annualPrice = annualPrice * (1 - discountPctLocal / 100);
+    monthlyPrice = monthlyPrice * (1 - discountPctLocal / 100);
+  }
+
+  const totalPrice = isAnual ? annualPrice : monthlyPrice;
+  const formattedPrice = SubscriptionUtils.formatCurrency(totalPrice);
+  const discountPercent = monthlyPrice > 0 ? Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100) : 0;
+  const totalDiscount = (monthlyPrice * 12) - annualPrice;
+  const freeMonths = monthlyPrice > 0 ? Math.round(totalDiscount / monthlyPrice) : 0;
+
   return {
     step,
     nextStep,
@@ -312,5 +358,19 @@ export function useSaaSCheckoutViewModel({
     hasActiveDiscount: referral?.hasActiveDiscount,
     discountPct: referral?.discountPct,
     isLoadingData: isLoadingReferral || isRefetchingReferral || !plans,
+    
+    // UI Computed Properties
+    annualPlan,
+    monthlyPlan,
+    isAnual,
+    selectedPlan,
+    annualPrice,
+    monthlyPrice,
+    hasOverride,
+    totalPrice,
+    formattedPrice,
+    discountPercent,
+    totalDiscount,
+    freeMonths
   };
 }

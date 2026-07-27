@@ -23,7 +23,8 @@ export const RoleProtectedRoute = ({ children, allowedRoles }: RoleProtectedRout
   const isLoading = sessionLoading || (!!session && profileLoading);
 
   if (isLoading) {
-    return <InitialLoading />;
+    const isDarkRoute = location.pathname.startsWith("/admin") || allowedRoles.includes(UserType.ADMIN);
+    return <InitialLoading darkMode={isDarkRoute} />;
   }
 
   // Se não houver sessão, AppGate já deve cuidar disso, mas por segurança:

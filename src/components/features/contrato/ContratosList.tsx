@@ -1,6 +1,5 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
-import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
 
@@ -15,11 +14,22 @@ import {
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoStatus, ContratoTab } from "@/types/enums";
-import { formatFirstName, formatShortName } from "@/utils/formatters";
+import { formatShortName } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 import { ContratoSummary } from "./ContratoSummary";
+
+const getIconConfig = (isAssinado: boolean, isSemContrato: boolean) => {
+  if (isAssinado) {
+    return { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" };
+  }
+  if (isSemContrato) {
+    return { icon: FileX2, className: "bg-red-50 border-red-100 text-red-500" };
+  }
+  return { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+};
 
 interface ContratosListProps {
   data: any[];
@@ -87,11 +97,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   const nomeExibicao = item.passageiro?.nome || item.nome || "";
   const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "";
 
-  const iconConfig = isAssinado
-    ? { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" }
-    : isSemContrato
-      ? { icon: FileX2, className: "bg-slate-50 border-slate-100 text-slate-400" }
-      : { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+  const iconConfig = getIconConfig(isAssinado, isSemContrato);
 
   const swipeActions = actions.map((action) => ({
     ...action,
@@ -111,24 +117,14 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {formatShortName(nomeExibicao, true)}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-              {formatFirstName(responsavelExibicao)}
+          <div className="flex flex-col min-w-0 mt-0.5">
+            <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
+              {formatNomeResponsavelExibicao(responsavelExibicao)}
             </p>
           </div>
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-7 top-8 -translate-y-1/2">
-          <div className="flex items-center gap-1.5">
-            {(status === ContratoStatus.ASSINADO &&
-              <StatusBadge
-                status={status === ContratoStatus.ASSINADO}
-                trueLabel="ASSINADO"
-                falseLabel="PENDENTE"
-                className="font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none"
-              />
-            )}
-          </div>
         </div>
       </div>
     </MobileActionItem>
@@ -175,7 +171,7 @@ export const ContratosList = memo(function ContratosList({
       },
     };
 
-    const config = configs[activeTab] || configs[ContratoTab.PENDENTES];
+    const config = configs[activeTab] || configs[ContratoTab.SEM_CONTRATO];
 
     return (
       <UnifiedEmptyState
@@ -209,7 +205,7 @@ export const ContratosList = memo(function ContratosList({
           <TableHeader className="bg-gray-50/50">
             <TableRow className="hover:bg-transparent border-b border-gray-100/80">
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Passageiro
+                Nome
               </TableHead>
               <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Valor Mensal
@@ -221,8 +217,15 @@ export const ContratosList = memo(function ContratosList({
           </TableHeader>
           <TableBody>
             {data.map((item) => {
-              const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
-              const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
+              const nomePassageiro = item.passageiro?.nome || item.nome;
+              const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel;
+
+              const isSemContrato = item.tipo === "passageiro";
+              const status = item.status as ContratoStatus | null;
+              const isAssinado = status === ContratoStatus.ASSINADO;
+
+              const iconConfig = getIconConfig(isAssinado, isSemContrato);
+
               return (
                 <TableRow
                   key={item.id}
@@ -230,15 +233,15 @@ export const ContratosList = memo(function ContratosList({
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
-                        <FileText className="w-5 h-5 text-[#1a3a5c]" />
+                      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border", iconConfig.className)}>
+                        <iconConfig.icon className="w-5 h-5" />
                       </div>
                       <div className="flex flex-col">
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                           {formatShortName(nomePassageiro, true)}
                         </p>
                         <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
-                          {formatFirstName(nomeResponsavel)}
+                          {formatNomeResponsavelExibicao(nomeResponsavel)}
                         </p>
                       </div>
                     </div>

@@ -5,7 +5,7 @@ export interface ConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: string;
+  description: React.ReactNode;
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
   confirmText?: string;
@@ -52,7 +52,7 @@ export default function ConfirmationDialog({
         onClose={allowClose ? () => onOpenChange(false) : undefined}
       />
       <BaseDialog.Body>
-        <p className="text-slate-500 text-sm font-medium leading-relaxed">{description}</p>
+        <div className="text-slate-500 text-sm font-medium leading-relaxed">{description}</div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
         <BaseDialog.Action

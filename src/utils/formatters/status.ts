@@ -2,9 +2,13 @@ import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso } from "./cobranca";
 import { getStartOfDayBR, getNowBR, differenceInCalendarDaysBR } from "../dateUtils";
 
-export const getStatusText = (status: string, dataVencimento: string) => {
+export const getStatusText = (status: string, dataVencimento?: string) => {
   if (status === CobrancaStatus.PAGO) {
     return "Pago";
+  }
+
+  if (!dataVencimento) {
+    return "Pendente";
   }
 
   const vencimento = getStartOfDayBR(dataVencimento);
@@ -21,9 +25,13 @@ export const getStatusText = (status: string, dataVencimento: string) => {
   return "Pendente";
 };
 
-export const getStatusColor = (status: string, dataVencimento: string) => {
+export const getStatusColor = (status: string, dataVencimento?: string) => {
   if (status === CobrancaStatus.PAGO) {
     return "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-transparent shadow-sm";
+  }
+
+  if (!dataVencimento) {
+    return "bg-amber-50 text-amber-600 hover:bg-amber-100 border-transparent shadow-sm";
   }
 
   if (checkCobrancaEmAtraso(dataVencimento)) {

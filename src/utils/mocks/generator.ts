@@ -44,6 +44,7 @@ const escolas = [
     cidade: "São Paulo",
     estado: "SP",
     referencia: "",
+    complemento: "",
   },
   {
     nome: "Joanna Abraão",
@@ -54,6 +55,7 @@ const escolas = [
     cidade: "São Paulo",
     estado: "SP",
     referencia: "Próximo ao MASP",
+    complemento: "Bloco A",
   },
 ];
 
@@ -143,6 +145,10 @@ export const generateName = (): string => {
   return `${nome} ${sobrenome1} ${sobrenome2}`;
 };
 
+export const generatePhone = (): string => {
+  return "(11) 95118-6951";
+}
+
 /**
  * Gera um email aleatório baseado no nome
  */
@@ -151,17 +157,6 @@ export const generateEmail = (name: string): string => {
   const domains = ["gmail.com", "hotmail.com", "outlook.com", "uol.com.br", "bol.com.br"];
   const domain = domains[randomNumber(0, domains.length - 1)];
   return `${cleanName}${randomNumber(1, 99)}@${domain}`;
-};
-
-/**
- * Gera um telefone celular aleatório formatado
- */
-export const generatePhone = (): string => {
-  return "(11) 95118-6951";
-  const ddd = randomNumber(11, 99);
-  const part1 = randomNumber(90000, 99999);
-  const part2 = randomNumber(1000, 9999);
-  return `(${ddd}) ${part1}-${part2}`;
 };
 
 /**
@@ -198,6 +193,16 @@ export const generatePeriodo = (): string => {
   return periodos[randomNumber(0, periodos.length - 1)];
 };
 
+export const generateTurma = (): string => {
+  const turmas = ["1º ano", "2º ano", "3º ano", "4º ano", "5º ano", "6º ano", "7º ano", "8º ano", "9º ano"];
+  return turmas[randomNumber(0, turmas.length - 1)];
+};
+
+
+export const generateProfessor = (): string => {
+  return "Claudia";
+};
+
 /**
  * Gera um dia de vencimento aleatório (comum)
  */
@@ -209,7 +214,7 @@ export const generateVencimento = (): string => {
 };
 
 /**
- * Gera um valor de mensalidade aleatório formatado
+ * Gera um valor de parcela aleatório formatado
  */
 export const generateValorCobranca = (): string => {
   const valores = ["150,00", "180,00", "200,00", "220,00", "250,00"];
@@ -278,9 +283,9 @@ export const mockGenerator = {
       nome: name,
       periodo: generatePeriodo(),
       nome_responsavel: generateName(),
-      email_responsavel: generateEmail(name),
+
       cpf_responsavel: generateCPF(),
-      telefone_responsavel: generatePhone(),
+      telefone_responsavel: "(11) 95118-6951",
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
       ...address,
@@ -288,11 +293,16 @@ export const mockGenerator = {
       observacoes: "é um teste",
 
       // New fields from Schema/Enums
+      turma: generateTurma(),
+      nome_professor: generateProfessor(),
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),
       parentesco_responsavel: randomEnum(ParentescoResponsavel),
       data_nascimento: generateDate(2010, 2020), // 4-14 years old
-      data_inicio_transporte: generateDate(2024, 2024),
+      data_inicio_transporte: generateDate(2024, 2026),
+      data_fim_transporte: generateDate(2024, 2026),
+      mes_inicio_cobranca: 1,
+      mes_fim_cobranca: 12,
 
       ...overrides
     };

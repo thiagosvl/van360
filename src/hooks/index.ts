@@ -59,7 +59,8 @@ export {
     useCreateGasto, useDeleteGasto, useUpdateGasto
 } from "./api/useGastoMutations";
 export {
-    useCreatePassageiro, useDeletePassageiro, useFinalizePreCadastro, useToggleAtivoPassageiro, useUpdatePassageiro
+    useCreatePassageiro, useDeletePassageiro, useFinalizePreCadastro, useToggleAtivoPassageiro, useUpdatePassageiro,
+    useCreateResponsavelAdicional, useUpdateResponsavelAdicional, useDeleteResponsavelAdicional, useSetPrincipalResponsavel
 } from "./api/usePassageiroMutations";
 export {
     useCreatePrePassageiro,
@@ -69,3 +70,7 @@ export {
     useCreateVeiculo, useDeleteVeiculo,
     useToggleAtivoVeiculo, useUpdateVeiculo
 } from "./api/useVeiculoMutations";
+
+export {
+    useGastoCategorias, useCreateGastoCategoria, useUpdateGastoCategoria, useDeleteGastoCategoria
+} from "./api/useGastoCategorias";

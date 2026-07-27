@@ -7,25 +7,25 @@ import {
 } from "@/hooks/api/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { cn } from "@/lib/utils";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { phoneMask } from "@/utils/masks";
+import { openBrowserLink } from "@/utils/browser";
+import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
 import {
-  Gift,
   Copy,
-  CheckCircle2,
+  CopyCheck,
   Clock,
-  Trash2,
   Lock,
   TrendingUp,
-  Award,
-  Share2,
-  CreditCard,
-  CircleDot,
+  CheckCircle2,
   ChevronDown,
-  X,
-  AlertOctagon,
+  CircleDot,
+  Trash2,
+  CreditCard,
+  AlertOctagon
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -74,16 +74,13 @@ const SubscriptionPage = () => {
     deletePaymentMethod
   } = useSubscriptionBilling(user?.id);
 
-  const {
-    referral,
-    claimReferral
-  } = useSubscriptionReferral(user?.id);
+  const { referral } = useSubscriptionReferral(user?.id);
+
+
 
   const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const [isCopied, setIsCopied] = useState(false);
-  const [claimPhone, setClaimPhone] = useState("");
-  const [isClaimOpen, setIsClaimOpen] = useState(false);
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
+  const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
 
   const cancelSubscription = useCancelSubscription();
 
@@ -113,18 +110,9 @@ const SubscriptionPage = () => {
   const isPastDue = subscription?.status === SubscriptionStatus.PAST_DUE;
 
   const trialDaysLeft = (() => {
-    if (!isTrial || !subscription?.trial_ends_at) return 0;
+    if (!isTrial || !subscription?.trial_ends_at) return null;
     return Math.max(0, differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()));
   })();
-
-  const handleCopyReferral = () => {
-    if (referral?.referralLink) {
-      navigator.clipboard.writeText(referral.referralLink);
-      setIsCopied(true);
-      toast.success("Link de indicação copiado!");
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -150,7 +138,7 @@ const SubscriptionPage = () => {
   const handleCancelSubscription = () => {
     openConfirmationDialog({
       title: "Cancelar Assinatura",
-      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso aos recursos e não será mais cobrado.",
+      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso as funcionalidades e não será mais cobrado.",
       confirmText: "Sim, Cancelar",
       cancelText: "Voltar",
       variant: "destructive",
@@ -194,25 +182,10 @@ const SubscriptionPage = () => {
     });
   };
 
-  const handleClaimReferral = async () => {
-    const cleanedPhone = claimPhone.replace(/\D/g, "");
-    if (cleanedPhone.length < 10) {
-      toast.error("Informe um número de WhatsApp válido (com DDD).");
-      return;
-    }
-    try {
-      await claimReferral.mutateAsync(cleanedPhone);
-      toast.success("Indicação vinculada com sucesso!");
-      setClaimPhone("");
-      setIsClaimOpen(false);
-    } catch {
-      toast.error("Motorista não encontrado com esse número.");
-    }
-  };
-
-  const handleCopyPix = (pixCode: string) => {
+  const handleCopyPix = (pixCode: string, invId: string) => {
     navigator.clipboard.writeText(pixCode);
-    toast.success("Código Pix copiado!");
+    setCopiedPixId(invId);
+    setTimeout(() => setCopiedPixId(null), 2000);
   };
 
   if (isLoading) {
@@ -226,10 +199,6 @@ const SubscriptionPage = () => {
     );
   }
 
-  const bonusDaysPerReferral = referral?.bonusDays;
-  const completedReferrals = referral?.completed ?? 0;
-  const totalBonusDays = completedReferrals * bonusDaysPerReferral;
-
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
       <div className="min-h-screen bg-surface max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -242,7 +211,7 @@ const SubscriptionPage = () => {
                 <div className="flex items-center gap-2">
                   <span className="font-headline font-bold text-slate-500 uppercase tracking-[0.2em] text-[10px]">Assinatura Cancelada</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-slate-700">Acesso Suspenso</h3>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-slate-700">Acesso Suspenso</h3>
                 <p className="text-slate-500 font-medium leading-relaxed max-w-2xl">
                   Sua assinatura está cancelada. Você não receberá novas cobranças e o uso do aplicativo está bloqueado.
                 </p>
@@ -266,11 +235,11 @@ const SubscriptionPage = () => {
                     {isTrialExpired ? "Período de Teste Expirado" : "Assinatura Expirada"}
                   </span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">Acesso Suspenso</h3>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">Acesso Suspenso</h3>
                 <p className="text-white/80 font-medium leading-relaxed">
                   {isTrialExpired
-                    ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todos os recursos."
-                    : "Sua assinatura expirou. Renove para continuar usando todos os recursos."}
+                    ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todas as funcionalidades."
+                    : "Sua assinatura expirou. Renove para continuar usando todas as funcionalidades."}
                 </p>
                 {referral?.hasActiveDiscount && (
                   <div className="mt-2 inline-flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-white font-bold text-[11px] uppercase tracking-wide animate-pulse">
@@ -295,7 +264,7 @@ const SubscriptionPage = () => {
                   <AlertOctagon className="w-5 h-5 text-white" />
                   <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura em Atraso</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-white">
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">
                   Regularização Pendente
                 </h3>
                 <p className="text-white/80 font-medium leading-relaxed max-w-2xl">
@@ -312,29 +281,48 @@ const SubscriptionPage = () => {
               </div>
             </div>
           ) : isTrial ? (
-            <div className="bg-[#fff8f0] border border-orange-200/60 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md group cursor-pointer" onClick={() => handleSubscribe()}>
-              <div className="absolute left-0 bottom-0 w-64 h-64 bg-white/60 rounded-full -ml-20 -mb-20 blur-3xl"></div>
+            <div 
+              className={cn(
+                "bg-white rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-slate-200/40 relative overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-0.5 group border border-slate-200/80",
+                trialDaysLeft !== null ? "cursor-pointer" : ""
+              )}
+              onClick={() => trialDaysLeft !== null && handleSubscribe()}
+            >
+              <div className="absolute right-0 top-0 w-64 h-64 bg-amber-400/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+              <div className="absolute left-0 bottom-0 w-64 h-64 bg-primary/5 rounded-full -ml-20 -mb-20 blur-3xl"></div>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-orange-500" />
+                  <div className="p-1.5 rounded-lg">
+                    <TrendingUp className="w-4 h-4 text-amber-600" />
+                  </div>
                   <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-primary">Período de Testes</h3>
-                <p className="text-slate-500 font-medium leading-relaxed">Você tem <span className="text-orange-500 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</p>
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
+                  {trialDaysLeft !== null ? "Período de Testes" : "Acesso Ilimitado"}
+                </h3>
+                <p className="text-slate-500 font-medium leading-relaxed">
+                  {trialDaysLeft !== null ? (
+                    <>Você tem <span className="text-amber-600 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</>
+                  ) : (
+                    <>Você tem <span className="text-amber-600 font-black">acesso gratuito</span> ilimitado.</>
+                  )}
+                </p>
                 {referral?.hasActiveDiscount && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-100/50 px-3.5 py-1.5 rounded-xl border border-orange-200/50 text-orange-600 font-bold text-[11px] uppercase tracking-wide animate-pulse">
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 px-3.5 py-1.5 rounded-xl border border-emerald-200/60 text-emerald-700 font-bold text-[11px] uppercase tracking-wide animate-pulse shadow-sm">
                     🎁 Desconto de {referral.discountPct}% por indicação ativo!
                   </div>
                 )}
               </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                <Button
-                  className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
-                  onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
-                >
-                  Assinar um Plano
-                </Button>
-              </div>
+              {trialDaysLeft !== null && (
+                <div className="mt-8 md:mt-0 relative z-10 shrink-0">
+                  <Button
+                    className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
+                    onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
+                  >
+                    Assinar um Plano
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
@@ -344,17 +332,23 @@ const SubscriptionPage = () => {
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
                 </div>
-                <h3 className="font-headline font-extrabold text-3xl text-primary">
+                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
                   Plano {subscription?.planos?.nome}
                 </h3>
-                <p className="text-slate-500 font-medium">
-                  Próxima renovação em <span className="text-primary font-bold">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "Em breve"}</span>
-                </p>
+                {subscription?.data_vencimento ? (
+                  <p className="text-slate-500 text-sm">
+                    Próxima renovação programada para <span className="font-medium text-slate-700">{formatLocalDate(parseLocalDate(subscription.data_vencimento))}</span>.
+                  </p>
+                ) : (
+                  <p className="text-slate-500 text-sm">
+                    Sua conta possui acesso vitalício e não requer renovações.
+                  </p>
+                )}
               </div>
-              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && (
+              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && subscription?.data_vencimento && (
                 <div className="mt-6 md:mt-0 relative z-10 shrink-0">
                   <Button
-                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
+                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
                     onClick={() => handleSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
                   >
                     Assinar Plano Anual
@@ -369,13 +363,13 @@ const SubscriptionPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Main Column (2/3 desktop) */}
-          <div className="lg:col-span-2 space-y-12">
+          <div className="lg:col-span-2 space-y-8">
 
             {/* 1. Histórico de Faturas: PRIORIDADE */}
-            <section className="space-y-6">
-              <div className="flex items-center justify-between px-1">
-                <h4 className="font-headline font-bold text-xl text-primary">Histórico de Cobrança</h4>
-              </div>
+            <section>
+              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                Histórico de Cobrança
+              </h2>
 
               <div className="space-y-3">
                 {invoices && invoices.length > 0 ? (
@@ -397,7 +391,7 @@ const SubscriptionPage = () => {
                             </div>
                             <div className="text-[11px] sm:text-xs font-medium text-slate-500">
                               <span>Vencimento:</span>{" "}
-                              {formatLocalDate(parseLocalDate(inv.data_vencimento || inv.created_at))}
+                              {formatLocalDate(parseLocalDate(inv.data_vencimento))}
                               {inv.metodo_pagamento && (
                                 <>
                                   <span className="mx-1.5 text-slate-300">•</span>
@@ -419,19 +413,36 @@ const SubscriptionPage = () => {
                         {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
                           <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
                             {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
-                              <button
-                                className="w-full flex justify-center items-center gap-2 text-[11px] font-black text-white hover:bg-primary/90 transition-colors uppercase tracking-[0.1em] bg-primary px-4 py-3 rounded-xl border border-primary-400/40"
-                                onClick={() => handleCopyPix(inv.pix_copy_paste!)}
-                              >
-                                <Copy className="w-4 h-4" />
-                                Copiar código PIX
-                              </button>
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <button
+                                  className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 transition-colors bg-primary px-4 py-3 rounded-xl border border-primary-400/40 transition-all duration-300"
+                                  onClick={() => handleCopyPix(inv.pix_copy_paste!, inv.id)}
+                                >
+                                  {copiedPixId === inv.id ? (
+                                    <>
+                                      <CopyCheck className="w-4 h-4 animate-in zoom-in duration-200" />
+                                      Copiado!
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-4 h-4" />
+                                      Copiar código PIX
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 transition-colors bg-primary/5 px-4 py-3 rounded-xl border border-primary/10"
+                                  onClick={() => handleSubscribe()}
+                                >
+                                  Alterar forma de pagamento
+                                </button>
+                              </div>
                             ) : (
                               <button
-                                className="w-full px-4 py-3 bg-primary text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
+                                className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
                                 onClick={() => handleSubscribe()}
                               >
-                                Pagar Agora
+                                Alterar forma de pagamento
                               </button>
                             )}
                           </div>
@@ -451,10 +462,10 @@ const SubscriptionPage = () => {
 
             {/* 2. Métodos de Pagamento: COMPACTO - Só aparece se houver cartões */}
             {paymentMethods && paymentMethods.length > 0 && (
-              <section className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="flex items-center justify-between px-1">
-                  <h4 className="font-headline font-bold text-xl text-primary">Métodos de Pagamento</h4>
-                </div>
+              <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                  Métodos de Pagamento
+                </h2>
 
                 <div className="space-y-3">
                   {paymentMethods.map((method) => {
@@ -546,118 +557,17 @@ const SubscriptionPage = () => {
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
-          <aside className="lg:col-span-1 mt-4">
-            <div className="flex items-center justify-between px-1 pb-6">
-              <h4 className="font-headline font-bold text-xl text-primary">Indique e Ganhe</h4>
-            </div>
-            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[32px] p-6 lg:p-8 text-primary shadow-sm sticky top-24 overflow-hidden">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-
-              <div className="relative z-10 space-y-6 lg:space-y-8">
-                <div className="space-y-3">
-                  <p className="font-headline font-extrabold text-xl leading-[1.1] text-primary">
-                    Ganhe {bonusDaysPerReferral} dias grátis <span className="text-primary font-black">por indicação</span>
-                  </p>
-                  <p className="text-slate-500 text-xs font-medium leading-relaxed">
-                    Indique colegas motoristas e receba mensalidades gratuitas assim que eles se tornarem assinantes.
-                  </p>
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center justify-around bg-white/50 p-5 rounded-[22px] border border-[#d6e4f0] shadow-sm">
-                  <div className="text-center w-full">
-                    <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Indicações</p>
-                    <p className="text-2xl font-black text-primary">{completedReferrals}</p>
-                  </div>
-
-                  <div className="w-px h-10 bg-slate-200 shrink-0 mx-2"></div>
-
-                  <div className="text-center w-full">
-                    <p className="text-[9px] uppercase font-black text-slate-400 mb-1 tracking-widest">Dias Ganhos</p>
-                    <p className="text-2xl font-black text-primary">{totalBonusDays}d</p>
-                  </div>
-                </div>
-
-                {/* Share Link */}
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Seu Link de Convite</Label>
-                    <div className="flex gap-2">
-                      <div className="bg-white flex-1 px-4 py-3 rounded-xl text-[11px] font-medium truncate text-slate-600 border border-[#d6e4f0] shadow-sm leading-none flex items-center">
-                        {referral?.referralLink || "Gerando link..."}
-                      </div>
-                      <button
-                        onClick={handleCopyReferral}
-                        className="bg-primary text-white p-3 rounded-xl active:scale-90 transition-transform shadow-md shrink-0"
-                      >
-                        {isCopied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => {
-                      if (referral?.referralLink && navigator.share) {
-                        navigator.share({
-                          url: referral.referralLink,
-                          title: "Van360 - Melhore sua gestão escolar",
-                          text: "Use meu link para se cadastrar na Van360 e ganhe benefícios!"
-                        }).catch(() => null);
-                      } else {
-                        handleCopyReferral();
-                      }
-                    }}
-                    className="w-full h-12 bg-primary text-white hover:bg-primary/90 rounded-2xl font-black text-[11px] font-headline uppercase tracking-widest shadow-md shadow-primary/20 flex items-center gap-2 group transition-all"
-                  >
-                    <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    Compartilhar Link
-                  </Button>
-                </div>
-
-                {isTrial && !referral?.hasIndicator && (
-                  <div className="pt-6 border-t border-[#d6e4f0] text-center">
-                    {!isClaimOpen ? (
-                      <button
-                        onClick={() => setIsClaimOpen(true)}
-                        className="text-[10px] font-black text-slate-400 hover:text-primary uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
-                      >
-                        <Award className="w-4 h-4" />
-                        Ganhei um convite
-                      </button>
-                    ) : (
-                      <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
-                        <Input
-                          value={claimPhone}
-                          onChange={(e) => setClaimPhone(phoneMask(e.target.value))}
-                          placeholder="WhatsApp de quem indicou"
-                          className="bg-white border-[#d6e4f0] text-slate-700 placeholder:text-slate-400 h-11 rounded-xl text-xs px-4 focus:ring-amber-500/50 shadow-sm"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            className="flex-1 h-11 bg-primary text-white font-black text-[11px] font-headline uppercase rounded-xl hover:bg-primary/90 shadow-md shadow-primary/20"
-                            onClick={handleClaimReferral}
-                            disabled={claimReferral.isPending}
-                          >
-                            {claimReferral.isPending ? "Processando..." : "Utilizar o Bônus"}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="w-11 h-11 text-slate-400 hover:bg-slate-100 hover:text-rose-500 p-0 rounded-xl transition-colors"
-                            onClick={() => setIsClaimOpen(false)}
-                          >
-                            <X className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+          <aside className="lg:col-span-1">
+            <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+              Indique e Ganhe
+            </h2>
+            <div className="sticky top-24">
+              <ReferAndEarnCard isTrial={isTrial} />
             </div>
           </aside>
         </div>
 
-        {!isCanceled && (
+        {!isCanceled && !isTrial && (
           <div className="flex justify-center pt-10">
             <button
               type="button"

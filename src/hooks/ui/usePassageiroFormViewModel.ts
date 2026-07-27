@@ -93,7 +93,6 @@ export function usePassageiroFormViewModel({
 
       if (responsavel) {
         form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
-        form.setValue("email_responsavel", responsavel.email_responsavel || "");
         form.setValue(
           "telefone_responsavel",
           phoneMask(responsavel.telefone_responsavel) || ""
@@ -162,10 +161,6 @@ export function usePassageiroFormViewModel({
 
     const purePayload: any = { ...data };
 
-    purePayload.email_responsavel = purePayload.email_responsavel?.trim()
-      ? purePayload.email_responsavel.toLowerCase().trim()
-      : null;
-
     purePayload.cep = purePayload.cep?.replace(/\D/g, "") || null;
     purePayload.cpf_responsavel = purePayload.cpf_responsavel?.replace(/\D/g, "") || null;
 
@@ -180,6 +175,13 @@ export function usePassageiroFormViewModel({
     purePayload.data_fim_transporte = purePayload.data_fim_transporte
       ? convertDateBrToISO(purePayload.data_fim_transporte)
       : null;
+
+    const currentYear = new Date().getFullYear();
+
+    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
+    delete purePayload.mes_inicio_cobranca;
+    delete purePayload.mes_fim_cobranca;
 
     purePayload.genero = purePayload.genero || null;
     purePayload.periodo = purePayload.periodo || null;
@@ -206,13 +208,16 @@ export function usePassageiroFormViewModel({
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {
-          const moneyToNumber = (v: any) => {
-            if (typeof v === 'number') return v;
-            if (typeof v === 'string') return Number(v.replace(/\D/g, "")) / 100;
-            return 0;
+          const cleanString = (val: any) => {
+            if (val === null || val === undefined) return "";
+            return String(val).trim().toLowerCase();
           };
 
-          const valorForm = moneyToNumber(purePayload.valor_cobranca);
+          const checkStringChange = (formVal: any, dbVal: any) => {
+            return cleanString(formVal) !== cleanString(dbVal);
+          };
+
+          const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca);
           const vencimentoForm = Number(purePayload.dia_vencimento);
           
           const valorAtual = Number(editingPassageiro.valor_cobranca || 0);
@@ -220,7 +225,26 @@ export function usePassageiroFormViewModel({
 
           hasCriticalContractChanges =
             Math.abs(valorForm - valorAtual) > 0.01 ||
-            vencimentoForm !== vencimentoAtual;
+            vencimentoForm !== vencimentoAtual ||
+            checkStringChange(purePayload.nome, editingPassageiro.nome) ||
+            checkStringChange(purePayload.nome_responsavel, editingPassageiro.nome_responsavel) ||
+            checkStringChange(purePayload.parentesco_responsavel, editingPassageiro.parentesco_responsavel) ||
+            checkStringChange(purePayload.cpf_responsavel, editingPassageiro.cpf_responsavel) ||
+            checkStringChange(purePayload.escola_id, editingPassageiro.escola_id) ||
+            checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
+            checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
+            checkStringChange(purePayload.turma, editingPassageiro.turma) ||
+            checkStringChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
+            checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
+            checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
+            checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
+            checkStringChange(purePayload.data_fim_cobranca, editingPassageiro.data_fim_cobranca) ||
+            checkStringChange(purePayload.logradouro, editingPassageiro.logradouro) ||
+            checkStringChange(purePayload.numero, editingPassageiro.numero) ||
+            checkStringChange(purePayload.bairro, editingPassageiro.bairro) ||
+            checkStringChange(purePayload.cidade, editingPassageiro.cidade) ||
+            checkStringChange(purePayload.estado, editingPassageiro.estado) ||
+            checkStringChange(purePayload.cep, editingPassageiro.cep);
         }
 
         onSuccess(responseData, {

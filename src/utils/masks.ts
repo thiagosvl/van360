@@ -1,3 +1,5 @@
+import { parseCurrencyToNumber } from "./formatters/currency";
+
 export const phoneMask = (value: string): string => {
   if (!value) return value;
   
@@ -32,18 +34,8 @@ export const moneyMask = (value: string | number): string => {
   });
 };
 
-export const moneyToNumber = (value: string | number): number => {
-  if (typeof value === 'number') return value;
-  if (!value) return 0;
-
-  let numericString = value.replace(/[R$\s]/g, '');
-
-  // Se contiver vírgula, assume formato brasileiro (1.234,56) onde o ponto é milhar
-  if (numericString.includes(',')) {
-    numericString = numericString.replace(/\./g, '').replace(',', '.');
-  }
-
-  return parseFloat(numericString) || 0;
+export const moneyToNumber = (value: string | number | null | undefined): number => {
+  return parseCurrencyToNumber(value);
 };
 
 export const cepMask = (value: string): string => {

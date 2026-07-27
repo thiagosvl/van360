@@ -65,7 +65,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <LayoutProvider>
-      <div className="flex min-h-screen bg-[#f8fafc] font-body selection:bg-[#1a3a5c]/10 selection:text-[#1a3a5c]">
+      <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-body selection:bg-blue-500/20 selection:text-blue-300">
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <AdminSidebar />
@@ -76,7 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <SheetContent 
             ref={sheetRef}
             side="left" 
-            className="p-0 border-r-0 w-72 bg-[#1a3a5c] [&>button]:text-white [&>button]:hover:text-white/80"
+            className="p-0 border-r-0 w-72 bg-[#0d1424] [&>button]:text-white [&>button]:hover:text-white/80"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -95,12 +95,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </main>
 
-          {/* Optional Footer */}
-          <footer className="px-6 pt-6 pb-[calc(1.5rem+var(--safe-area-bottom))] border-t border-slate-100 bg-white/50 text-center">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Van360 © {getNowBR().getFullYear()} — Você dirige. A gente organiza.
-            </p>
-          </footer>
         </div>
       </div>
     </LayoutProvider>

@@ -63,7 +63,7 @@ export function HelpSheet() {
     },
     {
       question: "Onde vejo quem está devendo?",
-      answer: "Na aba 'Mensalidades', você verá uma lista organizada por status. Os atrasados ficam em destaque com cor vermelha."
+      answer: "Na aba 'Parcelas', você verá uma lista organizada por status. Os atrasados ficam em destaque com cor vermelha."
     },
     {
       question: "Como enviar recibo pelo WhatsApp?",

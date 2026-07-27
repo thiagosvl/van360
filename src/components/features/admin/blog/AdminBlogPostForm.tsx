@@ -1,0 +1,653 @@
+import { useState, useEffect } from "react";
+import {
+  useAdminBlogPostDetails,
+  useCreateBlogPost,
+  useUpdateBlogPost,
+} from "@/hooks/api/adminHooks";
+import { BlogPostStatus } from "@/types/enums";
+import { adminApi } from "@/services/api/admin.api";
+import { toast } from "@/utils/notifications/toast";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import TiptapImage from "@tiptap/extension-image";
+import {
+  Bold,
+  Italic,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Link as LinkIcon,
+  Quote,
+  Undo2,
+  Redo2,
+  X,
+  ArrowLeft,
+  Loader2,
+  Save,
+  Wand2,
+  Image as ImageIcon,
+  Code,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const compressAndConvertImage = (file: File, maxWidth = 1200, quality = 0.75): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+interface AdminBlogPostFormProps {
+  postId: string | null;
+  isEdit: boolean;
+  onCancel: () => void;
+}
+
+export default function AdminBlogPostForm({
+  postId,
+  isEdit,
+  onCancel,
+}: AdminBlogPostFormProps) {
+  const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [status, setStatus] = useState<BlogPostStatus>(BlogPostStatus.DRAFT);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const [htmlContent, setHtmlContent] = useState("");
+
+  const { data: post, isLoading: isLoadingDetails } = useAdminBlogPostDetails(
+    postId ?? ""
+  );
+
+  const createMutation = useCreateBlogPost();
+  const updateMutation = useUpdateBlogPost();
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-blue-400 underline hover:text-blue-300",
+        },
+      }),
+      TiptapImage.configure({
+        HTMLAttributes: {
+          class: "max-w-full h-auto rounded-2xl my-6 mx-auto block shadow-md",
+        },
+      }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-invert focus:outline-none max-w-none min-h-[350px] px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 text-sm leading-relaxed",
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (isEdit && post) {
+      setTitle(post.title);
+      setExcerpt(post.excerpt ?? "");
+      setStatus(post.status);
+      setTags(post.tags ?? []);
+      setCoverImageUrl(post.cover_image_url ?? "");
+      setPreviewUrl(post.cover_image_url ?? "");
+      if (editor && !editor.isDestroyed) {
+        editor.commands.setContent(post.content);
+        setHtmlContent(post.content);
+      }
+    }
+  }, [post, isEdit, editor]);
+
+  const toggleHtmlMode = () => {
+    if (!editor) return;
+    if (isHtmlMode) {
+      editor.commands.setContent(htmlContent);
+    } else {
+      const html = editor.getHTML();
+      setHtmlContent(html);
+    }
+    setIsHtmlMode(!isHtmlMode);
+  };
+
+  const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setCoverImageUrl("");
+  };
+
+  const addImage = () => {
+    if (!editor) return;
+    const url = window.prompt("URL da Imagem:");
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const val = tagInput.trim().toLowerCase();
+      if (val && !tags.includes(val)) {
+        setTags([...tags, val]);
+        setTagInput("");
+      }
+    }
+  };
+
+  const handleRemoveTag = (indexToRemove: number) => {
+    setTags(tags.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const setLink = () => {
+    if (!editor) return;
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("URL do Link:", previousUrl);
+
+    if (url === null) {
+      return;
+    }
+
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  };
+
+  const handleMagicFill = () => {
+    setTitle("5 Dicas Essenciais para Organizar Rotas de Vans Escolares");
+    setExcerpt(
+      "A otimização de rotas de transporte escolar ajuda a economizar combustível, reduzir o tempo de trânsito e garantir a pontualidade e segurança dos alunos."
+    );
+    setTags(["rotas", "organizacao", "escolar", "economia"]);
+    setCoverImageUrl("https://images.unsplash.com/photo-1557223562-6c77ef16210f?w=800&auto=format&fit=crop&q=60");
+    setPreviewUrl("https://images.unsplash.com/photo-1557223562-6c77ef16210f?w=800&auto=format&fit=crop&q=60");
+    setStatus(BlogPostStatus.PUBLISHED);
+    if (editor && !editor.isDestroyed) {
+      const htmlStr = `<h2>Como otimizar a sua rotina diária no transporte escolar</h2>
+        <p>Planejar trajetos eficientes é um dos maiores desafios de quem trabalha com transporte escolar. Com o aumento do tráfego urbano e o preço dos combustíveis, a otimização de rotas não é mais um necessidade.</p>
+        <h3>1. Agrupe pontos por proximidade geográfica</h3>
+        <p>Evite cruzar a cidade desnecessariamente. Tente planejar o trajeto em formato de circuito (anél), minimizando o tempo que a van circula vazia.</p>
+        <h3>2. Defina tolerâncias de atraso com os pais</h3>
+        <p>A pontualidade é crucial. Alinhe com os responsáveis um limite máximo de tolerância de 2 a 3 minutos em cada parada, de modo que atrasos individuais não prejudiquem toda a rota.</p>
+        <p>Utilize ferramentas como o <strong>Van360</strong> para gerenciar seus passageiros, mensalidades e rotas escolares de forma centralizada e profissional!</p>`;
+      editor.commands.setContent(htmlStr);
+      setHtmlContent(htmlStr);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    let content = "";
+    if (isHtmlMode) {
+      content = htmlContent;
+      if (editor && !editor.isDestroyed) {
+        editor.commands.setContent(htmlContent);
+      }
+    } else {
+      if (!editor) return;
+      content = editor.getHTML();
+    }
+
+    try {
+      let finalCoverUrl = coverImageUrl;
+
+      if (selectedFile) {
+        const base64 = await compressAndConvertImage(selectedFile);
+        const uploadResult = await adminApi.uploadBlogPostCover(base64, selectedFile.name);
+        finalCoverUrl = uploadResult.url;
+      }
+
+      if (isEdit && postId) {
+        await updateMutation.mutateAsync({
+          id: postId,
+          data: {
+            title,
+            content,
+            excerpt,
+            tags,
+            status,
+            cover_image_url: finalCoverUrl || null,
+          },
+        });
+        toast.success("Artigo atualizado com sucesso!");
+      } else {
+        await createMutation.mutateAsync({
+          title,
+          content,
+          excerpt,
+          tags,
+          status,
+          cover_image_url: finalCoverUrl || null,
+        });
+        toast.success("Artigo publicado com sucesso!");
+      }
+      onCancel();
+    } catch (err) {
+      console.error("Erro ao salvar artigo:", err);
+      toast.error("Falha ao salvar o artigo. Verifique a conexão com o servidor e tente novamente.");
+    }
+  };
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  if (isEdit && isLoadingDetails) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Button
+          variant="ghost"
+          onClick={onCancel}
+          className="rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 self-start"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para Lista
+        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleMagicFill}
+            className="rounded-xl border-dashed border-purple-500/50 hover:border-purple-400 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 flex items-center gap-2 font-semibold text-xs uppercase"
+          >
+            <Wand2 className="h-4 w-4 text-purple-400 animate-pulse" />
+            Magic Fill
+          </Button>
+          <h2 className="text-xl font-bold text-white uppercase font-headline">
+            {isEdit ? "Editar Artigo" : "Novo Artigo"}
+          </h2>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-6 text-left">
+        <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] bg-[#131b2e]">
+          <CardContent className="p-6 space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Título do Artigo *
+              </Label>
+              <Input
+                id="title"
+                required
+                placeholder="Ex: Como organizar rotas de vans escolares..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="excerpt" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Resumo Curto (SEO / Excerpt)
+              </Label>
+              <Textarea
+                id="excerpt"
+                placeholder="Insira um pequeno resumo explicativo que aparecerá na listagem dos posts e motores de busca..."
+                value={excerpt}
+                onChange={(e) => setExcerpt(e.target.value)}
+                rows={3}
+                className="rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Imagem de Capa (Destaque)
+              </Label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-dashed border-slate-800 bg-slate-900/50">
+                <div className="h-28 aspect-video rounded-lg overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center relative shrink-0">
+                  {previewUrl ? (
+                    <>
+                      <img
+                        src={previewUrl}
+                        alt="Preview da capa"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute top-1 right-1 p-1 bg-red-600 hover:bg-red-500 text-white rounded-full shadow transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-slate-600" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-2 w-full">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="cover-file-input"
+                      onChange={handleImageSelection}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById("cover-file-input")?.click()}
+                      className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 text-xs font-bold hover:bg-slate-800 hover:text-white flex items-center gap-1.5"
+                    >
+                      <ImageIcon className="h-4 w-4 text-slate-400" />
+                      Escolher Imagem
+                    </Button>
+                    
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">ou cole uma URL</span>
+                  </div>
+                  <Input
+                    placeholder="Cole a URL pública da imagem de destaque..."
+                    value={coverImageUrl}
+                    onChange={(e) => {
+                      setCoverImageUrl(e.target.value);
+                      setPreviewUrl(e.target.value);
+                    }}
+                    className="h-9 rounded-xl bg-slate-950 border-slate-800 text-slate-200 text-xs focus-visible:ring-0 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Status de Publicação
+                </Label>
+                <Select
+                  value={status}
+                  onValueChange={(val: BlogPostStatus) => setStatus(val)}
+                >
+                  <SelectTrigger className="h-11 rounded-xl bg-slate-900 border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-0">
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 rounded-xl">
+                    <SelectItem value={BlogPostStatus.DRAFT} className="rounded-lg">Rascunho</SelectItem>
+                    <SelectItem value={BlogPostStatus.PUBLISHED} className="rounded-lg">Publicado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tags" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Tags (Pressione Enter ou vírgula para adicionar)
+                </Label>
+                <div className="space-y-2">
+                  <Input
+                    id="tags"
+                    placeholder="Adicione tags..."
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleAddTag}
+                    className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500"
+                  />
+                  <div className="flex flex-wrap gap-1.5 min-h-[30px] pt-1">
+                    {tags.map((tag, idx) => (
+                      <Badge
+                        key={idx}
+                        variant="secondary"
+                        className="text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 bg-slate-800 border border-slate-700 text-slate-300"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(idx)}
+                          className="hover:bg-slate-700 rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Conteúdo do Artigo *
+              </Label>
+              {editor && (
+                <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950">
+                  {/* Toolbar */}
+                  <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-900 border-b border-slate-800">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleBold().run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bold") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <Bold className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleItalic().run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("italic") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <Italic className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 2 }) ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <Heading2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("heading", { level: 3 }) ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <Heading3 className="h-4 w-4" />
+                    </Button>
+                    <span className="w-px h-6 bg-slate-800 mx-1" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleBulletList().run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("bulletList") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("orderedList") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <ListOrdered className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={setLink}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("link") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                      className={`h-8 w-8 p-0 rounded-lg ${editor.isActive("blockquote") ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
+                      <Quote className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode}
+                      onClick={addImage}
+                      className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:bg-slate-800"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                    <span className="w-px h-6 bg-slate-800 mx-1" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode || !editor.can().undo()}
+                      onClick={() => editor.chain().focus().undo().run()}
+                      className="h-8 w-8 p-0 rounded-lg text-slate-400 disabled:opacity-40"
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isHtmlMode || !editor.can().redo()}
+                      onClick={() => editor.chain().focus().redo().run()}
+                      className="h-8 w-8 p-0 rounded-lg text-slate-400 disabled:opacity-40"
+                    >
+                      <Redo2 className="h-4 w-4" />
+                    </Button>
+                    <span className="w-px h-6 bg-slate-800 mx-1" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleHtmlMode}
+                      className={`h-8 px-2 rounded-lg flex items-center gap-1 text-xs font-semibold ${isHtmlMode ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:bg-slate-800"}`}
+                      title={isHtmlMode ? "Alternar para modo Visual" : "Alternar para modo HTML"}
+                    >
+                      <Code className="h-3.5 w-3.5 mr-1" />
+                      <span>{isHtmlMode ? "Visual" : "HTML"}</span>
+                    </Button>
+                  </div>
+                  {isHtmlMode ? (
+                    <Textarea
+                      value={htmlContent}
+                      onChange={(e) => setHtmlContent(e.target.value)}
+                      placeholder="Cole o código HTML formatado do seu post aqui..."
+                      className="w-full min-h-[350px] font-mono text-xs p-4 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 border-0 rounded-none bg-slate-950 text-slate-100 resize-y"
+                    />
+                  ) : (
+                    <EditorContent editor={editor} />
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/80">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="rounded-xl border-slate-800 bg-slate-900 text-slate-300 font-bold uppercase tracking-wider hover:bg-slate-800"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="rounded-xl bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/30 font-bold uppercase tracking-wider flex items-center gap-2"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    {isEdit ? "Salvar Artigo" : "Publicar Artigo"}
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </div>
+  );
+}

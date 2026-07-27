@@ -11,41 +11,33 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import {
-  formatDateToBR,
-  formatGenero,
-  formatModalidade,
-  formatParentesco,
-  formatPeriodo,
-} from "@/utils/formatters";
-import { cpfMask, phoneMask } from "@/utils/masks";
+import { formatGenero, formatModalidade, formatPeriodo, formatarEnderecoCompleto, formatDateToBR, formatMonthYearToBR } from "@/utils/formatters";
+import { isCadastroPassageiroIncompleto } from "@/utils/domain";
+import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { openBrowserLink } from "@/utils/browser";
 import {
   Bus,
   Calendar,
+  CalendarClock,
   Check,
   Clock,
   Copy,
-  ExternalLink,
-  FileCheck2,
-  FileText,
-  FileX2,
   GraduationCap,
   MapPin,
-  MoreVertical,
   Pencil,
-  Plus,
   Power,
   PowerOff,
   Route,
   Trash2,
   User,
+  UserCheck,
   Users,
   Bot,
   BotOff,
-  Lock
+  BookOpen,
+  MoreHorizontal,
+  Wallet,
 } from "lucide-react";
-import { toast } from "sonner";
 
 export interface CarteirinhaInfoProps {
   passageiro: Passageiro;
@@ -62,12 +54,9 @@ export interface CarteirinhaInfoProps {
   contratosAtivos?: boolean;
 }
 
-/**
- * Componente interno para as ações rápidas (Ligar, WhatsApp, Menu).
- * Centralizado para evitar duplicação e garantir consistência visual.
- */
-const ProfileActions = ({
+const CarteirinhaTopCard = ({
   passageiro,
+  temCobrancasVencidas,
   onToggleClick,
   onEditClick,
   onDeleteClick,
@@ -75,7 +64,13 @@ const ProfileActions = ({
   onEnviarWhatsApp,
 }: Pick<
   CarteirinhaInfoProps,
-  "passageiro" | "onToggleClick" | "onEditClick" | "onDeleteClick" | "onToggleNotificacoesClick" | "onEnviarWhatsApp"
+  | "passageiro"
+  | "temCobrancasVencidas"
+  | "onToggleClick"
+  | "onEditClick"
+  | "onDeleteClick"
+  | "onToggleNotificacoesClick"
+  | "onEnviarWhatsApp"
 >) => {
   const isMobile = useIsMobile();
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
@@ -83,204 +78,182 @@ const ProfileActions = ({
     statusContrato === ContratoStatus.PENDENTE ||
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
+  const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
+  const phoneNumbersOnly = passageiro.telefone_responsavel?.replace(/\D/g, "");
+  const isWhatsAppDisabled =
+    isIncomplete ||
+    !phoneNumbersOnly ||
+    phoneNumbersOnly.length < 10;
+
   return (
-    <div className="flex items-center justify-center gap-3">
-      <Button
-        size="icon"
-        onClick={() => onToggleClick(!!passageiro.ativo)}
-        className={cn(
-          "h-11 w-11 rounded-2xl transition-all shadow-sm hover:shadow-md",
-          passageiro.ativo
-            ? "bg-rose-50/50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
-            : "bg-emerald-100/80 text-emerald-600 hover:bg-emerald-500 hover:text-white", // Inativo -> Ação Ativar (Verde)
-        )}
-        title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
-      >
-        {passageiro.ativo ? (
-          <PowerOff className="h-4.5 w-4.5" />
-        ) : (
-          <Power className="h-4.5 w-4.5" />
-        )}
-      </Button>
-      <Button
-        size="icon"
-        onClick={() =>
-          openBrowserLink(
-            `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`
-          )
-        }
-        className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
-      >
-        <WhatsAppIcon className="h-4.5 w-4.5" />
-      </Button>
+    <div className="bg-[#1a3a5c] rounded-[2rem] relative flex flex-col items-center mb-8 shadow-md">
+      <div className="absolute top-0 left-0 w-full h-[25%] bg-black/15 rounded-t-[2rem] z-0" />
 
-      {/* Botão de Edição Direta */}
-      <Button
-        size="icon"
-        onClick={onEditClick}
-        className="h-11 w-11 rounded-2xl bg-blue-50/50 text-blue-500 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
-      >
-        <Pencil className="h-4.5 w-4.5" />
-      </Button>
+      <div className="relative z-10 w-full flex flex-col items-center px-4 pt-8 pb-10">
+        <div className="rounded-full bg-white p-[3px] shadow-sm shrink-0">
+          <div className="rounded-full bg-[#132a42] p-[4px]">
+            <div className="h-16 w-16 rounded-full bg-slate-200 border-[3px] border-white flex items-center justify-center">
+              <User className="w-8 h-8 text-slate-400 fill-current" />
+            </div>
+          </div>
+        </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            size="icon"
-            className="h-11 w-11 rounded-2xl bg-white text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
+        <div className="text-center mt-2 w-full px-2">
+          <h2 className="text-xl md:text-[22px] font-bold text-white tracking-tight leading-snug">
+            {passageiro.nome}
+          </h2>
+          {passageiro.nome_responsavel && (
+            <p className="text-[13px] md:text-sm text-slate-300/90 font-medium mt-0.5">
+              {formatNomeResponsavelCompletoExibicao(passageiro.nome_responsavel)}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-5 pointer-events-none">
+          <Badge
+            className={cn(
+              "border-none px-2 py-0.5 text-[9px] font-bold uppercase",
+              passageiro.ativo
+                ? "text-emerald-700 bg-[#d8f0e1]"
+                : "text-rose-700 bg-rose-100"
+            )}
           >
-            <MoreVertical className="h-4.5 w-4.5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="center"
-          className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
+            {passageiro.ativo ? "Ativo" : "Inativo"}
+          </Badge>
+          {temCobrancasVencidas && (
+            <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2 py-0.5 text-[9px] font-bold uppercase animate-pulse">
+              Possui Débitos
+            </Badge>
+          )}
+          <Badge
+            className={cn(
+              "border-none px-2 py-0.5 text-[9px] font-bold uppercase",
+              passageiro.enviar_notificacoes
+                ? "text-emerald-700 bg-[#d8f0e1]"
+                : "text-rose-700 bg-rose-100"
+            )}
+          >
+            {passageiro.enviar_notificacoes ? "Lembretes Ativos" : "Lembretes Inativos"}
+          </Badge>
+        </div>
+      </div>
+
+      <div className="absolute -bottom-6 left-0 w-full flex justify-center gap-3 z-20">
+        <Button
+          size="icon"
+          onClick={() => onToggleClick(!!passageiro.ativo)}
+          className={cn(
+            "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
+            passageiro.ativo
+              ? "bg-[#f04f64] text-white hover:bg-rose-600"
+              : "bg-emerald-500 text-white hover:bg-emerald-600"
+          )}
+          title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
         >
-          {isPendente && onEnviarWhatsApp && (
+          {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
+        </Button>
+        <Button
+          size="icon"
+          disabled={isWhatsAppDisabled}
+          onClick={() => {
+            if (isWhatsAppDisabled) return;
+            openBrowserLink(
+              `https://wa.me/55${phoneNumbersOnly}`
+            );
+          }}
+          title={isWhatsAppDisabled ? undefined : "Enviar mensagem no WhatsApp"}
+          className={cn(
+            "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
+            isWhatsAppDisabled
+              ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-40 shadow-none hover:bg-slate-300 pointer-events-none"
+              : "bg-[#25D366] text-white hover:bg-[#1da851]"
+          )}
+        >
+          <WhatsAppIcon size={26} className="h-[26px] w-[26px]" />
+        </Button>
+        <Button
+          size="icon"
+          title="Editar"
+          onClick={onEditClick}
+          className="h-12 w-12 rounded-full bg-[#2c7be5] text-white hover:bg-[#1a5bba] transition-all shadow-md hover:shadow-lg"
+        >
+          <Pencil size={28} className="h-7 w-7" />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              title="Mais opções"
+              className="h-12 w-12 rounded-full bg-white text-slate-600 hover:bg-slate-100 transition-all shadow-md hover:shadow-lg"
+            >
+              <MoreHorizontal size={28} className="h-7 w-7" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="center"
+            className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
+          >
+            {isPendente && onEnviarWhatsApp && (
+              <DropdownMenuItem
+                disabled={isWhatsAppDisabled}
+                onClick={() => {
+                  if (isWhatsAppDisabled) return;
+                  onEnviarWhatsApp(passageiro);
+                }}
+                className={cn(
+                  "flex items-center gap-2 p-2.5 rounded-lg font-medium",
+                  isWhatsAppDisabled
+                    ? "opacity-50 cursor-not-allowed text-gray-400"
+                    : "cursor-pointer text-gray-700"
+                )}
+              >
+                {isMobile ? (
+                  <>
+                    <WhatsAppIcon className="h-4 w-4 text-slate-400" />
+                    Reenviar Contrato
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 text-slate-400" />
+                    Copiar Link para Assinatura do Contrato
+                  </>
+                )}
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem
-              onClick={() => onEnviarWhatsApp(passageiro)}
+              onClick={onToggleNotificacoesClick}
               className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
             >
-              {isMobile ? (
+              {passageiro.enviar_notificacoes ? (
                 <>
-                  <WhatsAppIcon className="h-4 w-4 text-slate-400" />
-                  Reenviar Contrato
+                  <BotOff className="h-4 w-4 text-slate-400" />
+                  Desativar Lembretes
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4 text-slate-400" />
-                  Copiar Link para Assinatura
+                  <Bot className="h-4 w-4 text-slate-400" />
+                  Ativar Lembretes
                 </>
               )}
             </DropdownMenuItem>
-          )}
 
-          <DropdownMenuItem
-            onClick={onToggleNotificacoesClick}
-            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
-          >
-            {passageiro.enviar_notificacoes ? (
-              <>
-                <BotOff className="h-4 w-4 text-slate-400" />
-                Desativar Notificações e Lembretes
-              </>
-            ) : (
-              <>
-                <Bot className="h-4 w-4 text-slate-400" />
-                Ativar Notificações e Lembretes
-              </>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            onClick={onDeleteClick}
-            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
-          >
-            <Trash2 className="h-3.5 w-3.5 opacity-60" />
-            Excluir passageiro
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuItem
+              onClick={onDeleteClick}
+              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
+            >
+              <Trash2 className="h-3.5 w-3.5 opacity-60" />
+              Excluir passageiro
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };
 
 /**
- * Componente interno para o resumo do perfil (Avatar, Nome, Badges).
- */
-const ProfileSummary = ({
-  passageiro,
-  temCobrancasVencidas,
-}: Pick<CarteirinhaInfoProps, "passageiro" | "temCobrancasVencidas">) => (
-  <div className="flex flex-col items-center -mt-12 mb-4">
-    <div className="h-24 w-24 rounded-[2rem] bg-white p-1.5 shadow-xl">
-      <div
-        className={cn(
-          "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] relative border-2",
-          passageiro.ativo ? "border-emerald-500/20" : "border-rose-500/20",
-        )}
-      >
-        <User className="h-10 w-10 opacity-20" />
-      </div>
-    </div>
-
-    <div className="text-center mt-3">
-      <h2 className="text-xl font-headline font-bold text-[#1a3a5c] tracking-tight">
-        {passageiro.nome}
-      </h2>
-      {passageiro.nome_responsavel && (
-        <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-          {passageiro.nome_responsavel}
-        </p>
-      )}
-      <div className="flex items-center justify-center gap-2 mt-2">
-        <Badge
-          variant="outline"
-          className={cn(
-            "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
-            passageiro.ativo
-              ? "text-emerald-500 bg-emerald-50"
-              : "text-rose-500 bg-rose-50",
-          )}
-        >
-          {passageiro.ativo ? "Passageiro Ativo" : "Passageiro Inativo"}
-        </Badge>
-        {temCobrancasVencidas && (
-          <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
-            Possui Débitos
-          </Badge>
-        )}
-        <Badge
-          variant="outline"
-          className={cn(
-            "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
-            passageiro.enviar_notificacoes
-              ? "text-emerald-500 bg-emerald-50"
-              : "text-rose-500 bg-rose-50",
-          )}
-        >
-          {passageiro.enviar_notificacoes ? "Notificações Ativas" : "Notificações Inativas"}
-        </Badge>
-      </div>
-    </div>
-  </div>
-);
-
-/**
- * Wrapper de Card para a carteirinha, permitindo variações entre mobile e desktop.
- */
-const CarteirinhaCard = ({
-  children,
-  headerHeight = "h-16",
-  className,
-}: {
-  children: React.ReactNode;
-  headerHeight?: "h-16" | "h-24";
-  className?: string;
-}) => (
-  <div
-    className={cn(
-      "bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden transition-all relative",
-      className,
-    )}
-  >
-    {/* Header gradient */}
-    <div
-      className={cn(
-        "bg-gradient-to-br from-[#1a3a5c] to-[#002444] relative overflow-hidden",
-        headerHeight,
-      )}
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent)]" />
-      <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
-    </div>
-    <div className="px-6 pb-5 relative">{children}</div>
-  </div>
-);
-
-/**
- * Header da carteirinha: avatar, nome, responsável, badges, botões de ação.
- * Fica sempre visível no topo (mobile e desktop).
+ * Header da carteirinha: usado isoladamente na versão mobile.
  */
 export const CarteirinhaHeader = (
   props: Pick<
@@ -295,13 +268,9 @@ export const CarteirinhaHeader = (
   >,
 ) => {
   return (
-    <CarteirinhaCard headerHeight="h-16">
-      <ProfileSummary
-        passageiro={props.passageiro}
-        temCobrancasVencidas={props.temCobrancasVencidas}
-      />
-      <ProfileActions {...props} />
-    </CarteirinhaCard>
+    <div className="px-2 pt-2">
+      <CarteirinhaTopCard {...props} />
+    </div>
   );
 };
 
@@ -310,30 +279,29 @@ export const CarteirinhaHeader = (
  */
 export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
   return (
-    <CarteirinhaCard headerHeight="h-24">
-      <ProfileSummary
+    <div className="space-y-6">
+      <CarteirinhaTopCard
         passageiro={props.passageiro}
         temCobrancasVencidas={props.temCobrancasVencidas}
+        onToggleClick={props.onToggleClick}
+        onEditClick={props.onEditClick}
+        onDeleteClick={props.onDeleteClick}
+        onToggleNotificacoesClick={props.onToggleNotificacoesClick}
+        onEnviarWhatsApp={props.onEnviarWhatsApp}
       />
-      <div className="mb-6">
-        <ProfileActions
+      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-4 md:p-6 pb-6">
+        <CarteirinhaDadosPessoais
           passageiro={props.passageiro}
-          onToggleClick={props.onToggleClick}
-          onEditClick={props.onEditClick}
-          onDeleteClick={props.onDeleteClick}
-          onToggleNotificacoesClick={props.onToggleNotificacoesClick}
+          isCopiedEndereco={props.isCopiedEndereco}
+          isCopiedTelefone={props.isCopiedTelefone}
+          onCopyToClipboard={props.onCopyToClipboard}
+          onContractAction={props.onContractAction}
+          contratosAtivos={props.contratosAtivos}
           onEnviarWhatsApp={props.onEnviarWhatsApp}
+          onEditClick={props.onEditClick}
         />
       </div>
-      <CarteirinhaDadosPessoais
-        passageiro={props.passageiro}
-        isCopiedEndereco={props.isCopiedEndereco}
-        isCopiedTelefone={props.isCopiedTelefone}
-        onCopyToClipboard={props.onCopyToClipboard}
-        onContractAction={props.onContractAction}
-        contratosAtivos={props.contratosAtivos}
-      />
-    </CarteirinhaCard>
+    </div>
   );
 };
 
@@ -344,10 +312,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
 export const CarteirinhaDadosPessoais = ({
   passageiro,
   isCopiedEndereco,
-  isCopiedTelefone,
   onCopyToClipboard,
-  onContractAction,
-  contratosAtivos = true,
 }: Pick<
   CarteirinhaInfoProps,
   | "passageiro"
@@ -356,171 +321,69 @@ export const CarteirinhaDadosPessoais = ({
   | "onCopyToClipboard"
   | "onContractAction"
   | "contratosAtivos"
+  | "onEnviarWhatsApp"
+  | "onEditClick"
 >) => {
-  const isContractActionDisabled =
-    !contratosAtivos &&
-    passageiro.status_contrato !== ContratoStatus.PENDENTE &&
-    passageiro.status_contrato !== ContratoStatus.ASSINADO;
-
-  const getContratoConfig = (status?: ContratoStatus) => {
-    if (status === ContratoStatus.ASSINADO) {
-      return {
-        title: "Contrato Assinado",
-        desc: "Documento oficial assinado eletronicamente",
-        color: "bg-emerald-50/40 border-emerald-100/80 hover:bg-emerald-50 hover:border-emerald-200/50",
-        iconColor: "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-sm",
-        icon: FileCheck2,
-        actionLabel: "Visualizar",
-        actionColor: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/10",
-        actionIcon: ExternalLink,
-      };
-    }
-    if (status === ContratoStatus.PENDENTE) {
-      return {
-        title: "Assinatura Pendente",
-        desc: "Aguardando assinatura do responsável",
-        color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
-        iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-sm",
-        icon: Clock,
-        actionLabel: "Ver contrato",
-        actionColor: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/10",
-        actionIcon: ExternalLink,
-      };
-    }
-
-    return {
-      title: "Sem contrato gerado",
-      desc: isContractActionDisabled
-        ? "Você precisa ativar o uso de contratos na sua conta antes de gerar o documento."
-        : "Gere o contrato para assinatura do responsável",
-      color: isContractActionDisabled
-        ? "bg-slate-50/30 border-slate-200/50 opacity-75 cursor-not-allowed"
-        : "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
-      iconColor: isContractActionDisabled
-        ? "text-slate-400 bg-slate-100/80 border border-slate-200/30"
-        : "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-sm",
-      icon: FileX2,
-      actionLabel: "Gerar contrato",
-      actionColor: isContractActionDisabled
-        ? "bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300/20 font-bold"
-        : "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-sm shadow-[#1a3a5c]/10",
-      actionIcon: isContractActionDisabled ? Lock : Plus,
-    };
-  };
-
-  const contratoConfig = getContratoConfig(passageiro.status_contrato);
-
   const getEnderecoFormatado = () => {
     if (!passageiro.logradouro) return "-";
-    return `${passageiro.logradouro}, ${passageiro.numero || "S/N"} - ${passageiro.bairro || ""}`;
+    return formatarEnderecoCompleto(passageiro);
   };
   const enderecoFormatado = getEnderecoFormatado();
 
-  const handleContratoClick = () => {
-    if (isContractActionDisabled) {
-      toast.warning("Ative o uso de Contratos", {
-        description:
-          "Para gerar novos contratos, primeiro ative o recurso acessando a aba 'Contratos'.",
-      });
-      return;
-    }
-    onContractAction();
-  };
+  const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
+
+  const valorCobrancaFormatado =
+    !isIncomplete && passageiro.valor_cobranca && Number(passageiro.valor_cobranca) > 0
+      ? Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })
+      : "-";
+
+  const diaVencimentoFormatado =
+    !isIncomplete && passageiro.dia_vencimento
+      ? `Dia ${passageiro.dia_vencimento}`
+      : "-";
+
+  const inicioCobrancaFormatado =
+    !isIncomplete && passageiro.data_inicio_cobranca
+      ? formatMonthYearToBR(passageiro.data_inicio_cobranca)
+      : "-";
+
+  const fimCobrancaFormatado =
+    !isIncomplete && passageiro.data_fim_cobranca
+      ? formatMonthYearToBR(passageiro.data_fim_cobranca)
+      : "-";
 
   return (
-    <div className="space-y-3">
-
-      {/* Contrato */}
-      <div
-        className={cn(
-          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato",
-          contratoConfig.color
-        )}
-      >
-        <div className="flex items-start gap-3 min-w-0">
-          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5", contratoConfig.iconColor)}>
-            <contratoConfig.icon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug">
-              {contratoConfig.title}
-            </span>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
-              {contratoConfig.desc}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleContratoClick}
-          disabled={isContractActionDisabled && passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO}
-          className={cn(
-            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 shadow-sm hover:shadow active:scale-[0.99] shrink-0",
-            contratoConfig.actionColor
-          )}
-        >
-          <contratoConfig.actionIcon className="h-3.5 w-3.5" />
-          <span>{contratoConfig.actionLabel}</span>
-        </button>
-      </div>
-
-      {/* Responsável */}
-      <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
-        <div className="flex items-center gap-2">
-          <Users className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-            Responsável
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="min-w-0">
-            <span className="block text-sm font-bold text-[#1a3a5c]">
-              {passageiro.nome_responsavel}
-              <div className="text-[11px] font-medium text-slate-500">
-                {formatParentesco(passageiro.parentesco_responsavel)}
-              </div>
-            </span>
-            <div className="text-[11px] font-medium text-slate-500 flex flex-col mt-1 gap-0.5">
-              <span>{phoneMask(passageiro.telefone_responsavel)}</span>
-              {passageiro.cpf_responsavel && <span>{cpfMask(passageiro.cpf_responsavel)}</span>}
-              {passageiro.email_responsavel && <span className="truncate max-w-[180px] sm:max-w-xs">{passageiro.email_responsavel}</span>}
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() =>
-              onCopyToClipboard(
-                passageiro.telefone_responsavel || "",
-                "Telefone",
-              )
-            }
-            className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
-          >
-            {isCopiedTelefone ? (
-              <Check className="h-3.5 w-3.5 text-emerald-500" />
-            ) : (
-              <Copy className="h-3.5 w-3.5 text-slate-400" />
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Linha: Período + Escola */}
+    <div className="space-y-3 transform-gpu will-change-transform pt-2">
+      {/* Grupo Escolar & Transporte */}
       <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Período"
-          value={formatPeriodo(passageiro.periodo)}
-          icon={<Clock className="h-3.5 w-3.5" />}
-        />
         <InfoTile
           label="Escola"
           value={passageiro.escola?.nome || "-"}
           icon={<GraduationCap className="h-3.5 w-3.5" />}
         />
+
+        <InfoTile
+          label="Período"
+          value={formatPeriodo(passageiro.periodo)}
+          icon={<Clock className="h-3.5 w-3.5" />}
+        />
+
+        <InfoTile
+          label="Turma"
+          value={passageiro.turma || "-"}
+          icon={<BookOpen className="h-3.5 w-3.5" />}
+        />
+
+        <InfoTile
+          label="Professor(a)"
+          value={passageiro.nome_professor || "-"}
+          icon={<UserCheck className="h-3.5 w-3.5" />}
+        />
       </div>
 
-      {/* Linha: Modalidade + Veículo */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Modalidade"
@@ -538,10 +401,50 @@ export const CarteirinhaDadosPessoais = ({
         />
       </div>
 
-      {/* Linha: Nascimento + Gênero */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
-          label="Nascimento"
+          label="Início Transporte"
+          value={passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "-"}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+        <InfoTile
+          label="Término Transporte"
+          value={passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "-"}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+      </div>
+
+      {/* Grupo Financeiro & Cobrança */}
+      <div className="grid grid-cols-2 gap-3">
+        <InfoTile
+          label="Valor da Parcela"
+          value={valorCobrancaFormatado}
+          icon={<Wallet className="h-3.5 w-3.5" />}
+        />
+        <InfoTile
+          label="Dia do Vencimento"
+          value={diaVencimentoFormatado}
+          icon={<CalendarClock className="h-3.5 w-3.5" />}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <InfoTile
+          label="Início Cobrança"
+          value={inicioCobrancaFormatado}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+        <InfoTile
+          label="Término Cobrança"
+          value={fimCobrancaFormatado}
+          icon={<Calendar className="h-3.5 w-3.5" />}
+        />
+      </div>
+
+      {/* Grupo Dados Pessoais */}
+      <div className="grid grid-cols-2 gap-3">
+        <InfoTile
+          label="Data de Nascimento"
           value={
             passageiro.data_nascimento
               ? `${formatDateToBR(passageiro.data_nascimento)}`
@@ -556,30 +459,16 @@ export const CarteirinhaDadosPessoais = ({
         />
       </div>
 
-      {/* Linha: Início e Fim do Transporte */}
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Início Transporte"
-          value={passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "-"}
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Término Transporte"
-          value={passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "-"}
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-      </div>
-
       {/* Endereço */}
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
         <div className="flex items-center gap-2">
-          <MapPin className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
+          <MapPin className="h-4 w-4 text-slate-500" />
+          <span className="text-xs font-normal text-slate-500">
             Endereço
           </span>
         </div>
         <div className="flex items-start justify-between gap-3">
-          <p className="text-xs font-bold text-slate-600 leading-relaxed">
+          <p className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
             {enderecoFormatado}
           </p>
           <Button
@@ -595,14 +484,6 @@ export const CarteirinhaDadosPessoais = ({
             )}
           </Button>
         </div>
-        {passageiro.referencia && (
-          <div className="pt-2 mt-2 border-t border-slate-200">
-            <p className="text-[10px] text-slate-500 leading-relaxed">
-              <span className="font-bold text-slate-600 mr-1">Referência:</span>
-              {passageiro.referencia}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -627,13 +508,14 @@ const InfoTile = ({
     )}
   >
     <div className="flex items-center gap-1.5 mb-1.5">
-      <span className="text-slate-400">{icon}</span>
-      <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400">
+      <span className="text-slate-500">{icon}</span>
+      <span className="text-xs font-normal text-slate-500">
         {label}
       </span>
     </div>
-    <span className="text-sm font-bold text-[#1a3a5c] leading-tight block ">
+    <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
       {value}
     </span>
   </div>
 );
+

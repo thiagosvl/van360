@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { formatarPlacaExibicao } from "@/utils/domain";
-import { Plus, Layers, Car } from "lucide-react";
+import { formatarPlacaExibicao, getCategoriaMetadata } from "@/utils/domain";
+import { Plus, Layers, Car, Tag } from "lucide-react";
 import { memo, useEffect, useState } from "react";
-import { FilterDefaults, GastoCategoria } from "@/types/enums";
+import { FilterDefaults } from "@/types/enums";
 import { DataTableToolbar } from "../common/DataTableToolbar";
 import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
-import { GASTO_CATEGORIA_LABELS } from "@/types/gasto";
+import { useGastoCategorias, useLayout } from "@/hooks";
 
 interface GastosToolbarProps {
   categoriaFilter: string;
@@ -18,8 +18,6 @@ interface GastosToolbarProps {
   categorias: string[];
   veiculos: { id: string; placa: string }[];
   disabled?: boolean;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
 }
@@ -34,8 +32,6 @@ export const GastosToolbar = memo(function GastosToolbar({
   categorias,
   veiculos,
   disabled,
-  searchTerm,
-  onSearchChange,
   hasActiveFilters: hasActiveFiltersProp,
   onClearFilters,
 }: GastosToolbarProps) {
@@ -46,14 +42,15 @@ export const GastosToolbar = memo(function GastosToolbar({
     veiculo: veiculoFilter || FilterDefaults.TODOS,
   });
 
+  const { data: categoriasData } = useGastoCategorias();
+  const { openGerenciarCategoriasDialog } = useLayout();
+
   useEffect(() => {
-    if (isSheetOpen) {
-      setTempFilters({
-        categoria: categoriaFilter || FilterDefaults.TODAS,
-        veiculo: veiculoFilter || FilterDefaults.TODOS,
-      });
-    }
-  }, [isSheetOpen, categoriaFilter, veiculoFilter]);
+    setTempFilters({
+      categoria: categoriaFilter || FilterDefaults.TODAS,
+      veiculo: veiculoFilter || FilterDefaults.TODOS,
+    });
+  }, [categoriaFilter, veiculoFilter]);
 
   const handleApplyFilters = () => {
     if (onApplyFilters) {
@@ -75,9 +72,8 @@ export const GastosToolbar = memo(function GastosToolbar({
     });
   };
 
-  const hasActiveFilters =
-    hasActiveFiltersProp ??
-    (categoriaFilter !== FilterDefaults.TODAS || veiculoFilter !== FilterDefaults.TODOS || !!searchTerm);
+  const hasActiveFilters = hasActiveFiltersProp !== undefined ? hasActiveFiltersProp :
+    (categoriaFilter !== FilterDefaults.TODAS || veiculoFilter !== FilterDefaults.TODOS);
 
   const filterChildren = (
     <>
@@ -96,7 +92,7 @@ export const GastosToolbar = memo(function GastosToolbar({
         options={[
           { label: "Todas Categorias", value: FilterDefaults.TODAS },
           ...categorias.map((cat) => ({
-            label: GASTO_CATEGORIA_LABELS[cat as GastoCategoria] || cat,
+            label: getCategoriaMetadata(cat, categoriasData).label,
             value: cat,
           })),
         ]}
@@ -125,9 +121,6 @@ export const GastosToolbar = memo(function GastosToolbar({
 
   return (
     <DataTableToolbar
-      searchTerm={searchTerm}
-      onSearchChange={onSearchChange}
-      searchPlaceholder="Buscar por descrição..."
       disabled={disabled}
       filterConfig={{
         title: "Filtrar Gastos",
@@ -141,15 +134,28 @@ export const GastosToolbar = memo(function GastosToolbar({
       }}
       filterChildren={filterChildren}
       actions={
-        <Button
-          onClick={onRegistrarGasto}
-          disabled={disabled}
-          className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 md:px-6 shadow-md transition-all active:scale-95"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden md:inline">Registrar</span>
-          <span className="md:hidden">Registrar</span>
-        </Button>
+        <div className="flex items-center gap-2 flex-1 md:flex-initial">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => openGerenciarCategoriasDialog()}
+            disabled={disabled}
+            className="h-12 md:h-14 w-12 md:w-auto rounded-2xl px-0 md:px-5 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all active:scale-95 shadow-sm font-semibold text-sm flex items-center justify-center shrink-0"
+            title="Gerenciar Categorias"
+          >
+            <Tag className="h-4 w-4" />
+            <span className="hidden md:inline">Categorias</span>
+          </Button>
+
+          <Button
+            onClick={onRegistrarGasto}
+            disabled={disabled}
+            className="flex-1 md:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
+          >
+            <Plus className="h-4 w-4 mr-1.5 md:mr-2" />
+            <span>Registrar</span>
+          </Button>
+        </div>
       }
     />
   );

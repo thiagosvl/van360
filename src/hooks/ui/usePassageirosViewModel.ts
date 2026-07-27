@@ -30,6 +30,7 @@ import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
+import { isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -109,7 +110,6 @@ export function usePassageirosViewModel() {
   const substituirContrato = useSubstituirContrato();
   const createEscola = useCreateEscola();
   const createVeiculo = useCreateVeiculo();
-  const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
 
@@ -133,7 +133,7 @@ export function usePassageirosViewModel() {
   } = usePassageiros(passageiroFilters, {
     enabled: !!profile?.id,
     onError: () =>
-      toast.error("passageiro.erro.excluir", {
+      toast.error("passageiro.erro.carregar", {
         description: "passageiro.erro.carregarDetalhe",
       }),
   });
@@ -190,9 +190,6 @@ export function usePassageirosViewModel() {
     if (openModal === "true") {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.CREATE,
-        onSuccess: () => {
-          refetchPassageiros();
-        },
       });
     }
   }, [searchParams, refetchPassageiros, openPassageiroFormDialog]);
@@ -225,8 +222,8 @@ export function usePassageirosViewModel() {
       openConfirmationDialog({
         title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
         description: action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens de passageiros ativos e as mensalidades dele voltarão a ser geradas automaticamente."
-          : "O passageiro ficará inativo e as mensalidades dele não serão mais geradas automaticamente. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
@@ -248,24 +245,25 @@ export function usePassageirosViewModel() {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
-        onSuccess: () => {
-          refetchPassageiros();
-        },
       });
     },
     [openPassageiroFormDialog, refetchPassageiros],
   );
 
   const handleOpenNewDialog = useCallback(() => {
+    const isFirstPassageiro = (countPassageiros || 0) === 0;
     openQuickStartPassageiroDialog({
+      isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro) => {
         refetchPassageiros();
-        if (passageiro) {
-          openFirstChargeDialog({ passageiro: passageiro });
+        if (passageiro && isFirstPassageiro) {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+        } else if (passageiro && !isFirstPassageiro) {
+          openFirstChargeDialog({ passageiro });
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, refetchPassageiros]);
+  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, navigate, refetchPassageiros]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -382,8 +380,9 @@ export function usePassageirosViewModel() {
     (passageiro: Passageiro) => {
       openConfirmationDialog({
         title: "Substituir contrato?",
-        description: "Ao confirmar, o contrato atual será cancelado e um novo será gerado com os dados atuais do passageiro.",
+        description: "Ao confirmar, o contrato atual será cancelado e um novo com os dados atualizados será gerado para o passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
         confirmText: "Substituir",
+        cancelText: "Manter atual",
         variant: "warning",
         onConfirm: async () => {
           try {
@@ -411,12 +410,16 @@ export function usePassageirosViewModel() {
       return;
     }
 
-    const telefone =
+    const telefone = isResponsavelMockTelefone(
       passageiro.telefone_responsavel ||
-      (passageiro as any).dados_contrato?.telefone_responsavel;
+      (passageiro as any).dados_contrato?.telefone_responsavel
+    ) ? undefined : (
+      passageiro.telefone_responsavel ||
+      (passageiro as any).dados_contrato?.telefone_responsavel
+    );
 
     if (!telefone) {
-      toast.error("Telefone do responsável não informado.");
+      toast.error("Telefone do responsável inválido ou não informado.");
       return;
     }
 

@@ -55,27 +55,13 @@ const EscolaMobileCard = memo(function EscolaMobileCard({
           <GraduationCap className="h-5 w-5 text-white" />
         </div>
 
-        <div className="flex-grow min-w-0 pr-10">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight">
+        <div className="flex-grow min-w-0">
+          <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight line-clamp-2">
             {escola.nome}
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-          <div className="flex items-center gap-1">
-            <Users2 className="w-3 h-3 text-[#1a3a5c]/40" />
-            <span className="text-[12px] font-black text-[#1a3a5c] leading-none">
-              {escola.passageiros_ativos_count ?? 0}
-            </span>
-          </div>
-          <StatusBadge
-            status={escola.ativo}
-            className={cn(
-              "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-              escola.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
-            )}
-          />
-        </div>
+
       </div>
     </MobileActionItem>
   );
@@ -113,10 +99,10 @@ export function EscolasList({
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100/80">
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Escola
+                  Nome
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Passageiros
+                  Qtd. Passageiros
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Status
@@ -134,30 +120,37 @@ export function EscolasList({
                   className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                 >
                   <td className="px-8 py-5 align-middle">
-                    <div className="flex flex-col">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm tracking-tight">
-                        {escola.nome}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center">
+                        <div className="rounded-full border border-[#132a42] flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-full bg-slate-200 border-[2px] border-white flex items-center justify-center">
+                            <GraduationCap className="w-4 h-4 text-slate-400 fill-current" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm tracking-tight">
+                          {escola.nome}
+                        </p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-8 py-5 align-middle">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/50 border border-slate-100 w-fit group-hover:bg-white group-hover:border-slate-200 transition-all">
-                      <Users2 className="w-4 h-4 text-[#1a3a5c]/40" />
-                      <span className="text-sm font-semibold text-slate-700">
-                        {escola.passageiros_ativos_count ?? 0}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Ativos
-                      </span>
+                    <div className="flex items-center gap-1.5">
+                      <Users2 className="w-4 h-4 text-slate-400" />
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[13px] font-semibold text-slate-700">
+                          {escola.passageiros_ativos_count ?? 0}
+                        </span>
+                        <span className="text-xs font-medium text-slate-500">
+                          passageiros
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-8 py-5 align-middle">
                     <StatusBadge
                       status={escola.ativo}
-                      className={cn(
-                        "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
-                        escola.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
-                      )}
                     />
                   </td>
                   <td className="px-8 py-5 text-right align-middle" onClick={(e) => e.stopPropagation()}>
