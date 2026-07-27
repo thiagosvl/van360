@@ -44,6 +44,7 @@ export function useAttribution(): void {
     const utmContent = urlParams.get("utm_content");
     const utmTerm = urlParams.get("utm_term");
 
+    const hasUtm = Boolean(utmSource || utmMedium || utmCampaign || utmContent || utmTerm);
     const rawReferrer = document.referrer || undefined;
     const isExternalReferrer = Boolean(rawReferrer && !rawReferrer.startsWith(window.location.origin));
 
