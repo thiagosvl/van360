@@ -28,7 +28,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const isLoading = sessionLoading || (!!session && profileLoading && !isDriverInSession);
 
   if (isLoading) {
-    return <InitialLoading />;
+    return <InitialLoading darkMode={location.pathname.startsWith("/admin")} />;
   }
 
   // 🔹 Se não está logado e a rota é pública → libera

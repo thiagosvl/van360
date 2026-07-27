@@ -1,5 +1,20 @@
-export const InitialLoading = ({ darkMode = false }: { darkMode?: boolean }) => {
-  if (darkMode) {
+import { useLocation } from "react-router-dom";
+
+export const InitialLoading = ({ darkMode }: { darkMode?: boolean }) => {
+  let isDark = darkMode;
+
+  if (isDark === undefined) {
+    try {
+      const location = useLocation();
+      isDark = location.pathname.startsWith("/admin");
+    } catch {
+      if (typeof window !== "undefined") {
+        isDark = window.location.pathname.startsWith("/admin");
+      }
+    }
+  }
+
+  if (isDark) {
     return (
       <div className="min-h-screen bg-[#0b0f19] flex flex-col items-center justify-center p-6 animate-in fade-in duration-500 text-slate-100">
         <div className="relative w-40 h-40 flex items-center justify-center">
