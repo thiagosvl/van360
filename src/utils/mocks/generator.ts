@@ -198,6 +198,11 @@ export const generateTurma = (): string => {
   return turmas[randomNumber(0, turmas.length - 1)];
 };
 
+
+export const generateProfessor = (): string => {
+  return "Claudia";
+};
+
 /**
  * Gera um dia de vencimento aleatório (comum)
  */
@@ -289,6 +294,7 @@ export const mockGenerator = {
 
       // New fields from Schema/Enums
       turma: generateTurma(),
+      nome_professor: generateProfessor(),
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),
       parentesco_responsavel: randomEnum(ParentescoResponsavel),

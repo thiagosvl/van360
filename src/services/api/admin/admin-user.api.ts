@@ -93,6 +93,7 @@ export interface AdminUserPassengerItem {
   data_nascimento: string | null;
   serie_ano: string | null;
   turma: string | null;
+  nome_professor: string | null;
   turno: string | null;
   periodo_cobranca: string | null;
   nome_responsavel: string | null;
@@ -120,6 +121,7 @@ export interface AdminUserPendingRequestItem {
   email_responsavel: string | null;
   serie_ano: string | null;
   turma: string | null;
+  nome_professor: string | null;
   turno: string | null;
   endereco: string | null;
   numero?: string | null;

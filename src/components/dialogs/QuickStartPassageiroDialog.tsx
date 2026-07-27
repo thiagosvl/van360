@@ -348,7 +348,7 @@ export function QuickStartPassageiroDialog({
                     <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
                       <Car className="w-5 h-5" />
                     </div>
-                    Transporte e Escola
+                    Veículo e Escola
                   </div>
                 )}
 

@@ -30,6 +30,7 @@ import {
   Route,
   Trash2,
   User,
+  UserCheck,
   Users,
   Bot,
   BotOff,
@@ -357,24 +358,29 @@ export const CarteirinhaDadosPessoais = ({
   return (
     <div className="space-y-3 transform-gpu will-change-transform pt-2">
       {/* Grupo Escolar & Transporte */}
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Escola"
           value={passageiro.escola?.nome || "-"}
           icon={<GraduationCap className="h-3.5 w-3.5" />}
         />
-      </div>
 
-      <div className="grid grid-cols-2 gap-3">
         <InfoTile
           label="Período"
           value={formatPeriodo(passageiro.periodo)}
           icon={<Clock className="h-3.5 w-3.5" />}
         />
+
         <InfoTile
           label="Turma"
           value={passageiro.turma || "-"}
           icon={<BookOpen className="h-3.5 w-3.5" />}
+        />
+
+        <InfoTile
+          label="Professor(a)"
+          value={passageiro.nome_professor || "-"}
+          icon={<UserCheck className="h-3.5 w-3.5" />}
         />
       </div>
 
@@ -438,7 +444,7 @@ export const CarteirinhaDadosPessoais = ({
       {/* Grupo Dados Pessoais */}
       <div className="grid grid-cols-2 gap-3">
         <InfoTile
-          label="Nascimento"
+          label="Data de Nascimento"
           value={
             passageiro.data_nascimento
               ? `${formatDateToBR(passageiro.data_nascimento)}`

@@ -1,9 +1,26 @@
+const PREPOSICOES_NOME = new Set(["de", "da", "do", "dos", "das", "e"]);
+
 export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
   if (!fullName) return "";
   const names = fullName.trim().split(/\s+/);
+  
   if (includeSecond && names.length >= 2) {
-    return `${names[0]} ${names[1]}`;
+    const result: string[] = [];
+    let mainNameCount = 0;
+
+    for (const name of names) {
+      result.push(name);
+      if (!PREPOSICOES_NOME.has(name.toLowerCase())) {
+        mainNameCount++;
+      }
+      if (mainNameCount === 2) {
+        break;
+      }
+    }
+
+    return result.join(" ");
   }
+
   if (names.length <= 2) return fullName.trim();
   return names[0] || "";
 };

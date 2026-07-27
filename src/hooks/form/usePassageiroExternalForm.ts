@@ -39,6 +39,7 @@ const prePassageiroSchema = z.object({
 
   escola_id: z.string().optional(),
   turma: z.string().min(1, "Campo obrigatório"),
+  nome_professor: z.string().optional().nullable().or(z.literal("")),
   periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
   data_nascimento: dateSchema(true),
@@ -126,6 +127,7 @@ export function usePassageiroExternalForm() {
       dia_vencimento: "",
       escola_id: "",
       turma: "",
+      nome_professor: "",
       periodo: "",
       modalidade: "",
       data_nascimento: "",
@@ -264,6 +266,7 @@ export function usePassageiroExternalForm() {
       nome: "",
       escola_id: "",
       turma: "",
+      nome_professor: "",
       periodo: "",
       observacoes: "",
 

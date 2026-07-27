@@ -234,6 +234,7 @@ export function usePassageiroFormViewModel({
             checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
             checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
             checkStringChange(purePayload.turma, editingPassageiro.turma) ||
+            checkStringChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
             checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
             checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
             checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||

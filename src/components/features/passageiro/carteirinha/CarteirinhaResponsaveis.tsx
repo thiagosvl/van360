@@ -194,32 +194,46 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
         };
 
         return (
-          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-diff-shadow p-4 sm:p-5 space-y-4 animate-in fade-in duration-200 text-left w-full min-w-0">
-            <div className="flex items-start justify-between gap-4 min-w-0">
+          <div className="space-y-3.5 animate-in fade-in duration-200 text-left w-full min-w-0">
+            <div className="flex items-start justify-between gap-4 min-w-0 px-1 pt-1">
               <div className="min-w-0 flex-1">
-                <h4 className="text-sm font-bold text-[#16314f] break-words leading-tight">
+                <h4 className="text-base font-bold text-[#16314f] break-words leading-tight">
                   {formatNomeResponsavelCompletoExibicao(currentResp.nome)}
                 </h4>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   {isPrincipalTab ? (
-                    <Badge className="bg-blue-600/10 text-blue-600 border-none text-[9px] font-bold h-4 px-1.5 rounded-full hover:bg-blue-600/10">
+                    <Badge className="bg-blue-600/10 text-blue-600 border-none text-[10px] font-bold h-5 px-2.5 rounded-full hover:bg-blue-600/10">
                       {formatParentesco(passageiro.parentesco_responsavel) || "Parentesco não informado"}
                     </Badge>
                   ) : (
-                    <Badge className="bg-[#1a3a5c]/5 text-[#1a3a5c] border-none text-[9px] font-bold h-4 px-1.5 rounded-full hover:bg-[#1a3a5c]/5">
+                    <Badge className="bg-[#1a3a5c]/5 text-[#1a3a5c] border-none text-[10px] font-bold h-5 px-2.5 rounded-full hover:bg-[#1a3a5c]/5">
                       {formatParentesco(currentResp.parentesco) || "Outro"}
                     </Badge>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0 mt-0.5">
-                <Button variant="ghost" size="icon" onClick={() => { if (isPrincipalTab) { onEditClick(); } else { openResponsavelFormDialog({ passageiroId: passageiro.id!, editingResponsavel: currentResp as PassageiroResponsavel, }); } }} className="h-8 w-8 rounded-full bg-slate-50 text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (isPrincipalTab) {
+                      onEditClick();
+                    } else {
+                      openResponsavelFormDialog({
+                        passageiroId: passageiro.id!,
+                        editingResponsavel: currentResp as PassageiroResponsavel,
+                      });
+                    }
+                  }}
+                  className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
+                >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 {!isPrincipalTab && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-slate-50 text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80">
                         <MoreVertical className="h-3.5 w-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -235,40 +249,51 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                 )}
               </div>
             </div>
-            <div className="space-y-2.5 pt-1 w-full min-w-0">
-              <div className="bg-slate-50/80 rounded-2xl p-3.5 transition-colors hover:bg-slate-100/80 relative flex items-center justify-between gap-3 w-full min-w-0 text-left">
+
+            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3 text-left w-full min-w-0">
+              <div className="flex items-center justify-between gap-3 min-w-0">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className="text-slate-500"><Phone className="h-3.5 w-3.5" /></span>
+                    <Phone className="h-3.5 w-3.5 text-slate-500" />
                     <span className="text-xs font-normal text-slate-500">Telefone</span>
                   </div>
-                  <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                  <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                     {isResponsavelMockTelefone(currentResp.telefone) ? "Não informado" : phoneMask(currentResp.telefone)}
                   </span>
                 </div>
                 {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
-                  <Button size="icon" onClick={() => { const cleanPhone = currentResp.telefone!.replace(/\D/g, ""); const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone; openBrowserLink(`https://wa.me/${formattedPhone}`); }} className="h-8 w-8 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all">
+                  <Button
+                    size="icon"
+                    onClick={() => {
+                      const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
+                      const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
+                      openBrowserLink(`https://wa.me/${formattedPhone}`);
+                    }}
+                    className="h-8 w-8 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
+                  >
                     <WhatsAppIcon className="w-4 h-4" />
                   </Button>
                 )}
               </div>
-              <div className="bg-slate-50/80 rounded-2xl p-3.5 transition-colors hover:bg-slate-100/80 w-full min-w-0 text-left">
+
+              <div className="pt-2.5 border-t border-slate-200/50 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-slate-500"><IdCard className="h-3.5 w-3.5" /></span>
+                  <IdCard className="h-3.5 w-3.5 text-slate-500" />
                   <span className="text-xs font-normal text-slate-500">CPF</span>
                 </div>
-                <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                   {cpfMask(currentResp.cpf) || '-'}
                 </span>
               </div>
-              <div className="bg-slate-50/80 rounded-2xl p-3.5 transition-colors hover:bg-slate-100/80 w-full min-w-0 text-left">
+
+              <div className="pt-2.5 border-t border-slate-200/50 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-slate-500"><MapPin className="h-3.5 w-3.5" /></span>
+                  <MapPin className="h-3.5 w-3.5 text-slate-500" />
                   <span className="text-xs font-normal text-slate-500">Endereço</span>
                 </div>
-                <span className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                <p className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                   {respAddress || '-'}
-                </span>
+                </p>
               </div>
             </div>
           </div>

@@ -26,7 +26,7 @@ import {
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
 import { dateMask } from "@/utils/masks";
-import { AlertTriangle, Car, Compass, School, Sun, User, CalendarIcon, X } from "lucide-react";
+import { AlertTriangle, Car, Compass, School, Sun, User, UserCheck, CalendarIcon, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
@@ -242,7 +242,7 @@ export function PassageiroFormDadosCadastrais({
       <section className="space-y-5">
         <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-            <School className="w-5 h-5" />
+            <Car className="w-5 h-5" />
           </div>
           Veículo e Escola
         </div>
@@ -305,7 +305,7 @@ export function PassageiroFormDadosCadastrais({
             control={form.control}
             name="escola_id"
             render={({ field, fieldState }) => (
-              <FormItem className="col-span-1">
+              <FormItem className="col-span-1 md:col-span-2">
                 <Select
                   value={field.value || undefined}
                   onValueChange={(value) => {
@@ -513,6 +513,47 @@ export function PassageiroFormDadosCadastrais({
                         <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                         <Input
                           placeholder="Ex: 5º Ano A"
+                          {...field}
+                          value={field.value || ""}
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="nome_professor"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={UserCheck} label="Professor(a)" error={!!fieldState.error}>
+                      <Input
+                        placeholder="Ex: Cláudia"
+                        {...field}
+                        value={field.value || ""}
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                        aria-invalid={!!fieldState.error}
+                      />
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Professor(a)
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <UserCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          placeholder="Ex: Cláudia"
                           {...field}
                           value={field.value || ""}
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"

@@ -53,8 +53,9 @@ export const passageiroSchema = z
 
     observacoes: z.string().optional().nullable().or(z.literal("")),
 
-    nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+    nome_responsavel: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(2, "Deve ter pelo menos 2 caracteres"),
     turma: z.string().optional().nullable().or(z.literal("")),
+    nome_professor: z.string().optional().nullable().or(z.literal("")),
     parentesco_responsavel: z.string().optional().nullable().or(z.literal("")),
     cpf_responsavel: z
       .string()
@@ -66,17 +67,17 @@ export const passageiroSchema = z
     telefone_responsavel: phoneSchema,
 
     valor_cobranca: z
-      .string()
+      .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
       .min(1, "Campo obrigatório")
       .refine((val) => {
         const num = moneyToNumber(val);
         return num >= 1;
       }, "O valor deve ser no mínimo R$ 1,00"),
-    dia_vencimento: z.string().min(1, "Campo obrigatório"),
+    dia_vencimento: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
-    mes_inicio_cobranca: z.string().min(1, "Campo obrigatório"),
-    mes_fim_cobranca: z.string().min(1, "Campo obrigatório"),
+    mes_inicio_cobranca: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+    mes_fim_cobranca: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
@@ -152,6 +153,7 @@ export function usePassageiroForm({
       referencia: "",
       complemento: "",
       turma: "",
+      nome_professor: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
 
@@ -186,6 +188,7 @@ export function usePassageiroForm({
             data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
             genero: editingPassageiro.genero || "",
             turma: editingPassageiro.turma || "",
+            nome_professor: editingPassageiro.nome_professor || "",
             nome_responsavel: isResponsavelMockNome(editingPassageiro.nome_responsavel) 
               ? "" 
               : editingPassageiro.nome_responsavel,
@@ -246,6 +249,7 @@ export function usePassageiroForm({
           periodo: prePassageiro.periodo || "",
           modalidade: prePassageiro.modalidade || "",
           turma: prePassageiro.turma || "",
+          nome_professor: prePassageiro.nome_professor || "",
           data_nascimento: prePassageiro.data_nascimento ? formatDateToBR(prePassageiro.data_nascimento) : "",
           genero: prePassageiro.genero || "",
           parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
@@ -316,6 +320,7 @@ export function usePassageiroForm({
           referencia: "",
           complemento: "",
           turma: "",
+          nome_professor: "",
           nome_responsavel: "",
           parentesco_responsavel: "",
 
