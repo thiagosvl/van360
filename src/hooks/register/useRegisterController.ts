@@ -2,7 +2,8 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
-import { detectPlatform, isMobilePlatform, isNativeApp } from "@/utils/detectPlatform";
+import { getDispositivoCadastro, isNativeApp } from "@/utils/detectPlatform";
+import { useAttribution, getStoredAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
@@ -19,6 +20,8 @@ export function useRegisterController() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
 
+  // Injetar captura de UTMs e Referrer
+  useAttribution();
 
   useEffect(() => {
     const refParam = searchParams.get("ref");
@@ -61,15 +64,25 @@ export function useRegisterController() {
       setLoading(true);
       setDuplicateError(null);
       const referralCode = localStorage.getItem("van360_referral_code") || undefined;
+      const attribution = getStoredAttribution();
+      const dispositivo_cadastro = getDispositivoCadastro();
+
       const result = await usuarioApi.registrar({
         ...data,
         cpfcnpj: data.cpfcnpj?.replace(/\D/g, ""),
         telefone: data.telefone?.replace(/\D/g, ""),
         indicador_id: referralCode,
+        dispositivo_cadastro,
+        metadados_cadastro: attribution ? {
+          referrer: attribution.referrer,
+          utm: attribution.utm,
+        } : undefined,
       });
       if (result?.error) throw new Error(result.error);
 
       localStorage.removeItem("van360_referral_code");
+      clearStoredAttribution();
+
 
       // --- FLUXO DE PÓS-CADASTRO ---
 

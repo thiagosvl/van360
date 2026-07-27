@@ -95,6 +95,7 @@ import { toPersistenceString, getNowBR, toISODateTimeBR } from "@/utils/dateUtil
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
 import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
+import { DispositivoCadastroLabels } from "@/utils/dispositivo-cadastro.utils";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
@@ -886,9 +887,45 @@ export default function AdminUserDetails() {
                       Canal de Aquisição
                     </span>
                     <span className="font-medium text-slate-300 block">
-                      {data.user.canal_aquisicao ? CanalAquisicaoLabels[data.user.canal_aquisicao] : "—"}
+                      {data.user.canal_aquisicao ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao : "—"}
                     </span>
                   </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Dispositivo de Cadastro
+                    </span>
+                    <span className="font-medium text-slate-300 block">
+                      {data.user.dispositivo_cadastro ? DispositivoCadastroLabels[data.user.dispositivo_cadastro as keyof typeof DispositivoCadastroLabels] || data.user.dispositivo_cadastro : "—"}
+                    </span>
+                  </div>
+
+                  {data.user.metadados_cadastro && (data.user.metadados_cadastro.utm || data.user.metadados_cadastro.referrer) && (
+                    <div>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                        Origem / Atribuição (UTMs)
+                      </span>
+                      <span className="font-mono text-xs text-slate-300 block">
+                        {data.user.metadados_cadastro.utm?.source ? (
+                          <>
+                            <span className="text-blue-400 font-bold">{data.user.metadados_cadastro.utm.source}</span>
+                            {data.user.metadados_cadastro.utm.medium && (
+                              <span className="text-slate-400"> / {data.user.metadados_cadastro.utm.medium}</span>
+                            )}
+                            {data.user.metadados_cadastro.utm.campaign && (
+                              <span className="text-slate-500"> ({data.user.metadados_cadastro.utm.campaign})</span>
+                            )}
+                          </>
+                        ) : data.user.metadados_cadastro.referrer ? (
+                          <span className="text-slate-400 truncate max-w-[200px] block" title={data.user.metadados_cadastro.referrer}>
+                            {data.user.metadados_cadastro.referrer}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </span>
+                    </div>
+                  )}
 
                   <div>
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">

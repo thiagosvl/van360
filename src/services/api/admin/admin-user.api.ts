@@ -14,6 +14,7 @@ export interface AdminDashboardStats {
     canceled: number;
   };
   canaisAquisicao?: Record<string, number>;
+  dispositivosCadastro?: Record<string, number>;
   whatsappStatus?: WhatsappStatus;
   contratosStats?: {
     totalContratos: number;
