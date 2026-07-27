@@ -187,21 +187,30 @@ export function QuickStartPassageiroDialog({
 
       <BaseDialog.Body>
         {showTabs && (
-          <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as "rapido" | "completo")} className="w-full mb-4">
-            <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1">
-              <TabsTrigger
-                value="rapido"
-                className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm flex items-center gap-1.5"
-              >
-                <Zap className="w-3.5 h-3.5" /> Cadastro Rápido
-              </TabsTrigger>
-              <TabsTrigger
-                value="completo"
-                className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm flex items-center gap-1.5"
-              >
-                <FileText className="w-3.5 h-3.5" /> Cadastro Completo
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as "rapido" | "completo")} className="w-full mb-5">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700 ml-1 block">
+                Tipo de Cadastro
+              </label>
+              <TabsList className="grid grid-cols-2 w-full p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 h-auto">
+                <TabsTrigger
+                  value="rapido"
+                  className="rounded-xl py-2 px-3 text-xs font-bold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Zap className="w-3.5 h-3.5 shrink-0" />
+                  <span className="sm:hidden">Rápido</span>
+                  <span className="hidden sm:inline">Cadastro Rápido</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="completo"
+                  className="rounded-xl py-2 px-3 text-xs font-bold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
+                  <span className="sm:hidden">Completo</span>
+                  <span className="hidden sm:inline">Cadastro Completo</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </Tabs>
         )}
 
@@ -250,13 +259,13 @@ export function QuickStartPassageiroDialog({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((data) => handleSubmit(data, false), onFormError)}
-              className="space-y-6 py-2 px-1"
+              className="space-y-8 pb-6"
             >
-              <div className={cn("space-y-4", !isOnboarding && "space-y-5")}>
+              <div className="space-y-5">
                 {!isOnboarding && (
-                  <div className="flex items-center gap-3 text-base font-semibold text-slate-800">
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                      <User className="w-4 h-4" />
+                  <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
+                      <User className="w-5 h-5" />
                     </div>
                     Identificação
                   </div>
@@ -333,11 +342,11 @@ export function QuickStartPassageiroDialog({
 
               {!isOnboarding && <hr className="border-slate-100" />}
 
-              <div className={cn("space-y-4", !isOnboarding && "space-y-5")}>
+              <div className="space-y-5">
                 {!isOnboarding && (
-                  <div className="flex items-center gap-3 text-base font-semibold text-slate-800">
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                      <Car className="w-4 h-4" />
+                  <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
+                      <Car className="w-5 h-5" />
                     </div>
                     Transporte e Escola
                   </div>
@@ -461,9 +470,9 @@ export function QuickStartPassageiroDialog({
                   <hr className="border-slate-100" />
 
                   <section className="space-y-5">
-                    <div className="flex items-center gap-3 text-base font-semibold text-slate-800">
-                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                        <DollarSign className="w-4 h-4" />
+                    <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
+                        <DollarSign className="w-5 h-5" />
                       </div>
                       Financeiro e Vencimento
                     </div>
