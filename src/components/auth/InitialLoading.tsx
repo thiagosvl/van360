@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 
-export const InitialLoading = ({ darkMode }: { darkMode?: boolean }) => {
+export const InitialLoading = ({ darkMode, message }: { darkMode?: boolean; message?: string }) => {
   let isDark = darkMode;
 
   if (isDark === undefined) {
@@ -13,6 +13,8 @@ export const InitialLoading = ({ darkMode }: { darkMode?: boolean }) => {
       }
     }
   }
+
+  const textToDisplay = message || "Carregando sua jornada";
 
   if (isDark) {
     return (
@@ -33,7 +35,7 @@ export const InitialLoading = ({ darkMode }: { darkMode?: boolean }) => {
             <div className="w-2.5 h-2.5 bg-blue-300 rounded-full animate-bounce shadow-sm shadow-blue-300/50" />
           </div>
           <p className="text-xs font-headline font-black text-slate-400 tracking-[0.2em] uppercase animate-pulse">
-            Carregando sua jornada
+            {textToDisplay}
           </p>
         </div>
       </div>
@@ -58,7 +60,7 @@ export const InitialLoading = ({ darkMode }: { darkMode?: boolean }) => {
           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
         </div>
         <p className="text-sm font-medium text-muted-foreground tracking-widest uppercase">
-          Carregando sua jornada
+          {textToDisplay}
         </p>
       </div>
     </div>

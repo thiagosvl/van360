@@ -1,34 +1,26 @@
 import { AppGate } from "@/components/auth/AppGate";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
+import { SubscriptionGuard } from "@/components/auth/SubscriptionGuard";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
+import { AdminLayout } from "@/layouts/AdminLayout";
 import AppLayout from "@/layouts/AppLayout";
 import { apiClient } from "@/services/api/client";
-import { toast } from "@/utils/notifications/toast";
+import { queryClient } from "@/services/queryClient";
+import { UserType } from "@/types/enums";
+import { lazyLoad } from "@/utils/lazyLoad";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
+
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
-import { lazyLoad } from "@/utils/lazyLoad";
-
-// Lazy loading de rotas principais
 const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
 const Splash = lazyLoad(() => import("./pages/Splash"));
@@ -51,12 +43,6 @@ const PrivacyPolicy = lazyLoad(() => import("./pages/legal/PrivacyPolicyPage"));
 const TermsOfUse = lazyLoad(() => import("./pages/legal/TermsOfUsePage"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
-import { queryClient } from "@/services/queryClient";
-import { UserType } from "@/types/enums";
-import { AdminLayout } from "@/layouts/AdminLayout";
-import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
-import { SubscriptionGuard } from "@/components/auth/SubscriptionGuard";
-
 const AdminDashboard = lazyLoad(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazyLoad(() => import("./pages/admin/AdminUsers"));
 const AdminUserDetails = lazyLoad(() => import("./pages/admin/AdminUserDetails"));
@@ -70,51 +56,85 @@ const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
-  const [pendingUpdate, setPendingUpdate] = useState<{
-    latest_version: string;
-    url_zip: string;
-  } | null>(null);
 
   useEffect(() => {
     const runUpdater = async () => {
       if (!Capacitor.isNativePlatform()) return;
 
       try {
-        const { data } = await apiClient.get("/app/updates", {
-          params: { platform: Capacitor.getPlatform() }
-        });
-
-        if (!data) {
-          // Nenhuma atualização OTA encontrada
-          return;
-        }
-
-        const { latest_version, url_zip, force_update } = data;
         const current = await CapacitorUpdater.current();
         const currentVersion =
           current?.bundle?.version || current?.native || "builtin";
 
-        if (currentVersion === latest_version) {
-          // Já está na versão mais recente
-          return;
-        }
+        const { data } = await apiClient.get("/app/updates", {
+          params: {
+            platform: Capacitor.getPlatform(),
+            current_version: currentVersion,
+          },
+        });
+
+        if (!data) return;
+
+        const { latest_version, url_zip, force_update } = data;
+
+        if (currentVersion === latest_version) return;
 
         const pendingUpdateId = localStorage.getItem("pendingUpdate");
-        if (pendingUpdateId && pendingUpdateId === latest_version) {
-          // A atualização já foi baixada e está aguardando reinicialização
+        if (pendingUpdateId && pendingUpdateId === latest_version && !force_update) {
           return;
         }
 
         if (force_update) {
-          // Mostrar dialog de confirmação primeiro
-          setPendingUpdate({ latest_version, url_zip });
-          setShowUpdateDialog(true);
+          setUpdating(true);
+          setProgress(0);
+
+          const performForceUpdate = async () => {
+            let listener: unknown = null;
+            try {
+              listener = await CapacitorUpdater.addListener(
+                "download",
+                (info: { percent?: number }) => {
+                  if (info?.percent !== undefined) {
+                    setProgress(Math.round(info.percent));
+                  }
+                }
+              );
+
+              const version = await CapacitorUpdater.download({
+                version: latest_version,
+                url: url_zip,
+              });
+
+              if (listener && typeof (listener as { remove: () => Promise<void> }).remove === "function") {
+                await (listener as { remove: () => Promise<void> }).remove();
+              }
+
+              await CapacitorUpdater.set(version);
+              await CapacitorUpdater.reload();
+            } catch (err) {
+              if (listener && typeof (listener as { remove: () => Promise<void> }).remove === "function") {
+                try {
+                  await (listener as { remove: () => Promise<void> }).remove();
+                } catch {}
+              }
+              throw err;
+            }
+          };
+
+          const TIMEOUT_MS = 7000;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error("OTA timeout limit exceeded")), TIMEOUT_MS);
+          });
+
+          try {
+            await Promise.race([performForceUpdate(), timeoutPromise]);
+          } catch (err) {
+            setUpdating(false);
+          }
           return;
         }
 
         try {
-          // Atualização opcional 100% silenciosa em background
           const version = await CapacitorUpdater.download({
             version: latest_version,
             url: url_zip,
@@ -123,10 +143,8 @@ const App = () => {
           await CapacitorUpdater.next({ id: version.id });
           localStorage.setItem("pendingUpdate", version.id);
         } catch (err) {
-          // Erro em atualização silenciosa - não crítico
         }
       } catch (err) {
-        // Erro no processo OTA - não crítico
       }
     };
 
@@ -135,36 +153,31 @@ const App = () => {
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) {
-      document.body.classList.remove('native-app');
+      document.body.classList.remove("native-app");
       return;
     }
 
-    document.body.classList.add('native-app');
+    document.body.classList.add("native-app");
 
     const injectSafeAreas = () => {
-      // Criamos um elemento temporário para testar se o env() está funcionando
-      const testDiv = document.createElement('div');
-      testDiv.style.paddingTop = 'env(safe-area-inset-top)';
-      testDiv.style.position = 'absolute';
-      testDiv.style.visibility = 'hidden';
+      const testDiv = document.createElement("div");
+      testDiv.style.paddingTop = "env(safe-area-inset-top)";
+      testDiv.style.position = "absolute";
+      testDiv.style.visibility = "hidden";
       document.body.appendChild(testDiv);
 
       const computedStyle = window.getComputedStyle(testDiv);
-      const topInset = parseInt(computedStyle.paddingTop) || 0;
+      const topInset = parseInt(computedStyle.paddingTop, 10) || 0;
       document.body.removeChild(testDiv);
 
-      // Se o topInset for 0 em plataforma nativa Android, aplicamos um fallback manual
-      // pois o Android 15 edge-to-edge sempre tem algum inset (status bar).
-      if (topInset === 0 && Capacitor.getPlatform() === 'android') {
+      if (topInset === 0 && Capacitor.getPlatform() === "android") {
         const root = document.documentElement;
 
-        // Valores aproximados para Android moderno
-        root.style.setProperty('--safe-area-top', '24px');
-        root.style.setProperty('--safe-area-bottom', '24px');
+        root.style.setProperty("--safe-area-top", "24px");
+        root.style.setProperty("--safe-area-bottom", "24px");
       }
     };
 
-    // Pequeno delay para garantir que o WebView esteja pronto e com insets calculados
     setTimeout(injectSafeAreas, 500);
   }, []);
 
@@ -184,7 +197,6 @@ const App = () => {
 
         await CapacitorUpdater.notifyAppReady();
       } catch (err) {
-        // Erro ao enviar notifyAppReady - não crítico
       }
     };
 
@@ -201,7 +213,6 @@ const App = () => {
             <ScrollToTop />
             <Suspense fallback={<InitialLoading />}>
               <Routes>
-                {/* Rotas Públicas */}
                 <Route
                   path={ROUTES.PUBLIC.LOGIN}
                   element={
@@ -220,7 +231,6 @@ const App = () => {
                   }
                 />
 
-                {/* Rota Pública de pré-cadastro */}
                 <Route
                   path={ROUTES.PUBLIC.EXTERNAL_PASSENGER_FORM}
                   element={<PassageiroExternalForm />}
@@ -236,23 +246,16 @@ const App = () => {
                   element={<TermsOfUse />}
                 />
 
-                {/* <Route
-                  path={ROUTES.PUBLIC.FEATURES}
-                  element={<TudoQueFaz />}
-                /> */}
-
                 <Route
                   path={ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}
                   element={<ExternalCheckoutBridge />}
                 />
 
-                {/* Rota Pública de assinatura de contrato */}
                 <Route
                   path="/assinar/:token"
                   element={<AssinarContrato />}
                 />
 
-                {/* Splash/Hub do app nativo */}
                 <Route
                   path={ROUTES.PUBLIC.SPLASH}
                   element={
@@ -266,16 +269,13 @@ const App = () => {
                   path={ROUTES.PUBLIC.ROOT}
                   element={
                     Capacitor.isNativePlatform() ? (
-                      // App nativo → splash (AppGate redireciona para home se já logado)
                       <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
                     ) : (
-                      // Web → redireciona para o login do aplicativo (a LP agora está no Astro)
                       <Navigate to={ROUTES.PUBLIC.LOGIN} replace />
                     )
                   }
                 />
 
-                {/* Rotas Protegidas - Admin */}
                 <Route
                   element={
                     <AppGate>
@@ -299,7 +299,6 @@ const App = () => {
                   <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
                 </Route>
 
-                {/* Rotas Protegidas - Motorista */}
                 <Route
                   element={
                     <AppGate>
@@ -311,7 +310,6 @@ const App = () => {
                 >
                   <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
 
-                  {/* Rotas que exigem assinatura ativa ou trial (Paywall) */}
                   <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
                     <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
@@ -329,75 +327,22 @@ const App = () => {
                   </Route>
                 </Route>
 
+                <Route path="/" element={<Navigate to={ROUTES.PUBLIC.LOGIN} replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
         </AppErrorBoundary>
 
-        {/* 🔹 Dialog de confirmação de atualização */}
-        <AlertDialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-          <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md rounded-3xl p-6 border-none shadow-2xl bg-white">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-headline font-bold text-[#1a3a5c]">
-                {getMessage("sistema.atualizacao.titulo")}
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-sm font-medium text-slate-600 pt-2 leading-relaxed">
-                {getMessage("sistema.atualizacao.descricao")}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="pt-4 sm:justify-end">
-              <AlertDialogAction
-                className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 rounded-xl px-6 w-full sm:w-auto shadow-md transition-all active:scale-95"
-                onClick={async () => {
-                  setShowUpdateDialog(false);
-                  if (!pendingUpdate) return;
-
-                  setUpdating(true);
-                  setProgress(0);
-
-                  try {
-                    const listener = await CapacitorUpdater.addListener(
-                      "download",
-                      (info: any) => {
-                        if (info?.percent !== undefined)
-                          setProgress(Math.round(info.percent));
-                      }
-                    );
-
-                    const version = await CapacitorUpdater.download({
-                      version: pendingUpdate.latest_version,
-                      url: pendingUpdate.url_zip,
-                    });
-
-                    await listener.remove();
-                    await CapacitorUpdater.set(version);
-                    await CapacitorUpdater.reload();
-                  } catch (err) {
-                    setUpdating(false);
-                    setPendingUpdate(null);
-                    toast.error("sistema.erro.atualizacao", {
-                      description: "sistema.erro.atualizacaoDescricao",
-                    });
-                  }
-                }}
-              >
-                Atualizar Agora
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* 🔹 Overlay de atualização forçada */}
         {updating && (
-          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 text-white">
-            <Loader2 className="animate-spin w-10 h-10 mb-3" />
-            <p className="text-lg font-medium mb-2">
-              {getMessage("sistema.atualizacao.processando")}
-            </p>
-            <p className="text-sm opacity-80">
-              {getMessage("sistema.atualizacao.progresso", { PERCENTUAL: progress })}
-            </p>
+          <div className="fixed inset-0 z-[9999]">
+            <InitialLoading
+              message={
+                progress > 0
+                  ? `Atualizando aplicativo (${progress}%)...`
+                  : "Atualizando aplicativo..."
+              }
+            />
           </div>
         )}
       </TooltipProvider>

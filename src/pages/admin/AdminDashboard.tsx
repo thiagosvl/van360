@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
-import { phoneMask, cpfMask } from "@/utils/masks";
+import { phoneMask, cpfMask, cpfCnpjMask } from "@/utils/masks";
 import { apiClient } from "@/services/api/client";
 import { ROUTES } from "@/constants/routes";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
@@ -663,9 +663,9 @@ export default function AdminDashboard() {
                   <p className="text-xs text-slate-400 py-12 text-center">Nenhuma tentativa de login recente.</p>
                 ) : (
                   recentLoginAttempts.slice(0, 5).map((attempt) => {
-                    const rawDigits = (attempt.login_tentado || "").replace(/\D/g, "");
-                    const isCpfCnpj = rawDigits.length === 11 || rawDigits.length === 14;
-                    const ipOrLogin = attempt.ip || (isCpfCnpj ? cpfMask(attempt.login_tentado) : attempt.login_tentado);
+                    const loginFormatted = cpfCnpjMask(attempt.login_tentado);
+                    const deviceInfo = attempt.dispositivo || "Desconhecido";
+                    const detailInfo = !attempt.sucesso && attempt.motivo_falha ? attempt.motivo_falha : deviceInfo;
 
                     return (
                       <div
@@ -673,10 +673,9 @@ export default function AdminDashboard() {
                         onClick={() => navigate(ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS)}
                         className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col gap-1.5 cursor-pointer hover:bg-slate-800/80 transition-colors text-left"
                       >
-                        {/* LINHA 1: IP À ESQUERDA, SUCESSO/FALHA À DIREITA */}
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-mono font-bold text-slate-100 truncate">
-                            {ipOrLogin}
+                            {loginFormatted}
                           </span>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shrink-0 ${attempt.sucesso
@@ -688,14 +687,20 @@ export default function AdminDashboard() {
                           </span>
                         </div>
 
-                        {/* LINHA 2: DISPOSITIVO OU FRASE DE ERRO À ESQUERDA, HORÁRIO À DIREITA */}
                         <div className="flex items-center justify-between gap-2 text-[10px]">
                           <span className="font-semibold text-slate-400 truncate">
-                            {attempt.motivo_falha || attempt.dispositivo || "Tentativa de acesso"}
+                            {detailInfo}
                           </span>
-                          <span className="font-mono font-bold text-slate-400 shrink-0">
-                            {formatDateTimeBR(attempt.created_at)}
-                          </span>
+                          <div className="flex items-center gap-2 shrink-0 font-mono text-slate-400">
+                            {attempt.ip && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-400 font-mono">
+                                {attempt.ip}
+                              </span>
+                            )}
+                            <span className="font-bold">
+                              {formatRelativeTime(attempt.created_at)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
