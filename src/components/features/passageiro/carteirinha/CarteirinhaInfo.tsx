@@ -77,14 +77,18 @@ const CarteirinhaTopCard = ({
     statusContrato === ContratoStatus.PENDENTE ||
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
+  const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
+  const phoneNumbersOnly = passageiro.telefone_responsavel?.replace(/\D/g, "");
+  const isWhatsAppDisabled =
+    isIncomplete ||
+    !phoneNumbersOnly ||
+    phoneNumbersOnly.length < 10;
+
   return (
     <div className="bg-[#1a3a5c] rounded-[2rem] relative flex flex-col items-center mb-8 shadow-md">
-      {/* Fundo em duas cores (20% mais escuro no topo) */}
       <div className="absolute top-0 left-0 w-full h-[25%] bg-black/15 rounded-t-[2rem] z-0" />
 
-      {/* Conteúdo (Avatar, Textos, Badges) */}
       <div className="relative z-10 w-full flex flex-col items-center px-4 pt-8 pb-10">
-        {/* Avatar com triplo aro igual ao design */}
         <div className="rounded-full bg-white p-[3px] shadow-sm shrink-0">
           <div className="rounded-full bg-[#132a42] p-[4px]">
             <div className="h-16 w-16 rounded-full bg-slate-200 border-[3px] border-white flex items-center justify-center">
@@ -93,7 +97,6 @@ const CarteirinhaTopCard = ({
           </div>
         </div>
 
-        {/* Textos */}
         <div className="text-center mt-2 w-full px-2">
           <h2 className="text-xl md:text-[22px] font-bold text-white tracking-tight leading-snug">
             {passageiro.nome}
@@ -105,7 +108,6 @@ const CarteirinhaTopCard = ({
           )}
         </div>
 
-        {/* Badges */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 mt-5 pointer-events-none">
           <Badge
             className={cn(
@@ -135,7 +137,6 @@ const CarteirinhaTopCard = ({
         </div>
       </div>
 
-      {/* Action Buttons (floating at the bottom) */}
       <div className="absolute -bottom-6 left-0 w-full flex justify-center gap-3 z-20">
         <Button
           size="icon"
@@ -152,13 +153,20 @@ const CarteirinhaTopCard = ({
         </Button>
         <Button
           size="icon"
-          onClick={() =>
+          disabled={isWhatsAppDisabled}
+          onClick={() => {
+            if (isWhatsAppDisabled) return;
             openBrowserLink(
-              `https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`
-            )
-          }
-          title="Enviar mensagem no WhatsApp"
-          className="h-12 w-12 rounded-full bg-[#25D366] text-white hover:bg-[#1da851] transition-all shadow-md hover:shadow-lg"
+              `https://wa.me/55${phoneNumbersOnly}`
+            );
+          }}
+          title={isWhatsAppDisabled ? undefined : "Enviar mensagem no WhatsApp"}
+          className={cn(
+            "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
+            isWhatsAppDisabled
+              ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-40 shadow-none hover:bg-slate-300 pointer-events-none"
+              : "bg-[#25D366] text-white hover:bg-[#1da851]"
+          )}
         >
           <WhatsAppIcon size={26} className="h-[26px] w-[26px]" />
         </Button>
@@ -186,8 +194,17 @@ const CarteirinhaTopCard = ({
           >
             {isPendente && onEnviarWhatsApp && (
               <DropdownMenuItem
-                onClick={() => onEnviarWhatsApp(passageiro)}
-                className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
+                disabled={isWhatsAppDisabled}
+                onClick={() => {
+                  if (isWhatsAppDisabled) return;
+                  onEnviarWhatsApp(passageiro);
+                }}
+                className={cn(
+                  "flex items-center gap-2 p-2.5 rounded-lg font-medium",
+                  isWhatsAppDisabled
+                    ? "opacity-50 cursor-not-allowed text-gray-400"
+                    : "cursor-pointer text-gray-700"
+                )}
               >
                 {isMobile ? (
                   <>
