@@ -234,7 +234,8 @@ export default function VeiculoFormDialog({
         <Form {...form}>
           <form
             id="veiculo-form"
-            onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 pb-6"
+            onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+            className="space-y-4 pb-6"
           >
             <FormField
               name="placa"
@@ -248,13 +249,13 @@ export default function VeiculoFormDialog({
                     <div className="relative">
                       <Hash className={cn(
                         "absolute left-4 top-3.5 h-5 w-5 transition-colors",
-                        fieldState.error ? "text-red-400" : "text-slate-400"
+                        fieldState.error ? "text-red-400" : "text-slate-400 opacity-60"
                       )} />
                       <Input
                         {...field}
                         maxLength={8}
                         placeholder="Ex: ABC-1234"
-                        className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all uppercase"
+                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all uppercase"
                         onChange={(e) => {
                           const masked = aplicarMascaraPlaca(e.target.value);
                           field.onChange(masked);
@@ -268,7 +269,7 @@ export default function VeiculoFormDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 name="marca"
                 control={form.control}
@@ -281,12 +282,12 @@ export default function VeiculoFormDialog({
                       <div className="relative">
                         <Tag className={cn(
                           "absolute left-4 top-3.5 h-5 w-5 transition-colors",
-                          fieldState.error ? "text-red-400" : "text-slate-400"
+                          fieldState.error ? "text-red-400" : "text-slate-400 opacity-60"
                         )} />
                         <Input
                           placeholder="Ex: Fiat"
                           {...field}
-                          className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all"
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -307,12 +308,12 @@ export default function VeiculoFormDialog({
                       <div className="relative">
                         <Car className={cn(
                           "absolute left-4 top-3.5 h-5 w-5 transition-colors",
-                          fieldState.error ? "text-red-400" : "text-slate-400"
+                          fieldState.error ? "text-red-400" : "text-slate-400 opacity-60"
                         )} />
                         <Input
                           placeholder="Ex: Ducato"
                           {...field}
-                          className="pl-12 h-12 rounded-[1.25rem] bg-slate-50 border-slate-200 focus-visible:ring-4 focus-visible:ring-blue-500/10 focus:border-blue-500 transition-all"
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -328,7 +329,7 @@ export default function VeiculoFormDialog({
                 name="ativo"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-3 p-4 rounded-3xl bg-slate-50 border border-slate-100 space-y-0 transition-all hover:bg-slate-100/50">
+                  <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0 transition-all hover:bg-slate-100/50">
                     <Checkbox
                       id="ativo"
                       checked={field.value}
@@ -337,7 +338,7 @@ export default function VeiculoFormDialog({
                     />
                     <FormLabel
                       htmlFor="ativo"
-                      className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
+                      className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
                     >
                       Veículo Ativo
                     </FormLabel>
@@ -346,7 +347,7 @@ export default function VeiculoFormDialog({
               />
             )}
             {allowBatchCreation && !editingVeiculo && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
                 <Checkbox
                   id="keepOpen"
                   checked={keepOpen}
@@ -357,7 +358,7 @@ export default function VeiculoFormDialog({
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
+                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
                 >
                   Cadastrar outro em seguida
                 </label>

@@ -318,58 +318,54 @@ export default function EscolaFormDialog({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-10 pb-6"
+            className="space-y-4 pb-6"
           >
-            <div className="space-y-6">
-              <div className="space-y-4 mt-2">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Nome da Escola <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          {...field}
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          placeholder="Ex: Escola Municipal..."
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {editingEscola && (
                 <FormField
                   control={form.control}
-                  name="nome"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Nome da Escola <span className="text-red-600">*</span>
+                  name="ativo"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0">
+                      <Checkbox
+                        id="ativo"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <FormLabel
+                        htmlFor="ativo"
+                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                      >
+                        Escola Ativa
                       </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <Input
-                            {...field}
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                            placeholder="Ex: Escola Municipal..."
-                            aria-invalid={!!fieldState.error}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                {editingEscola && (
-                  <div className="pt-2">
-                    <FormField
-                      control={form.control}
-                      name="ativo"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                          <Checkbox
-                            id="ativo"
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="h-5 w-5"
-                          />
-                          <FormLabel
-                            htmlFor="ativo"
-                            className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
-                          >
-                            Escola Ativa
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-              </div>
+              )}
             </div>
 
             <Accordion
@@ -378,7 +374,7 @@ export default function EscolaFormDialog({
               onValueChange={setOpenAccordionItems}
               className="w-full"
             >
-              <AccordionItem value="endereco" className="border-none">
+              <AccordionItem value="endereco" className="border-none pt-4">
                 <AccordionTrigger className="hover:no-underline px-4 py-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 hover:bg-slate-100/50 hover:border-slate-300 transition-all data-[state=open]:border-solid data-[state=open]:border-slate-100 data-[state=open]:bg-white data-[state=open]:shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-500 shadow-sm border border-slate-100">
@@ -401,7 +397,7 @@ export default function EscolaFormDialog({
             </Accordion>
 
             {allowBatchCreation && !editingEscola && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
                 <Checkbox
                   id="keepOpen"
                   checked={keepOpen}
@@ -412,7 +408,7 @@ export default function EscolaFormDialog({
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
+                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
                 >
                   Cadastrar outra em seguida
                 </label>
