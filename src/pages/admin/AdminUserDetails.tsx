@@ -94,6 +94,7 @@ import { dateMask as maskDate } from "@/utils/masks";
 import { toPersistenceString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
+import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
@@ -865,7 +866,7 @@ export default function AdminUserDetails() {
                     </span>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="font-mono font-medium text-slate-200">
-                        {formatarChavePix(data.user.chave_pix, data.user.chave_pix_tipo)}
+                        {data.user.chave_pix ? formatarChavePix(data.user.chave_pix, data.user.chave_pix_tipo) : "—"}
                       </span>
                       {data.user.chave_pix && (
                         <button
@@ -885,7 +886,7 @@ export default function AdminUserDetails() {
                       Canal de Aquisição
                     </span>
                     <span className="font-medium text-slate-300 block">
-                      {data.user.canal_aquisicao || "—"}
+                      {data.user.canal_aquisicao ? CanalAquisicaoLabels[data.user.canal_aquisicao] : "—"}
                     </span>
                   </div>
 
