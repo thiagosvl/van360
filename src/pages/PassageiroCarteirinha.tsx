@@ -27,7 +27,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 
 import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { IncompletePassengerBanner } from "@/components/features/passageiro/IncompletePassengerBanner";
-import { isCadastroPassageiroIncompleto } from "@/utils/domain";
+import { isCadastroPassageiroIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -575,11 +575,12 @@ export default function PassageiroCarteirinha() {
         statusContrato === '1' ||
         (!!passageiro.contrato_id && !passageiro.status_contrato);
 
-      const isAssinado = statusContrato === ContratoStatus.ASSINADO || statusContrato === 'assinado' || statusContrato === '2';
-      const hasUrl = passageiro.contrato_url || passageiro.minuta_url;
+      const urlContrato = obterUrlDocumentoContrato(passageiro);
 
-      if (isAssinado || (isPendente && hasUrl)) {
-        openBrowserLink(passageiro.contrato_url || passageiro.minuta_url);
+      if (isAssinado || (isPendente && urlContrato)) {
+        if (urlContrato) {
+          openBrowserLink(urlContrato);
+        }
       } else {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,

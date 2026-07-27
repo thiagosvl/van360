@@ -42,6 +42,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { type LoginAttempt } from "./AdminLoginAttempts";
+import { formatRelativeTime } from "@/utils/formatters";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -178,11 +179,9 @@ export default function AdminDashboard() {
 
   const motoristasConfigurados = contratosStats.motoristasConfigurados ?? (contratosStats.motoristasConfig.ativo + contratosStats.motoristasConfig.inativo);
   const motoristasAtivos = contratosStats.motoristasAtivos ?? contratosStats.motoristasConfig.ativo;
-  const motoristasPausados = contratosStats.motoristasPausados ?? contratosStats.motoristasConfig.inativo;
-  const motoristasNaoConfigurados = contratosStats.motoristasNaoConfigurados ?? contratosStats.motoristasConfig.nao_configurado;
   const totalMotoristas = stats.totalMotoristas || 1;
   const pctConfigurados = Math.round((motoristasConfigurados / totalMotoristas) * 100);
-  const pctAssinados = contratosStats.totalContratos > 0 ? Math.round((contratosStats.contratosAssinados / contratosStats.totalContratos) * 100) : 0;
+  const pctAtivos = Math.round((motoristasAtivos / totalMotoristas) * 100);
 
   const indicacoesStats = stats.indicacoesStats || {
     total: 0,
@@ -364,7 +363,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-between pt-2.5 border-t border-blue-500/20 gap-2">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 text-xs font-extrabold font-mono shadow-sm shadow-blue-500/10">
                           <Clock className="h-4 w-4 text-blue-400" />
-                          {formatDateTimeBR(latestLog.created_at)}
+                          {formatRelativeTime(latestLog.created_at)}
                         </span>
                         <Button
                           variant="ghost"
@@ -378,40 +377,59 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* SECUNDÁRIAS (ATÉ 9 REGISTROS) */}
                     {remainingLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-3 md:gap-4 transition-colors hover:bg-slate-900/90"
+                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4 transition-colors hover:bg-slate-900/90"
                       >
-                        <span className="inline-flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 md:py-1.5 rounded-lg md:rounded-xl border border-slate-800/80 shrink-0">
-                          <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-slate-400" />
-                          {formatDateTimeBR(log.created_at)}
+                        <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800/80 shrink-0">
+                          <Clock className="h-3.5 w-3.5 text-slate-400" />
+                          {formatRelativeTime(log.created_at)}
                         </span>
 
-                        <div className="space-y-1 md:space-y-0.5 min-w-0 flex-1 text-left">
-                          <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
-                            {(log.usuario_id || log.usuarios?.id) ? (
-                              <Link
-                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
-                                className="hover:text-blue-400 hover:underline transition-colors"
-                              >
-                                {log.usuarios?.nome || log.entidade_tipo}
-                              </Link>
-                            ) : (
-                              <span>{log.usuarios?.nome || log.entidade_tipo}</span>
-                            )}
-                          </h5>
+                        <div className="space-y-1.5 md:space-y-0.5 min-w-0 flex-1 text-left">
+                          <div className="flex items-center justify-between gap-2 md:block">
+                            <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
+                              {(log.usuario_id || log.usuarios?.id) ? (
+                                <Link
+                                  to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
+                                  className="hover:text-blue-400 hover:underline transition-colors"
+                                >
+                                  {log.usuarios?.nome || log.entidade_tipo}
+                                </Link>
+                              ) : (
+                                <span>{log.usuarios?.nome || log.entidade_tipo}</span>
+                              )}
+                            </h5>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedLogModal(log)}
+                              className="md:hidden h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                              title="Ver detalhes da atividade"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+
                           <p className="text-xs text-slate-300 md:text-slate-400 leading-relaxed md:leading-normal break-words md:truncate">
                             {log.descricao}
                           </p>
+
+                          <div className="pt-1 md:hidden">
+                            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800/80">
+                              <Clock className="h-3 w-3 text-slate-400" />
+                              {formatRelativeTime(log.created_at)}
+                            </span>
+                          </div>
                         </div>
 
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedLogModal(log)}
-                          className="h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                          className="hidden md:flex h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
                           title="Ver detalhes da atividade"
                         >
                           <Eye className="h-3.5 w-3.5" />
@@ -746,32 +764,22 @@ export default function AdminDashboard() {
           </div>
         </TabsContent>
 
-        {/* ABA 3: CONTRATOS DIGITAIS */}
         <TabsContent value="contratos" className="space-y-6 m-0 outline-none">
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                CONTRATOS DIGITAIS DE TRANSPORTE
-              </h3>
-              <span className="text-[10px] font-bold text-slate-400 font-mono">
-                {contratosStats.totalContratos} GERADOS NO TOTAL
-              </span>
-            </div>
-
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <AdminKpiCard
-                title="MOTORISTAS COM CONTRATO"
-                value={motoristasConfigurados}
-                subtext={`${pctConfigurados}% dos motoristas (${stats.totalMotoristas} no total)`}
+                title="MOTORISTAS QUE CONFIGURARAM"
+                value={`${motoristasConfigurados}/${stats.totalMotoristas || 0}`}
+                subtext={`${pctConfigurados}% estão configurados`}
                 cardBorder="border-sky-500/40 shadow-sky-500/10"
                 iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
                 icon={<ShieldCheck className="h-5 w-5" />}
               />
 
               <AdminKpiCard
-                title="USANDO CONTRATO ATIVO"
-                value={`${motoristasAtivos} Ativos`}
-                subtext={`${motoristasPausados} pausados | ${motoristasNaoConfigurados} não configurados`}
+                title="USO DE CONTRATO ATIVO"
+                value={`${motoristasAtivos}/${stats.totalMotoristas || 0}`}
+                subtext={`${pctAtivos}% estão ativos`}
                 cardBorder="border-purple-500/40 shadow-purple-500/10"
                 iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
                 icon={<CheckCircle2 className="h-5 w-5" />}
@@ -789,7 +797,7 @@ export default function AdminDashboard() {
               <AdminKpiCard
                 title="CONTRATOS ASSINADOS"
                 value={contratosStats.contratosAssinados}
-                subtext={`${pctAssinados}% conversão (${contratosStats.contratosPendentes} pendentes)`}
+                subtext={`${contratosStats.contratosPendentes} pendentes`}
                 cardBorder="border-emerald-500/40 shadow-emerald-500/10"
                 iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                 icon={<CheckCircle2 className="h-5 w-5" />}

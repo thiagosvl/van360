@@ -7,14 +7,13 @@ import { CheckCircle2, Loader2, Wand2 } from "lucide-react";
 import { PassageiroFormDadosCadastrais } from "@/components/features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
-import { PassageiroFormFinanceiro } from "@/components/features/passageiro/form/PassageiroFormFinanceiro";
+import { getNowBR } from "@/utils/dateUtils";
 
 export default function PassageiroExternalForm() {
   useAnalyticsInjector({ clarity: true, force: true });
   const {
     form,
     loading,
-    motoristaApelido,
     submitting,
     success,
     escolasList,
@@ -141,7 +140,7 @@ export default function PassageiroExternalForm() {
         {/* Footer info */}
         <div className="text-center pb-12">
           <p className="text-xs text-slate-400 font-medium tracking-wide">
-            © 2026 Van360 • Você só Dirige. A gente cuida da burocracia.
+            © {getNowBR().getFullYear()} Van360. Todos os direitos reservados.
           </p>
         </div>
       </div>

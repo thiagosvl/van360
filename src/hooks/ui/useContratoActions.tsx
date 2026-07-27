@@ -12,7 +12,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMemo } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
-import { isResponsavelIncompleto } from "@/utils/domain";
+import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 
 interface UseContratoActionsProps {
   item: any;
@@ -75,9 +75,7 @@ export function useContratoActions({
       });
     }
 
-    const urlContrato = isPendente
-      ? (item.minuta_url || item.contrato_url)
-      : (item.contrato_final_url || item.contrato_url);
+    const urlContrato = obterUrlDocumentoContrato(item);
 
     if (hasContract) {
       list.push({
@@ -106,7 +104,7 @@ export function useContratoActions({
         list.push({
           label: 'Copiar Link para Assinatura',
           icon: <Copy className="h-4 w-4" />,
-          onClick: () => onEnviarWhatsApp(), // A ViewModel cuidará de copiar no Desktop
+          onClick: () => onEnviarWhatsApp(),
           disabled: isFeatureDisabled,
           swipeColor: 'bg-indigo-600',
           hasSeparatorAfter: true

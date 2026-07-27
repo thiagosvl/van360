@@ -3,10 +3,7 @@ import {
   FileText,
   CheckCircle2,
   Clock,
-  AlertTriangle,
-  Eye,
   ExternalLink,
-  Users,
   PenTool,
   Search,
   X,
@@ -21,7 +18,9 @@ import { AdminUserContractItem, AdminUserPassengerItem } from "@/services/api/ad
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatShortName } from "@/utils/formatters/name";
 import { phoneMask } from "@/utils/masks";
-import { ContratoStatus, DriverContractConfigStatus, ContractMultaTipo } from "@/types/enums";
+import { ContratoStatus, DriverContractConfigStatus } from "@/types/enums";
+import { toast } from "@/utils/notifications/toast";
+import { obterUrlDocumentoContrato } from "@/utils/domain";
 
 interface AdminUserContractsTabProps {
   user: {
@@ -47,27 +46,8 @@ export function AdminUserContractsTab({
   passageiros = [],
   contratos = [],
 }: AdminUserContractsTabProps) {
-  const [selectedContractModal, setSelectedContractModal] = useState<AdminUserContractItem | null>(null);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [search, setSearch] = useState("");
-
-  const statusConfig = !user.assinatura_digital_url
-    ? DriverContractConfigStatus.NAO_CONFIGURADO
-    : user.config_contrato?.usar_contratos === false
-    ? DriverContractConfigStatus.DESATIVADO
-    : DriverContractConfigStatus.ATIVO;
-
-  const config = user.config_contrato as Record<string, any> | null;
-
-  const formatarRegraContrato = (regra?: { valor?: number | string | null; tipo?: string | null } | null) => {
-    if (!regra || regra.valor === undefined || regra.valor === null || regra.valor === "") return "—";
-    const num = Number(regra.valor);
-    if (isNaN(num)) return "—";
-    if (regra.tipo === ContractMultaTipo.PERCENTUAL || regra.tipo === "percentual" || regra.tipo === "%") {
-      return `${num}%`;
-    }
-    return formatCurrency(num);
-  };
 
   const totalContratos = kpis?.contratosCount ?? contratos.length;
   const totalAssinados = kpis?.contratosAssinadosCount ?? contratos.filter((c) => c.status === ContratoStatus.ASSINADO).length;
@@ -100,14 +80,22 @@ export function AdminUserContractsTab({
     });
   }, [passageiros, search, contractByPassengerMap]);
 
+  const handleOpenContractDocument = (contrato: AdminUserContractItem) => {
+    const url = obterUrlDocumentoContrato(contrato);
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      toast.error("Documento do contrato indisponível no momento.");
+    }
+  };
+
   return (
     <div className="space-y-6 text-left">
-      {/* KPIS DE CONTRATOS EXCLUSIVOS DO MOTORISTA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
           title="CONTRATOS EMITIDOS"
-          value={totalContratos}
-          subtext={`${pctEmitidos}% dos passageiros (${totalPassageiros} passageiros)`}
+          value={`${totalContratos}/${totalPassageiros}`}
+          subtext={`${pctEmitidos}% dos passageiros`}
           cardBorder="border-sky-500/40 shadow-sky-500/10"
           iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
           icon={<FileText className="h-5 w-5" />}
@@ -116,7 +104,7 @@ export function AdminUserContractsTab({
         <AdminKpiCard
           title="CONTRATOS ASSINADOS"
           value={totalAssinados}
-          subtext={`${pctAssinados}% dos contratos emitidos`}
+          subtext={`${pctAssinados}% assinados`}
           cardBorder="border-emerald-500/40 shadow-emerald-500/10"
           iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           icon={<CheckCircle2 className="h-5 w-5" />}
@@ -125,14 +113,13 @@ export function AdminUserContractsTab({
         <AdminKpiCard
           title="CONTRATOS PENDENTES"
           value={totalPendentes}
-          subtext={`${pctPendentes}% dos contratos emitidos`}
+          subtext={`${pctPendentes}% aguardando assinatura`}
           cardBorder="border-amber-500/40 shadow-amber-500/10"
           iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
           icon={<Clock className="h-5 w-5" />}
         />
       </div>
 
-      {/* TABELA DE PASSAGEIROS E CONTRATOS */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100">
         <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -188,15 +175,13 @@ export function AdminUserContractsTab({
             </div>
           ) : (
             <>
-              {/* DESKTOP TABLE */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-800/80 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                       <th className="py-3.5 px-6">Passageiro</th>
                       <th className="py-3.5 px-4">Responsável</th>
-                      <th className="py-3.5 px-4">Contrato Emitido em</th>
-                      <th className="py-3.5 px-4">Status Contrato</th>
+                      <th className="py-3.5 px-4">Status</th>
                       <th className="py-3.5 px-6 text-right">Ação</th>
                     </tr>
                   </thead>
@@ -237,15 +222,6 @@ export function AdminUserContractsTab({
                               <span className="text-slate-500 italic text-[11px]">—</span>
                             )}
                           </td>
-                          <td className="py-4 px-4">
-                            {contrato ? (
-                              <span className="font-medium text-slate-300 text-xs">
-                                {new Date(contrato.created_at).toLocaleDateString("pt-BR")}
-                              </span>
-                            ) : (
-                              <span className="text-slate-500 italic text-[11px]">Não emitido</span>
-                            )}
-                          </td>
                           <td className="py-4 px-4 whitespace-nowrap">
                             {contrato ? (
                               contrato.status === ContratoStatus.ASSINADO ? (
@@ -272,10 +248,10 @@ export function AdminUserContractsTab({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setSelectedContractModal(contrato)}
+                                onClick={() => handleOpenContractDocument(contrato)}
                                 className="h-8 rounded-xl text-blue-400 hover:bg-slate-800 hover:text-blue-300 px-2.5 flex items-center gap-1.5 ml-auto"
                               >
-                                <Eye className="h-3.5 w-3.5" />
+                                <ExternalLink className="h-3.5 w-3.5" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider">Ver Contrato</span>
                               </Button>
                             ) : (
@@ -289,7 +265,6 @@ export function AdminUserContractsTab({
                 </table>
               </div>
 
-              {/* MOBILE CARDS */}
               <div className="md:hidden space-y-3">
                 {passageiros.map((p) => {
                   const contrato = contractByPassengerMap.get(p.id);
@@ -335,10 +310,10 @@ export function AdminUserContractsTab({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setSelectedContractModal(contrato)}
+                            onClick={() => handleOpenContractDocument(contrato)}
                             className="h-7 rounded-xl text-blue-400 hover:bg-slate-800 px-2.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
                           >
-                            <Eye className="h-3.5 w-3.5" /> Ver Contrato
+                            <ExternalLink className="h-3.5 w-3.5" /> Ver Contrato
                           </Button>
                         </div>
                       )}
@@ -351,115 +326,6 @@ export function AdminUserContractsTab({
         </CardContent>
       </Card>
 
-      {/* MODAL DE DETALHES DO CONTRATO COM ADMINBASEDIALOG */}
-      {selectedContractModal && (
-        <AdminBaseDialog
-          open={!!selectedContractModal}
-          onOpenChange={(open) => !open && setSelectedContractModal(null)}
-          maxWidth="lg"
-        >
-          <AdminBaseDialog.Header
-            title="Detalhes do Contrato Digital"
-            subtitle={`Passageiro: ${selectedContractModal.passageiros?.nome || "Não informado"}`}
-            icon={<FileText className="w-5 h-5 text-blue-400" />}
-            onClose={() => setSelectedContractModal(null)}
-          />
-          <AdminBaseDialog.Body>
-            <div className="space-y-4 text-xs text-left">
-              {/* BADGES STATUS & ID */}
-              <div className="grid grid-cols-2 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
-                <div>
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                    Status do Contrato
-                  </span>
-                  <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border mt-1 ${selectedContractModal.status === ContratoStatus.ASSINADO
-                      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                      : "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                      }`}
-                  >
-                    {selectedContractModal.status.toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                    Ano Letivo
-                  </span>
-                  <span className="text-xs font-mono font-bold text-slate-200 mt-1 block">
-                    {(selectedContractModal as any).ano || new Date(selectedContractModal.created_at).getFullYear()}
-                  </span>
-                </div>
-              </div>
-
-              {/* VALORES E CONDICOES */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
-                <div>
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                    Valor Total
-                  </span>
-                  <p className="text-xs font-mono font-bold text-emerald-400 mt-0.5">
-                    {selectedContractModal.valor_total ? formatCurrency(Number(selectedContractModal.valor_total)) : "—"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                    Parcelas
-                  </span>
-                  <p className="text-xs font-mono font-bold text-slate-300 mt-0.5">
-                    {selectedContractModal.qtd_parcelas || 1}x de{" "}
-                    {selectedContractModal.valor_parcela ? formatCurrency(Number(selectedContractModal.valor_parcela)) : "—"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                    Data de Emissão
-                  </span>
-                  <p className="text-xs font-mono font-bold text-slate-300 mt-0.5">
-                    {new Date(selectedContractModal.created_at).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-              </div>
-
-              {/* DATAS DE ASSINATURA */}
-              {selectedContractModal.assinado_em && (
-                <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                    Data de Assinatura pelos Responsáveis
-                  </span>
-                  <p className="text-xs font-mono font-bold text-blue-400">
-                    {new Date(selectedContractModal.assinado_em).toLocaleString("pt-BR")}
-                  </p>
-                </div>
-              )}
-
-              {/* LINKS DO CONTRATO */}
-              <div className="space-y-2 pt-2">
-                {selectedContractModal.contrato_final_url && (
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(selectedContractModal.contrato_final_url!, "_blank")}
-                    className="w-full h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-500 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 border-0 shadow-lg shadow-blue-600/30"
-                  >
-                    <ExternalLink className="h-4 w-4" /> Visualizar Documento Assinado (PDF)
-                  </Button>
-                )}
-
-                {selectedContractModal.minuta_url && !selectedContractModal.contrato_final_url && (
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(selectedContractModal.minuta_url!, "_blank")}
-                    className="w-full h-11 rounded-xl bg-slate-800 text-blue-400 hover:bg-slate-700 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-700"
-                  >
-                    <ExternalLink className="h-4 w-4" /> Visualizar Minuta do Contrato
-                  </Button>
-                )}
-              </div>
-            </div>
-          </AdminBaseDialog.Body>
-        </AdminBaseDialog>
-      )}
-
-      {/* MODAL DE VISUALIZAÇÃO DA ASSINATURA DIGITAL DO MOTORISTA */}
       {isSignatureModalOpen && user.assinatura_digital_url && (
         <AdminBaseDialog
           open={isSignatureModalOpen}

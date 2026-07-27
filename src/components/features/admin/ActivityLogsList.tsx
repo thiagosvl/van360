@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { phoneMask } from "@/utils/masks";
+import { formatRelativeTime } from "@/utils/formatters/date";
 
 interface ActivityLogsListProps {
   logs: AdminUserLogItem[];
@@ -72,14 +73,6 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
           </thead>
           <tbody className="divide-y divide-slate-800/40">
             {logs.map((log) => {
-              const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              });
 
               const actionLabel = log.acao.replace(/_/g, " ");
               const badgeStyle = getActionBadgeStyle(log.acao);
@@ -88,7 +81,7 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
               return (
                 <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
                   <td className="py-4 text-xs font-mono font-semibold text-slate-300 whitespace-nowrap">
-                    {dateFormatted}
+                    {formatRelativeTime(log.created_at)}
                   </td>
                   <td className="py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${badgeStyle}`}>
@@ -138,13 +131,6 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
       {/* MOBILE CARDS VIEW */}
       <div className="md:hidden space-y-3 mb-4">
         {logs.map((log) => {
-          const dateFormatted = new Date(log.created_at).toLocaleString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
 
           const actionLabel = log.acao.replace(/_/g, " ");
           const badgeStyle = getActionBadgeStyle(log.acao);
@@ -196,7 +182,7 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
               {/* LINHA 3: DATA & HORA (ESQUERDA COM ÊNFASE) & BOTÃO OLHINHO (DIREITA) */}
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
                 <span className="text-xs font-bold font-mono text-slate-200">
-                  {dateFormatted}
+                  {formatRelativeTime(log.created_at)}
                 </span>
                 <Button
                   variant="ghost"

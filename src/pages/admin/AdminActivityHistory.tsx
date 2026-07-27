@@ -51,18 +51,17 @@ export default function AdminActivityHistory() {
         <CardHeader className="pb-2 border-b border-slate-800/80 bg-slate-900/40">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-              Logs do Sistema
+              Histórico de Atividades
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
                 size="sm"
                 onClick={() => setIsMobileFiltersOpen(p => !p)}
-                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
-                  isMobileFiltersOpen
+                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
                     ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
                     : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
-                }`}
+                  }`}
               >
                 <Filter className="h-3.5 w-3.5" />
               </Button>
