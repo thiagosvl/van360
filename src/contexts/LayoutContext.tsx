@@ -5,6 +5,7 @@ import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
+import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import {
   createContext,
   useContext,
@@ -86,7 +87,7 @@ export interface OpenManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded: (updatedCobranca?: any) => void;
+  onPaymentRecorded?: (updatedCobranca?: any, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
 export interface OpenReceiptDialogProps {
