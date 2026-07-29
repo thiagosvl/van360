@@ -30,4 +30,5 @@ export interface RegistrarPagamentoManualDTO {
   valor_pago: number | string;
   data_pagamento: string;
   tipo_pagamento: CobrancaTipoPagamento;
+  enviar_recibo_whatsapp?: boolean;
 }
