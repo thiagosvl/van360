@@ -58,7 +58,7 @@ export default function RouteExecutionPage() {
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
       <div className="space-y-4 text-left pb-16">
-        {isLoading && !execucao ? (
+        {isLoading || !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (
           <ActiveRouteExecutionView

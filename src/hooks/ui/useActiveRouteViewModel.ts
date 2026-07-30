@@ -125,13 +125,17 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     });
   };
 
+  const isDataLoading = isExplicitPreview
+    ? routeQuery.isLoading
+    : (execQuery.isLoading || (execQuery.isError && routeQuery.isLoading));
+
   return {
     execucao,
     paradaAtual,
     proximasParadas,
     paradasConcluidas,
-    isLoading: execQuery.isLoading || (execQuery.isError && routeQuery.isLoading) || stepMutation.isPending || cancelMutation.isPending || reorderMutation.isPending || iniciarMutation.isPending,
-    isError: execQuery.isError && routeQuery.isError,
+    isLoading: isDataLoading || stepMutation.isPending || cancelMutation.isPending || reorderMutation.isPending || iniciarMutation.isPending,
+    isError: isExplicitPreview ? routeQuery.isError : (execQuery.isError && routeQuery.isError),
     handleStep,
     handleReordenar,
     handleCancel,

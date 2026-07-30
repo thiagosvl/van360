@@ -5,14 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import {
-  XCircle, MapPin, Check, UserMinus, Route, Compass, Navigation, Flag, X, ArrowUp, ArrowDown, Loader2, Play, AlertTriangle, School, User,
+  XCircle, MapPin, Check, CheckCircle2, UserMinus, Route, Compass, Navigation, Flag, X, ArrowUp, ArrowDown, Loader2, Play, AlertTriangle, School, User,
   Home
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
+import { GoogleMapsIcon } from "@/components/icons/GoogleMapsIcon";
+import { WazeIcon } from "@/components/icons/WazeIcon";
 import { RouteExecutionStatus, RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
+
 import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatarEnderecoParcialRota, formatShortName } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useRouteRules } from "@/hooks/business/useRouteRules";
@@ -109,7 +112,7 @@ export function ActiveRouteExecutionView({
   );
 
   const sentidoPassageiroAtivo = paradaAtual?.sentido || RouteSentido.INDO;
-  const actionLabel = sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? "Confirmar Entrega" : "Embarcou";
+  const actionLabel = sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? "Desembarcou" : "Embarcou";
 
   const todasParadas = [
     ...(paradasConcluidas || []),
@@ -333,32 +336,28 @@ export function ActiveRouteExecutionView({
     <div className="space-y-4">
       {isPreview ? (
         <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm space-y-3.5 text-left">
-          <div className="flex items-start justify-between gap-3 w-full">
-            <div className="space-y-1 min-w-0 pr-1">
-              <h2 className="text-xl font-extrabold text-[#1a3a5c] font-headline tracking-tight leading-snug break-words">
-                {execucao?.rota?.nome || "Rotaa"}
-              </h2>
-              <p className="text-xs font-medium text-slate-400 leading-none pt-0.5">
-                {(todasParadas.length || totalStops) === 1 ? "1 PARADA" : `${todasParadas.length || totalStops} PARADAS`}
-              </p>
-            </div>
+          <div className="space-y-1 min-w-0 pr-1">
+            <h2 className="text-xl font-extrabold text-[#1a3a5c] font-headline tracking-tight leading-snug break-words">
+              {execucao?.rota?.nome || "Rota"}
+            </h2>
+            <p className="text-xs font-medium text-slate-400 leading-none pt-0.5">
+              {(todasParadas.length || totalStops) === 1 ? "1 PARADA" : `${todasParadas.length || totalStops} PARADAS`}
+            </p>
+          </div>
 
-            {/* Botão Editar Rota */}
+          <div className="flex items-center gap-2.5 pt-1">
             {execucao?.rota_id && (
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
-                className="h-8 px-3 rounded-lg border-slate-200 text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all -mt-0.5"
+                className="h-11 px-4 rounded-lg border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-extrabold uppercase text-xs tracking-wider shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5"
                 title="Editar Rota"
               >
-                Editar
+                <span>Editar</span>
               </Button>
             )}
-          </div>
 
-          <div className="pt-1">
             <Button
               onClick={() => {
                 if (iniciarMutation && execucao?.rota_id) {
@@ -370,7 +369,7 @@ export function ActiveRouteExecutionView({
                 }
               }}
               disabled={!!outraRotaAtiva || isLoading}
-              className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-extrabold uppercase text-xs tracking-wider rounded-lg shadow-sm flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer"
+              className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-extrabold uppercase text-xs tracking-wider rounded-lg shadow-sm flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer"
             >
               {iniciarMutation?.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -379,16 +378,16 @@ export function ActiveRouteExecutionView({
               )}
               <span>Iniciar Rota</span>
             </Button>
-
-            {outraRotaAtiva && (
-              <div className="flex items-start gap-2 bg-rose-50 border border-rose-100 rounded-lg p-3 text-rose-800 text-[11px] font-semibold mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <p className="leading-snug text-left">
-                  Uma outra rota (<strong className="font-bold">{outraRotaAtiva.rota?.nome}</strong>) está em execução. Encerre a rota ativa para poder iniciar esta.
-                </p>
-              </div>
-            )}
           </div>
+
+          {outraRotaAtiva && (
+            <div className="flex items-start gap-2 bg-rose-50 border border-rose-100 rounded-lg p-3 text-rose-800 text-[11px] font-semibold mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+              <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+              <p className="leading-snug text-left">
+                Uma outra rota (<strong className="font-bold">{outraRotaAtiva.rota?.nome}</strong>) está em execução. Encerre a rota ativa para poder iniciar esta.
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm space-y-4 text-left">
@@ -511,6 +510,25 @@ export function ActiveRouteExecutionView({
             const isEscola = paradaAtual.tipo_no === RouteNodeType.ESCOLA;
             const displayOrdem = paradaAtual.ordem || 0;
 
+            const pass = paradaAtual.passageiro;
+            const responsaveisAdicionais = pass?.responsaveis || [];
+            const isPrincipal = selectedRespTab === TAB_DEFAULT || selectedRespTab === TAB_PRINCIPAL;
+            const respObj = !isPrincipal ? responsaveisAdicionais.find((r: any) => r.id === selectedRespTab) : null;
+
+            let currentAddressStr = isEscola
+              ? formatarEnderecoCompleto(paradaAtual.escola) || ""
+              : formatarEnderecoParcialRota(pass) || "";
+
+            if (!isEscola && pass) {
+              if (isPrincipal) {
+                currentAddressStr = formatarEnderecoParcialRota(pass) || "";
+              } else if (respObj) {
+                currentAddressStr = respObj.logradouro
+                  ? formatarEnderecoParcialRota(respObj)
+                  : (formatarEnderecoParcialRota(pass) || "");
+              }
+            }
+
             const cardClass = "bg-white p-4 sm:p-5 rounded-2xl shadow-sm space-y-3.5 animate-in fade-in zoom-in-95 duration-200 text-left border border-slate-200";
 
             return (
@@ -533,10 +551,35 @@ export function ActiveRouteExecutionView({
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
                     <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400">
                       {isEscola
-                        ? `Parada Atual (${displayOrdem} de ${totalStops})`
-                        : `Parada Atual (${displayOrdem} de ${totalStops})`}
+                        ? `Parada Atual`
+                        : `Parada Atual`}
                     </span>
                     <div className="flex items-center gap-1.5 ml-auto">
+                      {!isEscola && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setAddressDialogData({
+                              open: true,
+                              title: paradaAtual.passageiro?.nome || "Passageiro",
+                              address: currentAddressStr,
+                              latitude: respObj?.latitude || paradaAtual.passageiro?.latitude,
+                              longitude: respObj?.longitude || paradaAtual.passageiro?.longitude,
+                              tipoNo: RouteNodeType.PASSAGEIRO,
+                              sentido: paradaAtual.sentido,
+                              escolaNome: paradaAtual.passageiro?.escola?.nome,
+                              passageiro: paradaAtual.passageiro
+                            });
+                          }}
+                          className="h-8 w-8 rounded-lg border border-slate-200 bg-slate-50 text-[#1a3a5c] hover:bg-slate-100 flex items-center justify-center shrink-0 cursor-pointer transition-all shadow-2xs"
+                          title="Ver endereço e detalhes"
+                        >
+                          <MapPin className="w-4 h-4 text-[#1a3a5c]" />
+                        </Button>
+                      )}
+
                       {/* Seta de reordenar parada ativa */}
                       {(() => {
                         const totalPendentesReal = paradaAtual ? [paradaAtual, ...proximasParadas] : [...proximasParadas];
@@ -731,8 +774,16 @@ export function ActiveRouteExecutionView({
                           {formatShortName(paradaAtual.passageiro?.nome || "", true)}
                         </h2>
 
+                        {/* Endereço Principal do Passageiro */}
+                        {displayAddressStr && (
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mt-1 text-left">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="break-words">{displayAddressStr}</span>
+                          </div>
+                        )}
+
                         {/* Linha de contexto do sentido */}
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mt-1">
                           {sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? (
                             <>
                               <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -741,96 +792,11 @@ export function ActiveRouteExecutionView({
                           ) : (
                             <>
                               <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span>Indo para a escola ({paradaAtual.passageiro?.escola?.nome || "Escola"})</span>
+                              <span>Indo para a escola</span>
                             </>
                           )}
                         </div>
                       </div>
-
-                      {/* Tabs de Responsáveis posicionadas ANTES do endereço */}
-                      {(() => {
-                        const pass = paradaAtual.passageiro;
-                        const responsaveisAdicionais = pass?.responsaveis || [];
-                        const isPrincipal = selectedRespTab === TAB_DEFAULT || selectedRespTab === TAB_PRINCIPAL;
-                        const respObj = !isPrincipal ? responsaveisAdicionais.find((r: any) => r.id === selectedRespTab) : null;
-
-                        let currentAddressStr = displayAddressStr;
-                        if (pass) {
-                          if (isPrincipal) {
-                            currentAddressStr = formatarEnderecoParcialRota(pass) || displayAddressStr;
-                          } else if (respObj) {
-                            currentAddressStr = respObj.logradouro
-                              ? formatarEnderecoParcialRota(respObj)
-                              : (formatarEnderecoParcialRota(pass) || displayAddressStr);
-                          }
-                        }
-
-                        return (
-                          <div className="space-y-2 text-left w-full min-w-0">
-                            {responsaveisAdicionais.length > 0 && (
-                              <div className="space-y-1 text-left w-full min-w-0">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                                  Endereços e Responsáveis
-                                </span>
-                                <Tabs
-                                  value={selectedRespTab === TAB_DEFAULT ? TAB_PRINCIPAL : selectedRespTab}
-                                  onValueChange={setSelectedRespTab}
-                                  className="w-full min-w-0"
-                                >
-                                  <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                    <TabsTrigger
-                                      value={TAB_PRINCIPAL}
-                                      className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs shrink-0 cursor-pointer"
-                                    >
-                                      Principal
-                                    </TabsTrigger>
-                                    {responsaveisAdicionais.map((resp: any) => (
-                                      <TabsTrigger
-                                        key={resp.id}
-                                        value={resp.id}
-                                        className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs shrink-0 cursor-pointer"
-                                      >
-                                        {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
-                                      </TabsTrigger>
-                                    ))}
-                                  </TabsList>
-                                </Tabs>
-                              </div>
-                            )}
-
-                            {/* Endereço Atual baseado no Responsável Selecionado */}
-                            {currentAddressStr && (
-                              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mt-1 text-left">
-                                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <span className="break-words">{currentAddressStr}</span>
-                              </div>
-                            )}
-
-                            {/* Botao de Endereco e Rotas */}
-                            <div className="flex justify-end pt-1">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setAddressDialogData({
-                                  open: true,
-                                  title: paradaAtual.passageiro?.nome || "Passageiro",
-                                  address: currentAddressStr,
-                                  latitude: respObj?.latitude || paradaAtual.passageiro?.latitude,
-                                  longitude: respObj?.longitude || paradaAtual.passageiro?.longitude,
-                                  tipoNo: RouteNodeType.PASSAGEIRO,
-                                  sentido: paradaAtual.sentido,
-                                  escolaNome: paradaAtual.passageiro?.escola?.nome
-                                })}
-                                className="h-8 rounded-lg border-slate-200 text-[#1a3a5c] font-bold text-xs gap-1.5 shrink-0 px-3 bg-white hover:bg-slate-50 shadow-2xs mt-1 cursor-pointer"
-                              >
-                                <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                                Endereço e Rotas
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })()}
 
                       {/* Botoes de Acao do Passageiro */}
                       <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
@@ -843,7 +809,7 @@ export function ActiveRouteExecutionView({
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : isLastNode ? (
-                            <Flag className="w-4 h-4" />
+                            <CheckCircle2 className="w-4 h-4" />
                           ) : (
                             <Check className="w-4 h-4" />
                           )}
@@ -946,31 +912,33 @@ export function ActiveRouteExecutionView({
                         </div>
                       </div>
 
-                      {/* Botão de Endereço Reaproveitado no Canto Superior Direito (Apenas Ícone) */}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          setSelectedDialogRespTab(TAB_PRINCIPAL);
-                          setAddressDialogData({
-                            open: true,
-                            title: isEscolaItem ? (parada.escola?.nome || "Escola") : (pass?.nome || "Passageiro"),
-                            passageiro: isEscolaItem ? null : pass,
-                            escola: isEscolaItem ? parada.escola : null,
-                            address: currentAddressStr,
-                            latitude: currentLat,
-                            longitude: currentLng,
-                            tipoNo: isEscolaItem ? RouteNodeType.ESCOLA : RouteNodeType.PASSAGEIRO,
-                            sentido: isEscolaItem ? null : parada.sentido,
-                            escolaNome: isEscolaItem ? null : (pass?.escola?.nome || pass?.escola_nome)
-                          });
-                        }}
-                        className="h-8 w-8 rounded-lg border-slate-200 text-[#1a3a5c] hover:bg-slate-50 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs -mt-0.5"
-                        title="Ver endereço e rotas"
-                      >
-                        <MapPin className="w-3.5 h-3.5 text-[#1a3a5c]" />
-                      </Button>
+                      {/* Botão de Endereço no Canto Superior Direito (Apenas Passageiro) */}
+                      {!isEscolaItem && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedDialogRespTab(TAB_PRINCIPAL);
+                            setAddressDialogData({
+                              open: true,
+                              title: pass?.nome || "Passageiro",
+                              passageiro: pass,
+                              escola: null,
+                              address: currentAddressStr,
+                              latitude: currentLat,
+                              longitude: currentLng,
+                              tipoNo: RouteNodeType.PASSAGEIRO,
+                              sentido: parada.sentido,
+                              escolaNome: pass?.escola?.nome || pass?.escola_nome
+                            });
+                          }}
+                          className="h-8 w-8 rounded-lg border-slate-200 text-[#1a3a5c] hover:bg-slate-50 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs -mt-0.5"
+                          title="Ver endereço e detalhes"
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                        </Button>
+                      )}
                     </div>
 
                     {isEscolaItem && (() => {
@@ -978,24 +946,9 @@ export function ActiveRouteExecutionView({
                       const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
                       return (
-                        <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2 w-full text-left">
-                          {!isPreview && (
-                            <div className="flex flex-wrap items-center gap-2 min-w-0">
-                              <span className="inline-flex items-center gap-1 shrink-0 text-[11px]">
-                                <span>⬇️</span>
-                                <span className="font-bold text-[#1a3a5c]">{desces.length}</span>
-                                <span className="text-slate-600 font-medium">Desembarque</span>
-                              </span>
-                              <span className="inline-flex items-center gap-1 shrink-0 text-[11px]">
-                                <span>⬆️</span>
-                                <span className="font-bold text-[#1a3a5c]">{subes.length}</span>
-                                <span className="text-slate-600 font-medium">Embarque</span>
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Lista Completa de Alunos de Desembarque e Embarque (Sempre Visível) */}
-                          <div className={cn("space-y-1 text-left", !isPreview && "pt-1.5 border-t border-slate-100/80 mt-1")}>
+                        <div className="mt-2 space-y-1 border-t border-slate-100 pt-2 w-full text-left">
+                          {/* Lista Completa de Alunos de Desembarque e Embarque */}
+                          <div className="space-y-1 text-left">
                             <div className="text-[11px] leading-snug">
                               <span className="font-semibold text-slate-700">⬇️ Desembarque ({desces.length}):{" "}</span>
                               {desces.length > 0 && (
@@ -1116,9 +1069,9 @@ export function ActiveRouteExecutionView({
         </div>
       )}
 
-      {/* Diálogo Centralizado de Endereço e Rotas de Navegação */}
+      {/* Diálogo Centralizado de Detalhes da Parada (Exclusivo Passageiro) */}
       <BaseDialog
-        open={addressDialogData.open}
+        open={addressDialogData.open && addressDialogData.tipoNo === RouteNodeType.PASSAGEIRO}
         onOpenChange={(open) => {
           setAddressDialogData(prev => ({ ...prev, open }));
           if (!open) setSelectedDialogRespTab(TAB_PRINCIPAL);
@@ -1126,165 +1079,194 @@ export function ActiveRouteExecutionView({
         maxWidth="md"
       >
         <BaseDialog.Header
-          title={addressDialogData.title}
-          icon={addressDialogData.tipoNo === RouteNodeType.ESCOLA ? <School className="w-5 h-5 text-blue-600" /> : <User className="w-5 h-5 text-[#1a3a5c]" />}
+          title="Endereços do Passageiro"
+          icon={<MapPin className="w-5 h-5 text-[#1a3a5c]" />}
           onClose={() => {
             setAddressDialogData(prev => ({ ...prev, open: false }));
             setSelectedDialogRespTab(TAB_PRINCIPAL);
           }}
         />
 
-        <BaseDialog.Body className="space-y-4 text-left pt-3">
-          {/* Tabs de Responsáveis / Endereços Adicionais (estilo CarteirinhaResponsaveis) */}
-          {addressDialogData.tipoNo === RouteNodeType.PASSAGEIRO && addressDialogData.passageiro?.responsaveis && addressDialogData.passageiro.responsaveis.length > 0 && (
-            <div className="space-y-1.5 w-full min-w-0">
-              <span className="text-[10px] font-extrabold text-[#1a3a5c]/60 uppercase tracking-widest block text-left">
-                Responsáveis / Endereços
-              </span>
-              <Tabs value={selectedDialogRespTab} onValueChange={setSelectedDialogRespTab} className="w-full min-w-0">
-                <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                  <TabsTrigger
-                    value={TAB_PRINCIPAL}
-                    className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer"
-                  >
-                    Principal
-                  </TabsTrigger>
-                  {addressDialogData.passageiro.responsaveis.map((resp: any) => (
-                    <TabsTrigger
-                      key={resp.id}
-                      value={resp.id!}
-                      className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer"
-                    >
-                      {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </div>
-          )}
-
-          {/* Tipo e Fluxo de Destino */}
-          {addressDialogData.tipoNo === RouteNodeType.ESCOLA ? (
-            <div className="flex items-center">
-              <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg shrink-0 shadow-2xs border border-blue-100/60">
-                Escola
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-1.5 bg-slate-50/50 border border-slate-200/70 p-3.5 rounded-2xl">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[9px] font-extrabold text-[#1a3a5c]/60 uppercase tracking-wider block">
-                  Sentido do Passageiro:
-                </span>
-                <Badge className={cn(
-                  "text-[9px] font-bold border-none px-2 py-0.5 rounded-md shrink-0 shadow-2xs leading-none",
-                  addressDialogData.sentido === RouteSentido.VOLTANDO ? "bg-orange-50 text-orange-700" : "bg-blue-50 text-blue-700"
-                )}>
-                  {addressDialogData.sentido === RouteSentido.VOLTANDO ? "🏠 Volta (Para Casa)" : "➡️ Ida (Para Escola)"}
-                </Badge>
-              </div>
-              {addressDialogData.escolaNome && (
-                <p className="text-[11px] font-medium text-slate-500 leading-tight">
-                  Vinculado à escola: <span className="font-bold text-[#1a3a5c]">{addressDialogData.escolaNome}</span>
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Card de Endereço Ativo */}
+        <BaseDialog.Body className="space-y-3.5 text-left pt-2 pb-4">
           {(() => {
             const pass = addressDialogData.passageiro;
             const isPrincipal = selectedDialogRespTab === TAB_PRINCIPAL;
             const respObj = !isPrincipal ? pass?.responsaveis?.find((r: any) => r.id === selectedDialogRespTab) : null;
 
             let activeRespName = isPrincipal ? pass?.nome_responsavel : respObj?.nome;
-            let activeRespParentesco = isPrincipal
-              ? formatParentesco(pass?.parentesco_responsavel)
-              : formatParentesco(respObj?.parentesco);
-            let activeAddress = addressDialogData.address;
-
-            if (addressDialogData.tipoNo === RouteNodeType.PASSAGEIRO && pass) {
-              if (isPrincipal) {
-                activeAddress = formatarEnderecoParcialRota(pass) || addressDialogData.address;
-              } else if (respObj) {
-                activeAddress = respObj.logradouro
-                  ? formatarEnderecoParcialRota(respObj)
-                  : (formatarEnderecoParcialRota(pass) || addressDialogData.address);
-              }
-            }
-
-            return (
-              <div className="bg-white border border-slate-200 p-4 rounded-2xl space-y-2 shadow-sm text-left">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-extrabold text-[#1a3a5c]/60 uppercase tracking-widest block leading-none">
-                    Endereço de Parada
-                  </span>
-                  {activeRespName && (
-                    <span className="text-[11px] font-bold text-[#1a3a5c] truncate">
-                      {activeRespName} {activeRespParentesco ? `(${activeRespParentesco})` : ""}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm font-bold text-[#1a3a5c] leading-relaxed break-words">
-                  {activeAddress}
-                </p>
-              </div>
-            );
-          })()}
-        </BaseDialog.Body>
-
-        <BaseDialog.Footer className="grid grid-cols-2 gap-3">
-          {(() => {
-            const pass = addressDialogData.passageiro;
-            const isPrincipal = selectedDialogRespTab === TAB_PRINCIPAL;
-            const respObj = !isPrincipal ? pass?.responsaveis?.find((r: any) => r.id === selectedDialogRespTab) : null;
-
+            let rawParentesco = isPrincipal ? pass?.parentesco_responsavel : respObj?.parentesco;
             let activeAddress = addressDialogData.address;
             let activeLat = addressDialogData.latitude;
             let activeLng = addressDialogData.longitude;
 
-            if (addressDialogData.tipoNo === RouteNodeType.PASSAGEIRO && pass) {
+            if (pass) {
               if (isPrincipal) {
-                activeAddress = formatarEnderecoParcialRota(pass) || addressDialogData.address;
+                activeAddress = formatarEnderecoCompleto(pass) || formatarEnderecoParcialRota(pass) || addressDialogData.address;
                 activeLat = pass.latitude ?? addressDialogData.latitude;
                 activeLng = pass.longitude ?? addressDialogData.longitude;
               } else if (respObj) {
                 activeAddress = respObj.logradouro
-                  ? formatarEnderecoParcialRota(respObj)
-                  : (formatarEnderecoParcialRota(pass) || addressDialogData.address);
+                  ? formatarEnderecoCompleto(respObj)
+                  : (formatarEnderecoCompleto(pass) || formatarEnderecoParcialRota(pass) || addressDialogData.address);
                 activeLat = (respObj as any).latitude ?? pass.latitude ?? addressDialogData.latitude;
                 activeLng = (respObj as any).longitude ?? pass.longitude ?? addressDialogData.longitude;
               }
             }
 
+            const activeRespFirstName = activeRespName ? formatFirstName(activeRespName) : "";
+            const formattedParentesco = rawParentesco ? formatParentesco(rawParentesco) : "";
+            const parentescoLabel = (formattedParentesco && formattedParentesco.trim().length > 0)
+              ? formattedParentesco
+              : (isPrincipal ? "Principal" : "Responsável");
+
+            const isVolta = addressDialogData.sentido === RouteSentido.VOLTANDO;
+            const casaAddress = activeAddress || "Endereço do Aluno";
+            const escolaNome = addressDialogData.escolaNome || "Escola";
+
+            const saindoDe = isVolta ? escolaNome : casaAddress;
+            const chegandoEm = isVolta ? casaAddress : escolaNome;
+
             return (
               <>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    openNavigation("maps", activeAddress, activeLat, activeLng);
-                  }}
-                  variant="outline"
-                  className="h-11 border-slate-200 text-[#1a3a5c] font-bold text-xs rounded-lg flex items-center justify-center gap-2 bg-white hover:bg-slate-50 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
-                >
-                  <Navigation className="w-4 h-4 text-[#1a3a5c]" />
-                  Google Maps
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    openNavigation("waze", activeAddress, activeLat, activeLng);
-                  }}
-                  variant="outline"
-                  className="h-11 border-sky-200/80 text-[#0099cc] font-bold text-xs rounded-lg flex items-center justify-center gap-2 bg-sky-50/20 hover:bg-sky-50/50 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
-                >
-                  <Compass className="w-4 h-4 text-[#0099cc]" />
-                  Waze
-                </Button>
+                {/* 0. Nome e Avatar Inline do Passageiro */}
+                <div className="flex items-center justify-center gap-2 py-0.5 text-center">
+                  <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#1a3a5c] shrink-0">
+                    <User className="w-3.5 h-3.5" />
+                  </div>
+                  <h3 className="text-sm font-bold text-[#1a3a5c] uppercase font-headline tracking-tight">
+                    {addressDialogData.title}
+                  </h3>
+                </div>
+
+                {/* 1. Tabs de Responsáveis Adicionais (Somente se existirem adicionais) */}
+                {pass?.responsaveis && pass.responsaveis.length > 0 && (
+                  <div className="w-full min-w-0">
+                    <Tabs value={selectedDialogRespTab} onValueChange={setSelectedDialogRespTab} className="w-full min-w-0">
+                      <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                        <TabsTrigger
+                          value={TAB_PRINCIPAL}
+                          className="rounded-full border border-slate-200 bg-white text-slate-600 px-3.5 py-1 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs shrink-0 cursor-pointer"
+                        >
+                          Principal
+                        </TabsTrigger>
+                        {pass.responsaveis.map((resp: any) => (
+                          <TabsTrigger
+                            key={resp.id}
+                            value={resp.id!}
+                            className="rounded-full border border-slate-200 bg-white text-slate-600 px-3.5 py-1 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs shrink-0 cursor-pointer"
+                          >
+                            {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                )}
+
+                {/* 2. Alerta de Atenção para Responsável Alternativo (ex: Pai/Mãe) */}
+                {!isPrincipal && respObj && (
+                  <div className="flex items-start gap-2 bg-amber-50/90 border border-amber-200/80 p-2.5 rounded-xl text-amber-900 text-[11px] font-normal leading-tight animate-in fade-in duration-200 text-left shadow-2xs">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold text-amber-950 block mb-0.5">Aviso de endereço alternativo:</span>
+                      Você está visualizando e navegando para o endereço de <strong className="font-semibold">{formatFirstName(respObj.nome)}</strong> ({parentescoLabel}).
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Card de Endereço Ativo (Com os Botões de Navegação Maps e Waze) */}
+                <div className="bg-white border border-slate-200/90 p-3.5 rounded-xl space-y-2.5 text-left shadow-2xs">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                      Endereço
+                    </span>
+                    {activeRespFirstName && (
+                      <span className="text-xs font-semibold text-[#1a3a5c] break-words text-right">
+                        {activeRespFirstName} ({parentescoLabel})
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-semibold text-[#1a3a5c] leading-relaxed break-words">
+                    {activeAddress || "Endereço não informado"}
+                  </p>
+
+                  {/* Botões de Navegação com Cores Oficiais */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1.5 border-t border-slate-100">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        openNavigation("maps", activeAddress, activeLat, activeLng);
+                      }}
+                      className="h-10 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-full flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
+                    >
+                      <GoogleMapsIcon className="w-4 h-4 shrink-0" />
+                      <span>Maps</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        openNavigation("waze", activeAddress, activeLat, activeLng);
+                      }}
+                      className="h-10 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-full flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
+                    >
+                      <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />
+                      <span>Waze</span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 4. Trajeto da Rota (Com Linha Conectora) */}
+                <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-xl space-y-3 text-left shadow-2xs">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      Trajeto da Rota
+                    </span>
+                    <span className={cn(
+                      "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border leading-none shadow-2xs",
+                      isVolta ? "bg-slate-100 text-slate-700 border-slate-200" : "bg-[#1a3a5c]/10 text-[#1a3a5c] border-[#1a3a5c]/20"
+                    )}>
+                      {isVolta ? "Voltando" : "Indo"}
+                    </span>
+                  </div>
+
+                  <div className="relative pl-0.5 space-y-4 pt-1 text-xs">
+                    {/* Saindo de */}
+                    <div className="flex items-start gap-3 relative">
+                      <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-2xs z-10">
+                        {isVolta ? <School className="w-3.5 h-3.5" /> : <Home className="w-3.5 h-3.5" />}
+                      </div>
+                      {/* Linha Conectora Vertical */}
+                      <div className="absolute left-[11px] top-6 bottom-[-16px] w-[2px] bg-slate-200" />
+                      <div className="space-y-0.5 flex-1 min-w-0">
+                        <span className="font-semibold text-slate-400 uppercase text-[9px] tracking-wider block">
+                          Saindo de:
+                        </span>
+                        <span className="font-semibold text-[#1a3a5c] break-words block leading-snug">
+                          {saindoDe}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Chegando em */}
+                    <div className="flex items-start gap-3 relative">
+                      <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-2xs z-10">
+                        {isVolta ? <Home className="w-3.5 h-3.5" /> : <School className="w-3.5 h-3.5" />}
+                      </div>
+                      <div className="space-y-0.5 flex-1 min-w-0">
+                        <span className="font-semibold text-slate-400 uppercase text-[9px] tracking-wider block">
+                          Chegando em:
+                        </span>
+                        <span className="font-semibold text-[#1a3a5c] break-words block leading-snug">
+                          {chegandoEm}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             );
           })()}
-        </BaseDialog.Footer>
+        </BaseDialog.Body>
       </BaseDialog>
     </div>
   );
