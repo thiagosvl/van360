@@ -12,7 +12,6 @@ import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
-  ChevronDown,
   HelpCircle,
   Lock,
   Loader2,
@@ -21,7 +20,6 @@ import {
   Key,
   Rocket,
   IdCard,
-  Menu,
   Route,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -81,16 +79,19 @@ export function AppNavbar({ role }: { role: "motorista" }) {
     }
   };
 
-  const userInitial = useMemo(() => {
-    return profile?.nome.charAt(0)?.toUpperCase();
+  const userInitials = useMemo(() => {
+    if (!profile?.nome) return "U";
+    const nameParts = profile.nome.trim().split(/\s+/).filter(Boolean);
+    if (nameParts.length >= 2) {
+      return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+    }
+    return nameParts[0].substring(0, 2).toUpperCase();
   }, [profile?.nome]);
 
   return (
     <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-[calc(4rem+var(--safe-area-top))] sm:h-[calc(5rem+var(--safe-area-top))] pt-[var(--safe-area-top)] transition-all">
       <div className="flex h-full items-center justify-between px-4 sm:px-8 relative">
-        {/* Esquerda: Logo (Mobile) / Título (Desktop) */}
         <div className="flex-1 flex items-center min-w-0">
-          {/* Logo - Apenas Mobile */}
           <div className="flex md:hidden shrink-0">
             <img
               src="/assets/logo-van360.webp"
@@ -100,7 +101,6 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             />
           </div>
 
-          {/* Título da Página - Apenas Desktop */}
           <div className="hidden md:flex items-center gap-3 min-w-0">
             {displayTitle && (
               <>
@@ -121,37 +121,28 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           </div>
         </div>
 
-        {/* Centro: Título da Página (Apenas Mobile) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden w-[40%] sm:w-[50%]">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden max-w-[55%] sm:max-w-[60%] pointer-events-none">
           {displayTitle && (
-            <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c] tracking-tight leading-none truncate text-center w-full px-1">
+            <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c] tracking-tight leading-tight truncate text-center">
               {displayTitle}
             </h2>
           )}
         </div>
 
-        {/* Direita: Ajuda (Mobile) e Perfil de Usuário */}
         <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2">
-          {/* Perfil de Usuário / Menu Hamburger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="group flex items-center gap-x-1.5 outline-none p-1 sm:p-0">
-                {/* Mobile: Avatar com inicial + seta */}
-                <div className="md:hidden flex items-center gap-x-1.5">
-                  <div className="h-10 w-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm group-hover:bg-slate-50 group-hover:text-primary transition-all shadow-sm">
-                    {isLoadingProfile ? (
-                      <Skeleton className="h-full w-full rounded-2xl" />
-                    ) : (
-                      <span>{userInitial}</span>
-                    )}
-                  </div>
-                  <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+              <button className="group flex flex-col items-center justify-center outline-none p-0.5 transition-all cursor-pointer">
+                <div className="h-[35px] w-[35px] rounded-full bg-slate-100 border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-[12px] shadow-2xs group-hover:bg-slate-200/80 group-hover:border-slate-300 transition-all">
+                  {isLoadingProfile ? (
+                    <Skeleton className="h-full w-full rounded-full" />
+                  ) : (
+                    <span>{userInitials}</span>
+                  )}
                 </div>
-
-                {/* Desktop: Menu Hamburger */}
-                <div className="hidden md:flex items-center justify-center h-12 w-12 rounded-2xl bg-white border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 hover:text-primary transition-all shadow-sm">
-                  <Menu className="h-7 w-7" strokeWidth={2.5} />
-                </div>
+                <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-800 leading-none mt-1">
+                  Conta
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-2 rounded-xl p-1 shadow-xl border-gray-100" align="end">

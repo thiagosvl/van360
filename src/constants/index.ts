@@ -8,3 +8,4 @@ export const WHATSAPP_SUPORTE = "5511962508068";
 export function getWhatsAppUrl(message = "Olá, preciso de ajuda com o Van360") {
   return `https://wa.me/${WHATSAPP_SUPORTE}?text=${encodeURIComponent(message)}`;
 }
+export * from "./navigation";

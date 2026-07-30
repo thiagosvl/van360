@@ -25,7 +25,7 @@ export default function RouteDetailsPage() {
   const concludedStops = paradasConcluidas?.length || 0;
 
   useEffect(() => {
-    setPageTitle("Rota");
+    setPageTitle("Histórico da Rota");
   }, [setPageTitle]);
 
   if (isError) {

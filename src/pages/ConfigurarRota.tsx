@@ -51,7 +51,7 @@ export default function ConfigurarRota() {
   const usuarioId = profile?.id || "";
 
   useEffect(() => {
-    setPageTitle(isEditing ? "Editar Rota" : "Criar Rota");
+    setPageTitle(isEditing ? "Configuração da Rota" : "Nova Rota");
   }, [isEditing, setPageTitle]);
 
   const { data: routeData, isLoading: isLoadingRoute } = useRouteDetail(id || "");
@@ -868,7 +868,7 @@ export default function ConfigurarRota() {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                <span>{createRouteMutation.isPending || updateRouteMutation.isPending ? "Salvando..." : "Salvar Rota"}</span>
+                <span>{createRouteMutation.isPending || updateRouteMutation.isPending ? "Salvando..." : "Salvar"}</span>
               </Button>
             </div>
           )}

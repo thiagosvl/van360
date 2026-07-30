@@ -22,6 +22,9 @@ import { useRouteRules } from "@/hooks/business/useRouteRules";
 import { useSession } from "@/hooks/business/useSession";
 import { useExecucoesRota } from "@/hooks/api/useRoutes";
 
+import { openExternalNavigation } from "@/utils/browser";
+import { NavigationApp } from "@/constants";
+
 const TAB_DEFAULT = "default";
 const TAB_PRINCIPAL = "principal";
 
@@ -228,25 +231,8 @@ export function ActiveRouteExecutionView({
     });
   };
 
-  const openNavigation = (app: "maps" | "waze", address: string, lat?: number, lng?: number) => {
-    if (!address && !lat && !lng) return;
-    let url = "";
-    if (app === "maps") {
-      if (lat && lng) {
-        url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      } else {
-        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-      }
-    } else if (app === "waze") {
-      if (lat && lng) {
-        url = `waze://?ll=${lat},${lng}&navigate=yes`;
-      } else {
-        url = `waze://?q=${encodeURIComponent(address)}&navigate=yes`;
-      }
-    }
-    if (url) {
-      window.open(url, "_blank");
-    }
+  const openNavigation = (app: NavigationApp, address: string, lat?: number, lng?: number) => {
+    openExternalNavigation(app, address, lat, lng);
   };
 
   let activeRespName = "";
@@ -1120,8 +1106,8 @@ export function ActiveRouteExecutionView({
               : (isPrincipal ? "Principal" : "Responsável");
 
             const isVolta = addressDialogData.sentido === RouteSentido.VOLTANDO;
-            const casaAddress = activeAddress || "Endereço do Aluno";
-            const escolaNome = addressDialogData.escolaNome || "Escola";
+            const casaAddress = activeAddress;
+            const escolaNome = addressDialogData.escolaNome;
 
             const saindoDe = isVolta ? escolaNome : casaAddress;
             const chegandoEm = isVolta ? casaAddress : escolaNome;
@@ -1129,12 +1115,12 @@ export function ActiveRouteExecutionView({
             return (
               <>
                 {/* 0. Nome e Avatar Inline do Passageiro */}
-                <div className="flex items-center justify-center gap-2 py-0.5 text-center">
+                <div className="flex items-center justify-start gap-2 py-0.5 text-left">
                   <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#1a3a5c] shrink-0">
                     <User className="w-3.5 h-3.5" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#1a3a5c] uppercase font-headline tracking-tight">
-                    {addressDialogData.title}
+                  <h3 className="text-sm font-bold text-[#1a3a5c] font-headline tracking-tight">
+                    {formatShortName(pass?.nome || addressDialogData.title, true)}
                   </h3>
                 </div>
 
@@ -1181,7 +1167,9 @@ export function ActiveRouteExecutionView({
                       Endereço
                     </span>
                     {activeRespFirstName && (
-                      <span className="text-xs font-semibold text-[#1a3a5c] break-words text-right">
+                      <span className={cn(
+                        "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border leading-none shadow-2xs bg-slate-100 text-slate-700 border-slate-200"
+                      )}>
                         {activeRespFirstName} ({parentescoLabel})
                       </span>
                     )}
@@ -1195,7 +1183,7 @@ export function ActiveRouteExecutionView({
                     <Button
                       type="button"
                       onClick={() => {
-                        openNavigation("maps", activeAddress, activeLat, activeLng);
+                        openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress, activeLat, activeLng);
                       }}
                       className="h-10 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-full flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
                     >
@@ -1205,7 +1193,7 @@ export function ActiveRouteExecutionView({
                     <Button
                       type="button"
                       onClick={() => {
-                        openNavigation("waze", activeAddress, activeLat, activeLng);
+                        openNavigation(NavigationApp.WAZE, activeAddress, activeLat, activeLng);
                       }}
                       className="h-10 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-full flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
                     >
@@ -1223,7 +1211,7 @@ export function ActiveRouteExecutionView({
                     </span>
                     <span className={cn(
                       "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border leading-none shadow-2xs",
-                      isVolta ? "bg-slate-100 text-slate-700 border-slate-200" : "bg-[#1a3a5c]/10 text-[#1a3a5c] border-[#1a3a5c]/20"
+                      !isVolta ? "bg-slate-100 text-slate-700 border-slate-200" : "bg-red text-[#1a3a5c] border-[#1a3a5c]/20"
                     )}>
                       {isVolta ? "Voltando" : "Indo"}
                     </span>

@@ -31,8 +31,8 @@ export default function RouteExecutionPage() {
   const concludedStops = paradasConcluidas?.length || 0;
 
   useEffect(() => {
-    setPageTitle("Rota");
-  }, [setPageTitle]);
+    setPageTitle(isPreview ? "Prévia da Rota" : "Execução de Rota");
+  }, [setPageTitle, isPreview]);
 
   if (isError) {
     return (
