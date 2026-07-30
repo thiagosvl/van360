@@ -28,7 +28,7 @@ interface PassageiroEnderecoFormDialogProps {
   onClose: () => void;
   passageiroId: string;
   nomePassageiro: string;
-  onSuccess: () => void;
+  onSuccess: (addressData?: PassageiroEnderecoFormData) => void;
   showRouteNotice?: boolean;
 }
 
@@ -89,7 +89,7 @@ export default function PassageiroEnderecoFormDialog({
         showToast: false,
       });
 
-      onSuccess();
+      onSuccess(data);
       onClose();
     } catch (err) {
       toast.error("Erro ao salvar endereço do passageiro.");

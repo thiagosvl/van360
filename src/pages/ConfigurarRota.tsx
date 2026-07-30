@@ -1039,34 +1039,46 @@ export default function ConfigurarRota() {
           nomePassageiro={passageirosList.find(p => p.id === editingInlinePassageiroId)?.nome || ""}
           isOpen={!!editingInlinePassageiroId}
           showRouteNotice={shouldAutoAddPassageiro}
-          onSuccess={async () => {
-            const { data: updatedData } = await refetchPassageiros();
+          onSuccess={(addressData?: any) => {
+            const targetId = editingInlinePassageiroId;
+            const isAutoAdd = shouldAutoAddPassageiro;
 
-            if (shouldAutoAddPassageiro) {
-              const freshPass = updatedData?.list?.find(p => p.id === editingInlinePassageiroId);
-              if (freshPass) {
-                const sentidoInicial = getInitialSentido(itinerario, insertTarget);
-                const newItem: ItineraryItem = {
-                  id: `no-pass-${freshPass.id}-${Date.now()}`,
-                  tipo_no: RouteNodeType.PASSAGEIRO,
-                  passageiro_id: freshPass.id,
-                  nome: freshPass.nome,
-                  detalhe: freshPass.escola?.nome ? `Escola: ${freshPass.escola.nome}` : undefined,
-                  temEndereco: true,
-                  responsaveisAdicionais: (freshPass as any).responsaveis || [],
-                  passageiro: freshPass,
-                  sentido: sentidoInicial
-                };
-                setItinerario(prev => insertItemIntoItinerario(prev, newItem, insertTarget));
-                setIsDialogOpen(false);
-                toast.success(`Endereço salvo e ${formatShortName(freshPass.nome, true)} adicionado(a) à rota!`);
-              }
+            // Fechamento síncrono e simultâneo de ambos os modais
+            setIsDialogOpen(false);
+            setEditingInlinePassageiroId(null);
+            setShouldAutoAddPassageiro(false);
+
+            if (isAutoAdd && targetId) {
+              const pass = passageirosList.find(p => p.id === targetId);
+              const passName = pass?.nome || "Passageiro";
+              const sentidoInicial = getInitialSentido(itinerario, insertTarget);
+
+              const updatedPass = pass ? {
+                ...pass,
+                logradouro: addressData?.logradouro || pass.logradouro || "Endereço cadastrado",
+                numero: addressData?.numero || pass.numero || "",
+                bairro: addressData?.bairro || pass.bairro || "",
+                cidade: addressData?.cidade || pass.cidade || "",
+                estado: addressData?.estado || pass.estado || "",
+              } : null;
+
+              const newItem: ItineraryItem = {
+                id: `no-pass-${targetId}-${Date.now()}`,
+                tipo_no: RouteNodeType.PASSAGEIRO,
+                passageiro_id: targetId,
+                nome: passName,
+                detalhe: pass?.escola?.nome ? `Escola: ${pass.escola.nome}` : undefined,
+                temEndereco: true,
+                responsaveisAdicionais: (pass as any)?.responsaveis || [],
+                passageiro: updatedPass,
+                sentido: sentidoInicial
+              };
+
+              setItinerario(prev => insertItemIntoItinerario(prev, newItem, insertTarget));
+              toast.success(`Endereço salvo e ${formatShortName(passName, true)} adicionado(a) à rota!`);
             } else {
               toast.success("Endereço atualizado com sucesso!");
             }
-
-            setEditingInlinePassageiroId(null);
-            setShouldAutoAddPassageiro(false);
           }}
           onClose={() => {
             setEditingInlinePassageiroId(null);

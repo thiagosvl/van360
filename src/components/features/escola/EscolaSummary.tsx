@@ -40,7 +40,7 @@ export const EscolaSummary = ({ escola }: EscolaSummaryProps) => {
       {enderecoResumido && (
         <div className="flex items-start gap-1.5 mt-2 w-full min-w-0">
           <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
-          <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 uppercase leading-snug line-clamp-2 break-words w-full min-w-0">
+          <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 leading-snug break-words w-full min-w-0">
             {enderecoResumido}
           </p>
         </div>
@@ -51,7 +51,7 @@ export const EscolaSummary = ({ escola }: EscolaSummaryProps) => {
         <div className="flex items-center gap-1.5 min-w-0">
           <Users2 className="h-4 w-4 text-slate-400 shrink-0" />
           <span className="text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
-            <strong className="text-[#1a3a5c] dark:text-zinc-300 font-extrabold">{escola.passageiros_ativos_count ?? 0}</strong> PASSAGEIROS ATIVOS
+            {escola.passageiros_ativos_count ?? 0} PASSAGEIROS ATIVOS
           </span>
         </div>
       </div>

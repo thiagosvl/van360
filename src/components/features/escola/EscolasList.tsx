@@ -55,7 +55,7 @@ const EscolaMobileCard = memo(function EscolaMobileCard({
           <GraduationCap className="h-5 w-5 text-white" />
         </div>
 
-        <div className="flex-grow min-w-0">
+        <div className="flex-grow min-w-0 pr-8">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight line-clamp-2">
             {escola.nome}
           </p>
