@@ -10,7 +10,6 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
   const searchParams = new URLSearchParams(location.search);
   const isExplicitPreview = searchParams.get("preview") === "true";
 
-  // 1. Tenta carregar a execução apenas se não for um preview explícito
   const execQuery = useQuery({
     queryKey: ["route-execution", execucaoId],
     queryFn: () => routeApi.getExecucao(execucaoId),
@@ -22,7 +21,6 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     }
   });
 
-  // 2. Se for um preview explícito ou a busca de execução falhar, carrega a rota configurada
   const routeQuery = useQuery({
     queryKey: ["route", execucaoId],
     queryFn: () => routeApi.getRoute(execucaoId),
@@ -45,7 +43,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
       id: "",
       rota_id: routeQuery.data.id,
       usuario_id: routeQuery.data.usuario_id,
-      status: "preview" as any, // Identificador de preview
+      status: "preview" as any,
       tipo: routeQuery.data.tipo,
       iniciada_em: "",
       created_at: routeQuery.data.created_at,
@@ -72,11 +70,8 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
   const paradasPendentes = paradas.filter((p: RouteExecutionPassenger) => !p.visitado_em && p.status !== RouteStopStatus.AUSENTE);
   const paradasConcluidas = paradas.filter((p: RouteExecutionPassenger) => !!p.visitado_em || p.status === RouteStopStatus.AUSENTE);
 
-  // Parada em evidência máxima: a primeira com status PENDENTE (apenas em execução, não em preview!)
   const paradaAtual = !isPreview && paradasPendentes.length > 0 ? paradasPendentes[0] : null;
 
-  // Próximas paradas após a parada atual
-  // Se for preview, exibimos todas as paradas em sequência
   const proximasParadas = isPreview 
     ? paradas 
     : paradasPendentes.length > 1 
