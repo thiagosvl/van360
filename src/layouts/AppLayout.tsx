@@ -13,11 +13,9 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
-import { SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
-import { SubscriptionStatus } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
