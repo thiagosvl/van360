@@ -9,17 +9,17 @@ export function RouteConfigSkeleton({ count = 4 }: RouteConfigSkeletonProps) {
     <div className="space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto px-4">
       {/* Card de Configuração de Rota Skeleton */}
       <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center justify-between gap-4">
-        <div className="space-y-2 flex-1">
-          <Skeleton className="h-5 w-44 rounded-md" />
-          <Skeleton className="h-3.5 w-32 rounded-md" />
+        <div className="space-y-2 flex-1 min-w-0">
+          <Skeleton className="h-5 w-40 rounded-md" />
+          <Skeleton className="h-3.5 w-28 rounded-md" />
         </div>
         <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
       </div>
 
       {/* Header do Itinerário Skeleton */}
       <div className="flex items-center justify-between px-1">
-        <Skeleton className="h-4 w-32 rounded-md" />
-        <Skeleton className="h-4 w-20 rounded-md" />
+        <Skeleton className="h-4 w-28 rounded-md" />
+        <Skeleton className="h-4 w-16 rounded-md" />
       </div>
 
       {/* Timeline de Paradas Configuradas Skeleton */}
@@ -33,17 +33,17 @@ export function RouteConfigSkeleton({ count = 4 }: RouteConfigSkeletonProps) {
             <Skeleton className="absolute left-[-31px] top-1/2 -translate-y-1/2 h-6 w-6 rounded-full border-2 border-white shadow-sm z-10" />
 
             {/* Card de Parada Skeleton */}
-            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-              <div className="flex items-start justify-between gap-3">
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-3 min-w-0 overflow-hidden">
+              <div className="flex items-start justify-between gap-3 min-w-0">
                 <div className="space-y-1.5 flex-1 min-w-0">
-                  <Skeleton className="h-4 w-40 rounded-md" />
-                  <Skeleton className="h-3 w-52 rounded-md" />
+                  <Skeleton className="h-4 w-28 max-w-[80%] rounded-md" />
+                  <Skeleton className="h-3 w-36 max-w-[90%] rounded-md" />
                 </div>
                 <Skeleton className="h-6 w-6 rounded-full shrink-0" />
               </div>
 
               {/* Tabs de Sentido (Indo / Volta) Skeleton */}
-              <div className="flex items-center gap-1.5 pt-1 border-t border-slate-100">
+              <div className="flex items-center gap-1.5 pt-1 border-t border-slate-100 min-w-0">
                 <Skeleton className="h-7 flex-1 rounded-full" />
                 <Skeleton className="h-7 flex-1 rounded-full" />
               </div>
