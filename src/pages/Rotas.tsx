@@ -236,7 +236,7 @@ export default function Rotas() {
                         </div>
 
                         <div className="flex-grow min-w-0 pr-2 space-y-0.5">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight group-hover:text-blue-700 transition-colors break-words truncate">
+                          <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-snug transition-colors break-words">
                             {rota.nome}
                           </p>
                           <div className="text-[10px] text-slate-400 font-medium leading-tight">
@@ -354,7 +354,7 @@ export default function Rotas() {
                         </div>
 
                         <div className="flex-grow min-w-0 pr-2 space-y-0.5">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-tight group-hover:text-blue-700 transition-colors break-words truncate">
+                          <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-snug transition-colors break-words">
                             {exec.rota?.nome || "Rota Removida"}
                           </p>
 
