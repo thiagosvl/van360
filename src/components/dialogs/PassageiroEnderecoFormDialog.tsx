@@ -100,7 +100,7 @@ export default function PassageiroEnderecoFormDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="xl">
       <BaseDialog.Header
         title={`Incluir Endereço`}
-        icon={<MapPin className="w-5 h-5 text-amber-600" />}
+        icon={<MapPin className="w-5 h-5" />}
         onClose={onClose}
         leftAction={import.meta.env.DEV && (
           <Button

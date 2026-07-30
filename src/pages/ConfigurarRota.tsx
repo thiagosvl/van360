@@ -503,7 +503,9 @@ export default function ConfigurarRota() {
     }
   };
 
-  if (isEditing && isLoadingRoute) {
+  const isDataReady = !isEditing || (!isLoadingRoute && !!routeData && (routeData.passageiros ? (itinerario.length > 0 || routeData.passageiros.length === 0) : true));
+
+  if (isEditing && !isDataReady) {
     return <RouteConfigSkeleton count={4} />;
   }
 
@@ -935,25 +937,31 @@ export default function ConfigurarRota() {
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold text-[#1a3a5c]">
+                            {/* Linha 1: Nome + Turma */}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="text-xs font-bold text-[#1a3a5c] truncate">
                                 {formatShortName(p.nome, true)}
-                                {p.turma && (
-                                  <span className="text-slate-400 font-semibold text-[10px] inline-flex items-center gap-1.5 normal-case font-sans">
-                                    <span className="text-[7.5px] opacity-40">•</span>
-                                    {p.turma}
-                                  </span>
-                                )}
                               </span>
-                              {!temEndereco && (
-                                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100/60 shrink-0 leading-none">
-                                  <AlertCircle className="w-2.5 h-2.5" /> Sem endereço
+                              {p.turma && (
+                                <span className="text-slate-400 font-semibold text-[10px] inline-flex items-center gap-1 shrink-0">
+                                  <span className="text-[7.5px] opacity-40">•</span>
+                                  {p.turma}
                                 </span>
                               )}
                             </div>
+
+                            {/* Linha 2: Escola */}
                             <p className="text-[10px] text-slate-500 font-medium whitespace-normal break-words text-left mt-0.5 leading-snug">
-                              {p.escola?.nome}
+                              {p.escola?.nome || "Escola não informada"}
                             </p>
+
+                            {/* Linha 3: Aviso de Sem Endereço (quando aplicável) */}
+                            {!temEndereco && (
+                              <div className="flex items-center gap-1 text-[10px] font-semibold text-amber-700 mt-1">
+                                <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                                <span>Sem endereço cadastrado</span>
+                              </div>
+                            )}
                           </div>
 
                           <Button
