@@ -19,8 +19,8 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
     : pagesItems;
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      <nav className="flex-1 space-y-[clamp(2px,calc(3vh-19px),12px)] md:space-y-0.5 overflow-y-auto pr-1">
+    <div className="flex h-full flex-col justify-between">
+      <nav className="space-y-1">
         {itemsToRender.map((item) => (
           <NavLink
             key={item.href}
@@ -28,34 +28,26 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-xl px-3 py-[clamp(6px,calc(3vh-15px),16px)] md:py-2.5 text-[clamp(14px,calc(3vh-7px),22px)] md:text-[16px] transition-colors",
+                "flex items-center gap-3.5 rounded-2xl px-4 py-2.5 sm:py-3 text-[15px] transition-colors",
                 isActive
-                  ? "bg-white/10 text-white font-bold shadow-sm"
+                  ? "bg-white/10 text-white font-bold shadow-xs"
                   : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
               )
             }
           >
             {({ isActive }) => (
               <>
-                <span
+                <item.icon
                   className={cn(
-                    "flex items-center justify-center rounded-lg border border-transparent text-base shrink-0",
-                    "h-[clamp(36px,calc(7vh-13px),56px)] w-[clamp(36px,calc(7vh-13px),56px)] md:h-8 md:w-8",
-                    isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
+                    "h-5 w-5 shrink-0 transition-colors",
+                    isActive ? "text-white" : "text-slate-400"
                   )}
-                >
-                  <item.icon
-                    className={cn(
-                      "h-[clamp(18px,calc(4vh-10px),32px)] w-[clamp(18px,calc(4vh-10px),32px)] md:h-[18px] md:w-[18px]",
-                      isActive ? "text-white" : "text-slate-400"
-                    )}
-                  />
-                </span>
+                />
                 <span className="truncate">{item.title}</span>
 
                 {(item as any).badge !== undefined &&
                   (item as any).badge > 0 && (
-                    <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold text-white">
+                    <span className="ml-auto flex h-5 min-w-5 px-1.5 shrink-0 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold text-white">
                       {(item as any).badge}
                     </span>
                   )}

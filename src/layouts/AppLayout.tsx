@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { X } from "lucide-react";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { AppNavbar } from "@/components/layout/AppNavbar";
@@ -8,7 +8,6 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { HelpSheet } from "@/components/features/HelpSheet";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 
-import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -28,12 +27,18 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { subscription } = useSubscriptionStatus(user?.id);
-  const userInitial = profile?.nome?.charAt(0)?.toUpperCase();
+  const userInitials = useMemo(() => {
+    if (!profile?.nome) return "U";
+    const nameParts = profile.nome.trim().split(/\s+/).filter(Boolean);
+    if (nameParts.length >= 2) {
+      return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+    }
+    return nameParts[0].substring(0, 2).toUpperCase();
+  }, [profile?.nome]);
+
   const displayName = profile?.apelido || formatShortName(profile?.nome);
 
-  const statusLabel = subscription?.status
-    ? SUBSCRIPTION_STATUS_DETAILS[subscription.status as SubscriptionStatus]?.label || "Motorista Parceiro"
-    : "Carregando...";
+  const statusLabel = "Motorista";
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
@@ -94,7 +99,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4">
           <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
-            {userInitial}
+            {userInitials}
           </div>
           <div className="flex flex-col min-w-0 pr-2">
             <span className="text-[15px] font-bold text-white leading-tight truncate mb-1">
@@ -124,32 +129,34 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
         <SheetContent
           ref={sheetRef}
           side="right"
-          className="w-[85%] sm:w-80 px-0 border-l border-[#0b1a2e] bg-[#0b1a2e]"
+          className="w-[85%] sm:w-80 px-0 border-l border-white/10 bg-[#0b1a2e] flex flex-col h-full overflow-hidden"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="px-6 pb-6 pt-[max(2.5rem,env(safe-area-inset-top)+1rem)] flex items-center gap-4 relative">
+          <div className="px-5 pb-3.5 pt-[max(1.5rem,env(safe-area-inset-top)+0.5rem)] flex items-center justify-between border-b border-white/10 bg-white/[0.02]">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
-            <div className="h-14 w-14 rounded-full bg-white/10 border border-white/5 flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0">
-              {userInitial}
-            </div>
-            <div className="flex flex-col min-w-0 pr-6">
-              <span className="text-[17px] font-bold text-white leading-tight truncate mb-1">
-                {displayName}
-              </span>
-              <div className="flex items-center">
-                <span className="text-[13px] text-slate-400 font-medium">{statusLabel}</span>
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
+                {userInitials}
+              </div>
+              <div className="flex flex-col min-w-0 pr-2">
+                <span className="text-[15px] font-bold text-white leading-tight truncate mb-0.5">
+                  {displayName}
+                </span>
+                <div className="flex items-center">
+                  <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
+                </div>
               </div>
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute top-[max(1rem,env(safe-area-inset-top)+0.5rem)] right-4 p-2 text-slate-400 hover:text-white transition-colors"
+              className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all shrink-0"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom)+1.5rem)] h-[calc(100dvh-140px)] overflow-y-auto scrollbar-hide">
+          <div className="flex-1 px-3 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom)+1rem)] overflow-y-auto scrollbar-hide">
             <AppSidebar
               role={role}
               onLinkClick={() => setIsMobileMenuOpen(false)}
