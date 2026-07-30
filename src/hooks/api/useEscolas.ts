@@ -11,16 +11,22 @@ export interface UseEscolasFilters {
 }
 
 export function useEscolas(
-  filters: UseEscolasFilters,
+  filters: UseEscolasFilters | string,
   options?: {
     enabled?: boolean;
     onError?: (error: unknown) => void;
   }
 ) {
-  const { usuarioId, search, status } = filters || {};
+  const safeFilters: UseEscolasFilters = typeof filters === "object" && filters !== null 
+    ? filters 
+    : { usuarioId: String(filters || "") };
+
+  const { usuarioId, search, status } = safeFilters;
+
+  const searchStr = typeof search === "string" ? search : undefined;
 
   const apiFilters = {
-    search: search?.trim() ? search.trim() : undefined,
+    search: searchStr?.trim() ? searchStr.trim() : undefined,
     ativo: status && status !== FilterDefaults.TODOS ? status : undefined,
   };
 
@@ -62,4 +68,3 @@ export function useEscolas(
 
   return query;
 }
-

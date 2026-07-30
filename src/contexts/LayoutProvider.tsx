@@ -19,6 +19,7 @@ import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import ResponsavelFormDialog from "@/components/dialogs/ResponsavelFormDialog";
 
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import RouteFormDialog from "@/components/dialogs/RouteFormDialog";
 import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
@@ -49,6 +50,7 @@ import {
   OpenManualPaymentDialogProps,
   OpenPassageiroFormProps,
   OpenVeiculoFormProps,
+  OpenRouteFormProps,
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -74,6 +76,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [escolaFormDialogState, setEscolaFormDialogState] = useState<{
     open: boolean;
     props?: OpenEscolaFormProps;
+  }>({
+    open: false,
+  });
+
+  // Route Form Dialog State
+  const [routeFormDialogState, setRouteFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenRouteFormProps;
   }>({
     open: false,
   });
@@ -247,6 +257,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openRouteFormDialog = (props: OpenRouteFormProps) => {
+    setRouteFormDialogState({
+      open: true,
+      props,
+    });
+  };
+
   const openVeiculoFormDialog = (props?: OpenVeiculoFormProps) => {
     setVeiculoFormDialogState({
       open: true,
@@ -380,6 +397,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openEscolaFormDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
+        openRouteFormDialog,
         openQuickStartPassageiroDialog,
         openGastoFormDialog,
         openGerenciarCategoriasDialog,
@@ -441,6 +459,22 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isLoading={confirmationDialogState.props.isLoading}
           onCancel={confirmationDialogState.props.onCancel}
           allowClose={confirmationDialogState.props.allowClose}
+        />
+      )}
+
+      {routeFormDialogState.open && (
+        <RouteFormDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setRouteFormDialogState((prev) => ({ ...prev, open: false })),
+            )
+          }
+          onSuccess={(data) => {
+            setRouteFormDialogState((prev) => ({ ...prev, open: false }));
+            routeFormDialogState.props?.onSuccess?.(data);
+          }}
+          editingRoute={routeFormDialogState.props?.editingRoute}
         />
       )}
 

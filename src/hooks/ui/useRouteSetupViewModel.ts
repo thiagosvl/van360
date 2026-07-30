@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePassageiros } from "../api/usePassageiros";
 import { useCreateRoute, useUpdateRoute } from "../api/useRouteMutations";
-import { Route, RouteType } from "@/types/route";
+import { Route } from "@/types/route";
 import { Passageiro } from "@/types/passageiro";
 import { PassageiroPeriodo } from "@/types/enums";
 
@@ -21,7 +21,6 @@ interface SetupPassenger {
 export const routeSetupSchema = z.object({
   nome: z.string({ required_error: "Nome da rota é obrigatório" }).min(1, "Nome da rota é obrigatório"),
   periodo: z.nativeEnum(PassageiroPeriodo, { required_error: "Período é obrigatório" }),
-  tipo: z.nativeEnum(RouteType, { required_error: "Tipo é obrigatório" }),
   passageiros: z.array(z.object({
     id: z.string(),
     nome: z.string(),
@@ -48,7 +47,6 @@ export function useRouteSetupViewModel({
     defaultValues: {
       nome: "",
       periodo: PassageiroPeriodo.MANHA,
-      tipo: RouteType.IDA,
       passageiros: []
     },
     mode: "onBlur"
@@ -67,12 +65,11 @@ export function useRouteSetupViewModel({
     if (routeToEdit) {
       form.setValue("nome", routeToEdit.nome);
       form.setValue("periodo", routeToEdit.periodo);
-      form.setValue("tipo", routeToEdit.tipo);
       if (routeToEdit.passageiros) {
         const mapped = routeToEdit.passageiros.map((p) => ({
-          id: p.passageiro_id,
-          nome: p.nome,
-          bairro: p.bairro,
+          id: p.passageiro_id || "",
+          nome: p.nome || "",
+          bairro: p.bairro || "",
           escola_nome: p.escola?.nome,
           ordem: p.ordem
         }));
@@ -84,11 +81,9 @@ export function useRouteSetupViewModel({
   const selectedPassengers = form.watch("passageiros") || [];
   const nome = form.watch("nome");
   const periodo = form.watch("periodo");
-  const tipo = form.watch("tipo");
 
   const setNome = (val: string) => form.setValue("nome", val, { shouldValidate: true });
   const setPeriodo = (val: string) => form.setValue("periodo", val, { shouldValidate: true });
-  const setTipo = (val: RouteType) => form.setValue("tipo", val, { shouldValidate: true });
 
   const togglePassengerSelection = (passenger: Passageiro) => {
     const isSelected = selectedPassengers.some((p) => p.id === passenger.id);
@@ -168,7 +163,7 @@ export function useRouteSetupViewModel({
       usuario_id: usuarioId,
       nome,
       periodo,
-      tipo,
+      tipo: "mista",
       passageiros: selectedPassengers.map((p) => ({
         passageiro_id: p.id,
         ordem: p.ordem
@@ -238,8 +233,6 @@ export function useRouteSetupViewModel({
     setNome,
     periodo,
     setPeriodo,
-    tipo,
-    setTipo,
     selectedPassengers,
     availablePassengers,
     availableSchools,
@@ -259,4 +252,3 @@ export function useRouteSetupViewModel({
     handleSave
   };
 }
-

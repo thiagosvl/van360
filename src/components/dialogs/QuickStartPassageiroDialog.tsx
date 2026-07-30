@@ -189,9 +189,6 @@ export function QuickStartPassageiroDialog({
         {showTabs && (
           <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as "rapido" | "completo")} className="w-full mb-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1 block">
-                Tipo de Cadastro
-              </label>
               <TabsList className="grid grid-cols-2 w-full p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 h-auto">
                 <TabsTrigger
                   value="rapido"
@@ -278,7 +275,7 @@ export function QuickStartPassageiroDialog({
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Nome Completo <span className="text-red-600">*</span>
+                          Nome do Passageiro <span className="text-red-600">*</span>
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -304,7 +301,7 @@ export function QuickStartPassageiroDialog({
                         render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Nome do Responsável <span className="text-red-600">*</span>
+                              Nome do Responsável Financeiro <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
@@ -328,7 +325,7 @@ export function QuickStartPassageiroDialog({
                         render={({ field }) => (
                           <PhoneInput
                             field={field}
-                            label="Telefone Responsável"
+                            label="Telefone do Responsável Financeiro"
                             required
                             labelClassName="text-slate-700 font-semibold ml-1"
                             inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"

@@ -103,26 +103,20 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     }))
     : undefined;
 
-  const actions = cobranca?.isProjection
-    ? [
-      {
-        label: "Registrar Pagamento",
-        icon: CheckCircle2,
-        onClick: () => onOpenCreateForProjection?.(cobranca),
-      },
-    ]
-    : useCobrancaActions({
-      cobranca,
-      onVerCobranca: () => { },
-      onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
-      onEditarCobranca: () => onEditarCobranca(cobranca),
-      onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
-      onExcluirCobranca: () => onExcluirCobranca(cobranca),
-      onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
-      onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
-      onEnviarCobranca,
-      onActionSuccess,
-    });
+  const actions = useCobrancaActions({
+    cobranca,
+    onVerCobranca: () => { },
+    onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
+    onEditarCobranca: cobranca?.isProjection ? undefined : () => onEditarCobranca(cobranca),
+    onRegistrarPagamento: cobranca?.isProjection
+      ? () => onOpenCreateForProjection?.(cobranca)
+      : () => onRegistrarPagamento(cobranca),
+    onExcluirCobranca: cobranca?.isProjection ? undefined : () => onExcluirCobranca(cobranca),
+    onDesfazerPagamento: cobranca?.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined),
+    onVerRecibo: cobranca?.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
+    onEnviarCobranca: cobranca?.isProjection ? undefined : onEnviarCobranca,
+    onActionSuccess,
+  });
 
   const vencDia = getVencimentoDia(cobranca);
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
@@ -139,7 +133,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   return (
     <MobileActionItem
       actions={actions}
-      onClickItem={cobranca?.isProjection ? () => onOpenCreateForProjection?.(cobranca) : undefined}
+      onClickItem={undefined}
       className="bg-transparent"
       renderHeader={renderHeader}
     >
@@ -288,7 +282,7 @@ export function CobrancasList({
     return (
       <TableRow
         key={cobranca.id}
-        onClick={() => cobranca?.isProjection ? handleOpenCreateForProjection(cobranca) : setOpenedCobranca(cobranca)}
+        onClick={() => setOpenedCobranca(cobranca)}
         className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
       >
         <TableCell className="px-8 py-5">
@@ -408,6 +402,7 @@ export function CobrancasList({
             open={!!openedCobranca}
             onOpenChange={(open) => !open && setOpenedCobranca(null)}
             props={props}
+            onOpenCreateForProjection={handleOpenCreateForProjection}
             chavePix={profile?.chave_pix}
             tipoChavePix={profile?.tipo_chave_pix}
           />
@@ -423,6 +418,7 @@ function ActionSheetWrapper({
   open,
   onOpenChange,
   props,
+  onOpenCreateForProjection,
   chavePix,
   tipoChavePix,
 }: {
@@ -430,6 +426,7 @@ function ActionSheetWrapper({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   props: any;
+  onOpenCreateForProjection: (cobranca: Cobranca) => void;
   chavePix?: string | null;
   tipoChavePix?: string | null;
 }) {
@@ -451,12 +448,14 @@ function ActionSheetWrapper({
     cobranca,
     onVerCobranca: () => { },
     onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id),
-    onEditarCobranca: () => props.onEditarCobranca(cobranca),
-    onRegistrarPagamento: () => props.onRegistrarPagamento(cobranca),
-    onExcluirCobranca: () => props.onExcluirCobranca(cobranca),
-    onDesfazerPagamento: props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined,
-    onVerRecibo: cobranca.recibo_url ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
-    onEnviarCobranca,
+    onEditarCobranca: cobranca.isProjection ? undefined : () => props.onEditarCobranca(cobranca),
+    onRegistrarPagamento: cobranca.isProjection
+      ? () => onOpenCreateForProjection(cobranca)
+      : () => props.onRegistrarPagamento(cobranca),
+    onExcluirCobranca: cobranca.isProjection ? undefined : () => props.onExcluirCobranca(cobranca),
+    onDesfazerPagamento: cobranca.isProjection ? undefined : (props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined),
+    onVerRecibo: cobranca.isProjection ? undefined : (cobranca.recibo_url ? () => props.onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
+    onEnviarCobranca: cobranca.isProjection ? undefined : onEnviarCobranca,
     onActionSuccess: props.onActionSuccess,
   });
 

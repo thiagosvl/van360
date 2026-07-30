@@ -38,7 +38,8 @@ const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const Rotas = lazyLoad(() => import("./pages/Rotas"));
 const ConfigurarRota = lazyLoad(() => import("./pages/ConfigurarRota"));
-const ActiveRoutePage = lazyLoad(() => import("./pages/ActiveRoutePage"));
+const RouteExecutionPage = lazyLoad(() => import("./pages/RouteExecutionPage"));
+const RouteDetailsPage = lazyLoad(() => import("./pages/RouteDetailsPage"));
 const Aniversariantes = lazyLoad(() => import("./pages/Aniversariantes"));
 const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
 const ExternalCheckoutBridge = lazyLoad(() => import("./pages/subscription/ExternalCheckoutBridge"));
@@ -329,7 +330,8 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP} element={<ConfigurarRota />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT} element={<ConfigurarRota />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_ACTIVE} element={<ActiveRoutePage />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE} element={<RouteExecutionPage />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_DETAILS} element={<RouteDetailsPage />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS} element={<Aniversariantes />} />
                   </Route>
                 </Route>

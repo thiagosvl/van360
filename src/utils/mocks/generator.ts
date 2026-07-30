@@ -9,17 +9,64 @@ import { addDays, getNowBR } from "@/utils/dateUtils";
 // Listas de dados para geração aleatória
 const nomes = [
   "Miguel", "Arthur", "Gael", "Théo", "Heitor", "Ravi", "Davi", "Bernardo", "Noah", "Gabriel",
-  "Helena", "Alice", "Laura", "Maria Alice", "Sophia", "Manuela", "Maitê", "Liz", "Cecília", "Isabella"
+  "Helena", "Alice", "Laura", "Maria Alice", "Sophia", "Manuela", "Maitê", "Liz", "Cecília", "Isabella",
+  "Camila", "Carolina", "Juliana", "Mariana", "Fernanda", "Patrícia", "Renata", "Simone", "Viviane",
+  "Amanda", "Aline", "Ana", "Beatriz", "Bianca", "Clara", "Daniela", "Debora", "Eliane", "Erica",
+  "Fabiana", "Flavia", "Gabriela", "Giovanna", "Heloísa", "Igor", "Julia", "Larissa", "Letícia", "Lívia",
+  "Luana", "Ludmila", "Luiza", "Madalena", "Marcela", "Mariane", "Marina", "Nathalia", "Pamela",
+  "Priscila", "Raquel", "Sabrina", "Samantha", "Tatiane", "Thamiris", "Vanessa", "Vitória",
+
+  // Masculinos adicionais
+  "João", "Pedro", "Lucas", "Matheus", "Enzo", "Benjamin", "Samuel", "Lorenzo", "Enrico", "Levi",
+  "Nicolas", "Guilherme", "Felipe", "Vinicius", "Caio", "Diego", "Bruno", "Eduardo", "Leonardo", "Murilo",
+  "Muricy", "Otávio", "Henrique", "André", "Rafael", "Rodrigo", "Thiago", "William", "Yuri", "Vitor",
+  "Alexandre", "Danilo", "Gustavo", "João Pedro", "João Miguel", "Isaac", "Antônio", "Cauã", "César", "Cristiano",
+
+  // Femininos adicionais
+  "Maria", "Maria Clara", "Maria Eduarda", "Maria Júlia", "Maria Luiza", "Valentina", "Emanuelly",
+  "Yasmin", "Eloá", "Lorena", "Antonella", "Agatha", "Bruna", "Nicole", "Natália", "Melissa",
+  "Esther", "Sarah", "Isadora", "Rebeca", "Elisa", "Eduarda", "Milena", "Rafaela", "Alicia",
+  "Cristina", "Denise", "Elaine", "Franciele", "Gisele", "Ingrid", "Jaqueline", "Kelly",
+  "Monique", "Rosana", "Silvia", "Teresa", "Verônica", "Yohana", "Zilda"
 ];
 
 const sobrenomes = [
   "Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes",
-  "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa"
+  "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa",
+  "Barreto", "Dias", "Rocha", "Mendes", "Nunes", "Costa", "Pinto", "Moura", "Albuquerque", "Rodrigues"
 ];
 
 const ruas = [
-  "Rua das Flores", "Avenida Paulista", "Rua Augusta", "Avenida Brasil", "Rua da Consolação",
-  "Rua Oscar Freire", "Avenida Faria Lima", "Rua Haddock Lobo", "Rua Bela Cintra", "Alameda Santos"
+  "Rua das Flores",
+  "Avenida Paulista",
+  "Rua Augusta",
+  "Avenida Brasil",
+  "Rua da Consolação",
+  "Rua Oscar Freire",
+  "Avenida Faria Lima",
+  "Rua Haddock Lobo",
+  "Rua Bela Cintra",
+  "Alameda Santos",
+  "Rua XV de Novembro",
+  "Rua Sete de Setembro",
+  "Rua Tiradentes",
+  "Rua Dom Pedro II",
+  "Rua Marechal Deodoro",
+  "Rua Rui Barbosa",
+  "Rua Castro Alves",
+  "Rua José Bonifácio",
+  "Rua Independência",
+  "Rua das Acácias",
+  "Rua das Palmeiras",
+  "Rua dos Ipês",
+  "Rua das Laranjeiras",
+  "Rua São José",
+  "Rua São João",
+  "Avenida Central",
+  "Avenida Independência",
+  "Avenida das Nações",
+  "Avenida das Américas",
+  "Alameda Rio Branco"
 ];
 
 const bairros = [
@@ -36,7 +83,7 @@ const cidades = [
 
 const escolas = [
   {
-    nome: "Ibrahim Nobre",
+    nome: "Escola Vicente Garcia (zeferina)",
     cep: "04410-080",
     logradouro: "Rua das Flores",
     numero: "123",
@@ -47,7 +94,29 @@ const escolas = [
     complemento: "",
   },
   {
-    nome: "Joanna Abraão",
+    nome: "Escola Municipal Menino Jesus De Praga",
+    cep: "01310-100",
+    logradouro: "Avenida Paulista",
+    numero: "1578",
+    bairro: "Bela Vista",
+    cidade: "São Paulo",
+    estado: "SP",
+    referencia: "Próximo ao MASP",
+    complemento: "Bloco A",
+  },
+  {
+    nome: "Escola Confessional - Unidade Paulo Vi",
+    cep: "01310-100",
+    logradouro: "Avenida Paulista",
+    numero: "1578",
+    bairro: "Bela Vista",
+    cidade: "São Paulo",
+    estado: "SP",
+    referencia: "Próximo ao MASP",
+    complemento: "Bloco A",
+  },
+  {
+    nome: "Eei Mundo De Zacarias",
     cep: "01310-100",
     logradouro: "Avenida Paulista",
     numero: "1578",
@@ -70,6 +139,96 @@ const veiculos = [
     modelo: "Gol",
     marca: "Volkswagen",
   },
+  {
+    placa: "GHI-9012",
+    modelo: "HB20",
+    marca: "Hyundai",
+  },
+  {
+    placa: "JKL-3456",
+    modelo: "Ka",
+    marca: "Ford",
+  },
+  {
+    placa: "MNO-7890",
+    modelo: "Uno",
+    marca: "Fiat",
+  },
+  {
+    placa: "PQR-2468",
+    modelo: "Argo",
+    marca: "Fiat",
+  },
+  {
+    placa: "STU-1357",
+    modelo: "Cronos",
+    marca: "Fiat",
+  },
+  {
+    placa: "VWX-8642",
+    modelo: "Corolla",
+    marca: "Toyota",
+  },
+  {
+    placa: "YZA-9753",
+    modelo: "Yaris",
+    marca: "Toyota",
+  },
+  {
+    placa: "BCD-4826",
+    modelo: "Civic",
+    marca: "Honda",
+  },
+  {
+    placa: "EFG-7195",
+    modelo: "Fit",
+    marca: "Honda",
+  },
+  {
+    placa: "HIJ-3061",
+    modelo: "Sandero",
+    marca: "Renault",
+  },
+  {
+    placa: "KLM-5284",
+    modelo: "Logan",
+    marca: "Renault",
+  },
+  {
+    placa: "NOP-1478",
+    modelo: "Polo",
+    marca: "Volkswagen",
+  },
+  {
+    placa: "QRS-9630",
+    modelo: "Virtus",
+    marca: "Volkswagen",
+  },
+  {
+    placa: "TUV-8521",
+    modelo: "Tracker",
+    marca: "Chevrolet",
+  },
+  {
+    placa: "WXY-6743",
+    modelo: "Creta",
+    marca: "Hyundai",
+  },
+  {
+    placa: "ZAB-2187",
+    modelo: "Compass",
+    marca: "Jeep",
+  },
+  {
+    placa: "CDE-5591",
+    modelo: "Pulse",
+    marca: "Fiat",
+  },
+  {
+    placa: "FGH-8802",
+    modelo: "Kwid",
+    marca: "Renault",
+  }
 ];
 
 /**
@@ -305,6 +464,22 @@ export const mockGenerator = {
       mes_fim_cobranca: 12,
 
       ...overrides
+    };
+  },
+  rota: () => {
+    const nomesRotas = [
+      "Rota das Escolas Municipais",
+      "Rota Sul Integrada",
+      "Rota Escolar Tarde",
+      "Rota Centro-Norte",
+      "Escolas Estaduais",
+      "Colégio Objetivo"
+    ];
+
+    const nomeBase = nomesRotas[randomNumber(0, nomesRotas.length - 1)];
+
+    return {
+      nome: `${nomeBase}`
     };
   }
 };

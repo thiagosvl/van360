@@ -13,6 +13,7 @@ export interface CreateCobrancaDTO {
   data_pagamento?: string;
   valor_pago?: number;
   pagamento_manual?: boolean;
+  enviar_recibo_whatsapp?: boolean;
 }
 
 export interface UpdateCobrancaDTO {
@@ -30,4 +31,5 @@ export interface RegistrarPagamentoManualDTO {
   valor_pago: number | string;
   data_pagamento: string;
   tipo_pagamento: CobrancaTipoPagamento;
+  enviar_recibo_whatsapp?: boolean;
 }

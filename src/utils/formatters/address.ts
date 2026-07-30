@@ -39,3 +39,37 @@ export function formatarEnderecoCompleto(obj: {
   return `${mainAddress}${bairro}${cidade}${estadoUf}${cepStr}`;
 }
 
+/**
+ * Formata o endereço de forma limpa e objetiva para exibição em telas de rotas (Preview, Execução, Configuração),
+ * ocultando cidade, estado e CEP, já que todos os passageiros da rota pertencem à mesma localidade.
+ * Exemplo de retorno: "Avenida Independência, 112 - Vila Madalena"
+ */
+export function formatarEnderecoParcialRota(obj: {
+  cep?: string | null;
+  logradouro?: string | null;
+  endereco?: string | null;
+  numero?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  uf?: string | null;
+  complemento?: string | null;
+  referencia?: string | null;
+} | null | undefined): string {
+  if (!obj) return "";
+
+  const logradouro = obj.logradouro || obj.endereco || "";
+  const numero = obj.numero ? `, ${obj.numero}` : "";
+  const complemento = obj.complemento ? ` (${obj.complemento})` : "";
+  const bairro = obj.bairro ? ` - ${obj.bairro}` : "";
+
+  const mainAddress = `${logradouro}${numero}${complemento}`.trim();
+  if (!mainAddress && !bairro) return "";
+
+  if (mainAddress.startsWith(",")) {
+    return `${mainAddress.slice(1).trim()}${bairro}`;
+  }
+
+  return `${mainAddress}${bairro}`;
+}
+

@@ -190,6 +190,7 @@ export const messages = {
       notificacoesAtivadas: "Lembretes automáticos reativados com sucesso.",
       notificacoesDesativadas: "Lembretes automáticos pausados com sucesso.",
       pagamentoRegistrado: "Pagamento registrado com sucesso.",
+      pagamentoEReciboEnviado: "Pagamento registrado e recibo enviado por WhatsApp!",
       pagamentoDesfeito: "Pagamento desfeito com sucesso.",
     },
   },

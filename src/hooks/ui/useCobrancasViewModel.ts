@@ -269,9 +269,9 @@ export function useCobrancasViewModel() {
         valorOriginal: Number(cobranca.valor),
         status: cobranca.status,
         dataVencimento: cobranca.data_vencimento,
-        onPaymentRecorded: (updatedCobranca) => {
+        onPaymentRecorded: (updatedCobranca, dataSent) => {
           refetchCobrancas();
-          if (updatedCobranca?.recibo_url) {
+          if (dataSent?.enviar_recibo_whatsapp === false && updatedCobranca?.recibo_url) {
             openReceiptDialog({
               receiptUrl: updatedCobranca.recibo_url,
               cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${cobranca.passageiro?.nome || ""}`,

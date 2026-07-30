@@ -1,5 +1,5 @@
-import { monthNamesInBR as meses } from "@/utils/dateUtils";
-import {
+import { differenceInCalendarDaysBR, formatDateTime, formatSafeBrazilianDate, getNowBR, monthNamesInBR as meses, parseLocalDate, toPersistenceString } from "@/utils/dateUtils";
+export {
   parseLocalDate,
   formatSafeBrazilianDate,
   formatDateTime,

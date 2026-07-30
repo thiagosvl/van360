@@ -298,26 +298,20 @@ const CobrancaItemPassageiro = forwardRef<
     }))
     : undefined;
 
-  const actions = cobranca.isProjection
-    ? [
-      {
-        label: "Registrar Pagamento",
-        icon: <CheckCircle2 className="h-4 w-4" />,
-        onClick: () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true),
-      },
-    ]
-    : useCobrancaActions({
-      cobranca,
-      onVerCobranca: () => { },
-      onVerCarteirinha: undefined,
-      onEditarCobranca: () => onEditCobranca(cobranca),
-      onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
-      onExcluirCobranca: () => onExcluirCobranca(cobranca),
-      onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined,
-      onVerRecibo: cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined,
-      onEnviarCobranca,
-      showHistory: true,
-    });
+  const actions = useCobrancaActions({
+    cobranca,
+    onVerCobranca: () => { },
+    onVerCarteirinha: undefined,
+    onEditarCobranca: cobranca.isProjection ? undefined : () => onEditCobranca(cobranca),
+    onRegistrarPagamento: cobranca.isProjection
+      ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
+      : () => onRegistrarPagamento(cobranca),
+    onExcluirCobranca: cobranca.isProjection ? undefined : () => onExcluirCobranca(cobranca),
+    onDesfazerPagamento: cobranca.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined),
+    onVerRecibo: cobranca.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
+    onEnviarCobranca: cobranca.isProjection ? undefined : onEnviarCobranca,
+    showHistory: cobranca.isProjection ? false : true,
+  });
 
   const renderHeader = () => (
     <CobrancaSummary cobranca={{ ...cobranca, passageiro }} />
@@ -334,7 +328,7 @@ const CobrancaItemPassageiro = forwardRef<
     >
       <MobileActionItem
         actions={actions}
-        onClickItem={cobranca.isProjection ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true) : undefined}
+        onClickItem={undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
       >

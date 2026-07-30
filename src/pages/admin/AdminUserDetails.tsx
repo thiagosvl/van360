@@ -161,6 +161,27 @@ export default function AdminUserDetails() {
   const sub = data?.assinatura;
   const updateUser = useUpdateUserAdmin();
 
+  const passageirosComContratoSet = useMemo(() => {
+    const set = new Set<string>();
+    if (data?.contratos) {
+      for (const c of data.contratos) {
+        if (c.passageiro_id) {
+          set.add(c.passageiro_id);
+        }
+      }
+    }
+    return set;
+  }, [data?.contratos]);
+
+  const passageirosSemContrato = useMemo(() => {
+    const totalPassageiros = data?.kpis?.passageirosCount ?? data?.passageiros?.length ?? 0;
+    if (!data?.passageiros || data.passageiros.length === 0) {
+      const totalContratos = data?.kpis?.contratosCount ?? data?.contratos?.length ?? 0;
+      return Math.max(0, totalPassageiros - totalContratos);
+    }
+    return data.passageiros.filter((p) => !passageirosComContratoSet.has(p.id)).length;
+  }, [data?.passageiros, data?.kpis?.passageirosCount, data?.kpis?.contratosCount, data?.contratos?.length, passageirosComContratoSet]);
+
   const handleOpenMinutaPreview = async () => {
     if (!data?.user) return;
     try {
@@ -698,11 +719,11 @@ export default function AdminUserDetails() {
             <AdminKpiCard
               title="PASSAGEIROS"
               value={data.kpis?.passageirosCount ?? 0}
-              subtext="Passageiros cadastrados"
+              subtext={`${data.kpis?.solicitacoesPendentesCount ?? 0} ${(data.kpis?.solicitacoesPendentesCount ?? 0) === 1 ? "solicitação pendente" : "solicitações pendentes"}`}
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<Users className="h-5 w-5" />}
-              onClick={() => handleSubTabChange("passageiros")}
+              onClick={() => handleSubTabChange(AdminUserSubTab.PASSAGEIROS)}
             />
 
             <AdminKpiCard
@@ -712,7 +733,7 @@ export default function AdminUserDetails() {
               cardBorder="border-blue-500/40 shadow-blue-500/10"
               iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
               icon={<Bus className="h-5 w-5" />}
-              onClick={() => handleSubTabChange("veiculos")}
+              onClick={() => handleSubTabChange(AdminUserSubTab.VEICULOS)}
             />
 
             <AdminKpiCard
@@ -722,17 +743,17 @@ export default function AdminUserDetails() {
               cardBorder="border-purple-500/40 shadow-purple-500/10"
               iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
               icon={<GraduationCap className="h-5 w-5" />}
-              onClick={() => handleSubTabChange("escolas")}
+              onClick={() => handleSubTabChange(AdminUserSubTab.ESCOLAS)}
             />
 
             <AdminKpiCard
-              title="SOLICITAÇÕES PENDENTES"
-              value={data.kpis?.solicitacoesPendentesCount ?? 0}
-              subtext="Aprovações pendentes"
-              cardBorder="border-amber-500/40 shadow-amber-500/10"
-              iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
-              icon={<Clock className="h-5 w-5" />}
-              onClick={() => handleSubTabChange("solicitacoes")}
+              title="CONTRATOS"
+              value={data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
+              subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "passageiro sem contrato" : "passageiros sem contrato"}`}
+              cardBorder="border-sky-500/40 shadow-sky-500/10"
+              iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
+              icon={<FileCheck className="h-5 w-5" />}
+              onClick={() => handleSubTabChange(AdminUserSubTab.CONTRATOS)}
             />
           </div>
 

@@ -16,66 +16,62 @@ interface CobrancaSummaryProps {
 export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const isProjection = cobranca.isProjection === true;
   const isPago = !isProjection && cobranca.status === CobrancaStatus.PAGO;
-  const isPendente = !isProjection && cobranca.status === CobrancaStatus.PENDENTE;
-  const isAtrasado = isPendente && checkCobrancaEmAtraso(cobranca.data_vencimento);
+  const isPendente = (isProjection || cobranca.status === CobrancaStatus.PENDENTE) && !isPago;
+  const isAtrasado = isPendente && !isProjection && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
-  const statusLabel = isProjection ? "PREVISTA" : isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
-
-  const passageiroCreatedAt = cobranca.passageiro?.created_at ? new Date(cobranca.passageiro.created_at) : null;
-  const now = getNowBR();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
+  const statusLabel = isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
 
   return (
-    <div className="flex flex-col p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left">
+    <div className="flex flex-col p-4 sm:p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left w-full min-w-0 overflow-hidden">
 
       {/* LINHA 1: Overline de Contexto + Badge Minimalista */}
-      <div className="flex justify-between items-center mb-2">
-        <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wider leading-none">
+      <div className="flex justify-between items-center mb-2 w-full min-w-0 gap-2">
+        <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider leading-none shrink-0">
           PARCELA DE {getMesNome(cobranca.mes)}
         </p>
 
         <div className={cn(
-          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-          isProjection ? "bg-slate-100 text-[#1a3a5c]/80 border border-slate-200/80" :
-            isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
-              isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
-                "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
+          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
+          isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
+            isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
+              "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
         )}>
           {statusLabel}
         </div>
       </div>
 
       {/* LINHA 2: Nome do Passageiro em Destaque */}
-      <h1 className="text-[22px] font-semibold text-[#1a3a5c] dark:text-zinc-100 leading-tight truncate mt-1">
-        {formatShortName(cobranca.passageiro?.nome, true)}
-      </h1>
+      <div className="flex items-start gap-2 mt-0.5 w-full min-w-0">
+        <h1 className="text-base sm:text-lg font-bold text-[#1a3a5c] dark:text-zinc-100 leading-snug line-clamp-3 break-words w-full min-w-0">
+          {formatShortName(cobranca.passageiro?.nome, true)}
+        </h1>
+      </div>
 
       {/* Info Extra de Responsável */}
       {cobranca.passageiro?.nome_responsavel && (
-        <p className="text-[13px] font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-none">
+        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
           {formatNomeResponsavelExibicao(cobranca.passageiro.nome_responsavel)}
         </p>
       )}
 
       {/* LINHA 3: Footer com Valor e Data */}
-      <div className="flex items-end justify-between mt-5 pt-4 border-t border-slate-200/60 dark:border-zinc-800/80">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4 text-slate-400" />
-            <span className="text-[12px] font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wide">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60 dark:border-zinc-800/80 w-full min-w-0 gap-2">
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
+            <span className="text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
               {`Vence ${formatDateToBR(cobranca.data_vencimento)}`}
             </span>
           </div>
           {isAtrasado && !isProjection && (
-            <p className="text-[11px] font-semibold text-red-600 uppercase tracking-wide">
+            <p className="text-[10px] sm:text-[11px] font-extrabold text-red-600 uppercase tracking-wide truncate">
               {formatDiasAtraso(cobranca.data_vencimento)}
             </p>
           )}
         </div>
 
-        <div className="flex items-center">
-          <span className="text-[20px] font-semibold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
+        <div className="flex items-center shrink-0">
+          <span className="text-lg sm:text-[20px] font-bold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
             {formatCurrency(cobranca.valor)}
           </span>
         </div>

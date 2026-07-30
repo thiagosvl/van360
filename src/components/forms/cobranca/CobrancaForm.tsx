@@ -303,33 +303,32 @@ export function CobrancaFormContent({
                 />
             )}
 
-            <FormField
-                control={form.control}
-                name="foi_pago"
-                render={({ field }) => (
-                    <FormItem className={cn(
-                        "flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0",
-                        (mode === "edit" || lockFoiPago) && "hidden"
-                    )}>
-                        <div className="flex items-center gap-3">
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={lockFoiPago}
-                                    className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                            </FormControl>
-                            <div className="flex-1 space-y-1 leading-none">
-                                <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
-                                    Esta parcela já foi paga?
-                                </FormLabel>
+            {mode === "create" && !lockFoiPago && (
+                <FormField
+                    control={form.control}
+                    name="foi_pago"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                            <div className="flex items-center gap-3">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        disabled={lockFoiPago}
+                                        className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                </FormControl>
+                                <div className="flex-1 space-y-1 leading-none">
+                                    <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
+                                        Esta parcela já foi paga?
+                                    </FormLabel>
+                                </div>
                             </div>
-                        </div>
-                        <FormMessage className="pt-2" />
-                    </FormItem>
-                )}
-            />
+                            <FormMessage className="pt-2" />
+                        </FormItem>
+                    )}
+                />
+            )}
 
             {/* --- Detalhes do Pagamento (Se pago) --- */}
             {isPaga && (
@@ -420,6 +419,28 @@ export function CobrancaFormContent({
                             </FormItem>
                         )}
                     />
+                    {lockFoiPago && (
+                        <FormField
+                            control={form.control}
+                            name="enviar_recibo_whatsapp"
+                            render={({ field }) => (
+                                <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0 transition-all hover:bg-slate-100/50">
+                                    <Checkbox
+                                        id="enviar_recibo_whatsapp"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <FormLabel
+                                        htmlFor="enviar_recibo_whatsapp"
+                                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                                    >
+                                        Enviar recibo por WhatsApp para o responsável
+                                    </FormLabel>
+                                </FormItem>
+                            )}
+                        />
+                    )}
                 </div>
             )}
 

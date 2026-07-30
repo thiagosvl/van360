@@ -65,6 +65,9 @@ export function useIniciarRota() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["routes"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution", data.id] });
+      if (data.alertaInativos) {
+        toast.info("Atenção na inicialização", { description: data.alertaInativos });
+      }
       toast.success("Rota iniciada com sucesso!");
     },
     onError: (error: any) => {
@@ -81,21 +84,41 @@ export function useAtualizarParadaStatus() {
   return useMutation({
     mutationFn: ({
       execucaoId,
-      passageiroId,
+      paradaId,
       status
     }: {
       execucaoId: string;
-      passageiroId: string;
+      paradaId: string;
       status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE;
-    }) => routeApi.atualizarParadaStatus(execucaoId, passageiroId, status),
+    }) => routeApi.atualizarParadaStatus(execucaoId, paradaId, status),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
-      if (variables.status === RouteStopStatus.EMBARCADO) {
-        toast.success("Passageiro marcado como embarcado/desembarcado!");
-      }
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar status da parada", {
+        description: getErrorMessage(error, "Por favor, tente novamente."),
+      });
+    },
+  });
+}
+
+export function useReordenarExecucao() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      execucaoId,
+      paradas
+    }: {
+      execucaoId: string;
+      paradas: Array<{ id: string; ordem: number }>;
+    }) => routeApi.reordenarExecucao(execucaoId, paradas),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
+      toast.success("Ordem dos itinerários atualizada!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao reordenar itinerário", {
         description: getErrorMessage(error, "Por favor, tente novamente."),
       });
     },
@@ -110,10 +133,10 @@ export function useCancelarExecucao() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["routes"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution", data.id] });
-      toast.success("Rota cancelada com sucesso!");
+      toast.success("rota encerrada com sucesso!");
     },
     onError: (error: any) => {
-      toast.error("Erro ao cancelar rota", {
+      toast.error("Erro ao encerrar rota", {
         description: getErrorMessage(error, "Por favor, tente novamente."),
       });
     },

@@ -17,7 +17,7 @@ import { cpfCnpjMask as maskCpf, phoneMask as maskPhone, dateMask as maskDate } 
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Loader2, Mail, User } from "lucide-react";
+import { Calendar, Info, Loader2, Mail, User } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -144,7 +144,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose}>
+    <BaseDialog maxWidth="xl" open={isOpen} onOpenChange={onClose}>
       <BaseDialog.Header title="Editar Cadastro" icon={<User className="w-5 h-5" />} onClose={onClose} />
       <BaseDialog.Body>
         {isLoading ? (
@@ -153,39 +153,17 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
+            <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-4 mt-2">
               {(() => {
                 const cpfcnpjValue = form.watch("cpfcnpj") || "";
                 const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
                 return (
                   <>
-                    <div className="mb-4">
-                      <FormField
-                        control={form.control}
-                        name="cpfcnpj"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              CPF ou CNPJ <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                readOnly
-                                className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
                     <FormField
                       control={form.control}
                       name="razao_social"
                       render={({ field, fieldState, formState }) => (
-                        <FormItem className="mb-4">
+                        <FormItem>
                           <FormLabel className="text-slate-700 font-semibold ml-1">
                             Razão Social {isCnpj && <span className="text-red-600">*</span>}
                           </FormLabel>
@@ -209,7 +187,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                       )}
                     />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="nome"
@@ -256,7 +234,7 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="telefone"
@@ -273,15 +251,65 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                       />
                       <FormField
                         control={form.control}
-                        name="email"
-                        render={({ field }) => (
+                        name="data_nascimento"
+                        render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="text-slate-700 font-semibold ml-1">
-                              E-mail <span className="text-red-600">*</span>
+                              Data de nascimento <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  {...field}
+                                  inputMode="numeric"
+                                  maxLength={10}
+                                  onChange={(e) => field.onChange(maskDate(e.target.value))}
+                                  placeholder="dd/mm/aaaa"
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                  aria-invalid={!!fieldState.error}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <hr className="border-slate-100 my-1" />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="cpfcnpj"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-500 font-semibold ml-1">
+                              CPF ou CNPJ <span className="text-red-600/60">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                readOnly
+                                className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-500 font-semibold ml-1">
+                              E-mail <span className="text-red-600/60">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                                 <Input
                                   {...field}
                                   readOnly
@@ -295,32 +323,12 @@ export default function EditarCadastroDialog({ isOpen, onClose }: EditarCadastro
                       />
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="data_nascimento"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Data de nascimento <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                              <Input
-                                {...field}
-                                inputMode="numeric"
-                                maxLength={10}
-                                onChange={(e) => field.onChange(maskDate(e.target.value))}
-                                placeholder="dd/mm/aaaa"
-                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                                aria-invalid={!!fieldState.error}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="flex items-start gap-2.5 text-xs text-amber-800 bg-amber-50/50 border border-amber-200/60 p-3.5 rounded-xl">
+                      <Info className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+                      <p className="leading-relaxed font-medium">
+                        Por motivos de segurança, para alterar seu <span className="font-semibold text-slate-800">CPF/CNPJ</span> ou <span className="font-semibold text-slate-800">E-mail</span> cadastrados, é necessário entrar em contato com o suporte.
+                      </p>
+                    </div>
                   </>
                 );
               })()}

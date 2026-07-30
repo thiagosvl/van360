@@ -3,8 +3,11 @@ import {
   useDeleteCobranca,
   useDesfazerPagamento,
   useToggleNotificacoesCobranca,
+  useCreateCobranca,
+  useSession,
   safeCloseDialog,
 } from "@/hooks";
+import { CobrancaStatus, CobrancaOrigem } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
@@ -55,18 +58,47 @@ export function useCobrancaOperations({
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const deleteCobranca = useDeleteCobranca();
+  const createCobranca = useCreateCobranca();
+  const { user } = useSession();
 
   const handleToggleLembretes = useCallback(async () => {
-    try {
-      await toggleNotificacoes.mutateAsync({
-        cobrancaId: cobranca.id,
-        desativar: !cobranca.desativar_lembretes,
-      });
-      if (onActionSuccess) onActionSuccess();
-    } catch (error) {
-      console.error(error);
-    }
-  }, [toggleNotificacoes, onActionSuccess, cobranca]);
+    const desativar = !cobranca.desativar_lembretes;
+    openConfirmationDialog({
+      title: desativar ? "Desativar lembretes?" : "Ativar lembretes?",
+      description: desativar
+        ? "O responsável não receberá lembretes automáticos via WhatsApp para esta parcela específica."
+        : "O responsável voltará a receber lembretes automáticos via WhatsApp para esta parcela específica.",
+      confirmText: desativar ? "Desativar" : "Ativar",
+      variant: desativar ? "warning" : "default",
+      onConfirm: async () => {
+        try {
+          if (cobranca.isProjection) {
+            await createCobranca.mutateAsync({
+              usuario_id: cobranca.passageiro?.usuario_id || cobranca.usuario_id || user?.id || "",
+              passageiro_id: cobranca.passageiro_id,
+              valor: Number(cobranca.valor),
+              data_vencimento: cobranca.data_vencimento,
+              mes: cobranca.mes,
+              ano: cobranca.ano,
+              status: CobrancaStatus.PENDENTE,
+              origem: CobrancaOrigem.AUTOMATICA,
+              desativar_lembretes: desativar,
+            });
+          } else {
+            await toggleNotificacoes.mutateAsync({
+              cobrancaId: cobranca.id,
+              desativar: desativar,
+            });
+          }
+          safeCloseDialog(closeConfirmationDialog);
+          if (onActionSuccess) onActionSuccess();
+        } catch (error) {
+          safeCloseDialog(closeConfirmationDialog);
+          console.error(error);
+        }
+      },
+    });
+  }, [toggleNotificacoes, createCobranca, onActionSuccess, cobranca, user?.id, openConfirmationDialog, closeConfirmationDialog]);
 
   const handleDesfazerPagamento = useCallback(async () => {
     openConfirmationDialog({
@@ -117,7 +149,8 @@ export function useCobrancaOperations({
   const isActionLoading =
     toggleNotificacoes.isPending ||
     desfazerPagamento.isPending ||
-    deleteCobranca.isPending;
+    deleteCobranca.isPending ||
+    createCobranca.isPending;
 
   return {
     handleToggleLembretes,
@@ -125,7 +158,7 @@ export function useCobrancaOperations({
     handleDeleteCobranca,
     handleShowHistory,
     isActionLoading,
-    isTogglingNotificacoes: toggleNotificacoes.isPending,
+    isTogglingNotificacoes: toggleNotificacoes.isPending || createCobranca.isPending,
     isDesfazendoPagamento: desfazerPagamento.isPending,
     isDeleting: deleteCobranca.isPending
   };
@@ -168,6 +201,30 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
   return useMemo(() => {
     if (cobranca.isProjection) {
       const projActions: ActionItem[] = [];
+      if (onRegistrarPagamento) {
+        projActions.push({
+          label: "Registrar Pagamento",
+          icon: <CheckCircle2 className="h-4 w-4" />,
+          onClick: () => {
+            document.body.click();
+            setTimeout(() => onRegistrarPagamento(), 10);
+          },
+          swipeColor: "bg-emerald-500",
+          hasSeparatorAfter: true,
+        });
+      }
+
+      const desativar = cobranca.desativar_lembretes ?? false;
+      projActions.push({
+        label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
+        icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
+        onClick: handleToggleLembretes,
+        disabled: isActionLoading,
+        isLoading: isTogglingNotificacoes,
+        swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
+        hasSeparatorAfter: true,
+      });
+
       if (onVerCarteirinha) {
         projActions.push({
           label: "Ver Carteirinha",
@@ -239,6 +296,17 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         hasSeparatorAfter: true,
       });
     }
+
+    const desativar = cobranca.desativar_lembretes ?? false;
+    actions.push({
+      label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
+      icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
+      onClick: handleToggleLembretes,
+      disabled: isActionLoading,
+      isLoading: isTogglingNotificacoes,
+      swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
+      hasSeparatorAfter: true,
+    });
 
     if (onEditarCobranca) {
       actions.push({

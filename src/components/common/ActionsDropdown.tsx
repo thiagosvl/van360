@@ -89,7 +89,7 @@ export function ActionsDropdown({
             <DrawerHeader className="text-left px-6 pt-6 pb-2 shrink-0">
               {title && <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">{title}</DrawerTitle>}
               {description && <DrawerDescription className="text-xs font-medium text-gray-400">{description}</DrawerDescription>}
-              {header && <div className="mt-4">{header}</div>}
+              {header && <div className="mt-4 w-full min-w-0">{header}</div>}
             </DrawerHeader>
           )}
           

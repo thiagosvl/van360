@@ -22,6 +22,7 @@ import {
   Rocket,
   IdCard,
   Menu,
+  Route,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -35,7 +36,8 @@ export function AppNavbar({ role }: { role: "motorista" }) {
     openEditarCadastroDialog,
     openEditarPixDialog,
     setIsHelpOpen,
-    setIsGlobalLoading
+    setIsGlobalLoading,
+    pageTitle
   } = useLayout();
 
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -52,6 +54,8 @@ export function AppNavbar({ role }: { role: "motorista" }) {
       icon: IdCard,
     };
   }
+
+  const displayTitle = currentPage?.title || pageTitle;
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -98,14 +102,18 @@ export function AppNavbar({ role }: { role: "motorista" }) {
 
           {/* Título da Página - Apenas Desktop */}
           <div className="hidden md:flex items-center gap-3 min-w-0">
-            {currentPage && (
+            {displayTitle && (
               <>
                 <div className="h-10 w-10 shrink-0 rounded-xl flex items-center justify-center text-[#1a3a5c]">
-                  <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
+                  {currentPage?.icon ? (
+                    <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
+                  ) : (
+                    <Route className="h-5 w-5" strokeWidth={2.5} />
+                  )}
                 </div>
                 <div className="flex flex-col min-w-0">
                   <h2 className="text-lg font-bold text-[#1a3a5c] tracking-tight leading-none truncate">
-                    {currentPage.title}
+                    {displayTitle}
                   </h2>
                 </div>
               </>
@@ -115,9 +123,9 @@ export function AppNavbar({ role }: { role: "motorista" }) {
 
         {/* Centro: Título da Página (Apenas Mobile) */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden w-[40%] sm:w-[50%]">
-          {currentPage && (
+          {displayTitle && (
             <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c] tracking-tight leading-none truncate text-center w-full px-1">
-              {currentPage.title}
+              {displayTitle}
             </h2>
           )}
         </div>

@@ -34,15 +34,19 @@ export function useUpdatePassageiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Passageiro> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Passageiro>; showToast?: boolean }) =>
       passageiroApi.updatePassageiro(id, data),
     onError: (error: any, variables) => {
-      toast.error("passageiro.erro.atualizar", {
-        description: getErrorMessage(error, "passageiro.erro.atualizarDetalhe"),
-      });
+      if (variables.showToast !== false) {
+        toast.error("passageiro.erro.atualizar", {
+          description: getErrorMessage(error, "passageiro.erro.atualizarDetalhe"),
+        });
+      }
     },
     onSuccess: (data, variables) => {
-      toast.success("sucesso.atualizar");
+      if (variables.showToast !== false) {
+        toast.success("sucesso.atualizar");
+      }
 
       // Invalidações globais
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });

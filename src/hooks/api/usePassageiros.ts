@@ -13,15 +13,16 @@ export interface UsePassageirosFilters {
   periodo?: string;
 }
 
-function normalizeFilters(filters: UsePassageirosFilters) {
+function normalizeFilters(filters: UsePassageirosFilters = {}) {
+  const searchVal = typeof filters?.search === "string" ? filters.search : undefined;
   return {
-    search: filters.search?.trim() ? filters.search.trim() : undefined,
+    search: searchVal?.trim() ? searchVal.trim() : undefined,
     escola:
-      filters.escola && filters.escola !== FilterDefaults.TODAS ? filters.escola : undefined,
+      filters?.escola && filters.escola !== FilterDefaults.TODAS ? filters.escola : undefined,
     veiculo:
-      filters.veiculo && filters.veiculo !== FilterDefaults.TODOS ? filters.veiculo : undefined,
+      filters?.veiculo && filters.veiculo !== FilterDefaults.TODOS ? filters.veiculo : undefined,
     ativo:
-      filters.status && filters.status !== FilterDefaults.TODOS
+      filters?.status && filters.status !== FilterDefaults.TODOS
         ? filters.status === "true"
           ? "true"
           : filters.status === "false"
@@ -29,7 +30,7 @@ function normalizeFilters(filters: UsePassageirosFilters) {
             : undefined
         : undefined,
     periodo:
-      filters.periodo && filters.periodo !== FilterDefaults.TODOS ? filters.periodo : undefined,
+      filters?.periodo && filters.periodo !== FilterDefaults.TODOS ? filters.periodo : undefined,
   };
 }
 
@@ -40,20 +41,21 @@ export function usePassageiros(
     onError?: (error: unknown) => void;
   }
 ) {
-  const normalizedFilters = normalizeFilters(filters);
+  const safeFilters = typeof filters === "object" && filters !== null ? filters : { usuarioId: String(filters || "") };
+  const normalizedFilters = normalizeFilters(safeFilters);
   const filterKey = JSON.stringify(normalizedFilters);
 
   const query = useQuery({
-    queryKey: ["passageiros", filters.usuarioId, filterKey],
-    enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
+    queryKey: ["passageiros", safeFilters.usuarioId, filterKey],
+    enabled: (options?.enabled ?? true) && Boolean(safeFilters.usuarioId),
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<Passageiro[]> => {
-      if (!filters.usuarioId) return [];
+      if (!safeFilters.usuarioId) return [];
 
       const data = await passageiroApi.listPassageiros(
-        filters.usuarioId,
+        safeFilters.usuarioId,
         normalizedFilters
       );
 
@@ -83,4 +85,3 @@ export function usePassageiros(
 
   return query;
 }
-

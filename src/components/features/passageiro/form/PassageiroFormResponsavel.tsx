@@ -37,7 +37,7 @@ export function PassageiroFormResponsavel({
         <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
           <Contact className="w-5 h-5" />
         </div>
-        Responsável
+        Responsável Financeiro
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
@@ -61,7 +61,7 @@ export function PassageiroFormResponsavel({
               ) : (
                 <>
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome do Responsável <span className="text-red-600">*</span>
+                    Nome do Responsável Financeiro <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -88,7 +88,7 @@ export function PassageiroFormResponsavel({
           render={({ field }) => (
             <PhoneInput
               field={field}
-              label="Telefone"
+              label="Telefone do Responsável Financeiro"
               required
               labelClassName="text-slate-700 font-semibold ml-1"
               inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"

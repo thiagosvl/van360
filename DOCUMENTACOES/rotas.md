@@ -1,51 +1,86 @@
-# Planejamento Estratégico: Rotas de Passageiros (Versão 2.0)
+# Especificação Funcional - Sistema de Rotas Flexíveis (Van360)
 
-Este documento descreve as diretrizes, tecnologias e arquitetura de negócios planejadas para a evolução do módulo de **Rotas de Passageiros e Rastreamento (Versão 2.0)** no ecossistema **Van360**.
-
----
-
-## 🎯 Visão Geral da V2.0
-
-Enquanto a V1.0 focou na precisão cirúrgica de deep linking curva a curva (Waze e Google Maps), avanço manual resiliente perna-a-perna do motorista e envio de WhatsApps baseados no sequenciamento da fila a **custo recorrente zero de APIs de mapa**, a **Versão 2.0** tem como foco a **experiência em tempo real para as famílias e automação por presença geográfica**.
+Este documento define os requisitos de negócio, fluxos de uso, validações de consistência logística e especificações lógicas da funcionalidade de Rotas Flexíveis. O objetivo principal é dar flexibilidade estruturada para o motorista criar trajetos diários inteligentes e livres de falhas logísticas (como alunos esquecidos na van ou embarques após o destino).
 
 ---
 
-## 🚀 Funcionalidades Mapeadas para a V2.0
+## 📌 1. Casos de Uso e Cenários Operacionais
 
-### 1. Link Público de Rastreamento em Tempo Real (Pais)
-*   **A Experiência:** O pai/responsável recebe um link no WhatsApp no momento em que a van inicia a rota (ou quando a criança se torna a parada ativa) e pode visualizar em tempo real o ícone do veículo se movendo em direção à sua casa ou escola.
-*   **A Blindagem de Custo (Margem de Lucro SaaS):**
-    *   **Proibido:** Uso de Google Maps JavaScript API (custa muito caro por requisição de Tiles e travará financeiramente a viabilidade do plano mensal dos motoristas).
-    *   **Solução Proposta:** **Leaflet.js + OpenStreetMap (OSM)**. Leaflet é uma biblioteca open-source de alta performance e os Tiles do OpenStreetMap são **100% gratuitos**, permitindo renderizar o mapa do trajeto para o pai sem gastar R$ 0,00 de licenças.
-*   **Tecnologia de Transporte:** **Supabase Realtime (WebSockets)**. O aplicativo Capacitor do motorista envia pequenas coordenadas de GPS de tempos em tempos (ex: a cada 5 segundos) para uma tabela de "posicao_motorista". O Supabase Realtime propaga essa posição para a tela do pai aberta no navegador via WebSocket de forma instantânea e com consumo de rede irrelevante.
+A rota não possui mais um "sentido global" rígido (como antiga "só ida" ou "só volta"). Sob a ótica do sistema, **toda rota é uma sequência livre e ordenada de paradas**, na qual passageiros podem estar indo para a escola ou voltando para casa de forma misturada no mesmo veículo. Cada passageiro figura exatamente uma vez por rota no seu sentido cadastrado (`INDO` ou `VOLTANDO`).
 
-### 2. Geofencing Mobile Ativo Local (Automação de Parada)
-*   **A Experiência:** O motorista não precisará clicar em "Cheguei à porta". O celular fixado no suporte detectará a proximidade automaticamente e disparará o WhatsApp para o responsável.
-*   **Como Funciona:** O aplicativo local mobile Capacitor rodando em primeiro plano lê as coordenadas de GPS do celular e calcula **offline** (usando a **Fórmula de Haversine** localmente na CPU do aparelho) a distância em linha reta até a parada ativa.
-*   **O Gatilho:** Quando a distância for menor que **80 metros**, o aplicativo emite um alerta sonoro/vibratório para o motorista, mostra em destaque *"Você chegou!"* e dispara silenciosamente um evento de API para o backend avisar os pais via WhatsApp.
-*   **Custo:** **R$ 0,00**, pois todo o processamento de proximidade é feito de forma nativa e offline no chip de GPS e CPU do próprio smartphone do motorista.
+### A. Coleta Residencial (Casas ➔ Escolas)
+* **Fluxo:** O motorista inicia a rota vazio, recolhe os passageiros em suas residências (sentido `indo` / Ida) e realiza a entrega coletiva nas respectivas escolas.
 
-### 3. Matriz de Distância e Otimização Sequencial Automática
-*   **A Experiência:** Ao criar uma rota com 15 passageiros espalhados por diferentes ruas, o motorista não precisará ordenar a sequência de paradas manualmente. O sistema sugere o trajeto de menor tempo ou menor quilometragem de forma inteligente com um clique.
-*   **Tecnologia Proposta:** Uso pontual do **Google Distance Matrix API** ou serviços livres como o **OSRM (Open Source Routing Machine)**. Por rodar apenas no momento do cadastro ou reordenação (e não repetidamente durante as corridas), o consumo cabe perfeitamente na cota mensal de franquia do plano de desenvolvedor.
+### B. Coleta Escolar (Escolas ➔ Casas)
+* **Fluxo:** O motorista recolhe os alunos nas escolas de origem (sentido `voltando` / Volta) e realiza as entregas nas suas respectivas residências.
+
+### C. Corrida Mista (Circular / Meio-Dia / Ocorrências Múltiplas)
+* **Fluxo:** O motorista recolhe alunos de manhã em uma escola para levar para casa (sentido `voltando`) e, concorrentemente no mesmo trajeto, recolhe alunos do turno da tarde em suas residências para levar para a escola (sentido `indo`). Uma mesma escola pode ser adicionada múltiplas vezes na timeline (ex: Parada 3 = Escola A, Parada 6 = Escola A).
 
 ---
 
-## 🗄️ Arquitetura do Banco de Dados Pronta (Preparação de Terreno)
+## 📐 2. Modelo de Dados de Itinerário
 
-A modelagem de tabelas implementada na V1.0 já foi estruturada pensando no suporte de dados da V2.0:
-*   A tabela `passageiros` já possui as colunas `latitude` e `longitude` persistidas no banco.
-*   A tabela `execucoes_rota_passageiros` possui timestamps de `notificado_em` e `visitado_em` para histórico, relatórios de pontualidade e auditoria de presença.
+O itinerário é mapeado como uma **sequência ordenada de Paradas Físicas (Nós do Trajeto)** configurada pelo motorista:
 
----
-
-## 🛡️ Pilares Tecnológicos Recomendados para a V2.0
-
-```mermaid
-graph TD
-    A[Capacitor GPS Nativo] -->|Posição GPS a cada 5s| B[Supabase Realtime WebSockets]
-    B -->|Propagação instantânea| C[Browser do Responsável]
-    C -->|Renderização de Mapa| D[Leaflet.js + OpenStreetMap]
-    A -->|Proximidade < 80m via Haversine local| E[Gatilho de Proximidade]
-    E -->|Aviso de chegada| F[Evolution API - WhatsApp]
 ```
+Itinerário = [ Parada 1, Parada 2, Parada 3, ..., Parada N ]
+```
+
+Cada parada física é de um dos tipos:
+1. **Residência (Passageiro):** Nó individual para cada passageiro cadastrado na rota. Local de embarque (se o passageiro está `indo`) ou desembarque (se o passageiro está `voltando`).
+2. **Escola:** Local de embarque coletivo (de quem está `voltando`) ou desembarque coletivo (de quem está `indo`). Pode figurar uma ou mais vezes no trajeto.
+
+---
+
+## 🧭 3. O Perfil de Deslocamento do Aluno (Sentido)
+
+Cada passageiro em uma rota possui um **Sentido de Deslocamento** individual (`INDO` ou `VOLTANDO`) que determina suas ações em runtime:
+
+### A. Passageiro no Sentido `INDO` (Casa ➔ Escola)
+* **Embarque (Coleta):** Ocorre na parada de sua **Residência** (Ação: *Embarcou / Faltou*).
+* **Desembarque (Entrega):** Ocorre na parada física de sua **Escola** vinculada (Ação: *Desembarcar*).
+
+### B. Passageiro no Sentido `VOLTANDO` (Escola ➔ Casa)
+* **Embarque (Coleta):** Ocorre na parada física de sua **Escola** vinculada (Ação: *Embarcar* coletivo).
+* **Desembarque (Entrega):** Ocorre na parada de sua **Residência** (Ação: *Confirmar Entrega* na casa).
+
+---
+
+## 🛡️ 4. Regras de Consistência e Validações (Configuração de Rota)
+
+Para garantir a viabilidade lógica do trajeto e evitar erros operacionais críticos de roteirização, a configuração de rotas (cadastro, edição e reordenação) valida as seguintes regras:
+
+1. **Escola Obrigatória na Timeline:** Qualquer escola associada a um passageiro presente na rota **deve** estar inserida como parada no itinerário.
+2. **Precedência Logística da Ida (Casa antes da Escola):** 
+   - Se o aluno está no sentido `indo` (Ida), o nó de sua residência deve, obrigatoriamente, estar em uma posição da timeline **anterior** a pelo menos um nó da escola de destino dele.
+3. **Precedência Logística da Volta (Escola antes da Casa):** 
+   - Se o aluno está no sentido `voltando` (Volta), o nó de sua residência deve, obrigatoriamente, estar em uma posição da timeline **posterior** a pelo menos um nó da escola de origem dele.
+4. **Alinhamento e Feedback de Erro:**
+   - Caso alguma regra de precedência seja violada, o validador lógico gera mensagens orientativas impeditivas na tela impedindo a gravação ou movimentação inconsistente da rota.
+
+---
+
+## 🚗 5. Dinâmica de Execução e Visualização (Painel do Motorista & Preview)
+
+### A. Associação Inteligente por Posição em Escolas Múltiplas
+Quando uma escola figura em uma determinada parada física da timeline (posição `K`), a lista de alunos exibida para aquela parada é calculada com base no escopo posicional:
+* **Desembarque (`INDO`):** Exibe apenas os alunos vinculados àquela escola cujo nó de residência está posicionado **antes** da parada `K` e para os quais a parada `K` é a **primeira** ocorrência da escola após a residência deles.
+* **Embarque (`VOLTANDO`):** Exibe apenas os alunos vinculados àquela escola cujo nó de residência está posicionado **depois** da parada `K` e para os quais a parada `K` é a **última** ocorrência da escola antes da residência deles.
+
+### B. Exibição da Timeline
+* **Ícone da Escola nos Nós:** Todas as paradas físicas do tipo escola exibem o ícone da escola (`School`) no círculo da timeline (em substituição ao número da parada), tanto na configuração quanto no preview, execução e histórico.
+* **Exibição Inteligente nos Cards de Configuração:** Na tela de configuração de rota, o card da escola substitui o texto genérico por chips dos alunos vinculados àquela parada física específica (`⬇️ Desembarque` e `⬆️ Embarque`), aplicando exatamente as mesmas regras posicionais da execução.
+* **Nomes das Escolas sem Cortes:** A indicação de destino da escola não sofre truncamento.
+* **Badges Inline de Sentido:** A indicação de sentido (**"➡️ Ida"** ou **"🏠 Volta"**) é exibida inline ao lado do nome de cada aluno na timeline.
+* **Diálogo de Detalhe de Parada (`BaseDialog`):**
+  - Utiliza o padrão premium do sistema (`BaseDialog.Header`, `BaseDialog.Body` e `BaseDialog.Footer`).
+  - Apresenta metadados refinados (fluxo de destino e sentido do passageiro) e o endereço formatado em destaque.
+  - Provê no rodapé (`Footer`) botões de GPS integrados de navegação rápida para Google Maps e Waze.
+
+---
+
+## ⏱️ 6. Tratamento de Ausências
+
+A ausência do passageiro ativa comportamentos de atualização no itinerário:
+* **Falta por Sentido na Rota:** Ao marcar falta para um aluno em seu nó ativo (residência ou escola), o nó é marcado como `AUSENTE`, salvando a data/hora do registro e finalizando a pendência daquele passageiro na corrida.

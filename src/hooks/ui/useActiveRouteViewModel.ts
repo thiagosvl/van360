@@ -1,25 +1,99 @@
-import { useExecucaoDetail } from "../api/useRoutes";
-import { useAtualizarParadaStatus, useCancelarExecucao } from "../api/useRouteMutations";
-import { toast } from "@/utils/notifications/toast";
-import { RouteStopStatus } from "@/types/route";
+import { useLocation } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { routeApi } from "@/services/api/route.api";
+import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReordenarExecucao } from "../api/useRouteMutations";
+import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger } from "@/types/route";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
-  const { data: execucao, isLoading, isError } = useExecucaoDetail(execucaoId);
+  const queryClient = useQueryClient();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isExplicitPreview = searchParams.get("preview") === "true";
+
+  // 1. Tenta carregar a execução apenas se não for um preview explícito
+  const execQuery = useQuery({
+    queryKey: ["route-execution", execucaoId],
+    queryFn: () => routeApi.getExecucao(execucaoId),
+    enabled: !isExplicitPreview && !!execucaoId,
+    retry: false,
+    refetchInterval: (query) => {
+      const data = query.state.data as any;
+      return data?.status === RouteExecutionStatus.INICIADA ? 15000 : false;
+    }
+  });
+
+  // 2. Se for um preview explícito ou a busca de execução falhar, carrega a rota configurada
+  const routeQuery = useQuery({
+    queryKey: ["route", execucaoId],
+    queryFn: () => routeApi.getRoute(execucaoId),
+    enabled: (isExplicitPreview || !!execQuery.isError) && !!execucaoId,
+    retry: false,
+  });
 
   const stepMutation = useAtualizarParadaStatus();
+  const reorderMutation = useReordenarExecucao();
   const cancelMutation = useCancelarExecucao();
+  const iniciarMutation = useIniciarRota();
+
+  const isPreview = isExplicitPreview || (!!execQuery.isError && !!routeQuery.data);
+
+  let execucao = execQuery.data;
+  let paradas = execQuery.data?.paradas || [];
+
+  if (isPreview && routeQuery.data) {
+    execucao = {
+      id: "",
+      rota_id: routeQuery.data.id,
+      usuario_id: routeQuery.data.usuario_id,
+      status: "preview" as any, // Identificador de preview
+      tipo: routeQuery.data.tipo,
+      iniciada_em: "",
+      created_at: routeQuery.data.created_at,
+      rota: {
+        id: routeQuery.data.id,
+        nome: routeQuery.data.nome
+      }
+    } as any;
+
+    paradas = (routeQuery.data.passageiros || []).map((p) => ({
+      id: p.id || "",
+      execucao_rota_id: "",
+      tipo_no: p.tipo_no,
+      passageiro_id: p.passageiro_id,
+      escola_id: p.escola_id,
+      status: RouteStopStatus.PENDENTE,
+      ordem: p.ordem,
+      passageiro: p.passageiro,
+      escola: p.escola,
+      sentido: p.sentido || null
+    })) as any[];
+  }
+
+  const paradasPendentes = paradas.filter((p: RouteExecutionPassenger) => !p.visitado_em && p.status !== RouteStopStatus.AUSENTE);
+  const paradasConcluidas = paradas.filter((p: RouteExecutionPassenger) => !!p.visitado_em || p.status === RouteStopStatus.AUSENTE);
+
+  // Parada em evidência máxima: a primeira com status PENDENTE (apenas em execução, não em preview!)
+  const paradaAtual = !isPreview && paradasPendentes.length > 0 ? paradasPendentes[0] : null;
+
+  // Próximas paradas após a parada atual
+  // Se for preview, exibimos todas as paradas em sequência
+  const proximasParadas = isPreview 
+    ? paradas 
+    : paradasPendentes.length > 1 
+      ? paradasPendentes.slice(1) 
+      : [];
 
   const handleStep = async (
-    passageiroId: string,
+    paradaId: string,
     status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE,
     onSuccessCallback?: () => void
   ) => {
-    if (!execucaoId || stepMutation.isPending) return;
+    if (!execucaoId || stepMutation.isPending || isPreview) return;
 
-    stepMutation.mutate(
+    await stepMutation.mutateAsync(
       {
         execucaoId,
-        passageiroId,
+        paradaId,
         status
       },
       {
@@ -30,81 +104,43 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     );
   };
 
-  const handleCancel = async (onSuccessCallback?: () => void) => {
-    if (!execucaoId) return;
+  const handleReordenar = async (novaOrdem: Array<{ id: string; ordem: number }>, onSuccessCallback?: () => void) => {
+    if (!execucaoId || reorderMutation.isPending || isPreview) return;
 
-    cancelMutation.mutate(execucaoId, {
+    await reorderMutation.mutateAsync(
+      {
+        execucaoId,
+        paradas: novaOrdem
+      },
+      {
+        onSuccess: () => {
+          if (onSuccessCallback) onSuccessCallback();
+        }
+      }
+    );
+  };
+
+  const handleCancel = async (onSuccessCallback?: () => void) => {
+    if (!execucaoId || isPreview) return;
+
+    await cancelMutation.mutateAsync(execucaoId, {
       onSuccess: () => {
-        toast.success("Corrida cancelada com sucesso!");
         if (onSuccessCallback) onSuccessCallback();
       }
     });
   };
 
-  const abrirNoWaze = (latitude?: number, longitude?: number, logradouro?: string, numero?: string) => {
-    let url = "";
-
-    if (latitude && longitude) {
-      // Usar coordenadas exatas para precisão cirúrgica de GPS
-      url = `waze://?ll=${latitude},${longitude}&navigate=yes`;
-    } else if (logradouro) {
-      // Fallback para endereço textual estruturado
-      const query = `${logradouro}, ${numero || ""}`;
-      url = `waze://?q=${encodeURIComponent(query)}&navigate=yes`;
-    } else {
-      toast.error("Endereço deste passageiro não cadastrado.");
-      return;
-    }
-
-    // Tentar abrir o aplicativo nativo
-    window.open(url, "_system");
-
-    // Fallback para web caso o aplicativo Waze não esteja instalado
-    setTimeout(() => {
-      if (latitude && longitude) {
-        window.open(`https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`, "_blank");
-      }
-    }, 1500);
-  };
-
-  const abrirNoMaps = (latitude?: number, longitude?: number, logradouro?: string, numero?: string) => {
-    let url = "";
-
-    if (latitude && longitude) {
-      // O link HTTPS do Google Maps é a melhor prática recomendada de deep linking
-      // Ele abre o app nativo do Google Maps tanto em Android quanto iOS de forma automática e transparente
-      url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-    } else if (logradouro) {
-      const query = `${logradouro}, ${numero || ""}`;
-      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-    } else {
-      toast.error("Endereço deste passageiro não cadastrado.");
-      return;
-    }
-
-    window.open(url, "_system");
-  };
-
-  const paradaAtual = execucao?.paradas?.find((p) => p.status === RouteStopStatus.A_CAMINHO);
-
-  const paradasPendentes = execucao?.paradas?.filter(
-    (p) => p.status === RouteStopStatus.PENDENTE
-  ) || [];
-
-  const paradasConcluidas = execucao?.paradas?.filter(
-    (p) => p.status === RouteStopStatus.EMBARCADO || p.status === RouteStopStatus.AUSENTE
-  ) || [];
-
   return {
     execucao,
     paradaAtual,
-    paradasPendentes,
+    proximasParadas,
     paradasConcluidas,
-    isLoading: isLoading || stepMutation.isPending || cancelMutation.isPending,
-    isError,
+    isLoading: execQuery.isLoading || (execQuery.isError && routeQuery.isLoading) || stepMutation.isPending || cancelMutation.isPending || reorderMutation.isPending || iniciarMutation.isPending,
+    isError: execQuery.isError && routeQuery.isError,
     handleStep,
+    handleReordenar,
     handleCancel,
-    abrirNoWaze,
-    abrirNoMaps
+    isPreview,
+    iniciarMutation
   };
 }

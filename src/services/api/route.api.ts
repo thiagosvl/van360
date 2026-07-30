@@ -46,14 +46,22 @@ export const routeApi = {
 
   atualizarParadaStatus: (
     execucaoId: string,
-    passageiroId: string,
+    paradaId: string,
     status: "embarcado" | "ausente"
   ): Promise<RouteExecution> =>
     apiClient
       .post(`${endpointBase}/execucoes/${execucaoId}/parada`, {
-        passageiro_id: passageiroId,
+        parada_id: paradaId,
         status
       })
+      .then(res => res.data),
+
+  reordenarExecucao: (
+    execucaoId: string,
+    paradas: Array<{ id: string; ordem: number }>
+  ): Promise<RouteExecution> =>
+    apiClient
+      .post(`${endpointBase}/execucoes/${execucaoId}/reordenar`, { paradas })
       .then(res => res.data),
 
   cancelarExecucao: (id: string): Promise<RouteExecution> =>

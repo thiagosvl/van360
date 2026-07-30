@@ -18,9 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
 import { cn } from "@/lib/utils";
+import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
 import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
@@ -36,7 +38,7 @@ export interface ManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded: (updatedCobranca?: any) => void;
+  onPaymentRecorded: (updatedCobranca?: any, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
 export default function ManualPaymentDialog({
@@ -205,6 +207,27 @@ export default function ManualPaymentDialog({
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="enviar_recibo_whatsapp"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0 transition-all hover:bg-slate-100/50">
+                  <Checkbox
+                    id="enviar_recibo_whatsapp"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <FormLabel
+                    htmlFor="enviar_recibo_whatsapp"
+                    className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                  >
+                    Enviar recibo por WhatsApp para o responsável
+                  </FormLabel>
                 </FormItem>
               )}
             />

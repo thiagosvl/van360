@@ -3,19 +3,26 @@ import { cobrancaApi } from "@/services/api/cobranca.api";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CobrancaStatus } from "@/types/enums";
 
 export function useCreateCobranca() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: CreateCobrancaDTO) => cobrancaApi.createCobranca(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
-      toast.success("cobranca.sucesso.criada");
+      toast.success(
+        variables.status === CobrancaStatus.PAGO
+          ? (variables.enviar_recibo_whatsapp !== false
+            ? "cobranca.sucesso.pagamentoEReciboEnviado"
+            : "cobranca.sucesso.pagamentoRegistrado")
+          : "cobranca.sucesso.criada"
+      );
     },
     onError: (error: any) => {
       const isDuplicate =
@@ -112,13 +119,17 @@ export function useRegistrarPagamentoManual() {
   return useMutation({
     mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: RegistrarPagamentoManualDTO }) =>
       cobrancaApi.registrarPagamentoManual(cobrancaId, data),
-    onSuccess: (updatedCobranca, { cobrancaId }) => {
+    onSuccess: (updatedCobranca, { cobrancaId, data }) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      toast.success("cobranca.sucesso.pagamentoRegistrado");
+      toast.success(
+        data?.enviar_recibo_whatsapp !== false
+          ? "cobranca.sucesso.pagamentoEReciboEnviado"
+          : "cobranca.sucesso.pagamentoRegistrado"
+      );
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.registrarPagamento", {
