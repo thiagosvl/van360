@@ -314,7 +314,6 @@ export const messages = {
       progresso: "{{PERCENTUAL}}% concluído",
     },
     sucesso: {
-      linkCopiado: "Link copiado!",
       processando: "Processando...",
     },
     info: {

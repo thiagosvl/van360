@@ -19,7 +19,6 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
     if (referralLink) {
       navigator.clipboard.writeText(referralLink);
       setIsCopied(true);
-      toast.success("Link copiado!");
       setTimeout(() => setIsCopied(false), 2000);
     }
   };
@@ -34,7 +33,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
           onClick={handleCopyReferral}
           className={cn(
             "flex-1 transition-all rounded-xl h-10 px-1 text-[10px] lg:text-[11px] whitespace-nowrap font-bold border",
-            darkTheme 
+            darkTheme
               ? "bg-white text-[#0b1a2e] hover:bg-slate-100 border-white/20"
               : "border-[#1a3a5c]/10 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 hover:text-[#1a3a5c]",
             isCopied ? "bg-emerald-50 text-emerald-700 border-emerald-200" : ""
