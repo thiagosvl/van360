@@ -370,6 +370,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
+    /* 
     actions.push({
       label: "Excluir",
       icon: <Trash2 className="h-4 w-4" />,
@@ -380,6 +381,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       className: "text-red-600 font-bold",
       isLoading: isDeleting,
     });
+    */
 
     return actions;
   }, [

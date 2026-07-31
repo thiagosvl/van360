@@ -14,6 +14,7 @@ export interface CreateCobrancaDTO {
   valor_pago?: number;
   pagamento_manual?: boolean;
   enviar_recibo_whatsapp?: boolean;
+  desativar_lembretes?: boolean;
 }
 
 export interface UpdateCobrancaDTO {

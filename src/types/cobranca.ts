@@ -3,6 +3,7 @@ import { Passageiro } from "./passageiro";
 
 export interface Cobranca {
   id: string;
+  usuario_id?: string;
   passageiro_id: string;
   mes: number;
   ano: number;
