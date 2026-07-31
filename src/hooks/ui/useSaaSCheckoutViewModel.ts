@@ -216,7 +216,10 @@ export function useSaaSCheckoutViewModel({
         const usingSavedCard = selectedSavedCardId && selectedSavedCardId !== "new";
 
         if (usingSavedCard) {
-          cardInfo = { savedCardId: selectedSavedCardId as string };
+          cardInfo = {
+            savedCardId: selectedSavedCardId as string,
+            installments: cardData?.installments || 1
+          };
         } else {
           if (!cardData) throw new Error("Dados do cartão não informados.");
           if (!isProviderReady) throw new Error("Sistema de pagamento não inicializado. Aguarde e tente novamente.");
@@ -250,6 +253,7 @@ export function useSaaSCheckoutViewModel({
             expireMonth: expiryMonth?.trim(),
             expireYear: expiryYear?.trim(),
             saveCard: true,
+            installments: cardData.installments || 1,
             birth: birthForApi,
             street: cardData.street,
             number: cardData.number_address,

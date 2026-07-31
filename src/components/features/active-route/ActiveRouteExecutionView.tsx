@@ -41,6 +41,7 @@ interface ActiveRouteExecutionViewProps {
   paradasConcluidas: any[];
   isLoading: boolean;
   handleStep: (paradaId: string, status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE, callback?: () => void) => Promise<void>;
+  handleFinalizarRota?: (callback?: () => void) => Promise<void>;
   handleCancel: (callback?: () => void) => Promise<void>;
   handleReordenar: (novaOrdem: Array<{ id: string; ordem: number }>, callback?: () => void) => Promise<void>;
   concludedStops: number;
@@ -48,6 +49,7 @@ interface ActiveRouteExecutionViewProps {
   progressPercentage: number;
   isPreview?: boolean;
   iniciarMutation?: any;
+  onShowSuccess?: () => void;
 }
 
 export function ActiveRouteExecutionView({
@@ -57,13 +59,15 @@ export function ActiveRouteExecutionView({
   paradasConcluidas,
   isLoading,
   handleStep,
+  handleFinalizarRota,
   handleCancel,
   handleReordenar,
   concludedStops,
   totalStops,
   progressPercentage,
   isPreview = false,
-  iniciarMutation
+  iniciarMutation,
+  onShowSuccess
 }: ActiveRouteExecutionViewProps) {
   const navigate = useNavigate();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
@@ -75,14 +79,7 @@ export function ActiveRouteExecutionView({
     if (paradaAtual?.id && activeCardRef.current && !isPreview) {
       const timer = setTimeout(() => {
         if (activeCardRef.current) {
-          const rect = activeCardRef.current.getBoundingClientRect();
-          const absoluteTop = window.pageYOffset + rect.top;
-          const targetScroll = absoluteTop - (window.innerHeight * 0.25);
-
-          window.scrollTo({
-            top: Math.max(0, targetScroll),
-            behavior: "smooth"
-          });
+          activeCardRef.current.scrollIntoView({ behavior: "smooth" });
         }
       }, 150);
 
@@ -204,6 +201,7 @@ export function ActiveRouteExecutionView({
   };
 
   const handleConfirmFalta = (paradaId: string, nome: string) => {
+    const isLastStop = proximasParadas.length === 0;
     openConfirmationDialog({
       title: "Confirmar Falta Hoje?",
       description: `Tem certeza que deseja marcar ${formatFirstName(nome)} como ausente hoje nesta corrida?`,
@@ -211,8 +209,13 @@ export function ActiveRouteExecutionView({
       cancelText: "Cancelar",
       variant: "destructive",
       onConfirm: async () => {
-        await handleStep(paradaId, RouteStopStatus.AUSENTE, () => {
+        await handleStep(paradaId, RouteStopStatus.AUSENTE, async () => {
           setSelectedRespTab(TAB_DEFAULT);
+          if (isLastStop && handleFinalizarRota) {
+            await handleFinalizarRota(() => {
+              onShowSuccess?.();
+            });
+          }
         });
         safeCloseDialog(closeConfirmationDialog);
       }
@@ -220,13 +223,13 @@ export function ActiveRouteExecutionView({
   };
 
   const handleConfirmAction = async (paradaId: string) => {
-    const isLastStop = (proximasParadas.length === 0);
-    const shouldRedirect = isLastStop;
-    await handleStep(paradaId, RouteStopStatus.EMBARCADO, () => {
+    const isLastStop = proximasParadas.length === 0;
+    await handleStep(paradaId, RouteStopStatus.EMBARCADO, async () => {
       setSelectedRespTab(TAB_DEFAULT);
-      if (shouldRedirect) {
-        toast.success("Rota concluída com sucesso!");
-        navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+      if (isLastStop && handleFinalizarRota) {
+        await handleFinalizarRota(() => {
+          onShowSuccess?.();
+        });
       }
     });
   };
@@ -742,11 +745,6 @@ export function ActiveRouteExecutionView({
                       >
                         {isLoading ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : isLastNode ? (
-                          <>
-                            <Flag className="w-4 h-4" />
-                            <span>Finalizar Rota</span>
-                          </>
                         ) : (
                           <span>Concluir Parada</span>
                         )}
@@ -794,12 +792,10 @@ export function ActiveRouteExecutionView({
                         >
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : isLastNode ? (
-                            <CheckCircle2 className="w-4 h-4" />
                           ) : (
                             <Check className="w-4 h-4" />
                           )}
-                          {isLastNode ? "Finalizar Rota" : actionLabel}
+                          {actionLabel}
                         </Button>
 
                         {sentidoPassageiroAtivo !== RouteSentido.VOLTANDO && paradaAtual.status !== RouteStopStatus.EMBARCADO && (

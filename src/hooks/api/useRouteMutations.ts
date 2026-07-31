@@ -142,3 +142,20 @@ export function useCancelarExecucao() {
     },
   });
 }
+
+export function useFinalizarExecucao() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => routeApi.finalizarExecucao(id),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["route-execution", data.id] });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao finalizar rota", {
+        description: getErrorMessage(error, "Por favor, tente novamente."),
+      });
+    },
+  });
+}

@@ -1,8 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { CreditCard, MapPin, Info, Loader2, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
+import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
+import { InstallmentOption } from "@/types/payment";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface CreditCardData {
   number: string;
@@ -16,15 +19,23 @@ export interface CreditCardData {
   neighborhood: string;
   city: string;
   state: string;
+  installments?: number;
+  installmentOption?: InstallmentOption | null;
 }
 
 interface CreditCardFormProps {
   onChange: (data: CreditCardData | null) => void;
   initialBirthDate?: string;
   cardError?: string | null;
+  totalPrice?: number;
 }
 
-export default function CreditCardForm({ onChange, initialBirthDate, cardError }: CreditCardFormProps) {
+export default function CreditCardForm({ onChange, initialBirthDate, cardError, totalPrice }: CreditCardFormProps) {
+  const { getInstallments } = usePaymentProvider();
+  const [installmentsList, setInstallmentsList] = useState<InstallmentOption[]>([]);
+  const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
+  const [loadingInstallments, setLoadingInstallments] = useState(false);
+
   const formattedInitialBirth = (() => {
     if (!initialBirthDate) return "";
     const clean = initialBirthDate.trim();
@@ -49,7 +60,8 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError }
     number_address: "",
     neighborhood: "",
     city: "",
-    state: ""
+    state: "",
+    installments: 1
   });
 
   const [maskedNumber, setMaskedNumber] = useState("");
@@ -57,6 +69,49 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError }
   const [maskedBirth, setMaskedBirth] = useState(formattedInitialBirth);
   const [maskedZip, setMaskedZip] = useState("");
   const [loadingCep, setLoadingCep] = useState(false);
+  const fetchedKeyRef = useRef<string>("");
+
+  useEffect(() => {
+    const cleanNumber = formData.number.replace(/\D/g, "");
+    if (cleanNumber.length >= 13 && totalPrice && totalPrice > 0 && getInstallments) {
+      let brand = "mastercard";
+      if (/^4/.test(cleanNumber)) brand = "visa";
+      else if (/^5[1-5]/.test(cleanNumber)) brand = "mastercard";
+      else if (/^3[47]/.test(cleanNumber)) brand = "amex";
+      else if (/^6(?:011|5)/.test(cleanNumber)) brand = "elo";
+
+      const totalCents = Math.round(totalPrice * 100);
+      const cacheKey = `${brand}_${totalCents}_${cleanNumber.slice(0, 6)}`;
+
+      if (fetchedKeyRef.current === cacheKey) return;
+      fetchedKeyRef.current = cacheKey;
+
+      setLoadingInstallments(true);
+
+      getInstallments(brand, totalCents)
+        .then((options) => {
+          if (options && options.length > 0) {
+            setInstallmentsList(options);
+            setSelectedInstallment(options[0].installment);
+            setFormData(prev => ({ ...prev, installments: options[0].installment, installmentOption: options[0] }));
+          } else {
+            setInstallmentsList([]);
+            setFormData(prev => ({ ...prev, installments: 1, installmentOption: null }));
+          }
+        })
+        .catch(() => {
+          setInstallmentsList([]);
+          setFormData(prev => ({ ...prev, installments: 1, installmentOption: null }));
+        })
+        .finally(() => {
+          setLoadingInstallments(false);
+        });
+    } else {
+      fetchedKeyRef.current = "";
+      setInstallmentsList([]);
+      setFormData(prev => ({ ...prev, installments: 1, installmentOption: null }));
+    }
+  }, [formData.number, totalPrice, getInstallments]);
 
   const handleCepFetch = async (cleanCep: string) => {
     setLoadingCep(true);
@@ -163,22 +218,30 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError }
 
   const fillMagicData = (type: 'success' | 'error_invalid' | 'error_risk') => {
     const cardNumber = type === 'success'
-      ? '4485785674290087'  // último dígito 7 = aprovado (EfiPay docs)
+      ? '4485785674290087'
       : type === 'error_invalid'
-        ? '4111111111111111' // último dígito 1 = dados inválidos
-        : '4000000000000002'; // último dígito 2 = recusado por segurança
+        ? '4111111111111111'
+        : '4000000000000002';
 
-    handleChange("number", cardNumber);
-    handleChange("name", "JOAO DA SILVA TESTE");
-    handleChange("expiry", "12/28");
-    handleChange("cvv", "123");
-    handleChange("birth", "01/01/1990");
-    handleChange("zipcode", "01001-000");
-    handleChange("street", "Praça da Sé");
-    handleChange("number_address", "1");
-    handleChange("neighborhood", "Sé");
-    handleChange("city", "São Paulo");
-    handleChange("state", "SP");
+    setMaskedNumber(formatCardNumber(cardNumber));
+    setMaskedExpiry("12/28");
+    setMaskedBirth("01/01/1990");
+    setMaskedZip("01001-000");
+
+    setFormData({
+      number: cardNumber,
+      name: "JOAO DA SILVA TESTE",
+      expiry: "12/28",
+      cvv: "123",
+      birth: "01/01/1990",
+      zipcode: "01001-000",
+      street: "Praça da Sé",
+      number_address: "1",
+      neighborhood: "Sé",
+      city: "São Paulo",
+      state: "SP",
+      installments: 1
+    });
   };
 
   const inputStyles = "w-full px-4 py-3.5 bg-[#e0e3e5] border-none rounded-lg font-inter text-[#191c1e] focus:ring-2 focus:ring-[#002444]/40 transition-all placeholder:text-[#73777f]/60 text-sm";
@@ -275,6 +338,32 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError }
               />
             </div>
           </div>
+
+          {installmentsList.length > 0 && (
+            <div className="space-y-1 animate-in fade-in duration-300">
+              <label className={labelStyles}>Opções de Parcelamento</label>
+              <Select
+                value={String(selectedInstallment)}
+                onValueChange={(valStr) => {
+                  const val = Number(valStr);
+                  const opt = installmentsList.find(o => o.installment === val) || null;
+                  setSelectedInstallment(val);
+                  setFormData(prev => ({ ...prev, installments: val, installmentOption: opt }));
+                }}
+              >
+                <SelectTrigger className={cn(inputStyles, "h-12 w-full focus:ring-2 focus:ring-[#002444]/40 text-sm text-left")}>
+                  <SelectValue placeholder="Selecione as parcelas" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60 overflow-y-auto">
+                  {installmentsList.map((opt) => (
+                    <SelectItem key={opt.installment} value={String(opt.installment)}>
+                      {opt.installment}x de R$ {opt.currency} {opt.has_interest ? '(com juros)' : '(sem juros)'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
 

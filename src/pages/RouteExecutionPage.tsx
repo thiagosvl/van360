@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useActiveRouteViewModel } from "@/hooks/ui/useActiveRouteViewModel";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -8,11 +8,14 @@ import { AlertOctagon } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ActiveRouteExecutionView } from "@/components/features/active-route/ActiveRouteExecutionView";
+import { RouteSuccessOverlay } from "@/components/features/active-route/RouteSuccessOverlay";
+import { RouteExecutionStatus } from "@/types/route";
 
 export default function RouteExecutionPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
   const {
     execucao,
@@ -22,6 +25,7 @@ export default function RouteExecutionPage() {
     isLoading,
     isError,
     handleStep,
+    handleFinalizarRota,
     handleCancel,
     handleReordenar,
     isPreview,
@@ -33,6 +37,12 @@ export default function RouteExecutionPage() {
   useEffect(() => {
     setPageTitle(isPreview ? "Prévia da Rota" : "Execução de Rota");
   }, [setPageTitle, isPreview]);
+
+  useEffect(() => {
+    if (execucao?.status === RouteExecutionStatus.CONCLUIDA && !isPreview && !showSuccessOverlay) {
+      setShowSuccessOverlay(true);
+    }
+  }, [execucao?.status, isPreview, showSuccessOverlay]);
 
   if (isError) {
     return (
@@ -58,7 +68,7 @@ export default function RouteExecutionPage() {
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
       <div className="space-y-4 text-left pb-16">
-        {isLoading || !execucao ? (
+        {isLoading && !showSuccessOverlay || !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (
           <ActiveRouteExecutionView
@@ -68,6 +78,7 @@ export default function RouteExecutionPage() {
             paradasConcluidas={paradasConcluidas}
             isLoading={isLoading}
             handleStep={handleStep}
+            handleFinalizarRota={handleFinalizarRota}
             handleCancel={handleCancel}
             handleReordenar={handleReordenar}
             concludedStops={concludedStops}
@@ -75,9 +86,16 @@ export default function RouteExecutionPage() {
             progressPercentage={progressPercentage}
             isPreview={isPreview}
             iniciarMutation={iniciarMutation}
+            onShowSuccess={() => setShowSuccessOverlay(true)}
           />
         )}
       </div>
+
+      {showSuccessOverlay && (
+        <RouteSuccessOverlay
+          onNavigate={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
+        />
+      )}
     </PullToRefreshWrapper>
   );
 }

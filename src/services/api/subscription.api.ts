@@ -16,6 +16,7 @@ export const subscriptionApi = {
   createCheckout: (data: {
     planId: string;
     paymentMethod: "pix" | "credit_card";
+    installments?: number;
     paymentToken?: string;
     savedCardId?: string;
     saveCard?: boolean;

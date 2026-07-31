@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
-import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReordenarExecucao } from "../api/useRouteMutations";
+import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReordenarExecucao, useFinalizarExecucao } from "../api/useRouteMutations";
 import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger } from "@/types/route";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
@@ -31,6 +31,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
   const stepMutation = useAtualizarParadaStatus();
   const reorderMutation = useReordenarExecucao();
   const cancelMutation = useCancelarExecucao();
+  const finalizarMutation = useFinalizarExecucao();
   const iniciarMutation = useIniciarRota();
 
   const isPreview = isExplicitPreview || (!!execQuery.isError && !!routeQuery.data);
@@ -99,6 +100,16 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     );
   };
 
+  const handleFinalizarRota = async (onSuccessCallback?: () => void) => {
+    if (!execucaoId || finalizarMutation.isPending || isPreview) return;
+
+    await finalizarMutation.mutateAsync(execucaoId, {
+      onSuccess: () => {
+        if (onSuccessCallback) onSuccessCallback();
+      }
+    });
+  };
+
   const handleReordenar = async (novaOrdem: Array<{ id: string; ordem: number }>, onSuccessCallback?: () => void) => {
     if (!execucaoId || reorderMutation.isPending || isPreview) return;
 
@@ -134,9 +145,10 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     paradaAtual,
     proximasParadas,
     paradasConcluidas,
-    isLoading: isDataLoading || stepMutation.isPending || cancelMutation.isPending || reorderMutation.isPending || iniciarMutation.isPending,
+    isLoading: isDataLoading || stepMutation.isPending || cancelMutation.isPending || reorderMutation.isPending || iniciarMutation.isPending || finalizarMutation.isPending,
     isError: isExplicitPreview ? routeQuery.isError : (execQuery.isError && routeQuery.isError),
     handleStep,
+    handleFinalizarRota,
     handleReordenar,
     handleCancel,
     isPreview,

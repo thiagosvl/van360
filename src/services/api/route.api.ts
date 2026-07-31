@@ -1,4 +1,4 @@
-import { Route, RouteExecution } from "@/types/route";
+import { Route, RouteExecution, RouteStopStatus } from "@/types/route";
 import { apiClient } from "./client";
 
 const endpointBase = "/routes";
@@ -47,7 +47,7 @@ export const routeApi = {
   atualizarParadaStatus: (
     execucaoId: string,
     paradaId: string,
-    status: "embarcado" | "ausente"
+    status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE
   ): Promise<RouteExecution> =>
     apiClient
       .post(`${endpointBase}/execucoes/${execucaoId}/parada`, {
@@ -67,5 +67,10 @@ export const routeApi = {
   cancelarExecucao: (id: string): Promise<RouteExecution> =>
     apiClient
       .post(`${endpointBase}/execucoes/${id}/cancelar`)
+      .then(res => res.data),
+
+  finalizarExecucao: (id: string): Promise<RouteExecution> =>
+    apiClient
+      .post(`${endpointBase}/execucoes/${id}/finalizar`)
       .then(res => res.data),
 };

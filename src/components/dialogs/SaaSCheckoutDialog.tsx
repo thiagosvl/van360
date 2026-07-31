@@ -11,8 +11,11 @@ import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
+import { InstallmentOption } from "@/types/payment";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Smartphone, CreditCard as CreditCardIcon, ShieldCheck,
+  Smartphone, CreditCard as CreditCardIcon, ShieldCheck, Tag, Loader2,
   ChevronLeft, ArrowRight, Check, Calendar, RefreshCw, Copy, Star, AlertCircle, Plus
 } from "lucide-react";
 
@@ -65,6 +68,52 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   const [addressData, setAddressData] = useState<Partial<CreditCardData> | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  const { getInstallments } = usePaymentProvider();
+  const [savedCardInstallments, setSavedCardInstallments] = useState<InstallmentOption[]>([]);
+  const [selectedSavedCardInstallment, setSelectedSavedCardInstallment] = useState<number>(1);
+  const [loadingSavedCardInstallments, setLoadingSavedCardInstallments] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (
+      isOpen &&
+      paymentMethod === CheckoutPaymentMethod.CREDIT_CARD &&
+      selectedSavedCardId &&
+      selectedSavedCardId !== "new" &&
+      totalPrice > 0 &&
+      getInstallments
+    ) {
+      const card = savedCards.find((c) => c.id === selectedSavedCardId);
+      if (card) {
+        setLoadingSavedCardInstallments(true);
+        const totalCents = Math.round(totalPrice * 100);
+        getInstallments(card.brand?.toLowerCase() || "mastercard", totalCents)
+          .then((options) => {
+            if (options && options.length > 0) {
+              setSavedCardInstallments(options);
+              setSelectedSavedCardInstallment(options[0].installment);
+              setCardData((prev) => ({
+                ...(prev as CreditCardData),
+                installments: options[0].installment,
+                installmentOption: options[0],
+              }));
+            } else {
+              setSavedCardInstallments([]);
+              setSelectedSavedCardInstallment(1);
+            }
+          })
+          .catch(() => {
+            setSavedCardInstallments([]);
+            setSelectedSavedCardInstallment(1);
+          })
+          .finally(() => {
+            setLoadingSavedCardInstallments(false);
+          });
+      }
+    } else if (selectedSavedCardId === "new") {
+      setSavedCardInstallments([]);
+    }
+  }, [isOpen, selectedSavedCardId, paymentMethod, totalPrice, getInstallments]);
 
   useEffect(() => {
     if (!isOpen || step !== 4) {
@@ -198,7 +247,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {hasActiveDiscount && (
               <div className="flex items-center gap-2.5 p-3 bg-[#d1fae5] border border-[#a7f3d0] rounded-xl mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
-                <ShieldCheck className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
+                <Tag className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
                 <p className="text-[11px] font-bold text-[#065f46]">
                   Desconto de {discountPct}% de indicação ativo! Aproveite seu benefício.
                 </p>
@@ -428,6 +477,44 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   </div>
                 )}
 
+                {selectedSavedCardId && selectedSavedCardId !== "new" && (
+                  <div className="space-y-1.5 pt-3 mt-1 border-t border-slate-200/60 animate-in fade-in duration-300">
+                    <label className="block text-[11px] font-bold text-[#545f73] uppercase tracking-wider flex items-center justify-between">
+                      <span>Opções de Parcelamento</span>
+                      {loadingSavedCardInstallments && (
+                        <span className="text-[10px] text-slate-400 font-normal flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin text-[#002444]" /> Carregando...
+                        </span>
+                      )}
+                    </label>
+                    <Select
+                      disabled={loadingSavedCardInstallments}
+                      value={String(selectedSavedCardInstallment)}
+                      onValueChange={(valStr) => {
+                        const val = Number(valStr);
+                        const opt = savedCardInstallments.find((o) => o.installment === val) || null;
+                        setSelectedSavedCardInstallment(val);
+                        setCardData((prev) => ({
+                          ...(prev as CreditCardData),
+                          installments: val,
+                          installmentOption: opt,
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="h-12 w-full bg-[#e0e3e5] border-none rounded-lg font-inter text-[#191c1e] focus:ring-2 focus:ring-[#002444]/40 text-xs sm:text-sm text-left">
+                        <SelectValue placeholder={loadingSavedCardInstallments ? "Buscando opções..." : "Selecione as parcelas"} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {savedCardInstallments.map((opt) => (
+                          <SelectItem key={opt.installment} value={String(opt.installment)}>
+                            {opt.installment}x de R$ {opt.currency} {opt.has_interest ? "(com juros)" : "(sem juros)"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {/* Formulário de novo cartão (Endereço Primeiro) */}
                 {(savedCards.length === 0 || selectedSavedCardId === "new") && (
                   <BillingAddressForm
@@ -443,57 +530,24 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                     }}
                   />
                 )}
-
-                {!hasNewCardFlow && cardError && (
-                  <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl">
-                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
-                  </div>
-                )}
-
-                {!hasNewCardFlow && (
-                  <div className="p-4 bg-[#f2f4f6] rounded-xl">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
-                      <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
-                        Plano {isAnual ? "Anual" : "Mensal"}
-                      </span>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
-                      <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
-                    </div>
-                    {hasActiveDiscount && (
-                      <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        Desconto de indicação de {discountPct}% aplicado!
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
             )}
           </div>
         )}
 
-        {step === 3 && hasNewCardFlow && (
-          <div className="p-6 space-y-4">
-            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} cardError={cardError} />
+        {hasNewCardFlow && (
+          <div className={cn("p-6 space-y-4", step !== 3 && "hidden")}>
+            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} cardError={cardError} totalPrice={totalPrice} />
 
-            <div className="p-4 bg-[#f2f4f6] rounded-xl">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-semibold text-[#545f73] uppercase tracking-tight">Resumo da Compra</span>
-                <span className="text-[10px] bg-[#d5e0f8] text-[#586377] px-2 py-0.5 rounded-full font-bold uppercase">
-                  Plano {isAnual ? "Anual" : "Mensal"}
-                </span>
+            <div className="pt-2 border-t border-slate-100 space-y-1">
+              <div className="flex justify-between items-center text-xs text-[#545f73]">
+                <span>Plano selecionado</span>
+                <span className="font-semibold text-[#002444]">{isAnual ? "Anual" : "Mensal"}</span>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-black text-[#002444]">{formattedPrice}</span>
-                <span className="text-xs text-[#43474e]">/{isAnual ? "ano" : "mês"}</span>
-              </div>
+
               {hasActiveDiscount && (
-                <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                <p className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
+                  <Tag className="w-3.5 h-3.5" />
                   Desconto de indicação de {discountPct}% aplicado!
                 </p>
               )}
@@ -518,12 +572,13 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 <p className="text-xs text-[#43474e]">Aguarde um momento</p>
               </div>
             ) : isCardStep4 ? (
-              <div className="flex flex-col items-center justify-center py-12 space-y-5 text-center">
-                <div className="w-16 h-16 rounded-full bg-[#002444]/5 flex items-center justify-center">
-                  <RefreshCw className="w-8 h-8 text-[#002444] animate-spin" />
+              <div className="flex flex-col items-center justify-center py-12 space-y-4 text-center">
+                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                  <CreditCardIcon className="w-8 h-8 text-[#002444]" />
                 </div>
-                <div className="space-y-1.5">
-                  <p className="text-xs text-[#43474e] leading-relaxed max-w-[240px]">
+                <div className="space-y-1 max-w-sm">
+                  <h4 className="text-base font-bold text-[#002444]">Pagamento em Processamento</h4>
+                  <p className="text-xs text-[#43474e] leading-relaxed">
                     Seu pagamento foi enviado. Aguardando a confirmação da operadora do cartão para ativar a assinatura.
                   </p>
                 </div>
@@ -545,22 +600,27 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       </BaseDialog.Body>
 
       <BaseDialog.Footer className="flex-col gap-3 bg-[#f2f4f6]/50">
-        {/* Resumo de preço nos steps 1 e 2 */}
+        {/* Resumo de preço nos steps 1, 2 e 3 */}
         {selectedPlan && (
           <div className="flex items-center justify-between w-full px-1">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#43474e]" />
-              <span className="text-[10px] text-[#43474e]">Pagamento 100% seguro</span>
+            <div className="flex items-center gap-1.5 shrink-0 text-[#43474e]">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[10px]">Pagamento seguro</span>
             </div>
-            {step === 1 ? (
-              <div className="flex items-baseline gap-1">
-              </div>
-            ) : (
-              <div className="flex items-baseline gap-1">
-                <span className="text-base font-black text-[#002444]">{formattedPrice}</span>
-                <span className="text-[10px] text-[#43474e] ml-1">/{isAnual ? "ano" : "mês"}</span>
-              </div>
-            )}
+            <div className="flex items-center justify-end w-full sm:w-auto">
+              {cardData?.installmentOption ? (
+                <div className="flex items-baseline gap-1 whitespace-nowrap">
+                  <span className="text-sm sm:text-base font-black text-[#002444] whitespace-nowrap">
+                    {cardData.installmentOption.installment}x de R$ {cardData.installmentOption.currency}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-1 whitespace-nowrap">
+                  <span className="text-sm sm:text-base font-black text-[#002444] whitespace-nowrap">{formattedPrice}</span>
+                  <span className="text-[10px] sm:text-xs text-[#43474e] ml-0.5 sm:ml-1 whitespace-nowrap">/{isAnual ? "ano" : "mês"}</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -588,7 +648,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   if (hasNewCardFlow) {
                     jumpToStep(3);
                   } else {
-                    handleGenerateCheckout(null); // Will use selectedSavedCardId or Pix
+                    handleGenerateCheckout(cardData);
                   }
                 }}
                 isLoading={isGenerating}

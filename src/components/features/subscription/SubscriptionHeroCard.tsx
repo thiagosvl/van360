@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Lock, AlertOctagon, CheckCircle2, ShieldCheck } from "lucide-react";
+import { TrendingUp, Lock, AlertOctagon, CheckCircle2, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatLocalDate, parseLocalDate } from "@/utils/dateUtils";
 import { SubscriptionIdentifer } from "@/types/enums";
@@ -166,7 +166,7 @@ export function SubscriptionHeroCard({
               <div className="md:hidden pt-2">
                 <div className="p-3 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex items-center gap-3 text-left">
                   <div className="w-9 h-9 rounded-full bg-[#d1fae5] flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-5 h-5 text-[#047857]" />
+                    <Tag className="w-5 h-5 text-[#047857]" />
                   </div>
                   <span className="text-xs font-bold text-[#065f46]">
                     Desconto de {referral.discountPct}% por indicação ativo!
@@ -197,7 +197,7 @@ export function SubscriptionHeroCard({
             <div className="p-3.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex items-center justify-between gap-3 text-left w-full">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-[#d1fae5] flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-5 h-5 text-[#047857]" />
+                  <Tag className="w-5 h-5 text-[#047857]" />
                 </div>
                 <span className="text-xs sm:text-sm font-bold text-[#065f46]">
                   Desconto de {referral.discountPct}% por indicação ativo!

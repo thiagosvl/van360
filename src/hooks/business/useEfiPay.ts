@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import EfiPay from 'payment-token-efi';
+import { InstallmentOption } from '@/types/payment';
 
 interface EfiCardData {
   brand: string;
@@ -69,8 +70,35 @@ export const useEfiPay = () => {
     }
   }, [accountIdentifier, isProduction]);
 
+  const getInstallments = useCallback(async (brand: string, totalInCents: number): Promise<InstallmentOption[]> => {
+    if (!accountIdentifier) return [];
+
+    try {
+      EfiPay.CreditCard
+        .setAccount(accountIdentifier)
+        .setEnvironment(isProduction ? 'production' : 'sandbox');
+
+      const response = await EfiPay.CreditCard
+        .setBrand(brand.toLowerCase())
+        .setTotal(totalInCents)
+        .getInstallments();
+
+      if (response && typeof response === 'object') {
+        const resObj = response as { data?: { installments?: InstallmentOption[] }; installments?: InstallmentOption[] };
+        const installments = resObj.data?.installments || resObj.installments;
+        if (Array.isArray(installments)) {
+          return installments;
+        }
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }, [accountIdentifier, isProduction]);
+
   return {
     isReady,
-    generatePaymentToken
+    generatePaymentToken,
+    getInstallments
   };
 };

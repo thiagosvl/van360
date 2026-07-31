@@ -14,15 +14,11 @@ import {
   Copy,
   CopyCheck,
   Clock,
-  Lock,
-  TrendingUp,
   CheckCircle2,
   ChevronDown,
   CircleDot,
   Trash2,
   CreditCard,
-  AlertOctagon,
-  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -72,7 +68,9 @@ const SubscriptionPage = () => {
   } = useSubscriptionBilling(user?.id);
 
   const { referral } = useSubscriptionReferral(user?.id);
-
+  const {
+    setPageTitle,
+  } = useLayout();
 
 
   const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
@@ -123,6 +121,11 @@ const SubscriptionPage = () => {
       onSuccess: () => handleRefresh(),
     });
   };
+
+  // Sync Page Title
+  useEffect(() => {
+    setPageTitle("Minha Assinatura");
+  }, [setPageTitle]);
 
   useEffect(() => {
     if (searchParams.get("open_checkout") === "true" && plans && plans.length > 0) {
@@ -247,12 +250,18 @@ const SubscriptionPage = () => {
                               <InvoiceStatusBadge status={inv.status} />
                             </div>
                             <div className="text-[11px] sm:text-xs font-medium text-slate-500">
-                              <span>Vencimento:</span>{" "}
+                              <span>
+                                {inv.status === SubscriptionInvoiceStatus.PAID
+                                  ? "Válido até:"
+                                  : inv.status === SubscriptionInvoiceStatus.PENDING
+                                    ? "Vence em:"
+                                    : "Venceu em:"}
+                              </span>{" "}
                               {formatLocalDate(parseLocalDate(inv.data_vencimento))}
                               {inv.metodo_pagamento && (
                                 <>
                                   <span className="mx-1.5 text-slate-300">•</span>
-                                  <span className="capitalize tracking-wider">
+                                  <span className="capitalize">
                                     {PAYMENT_METHOD_LABELS[inv.metodo_pagamento as CheckoutPaymentMethod] || "Boleto"}
                                   </span>
                                 </>
@@ -260,10 +269,15 @@ const SubscriptionPage = () => {
                             </div>
                           </div>
 
-                          <div className="flex flex-col items-end gap-2 shrink-0">
-                            <div className="text-sm sm:text-base font-semibold text-primary">
-                              {formatCurrency(inv.valor)}
+                          <div className="flex flex-col items-end shrink-0 text-right">
+                            <div className="text-sm sm:text-base font-bold text-primary whitespace-nowrap">
+                              {formatCurrency(inv.valor_total || inv.valor)}
                             </div>
+                            {inv.parcelas && inv.parcelas > 1 && (
+                              <span className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
+                                {inv.parcelas}x de {formatCurrency(inv.valor_parcela || Math.round(((inv.valor_total || inv.valor) / inv.parcelas) * 100) / 100)}
+                              </span>
+                            )}
                           </div>
                         </div>
 

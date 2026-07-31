@@ -63,6 +63,9 @@ export interface SubscriptionInvoice {
   metodo_pagamento: CheckoutPaymentMethod;
   status: SubscriptionInvoiceStatus;
   valor: number;
+  parcelas?: number;
+  valor_parcela?: number;
+  valor_total?: number;
   data_vencimento: string;
   data_pagamento: string | null;
   gateway_txid: string | null;
