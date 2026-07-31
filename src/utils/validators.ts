@@ -70,22 +70,22 @@ export function isValidCEPFormat(cep: string | undefined | null): boolean {
  */
 export function isValidDateBr(dateString: string | undefined | null, allowFuture: boolean = false): boolean {
   if (!dateString) return false;
-  
+
   const regex = /^\d{2}\/\d{2}\/\d{4}$/;
   if (!regex.test(dateString)) return false;
 
   const [day, month, year] = dateString.split('/').map(Number);
-  
+
   if (month < 1 || month > 12) return false;
   if (day < 1 || day > 31) return false;
   if (year < 1900) return false;
 
   // Usa parseLocalDate com o formato ISO gerado dos componentes para validação segura
   const date = parseLocalDate(`${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`);
-  
+
   // Verifica se a data é válida (ex: 31/02 vira 03/03 no construtor Date, o que parseLocalDate evita ou detectamos aqui)
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
-      return false;
+    return false;
   }
 
   if (!allowFuture) {

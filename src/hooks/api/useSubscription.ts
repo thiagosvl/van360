@@ -178,27 +178,16 @@ export const useSubscriptionBilling = (userId?: string) => {
 };
 
 export const useSubscriptionReferral = (userId?: string) => {
-  const queryClient = useQueryClient();
-
   const query = useQuery<ReferralData>({
     queryKey: ["referral-link", userId],
     queryFn: () => subscriptionApi.getReferralLink(),
     enabled: !!userId,
   });
 
-  const claimReferral = useMutation({
-    mutationFn: (phone: string) => subscriptionApi.claimReferral(phone),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["referral-link"] });
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
-    },
-  });
-
   return {
     referral: query.data,
     isLoading: query.isLoading,
     refetch: query.refetch,
-    claimReferral,
   };
 };
 

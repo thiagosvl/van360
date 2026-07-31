@@ -14,6 +14,7 @@ export interface RegistrarPayloadDTO {
   data_nascimento?: string;
   razao_social?: string;
   indicador_id?: string;
+  indicador_telefone?: string;
   dispositivo_cadastro?: DispositivoCadastro;
   metadados_cadastro?: MetadadosCadastroData;
 }

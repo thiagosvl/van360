@@ -3,7 +3,7 @@ import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
 import { getNowBR } from "@/utils/dateUtils";
-import { Wand2, Loader2, Calendar, Eye, EyeOff, Lock, Mail, User, Phone } from "lucide-react";
+import { Wand2, Loader2, Calendar, Eye, EyeOff, Lock, Mail, User, Phone, Award, Sparkles, X, Gift } from "lucide-react";
 import { useState } from "react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -29,9 +29,11 @@ export default function Register() {
     handleFillMagic,
     duplicateError,
     clearDuplicateError,
+    hasRefParam,
   } = useRegisterController();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showReferralInput, setShowReferralInput] = useState(false);
   const [openTermos, setOpenTermos] = useState(false);
   const [openPolitica, setOpenPolitica] = useState(false);
   const navigate = useNavigate();
@@ -312,6 +314,69 @@ export default function Register() {
                         </FormItem>
                       )}
                     />
+
+                    {hasRefParam ? (
+                      <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 flex items-center gap-2.5 text-emerald-800 text-xs font-semibold animate-in fade-in duration-300">
+                        <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span><span className="font-extrabold">Indicação ativada!</span> Você garantirá desconto na primeira assinatura.</span>
+                      </div>
+                    ) : (
+                      <div className="pt-1">
+                        {!showReferralInput ? (
+                          <button
+                            type="button"
+                            onClick={() => setShowReferralInput(true)}
+                            className="text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] transition-colors flex items-center gap-2 px-1 py-1"
+                          >
+                            <Gift className="w-4 h-4 text-amber-500 shrink-0" />
+                            <span>Foi indicado por outro motorista?</span>
+                          </button>
+                        ) : (
+                          <FormField
+                            control={form.control}
+                            name="indicador_telefone"
+                            render={({ field, fieldState }) => (
+                              <FormItem className="animate-in fade-in zoom-in-95 duration-200">
+                                <FormControl>
+                                  <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50 text-amber-600 mr-3 shrink-0">
+                                      <Phone className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                      <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                        WhatsApp de quem indicou
+                                      </label>
+                                      <Input
+                                        {...field}
+                                        type="tel"
+                                        inputMode="numeric"
+                                        placeholder="(11) 99999-9999"
+                                        maxLength={15}
+                                        onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
+                                      />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        form.setValue("indicador_telefone", "", { shouldValidate: true });
+                                        form.clearErrors("indicador_telefone");
+                                        setShowReferralInput(false);
+                                      }}
+                                      className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl transition-colors shrink-0"
+                                      title="Remover"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage className="text-xs ml-1" />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </div>
+                    )}
 
                     <FormField
                       control={form.control}

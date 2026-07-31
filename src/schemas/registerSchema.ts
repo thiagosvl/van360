@@ -13,6 +13,11 @@ export const registerSchema = z.object({
   termos_aceitos: z.literal(true, {
     errorMap: () => ({ message: "Você deve aceitar os termos para continuar." }),
   }),
+  indicador_telefone: z.string().optional().refine((val) => {
+    if (!val || val.trim() === "") return true;
+    const cleaned = val.replace(/\D/g, "");
+    return cleaned.length === 11;
+  }, "Telefone inválido"),
   data_nascimento: z.string()
     .min(10, "Data inválida")
     .refine((val) => {
@@ -36,7 +41,7 @@ export const registerSchema = z.object({
       const idade = hoje.getFullYear() - data.getFullYear();
       const mesDiff = hoje.getMonth() - data.getMonth();
       const diaDiff = hoje.getDate() - data.getDate();
-      
+
       let idadeReal = idade;
       if (mesDiff < 0 || (mesDiff === 0 && diaDiff < 0)) {
         idadeReal--;

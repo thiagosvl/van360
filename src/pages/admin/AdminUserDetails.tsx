@@ -341,10 +341,10 @@ export default function AdminUserDetails() {
         status: s.status || "",
         data_vencimento: toDateInputValue(s.data_vencimento),
         trial_ends_at: toDateInputValue(s.trial_ends_at),
-        valor_base_mensal: s.valor_base_mensal !== null && s.valor_base_mensal !== undefined ? moneyMask((Number(s.valor_base_mensal) * 100).toString()) : "",
-        valor_base_anual: s.valor_base_anual !== null && s.valor_base_anual !== undefined ? moneyMask((Number(s.valor_base_anual) * 100).toString()) : "",
-        valor_promocional_mensal: s.valor_promocional_mensal !== null && s.valor_promocional_mensal !== undefined ? moneyMask((Number(s.valor_promocional_mensal) * 100).toString()) : "",
-        valor_promocional_anual: s.valor_promocional_anual !== null && s.valor_promocional_anual !== undefined ? moneyMask((Number(s.valor_promocional_anual) * 100).toString()) : "",
+        valor_base_mensal: s.valor_base_mensal !== null && s.valor_base_mensal !== undefined ? moneyMask(Number(s.valor_base_mensal)) : "",
+        valor_base_anual: s.valor_base_anual !== null && s.valor_base_anual !== undefined ? moneyMask(Number(s.valor_base_anual)) : "",
+        valor_promocional_mensal: s.valor_promocional_mensal !== null && s.valor_promocional_mensal !== undefined ? moneyMask(Number(s.valor_promocional_mensal)) : "",
+        valor_promocional_anual: s.valor_promocional_anual !== null && s.valor_promocional_anual !== undefined ? moneyMask(Number(s.valor_promocional_anual)) : "",
         data_fim_promocao: toDateInputValue(s.data_fim_promocao),
       });
     }

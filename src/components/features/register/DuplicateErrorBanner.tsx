@@ -29,7 +29,7 @@ export function DuplicateErrorBanner({
         <button
           type="button"
           onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
-          className="inline-flex justify-center items-center text-[10px] font-black uppercase tracking-widest text-amber-800 bg-amber-200/60 hover:bg-amber-200 px-5 h-10 rounded-2xl transition-all active:scale-95 shadow-sm"
+          className="inline-flex justify-center items-center text-xs font-extrabold text-amber-800 bg-amber-200/60 hover:bg-amber-200 px-5 h-10 rounded-2xl transition-all active:scale-95 shadow-sm"
         >
           Fazer Login
         </button>

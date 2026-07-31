@@ -1,40 +1,12 @@
-import { useState } from "react";
-import { Award, X, HelpCircle, Star, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Star } from "lucide-react";
 import { useSubscriptionReferral } from "@/hooks/api/useSubscription";
-import { phoneMask } from "@/utils/masks";
-import { toast } from "sonner";
 import { useSession } from "@/hooks/business/useSession";
 import { ReferralShareBlock } from "./ReferralShareBlock";
 import { ReferralHowItWorksDrawer } from "./ReferralHowItWorksDrawer";
 
-interface ReferAndEarnCardProps {
-  isTrial: boolean;
-}
-
-export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
+export function ReferAndEarnCard() {
   const { user } = useSession();
-  const { referral, claimReferral } = useSubscriptionReferral(user?.id);
-
-  const [isClaimOpen, setIsClaimOpen] = useState(false);
-  const [claimPhone, setClaimPhone] = useState("");
-
-  const handleClaimReferral = async () => {
-    const cleanedPhone = claimPhone.replace(/\D/g, "");
-    if (cleanedPhone.length < 10) {
-      toast.error("Informe um número de WhatsApp válido (com DDD).");
-      return;
-    }
-    try {
-      await claimReferral.mutateAsync(cleanedPhone);
-      toast.success("Indicação vinculada com sucesso!");
-      setClaimPhone("");
-      setIsClaimOpen(false);
-    } catch {
-      toast.error("Motorista não encontrado com esse número.");
-    }
-  };
+  const { referral } = useSubscriptionReferral(user?.id);
 
   const bonusDaysPerReferral = referral?.bonusDays || 30;
   const completedReferrals = referral?.completed || 0;
@@ -52,9 +24,9 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
         </div>
 
         {/* Title & Subtitle */}
-        <h4 className="text-[22px] font-bold text-[#f59e0b] mb-2 tracking-tight">
+        <h3 className="text-[20px] font-black text-[#d97706] mb-1 tracking-tight font-headline">
           Ganhe {bonusDaysPerReferral} dias grátis
-        </h4>
+        </h3>
         <p className="text-[13px] text-slate-500 leading-snug px-4 mb-4">
           Convide outros motoristas. Eles ganham desconto e você ganha +1 mês gratis!
         </p>
@@ -66,58 +38,18 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
 
         {/* Stats Row */}
         <div className="flex w-full gap-3 mb-6">
-          <div className="flex-1 border border-slate-100 shadow-sm rounded-xl py-3 flex flex-col items-center justify-center bg-white">
+          <div className="flex-1 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center bg-slate-50/50">
             <span className="text-[11px] font-semibold text-slate-500 mb-0.5">Indicações</span>
-            <span className="text-[20px] font-bold text-[#1e3a8a]">{completedReferrals}</span>
+            <span className="text-xl font-bold text-[#1e3a8a]">{completedReferrals}</span>
           </div>
-          <div className="flex-1 border border-slate-100 shadow-sm rounded-xl py-3 flex flex-col items-center justify-center bg-white">
+          <div className="flex-1 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center bg-slate-50/50">
             <span className="text-[11px] font-semibold text-slate-500 mb-0.5">Dias Ganhos</span>
-            <span className="text-[20px] font-bold text-[#1e3a8a]">{totalBonusDays}</span>
+            <span className="text-xl font-bold text-[#d97706]">{totalBonusDays}</span>
           </div>
         </div>
 
         {/* Share Block */}
         <ReferralShareBlock referralLink={referral?.referralLink} variant="default" />
-
-        {/* Claim Invite logic for trial users */}
-        {isTrial && !referral?.hasIndicator && (
-          <div className="w-full mt-6 pt-5 border-t border-slate-100">
-            {!isClaimOpen ? (
-              <button
-                onClick={() => setIsClaimOpen(true)}
-                className="text-[13px] font-bold text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1.5 w-full"
-              >
-                <Award className="w-4 h-4" />
-                Fui Convidado
-              </button>
-            ) : (
-              <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
-                <Input
-                  value={claimPhone}
-                  onChange={(e) => setClaimPhone(phoneMask(e.target.value))}
-                  placeholder="WhatsApp de quem indicou"
-                  className="bg-slate-50 border-slate-100 text-slate-700 placeholder:text-slate-400 h-11 rounded-xl text-xs px-4 focus:ring-primary/20 shadow-sm"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    className="flex-1 h-11 bg-primary text-white font-bold text-[13px] rounded-xl hover:bg-primary/90 shadow-md shadow-primary/20"
-                    onClick={handleClaimReferral}
-                    disabled={claimReferral.isPending}
-                  >
-                    {claimReferral.isPending ? "Processando..." : "Utilizar o Bônus"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-11 h-11 text-slate-400 hover:bg-slate-100 hover:text-rose-500 p-0 rounded-xl transition-colors shrink-0"
-                    onClick={() => setIsClaimOpen(false)}
-                  >
-                    <X className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -21,6 +21,7 @@ import {
   Rocket,
   IdCard,
   Route,
+  User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -132,14 +133,17 @@ export function AppNavbar({ role }: { role: "motorista" }) {
         <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="group flex items-center justify-center outline-none p-0.5 transition-all cursor-pointer">
-                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-slate-100 border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xs sm:text-sm shadow-xs group-hover:bg-slate-200/80 group-hover:border-slate-300 transition-all">
+              <button className="group flex flex-col items-center justify-center outline-none p-0.5 transition-all cursor-pointer">
+                <div className="h-[34px] w-[34px] md:h-[37px] md:w-[37px] rounded-full bg-slate-50 border border-slate-200 text-[#1a3a5c] flex items-center justify-center shadow-xs group-hover:bg-slate-200/80 group-hover:border-slate-300 transition-all">
                   {isLoadingProfile ? (
                     <Skeleton className="h-full w-full rounded-full" />
                   ) : (
-                    <span>{userInitials}</span>
+                    <User className="h-5 w-5 md:h-[21px] md:w-[21px] text-[#1a3a5c]" />
                   )}
                 </div>
+                <span className="text-[10px] md:text-[11.5px] font-medium text-slate-500 group-hover:text-slate-800 leading-none mt-0.5 md:mt-1">
+                  Conta
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-2 rounded-xl p-1 shadow-xl border-gray-100" align="end">

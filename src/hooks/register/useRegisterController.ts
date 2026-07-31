@@ -1,6 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
+import { RegistrarPayloadDTO } from "@/services/api/usuario.api";
 import { sessionManager } from "@/services/sessionManager";
 import { getDispositivoCadastro, isNativeApp } from "@/utils/detectPlatform";
 import { useAttribution, getStoredAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
@@ -23,10 +24,15 @@ export function useRegisterController() {
   // Injetar captura de UTMs e Referrer
   useAttribution();
 
+  const [hasRefParam, setHasRefParam] = useState<boolean>(() => {
+    return !!(searchParams.get("ref") || localStorage.getItem("van360_referral_code"));
+  });
+
   useEffect(() => {
     const refParam = searchParams.get("ref");
     if (refParam) {
       localStorage.setItem("van360_referral_code", refParam);
+      setHasRefParam(true);
     }
   }, [searchParams]);
 
@@ -42,6 +48,7 @@ export function useRegisterController() {
       senha: "",
       termos_aceitos: false as unknown as true,
       data_nascimento: "",
+      indicador_telefone: "",
     },
   });
 
@@ -67,17 +74,25 @@ export function useRegisterController() {
       const attribution = getStoredAttribution();
       const dispositivo_cadastro = getDispositivoCadastro();
 
-      const result = await usuarioApi.registrar({
-        ...data,
+      const payload: RegistrarPayloadDTO = {
+        nome: data.nome,
+        email: data.email,
+        senha: data.senha,
+        termos_aceitos: data.termos_aceitos,
+        data_nascimento: data.data_nascimento,
+        razao_social: data.razao_social,
         cpfcnpj: data.cpfcnpj?.replace(/\D/g, ""),
         telefone: data.telefone?.replace(/\D/g, ""),
         indicador_id: referralCode,
+        indicador_telefone: data.indicador_telefone ? data.indicador_telefone.replace(/\D/g, "") : undefined,
         dispositivo_cadastro,
         metadados_cadastro: attribution ? {
           referrer: attribution.referrer,
           utm: attribution.utm,
         } : undefined,
-      });
+      };
+
+      const result = await usuarioApi.registrar(payload);
       if (result?.error) throw new Error(result.error);
 
       localStorage.removeItem("van360_referral_code");
@@ -121,6 +136,12 @@ export function useRegisterController() {
       const respData = err.response?.data;
       const errorMsg = (respData?.error || err.message || "").toLowerCase();
 
+      // Erro de indicação
+      if (respData?.field === "indicador_telefone" || errorMsg.includes("motorista") || errorMsg.includes("whatsapp")) {
+        form.setError("indicador_telefone", { message: respData?.error || "Não encontramos esse motorista. Verifique se o WhatsApp está correto." });
+        return;
+      }
+
       // Detectar erro de duplicidade
       const isDuplicateEmail =
         respData?.field === "email" ||
@@ -133,28 +154,28 @@ export function useRegisterController() {
         (errorMsg.includes("telefone") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
 
       if (isDuplicateEmail) {
-        form.setError("email", { message: "Este email já está em uso." });
+        form.setError("email", { message: "E-mail já cadastrado." });
         setDuplicateError({
           field: "email",
-          message: "Este email já está cadastrado.",
+          message: "E-mail já cadastrado.",
         });
         return;
       }
 
       if (isDuplicateCpf) {
-        form.setError("cpfcnpj", { message: "Este CPF/CNPJ já está em uso." });
+        form.setError("cpfcnpj", { message: "CPF/CNPJ já cadastrado." });
         setDuplicateError({
           field: "cpfcnpj",
-          message: "Este CPF/CNPJ já está cadastrado.",
+          message: "CPF/CNPJ já cadastrado.",
         });
         return;
       }
 
       if (isDuplicatePhone) {
-        form.setError("telefone", { message: "Este telefone já está em uso." });
+        form.setError("telefone", { message: "Telefone já cadastrado." });
         setDuplicateError({
           field: "telefone",
-          message: "Este telefone já está cadastrado.",
+          message: "Telefone já cadastrado.",
         });
         return;
       }
@@ -182,6 +203,9 @@ export function useRegisterController() {
 
   const handleNextStep = async () => {
     const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "razao_social", "email", "telefone", "senha", "termos_aceitos", "data_nascimento"];
+    if (form.getValues("indicador_telefone")) {
+      fields.push("indicador_telefone");
+    }
     const ok = await form.trigger(fields as any);
     if (!ok) {
       toast.error("validacao.formularioComErros");
@@ -201,5 +225,6 @@ export function useRegisterController() {
     handleFillMagic,
     duplicateError,
     clearDuplicateError,
+    hasRefParam,
   };
 }

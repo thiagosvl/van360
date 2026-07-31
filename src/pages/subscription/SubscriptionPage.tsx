@@ -7,11 +7,9 @@ import {
 } from "@/hooks/api/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { phoneMask } from "@/utils/masks";
-import { openBrowserLink } from "@/utils/browser";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
+import { SubscriptionHeroCard } from "@/components/features/subscription/SubscriptionHeroCard";
 import {
   Copy,
   CopyCheck,
@@ -23,7 +21,8 @@ import {
   CircleDot,
   Trash2,
   CreditCard,
-  AlertOctagon
+  AlertOctagon,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -48,8 +47,6 @@ import { useLayout } from "@/hooks";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/business/useSession";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 
@@ -116,11 +113,12 @@ const SubscriptionPage = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleSubscribe = (plan?: SaaSPlan, forcedPeriod?: SubscriptionIdentifer) => {
+  const handleSubscribe = (plan?: SaaSPlan | string, forcedPeriod?: SubscriptionIdentifer) => {
     if (!plans) return;
+    const initialPlanId = typeof plan === "string" ? plan : plan?.id;
     openSaaSCheckoutDialog({
       plans,
-      initialPlanId: plan?.id,
+      initialPlanId,
       forcedPeriod,
       onSuccess: () => handleRefresh(),
     });
@@ -205,158 +203,17 @@ const SubscriptionPage = () => {
 
         {/* Subscription Status Hero */}
         <section className="px-1 mb-10">
-          {isCanceled ? (
-            <div className="bg-slate-100 border border-slate-200 rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all">
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-headline font-bold text-slate-500 uppercase tracking-[0.2em] text-[10px]">Assinatura Cancelada</span>
-                </div>
-                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-slate-700">Acesso Suspenso</h3>
-                <p className="text-slate-500 font-medium leading-relaxed max-w-2xl">
-                  Sua assinatura está cancelada. Você não receberá novas cobranças e o uso do aplicativo está bloqueado.
-                </p>
-              </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                <Button
-                  className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
-                  onClick={() => handleSubscribe()}
-                >
-                  Reativar Agora
-                </Button>
-              </div>
-            </div>
-          ) : isExpired ? (
-            <div className="bg-[#ba1a1a] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden transition-all text-white">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">
-                    {isTrialExpired ? "Período de Teste Expirado" : "Assinatura Expirada"}
-                  </span>
-                </div>
-                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">Acesso Suspenso</h3>
-                <p className="text-white/80 font-medium leading-relaxed">
-                  {isTrialExpired
-                    ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todas as funcionalidades."
-                    : "Sua assinatura expirou. Renove para continuar usando todas as funcionalidades."}
-                </p>
-                {referral?.hasActiveDiscount && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-white font-bold text-[11px] uppercase tracking-wide animate-pulse">
-                    🎁 Desconto de {referral.discountPct}% por indicação ativo! Aproveite.
-                  </div>
-                )}
-              </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                <Button
-                  className="bg-white text-[#ba1a1a] hover:bg-white/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
-                  onClick={() => handleSubscribe()}
-                >
-                  {isTrialExpired ? "Assinar Agora" : "Reativar Agora"}
-                </Button>
-              </div>
-            </div>
-          ) : isPastDue ? (
-            <div className="bg-[#ba1a1a] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl relative overflow-hidden transition-all text-white">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center gap-2">
-                  <AlertOctagon className="w-5 h-5 text-white" />
-                  <span className="font-headline font-bold text-white uppercase tracking-[0.2em] text-[10px]">Assinatura em Atraso</span>
-                </div>
-                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-white">
-                  Regularização Pendente
-                </h3>
-                <p className="text-white/80 font-medium leading-relaxed max-w-2xl">
-                  Sua assinatura do <span className="font-bold text-white">Plano {subscription?.planos?.nome}</span> venceu em <span className="font-bold text-white">{subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "breve"}</span>. Regularize o pagamento para evitar a suspensão do seu acesso.
-                </p>
-              </div>
-              <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                <Button
-                  className="bg-white text-[#ba1a1a] hover:bg-white/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-black text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest shadow-lg active:scale-95 transition-all w-full md:w-auto"
-                  onClick={() => handleSubscribe()}
-                >
-                  Regularizar Agora
-                </Button>
-              </div>
-            </div>
-          ) : isTrial ? (
-            <div 
-              className={cn(
-                "bg-white rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-slate-200/40 relative overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-0.5 group border border-slate-200/80",
-                trialDaysLeft !== null ? "cursor-pointer" : ""
-              )}
-              onClick={() => trialDaysLeft !== null && handleSubscribe()}
-            >
-              <div className="absolute right-0 top-0 w-64 h-64 bg-amber-400/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-              <div className="absolute left-0 bottom-0 w-64 h-64 bg-primary/5 rounded-full -ml-20 -mb-20 blur-3xl"></div>
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg">
-                    <TrendingUp className="w-4 h-4 text-amber-600" />
-                  </div>
-                  <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Sua Assinatura</span>
-                </div>
-                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
-                  {trialDaysLeft !== null ? "Período de Testes" : "Acesso Ilimitado"}
-                </h3>
-                <p className="text-slate-500 font-medium leading-relaxed">
-                  {trialDaysLeft !== null ? (
-                    <>Você tem <span className="text-amber-600 font-black">{trialDaysLeft} dias</span> de acesso gratuito restante.</>
-                  ) : (
-                    <>Você tem <span className="text-amber-600 font-black">acesso gratuito</span> ilimitado.</>
-                  )}
-                </p>
-                {referral?.hasActiveDiscount && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 px-3.5 py-1.5 rounded-xl border border-emerald-200/60 text-emerald-700 font-bold text-[11px] uppercase tracking-wide animate-pulse shadow-sm">
-                    🎁 Desconto de {referral.discountPct}% por indicação ativo!
-                  </div>
-                )}
-              </div>
-              {trialDaysLeft !== null && (
-                <div className="mt-8 md:mt-0 relative z-10 shrink-0">
-                  <Button
-                    className="bg-primary text-white hover:bg-primary/90 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto"
-                    onClick={(e) => { e.stopPropagation(); handleSubscribe(); }}
-                  >
-                    Assinar um Plano
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="bg-[#f0f6fc] border border-[#d6e4f0] rounded-[28px] p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-              <div className="absolute right-0 top-0 w-64 h-64 bg-white/60 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.2em] text-[10px]">Assinatura Ativa</span>
-                </div>
-                <h3 className="font-headline font-extrabold text-2xl sm:text-3xl text-primary">
-                  Plano {subscription?.planos?.nome}
-                </h3>
-                {subscription?.data_vencimento ? (
-                  <p className="text-slate-500 text-sm">
-                    Próxima renovação programada para <span className="font-medium text-slate-700">{formatLocalDate(parseLocalDate(subscription.data_vencimento))}</span>.
-                  </p>
-                ) : (
-                  <p className="text-slate-500 text-sm">
-                    Sua conta possui acesso vitalício e não requer renovações.
-                  </p>
-                )}
-              </div>
-              {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && subscription?.data_vencimento && (
-                <div className="mt-6 md:mt-0 relative z-10 shrink-0">
-                  <Button
-                    className="bg-primary text-white hover:bg-primary/95 px-6 sm:px-10 h-14 rounded-2xl font-headline font-bold text-sm shadow-md shadow-primary/5 border border-[#d6e4f0] active:scale-95 transition-all w-full md:w-auto ring-1 ring-primary/10"
-                    onClick={() => handleSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
-                  >
-                    Assinar Plano Anual
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+          <SubscriptionHeroCard
+            subscription={subscription}
+            trialDaysLeft={trialDaysLeft}
+            isTrial={isTrial}
+            isExpired={isExpired}
+            isTrialExpired={isTrialExpired}
+            isCanceled={isCanceled}
+            isPastDue={isPastDue}
+            referral={referral}
+            onSubscribe={handleSubscribe}
+          />
         </section>
 
         {/* Bento Grid Layout Area */}
@@ -454,11 +311,17 @@ const SubscriptionPage = () => {
                     <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
                       <Clock className="w-6 h-6 text-slate-300" />
                     </div>
-                    <p className="text-xs font-bold text-slate-400">Não há histórico de pagamentos.</p>
+                    <p className="text-xs font-base text-slate-400">Não há histórico de pagamentos.</p>
                   </div>
                 )}
               </div>
             </section>
+
+            {/* Texto de Suporte ao Usuário */}
+            <p className="text-[11px] sm:text-xs text-slate-400 font-medium text-center max-w-md mx-auto mt-6 mb-2 leading-relaxed">
+              Precisa de ajuda com sua assinatura?
+              <br /> Entre em contato com o suporte através do menu 'Conta'.
+            </p>
 
             {/* 2. Métodos de Pagamento: COMPACTO - Só aparece se houver cartões */}
             {paymentMethods && paymentMethods.length > 0 && (
@@ -536,7 +399,7 @@ const SubscriptionPage = () => {
                               )}
                               <button
                                 className={cn(
-                                  "flex min-h-10 items-center justify-center gap-2 rounded-2xl px-4 text-[11px] font-black uppercase tracking-[0.14em] text-rose-600 transition-colors hover:bg-rose-100",
+                                  "flex min-h-10 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-bold   text-rose-600 transition-colors hover:bg-rose-100",
                                   method.is_default ? "w-full bg-rose-50" : "flex-1 bg-rose-50"
                                 )}
                                 onClick={() => handleDeleteCard(method.id)}
@@ -562,7 +425,7 @@ const SubscriptionPage = () => {
               Indique e Ganhe
             </h2>
             <div className="sticky top-24">
-              <ReferAndEarnCard isTrial={isTrial} />
+              <ReferAndEarnCard />
             </div>
           </aside>
         </div>

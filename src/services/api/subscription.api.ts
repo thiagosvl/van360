@@ -36,9 +36,6 @@ export const subscriptionApi = {
   getReferralLink: (): Promise<ReferralData> =>
     apiClient.get(`${endpointBase}/referral`).then((res) => res.data),
 
-  claimReferral: (phone: string) =>
-    apiClient.post(`${endpointBase}/referral/claim`, { phone }).then((res) => res.data),
-
   checkPixStatus: (txid: string) =>
     apiClient.get(`${endpointBase}/pix/status/${txid}`).then((res) => res.data),
 

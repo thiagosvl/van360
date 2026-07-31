@@ -12,11 +12,11 @@ export const PastDueBanner = ({ onRegularize }: PastDueBannerProps) => {
           <AlertOctagon className="h-5 w-5" />
         </div>
         <div className="flex-1">
-        <p className="text-xs font-bold text-rose-900">Assinatura em Atraso</p>
-        <p className="text-[11px] text-rose-700">
-          Sua assinatura não foi renovada. Regularize agora para evitar o bloqueio do seu acesso.
-        </p>
-      </div>
+          <p className="text-xs font-bold text-rose-900">Assinatura em Atraso</p>
+          <p className="text-[11px] text-rose-700">
+            Sua assinatura ainda não foi renovada. Regularize agora para evitar o bloqueio do seu acesso.
+          </p>
+        </div>
       </div>
       {onRegularize ? (
         <button
