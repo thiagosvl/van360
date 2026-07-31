@@ -21,7 +21,7 @@ import {
   FileText,
   Plus,
   TrendingDown,
-  UserCheck,
+  Route,
   GraduationCap,
   Car,
   Rocket,
@@ -279,9 +279,9 @@ const Home = () => {
                 variant="violet"
               />
               <ShortcutCard
-                to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
-                icon={UserCheck}
-                label="Solicitações"
+                to={ROUTES.PRIVATE.MOTORISTA.ROUTES}
+                icon={Route}
+                label="Rotas"
                 variant="emerald"
               />
               <ShortcutCard

@@ -17,7 +17,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const isProjection = cobranca.isProjection === true;
   const isPago = !isProjection && cobranca.status === CobrancaStatus.PAGO;
   const isPendente = (isProjection || cobranca.status === CobrancaStatus.PENDENTE) && !isPago;
-  const isAtrasado = isPendente && !isProjection && checkCobrancaEmAtraso(cobranca.data_vencimento);
+  const isAtrasado = isPendente && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
   const statusLabel = isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
 
@@ -63,7 +63,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
               {`Vence ${formatDateToBR(cobranca.data_vencimento)}`}
             </span>
           </div>
-          {isAtrasado && !isProjection && (
+          {isAtrasado && (
             <p className="text-[10px] sm:text-[11px] font-extrabold text-red-600 uppercase tracking-wide truncate">
               {formatDiasAtraso(cobranca.data_vencimento)}
             </p>

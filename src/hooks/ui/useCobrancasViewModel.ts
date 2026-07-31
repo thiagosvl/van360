@@ -220,7 +220,7 @@ export function useCobrancasViewModel() {
 
   const totalAtrasado = useMemo(
     () => cobrancasAReceber
-      .filter((c) => !c.isProjection && checkCobrancaEmAtraso(c.data_vencimento))
+      .filter((c) => checkCobrancaEmAtraso(c.data_vencimento))
       .reduce((acc, curr) => acc + Number(curr.valor), 0),
     [cobrancasAReceber]
   );

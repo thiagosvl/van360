@@ -135,8 +135,7 @@ export const CarteirinhaCobrancas = ({
     return displayCobrancas.reduce(
       (acc, c) => {
         const isPago = c.status === CobrancaStatus.PAGO;
-        const isProjection = c.isProjection === true;
-        const atrasado = !isPago && !isProjection && checkCobrancaEmAtraso(c.data_vencimento);
+        const atrasado = !isPago && checkCobrancaEmAtraso(c.data_vencimento);
 
         if (isPago) {
           acc.pago += Number(c.valor);
