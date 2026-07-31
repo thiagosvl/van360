@@ -133,7 +133,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="px-5 pt-5 pb-3 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] flex items-center justify-between border-b border-white/5">
+          <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
