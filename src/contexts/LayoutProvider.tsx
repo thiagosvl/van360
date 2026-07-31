@@ -13,6 +13,7 @@ import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import GerenciarCategoriasDialog from "@/components/dialogs/GerenciarCategoriasDialog";
 import AcquisitionChannelDialog from "@/components/dialogs/AcquisitionChannelDialog";
+import ReferAndEarnDialog from "@/components/dialogs/ReferAndEarnDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
@@ -222,6 +223,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
+  const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
   const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
     open: boolean;
     onSuccess?: (userId: string) => void;
@@ -421,6 +423,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
         openEditarPixDialog: () => setEditarPixDialogOpen(true),
         openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
+        openReferAndEarnDialog: () => setReferAndEarnDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isHelpOpen,
@@ -761,6 +764,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <AcquisitionChannelDialog
           isOpen={acquisitionChannelDialogOpen}
           onClose={() => safeCloseDialog(() => setAcquisitionChannelDialogOpen(false))}
+        />
+      )}
+
+      {referAndEarnDialogOpen && (
+        <ReferAndEarnDialog
+          isOpen={referAndEarnDialogOpen}
+          onClose={() => safeCloseDialog(() => setReferAndEarnDialogOpen(false))}
         />
       )}
 

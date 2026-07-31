@@ -52,7 +52,7 @@ export default function Gastos() {
           disabled={false}
         />
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="order-2 md:order-1 w-full md:w-auto md:min-w-[280px]">
             <KPICard
               label="Total de Despesas"

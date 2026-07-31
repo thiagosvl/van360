@@ -6,15 +6,8 @@ import { useSubscriptionReferral } from "@/hooks/api/useSubscription";
 import { phoneMask } from "@/utils/masks";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/business/useSession";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { ReferralShareBlock } from "./ReferralShareBlock";
+import { ReferralHowItWorksDrawer } from "./ReferralHowItWorksDrawer";
 
 interface ReferAndEarnCardProps {
   isTrial: boolean;
@@ -66,36 +59,10 @@ export function ReferAndEarnCard({ isTrial }: ReferAndEarnCardProps) {
           Convide outros motoristas. Eles ganham desconto e você ganha +1 mês gratis!
         </p>
 
-        <Drawer>
-          <DrawerTrigger asChild>
-            <button className="flex items-center justify-center text-[12px] font-medium text-slate-500 hover:text-slate-700 transition-colors bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-full mb-6 mx-auto">
-              <HelpCircle className="w-4 h-4 mr-1.5" strokeWidth={2} />
-              Como funciona?
-            </button>
-          </DrawerTrigger>
-          <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl overflow-hidden">
-            <DrawerHeader className="text-left px-8 pt-6 pb-2">
-              <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">
-                Como funciona o Indique e Ganhe?
-              </DrawerTitle>
-              <DrawerDescription className="text-sm font-medium text-slate-500 mt-3 text-left">
-                <ul className="space-y-4 list-decimal pl-5">
-                  <li><strong>Compartilhe:</strong> Envie seu link exclusivo para outros colegas motoristas.</li>
-                  <li><strong>Vantagem Dupla:</strong> O motorista que você indicou ganha um <strong>desconto especial</strong> ao assinar o Van360.</li>
-                  <li><strong>Sua Recompensa:</strong> Assim que a assinatura dele for ativada, você ganha <strong>{bonusDaysPerReferral} dias grátis</strong> na sua mensalidade!</li>
-                  <li><strong>Sem Limites:</strong> Não há limite de indicações. Sempre que alguém assinar pelo seu link, você acumula mais 1 mês grátis!</li>
-                </ul>
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="px-8 pb-8 pt-4">
-              <DrawerTrigger asChild>
-                <Button className="w-full h-12 rounded-xl bg-primary text-white font-bold">
-                  Entendi
-                </Button>
-              </DrawerTrigger>
-            </div>
-          </DrawerContent>
-        </Drawer>
+        <ReferralHowItWorksDrawer
+          bonusDaysPerReferral={bonusDaysPerReferral}
+          triggerClassName="flex items-center justify-center text-[12px] font-medium text-slate-500 hover:text-slate-700 transition-colors bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-full mb-6 mx-auto"
+        />
 
         {/* Stats Row */}
         <div className="flex w-full gap-3 mb-6">

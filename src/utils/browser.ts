@@ -11,11 +11,15 @@ export const openBrowserLink = async (url: string) => {
 
   try {
     if (Capacitor.isNativePlatform()) {
-      // Melhoria para WhatsApp no Android/iOS:
-      if (url.includes('wa.me/')) {
-        const nativeUrl = url
-          .replace('https://wa.me/', 'whatsapp://send?phone=')
-          .replace('?text=', '&text=');
+      if (url.includes('wa.me/') || url.includes('api.whatsapp.com/send')) {
+        let nativeUrl = url;
+        if (url.includes('wa.me/')) {
+          nativeUrl = url
+            .replace('https://wa.me/', 'whatsapp://send?phone=')
+            .replace('?text=', '&text=');
+        } else if (url.includes('api.whatsapp.com/send')) {
+          nativeUrl = url.replace('https://api.whatsapp.com/send', 'whatsapp://send');
+        }
 
         window.location.href = nativeUrl;
         return;

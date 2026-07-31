@@ -187,6 +187,7 @@ export interface LayoutContextType {
   openEditarCadastroDialog: () => void;
   openEditarPixDialog: () => void;
   openAcquisitionChannelDialog: () => void;
+  openReferAndEarnDialog: () => void;
 
   // Mobile Menu
   isMobileMenuOpen: boolean;

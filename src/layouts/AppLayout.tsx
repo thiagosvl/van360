@@ -15,11 +15,12 @@ import { useSession } from "@/hooks/business/useSession";
 import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
 import { formatShortName } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
+import { UserType } from "@/types/enums";
 import { Outlet } from "react-router-dom";
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
-function AppLayoutContent({ role }: { role: "motorista" }) {
+function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) {
   useAnalyticsInjector({ clarity: true, force: true });
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
   const { user } = useSession();
@@ -108,7 +109,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
             </div>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-6">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5">
           <AppSidebar role={role} />
         </div>
       </aside>
@@ -132,29 +133,29 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="px-5 pb-3.5 pt-[max(1.5rem,env(safe-area-inset-top)+0.5rem)] flex items-center justify-between border-b border-white/10 bg-white/[0.02]">
+          <div className="px-5 pt-5 pb-3 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] flex items-center justify-between border-b border-white/5">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
                 {userInitials}
               </div>
               <div className="flex flex-col min-w-0 pr-2">
-                <span className="text-[15px] font-bold text-white leading-tight truncate mb-0.5">
+                <span className="text-[16px] font-bold text-white leading-tight truncate">
                   {displayName}
                 </span>
-                <div className="flex items-center">
+                <div className="flex items-center mt-0.5">
                   <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
                 </div>
               </div>
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all shrink-0"
+              className="p-1.5 text-slate-400 hover:text-white transition-colors shrink-0"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 px-3 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom)+1rem)] overflow-y-auto scrollbar-hide">
+          <div className="flex-1 px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] overflow-y-auto scrollbar-hide">
             <AppSidebar
               role={role}
               onLinkClick={() => setIsMobileMenuOpen(false)}
@@ -186,7 +187,7 @@ export default function AppLayout() {
 
   return (
     <LayoutProvider>
-      <AppLayoutContent role="motorista" />
+      <AppLayoutContent role={UserType.MOTORISTA} />
     </LayoutProvider>
   );
 }

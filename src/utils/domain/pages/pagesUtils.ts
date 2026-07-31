@@ -1,4 +1,4 @@
-import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, Cake, BadgeDollarSign, Route } from "lucide-react";
+import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
 const pagesItems = [
@@ -43,17 +43,12 @@ const pagesItems = [
         icon: TrendingDown,
     },
     {
-        title: "Aniversários",
-        href: ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS,
-        icon: Cake,
-    },
-    {
         title: "Relatórios",
         href: ROUTES.PRIVATE.MOTORISTA.REPORTS,
         icon: ChartArea,
     },
     {
-        title: "Assinatura",
+        title: "Minha Assinatura",
         href: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
         icon: Rocket,
     },
