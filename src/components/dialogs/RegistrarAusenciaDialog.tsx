@@ -2,9 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { CalendarX, Search, Check, Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarX, Search, Check, Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useRoutes, useRouteDetail, useRegistrarAusenciaMutation } from "@/hooks/api/useRoutes";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -12,6 +15,7 @@ import { toast } from "@/utils/notifications/toast";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { Route, RouteNodeType } from "@/types/route";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 export interface RegistrarAusenciaDialogProps {
   isOpen: boolean;
@@ -36,6 +40,7 @@ export default function RegistrarAusenciaDialog({
   const [searchPassageiro, setSearchPassageiro] = useState("");
   const [isPassageiroDropdownOpen, setIsPassageiroDropdownOpen] = useState(false);
   const [dataAusencia, setDataAusencia] = useState("");
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: routeDetail, isLoading: isLoadingRouteDetail } = useRouteDetail(rotaId);
@@ -49,6 +54,7 @@ export default function RegistrarAusenciaDialog({
       setSearchPassageiro("");
       setIsPassageiroDropdownOpen(false);
       setDataAusencia("");
+      setIsCalendarOpen(false);
       setErrors({});
 
       if (lockedRotaId) {
@@ -61,7 +67,7 @@ export default function RegistrarAusenciaDialog({
 
   const passageirosDisponiveis = useMemo(() => {
     if (!rotaId || !routeDetail?.passageiros) return [];
-    
+
     const passageirosMap = new Map<string, Passageiro>();
     routeDetail.passageiros.forEach((p: any) => {
       const pid = p.passageiro_id || p.passageiro?.id;
@@ -288,18 +294,45 @@ export default function RegistrarAusenciaDialog({
             <Label className="text-slate-700 font-semibold ml-1">
               Data da Ausência <span className="text-red-500">*</span>
             </Label>
-            <Input
-              type="date"
-              value={dataAusencia}
-              onChange={(e) => {
-                setDataAusencia(e.target.value);
-                if (errors.dataAusencia) setErrors((prev) => ({ ...prev, dataAusencia: "" }));
-              }}
-              className={cn(
-                "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base w-full text-slate-700 font-medium px-3.5 flex items-center justify-between [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:opacity-70 hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
-                errors.dataAusencia && "border-red-500"
-              )}
-            />
+            {(() => {
+              const selectedDate = dataAusencia ? parseISO(dataAusencia) : undefined;
+
+              return (
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "h-12 w-full rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left font-medium px-3.5 flex items-center justify-between shadow-none hover:bg-slate-100 transition-colors cursor-pointer",
+                        !dataAusencia && "text-slate-400 font-normal",
+                        dataAusencia && "text-slate-700 font-medium",
+                        errors.dataAusencia && "border-red-500"
+                      )}
+                    >
+                      <span>
+                        {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "dd/mm/aaaa"}
+                      </span>
+                      <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0 ml-auto" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-auto p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999]">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setDataAusencia(format(date, "yyyy-MM-dd"));
+                          if (errors.dataAusencia) setErrors((prev) => ({ ...prev, dataAusencia: "" }));
+                          setIsCalendarOpen(false);
+                        }
+                      }}
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
+              );
+            })()}
             {errors.dataAusencia && (
               <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                 {errors.dataAusencia}
