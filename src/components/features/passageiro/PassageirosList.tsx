@@ -40,9 +40,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   PassageirosListProps,
   "passageiros"
 >) {
-
-  const initial = getInitials(passageiro?.nome);
-
   const shortName = formatShortName(passageiro?.nome, true);
   const schoolName = passageiro.escola?.nome;
 
@@ -76,8 +73,8 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           {shortName}
         </p>
         <div className="flex flex-col gap-0.5 mt-0.5 min-w-0">
-          <p className="text-[10px] text-gray-500 font-medium line-clamp-1 opacity-60">
-            {schoolName || "Sem vínculo"}
+          <p className="text-[10px] text-gray-500 font-medium opacity-60">
+            {schoolName}
           </p>
           {(passageiro.periodo || passageiro.turma) && (
             <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
@@ -195,9 +192,9 @@ export function PassageirosList({
                     <div className="flex flex-col items-start gap-1">
                       <span
                         className="text-sm text-slate-600 max-w-[280px] block truncate"
-                        title={passageiro.escola?.nome || "Sem vínculo"}
+                        title={passageiro.escola?.nome}
                       >
-                        {passageiro.escola?.nome || "Sem vínculo"}
+                        {passageiro.escola?.nome}
                       </span>
                       {(passageiro.periodo || passageiro.turma) && (
                         <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">

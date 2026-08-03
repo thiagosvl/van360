@@ -3,7 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarX, Search, Check, Loader2, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -83,14 +83,11 @@ export default function RegistrarAusenciaDialog({
         setPassageiroId("");
         setPassageiroNomeSelected("");
         setSearchPassageiro("");
-        if (lockedRotaId) {
-          setRotaId(lockedRotaId);
-        } else {
-          setRotaId("");
-        }
+        setRotaId(lockedRotaId || "");
       }
     }
-  }, [isOpen, lockedRotaId, lockedPassageiro, passageiroRotas]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const passageirosDisponiveis = useMemo(() => {
     if (!rotaId || !routeDetail?.passageiros) return [];
@@ -236,7 +233,7 @@ export default function RegistrarAusenciaDialog({
               </Label>
 
               <Popover open={isPassageiroDropdownOpen && !!rotaId} onOpenChange={(open) => rotaId && setIsPassageiroDropdownOpen(open)}>
-                <PopoverTrigger asChild>
+                <PopoverAnchor asChild>
                   <div className="relative">
                     <Input
                       type="text"
@@ -246,7 +243,10 @@ export default function RegistrarAusenciaDialog({
                       onFocus={() => {
                         if (!rotaId) return;
                         setIsPassageiroDropdownOpen(true);
-                        setSearchPassageiro("");
+                      }}
+                      onClick={() => {
+                        if (!rotaId) return;
+                        setIsPassageiroDropdownOpen(true);
                       }}
                       onChange={(e) => {
                         if (!rotaId) return;
@@ -254,7 +254,7 @@ export default function RegistrarAusenciaDialog({
                         setIsPassageiroDropdownOpen(true);
                       }}
                       className={cn(
-                        "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base pr-9",
+                        "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base pr-9 cursor-text",
                         errors.passageiroId && "border-red-500",
                         (!rotaId || isLoadingRouteDetail) && "opacity-60 cursor-not-allowed"
                       )}
@@ -267,7 +267,7 @@ export default function RegistrarAusenciaDialog({
                       )}
                     </div>
                   </div>
-                </PopoverTrigger>
+                </PopoverAnchor>
 
                 <PopoverContent
                   className="w-[var(--radix-popover-trigger-width)] p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999] max-h-56 overflow-y-auto overscroll-contain touch-auto divide-y divide-slate-100"

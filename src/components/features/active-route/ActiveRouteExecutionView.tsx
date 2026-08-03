@@ -514,10 +514,10 @@ export function ActiveRouteExecutionView({
           </div>
 
           {outraRotaAtiva && (
-            <div className="flex items-start gap-2 bg-rose-50 border border-rose-100 rounded-lg p-3 text-rose-800 text-[11px] font-semibold mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
-              <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-amber-900 text-[11px] font-medium mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200 shadow-2xs">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <p className="leading-snug text-left">
-                Uma outra rota (<strong className="font-bold">{outraRotaAtiva.rota?.nome}</strong>) está em execução. Encerre a rota ativa para poder iniciar esta.
+                Já existe outra rota em execução. Encerre a rota ativa se desejar iniciar esta.
               </p>
             </div>
           )}
