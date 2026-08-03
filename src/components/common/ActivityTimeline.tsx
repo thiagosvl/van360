@@ -19,6 +19,7 @@ import {
   Trash2,
   AlertCircle,
   BadgeDollarSign,
+  CheckCircle2,
 } from "lucide-react";
 
 interface ActivityTimelineProps {
