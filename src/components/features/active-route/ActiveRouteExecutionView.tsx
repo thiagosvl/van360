@@ -136,11 +136,14 @@ export function ActiveRouteExecutionView({
         setDesfazendoStopId(parada.id);
 
         try {
+          const pid = parada.passageiro_id || parada.passageiro?.id;
+          const rid = execucao?.rota_id || parada.rota_id;
+
           if (isPreview) {
             await removerAusenciaMutation.mutateAsync({
               id: parada.ausencia_id || DELETE_AUSENCIA_BY_QUERY_PARAM,
-              passageiro_id: parada.passageiro_id,
-              rota_id: execucao?.rota_id,
+              passageiro_id: pid,
+              rota_id: rid,
             });
             toast.success("Ausência desfeita! Passageiro retornado ao itinerário.");
           } else if (execucao?.id) {
@@ -151,13 +154,13 @@ export function ActiveRouteExecutionView({
             });
             toast.success("Ausência desfeita! Passageiro retornado ao trajeto.");
           }
-          const pid = parada.passageiro_id || parada.passageiro?.id;
-          if (pid) {
-            queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", pid] });
-            queryClient.invalidateQueries({ queryKey: ["passageiro-rotas", pid] });
-          } else {
-            queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
-          }
+
+          queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
+          queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"] });
+          queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
+          queryClient.invalidateQueries({ queryKey: ["route"] });
+          queryClient.invalidateQueries({ queryKey: ["route-execution"] });
+
           safeCloseDialog(closeConfirmationDialog);
         } catch (err: unknown) {
           const errorMsg = err instanceof Error ? err.message : "Erro ao desfazer ausência.";
