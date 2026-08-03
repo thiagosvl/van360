@@ -40,6 +40,8 @@ export function useAusenciasRota(rotaId: string, dataAusencia?: string) {
     queryKey: ["route-ausencias", rotaId, dataAusencia],
     queryFn: () => routeApi.listAusencias(rotaId, dataAusencia),
     enabled: !!rotaId,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
@@ -48,6 +50,8 @@ export function usePassageiroAusencias(passageiroId: string) {
     queryKey: ["passageiro-ausencias", passageiroId],
     queryFn: () => routeApi.listAusenciasByPassageiro(passageiroId),
     enabled: !!passageiroId,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
@@ -56,6 +60,8 @@ export function usePassageiroRotas(passageiroId: string) {
     queryKey: ["passageiro-rotas", passageiroId],
     queryFn: () => routeApi.listRotasByPassageiro(passageiroId),
     enabled: !!passageiroId,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
@@ -65,11 +71,12 @@ export function useRegistrarAusenciaMutation() {
     mutationFn: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }) =>
       routeApi.createAusencia(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["route", variables.rota_id] });
-      queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
-      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
-      queryClient.invalidateQueries({ queryKey: ["routes"] });
-      queryClient.invalidateQueries({ queryKey: ["route-execution"] });
+      queryClient.invalidateQueries({ queryKey: ["route"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["routes"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["route-execution"], refetchType: "all" });
     },
   });
 }
@@ -80,20 +87,12 @@ export function useRemoverAusenciaMutation() {
     mutationFn: ({ id, passageiro_id, rota_id, data_ausencia }: { id: string; passageiro_id?: string; rota_id?: string; data_ausencia?: string }) =>
       routeApi.deleteAusencia(id, { passageiro_id, rota_id, data_ausencia }),
     onSuccess: (_, variables) => {
-      if (variables.rota_id) {
-        queryClient.invalidateQueries({ queryKey: ["route", variables.rota_id] });
-        queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["route"] });
-        queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
-      }
-      if (variables.passageiro_id) {
-        queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
-      }
-      queryClient.invalidateQueries({ queryKey: ["routes"] });
-      queryClient.invalidateQueries({ queryKey: ["route-execution"] });
+      queryClient.invalidateQueries({ queryKey: ["route"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["routes"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["route-execution"], refetchType: "all" });
     },
   });
 }

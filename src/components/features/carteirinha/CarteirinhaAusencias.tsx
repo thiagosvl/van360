@@ -53,7 +53,7 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
     const dateFormatted = format(parseISO(ausencia.data_ausencia), "dd/MM/yyyy");
 
     openConfirmationDialog({
-      title: "Remover Ausência Agendada?",
+      title: "Remover Registro de Ausência?",
       description: `Tem certeza que deseja remover o agendamento de ausência do dia ${dateFormatted}?`,
       confirmText: "Remover Ausência",
       cancelText: "Cancelar",
@@ -145,7 +145,7 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
                   disabled={isDeletingThis}
                   onClick={() => handleExcluirAusencia(ausencia)}
                   className="h-8 w-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 shrink-0 cursor-pointer"
-                  title="Remover ausência agendada"
+                  title="Remover registro de ausência"
                 >
                   {isDeletingThis ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
