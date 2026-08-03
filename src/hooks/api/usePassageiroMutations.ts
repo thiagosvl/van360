@@ -76,17 +76,9 @@ export function useDeletePassageiro() {
   return useMutation({
     mutationFn: (id: string) => passageiroApi.deletePassageiro(id),
     onError: (error: any) => {
-      const errorMessage = getErrorMessage(error);
-
-      if (error?.response?.status === 400 || errorMessage) {
-        toast.error("passageiro.erro.excluir", {
-          description: errorMessage
-        });
-      } else {
-        toast.error("passageiro.erro.excluir", {
-          description: "passageiro.erro.excluirDetalhe",
-        });
-      }
+      toast.error("passageiro.erro.excluir", {
+        description: getErrorMessage(error, "passageiro.erro.excluirDetalhe"),
+      });
     },
     onSuccess: () => {
       toast.success("passageiro.sucesso.excluido");

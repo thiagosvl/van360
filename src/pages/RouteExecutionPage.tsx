@@ -23,6 +23,8 @@ export default function RouteExecutionPage() {
     proximasParadas,
     paradasConcluidas,
     isLoading,
+    isStepping,
+    isFinalizing,
     isError,
     handleStep,
     handleFinalizarRota,
@@ -35,7 +37,7 @@ export default function RouteExecutionPage() {
   const concludedStops = paradasConcluidas?.length || 0;
 
   useEffect(() => {
-    setPageTitle(isPreview ? "Prévia da Rota" : "Execução de Rota");
+    setPageTitle(isPreview ? "Prévia da Rota" : "Rota em Andamento");
   }, [setPageTitle, isPreview]);
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function RouteExecutionPage() {
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
       <div className="space-y-4 text-left pb-16">
-        {isLoading && !showSuccessOverlay || !execucao ? (
+        {(isLoading && !showSuccessOverlay) || !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (
           <ActiveRouteExecutionView
@@ -77,6 +79,8 @@ export default function RouteExecutionPage() {
             proximasParadas={proximasParadas}
             paradasConcluidas={paradasConcluidas}
             isLoading={isLoading}
+            isStepping={isStepping}
+            isFinalizing={isFinalizing}
             handleStep={handleStep}
             handleFinalizarRota={handleFinalizarRota}
             handleCancel={handleCancel}

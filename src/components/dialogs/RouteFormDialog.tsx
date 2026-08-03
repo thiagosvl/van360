@@ -174,11 +174,11 @@ export default function RouteFormDialog({
       <BaseDialog.Footer>
         <BaseDialog.Action
           variant="secondary"
-          label="CANCELAR"
+          label="Cancelar"
           onClick={onClose}
         />
         <BaseDialog.Action
-          label={editingRoute ? "SALVAR" : "CONFIRMAR"}
+          label={editingRoute ? "Salvar" : "Confirmar"}
           onClick={handleConfirm}
         />
       </BaseDialog.Footer>

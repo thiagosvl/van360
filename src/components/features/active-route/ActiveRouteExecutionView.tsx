@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import {
   XCircle, MapPin, Check, CheckCircle2, UserMinus, Route, Compass, Navigation, Flag, X, ArrowUp, ArrowDown, Loader2, Play, AlertTriangle, School, User,
-  Home
+  Home, Edit
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ import { toast } from "@/utils/notifications/toast";
 import { useRouteRules } from "@/hooks/business/useRouteRules";
 import { useSession } from "@/hooks/business/useSession";
 import { useExecucoesRota } from "@/hooks/api/useRoutes";
+import { useDeleteRoute } from "@/hooks/api/useRouteMutations";
 
 import { openExternalNavigation } from "@/utils/browser";
 import { NavigationApp } from "@/constants";
@@ -28,18 +29,14 @@ import { NavigationApp } from "@/constants";
 const TAB_DEFAULT = "default";
 const TAB_PRINCIPAL = "principal";
 
-const getTextoSentidoDescritivo = (sentido?: RouteSentido | null): string => {
-  return sentido === RouteSentido.VOLTANDO
-    ? "Voltando para casa"
-    : "Indo para a escola";
-};
-
 interface ActiveRouteExecutionViewProps {
   execucao: any;
   paradaAtual: any;
   proximasParadas: any[];
   paradasConcluidas: any[];
   isLoading: boolean;
+  isStepping?: boolean;
+  isFinalizing?: boolean;
   handleStep: (paradaId: string, status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE, callback?: () => void) => Promise<void>;
   handleFinalizarRota?: (callback?: () => void) => Promise<void>;
   handleCancel: (callback?: () => void) => Promise<void>;
@@ -58,6 +55,8 @@ export function ActiveRouteExecutionView({
   proximasParadas,
   paradasConcluidas,
   isLoading,
+  isStepping = false,
+  isFinalizing = false,
   handleStep,
   handleFinalizarRota,
   handleCancel,
@@ -79,7 +78,9 @@ export function ActiveRouteExecutionView({
     if (paradaAtual?.id && activeCardRef.current && !isPreview) {
       const timer = setTimeout(() => {
         if (activeCardRef.current) {
-          activeCardRef.current.scrollIntoView({ behavior: "smooth" });
+          const rect = activeCardRef.current.getBoundingClientRect();
+          const targetY = window.scrollY + rect.top - 90;
+          window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
         }
       }, 150);
 
@@ -111,12 +112,32 @@ export function ActiveRouteExecutionView({
     (e: any) => e.status === RouteExecutionStatus.INICIADA && e.rota_id !== execucao?.rota_id
   );
 
-  const sentidoPassageiroAtivo = paradaAtual?.sentido || RouteSentido.INDO;
+  const [submittingStopId, setSubmittingStopId] = useState<string | null>(null);
+  const [isFinishingLastStop, setIsFinishingLastStop] = useState(false);
+  const lastParadaAtualRef = useRef<any>(null);
+
+  if (paradaAtual) {
+    lastParadaAtualRef.current = paradaAtual;
+  }
+
+  const activeParadaToRender = (isFinishingLastStop || isFinalizing)
+    ? (paradaAtual || lastParadaAtualRef.current)
+    : paradaAtual;
+
+  useEffect(() => {
+    if (paradaAtual?.id && submittingStopId && paradaAtual.id !== submittingStopId) {
+      setSubmittingStopId(null);
+    }
+  }, [paradaAtual?.id, submittingStopId]);
+
+  const isActionDisabled = isLoading || isStepping || isFinalizing || (!!submittingStopId && submittingStopId === activeParadaToRender?.id);
+
+  const sentidoPassageiroAtivo = activeParadaToRender?.sentido || RouteSentido.INDO;
   const actionLabel = sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? "Desembarcou" : "Embarcou";
 
   const todasParadas = [
     ...(paradasConcluidas || []),
-    ...(paradaAtual ? [paradaAtual] : []),
+    ...(activeParadaToRender ? [activeParadaToRender] : []),
     ...(proximasParadas || [])
   ];
 
@@ -131,44 +152,46 @@ export function ActiveRouteExecutionView({
     }
 
     const escolaId = escolaNode.escola_id || escolaNode.escola?.id;
-    if (!escolaId) {
-      return { desces: [], subes: [] };
-    }
+    if (!escolaId) return { desces: [], subes: [] };
 
-    const desces = todasParadasList.filter((p, pIdx) => {
-      if (p.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
-      const pEscolaId = p.passageiro?.escola_id || p.passageiro?.escola?.id || p.escola_id;
-      if (pEscolaId !== escolaId) return false;
-
-      const sentido = p.sentido || p.passageiro?.sentido || RouteSentido.INDO;
-      if (sentido !== RouteSentido.INDO) return false;
-
-      if (pIdx >= escolaNodeIndex) return false;
-
-      const primeiraEscolaAposP = todasParadasList.findIndex((node, nodeIdx) =>
-        nodeIdx > pIdx &&
-        node.tipo_no === RouteNodeType.ESCOLA &&
-        (node.escola_id === escolaId || node.escola?.id === escolaId)
-      );
-
-      return primeiraEscolaAposP === escolaNodeIndex;
+    const desces = todasParadasList.filter((node, i) => {
+      if (node.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
+      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id;
+      if (passEscolaId !== escolaId) return false;
+      if (node.sentido !== RouteSentido.INDO) return false;
+      return i < escolaNodeIndex;
     });
 
-    const subes = todasParadasList.filter((p, pIdx) => {
-      if (p.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
-      const pEscolaId = p.passageiro?.escola_id || p.passageiro?.escola?.id || p.escola_id;
-      if (pEscolaId !== escolaId) return false;
-
-      const sentido = p.sentido || p.passageiro?.sentido || RouteSentido.INDO;
-      if (sentido !== RouteSentido.VOLTANDO) return false;
-
-      if (pIdx <= escolaNodeIndex) return false;
+    const subes = todasParadasList.filter((node, i) => {
+      if (node.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
+      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id;
+      if (passEscolaId !== escolaId) return false;
+      if (node.sentido !== RouteSentido.VOLTANDO) return false;
 
       let ultimaEscolaAntesDeP = -1;
-      for (let i = pIdx - 1; i >= 0; i--) {
-        const node = todasParadasList[i];
+      for (let idx = i - 1; idx >= 0; idx--) {
+        if (todasParadasList[idx].tipo_no === RouteNodeType.ESCOLA) {
+          ultimaEscolaAntesDeP = idx;
+          break;
+        }
+      }
+
+      if (node.status === RouteStopStatus.PENDENTE && i > escolaNodeIndex) {
+        let temEscolaDestaEntrem = false;
+        for (let idx = escolaNodeIndex + 1; idx < i; idx++) {
+          const n = todasParadasList[idx];
+          if (n.tipo_no === RouteNodeType.ESCOLA && (n.escola_id === escolaId || n.escola?.id === escolaId)) {
+            temEscolaDestaEntrem = true;
+            break;
+          }
+        }
+        if (!temEscolaDestaEntrem) return true;
+      }
+
+      for (let idx = i - 1; idx >= 0; idx--) {
+        const node = todasParadasList[idx];
         if (node.tipo_no === RouteNodeType.ESCOLA && (node.escola_id === escolaId || node.escola?.id === escolaId)) {
-          ultimaEscolaAntesDeP = i;
+          ultimaEscolaAntesDeP = idx;
           break;
         }
       }
@@ -179,9 +202,9 @@ export function ActiveRouteExecutionView({
     return { desces, subes };
   };
 
-  const paradaAtualIndexInTodas = paradaAtual ? (paradasConcluidas?.length || 0) : -1;
+  const paradaAtualIndexInTodas = activeParadaToRender ? (paradasConcluidas?.length || 0) : -1;
   const { desces: alunosParaDesembarcar, subes: alunosParaEmbarcar } =
-    (paradaAtual?.tipo_no === RouteNodeType.ESCOLA && !isPreview && paradaAtualIndexInTodas >= 0)
+    (activeParadaToRender?.tipo_no === RouteNodeType.ESCOLA && !isPreview && paradaAtualIndexInTodas >= 0)
       ? getAlunosEscolaPorPosicao(todasParadas, paradaAtualIndexInTodas)
       : { desces: [], subes: [] };
 
@@ -201,37 +224,49 @@ export function ActiveRouteExecutionView({
   };
 
   const handleConfirmFalta = (paradaId: string, nome: string) => {
+    if (submittingStopId) return;
     const isLastStop = proximasParadas.length === 0;
+
     openConfirmationDialog({
-      title: "Confirmar Falta Hoje?",
+      title: "Confirmar Ausência Hoje?",
       description: `Tem certeza que deseja marcar ${formatFirstName(nome)} como ausente hoje nesta corrida?`,
       confirmText: "Confirmar",
       cancelText: "Cancelar",
       variant: "destructive",
       onConfirm: async () => {
-        await handleStep(paradaId, RouteStopStatus.AUSENTE, async () => {
-          setSelectedRespTab(TAB_DEFAULT);
-          if (isLastStop && handleFinalizarRota) {
-            await handleFinalizarRota(() => {
-              onShowSuccess?.();
-            });
-          }
-        });
+        setSubmittingStopId(paradaId);
+        if (isLastStop) {
+          setIsFinishingLastStop(true);
+        }
+        await handleStep(paradaId, RouteStopStatus.AUSENTE);
+        setSelectedRespTab(TAB_DEFAULT);
+        if (isLastStop && handleFinalizarRota) {
+          await handleFinalizarRota(() => {
+            setIsFinishingLastStop(false);
+            onShowSuccess?.();
+          });
+        }
         safeCloseDialog(closeConfirmationDialog);
       }
     });
   };
 
   const handleConfirmAction = async (paradaId: string) => {
+    if (submittingStopId) return;
     const isLastStop = proximasParadas.length === 0;
-    await handleStep(paradaId, RouteStopStatus.EMBARCADO, async () => {
-      setSelectedRespTab(TAB_DEFAULT);
-      if (isLastStop && handleFinalizarRota) {
-        await handleFinalizarRota(() => {
-          onShowSuccess?.();
-        });
-      }
-    });
+
+    setSubmittingStopId(paradaId);
+    if (isLastStop) {
+      setIsFinishingLastStop(true);
+    }
+    await handleStep(paradaId, RouteStopStatus.EMBARCADO);
+    setSelectedRespTab(TAB_DEFAULT);
+    if (isLastStop && handleFinalizarRota) {
+      await handleFinalizarRota(() => {
+        setIsFinishingLastStop(false);
+        onShowSuccess?.();
+      });
+    }
   };
 
   const openNavigation = (app: NavigationApp, address: string, lat?: number, lng?: number) => {
@@ -243,8 +278,10 @@ export function ActiveRouteExecutionView({
   let activeRespParentesco = "";
   let activeAddressStr = "";
 
-  if (paradaAtual && paradaAtual.tipo_no === RouteNodeType.PASSAGEIRO && paradaAtual.passageiro) {
-    const pass = paradaAtual.passageiro;
+  const targetParadaForContext = activeParadaToRender || paradaAtual;
+
+  if (targetParadaForContext && targetParadaForContext.tipo_no === RouteNodeType.PASSAGEIRO && targetParadaForContext.passageiro) {
+    const pass = targetParadaForContext.passageiro;
     const responsaveisAdicionais = pass.responsaveis || [];
 
     const activeRespId = selectedRespTab === TAB_DEFAULT
@@ -270,8 +307,8 @@ export function ActiveRouteExecutionView({
         activeAddressStr = formatarEnderecoCompleto(pass) || "Endereço principal";
       }
     }
-  } else if (paradaAtual && paradaAtual.tipo_no === RouteNodeType.ESCOLA && paradaAtual.escola) {
-    const esc = paradaAtual.escola;
+  } else if (targetParadaForContext && targetParadaForContext.tipo_no === RouteNodeType.ESCOLA && targetParadaForContext.escola) {
+    const esc = targetParadaForContext.escola;
     activeRespName = "Desembarque na Escola";
     activeAddressStr = formatarEnderecoCompleto(esc) || "Endereço da escola";
   }
@@ -282,7 +319,7 @@ export function ActiveRouteExecutionView({
 
   const handleMoveParada = async (index: number, direction: "up" | "down") => {
     // Lista completa real de pendentes
-    const totalPendentesReal = paradaAtual ? [paradaAtual, ...proximasParadas] : [...proximasParadas];
+    const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
 
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= totalPendentesReal.length) return;
@@ -315,16 +352,20 @@ export function ActiveRouteExecutionView({
     }
   };
 
-  const displayParadasConcluidas = [...paradasConcluidas].sort((a, b) => a.ordem - b.ordem);
+  const activeStopId = activeParadaToRender?.id || paradaAtual?.id;
 
-  const totalTimelineItems = displayParadasConcluidas.length + (paradaAtual ? 1 : 0) + displayProximasParadas.length;
+  const rawConcluidas = paradasConcluidas.filter(p => p.id !== activeStopId);
+
+  const displayParadasConcluidas = [...rawConcluidas].sort((a, b) => a.ordem - b.ordem);
+
+  const totalTimelineItems = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + displayProximasParadas.length;
 
   const isLastNode = (proximasParadas.length === 0);
 
   return (
     <div className="space-y-4">
       {isPreview ? (
-        <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm space-y-3.5 text-left">
+        <div className="bg-white border border-slate-200 p-3.5 sm:p-4 rounded-2xl shadow-sm space-y-3.5 text-left">
           <div className="space-y-1 min-w-0 pr-1">
             <h2 className="text-xl font-extrabold text-[#1a3a5c] font-headline tracking-tight leading-snug break-words">
               {execucao?.rota?.nome || "Rota"}
@@ -334,16 +375,17 @@ export function ActiveRouteExecutionView({
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 pt-1">
+          <div className="flex items-center gap-2 pt-1">
             {execucao?.rota_id && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
-                className="h-11 px-4 rounded-lg border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-extrabold uppercase text-xs tracking-wider shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                title="Editar Rota"
+                className="h-12 px-3 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                title="Configurar itinerário e passageiros"
               >
-                <span>Editar</span>
+                <Edit className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>Configurar</span>
               </Button>
             )}
 
@@ -358,14 +400,14 @@ export function ActiveRouteExecutionView({
                 }
               }}
               disabled={!!outraRotaAtiva || isLoading}
-              className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-extrabold uppercase text-xs tracking-wider rounded-lg shadow-sm flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer"
+              className="flex-1 min-w-0 h-12 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
             >
               {iniciarMutation?.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
               ) : (
-                <Play className="w-4 h-4 fill-white" />
+                <Play className="w-4 h-4 fill-white shrink-0" />
               )}
-              <span>Iniciar Rota</span>
+              <span className="truncate">Iniciar Rota</span>
             </Button>
           </div>
 
@@ -380,7 +422,7 @@ export function ActiveRouteExecutionView({
         </div>
       ) : (
         <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm space-y-4 text-left">
-          <div className="flex items-start justify-between gap-3 w-full">
+          <div className="flex items-center justify-between gap-3 w-full">
             <div className="space-y-1 min-w-0 pr-1 text-left">
               <h2 className="text-xl font-extrabold text-[#1a3a5c] font-headline tracking-tight leading-snug break-words">
                 {execucao?.rota?.nome}
@@ -396,12 +438,12 @@ export function ActiveRouteExecutionView({
             {execucao?.status === RouteExecutionStatus.INICIADA && (
               <Button
                 variant="outline"
-                className="rounded-lg border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs shrink-0 h-8 px-3 gap-1 shadow-2xs cursor-pointer"
+                className="rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs shrink-0 h-9 px-3 gap-1.5 shadow-2xs cursor-pointer transition-all active:scale-95"
                 onClick={onCancel}
                 disabled={isLoading}
               >
                 <XCircle className="w-4 h-4 text-rose-500" />
-                Encerrar
+                <span>Encerrar</span>
               </Button>
             )}
           </div>
@@ -430,34 +472,34 @@ export function ActiveRouteExecutionView({
 
       {/* TIMELINE DE PARADAS */}
       {totalTimelineItems > 0 && (
-        <div className="relative flex flex-col gap-5 pl-9 pb-1 text-left">
+        <div className="relative flex flex-col gap-6 pl-10 pb-1 text-left">
           {displayParadasConcluidas.map((parada, index) => {
             const absIndex = index;
             const showTopLine = absIndex > 0;
             const showBottomLine = absIndex < totalTimelineItems - 1;
             const isAusente = parada.status === RouteStopStatus.AUSENTE;
             const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
-            const statusLabel = isAusente ? "FALTOU" : "CONCLUÍDO";
+            const statusLabel = isAusente ? "AUSENTE" : "CONCLUÍDO";
 
             return (
               <div key={parada.id} className="relative w-full">
                 {showTopLine && (
-                  <div className="absolute left-[-24px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                 )}
                 {showBottomLine && (
-                  <div className="absolute left-[-24px] top-1/2 bottom-[-20px] w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
                 )}
 
                 <span className={cn(
-                  "absolute left-[-35px] top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center font-extrabold text-[10px] border-2 shadow-sm z-10",
+                  "absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-[11px] border-2 shadow-sm z-10",
                   isAusente ? "bg-white border-rose-400 text-rose-500" : "bg-emerald-500 border-emerald-500 text-white"
                 )}>
                   {isAusente ? (
-                    <UserMinus className="w-3.5 h-3.5 text-rose-500" />
+                    <UserMinus className="w-4 h-4 text-rose-500" />
                   ) : isEscolaItem ? (
-                    <School className="w-3.5 h-3.5 text-white" />
+                    <School className="w-4 h-4 text-white" />
                   ) : (
-                    <Check className="w-3.5 h-3.5 text-white" />
+                    <Check className="w-4 h-4 text-white" />
                   )}
                 </span>
 
@@ -492,20 +534,20 @@ export function ActiveRouteExecutionView({
             );
           })}
 
-          {paradaAtual && (() => {
+          {activeParadaToRender && (() => {
             const absIndex = displayParadasConcluidas.length;
             const showTopLine = absIndex > 0;
             const showBottomLine = absIndex < totalTimelineItems - 1;
-            const isEscola = paradaAtual.tipo_no === RouteNodeType.ESCOLA;
-            const displayOrdem = paradaAtual.ordem || 0;
+            const isEscola = activeParadaToRender.tipo_no === RouteNodeType.ESCOLA;
+            const displayOrdem = activeParadaToRender.ordem || 0;
 
-            const pass = paradaAtual.passageiro;
+            const pass = activeParadaToRender.passageiro;
             const responsaveisAdicionais = pass?.responsaveis || [];
             const isPrincipal = selectedRespTab === TAB_DEFAULT || selectedRespTab === TAB_PRINCIPAL;
             const respObj = !isPrincipal ? responsaveisAdicionais.find((r: any) => r.id === selectedRespTab) : null;
 
             let currentAddressStr = isEscola
-              ? formatarEnderecoCompleto(paradaAtual.escola) || ""
+              ? formatarEnderecoCompleto(activeParadaToRender.escola) || ""
               : formatarEnderecoParcialRota(pass) || "";
 
             if (!isEscola && pass) {
@@ -518,31 +560,28 @@ export function ActiveRouteExecutionView({
               }
             }
 
-            const cardClass = "bg-white p-4 sm:p-5 rounded-2xl shadow-sm space-y-3.5 animate-in fade-in zoom-in-95 duration-200 text-left border border-slate-200";
+            const isLastStop = proximasParadas.length === 0;
+            const cardClass = "bg-gradient-to-b from-white to-slate-50/60 p-4 sm:p-5 rounded-2xl shadow-md space-y-3.5 animate-in fade-in zoom-in-95 duration-200 text-left border-2 border-[#1a3a5c] relative z-10";
 
             return (
-              <div key={paradaAtual.id} ref={activeCardRef} className="relative w-full">
+              <div key={activeParadaToRender.id} ref={activeCardRef} className="relative w-full">
                 {showTopLine && (
-                  <div className="absolute left-[-24px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                 )}
                 {showBottomLine && (
-                  <div className="absolute left-[-24px] top-1/2 bottom-[-20px] w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
                 )}
 
-                <span className={cn(
-                  "absolute left-[-35px] top-1/2 -translate-y-1/2 h-6 w-6 rounded-full text-white flex items-center justify-center font-bold text-[10px] border-2 shadow-sm z-10",
-                  isEscola ? "bg-blue-600 border-blue-600" : "bg-[#1a3a5c] border-white"
-                )}>
-                  {isEscola ? <School className="w-3.5 h-3.5" /> : displayOrdem}
+                <span className="absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 shadow-md z-10 scale-110 ring-4 bg-[#1a3a5c] border-white ring-[#1a3a5c]/25">
+                  {isEscola ? <School className="w-4 h-4" /> : displayOrdem}
                 </span>
 
                 <div className={cardClass}>
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-                    <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400">
-                      {isEscola
-                        ? `Parada Atual`
-                        : `Parada Atual`}
-                    </span>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1a3a5c] text-white border border-[#1a3a5c] text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-300 animate-pulse" />
+                      <span>{isLastStop ? "Última Parada" : "Parada Atual"}</span>
+                    </div>
                     <div className="flex items-center gap-1.5 ml-auto">
                       {!isEscola && (
                         <Button
@@ -552,14 +591,14 @@ export function ActiveRouteExecutionView({
                           onClick={() => {
                             setAddressDialogData({
                               open: true,
-                              title: paradaAtual.passageiro?.nome || "Passageiro",
+                              title: activeParadaToRender.passageiro?.nome || "Passageiro",
                               address: currentAddressStr,
-                              latitude: respObj?.latitude || paradaAtual.passageiro?.latitude,
-                              longitude: respObj?.longitude || paradaAtual.passageiro?.longitude,
+                              latitude: respObj?.latitude || activeParadaToRender.passageiro?.latitude,
+                              longitude: respObj?.longitude || activeParadaToRender.passageiro?.longitude,
                               tipoNo: RouteNodeType.PASSAGEIRO,
-                              sentido: paradaAtual.sentido,
-                              escolaNome: paradaAtual.passageiro?.escola?.nome,
-                              passageiro: paradaAtual.passageiro
+                              sentido: activeParadaToRender.sentido,
+                              escolaNome: activeParadaToRender.passageiro?.escola?.nome,
+                              passageiro: activeParadaToRender.passageiro
                             });
                           }}
                           className="h-8 w-8 rounded-lg border border-slate-200 bg-slate-50 text-[#1a3a5c] hover:bg-slate-100 flex items-center justify-center shrink-0 cursor-pointer transition-all shadow-2xs"
@@ -571,25 +610,24 @@ export function ActiveRouteExecutionView({
 
                       {/* Seta de reordenar parada ativa */}
                       {(() => {
-                        const totalPendentesReal = paradaAtual ? [paradaAtual, ...proximasParadas] : [...proximasParadas];
+                        const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
                         if (totalPendentesReal.length <= 1) return null;
 
                         const index = 0;
                         const isUpDisabled = true;
 
-                        const nextItem = totalPendentesReal[index + 1];
                         const isDownDisabled =
                           index === totalPendentesReal.length - 1 ||
                           isLoading;
 
                         return (
-                          <div className="flex items-center gap-0.5 border border-slate-100 rounded-lg p-0.5 bg-slate-50 shrink-0">
+                          <div className="h-8 flex items-center gap-0.5 border border-slate-200 rounded-lg p-0.5 bg-slate-50 shrink-0 shadow-2xs">
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
                               disabled={isUpDisabled}
-                              className="h-6 w-6 rounded-md text-slate-400 opacity-20 shrink-0 cursor-not-allowed"
+                              className="h-7 w-7 rounded-md text-slate-400 opacity-20 shrink-0 cursor-not-allowed flex items-center justify-center"
                               title="Subir parada (já está ativa)"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
@@ -600,7 +638,7 @@ export function ActiveRouteExecutionView({
                               size="icon"
                               disabled={isDownDisabled}
                               onClick={() => handleMoveParada(index, "down")}
-                              className="h-6 w-6 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0"
+                              className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-200/80 disabled:opacity-20 shrink-0 flex items-center justify-center"
                               title="Descer parada ativa"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
@@ -614,12 +652,15 @@ export function ActiveRouteExecutionView({
                   {isEscola ? (
                     <div className="space-y-3.5">
                       {/* Cabecalho Limpo da Escola */}
-                      <div className="space-y-1 text-left w-full">
-                        <h2 className="text-base font-bold text-[#1a3a5c] font-headline leading-snug break-words">
-                          {paradaAtual.escola?.nome}
-                        </h2>
+                      <div className="space-y-1.5 text-left w-full">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <School className="w-5 h-5 text-[#1a3a5c] shrink-0" />
+                          <h2 className="text-base font-bold text-[#1a3a5c] font-headline leading-snug break-words">
+                            {activeParadaToRender.escola?.nome}
+                          </h2>
+                        </div>
                         {activeAddressStr && (
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 text-left pl-7.5">
                             <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span className="break-words">{activeAddressStr}</span>
                           </div>
@@ -664,7 +705,7 @@ export function ActiveRouteExecutionView({
                                     <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
                                       <div className="flex items-center gap-2 min-w-0 pr-2">
                                         <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                        <span className="max-[334px]:text-[10px] text-xs font-medium text-[#1a3a5c] truncate">
+                                        <span className="text-xs font-medium text-[#1a3a5c] truncate">
                                           {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
                                         </span>
                                       </div>
@@ -673,17 +714,18 @@ export function ActiveRouteExecutionView({
                                           type="button"
                                           onClick={() => handleConfirmFalta(aluno.id, aluno.passageiro?.nome || aluno.nome)}
                                           disabled={isLoading}
-                                          className="h-7 px-2.5 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-2xs cursor-pointer flex items-center gap-1 shrink-0"
+                                          className="h-8 px-2.5 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-lg shadow-2xs cursor-pointer flex items-center gap-1 shrink-0 transition-all active:scale-95"
                                         >
                                           <UserMinus className="w-3 h-3 text-rose-500" />
-                                          <span>Faltou</span>
+                                          <span>AUSENTE</span>
                                         </Button>
+                                      ) : isABordo ? (
+                                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs" title="Embarcado">
+                                          <Check className="w-3 h-3 stroke-[3]" />
+                                        </span>
                                       ) : (
-                                        <span className={cn(
-                                          "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border shadow-2xs shrink-0 leading-none",
-                                          isABordo ? "bg-emerald-50 text-emerald-700 border-emerald-200/60" : "bg-rose-50 text-rose-600 border-rose-100"
-                                        )}>
-                                          {isABordo ? "A BORDO" : "FALTOU"}
+                                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-rose-100 bg-rose-50 text-rose-600 shrink-0 leading-none">
+                                          AUSENTE
                                         </span>
                                       )}
                                     </div>
@@ -704,19 +746,6 @@ export function ActiveRouteExecutionView({
                                   const isABordo = aluno.status === RouteStopStatus.EMBARCADO && !aluno.visitado_em;
                                   const isConcluido = aluno.status === RouteStopStatus.EMBARCADO && !!aluno.visitado_em;
 
-                                  let badgeText = "PENDENTE";
-                                  let badgeClass = "bg-slate-50 text-slate-600 border-slate-200/60";
-                                  if (isAusente) {
-                                    badgeText = "FALTOU";
-                                    badgeClass = "bg-rose-50 text-rose-600 border-rose-100";
-                                  } else if (isABordo) {
-                                    badgeText = "A BORDO";
-                                    badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200/60";
-                                  } else if (isConcluido) {
-                                    badgeText = "DESEMBARCADO";
-                                    badgeClass = "bg-slate-50 text-slate-600 border-slate-200/60";
-                                  }
-
                                   return (
                                     <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
                                       <div className="flex items-center gap-2 min-w-0 pr-2">
@@ -725,9 +754,23 @@ export function ActiveRouteExecutionView({
                                           {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
                                         </span>
                                       </div>
-                                      <span className={cn("text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border shadow-2xs shrink-0 leading-none", badgeClass)}>
-                                        {badgeText}
-                                      </span>
+                                      {isConcluido ? (
+                                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs" title="Desembarcado">
+                                          <Check className="w-3 h-3 stroke-[3]" />
+                                        </span>
+                                      ) : isABordo ? (
+                                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-emerald-200/60 bg-emerald-50 text-emerald-700 shrink-0 leading-none">
+                                          EMBARCADO
+                                        </span>
+                                      ) : isAusente ? (
+                                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-rose-100 bg-rose-50 text-rose-600 shrink-0 leading-none">
+                                          AUSENTE
+                                        </span>
+                                      ) : (
+                                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-slate-200/60 bg-slate-50 text-slate-600 shrink-0 leading-none">
+                                          PENDENTE
+                                        </span>
+                                      )}
                                     </div>
                                   );
                                 })
@@ -739,14 +782,14 @@ export function ActiveRouteExecutionView({
 
                       {/* Botao de Acao Principal da Escola */}
                       <Button
-                        onClick={() => handleConfirmAction(paradaAtual.id)}
-                        disabled={isLoading}
-                        className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase text-xs tracking-wider rounded-xl shadow-sm flex items-center justify-center gap-2 border-none mt-3.5 cursor-pointer"
+                        onClick={() => handleConfirmAction(activeParadaToRender.id)}
+                        disabled={isActionDisabled}
+                        className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 border-none mt-3.5 cursor-pointer transition-all active:scale-95"
                       >
-                        {isLoading ? (
+                        {isActionDisabled ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <span>Concluir Parada</span>
+                          <span>{proximasParadas.length === 0 ? "Concluir Rota" : "Continuar"}</span>
                         )}
                       </Button>
                     </div>
@@ -755,7 +798,7 @@ export function ActiveRouteExecutionView({
                       {/* Cabecalho do Passageiro */}
                       <div className="space-y-1 text-left w-full">
                         <h2 className="text-base font-bold text-[#1a3a5c] font-headline leading-snug break-words">
-                          {formatShortName(paradaAtual.passageiro?.nome || "", true)}
+                          {formatShortName(activeParadaToRender.passageiro?.nome || "", true)}
                         </h2>
 
                         {/* Endereço Principal do Passageiro */}
@@ -771,47 +814,61 @@ export function ActiveRouteExecutionView({
                           {sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? (
                             <>
                               <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span>Voltando para casa</span>
+                              <span><span className="font-bold">Voltando</span> para casa</span>
                             </>
                           ) : (
                             <>
                               <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span>Indo para a escola</span>
+                              <span><span className="font-bold">Indo</span> para a escola</span>
                             </>
                           )}
                         </div>
                       </div>
 
-                      {/* Botoes de Acao do Passageiro */}
-                      <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
-                        <Button
-                          type="button"
-                          onClick={() => handleConfirmAction(paradaAtual.id)}
-                          disabled={isLoading}
-                          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase text-xs tracking-wider rounded-xl shadow-sm flex items-center justify-center gap-1.5 border-none transition-colors cursor-pointer"
-                        >
-                          {isLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Check className="w-4 h-4" />
-                          )}
-                          {actionLabel}
-                        </Button>
+                      {/* Botoes de Acao do Passageiro (Lado a Lado no Mobile) */}
+                      <div className="pt-2 border-t border-slate-100 w-full">
+                        {sentidoPassageiroAtivo !== RouteSentido.VOLTANDO && activeParadaToRender.status !== RouteStopStatus.EMBARCADO ? (
+                          <div className="grid grid-cols-2 gap-2.5 w-full">
+                            <Button
+                              type="button"
+                              onClick={() => handleConfirmFalta(activeParadaToRender.id, activeParadaToRender.passageiro?.nome || "")}
+                              disabled={isActionDisabled}
+                              variant="outline"
+                              className="w-full h-12 border border-rose-200/80 hover:bg-rose-50/50 disabled:opacity-70 text-rose-600 font-bold text-sm rounded-xl shadow-2xs flex items-center justify-center gap-1.5 bg-white transition-all active:scale-95 cursor-pointer"
+                            >
+                              {isActionDisabled ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
+                              ) : (
+                                <UserMinus className="w-3.5 h-3.5 text-rose-500" />
+                              )}
+                              <span>AUSENTE</span>
+                            </Button>
 
-                        {sentidoPassageiroAtivo !== RouteSentido.VOLTANDO && paradaAtual.status !== RouteStopStatus.EMBARCADO && (
+                            <Button
+                              type="button"
+                              onClick={() => handleConfirmAction(activeParadaToRender.id)}
+                              disabled={isActionDisabled}
+                              className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
+                            >
+                              {isActionDisabled ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <span>{actionLabel}</span>
+                              )}
+                            </Button>
+                          </div>
+                        ) : (
                           <Button
                             type="button"
-                            onClick={() => handleConfirmFalta(paradaAtual.id, paradaAtual.passageiro?.nome || "")}
-                            disabled={isLoading}
-                            variant="outline"
-                            className="w-full h-10 border border-rose-200/80 hover:bg-rose-50/50 text-rose-600 font-bold uppercase text-xs tracking-wider rounded-xl shadow-2xs flex items-center justify-center gap-1.5 bg-white transition-colors cursor-pointer"
+                            onClick={() => handleConfirmAction(activeParadaToRender.id)}
+                            disabled={isActionDisabled}
+                            className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
                           >
-                            {isLoading ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
+                            {isActionDisabled ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <UserMinus className="w-3.5 h-3.5 text-rose-500" />
+                              <span>{actionLabel}</span>
                             )}
-                            <span>Faltou</span>
                           </Button>
                         )}
                       </div>
@@ -823,7 +880,7 @@ export function ActiveRouteExecutionView({
           })()}
 
           {displayProximasParadas.map((parada, index) => {
-            const absIndex = displayParadasConcluidas.length + (paradaAtual ? 1 : 0) + index;
+            const absIndex = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + index;
             const showTopLine = absIndex > 0;
             const showBottomLine = absIndex < totalTimelineItems - 1;
             const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
@@ -861,17 +918,14 @@ export function ActiveRouteExecutionView({
             return (
               <div key={parada.id} className="relative w-full">
                 {showTopLine && (
-                  <div className="absolute left-[-24px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                 )}
                 {showBottomLine && (
-                  <div className="absolute left-[-24px] top-1/2 bottom-[-20px] w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
                 )}
 
-                <span className={cn(
-                  "absolute left-[-35px] top-1/2 -translate-y-1/2 h-6 w-6 font-bold text-[10px] flex items-center justify-center shrink-0 text-white border-2 rounded-full shadow-sm z-10",
-                  isEscolaItem ? "bg-blue-600 border-blue-600" : "bg-[#1a3a5c] border-white"
-                )}>
-                  {isEscolaItem ? <School className="w-3.5 h-3.5" /> : parada.ordem}
+                <span className="absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 font-bold text-[11px] flex items-center justify-center shrink-0 text-white border-2 rounded-full shadow-sm z-10 bg-[#1a3a5c] border-white">
+                  {isEscolaItem ? <School className="w-4 h-4" /> : parada.ordem}
                 </span>
 
                 <div className="bg-white p-3.5 rounded-2xl flex flex-col justify-center text-left shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] min-h-[52px] transition-all border border-slate-200">
@@ -885,12 +939,14 @@ export function ActiveRouteExecutionView({
                             : formatShortName(parada.passageiro?.nome || parada.nome || "", true)}
                         </h4>
                         <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1 text-left">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="break-words">
-                            {isEscolaItem
-                              ? "Parada de Escola"
-                              : (currentAddressStr || "Endereço cadastrado")}
-                          </span>
+                          {!isEscolaItem && (
+                            <>
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="break-words">
+                                {currentAddressStr}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -957,12 +1013,12 @@ export function ActiveRouteExecutionView({
                         {parada.sentido === RouteSentido.VOLTANDO ? (
                           <>
                             <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span className="break-words">Voltando para casa</span>
+                            <span className="break-words"><span className="font-bold">Voltando</span> para casa</span>
                           </>
                         ) : (
                           <>
                             <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span className="break-words">Indo para a escola</span>
+                            <span className="break-words"><span className="font-bold">Indo</span> para a escola</span>
                           </>
                         )}
                       </div>
@@ -973,7 +1029,7 @@ export function ActiveRouteExecutionView({
                     <div className="flex items-center justify-between border-t border-slate-100 mt-2.5 pt-2">
                       <div className="flex items-center gap-2">
                         {(() => {
-                          const totalPendentesReal = paradaAtual ? [paradaAtual, ...proximasParadas] : [...proximasParadas];
+                          const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
                           if (totalPendentesReal.length <= 1) return null;
 
                           const realIndex = index + 1;
@@ -1018,11 +1074,11 @@ export function ActiveRouteExecutionView({
                       <div className="flex items-center gap-1.5">
                         {isEscolaItem ? null : parada.status === RouteStopStatus.EMBARCADO ? (
                           <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-md text-[10px] font-bold px-2 py-0.5 leading-none block whitespace-nowrap">
-                            A BORDO
+                            EMBARCADO
                           </span>
                         ) : parada.status === RouteStopStatus.AUSENTE ? (
                           <span className="bg-rose-50 text-rose-600 border border-rose-100 rounded-md text-[10px] font-bold px-2 py-0.5 leading-none block whitespace-nowrap">
-                            FALTOU
+                            AUSENTE
                           </span>
                         ) : (
                           <Button
@@ -1031,14 +1087,14 @@ export function ActiveRouteExecutionView({
                             disabled={isLoading}
                             onClick={() => handleConfirmFalta(parada.id, parada.passageiro?.nome || "")}
                             className="h-8 px-3 rounded-lg border-rose-200 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 shadow-xs flex items-center gap-1.5 bg-white text-[11px] font-bold transition-colors"
-                            title="Marcar falta hoje"
+                            title="Marcar como ausente hoje"
                           >
                             {isLoading ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             ) : (
                               <UserMinus className="w-3.5 h-3.5" />
                             )}
-                            <span>Faltou</span>
+                            <span>AUSENTE</span>
                           </Button>
                         )}
                       </div>

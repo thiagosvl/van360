@@ -184,7 +184,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     onRegistrarPagamento,
     onPagarPix,
     onEnviarCobranca,
-    showHistory = false,
+    showHistory = true,
   } = props;
 
   const {
@@ -248,7 +248,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     };
 
-    if (props.onVerRecibo && cobranca.recibo_url) {
+    if (isPago && props.onVerRecibo && cobranca.recibo_url) {
       actions.push({
         label: "Ver Recibo",
         icon: <Receipt className="h-4 w-4" />,
@@ -269,7 +269,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       }
     }
 
-    if (cobranca.pagamento_manual) {
+    if (isPago) {
       actions.push({
         label: "Desfazer Pagamento",
         icon: <RotateCcw className="h-4 w-4" />,
@@ -280,14 +280,14 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
             handleDesfazerPagamento();
           }
         },
-        disabled: !isPago || isActionLoading,
+        disabled: isActionLoading,
         swipeColor: "bg-amber-500",
         isLoading: isDesfazendoPagamento,
         hasSeparatorAfter: true,
       });
     }
 
-    if (onEnviarCobranca && isMobilePlatform() && !isPago) {
+    if (!isPago && onEnviarCobranca && isMobilePlatform()) {
       actions.push({
         label: "Enviar Cobrança",
         icon: <WhatsAppIcon className="h-4 w-4" />,
@@ -297,18 +297,20 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    const desativar = cobranca.desativar_lembretes ?? false;
-    actions.push({
-      label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
-      icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
-      onClick: handleToggleLembretes,
-      disabled: isActionLoading,
-      isLoading: isTogglingNotificacoes,
-      swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
-      hasSeparatorAfter: true,
-    });
+    if (!isPago) {
+      const desativar = cobranca.desativar_lembretes ?? false;
+      actions.push({
+        label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
+        icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
+        onClick: handleToggleLembretes,
+        disabled: isActionLoading,
+        isLoading: isTogglingNotificacoes,
+        swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
+        hasSeparatorAfter: true,
+      });
+    }
 
-    if (onEditarCobranca) {
+    if (!isPago && onEditarCobranca) {
       actions.push({
         label: "Editar",
         icon: <FilePen className="h-4 w-4" />,
@@ -322,7 +324,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (onRegistrarPagamento) {
+    if (!isPago && onRegistrarPagamento) {
       actions.push({
         label: "Registrar Pagamento",
         icon: <CheckCircle2 className="h-4 w-4" />,
@@ -336,7 +338,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (onPagarPix) {
+    if (!isPago && onPagarPix) {
       actions.push({
         label: "Pagar via PIX",
         icon: <QrCode className="h-4 w-4" />,
@@ -344,7 +346,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           document.body.click();
           setTimeout(() => onPagarPix(), 10);
         },
-        disabled: isPago || isActionLoading,
+        disabled: isActionLoading,
         swipeColor: "bg-emerald-600",
         hasSeparatorAfter: true,
       });
@@ -370,18 +372,18 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    /* 
-    actions.push({
-      label: "Excluir",
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: props.onExcluirCobranca || handleDeleteCobranca,
-      disabled: disableExcluirCobranca(cobranca) || isActionLoading,
-      isDestructive: true,
-      swipeColor: "bg-red-600",
-      className: "text-red-600 font-bold",
-      isLoading: isDeleting,
-    });
-    */
+    if (props.onExcluirCobranca) {
+      actions.push({
+        label: "Excluir",
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: props.onExcluirCobranca,
+        disabled: disableExcluirCobranca(cobranca) || isActionLoading,
+        isDestructive: true,
+        swipeColor: "bg-red-600",
+        className: "text-red-600 font-bold",
+        isLoading: isDeleting,
+      });
+    }
 
     return actions;
   }, [

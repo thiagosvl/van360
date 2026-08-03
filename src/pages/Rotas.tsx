@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { ListSkeleton } from "@/components/skeletons";
+import { RotasSkeleton, ListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { useRoutes, useExecucoesRota } from "@/hooks/api/useRoutes";
 import { useDeleteRoute, useCancelarExecucao } from "@/hooks/api/useRouteMutations";
@@ -31,7 +31,7 @@ export default function Rotas() {
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
   const usuarioId = profile?.id || "";
 
-  const { data: rotas = [], isLoading: isLoadingRotas, refetch: refetchRotas } = useRoutes(usuarioId);
+  const { data: rotas = [], isLoading: isLoadingRotas, isFetching: isFetchingRotas, refetch: refetchRotas } = useRoutes(usuarioId);
   const handleOpenCreateRouteDialog = () => {
     openRouteFormDialog({
       onSuccess: (data) => {
@@ -45,7 +45,7 @@ export default function Rotas() {
       }
     });
   };
-  const { data: execucoes = [], isLoading: isLoadingExecs, refetch: refetchExecs } = useExecucoesRota(usuarioId);
+  const { data: execucoes = [], isLoading: isLoadingExecs, isFetching: isFetchingExecs, refetch: refetchExecs } = useExecucoesRota(usuarioId);
   const deleteRouteMutation = useDeleteRoute(usuarioId);
   const cancelarExecucaoMutation = useCancelarExecucao();
 
@@ -70,13 +70,6 @@ export default function Rotas() {
   useEffect(() => {
     setPageTitle("Rotas");
   }, [setPageTitle]);
-
-  useEffect(() => {
-    if (usuarioId) {
-      refetchRotas();
-      refetchExecs();
-    }
-  }, [usuarioId, refetchRotas, refetchExecs]);
 
   const handleRefresh = async () => {
     await Promise.all([refetchRotas(), refetchExecs()]);
@@ -105,6 +98,13 @@ export default function Rotas() {
     return execucoes.filter(e => e.status !== RouteExecutionStatus.INICIADA);
   }, [execucoes]);
 
+  const isCanceling = cancelarExecucaoMutation.isPending;
+  const isInitialOrRefetchLoading = isLoadingRotas || isLoadingExecs || isCanceling || (isFetchingExecs && !!execucaoAtiva);
+
+  if (isInitialOrRefetchLoading && (!rotas.length || !execucoes.length || isCanceling || (isFetchingExecs && !!execucaoAtiva))) {
+    return <RotasSkeleton />;
+  }
+
   return (
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
@@ -123,28 +123,14 @@ export default function Rotas() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <div className="flex items-center shrink-0 w-full sm:w-auto">
                 <Button
                   size="sm"
-                  variant="outline"
-                  disabled={cancelarExecucaoMutation.isPending}
-                  className="flex-1 sm:flex-initial border-rose-200/80 text-rose-700 hover:bg-rose-50 hover:text-rose-800 font-bold text-xs rounded-lg h-9 px-3.5 bg-white shadow-2xs cursor-pointer"
-                  onClick={() => handleEncerrarExecucao(execucaoAtiva.id)}
-                >
-                  {cancelarExecucaoMutation.isPending ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                  ) : (
-                    <XCircle className="w-3.5 h-3.5 mr-1.5 text-rose-600" />
-                  )}
-                  Encerrar
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-sm h-9 px-4 cursor-pointer"
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-sm h-10 px-4 cursor-pointer flex items-center justify-center gap-1.5"
                   onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", execucaoAtiva.id))}
                 >
-                  <Play className="w-3.5 h-3.5 mr-1.5 fill-white" />
-                  Continuar
+                  <Play className="w-3.5 h-3.5 fill-white" />
+                  <span>Ver Execução</span>
                 </Button>
               </div>
             </div>
@@ -182,7 +168,7 @@ export default function Rotas() {
 
             <TabsContent value={TAB_MINHAS_ROTAS} className="space-y-4 mt-0">
               <div className="flex items-center justify-between px-1">
-                <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">{rotas.length > 0 ? "Suas Rotas" : ""}</h2>
+                <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">{rotas.length > 0 ? "Rotas Cadastradas" : ""}</h2>
                 <Button
                   onClick={handleOpenCreateRouteDialog}
                   className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95 flex items-center gap-1.5"

@@ -31,10 +31,6 @@ export function useExecucaoDetail(id: string) {
     queryKey: ["route-execution", id],
     queryFn: () => routeApi.getExecucao(id),
     enabled: !!id,
-    refetchInterval: (query) => {
-      // Se a rota está ativa/iniciada, podemos fazer refetch periódico suave (ex: a cada 15 segundos)
-      const data = query.state.data as any;
-      return data?.status === RouteExecutionStatus.INICIADA ? 15000 : false;
-    }
+    refetchInterval: false
   });
 }

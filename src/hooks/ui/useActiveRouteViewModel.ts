@@ -1,11 +1,10 @@
 import { useLocation } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReordenarExecucao, useFinalizarExecucao } from "../api/useRouteMutations";
-import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger } from "@/types/route";
+import { RouteStopStatus, RouteExecutionPassenger } from "@/types/route";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
-  const queryClient = useQueryClient();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isExplicitPreview = searchParams.get("preview") === "true";
@@ -15,10 +14,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     queryFn: () => routeApi.getExecucao(execucaoId),
     enabled: !isExplicitPreview && !!execucaoId,
     retry: false,
-    refetchInterval: (query) => {
-      const data = query.state.data as any;
-      return data?.status === RouteExecutionStatus.INICIADA ? 15000 : false;
-    }
+    refetchInterval: false
   });
 
   const routeQuery = useQuery({
@@ -45,7 +41,6 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
       rota_id: routeQuery.data.id,
       usuario_id: routeQuery.data.usuario_id,
       status: "preview" as any,
-      tipo: routeQuery.data.tipo,
       iniciada_em: "",
       created_at: routeQuery.data.created_at,
       rota: {
@@ -73,10 +68,10 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
   const paradaAtual = !isPreview && paradasPendentes.length > 0 ? paradasPendentes[0] : null;
 
-  const proximasParadas = isPreview 
-    ? paradas 
-    : paradasPendentes.length > 1 
-      ? paradasPendentes.slice(1) 
+  const proximasParadas = isPreview
+    ? paradas
+    : paradasPendentes.length > 1
+      ? paradasPendentes.slice(1)
       : [];
 
   const handleStep = async (
@@ -140,12 +135,18 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     ? routeQuery.isLoading
     : (execQuery.isLoading || (execQuery.isError && routeQuery.isLoading));
 
+  const isStartingRoute = iniciarMutation.isPending || (iniciarMutation.isSuccess && isPreview);
+
   return {
     execucao,
     paradaAtual,
     proximasParadas,
     paradasConcluidas,
-    isLoading: isDataLoading || stepMutation.isPending || cancelMutation.isPending || reorderMutation.isPending || iniciarMutation.isPending || finalizarMutation.isPending,
+    isLoading: isDataLoading || isStartingRoute || cancelMutation.isPending,
+    isStepping: stepMutation.isPending,
+    isFinalizing: finalizarMutation.isPending,
+    isReordering: reorderMutation.isPending,
+    isFetching: execQuery.isFetching || routeQuery.isFetching,
     isError: isExplicitPreview ? routeQuery.isError : (execQuery.isError && routeQuery.isError),
     handleStep,
     handleFinalizarRota,

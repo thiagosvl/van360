@@ -65,7 +65,7 @@ const Home = () => {
     if (sessionStorage.getItem("van360_just_registered") === "true") {
       sessionStorage.removeItem("van360_just_registered");
 
-      const duration = 0.8 * 1000; // 0.8 segundos (rápido e direto)
+      const duration = 0.4 * 1000;
       const end = Date.now() + duration;
 
       const frame = () => {
@@ -327,7 +327,7 @@ const Home = () => {
             <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
               Indique e Ganhe
             </h2>
-            <ReferAndEarnCard isTrial={subscription?.status === SubscriptionStatus.TRIAL} />
+            <ReferAndEarnCard />
           </section>
 
           {/* Onboarding em Vídeo (Contextual) */}

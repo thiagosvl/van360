@@ -120,9 +120,9 @@ export default function PassageiroEnderecoFormDialog({
           <div className="bg-amber-50 border border-amber-200/50 rounded-xl p-3 flex items-start gap-2.5 mb-5">
             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-left">
-              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Atenção:</span>
-              <p className="text-[10px] text-amber-700 font-medium leading-relaxed mt-0.5">
-                Informe o endereço do passageiro. Após salvar, ele será incluído automaticamente na rota.
+              <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">Atenção:</span>
+              <p className="text-[11px] text-amber-700 font-medium leading-relaxed mt-0.5">
+                Após preencher e salvar, o passageiro será incluído automaticamente na rota.
               </p>
             </div>
           </div>

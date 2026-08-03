@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useRouteDetail } from "@/hooks/api/useRoutes";
-import { useCreateRoute, useUpdateRoute } from "@/hooks/api/useRouteMutations";
+import { useCreateRoute, useUpdateRoute, useDeleteRoute } from "@/hooks/api/useRouteMutations";
 import { usePassageiros } from "@/hooks/api/usePassageiros";
 import { useEscolas } from "@/hooks/api/useEscolas";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
@@ -17,8 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus, Trash2, ArrowUp, ArrowDown,
-  AlertCircle, AlertTriangle, User, School, MapPin, X, Loader2, Pencil,
-  ChevronDown, ChevronUp, Save,
+  AlertCircle, AlertTriangle, User, School, MapPin, X, Loader2, Pencil, Edit,
+  ChevronDown, ChevronUp, Save, Home, Check
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
@@ -37,6 +37,7 @@ interface ItineraryItem {
   temEndereco?: boolean;
   responsaveisAdicionais?: Array<{ id: string; nome: string; parentesco: string }>;
   passageiro?: any;
+  escola?: any;
   sentido?: RouteSentido;
 }
 
@@ -44,7 +45,7 @@ export default function ConfigurarRota() {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
   const navigate = useNavigate();
-  const { setPageTitle, openRouteFormDialog } = useLayout();
+  const { setPageTitle, openRouteFormDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
@@ -55,24 +56,55 @@ export default function ConfigurarRota() {
   }, [isEditing, setPageTitle]);
 
   const { data: routeData, isLoading: isLoadingRoute } = useRouteDetail(id || "");
-  const { data: passageirosQueryData, refetch: refetchPassageiros } = usePassageiros({ usuarioId });
-  const passageirosList = passageirosQueryData?.list || [];
-
-  const { data: escolasQueryData } = useEscolas({ usuarioId });
-  const escolasList = escolasQueryData?.list || [];
-
-  const { data: veiculosQueryData } = useVeiculos({ usuarioId });
-  const veiculosList = veiculosQueryData?.list || [];
-
-  const createRouteMutation = useCreateRoute();
-  const updateRouteMutation = useUpdateRoute();
-  const { gerarErrosPorNo, validarItinerarioPronto } = useRouteRules();
 
   const location = useLocation();
   const stateData = location.state as { nome: string; veiculoId: string; escolaFixaId?: string } | null;
 
   const [nome, setNome] = useState(stateData?.nome || "");
   const [veiculoId, setVeiculoId] = useState(stateData?.veiculoId || "");
+
+  useEffect(() => {
+    if (routeData?.veiculo_id && !veiculoId) {
+      setVeiculoId(routeData.veiculo_id);
+    }
+  }, [routeData?.veiculo_id, veiculoId]);
+
+  const { data: passageirosQueryData, refetch: refetchPassageiros } = usePassageiros({
+    usuarioId,
+    veiculo: veiculoId || undefined
+  });
+  const passageirosList = passageirosQueryData?.list || [];
+
+  const { data: escolasQueryData } = useEscolas({ usuarioId });
+  const escolasList = escolasQueryData?.list || [];
+
+  const { data: veiculosQueryData, isLoading: isLoadingVeiculos } = useVeiculos({ usuarioId });
+  const veiculosList = veiculosQueryData?.list || [];
+
+  const createRouteMutation = useCreateRoute();
+  const updateRouteMutation = useUpdateRoute();
+  const deleteRouteMutation = useDeleteRoute(usuarioId);
+
+  const handleDeleteRoute = () => {
+    if (!id) return;
+    openConfirmationDialog({
+      title: "Excluir Rota?",
+      description: "Tem certeza que deseja excluir permanentemente esta rota? Esta ação não poderá ser desfeita.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteRouteMutation.mutateAsync(id);
+          closeConfirmationDialog();
+          navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+        } catch (error) {
+          closeConfirmationDialog();
+        }
+      }
+    });
+  };
+  const { gerarErrosPorNo, validarItinerarioPronto } = useRouteRules();
+
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const [itinerario, setItinerario] = useState<ItineraryItem[]>([]);
@@ -293,10 +325,6 @@ export default function ConfigurarRota() {
     }
   }, [veiculosList, isEditing, veiculoId]);
 
-
-
-
-
   useEffect(() => {
     if (!isDialogOpen) {
       setSearchAlunos("");
@@ -325,14 +353,27 @@ export default function ConfigurarRota() {
 
   const escolasDisponiveisCount = escolasList.length;
 
-  const getInitialSentido = (currentItinerario: ItineraryItem[], target: "top" | "bottom" | number): RouteSentido => {
+  const getInitialSentido = (
+    currentItinerario: ItineraryItem[],
+    target: "top" | "bottom" | number,
+    passageiroEscolaId?: string
+  ): RouteSentido => {
     if (target === "top") return RouteSentido.INDO;
-    if (typeof target === "number") {
-      const temEscolaAntes = currentItinerario.slice(0, target).some(item => item.tipo_no === RouteNodeType.ESCOLA);
-      return temEscolaAntes ? RouteSentido.VOLTANDO : RouteSentido.INDO;
+
+    const nodesAntes = typeof target === "number"
+      ? currentItinerario.slice(0, target)
+      : currentItinerario;
+
+    if (passageiroEscolaId) {
+      const temSuaEscolaAntes = nodesAntes.some(item => {
+        const itemEscolaId = item.escola_id || item.escola?.id;
+        return item.tipo_no === RouteNodeType.ESCOLA && itemEscolaId === passageiroEscolaId;
+      });
+      return temSuaEscolaAntes ? RouteSentido.VOLTANDO : RouteSentido.INDO;
     }
-    const temEscolaAntes = currentItinerario.some(item => item.tipo_no === RouteNodeType.ESCOLA);
-    return temEscolaAntes ? RouteSentido.VOLTANDO : RouteSentido.INDO;
+
+    const temQualquerEscolaAntes = nodesAntes.some(item => item.tipo_no === RouteNodeType.ESCOLA);
+    return temQualquerEscolaAntes ? RouteSentido.VOLTANDO : RouteSentido.INDO;
   };
 
   const insertItemIntoItinerario = (prev: ItineraryItem[], newItem: ItineraryItem, target: "top" | "bottom" | number): ItineraryItem[] => {
@@ -362,7 +403,8 @@ export default function ConfigurarRota() {
       return;
     }
 
-    const sentidoInicial = getInitialSentido(itinerario, insertTarget);
+    const passEscolaId = pass.escola_id || pass.escola?.id;
+    const sentidoInicial = getInitialSentido(itinerario, insertTarget, passEscolaId);
 
     const newItem: ItineraryItem = {
       id: `no-pass-${pass.id}-${Date.now()}`,
@@ -422,8 +464,8 @@ export default function ConfigurarRota() {
           <div className="mx-1 mb-4 bg-rose-50/90 border border-rose-200/80 rounded-2xl p-3.5 flex items-start gap-2.5 shadow-sm text-left animate-in fade-in slide-in-from-top-2 duration-200">
             <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
             <div className="space-y-1.5 flex-1">
-              <span className="text-[10px] font-extrabold text-rose-600 uppercase tracking-widest block">
-                {errosItinerario.length > 1 ? `AJUSTES NECESSÁRIOS (${errosItinerario.length})` : "AJUSTE NECESSÁRIO"}
+              <span className="text-[10px] font-bold text-rose-600 uppercase block">
+                {errosItinerario.length > 1 ? `Para Corrigir (${errosItinerario.length})` : "Para Corrigir"}
               </span>
               <ul className="space-y-1.5">
                 {errosItinerario.map((err, i) => (
@@ -494,18 +536,29 @@ export default function ConfigurarRota() {
     if (isEditing && id) {
       updateRouteMutation.mutate(
         { id, data: payload },
-        { onSuccess: () => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES) }
+        {
+          onSuccess: () => {
+            navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", id)}?preview=true`);
+          }
+        }
       );
     } else {
       createRouteMutation.mutate(payload, {
-        onSuccess: () => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)
+        onSuccess: (newRoute: any) => {
+          const createdId = newRoute?.id;
+          if (createdId) {
+            navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", createdId)}?preview=true`);
+          } else {
+            navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+          }
+        }
       });
     }
   };
 
-  const isDataReady = !isEditing || (!isLoadingRoute && !!routeData && (routeData.passageiros ? (itinerario.length > 0 || routeData.passageiros.length === 0) : true));
+  const isDataReady = (!isEditing || (!isLoadingRoute && !!routeData && (routeData.passageiros ? (itinerario.length > 0 || routeData.passageiros.length === 0) : true))) && !isLoadingVeiculos;
 
-  if (isEditing && !isDataReady) {
+  if (!isDataReady) {
     return <RouteConfigSkeleton count={4} />;
   }
 
@@ -522,7 +575,7 @@ export default function ConfigurarRota() {
                 {nome || "Configurar Rota"}
               </h2>
               {(() => {
-                const veiculo = veiculosList.find(v => v.id === veiculoId);
+                const veiculo = veiculosList.find(v => v.id === veiculoId) || (veiculosList.length === 1 ? veiculosList[0] : null);
                 return veiculo ? (
                   <p className="text-xs font-medium text-slate-400 leading-none">
                     {veiculo.marca} {veiculo.modelo} - {veiculo.placa}
@@ -534,15 +587,36 @@ export default function ConfigurarRota() {
                 );
               })()}
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleOpenEditRouteDialog}
-              className="h-8 px-3 rounded-lg border-slate-200 text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all"
-            >
-              <Pencil className="w-3 h-3" />
-            </Button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleOpenEditRouteDialog}
+                className="h-8 px-2.5 rounded-lg border-slate-200 text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all"
+                title="Editar Nome/Veículo"
+              >
+                <Edit className="w-3.5 h-3.5" />
+              </Button>
+
+              {isEditing && id && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteRoute}
+                  disabled={deleteRouteMutation.isPending}
+                  className="h-8 px-2.5 rounded-lg border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all"
+                  title="Excluir Rota"
+                >
+                  {deleteRouteMutation.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Seção do Itinerário */}
@@ -560,33 +634,7 @@ export default function ConfigurarRota() {
                   </span>
                 </div>
 
-                <div className="relative flex flex-col gap-1.5 pl-9 pb-1">
-
-                  {/* Botão "Adicionar Parada" no Início (exibido apenas se tiver 1 ou mais paradas) */}
-                  {itinerario.length > 0 && (
-                    <div className="relative w-full my-3.5">
-                      {/* Linha vertical conectora individual (Metade Inferior estendida) */}
-                      <div className="absolute left-[-24px] top-1/2 -bottom-6 w-[2.5px] bg-slate-200/70 z-0" />
-                      {/* Círculo do Timeline de ação (Topo - Clicável) */}
-                      <button
-                        type="button"
-                        onClick={openModalParadaTopo}
-                        className="absolute left-[-35px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white hover:bg-slate-100 border-2 border-dashed border-[#1a3a5c]/45 hover:border-[#1a3a5c] text-[#1a3a5c] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
-                        title="Adicionar Parada no Início"
-                      >
-                        <Plus className="w-3 h-3 stroke-[3px]" />
-                      </button>
-                      {/* Botão Topo */}
-                      <Button
-                        type="button"
-                        onClick={openModalParadaTopo}
-                        className="w-full h-11 bg-white hover:bg-[#1a3a5c]/5 border-2 border-dashed border-[#1a3a5c]/30 hover:border-[#1a3a5c] text-[#1a3a5c] font-extrabold uppercase text-xs tracking-wider rounded-lg shadow-sm flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99]"
-                      >
-                        <Plus className="w-4 h-4 stroke-[3px]" />
-                        <span>Adicionar Parada</span>
-                      </Button>
-                    </div>
-                  )}
+                <div className="relative flex flex-col gap-3.5 pl-10 pb-1">
 
                   {/* Renderização das Paradas Intermediárias */}
                   {itinerario.map((item, index) => {
@@ -595,26 +643,24 @@ export default function ConfigurarRota() {
                     const nodeError = errosPorNo[item.id];
                     const hasError = !!nodeError;
 
-                    const showTopLine = true;
+                    const showTopLine = index > 0;
 
                     return (
                       <div key={item.id} className="relative w-full">
                         {/* Linha vertical conectora individual (Metade Superior estendida) */}
                         {showTopLine && (
-                          <div className="absolute left-[-24px] -top-6 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                          <div className="absolute left-[-26px] -top-6 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                         )}
                         {/* Linha vertical conectora individual (Metade Inferior estendida) */}
-                        <div className="absolute left-[-24px] top-1/2 -bottom-6 w-[2.5px] bg-slate-200/70 z-0" />
+                        <div className="absolute left-[-26px] top-1/2 -bottom-6 w-[2.5px] bg-slate-200/70 z-0" />
                         {/* Círculo do Timeline contendo o ícone da escola ou o número exato da parada */}
                         <span className={cn(
-                          "absolute left-[-35px] top-1/2 -translate-y-[calc(50%+8px)] h-6 w-6 rounded-full text-white flex items-center justify-center font-bold text-[10px] border-2 shadow-sm z-10 transition-colors",
-                          isEscola
-                            ? "bg-blue-600 border-blue-600"
-                            : hasError
-                              ? "bg-rose-500 border-rose-500 shadow-md shadow-rose-200"
-                              : "bg-[#1a3a5c] border-white"
+                          "absolute left-[-39px] top-1/2 -translate-y-[calc(50%+8px)] h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 shadow-sm z-10 transition-colors",
+                          hasError
+                            ? "bg-rose-500 border-rose-500 shadow-md shadow-rose-200"
+                            : "bg-[#1a3a5c] border-white"
                         )}>
-                          {isEscola ? <School className="w-3.5 h-3.5" /> : displayLabel}
+                          {isEscola ? <School className="w-4 h-4" /> : displayLabel}
                         </span>
 
                         {/* Card */}
@@ -631,10 +677,6 @@ export default function ConfigurarRota() {
                                       <span className="font-bold text-sm text-[#1a3a5c] leading-snug block break-words">
                                         {item.nome}
                                       </span>
-                                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1">
-                                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                        <span>Parada de Escola</span>
-                                      </div>
                                     </div>
                                     <button
                                       type="button"
@@ -714,22 +756,19 @@ export default function ConfigurarRota() {
                                       <span className="font-bold text-sm text-[#1a3a5c] break-words leading-snug block">
                                         {formatShortName(item.nome, true)}
                                       </span>
-                                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1">
-                                        {item.sentido === RouteSentido.VOLTANDO ? (
-                                          <>
-                                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                            <span className="break-words">
-                                              {formatarEnderecoParcialRota(item.passageiro)}
-                                            </span>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                            <span className="break-words">
-                                              {item.passageiro?.escola?.nome}
-                                            </span>
-                                          </>
-                                        )}
+                                      {(item.passageiro?.escola?.nome || item.detalhe) && (
+                                        <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1">
+                                          <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                          <span className="break-words leading-snug">
+                                            {item.passageiro?.escola?.nome || item.detalhe?.replace("Escola: ", "")}
+                                          </span>
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5">
+                                        <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                        <span className="break-words">
+                                          {formatarEnderecoParcialRota(item.passageiro) || "Endereço não informado"}
+                                        </span>
                                       </div>
                                     </div>
                                     <button
@@ -812,14 +851,14 @@ export default function ConfigurarRota() {
                         {/* Nó Intermediário da Linha do Tempo entre Cards (Centralização Óptica Ajustada) */}
                         {index < itinerario.length - 1 && (
                           <div className="relative w-full h-4 flex items-center justify-center my-1 z-10">
-                            <div className="absolute left-[-24px] -top-3 -bottom-3 w-[2.5px] bg-slate-200/70 z-0" />
+                            <div className="absolute left-[-26px] -top-3 -bottom-3 w-[2.5px] bg-slate-200/70 z-0" />
                             <button
                               type="button"
                               onClick={() => openModalParadaIntermediaria(index + 1)}
-                              className="absolute left-[-35px] top-1/2 -translate-y-1/2 -translate-y-[8px] w-6 h-6 rounded-full bg-white hover:bg-slate-100 border-2 border-dashed border-[#1a3a5c]/45 hover:border-[#1a3a5c] text-[#1a3a5c] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                              className="absolute left-[-39px] top-1/2 -translate-y-1/2 -translate-y-[8px] w-7 h-7 rounded-full bg-white hover:bg-slate-100 border-2 border-dashed border-[#1a3a5c]/45 hover:border-[#1a3a5c] text-[#1a3a5c] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
                               title={`Inserir parada entre as paradas ${index + 1} e ${index + 2}`}
                             >
-                              <Plus className="w-3 h-3 stroke-[3px]" />
+                              <Plus className="w-3.5 h-3.5 stroke-[3px]" />
                             </button>
                           </div>
                         )}
@@ -831,16 +870,16 @@ export default function ConfigurarRota() {
                   <div className="relative w-full my-3.5">
                     {/* Linha vertical conectora individual (Metade Superior estendida) */}
                     {itinerario.length > 0 && (
-                      <div className="absolute left-[-24px] -top-6 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                      <div className="absolute left-[-26px] -top-6 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                     )}
                     {/* Círculo do Timeline de ação (Rodapé - Clicável) */}
                     <button
                       type="button"
                       onClick={openModalParadaGeral}
-                      className="absolute left-[-35px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white hover:bg-slate-100 border-2 border-dashed border-[#1a3a5c]/45 hover:border-[#1a3a5c] text-[#1a3a5c] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                      className="absolute left-[-39px] top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white hover:bg-slate-100 border-2 border-dashed border-[#1a3a5c]/45 hover:border-[#1a3a5c] text-[#1a3a5c] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
                       title="Adicionar Parada no Final"
                     >
-                      <Plus className="w-3 h-3 stroke-[3px]" />
+                      <Plus className="w-3.5 h-3.5 stroke-[3px]" />
                     </button>
                     {/* Botão */}
                     <Button
@@ -861,14 +900,14 @@ export default function ConfigurarRota() {
               <Button
                 type="submit"
                 disabled={createRouteMutation.isPending || updateRouteMutation.isPending || !isFormValid}
-                className="w-full h-11 bg-[#1a3a5c] hover:bg-[#16314f] text-white font-extrabold uppercase text-xs tracking-wider rounded-lg shadow-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] mt-4"
+                className="w-full h-12 bg-[#1a3a5c] hover:bg-[#16314f] text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] mt-4 cursor-pointer"
               >
                 {createRouteMutation.isPending || updateRouteMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                <span>{createRouteMutation.isPending || updateRouteMutation.isPending ? "Salvando..." : "Salvar"}</span>
+                <span>{createRouteMutation.isPending || updateRouteMutation.isPending ? "Salvando..." : "Salvar Rota"}</span>
               </Button>
             </div>
           )}
@@ -929,13 +968,14 @@ export default function ConfigurarRota() {
                   {filteredPassageiros.map((p) => {
                     const temEndereco = !!(p.logradouro && p.numero);
                     const estaAdicionado = itinerario.some((item) => item.passageiro_id === p.id);
+                    const passAddressStr = formatarEnderecoParcialRota(p);
 
-                    return (
-                      <div
-                        key={p.id}
-                        className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex flex-col gap-1 transition-colors hover:bg-slate-50"
-                      >
-                        <div className="flex items-center justify-between gap-3">
+                    if (temEndereco) {
+                      return (
+                        <div
+                          key={p.id}
+                          className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors hover:bg-slate-50 text-left min-h-[52px]"
+                        >
                           <div className="min-w-0 flex-1">
                             {/* Linha 1: Nome + Turma */}
                             <div className="flex items-center gap-1.5 min-w-0">
@@ -951,30 +991,83 @@ export default function ConfigurarRota() {
                             </div>
 
                             {/* Linha 2: Escola */}
-                            <p className="text-[10px] text-slate-500 font-medium whitespace-normal break-words text-left mt-0.5 leading-snug">
-                              {p.escola?.nome || "Escola não informada"}
-                            </p>
-
-                            {/* Linha 3: Aviso de Sem Endereço (quando aplicável) */}
-                            {!temEndereco && (
-                              <div className="flex items-center gap-1 text-[10px] font-semibold text-amber-700 mt-1">
-                                <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
-                                <span>Sem endereço cadastrado</span>
+                            {p.escola?.nome && (
+                              <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
+                                <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <span className="break-words leading-snug">{p.escola.nome}</span>
                               </div>
                             )}
+
+                            {/* Linha 3: Endereço do Aluno com Ícone da Casa */}
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
+                              <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="break-words leading-snug">{passAddressStr || "Endereço cadastrado"}</span>
+                            </div>
                           </div>
 
+                          {/* Botão de Adicionar (Centralizado Verticalmente com items-center) */}
                           <Button
                             type="button"
                             size="sm"
                             onClick={() => handleAddPassageiro(p.id)}
                             disabled={estaAdicionado}
                             title={estaAdicionado ? "Passageiro já adicionado" : "Adicionar passageiro"}
-                            className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm disabled:opacity-30"
+                            className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm disabled:opacity-30 cursor-pointer flex items-center justify-center"
                           >
-                            <Plus className="w-4 h-4" />
+                            {estaAdicionado ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                           </Button>
                         </div>
+                      );
+                    }
+
+                    // Card para Aluno Sem Endereço (Layout Responsivo Perfeito para 320px+)
+                    return (
+                      <div
+                        key={p.id}
+                        className="bg-amber-50/40 border border-amber-200/60 p-2.5 rounded-lg flex flex-col gap-2 transition-colors hover:bg-amber-50/70 text-left"
+                      >
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          {/* Linha 1: Nome + Turma */}
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-xs font-bold text-[#1a3a5c] truncate">
+                              {formatShortName(p.nome, true)}
+                            </span>
+                            {p.turma && (
+                              <span className="text-slate-400 font-semibold text-[10px] inline-flex items-center gap-1 shrink-0">
+                                <span className="text-[7.5px] opacity-40">•</span>
+                                {p.turma}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Linha 2: Escola */}
+                          {p.escola?.nome && (
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 text-left">
+                              <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="break-words leading-snug">{p.escola.nome}</span>
+                            </div>
+                          )}
+
+                          {/* Linha 3: Aviso de Sem Endereço */}
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-700">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>Sem endereço cadastrado</span>
+                          </div>
+                        </div>
+
+                        {/* Botão de Ação Destacado e de Largura Total (Sem espremer a tela) */}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleAddPassageiro(p.id)}
+                          disabled={estaAdicionado}
+                          title="Cadastrar endereço e adicionar à rota"
+                          className="w-full h-8 text-[11px] font-bold border-amber-300 bg-white hover:bg-amber-100/60 text-amber-900 flex items-center justify-center gap-1.5 rounded-lg shadow-2xs transition-colors cursor-pointer disabled:opacity-40"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                          <span>{estaAdicionado ? "Adicionado à Rota" : "Cadastrar Endereço e Adicionar"}</span>
+                        </Button>
                       </div>
                     );
                   })}
@@ -1005,20 +1098,26 @@ export default function ConfigurarRota() {
               ) : (
                 <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
                   {filteredEscolas.map((e) => {
+                    const escolaAddressStr = formatarEnderecoParcialRota(e);
+
                     return (
                       <div
                         key={e.id}
-                        className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors hover:bg-slate-50"
+                        className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors hover:bg-slate-50 text-left min-h-[52px]"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-[#1a3a5c]">{e.nome}</p>
+                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
+                            <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="break-words leading-snug">{escolaAddressStr || "Endereço não cadastrado"}</span>
+                          </div>
                         </div>
                         <Button
                           type="button"
                           size="sm"
                           onClick={() => handleAddEscola(e.id)}
                           title="Adicionar escola"
-                          className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm active:scale-95 transition-all"
+                          className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm active:scale-95 transition-all cursor-pointer flex items-center justify-center"
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
@@ -1051,7 +1150,8 @@ export default function ConfigurarRota() {
             if (isAutoAdd && targetId) {
               const pass = passageirosList.find(p => p.id === targetId);
               const passName = pass?.nome || "Passageiro";
-              const sentidoInicial = getInitialSentido(itinerario, insertTarget);
+              const passEscolaId = pass?.escola_id || pass?.escola?.id;
+              const sentidoInicial = getInitialSentido(itinerario, insertTarget, passEscolaId);
 
               const updatedPass = pass ? {
                 ...pass,

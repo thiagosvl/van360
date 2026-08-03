@@ -31,6 +31,7 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { forwardRef } from "react";
 import { getNowBR } from "@/utils/dateUtils";
 import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
+import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -330,10 +331,11 @@ const CobrancaItemPassageiro = forwardRef<
         onClickItem={undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
+        hideTriggerOnDesktop
       >
         <div
           className={cn(
-            "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50",
+            "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50 relative",
             cobranca.isProjection && "cursor-pointer"
           )}
         >
@@ -348,7 +350,7 @@ const CobrancaItemPassageiro = forwardRef<
                 <Clock className="h-4 w-4 text-white" />}
           </div>
 
-          <div className="flex-grow min-w-0 pr-[72px] sm:pr-20">
+          <div className="flex-grow min-w-0 pr-2 sm:pr-4">
             <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
               {getMesNome(cobranca.mes)}
             </p>
@@ -365,23 +367,40 @@ const CobrancaItemPassageiro = forwardRef<
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
-            <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-              {Number(cobranca.valor) > 0
-                ? Number(cobranca.valor).toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })
-                : "R$ --"}
-            </p>
-            <StatusBadge
-              status={cobranca.status}
-              dataVencimento={isIncomplete ? undefined : cobranca.data_vencimento}
-              className={cn(
-                "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                statusColor
-              )}
-            />
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-3 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
+            <div className="flex flex-col items-end gap-1">
+              <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+                {Number(cobranca.valor) > 0
+                  ? Number(cobranca.valor).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })
+                  : "R$ --"}
+              </p>
+              <StatusBadge
+                status={cobranca.status}
+                dataVencimento={isIncomplete ? undefined : cobranca.data_vencimento}
+                className={cn(
+                  "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                  statusColor
+                )}
+              />
+            </div>
+
+            <div className="hidden sm:flex items-center ml-1" onClick={(e) => e.stopPropagation()}>
+              <CobrancaActionsMenu
+                cobranca={cobranca}
+                onVerCarteirinha={undefined}
+                onEditarCobranca={cobranca.isProjection ? undefined : () => onEditCobranca(cobranca)}
+                onRegistrarPagamento={cobranca.isProjection
+                  ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
+                  : () => onRegistrarPagamento(cobranca)}
+                onExcluirCobranca={cobranca.isProjection ? undefined : () => onExcluirCobranca(cobranca)}
+                onDesfazerPagamento={cobranca.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined)}
+                onVerRecibo={cobranca.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined)}
+                onEnviarCobranca={cobranca.isProjection ? undefined : onEnviarCobranca}
+              />
+            </div>
           </div>
         </div>
       </MobileActionItem>

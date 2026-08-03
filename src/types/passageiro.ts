@@ -34,8 +34,8 @@ export interface Passageiro {
   observacoes?: string;
   latitude?: number;
   longitude?: number;
-  escola?: { nome: string };
-  veiculo?: { placa: string };
+  escola?: { id?: string; nome?: string };
+  veiculo?: { id?: string; placa?: string };
 
   status_contrato?: ContratoStatus;
   contrato_id?: string;

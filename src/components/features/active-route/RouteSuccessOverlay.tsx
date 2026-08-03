@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
-import { Trophy } from "lucide-react";
+import { CircleCheckBig } from "lucide-react";
 
 interface RouteSuccessOverlayProps {
   onNavigate: () => void;
@@ -9,22 +9,22 @@ interface RouteSuccessOverlayProps {
 
 export function RouteSuccessOverlay({ onNavigate }: RouteSuccessOverlayProps) {
   useEffect(() => {
-    const duration = 1.0 * 1000;
+    const duration = 0.35 * 1000;
     const animationEnd = Date.now() + duration;
 
     const frame = () => {
       confetti({
-        particleCount: 4,
+        particleCount: 3,
         angle: 60,
-        spread: 55,
+        spread: 45,
         origin: { x: 0 },
         colors: ["#1a3a5c", "#f59e0b", "#10b981", "#3b82f6"],
         zIndex: 99999
       });
       confetti({
-        particleCount: 4,
+        particleCount: 3,
         angle: 120,
-        spread: 55,
+        spread: 45,
         origin: { x: 1 },
         colors: ["#1a3a5c", "#f59e0b", "#10b981", "#3b82f6"],
         zIndex: 99999
@@ -41,8 +41,8 @@ export function RouteSuccessOverlay({ onNavigate }: RouteSuccessOverlayProps) {
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md text-white p-6 animate-in fade-in zoom-in-95 duration-300">
       <div className="relative mb-6">
         <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center animate-ping absolute inset-0" />
-        <div className="w-24 h-24 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 relative z-10">
-          <Trophy className="w-12 h-12" />
+        <div className="w-24 h-24 bg-emerald-500/70 text-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 relative z-10">
+          <CircleCheckBig className="w-12 h-12" />
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export function RouteSuccessOverlay({ onNavigate }: RouteSuccessOverlayProps) {
         <Button
           type="button"
           onClick={onNavigate}
-          className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold uppercase text-xs tracking-wider rounded-xl shadow-lg border-none cursor-pointer"
+          className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl shadow-lg border-none cursor-pointer transition-all active:scale-95 flex items-center justify-center"
         >
           Voltar para Rotas
         </Button>

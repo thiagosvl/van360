@@ -36,6 +36,8 @@ interface MobileActionItemProps {
   renderHeader?: () => ReactNode;
   /** Custom direct click handler for the item (bypasses ActionSheet drawer) */
   onClickItem?: () => void;
+  /** If true, hides the mobile trigger indicator on desktop view (sm and above) */
+  hideTriggerOnDesktop?: boolean;
 }
 
 export function MobileActionItem({
@@ -44,6 +46,7 @@ export function MobileActionItem({
   className,
   renderHeader,
   onClickItem,
+  hideTriggerOnDesktop,
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -76,7 +79,8 @@ export function MobileActionItem({
         className={cn(
           "absolute top-1/2 -translate-y-1/2 right-1.5 h-6 w-6 z-20 flex items-center justify-center transition-opacity",
           "text-zinc-400 opacity-30 dark:text-zinc-500",
-          onClickItem ? "cursor-pointer pointer-events-auto" : "pointer-events-none"
+          onClickItem ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
+          hideTriggerOnDesktop && "sm:hidden"
         )}
         onClick={(e) => {
           if (onClickItem) {

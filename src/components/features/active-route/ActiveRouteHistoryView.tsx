@@ -99,7 +99,7 @@ export function ActiveRouteHistoryView({
       </div>
 
       {/* TIMELINE UNIFICADO DE PARADAS DA ROTA HISTÓRICA */}
-      <div className="relative flex flex-col gap-5 pl-9 pb-1 text-left">
+      <div className="relative flex flex-col gap-6 pl-10 pb-1 text-left">
         {/* PARADAS CONCLUÍDAS / REALIZADAS */}
         {displayParadasConcluidas.map((parada, index) => {
           const absIndex = index;
@@ -109,7 +109,7 @@ export function ActiveRouteHistoryView({
           const isAusente = parada.status === RouteStopStatus.AUSENTE;
           const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
 
-          const statusLabel = isAusente ? "FALTOU" : "CONCLUÍDO";
+          const statusLabel = isAusente ? "AUSENTE" : "CONCLUÍDO";
           const subtitleText = isEscolaItem
             ? "Parada na escola"
             : isAusente
@@ -121,24 +121,24 @@ export function ActiveRouteHistoryView({
           return (
             <div key={parada.id} className="relative w-full">
               {showTopLine && (
-                <div className="absolute left-[-24px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
               )}
               {showBottomLine && (
-                <div className="absolute left-[-24px] top-1/2 bottom-[-20px] w-[2.5px] bg-slate-200/70 z-0" />
+                <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
               )}
 
               <span className={cn(
-                "absolute left-[-35px] top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center font-extrabold text-[10px] border-2 shadow-sm z-10",
+                "absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-[11px] border-2 shadow-sm z-10",
                 isAusente
                   ? "bg-white border-rose-400 text-rose-500"
                   : "bg-emerald-500 border-emerald-500 text-white"
               )}>
                 {isAusente ? (
-                  <UserMinus className="w-3.5 h-3.5 text-rose-500" />
+                  <UserMinus className="w-4 h-4 text-rose-500" />
                 ) : isEscolaItem ? (
-                  <School className="w-3.5 h-3.5 text-white" />
+                  <School className="w-4 h-4 text-white" />
                 ) : (
-                  <Check className="w-3.5 h-3.5 text-white" />
+                  <Check className="w-4 h-4 text-white" />
                 )}
               </span>
 
@@ -175,14 +175,14 @@ export function ActiveRouteHistoryView({
           return (
             <div key={parada.id} className="relative w-full">
               {showTopLine && (
-                <div className="absolute left-[-24px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
               )}
               {showBottomLine && (
-                <div className="absolute left-[-24px] top-1/2 bottom-[-20px] w-[2.5px] bg-slate-200/70 z-0" />
+                <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
               )}
 
-              <span className="absolute left-[-35px] top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-slate-100 border-2 border-slate-300 text-slate-400 flex items-center justify-center font-bold text-[10px] shadow-2xs z-10">
-                {isEscolaItem ? <School className="w-3.5 h-3.5 text-slate-400" /> : (parada.ordem || absIndex + 1)}
+              <span className="absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-100 border-2 border-slate-300 text-slate-400 flex items-center justify-center font-bold text-[11px] shadow-2xs z-10">
+                {isEscolaItem ? <School className="w-4 h-4 text-slate-400" /> : (parada.ordem || absIndex + 1)}
               </span>
 
               <div className="bg-white border border-slate-200 p-2.5 rounded-xl flex items-center justify-between gap-3 shadow-2xs opacity-50 min-h-[52px] transition-all">
