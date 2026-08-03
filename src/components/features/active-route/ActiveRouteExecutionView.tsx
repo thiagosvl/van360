@@ -27,6 +27,7 @@ import { useAtualizarParadaStatus } from "@/hooks/api/useRouteMutations";
 
 import { openExternalNavigation } from "@/utils/browser";
 import { NavigationApp } from "@/constants";
+import { queryClient } from "@/services/queryClient";
 
 const TAB_DEFAULT = "default";
 const TAB_PRINCIPAL = "principal";
