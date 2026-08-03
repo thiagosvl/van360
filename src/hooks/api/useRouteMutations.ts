@@ -101,6 +101,9 @@ export function useAtualizarParadaStatus() {
     }) => routeApi.atualizarParadaStatus(execucaoId, paradaId, status),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"] });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar status da parada", {

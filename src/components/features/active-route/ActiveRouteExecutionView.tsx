@@ -150,6 +150,13 @@ export function ActiveRouteExecutionView({
             });
             toast.success("Ausência desfeita! Passageiro retornado ao trajeto.");
           }
+          const pid = parada.passageiro_id || parada.passageiro?.id;
+          if (pid) {
+            queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", pid] });
+            queryClient.invalidateQueries({ queryKey: ["passageiro-rotas", pid] });
+          } else {
+            queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
+          }
           safeCloseDialog(closeConfirmationDialog);
         } catch (err: unknown) {
           const errorMsg = err instanceof Error ? err.message : "Erro ao desfazer ausência.";
@@ -617,13 +624,13 @@ export function ActiveRouteExecutionView({
             return (
               <div key={activeParadaToRender.id} ref={activeCardRef} className="relative w-full">
                 {showTopLine && (
-                  <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                 )}
                 {showBottomLine && (
-                  <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
                 )}
 
-                <span className="absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 shadow-md z-10 scale-110 ring-4 bg-[#1a3a5c] border-white ring-[#1a3a5c]/25">
+                <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 shadow-md z-10 scale-110 ring-4 bg-[#1a3a5c] border-white ring-[#1a3a5c]/25">
                   {isEscola ? <School className="w-4 h-4" /> : displayOrdem}
                 </span>
 
@@ -980,13 +987,13 @@ export function ActiveRouteExecutionView({
             return (
               <div key={parada.id} className="relative w-full">
                 {showTopLine && (
-                  <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
                 )}
                 {showBottomLine && (
-                  <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
+                  <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
                 )}
 
-                <span className="absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 font-bold text-[11px] flex items-center justify-center shrink-0 text-white border-2 rounded-full shadow-sm z-10 bg-[#1a3a5c] border-white">
+                <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 font-bold text-[11px] flex items-center justify-center shrink-0 text-white border-2 rounded-full shadow-sm z-10 bg-[#1a3a5c] border-white">
                   {isEscolaItem ? <School className="w-4 h-4" /> : parada.ordem}
                 </span>
 
