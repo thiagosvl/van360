@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { X } from "lucide-react";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { AppNavbar } from "@/components/layout/AppNavbar";
@@ -12,7 +12,6 @@ import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
 import { formatShortName } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
@@ -25,15 +24,6 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { subscription } = useSubscriptionStatus(user?.id);
-  const userInitials = useMemo(() => {
-    if (!profile?.nome) return "U";
-    const nameParts = profile.nome.trim().split(/\s+/).filter(Boolean);
-    if (nameParts.length >= 2) {
-      return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
-    }
-    return nameParts[0].substring(0, 2).toUpperCase();
-  }, [profile?.nome]);
 
   const displayName = profile?.apelido || formatShortName(profile?.nome);
 
@@ -97,11 +87,15 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
       {/* Sidebar fixa apenas para Desktop */}
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4">
-          <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
-            {userInitials}
+          <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center shadow-sm shrink-0 p-2">
+            <img
+              src="/assets/logo-van360.webp"
+              alt="Van360"
+              className="h-full w-full object-contain brightness-0 invert"
+            />
           </div>
           <div className="flex flex-col min-w-0 pr-2">
-            <span className="text-[15px] font-bold text-white leading-tight truncate mb-1">
+            <span className="text-[15px] font-bold text-white leading-tight truncate">
               {displayName}
             </span>
             <div className="flex items-center">
@@ -136,14 +130,18 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
-                {userInitials}
+              <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0 p-2">
+                <img
+                  src="/assets/logo-van360.webp"
+                  alt="Van360"
+                  className="h-full w-full object-contain brightness-0 invert"
+                />
               </div>
               <div className="flex flex-col min-w-0 pr-2">
                 <span className="text-[16px] font-bold text-white leading-tight truncate">
                   {displayName}
                 </span>
-                <div className="flex items-center mt-0.5">
+                <div className="flex items-center">
                   <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
                 </div>
               </div>

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import {
-  XCircle, MapPin, Check, CheckCircle2, UserMinus, Route, Compass, Navigation, Flag, X, ArrowUp, ArrowDown, Loader2, Play, AlertTriangle, School, User,
+  XCircle, MapPin, Check, UserMinus, Route, ArrowUp, ArrowDown, Loader2, Play, AlertTriangle, School, User,
   Home, Edit
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
@@ -21,7 +21,6 @@ import { toast } from "@/utils/notifications/toast";
 import { useRouteRules } from "@/hooks/business/useRouteRules";
 import { useSession } from "@/hooks/business/useSession";
 import { useExecucoesRota } from "@/hooks/api/useRoutes";
-import { useDeleteRoute } from "@/hooks/api/useRouteMutations";
 
 import { openExternalNavigation } from "@/utils/browser";
 import { NavigationApp } from "@/constants";
@@ -70,7 +69,7 @@ export function ActiveRouteExecutionView({
 }: ActiveRouteExecutionViewProps) {
   const navigate = useNavigate();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const { validarMovimentoPermitido } = useRouteRules();
+  const { validarMovimentoPermitido, validarItinerarioPronto } = useRouteRules();
   const [selectedRespTab, setSelectedRespTab] = useState<string>(TAB_DEFAULT);
   const activeCardRef = useRef<HTMLDivElement | null>(null);
 
@@ -133,7 +132,7 @@ export function ActiveRouteExecutionView({
   const isActionDisabled = isLoading || isStepping || isFinalizing || (!!submittingStopId && submittingStopId === activeParadaToRender?.id);
 
   const sentidoPassageiroAtivo = activeParadaToRender?.sentido || RouteSentido.INDO;
-  const actionLabel = sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? "Desembarcou" : "Embarcou";
+  const actionLabel = sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? "CONFIRMAR" : "CONFIRMAR";
 
   const todasParadas = [
     ...(paradasConcluidas || []),
@@ -156,17 +155,28 @@ export function ActiveRouteExecutionView({
 
     const desces = todasParadasList.filter((node, i) => {
       if (node.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
-      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id;
+      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id || node.escola_id;
       if (passEscolaId !== escolaId) return false;
       if (node.sentido !== RouteSentido.INDO) return false;
-      return i < escolaNodeIndex;
+      if (i >= escolaNodeIndex) return false;
+
+      // Passageiro marcado como AUSENTE não embarcou na van e portanto NÃO desembarca na escola
+      if (node.status === RouteStopStatus.AUSENTE || node.passageiro?.status === RouteStopStatus.AUSENTE) {
+        return false;
+      }
+      return true;
     });
 
     const subes = todasParadasList.filter((node, i) => {
       if (node.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
-      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id;
+      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id || node.escola_id;
       if (passEscolaId !== escolaId) return false;
       if (node.sentido !== RouteSentido.VOLTANDO) return false;
+
+      // Passageiro marcado como AUSENTE não embarca na escola
+      if (node.status === RouteStopStatus.AUSENTE || node.passageiro?.status === RouteStopStatus.AUSENTE) {
+        return false;
+      }
 
       let ultimaEscolaAntesDeP = -1;
       for (let idx = i - 1; idx >= 0; idx--) {
@@ -325,7 +335,14 @@ export function ActiveRouteExecutionView({
     if (targetIndex < 0 || targetIndex >= totalPendentesReal.length) return;
 
     // Regras de negócio compartilhadas do helper centralizado:
-    if (!validarMovimentoPermitido(execucao.tipo, index, direction, totalPendentesReal)) {
+    if (!validarMovimentoPermitido(execucao.tipo, index, direction, totalPendentesReal, paradasConcluidas)) {
+      const simulado = [...totalPendentesReal];
+      const temp = simulado[index];
+      simulado[index] = simulado[targetIndex];
+      simulado[targetIndex] = temp;
+      const fullItinerario = [...paradasConcluidas, ...simulado];
+      const check = validarItinerarioPronto(execucao.tipo, fullItinerario);
+      toast.error(check.errorMsg || "Movimento não permitido para este itinerário.");
       return;
     }
 
@@ -381,11 +398,10 @@ export function ActiveRouteExecutionView({
                 type="button"
                 variant="outline"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
-                className="h-12 px-3 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                className="h-12 px-3 sm:px-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5"
                 title="Configurar itinerário e passageiros"
               >
                 <Edit className="w-4 h-4 text-slate-500 shrink-0" />
-                <span>Configurar</span>
               </Button>
             )}
 
@@ -400,14 +416,14 @@ export function ActiveRouteExecutionView({
                 }
               }}
               disabled={!!outraRotaAtiva || isLoading}
-              className="flex-1 min-w-0 h-12 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
+              className="flex-1 min-w-0 h-12 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
             >
               {iniciarMutation?.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
               ) : (
                 <Play className="w-4 h-4 fill-white shrink-0" />
               )}
-              <span className="truncate">Iniciar Rota</span>
+              <span className="truncate">INICIAR ROTA</span>
             </Button>
           </div>
 
@@ -438,12 +454,12 @@ export function ActiveRouteExecutionView({
             {execucao?.status === RouteExecutionStatus.INICIADA && (
               <Button
                 variant="outline"
-                className="rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs shrink-0 h-9 px-3 gap-1.5 shadow-2xs cursor-pointer transition-all active:scale-95"
+                className="rounded-lg border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs shrink-0 h-9 px-3 gap-1.5 shadow-2xs cursor-pointer transition-all active:scale-95"
                 onClick={onCancel}
                 disabled={isLoading}
               >
                 <XCircle className="w-4 h-4 text-rose-500" />
-                <span>Encerrar</span>
+                <span>ENCERRAR</span>
               </Button>
             )}
           </div>
@@ -503,7 +519,7 @@ export function ActiveRouteExecutionView({
                   )}
                 </span>
 
-                <div className="bg-slate-50/70 border border-slate-200 p-2.5 rounded-xl flex items-center justify-between gap-3 shadow-2xs opacity-65 min-h-[52px] transition-all">
+                <div className="bg-slate-50/70 border border-slate-200 p-2.5 rounded-lg flex items-center justify-between gap-3 shadow-2xs opacity-65 min-h-[52px] transition-all">
                   <div className="min-w-0 flex-1">
                     <h4 className={cn(
                       "text-[11px] font-bold text-left break-words leading-tight pr-2",
@@ -579,7 +595,7 @@ export function ActiveRouteExecutionView({
                 <div className={cardClass}>
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1a3a5c] text-white border border-[#1a3a5c] text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-sky-300 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
                       <span>{isLastStop ? "Última Parada" : "Parada Atual"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 ml-auto">
@@ -618,7 +634,8 @@ export function ActiveRouteExecutionView({
 
                         const isDownDisabled =
                           index === totalPendentesReal.length - 1 ||
-                          isLoading;
+                          isLoading ||
+                          !validarMovimentoPermitido(execucao.tipo, index, "down", totalPendentesReal, paradasConcluidas);
 
                         return (
                           <div className="h-8 flex items-center gap-0.5 border border-slate-200 rounded-lg p-0.5 bg-slate-50 shrink-0 shadow-2xs">
@@ -673,7 +690,7 @@ export function ActiveRouteExecutionView({
 
                         return (
                           <Tabs defaultValue={defaultTab} className="w-full mt-3">
-                            <div className="bg-slate-100/80 p-1 rounded-xl">
+                            <div className="bg-slate-100/80 p-1 rounded-lg">
                               <TabsList className="grid grid-cols-2 w-full bg-transparent p-0 h-8">
                                 <TabsTrigger
                                   value="embarques"
@@ -693,7 +710,7 @@ export function ActiveRouteExecutionView({
                             {/* Conteudo de Embarques */}
                             <TabsContent value="embarques" className="mt-2.5 space-y-1.5 focus-visible:outline-none">
                               {alunosParaEmbarcar.length === 0 ? (
-                                <p className="text-xs text-slate-400 font-medium py-3 text-center bg-slate-50/50 rounded-xl border border-slate-100">
+                                <p className="text-xs text-slate-400 font-medium py-3 text-center bg-slate-50/50 rounded-lg border border-slate-100">
                                   Nenhum embarque nesta parada
                                 </p>
                               ) : (
@@ -702,7 +719,7 @@ export function ActiveRouteExecutionView({
                                   const isABordo = aluno.status === RouteStopStatus.EMBARCADO;
 
                                   return (
-                                    <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
+                                    <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
                                       <div className="flex items-center gap-2 min-w-0 pr-2">
                                         <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                         <span className="text-xs font-medium text-[#1a3a5c] truncate">
@@ -737,7 +754,7 @@ export function ActiveRouteExecutionView({
                             {/* Conteudo de Desembarques */}
                             <TabsContent value="desembarques" className="mt-2.5 space-y-1.5 focus-visible:outline-none">
                               {alunosParaDesembarcar.length === 0 ? (
-                                <p className="text-xs text-slate-400 font-medium py-3 text-center bg-slate-50/50 rounded-xl border border-slate-100">
+                                <p className="text-xs text-slate-400 font-medium py-3 text-center bg-slate-50/50 rounded-lg border border-slate-100">
                                   Nenhum desembarque nesta parada
                                 </p>
                               ) : (
@@ -747,7 +764,7 @@ export function ActiveRouteExecutionView({
                                   const isConcluido = aluno.status === RouteStopStatus.EMBARCADO && !!aluno.visitado_em;
 
                                   return (
-                                    <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
+                                    <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
                                       <div className="flex items-center gap-2 min-w-0 pr-2">
                                         <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                         <span className="text-xs font-medium text-[#1a3a5c] truncate">
@@ -784,12 +801,12 @@ export function ActiveRouteExecutionView({
                       <Button
                         onClick={() => handleConfirmAction(activeParadaToRender.id)}
                         disabled={isActionDisabled}
-                        className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 border-none mt-3.5 cursor-pointer transition-all active:scale-95"
+                        className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center gap-2 border-none mt-3.5 cursor-pointer transition-all active:scale-95"
                       >
                         {isActionDisabled ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <span>{proximasParadas.length === 0 ? "Concluir Rota" : "Continuar"}</span>
+                          <span>{proximasParadas.length === 0 ? "CONCLUIR" : "CONTINUAR"}</span>
                         )}
                       </Button>
                     </div>
@@ -834,7 +851,7 @@ export function ActiveRouteExecutionView({
                               onClick={() => handleConfirmFalta(activeParadaToRender.id, activeParadaToRender.passageiro?.nome || "")}
                               disabled={isActionDisabled}
                               variant="outline"
-                              className="w-full h-12 border border-rose-200/80 hover:bg-rose-50/50 disabled:opacity-70 text-rose-600 font-bold text-sm rounded-xl shadow-2xs flex items-center justify-center gap-1.5 bg-white transition-all active:scale-95 cursor-pointer"
+                              className="w-full h-12 border border-rose-200/80 hover:bg-rose-50/50 disabled:opacity-70 text-rose-600 font-bold text-sm rounded-lg shadow-2xs flex items-center justify-center gap-1.5 bg-white transition-all active:scale-95 cursor-pointer"
                             >
                               {isActionDisabled ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
@@ -848,7 +865,7 @@ export function ActiveRouteExecutionView({
                               type="button"
                               onClick={() => handleConfirmAction(activeParadaToRender.id)}
                               disabled={isActionDisabled}
-                              className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
+                              className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
                             >
                               {isActionDisabled ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -862,7 +879,7 @@ export function ActiveRouteExecutionView({
                             type="button"
                             onClick={() => handleConfirmAction(activeParadaToRender.id)}
                             disabled={isActionDisabled}
-                            className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
+                            className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
                           >
                             {isActionDisabled ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -933,11 +950,14 @@ export function ActiveRouteExecutionView({
                     {/* Cabeçalho do Card: Nome + Turma e Botão de Endereço no Canto Superior Direito */}
                     <div className="flex items-start justify-between gap-2 w-full">
                       <div className="flex-1 min-w-0 pr-1 text-left">
-                        <h4 className="text-sm font-bold text-[#1a3a5c] break-words leading-snug">
-                          {isEscolaItem
-                            ? parada.escola?.nome
-                            : formatShortName(parada.passageiro?.nome || parada.nome || "", true)}
-                        </h4>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {isEscolaItem && <School className="w-5 h-5 text-[#1a3a5c] shrink-0" />}
+                          <h4 className="text-sm font-bold text-[#1a3a5c] break-words leading-snug">
+                            {isEscolaItem
+                              ? parada.escola?.nome
+                              : formatShortName(parada.passageiro?.nome || parada.nome || "", true)}
+                          </h4>
+                        </div>
                         <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1 text-left">
                           {!isEscolaItem && (
                             <>
@@ -984,7 +1004,7 @@ export function ActiveRouteExecutionView({
                       const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
                       return (
-                        <div className="mt-2 space-y-1 border-t border-slate-100 pt-2 w-full text-left">
+                        <div className="mt-1 space-y-1 w-full text-left">
                           {/* Lista Completa de Alunos de Desembarque e Embarque */}
                           <div className="space-y-1 text-left">
                             <div className="text-[11px] leading-snug">
@@ -1036,11 +1056,13 @@ export function ActiveRouteExecutionView({
 
                           const isUpDisabled =
                             realIndex === 0 ||
-                            isLoading;
+                            isLoading ||
+                            !validarMovimentoPermitido(execucao.tipo, realIndex, "up", totalPendentesReal, paradasConcluidas);
 
                           const isDownDisabled =
                             realIndex === totalPendentesReal.length - 1 ||
-                            isLoading;
+                            isLoading ||
+                            !validarMovimentoPermitido(execucao.tipo, realIndex, "down", totalPendentesReal, paradasConcluidas);
 
                           return (
                             <div className="flex items-center gap-1 border border-slate-100 rounded-lg p-0.5 bg-slate-50 shrink-0">
@@ -1203,7 +1225,7 @@ export function ActiveRouteExecutionView({
 
                 {/* 2. Alerta de Atenção para Responsável Alternativo (ex: Pai/Mãe) */}
                 {!isPrincipal && respObj && (
-                  <div className="flex items-start gap-2 bg-amber-50/90 border border-amber-200/80 p-2.5 rounded-xl text-amber-900 text-[11px] font-normal leading-tight animate-in fade-in duration-200 text-left shadow-2xs">
+                  <div className="flex items-start gap-2 bg-amber-50/90 border border-amber-200/80 p-2.5 rounded-lg text-amber-900 text-[11px] font-normal leading-tight animate-in fade-in duration-200 text-left shadow-2xs">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-semibold text-amber-950 block mb-0.5">Aviso de endereço alternativo:</span>
@@ -1213,7 +1235,7 @@ export function ActiveRouteExecutionView({
                 )}
 
                 {/* 3. Card de Endereço Ativo (Com os Botões de Navegação Maps e Waze) */}
-                <div className="bg-white border border-slate-200/90 p-3.5 rounded-xl space-y-2.5 text-left shadow-2xs">
+                <div className="bg-white border border-slate-200/90 p-3.5 rounded-lg space-y-2.5 text-left shadow-2xs">
                   <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                       Endereço
@@ -1256,7 +1278,7 @@ export function ActiveRouteExecutionView({
                 </div>
 
                 {/* 4. Trajeto da Rota (Com Linha Conectora) */}
-                <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-xl space-y-3 text-left shadow-2xs">
+                <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-lg space-y-3 text-left shadow-2xs">
                   <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                       Trajeto da Rota

@@ -79,7 +79,7 @@ export default function Rotas() {
     e.stopPropagation();
     openConfirmationDialog({
       title: "Excluir rota?",
-      description: "Deseja realmente excluir esta rota? Todos os dados de sequenciamento serão apagados.",
+      description: "Tem certeza que deseja excluir esta rota? As execuções anteriores (histórico) também serão apagadas.",
       confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {

@@ -116,14 +116,6 @@ export default function ConfigurarRota() {
 
   const [activeTab, setActiveTab] = useState<'passageiros' | 'escolas'>('passageiros');
   const [isConfigExpanded, setIsConfigExpanded] = useState(false);
-  const [expandedSchoolNodes, setExpandedSchoolNodes] = useState<Record<string, boolean>>({});
-
-  const toggleSchoolNodeExpand = (nodeId: string) => {
-    setExpandedSchoolNodes(prev => ({
-      ...prev,
-      [nodeId]: !prev[nodeId]
-    }));
-  };
 
   const { isPronto: isRotaPronta, errorMsg: msgErroRota } = validarItinerarioPronto(null, itinerario);
 
@@ -673,7 +665,8 @@ export default function ConfigurarRota() {
                                 <div className="flex flex-col gap-1.5 min-w-0">
                                   {/* Nome da Escola (Sem Truncate - Full Width) + Lixeira no Canto Superior Direito */}
                                   <div className="w-full flex items-start justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                                      <School className="w-5 h-5 text-[#1a3a5c] shrink-0" />
                                       <span className="font-bold text-sm text-[#1a3a5c] leading-snug block break-words">
                                         {item.nome}
                                       </span>
@@ -688,44 +681,19 @@ export default function ConfigurarRota() {
                                     </button>
                                   </div>
 
-                                  {/* Resumo e Toggle de Alunos (Desembarque e Embarque) */}
+                                  {/* Lista Direta de Alunos (Desembarque e Embarque) */}
                                   {(() => {
                                     const { desces, subes } = getAlunosEscolaPorPosicao(itinerario, index);
                                     const totalAlunos = desces.length + subes.length;
-                                    const isExpanded = !!expandedSchoolNodes[item.id];
 
                                     return (
-                                      <div className="mt-1 border-t border-slate-100 pt-2 w-full space-y-2">
-                                        {/* Barra de Resumo + Toggle */}
-                                        <button
-                                          type="button"
-                                          onClick={() => toggleSchoolNodeExpand(item.id)}
-                                          disabled={totalAlunos === 0}
-                                          className={cn(
-                                            "flex items-center justify-between gap-1.5 w-full text-[11px] font-semibold text-slate-700 bg-slate-100/90 hover:bg-slate-200/80 px-2.5 py-1.5 rounded-lg transition-all select-none",
-                                            totalAlunos > 0 ? "cursor-pointer" : "opacity-60 cursor-default"
-                                          )}
-                                        >
-                                          <div className="flex flex-wrap items-center gap-2 min-w-0">
-                                            <span className="inline-flex items-center gap-1 shrink-0">
-                                              <span>⬇️</span>
-                                              <span className="font-bold text-[#1a3a5c]">{desces.length}</span>
-                                              <span className="text-slate-600 font-medium">Desembarque</span>
-                                            </span>
-                                            <span className="inline-flex items-center gap-1 shrink-0">
-                                              <span>⬆️</span>
-                                              <span className="font-bold text-[#1a3a5c]">{subes.length}</span>
-                                              <span className="text-slate-600 font-medium">Embarque</span>
-                                            </span>
-                                          </div>
-                                          {totalAlunos > 0 && (
-                                            isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-slate-500 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                          )}
-                                        </button>
-
-                                        {/* Lista Expandida de Alunos (Soft & Clean) */}
-                                        {isExpanded && totalAlunos > 0 && (
-                                          <div className="pt-2 space-y-1.5 text-left border-t border-slate-100/80 mt-1 animate-in fade-in duration-150">
+                                      <div className="mt-1.5 w-full space-y-1.5 text-left">
+                                        {totalAlunos === 0 ? (
+                                          <p className="text-[11px] text-slate-400 font-medium italic">
+                                            Nenhum passageiro vinculado nesta parada
+                                          </p>
+                                        ) : (
+                                          <>
                                             {desces.length > 0 && (
                                               <div className="text-[11px] leading-snug">
                                                 <span className="font-semibold text-slate-700">⬇️ Desembarque ({desces.length}): </span>
@@ -742,7 +710,7 @@ export default function ConfigurarRota() {
                                                 </span>
                                               </div>
                                             )}
-                                          </div>
+                                          </>
                                         )}
                                       </div>
                                     );

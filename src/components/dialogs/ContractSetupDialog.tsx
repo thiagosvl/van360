@@ -744,7 +744,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       <Button
         variant="outline"
         type="button"
-        className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-2xl font-black uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-2xs"
+        className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-lg font-bold uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-2xs"
         disabled={previewMutation.isPending}
         onClick={async () => {
           try {
@@ -862,7 +862,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       <div className="space-y-3 px-2">
         <Button
           variant="outline"
-          className="w-full h-12 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-2xl font-black uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98]"
+          className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-lg font-bold uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98]"
           disabled={previewMutation.isPending}
           onClick={async () => {
             try {

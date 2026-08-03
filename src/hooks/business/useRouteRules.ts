@@ -1,4 +1,4 @@
-import { RouteNodeType, RouteSentido } from "@/types/route";
+import { RouteNodeType, RouteSentido, RouteStopStatus } from "@/types/route";
 import { formatShortName } from "@/utils/formatters";
 
 /**
@@ -21,8 +21,12 @@ export function useRouteRules() {
     for (let i = 0; i < itinerario.length; i++) {
       const item = itinerario[i];
       if (item.tipo_no === RouteNodeType.PASSAGEIRO) {
+        if (item.status === RouteStopStatus.AUSENTE || item.passageiro?.status === RouteStopStatus.AUSENTE) {
+          continue;
+        }
+
         const pass = item.passageiro;
-        const escolaId = pass?.escola_id || pass?.escola?.id || item.escola_id;
+        const escolaId = item.escola_id || pass?.escola_id || pass?.escola?.id;
         const alunoNome = pass?.nome || item.nome || "Passageiro";
         const primeiroNome = formatShortName(alunoNome, true);
 
@@ -93,6 +97,7 @@ export function useRouteRules() {
     index: number,
     direction: "up" | "down",
     itinerario: any[],
+    paradasConcluidas: any[] = []
   ): boolean => {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= itinerario.length) return false;
@@ -102,7 +107,9 @@ export function useRouteRules() {
     simulado[index] = simulado[targetIndex];
     simulado[targetIndex] = temp;
 
-    const check = validarItinerarioPronto(tipo, simulado);
+    const fullItinerario = [...paradasConcluidas, ...simulado];
+
+    const check = validarItinerarioPronto(tipo, fullItinerario);
     return check.isPronto;
   };
 

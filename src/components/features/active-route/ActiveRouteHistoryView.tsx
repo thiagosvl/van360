@@ -142,13 +142,16 @@ export function ActiveRouteHistoryView({
                 )}
               </span>
 
-              <div className="bg-slate-50/70 border border-slate-200 p-2.5 rounded-xl flex items-center justify-between gap-3 shadow-2xs opacity-65 min-h-[52px] transition-all">
+              <div className="bg-slate-50/70 border border-slate-200 p-2.5 rounded-lg flex items-center justify-between gap-3 shadow-2xs opacity-65 min-h-[52px] transition-all">
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-[11px] font-bold text-left break-words leading-tight pr-2 text-[#1a3a5c]">
-                    {isEscolaItem
-                      ? `🏫 ${parada.escola?.nome}`
-                      : formatShortName(parada.passageiro?.nome || "", true)}
-                  </h4>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {isEscolaItem && <School className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />}
+                    <h4 className="text-[11px] font-bold text-left break-words leading-tight pr-2 text-[#1a3a5c]">
+                      {isEscolaItem
+                        ? parada.escola?.nome
+                        : formatShortName(parada.passageiro?.nome || "", true)}
+                    </h4>
+                  </div>
                   <p className="text-[9px] text-slate-400 font-semibold leading-none mt-0.5 text-left truncate">
                     {subtitleText}
                   </p>
@@ -185,7 +188,7 @@ export function ActiveRouteHistoryView({
                 {isEscolaItem ? <School className="w-4 h-4 text-slate-400" /> : (parada.ordem || absIndex + 1)}
               </span>
 
-              <div className="bg-white border border-slate-200 p-2.5 rounded-xl flex items-center justify-between gap-3 shadow-2xs opacity-50 min-h-[52px] transition-all">
+              <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between gap-3 shadow-2xs opacity-50 min-h-[52px] transition-all">
                 <div className="min-w-0 flex-1">
                   <h4 className="text-[11px] font-bold text-left break-words leading-tight pr-2 text-slate-600">
                     {isEscolaItem
