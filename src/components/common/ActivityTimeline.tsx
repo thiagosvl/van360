@@ -46,6 +46,7 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
         icon: <FileText className="w-3.5 h-3.5" />,
         color: "text-indigo-600 bg-indigo-50 border-indigo-100",
       };
+    case AtividadeAcao.ROTA_CONCLUIDA:
     case AtividadeAcao.CONTRATO_ASSINADO:
       return {
         icon: <ShieldCheck className="w-3.5 h-3.5" />,
@@ -58,6 +59,12 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
       };
   }
 
+  if (acao.includes("CONCLUIDA") || acao.includes("CONCLUIDO")) {
+    return {
+      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      color: "text-emerald-600 bg-emerald-50 border-emerald-100",
+    };
+  }
   if (acao.includes("CRIADA") || acao.includes("CRIADO") || acao.includes("REGISTRADO") || acao.includes("GERADO")) {
     return {
       icon: <PlusCircle className="w-3.5 h-3.5" />,
@@ -92,6 +99,7 @@ const getEntityDotColor = (tipo: AtividadeEntidadeTipo | string) => {
     case AtividadeEntidadeTipo.USUARIO: return "bg-emerald-500 shadow-emerald-200";
     case AtividadeEntidadeTipo.GASTO: return "bg-rose-500 shadow-rose-200";
     case AtividadeEntidadeTipo.CONTRATO: return "bg-blue-500 shadow-blue-200";
+    case AtividadeEntidadeTipo.ROTA: return "bg-teal-500 shadow-teal-200";
     default: return "bg-gray-400 shadow-gray-200";
   }
 };
