@@ -57,15 +57,15 @@ export function RouteCompletedStopItem({
         )}
       </div>
 
-      {/* Card da Parada Concluída Discreto */}
-      <div className="bg-slate-50/70 border border-slate-200/60 p-2.5 px-3 rounded-xl flex items-center justify-between gap-3 text-left transition-all opacity-85 hover:opacity-100 min-h-[48px]">
+      {/* Card da Parada Concluída Discreto (Sem opacity/alpha compositing) */}
+      <div className="bg-slate-50 border border-slate-200/80 p-2.5 px-3 rounded-xl flex items-center justify-between gap-3 text-left min-h-[48px]">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-700">
+            <span className="text-xs font-semibold text-slate-700 truncate">
               {formatShortName(isEscolaItem ? parada.escola?.nome : (parada.passageiro?.nome || parada.nome), true)}
             </span>
           </div>
-          <p className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+          <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
             {subtitleText}
           </p>
         </div>
@@ -75,8 +75,8 @@ export function RouteCompletedStopItem({
             className={cn(
               "text-[9px] font-bold border px-1.5 py-0.5 rounded-md shrink-0 leading-none uppercase pointer-events-none select-none shadow-none cursor-default",
               isAusente
-                ? "bg-rose-50/80 text-rose-600 border-rose-100"
-                : "bg-emerald-50/80 text-emerald-700 border-emerald-200/60"
+                ? "bg-rose-50 text-rose-600 border-rose-200"
+                : "bg-emerald-50 text-emerald-700 border-emerald-200"
             )}
           >
             {statusLabel}
@@ -92,7 +92,7 @@ export function RouteCompletedStopItem({
                 e.stopPropagation();
                 onDesfazer();
               }}
-              className="h-6 px-2 text-[10px] font-bold border border-rose-200/90 bg-white hover:bg-rose-50 hover:border-rose-300 text-rose-600 rounded-md flex items-center gap-1 transition-all cursor-pointer shadow-2xs shrink-0"
+              className="h-6 px-2 text-[10px] font-bold border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 rounded-md flex items-center gap-1 shrink-0 active:scale-95"
               title="Desfazer registro de ausência"
             >
               {isDesfazendo ? (
