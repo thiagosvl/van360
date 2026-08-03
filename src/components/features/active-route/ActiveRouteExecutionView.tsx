@@ -464,10 +464,10 @@ export function ActiveRouteExecutionView({
                   variant="outline"
                   onClick={() => setIsAusenciaDialogOpen(true)}
                   className="flex-1 min-w-0 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 px-3.5"
-                  title="Informar ausência antecipada de um passageiro"
+                  title="Registrar ausência antecipada de um passageiro"
                 >
                   <UserMinus className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span className="truncate">Informar Ausência</span>
+                  <span className="truncate uppercase">Registrar Ausência</span>
                 </Button>
 
                 <Button

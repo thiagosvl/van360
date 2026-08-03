@@ -178,7 +178,7 @@ export default function Rotas() {
                     className="flex-1 sm:flex-initial border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <UserMinus className="h-4 w-4 text-rose-500 shrink-0" />
-                    <span>Informar Ausência</span>
+                    <span>Registrar Ausência</span>
                   </Button>
 
                   <Button

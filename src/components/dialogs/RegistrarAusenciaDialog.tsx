@@ -165,7 +165,7 @@ export default function RegistrarAusenciaDialog({
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <BaseDialog.Header
-        title="INFORMAR AUSÊNCIA ANTECIPADA"
+        title="Registrar Ausência"
         icon={<CalendarX className="w-5 h-5" />}
         onClose={handleClose}
       />
@@ -202,8 +202,8 @@ export default function RegistrarAusenciaDialog({
                     lockedPassageiro && isLoadingPassageiroRotas
                       ? "Buscando rotas do aluno..."
                       : hasNoRoutesForStudent
-                      ? "Nenhuma rota disponível"
-                      : "Selecione a rota..."
+                        ? "Nenhuma rota disponível"
+                        : "Selecione a rota..."
                   }
                 />
               </SelectTrigger>

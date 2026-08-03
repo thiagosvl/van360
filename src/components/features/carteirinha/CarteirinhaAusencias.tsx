@@ -84,7 +84,7 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
       {/* Header do Card */}
       <div className="flex items-center justify-between text-left min-h-[32px]">
         <h3 className="text-base font-bold text-[#16314f]">
-          Ausências Programadas
+          Ausências
         </h3>
 
         <Button
