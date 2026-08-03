@@ -352,14 +352,14 @@ export function ActiveRouteExecutionView({
       activeRespName = pass.nome_responsavel || "Responsável Principal";
       activeRespPhone = pass.telefone_responsavel || "";
       activeRespParentesco = pass.parentesco_responsavel || "Principal";
-      activeAddressStr = formatarEnderecoCompleto(pass) || "Endereço principal do aluno";
+      activeAddressStr = formatarEnderecoCompleto(pass) || "Endereço principal";
     } else {
       const respObj = responsaveisAdicionais.find((r: any) => r.id === activeRespId);
       if (respObj) {
         activeRespName = respObj.nome;
         activeRespPhone = respObj.telefone;
         activeRespParentesco = respObj.parentesco;
-        activeAddressStr = respObj.logradouro ? formatarEnderecoCompleto(respObj) : (formatarEnderecoCompleto(pass) || "Mesmo endereço do aluno");
+        activeAddressStr = respObj.logradouro ? formatarEnderecoCompleto(respObj) : (formatarEnderecoCompleto(pass) || "Mesmo endereço");
       } else {
         activeRespName = pass.nome_responsavel || "Responsável";
         activeRespPhone = pass.telefone_responsavel || "";
@@ -960,13 +960,13 @@ export function ActiveRouteExecutionView({
               currentAddressStr = formatarEnderecoParcialRota(parada.escola) || "Endereço da escola";
             } else if (pass) {
               if (activeTabForCard === TAB_PRINCIPAL) {
-                currentAddressStr = formatarEnderecoParcialRota(pass) || "Endereço principal do aluno";
+                currentAddressStr = formatarEnderecoParcialRota(pass) || "Endereço principal";
                 currentLat = pass.latitude;
                 currentLng = pass.longitude;
               } else {
                 const respObj = responsaveisAdicionais.find((r: any) => r.id === activeTabForCard);
                 if (respObj) {
-                  currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass) || "Mesmo endereço do aluno");
+                  currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass) || "Mesmo endereço");
                   currentLat = respObj.latitude || pass.latitude;
                   currentLng = respObj.longitude || pass.longitude;
                 } else {

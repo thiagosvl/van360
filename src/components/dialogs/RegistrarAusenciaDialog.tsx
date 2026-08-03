@@ -200,10 +200,10 @@ export default function RegistrarAusenciaDialog({
                 <SelectValue
                   placeholder={
                     lockedPassageiro && isLoadingPassageiroRotas
-                      ? "Buscando rotas do aluno..."
+                      ? "Buscando rotas..."
                       : hasNoRoutesForStudent
                         ? "Nenhuma rota disponível"
-                        : "Selecione a rota..."
+                        : "Selecione a rota"
                   }
                 />
               </SelectTrigger>
@@ -240,7 +240,7 @@ export default function RegistrarAusenciaDialog({
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder={!rotaId ? "Selecione uma rota primeiro" : "Digite o nome do aluno"}
+                      placeholder={!rotaId ? "Selecione uma rota primeiro" : "Digite o nome"}
                       disabled={!rotaId || isLoadingRouteDetail}
                       value={isPassageiroDropdownOpen ? searchPassageiro : passageiroNomeSelected || searchPassageiro}
                       onFocus={() => {

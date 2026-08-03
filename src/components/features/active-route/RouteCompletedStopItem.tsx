@@ -90,7 +90,7 @@ export function RouteCompletedStopItem({
                 onDesfazer();
               }}
               className="h-6 px-2 text-[9px] font-bold border-rose-200 bg-white hover:bg-rose-50 text-rose-600 rounded-md flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
-              title="Desfazer ausência do aluno"
+              title="Desfazer registro de ausência"
             >
               {isDesfazendo ? (
                 <Loader2 className="w-3 h-3 animate-spin shrink-0" />
