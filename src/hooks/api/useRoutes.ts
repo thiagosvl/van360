@@ -69,6 +69,7 @@ export function useRegistrarAusenciaMutation() {
       queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
       queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
       queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["route-execution"] });
     },
   });
 }
