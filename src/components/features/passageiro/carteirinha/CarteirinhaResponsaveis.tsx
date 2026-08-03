@@ -51,7 +51,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
           size="sm"
           onClick={handleAddNew}
           className={cn(
-            "h-8 rounded-xl border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow"
+            "h-8 rounded-lg border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow"
           )}
         >
           <Plus className="w-3 h-3" /> Adicionar

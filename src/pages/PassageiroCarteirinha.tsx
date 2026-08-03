@@ -22,6 +22,7 @@ import {
   CarteirinhaContrato,
   CarteirinhaResponsaveis,
 } from "@/components/features/passageiro/carteirinha";
+import { CarteirinhaAusencias } from "@/components/features/carteirinha/CarteirinhaAusencias";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
@@ -469,6 +470,8 @@ export default function PassageiroCarteirinha() {
     await Promise.all([
       refetchPassageiro(),
       refetchCobrancas(),
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", passageiro_id] }),
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas", passageiro_id] }),
     ]);
   };
 
@@ -702,7 +705,7 @@ export default function PassageiroCarteirinha() {
                       />
                     </Suspense>
 
-                    {/* Contrato e Observações no final da aba dados */}
+                    {/* Contrato, Ausências e Observações no final da aba dados */}
                     <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
                       <CarteirinhaContrato
                         passageiro={passageiro}
@@ -710,6 +713,10 @@ export default function PassageiroCarteirinha() {
                         onContractAction={infoProps.onContractAction}
                         onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
                       />
+                    </Suspense>
+
+                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                      <CarteirinhaAusencias passageiro={passageiro} />
                     </Suspense>
 
                     <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
@@ -747,6 +754,10 @@ export default function PassageiroCarteirinha() {
                       onContractAction={infoProps.onContractAction}
                       onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
                     />
+                  </Suspense>
+
+                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                    <CarteirinhaAusencias passageiro={passageiro} />
                   </Suspense>
 
                   <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>

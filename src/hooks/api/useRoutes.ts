@@ -43,6 +43,22 @@ export function useAusenciasRota(rotaId: string, dataAusencia?: string) {
   });
 }
 
+export function usePassageiroAusencias(passageiroId: string) {
+  return useQuery({
+    queryKey: ["passageiro-ausencias", passageiroId],
+    queryFn: () => routeApi.listAusenciasByPassageiro(passageiroId),
+    enabled: !!passageiroId,
+  });
+}
+
+export function usePassageiroRotas(passageiroId: string) {
+  return useQuery({
+    queryKey: ["passageiro-rotas", passageiroId],
+    queryFn: () => routeApi.listRotasByPassageiro(passageiroId),
+    enabled: !!passageiroId,
+  });
+}
+
 export function useRegistrarAusenciaMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -51,6 +67,7 @@ export function useRegistrarAusenciaMutation() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["route", variables.rota_id] });
       queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
       queryClient.invalidateQueries({ queryKey: ["routes"] });
     },
   });
@@ -68,6 +85,11 @@ export function useRemoverAusenciaMutation() {
       } else {
         queryClient.invalidateQueries({ queryKey: ["route"] });
         queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
+      }
+      if (variables.passageiro_id) {
+        queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
       }
       queryClient.invalidateQueries({ queryKey: ["routes"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution"] });

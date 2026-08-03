@@ -10,6 +10,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Pencil, User } from "lucide-react";
 
+import { safeCloseDialog } from "@/hooks";
+
 interface CobrancaEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,18 +22,22 @@ interface CobrancaEditDialogProps {
 export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobrancaUpdated }: CobrancaEditDialogProps) {
   if (!cobranca) return null;
 
+  const handleClose = () => {
+    safeCloseDialog(onClose);
+  };
+
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
     mode: PassageiroFormModes.EDIT,
     cobranca,
     onSuccess: () => {
       onCobrancaUpdated();
-      onClose();
+      handleClose();
     },
   });
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Editar" icon={<Pencil className="w-5 h-5" />} onClose={onClose} />
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <BaseDialog.Header title="Editar" icon={<Pencil className="w-5 h-5" />} onClose={handleClose} />
       <BaseDialog.Body>
 
         <Form {...form}>
@@ -39,13 +45,13 @@ export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobran
             form={form}
             mode={PassageiroFormModes.EDIT}
             cobranca={cobranca}
-            onCancel={onClose}
+            onCancel={handleClose}
             hideButtons={true}
           />
         </Form>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={isSubmitting} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={handleClose} disabled={isSubmitting} />
         <BaseDialog.Action label="Salvar" onClick={onSubmit} isLoading={isSubmitting} />
       </BaseDialog.Footer>
     </BaseDialog>

@@ -88,4 +88,14 @@ export const routeApi = {
     apiClient
       .get(`${endpointBase}/${rotaId}/ausencias`, { params: { data: dataAusencia } })
       .then(res => res.data),
+
+  listAusenciasByPassageiro: (passageiroId: string): Promise<any[]> =>
+    apiClient
+      .get(`${endpointBase}/passageiros/${passageiroId}/ausencias`)
+      .then(res => res.data),
+
+  listRotasByPassageiro: (passageiroId: string): Promise<any[]> =>
+    apiClient
+      .get(`${endpointBase}/passageiros/${passageiroId}/rotas`)
+      .then(res => res.data),
 };

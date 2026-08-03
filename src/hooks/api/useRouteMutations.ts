@@ -32,6 +32,8 @@ export function useUpdateRoute() {
       queryClient.invalidateQueries({ queryKey: ["routes"] });
       queryClient.invalidateQueries({ queryKey: ["route", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
       queryClient.refetchQueries({ queryKey: ["routes"] });
       toast.success("Rota atualizada com sucesso!");
     },
@@ -50,6 +52,8 @@ export function useDeleteRoute(usuarioId?: string) {
     mutationFn: (id: string) => routeApi.deleteRoute(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
       queryClient.refetchQueries({ queryKey: ["routes"] });
       toast.success("Rota excluída com sucesso!");
     },
@@ -117,8 +121,8 @@ export function useReordenarExecucao() {
       execucaoId: string;
       paradas: Array<{ id: string; ordem: number }>;
     }) => routeApi.reordenarExecucao(execucaoId, paradas),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
+    onSuccess: async (data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
       toast.success("Ordem dos itinerários atualizada!");
     },
     onError: (error: any) => {

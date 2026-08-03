@@ -474,7 +474,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             )
           }
           onSuccess={(data) => {
-            setRouteFormDialogState((prev) => ({ ...prev, open: false }));
+            safeCloseDialog(() =>
+              setRouteFormDialogState((prev) => ({ ...prev, open: false }))
+            );
             routeFormDialogState.props?.onSuccess?.(data);
           }}
           editingRoute={routeFormDialogState.props?.editingRoute}
@@ -491,7 +493,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           onSuccess={(escola, keepOpen) => {
             if (!keepOpen) {
-              setEscolaFormDialogState((prev) => ({ ...prev, open: false }));
+              safeCloseDialog(() =>
+                setEscolaFormDialogState((prev) => ({ ...prev, open: false }))
+              );
             }
             escolaFormDialogState.props?.onSuccess?.(escola, keepOpen);
           }}
@@ -511,7 +515,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           onSuccess={(veiculo, keepOpen) => {
             if (!keepOpen) {
-              setVeiculoFormDialogState((prev) => ({ ...prev, open: false }));
+              safeCloseDialog(() =>
+                setVeiculoFormDialogState((prev) => ({ ...prev, open: false }))
+              );
             }
             veiculoFormDialogState.props?.onSuccess?.(veiculo, keepOpen);
           }}
@@ -569,7 +575,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             )
           }
           onSuccess={() => {
-            setGastoFormDialogState((prev) => ({ ...prev, open: false }));
+            safeCloseDialog(() =>
+              setGastoFormDialogState((prev) => ({ ...prev, open: false }))
+            );
             gastoFormDialogState.props?.onSuccess?.();
           }}
           gastoToEdit={gastoFormDialogState.props?.gastoToEdit}

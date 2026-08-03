@@ -377,6 +377,16 @@ export function ActiveRouteExecutionView({
 
   const displayProximasParadas = [...proximasParadas];
 
+  const [reorderingTarget, setReorderingTarget] = useState<{ index: number; direction: "up" | "down" } | null>(null);
+
+  const isAnyActionBusy =
+    isLoading ||
+    isActionDisabled ||
+    reorderingTarget !== null ||
+    desfazendoStopId !== null ||
+    submittingStopId !== null ||
+    isFinishingLastStop;
+
   const handleMoveParada = async (index: number, direction: "up" | "down") => {
     // Lista completa real de pendentes
     const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
@@ -413,9 +423,13 @@ export function ActiveRouteExecutionView({
     }));
 
     try {
+      setReorderingTarget({ index, direction });
       await handleReordenar(novaOrdem);
+      await new Promise((resolve) => setTimeout(resolve, 350));
     } catch (err) {
       toast.error("Erro ao reordenar trajeto.");
+    } finally {
+      setReorderingTarget(null);
     }
   };
 
@@ -566,6 +580,7 @@ export function ActiveRouteExecutionView({
                 showBottomLine={showBottomLine}
                 onDesfazer={() => handleDesfazerAusencia(parada)}
                 isDesfazendo={desfazendoStopId === parada.id}
+                disabled={isAnyActionBusy}
               />
             );
           })}
@@ -651,10 +666,12 @@ export function ActiveRouteExecutionView({
 
                         const index = 0;
                         const isUpDisabled = true;
+                        const isUpReordering = reorderingTarget?.index === index && reorderingTarget?.direction === "up";
+                        const isDownReordering = reorderingTarget?.index === index && reorderingTarget?.direction === "down";
 
                         const isDownDisabled =
                           index === totalPendentesReal.length - 1 ||
-                          isLoading ||
+                          isAnyActionBusy ||
                           !validarMovimentoPermitido(execucao.tipo, index, "down", totalPendentesReal, paradasConcluidas);
 
                         return (
@@ -663,22 +680,30 @@ export function ActiveRouteExecutionView({
                               type="button"
                               variant="ghost"
                               size="icon"
-                              disabled={isUpDisabled}
+                              disabled={isUpDisabled || isAnyActionBusy}
                               className="h-7 w-7 rounded-md text-slate-400 opacity-20 shrink-0 cursor-not-allowed flex items-center justify-center"
                               title="Subir parada (já está ativa)"
                             >
-                              <ArrowUp className="w-3.5 h-3.5" />
+                              {isUpReordering ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                              ) : (
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              )}
                             </Button>
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
-                              disabled={isDownDisabled}
+                              disabled={isDownDisabled || isAnyActionBusy}
                               onClick={() => handleMoveParada(index, "down")}
                               className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-200/80 disabled:opacity-20 shrink-0 flex items-center justify-center"
                               title="Descer parada ativa"
                             >
-                              <ArrowDown className="w-3.5 h-3.5" />
+                              {isDownReordering ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                              ) : (
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              )}
                             </Button>
                           </div>
                         );
@@ -820,7 +845,7 @@ export function ActiveRouteExecutionView({
                       {/* Botao de Acao Principal da Escola */}
                       <Button
                         onClick={() => handleConfirmAction(activeParadaToRender.id)}
-                        disabled={isActionDisabled}
+                        disabled={isActionDisabled || isAnyActionBusy}
                         className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center gap-2 border-none mt-3.5 cursor-pointer transition-all active:scale-95"
                       >
                         {isActionDisabled ? (
@@ -869,7 +894,7 @@ export function ActiveRouteExecutionView({
                             <Button
                               type="button"
                               onClick={() => handleConfirmFalta(activeParadaToRender.id, activeParadaToRender.passageiro?.nome || "")}
-                              disabled={isActionDisabled}
+                              disabled={isActionDisabled || isAnyActionBusy}
                               variant="outline"
                               className="w-full h-12 border border-rose-200/80 hover:bg-rose-50/50 disabled:opacity-70 text-rose-600 font-bold text-sm rounded-lg shadow-2xs flex items-center justify-center gap-1.5 bg-white transition-all active:scale-95 cursor-pointer"
                             >
@@ -884,7 +909,7 @@ export function ActiveRouteExecutionView({
                             <Button
                               type="button"
                               onClick={() => handleConfirmAction(activeParadaToRender.id)}
-                              disabled={isActionDisabled}
+                              disabled={isActionDisabled || isAnyActionBusy}
                               className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
                             >
                               {isActionDisabled ? (
@@ -898,7 +923,7 @@ export function ActiveRouteExecutionView({
                           <Button
                             type="button"
                             onClick={() => handleConfirmAction(activeParadaToRender.id)}
-                            disabled={isActionDisabled}
+                            disabled={isActionDisabled || isAnyActionBusy}
                             className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center border-none transition-all active:scale-95 cursor-pointer"
                           >
                             {isActionDisabled ? (
@@ -1073,15 +1098,17 @@ export function ActiveRouteExecutionView({
                           if (totalPendentesReal.length <= 1) return null;
 
                           const realIndex = index + 1;
+                          const isUpReordering = reorderingTarget?.index === realIndex && reorderingTarget?.direction === "up";
+                          const isDownReordering = reorderingTarget?.index === realIndex && reorderingTarget?.direction === "down";
 
                           const isUpDisabled =
                             realIndex === 0 ||
-                            isLoading ||
+                            isAnyActionBusy ||
                             !validarMovimentoPermitido(execucao.tipo, realIndex, "up", totalPendentesReal, paradasConcluidas);
 
                           const isDownDisabled =
                             realIndex === totalPendentesReal.length - 1 ||
-                            isLoading ||
+                            isAnyActionBusy ||
                             !validarMovimentoPermitido(execucao.tipo, realIndex, "down", totalPendentesReal, paradasConcluidas);
 
                           return (
@@ -1090,23 +1117,31 @@ export function ActiveRouteExecutionView({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                disabled={isUpDisabled}
+                                disabled={isUpDisabled || isAnyActionBusy}
                                 onClick={() => handleMoveParada(realIndex, "up")}
-                                className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0"
+                                className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0 flex items-center justify-center"
                                 title="Subir parada"
                               >
-                                <ArrowUp className="w-3.5 h-3.5" />
+                                {isUpReordering ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                                ) : (
+                                  <ArrowUp className="w-3.5 h-3.5" />
+                                )}
                               </Button>
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                disabled={isDownDisabled}
+                                disabled={isDownDisabled || isAnyActionBusy}
                                 onClick={() => handleMoveParada(realIndex, "down")}
-                                className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0"
+                                className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0 flex items-center justify-center"
                                 title="Descer parada"
                               >
-                                <ArrowDown className="w-3.5 h-3.5" />
+                                {isDownReordering ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                                ) : (
+                                  <ArrowDown className="w-3.5 h-3.5" />
+                                )}
                               </Button>
                             </div>
                           );
@@ -1126,7 +1161,7 @@ export function ActiveRouteExecutionView({
                           <Button
                             type="button"
                             variant="outline"
-                            disabled={isLoading}
+                            disabled={isLoading || isAnyActionBusy}
                             onClick={() => handleConfirmFalta(parada.id, parada.passageiro?.nome || "")}
                             className="h-8 px-3 rounded-lg border-rose-200 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 shadow-xs flex items-center gap-1.5 bg-white text-[11px] font-bold transition-colors"
                             title="Marcar como ausente hoje"
