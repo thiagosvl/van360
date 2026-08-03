@@ -96,7 +96,7 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
             "h-8 rounded-lg border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow cursor-pointer"
           )}
         >
-          <Plus className="w-3 h-3" /> Adicionar
+          <Plus className="w-3 h-3" /> Registrar
         </Button>
       </div>
 
