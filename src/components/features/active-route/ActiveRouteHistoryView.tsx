@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Check, Route, School, UserMinus, Calendar, Clock
 } from "lucide-react";
+import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
 import { cn } from "@/lib/utils";
 import { RouteExecutionStatus, RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
 import { formatShortName, formatDateTime } from "@/utils/formatters";
@@ -106,65 +107,13 @@ export function ActiveRouteHistoryView({
           const showTopLine = absIndex > 0;
           const showBottomLine = absIndex < totalTimelineItems - 1;
 
-          const isAusente = parada.status === RouteStopStatus.AUSENTE;
-          const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
-
-          const statusLabel = isAusente ? "AUSENTE" : "CONCLUÍDO";
-          const subtitleText = isEscolaItem
-            ? "Parada na escola"
-            : isAusente
-              ? "Não embarcado"
-              : parada.sentido === RouteSentido.VOLTANDO
-                ? "Passageiro desembarcado"
-                : "Passageiro embarcado";
-
           return (
-            <div key={parada.id} className="relative w-full">
-              {showTopLine && (
-                <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
-              )}
-              {showBottomLine && (
-                <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
-              )}
-
-              <span className={cn(
-                "absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-[11px] border-2 shadow-sm z-10",
-                isAusente
-                  ? "bg-white border-rose-400 text-rose-500"
-                  : "bg-emerald-500 border-emerald-500 text-white"
-              )}>
-                {isAusente ? (
-                  <UserMinus className="w-4 h-4 text-rose-500" />
-                ) : isEscolaItem ? (
-                  <School className="w-4 h-4 text-white" />
-                ) : (
-                  <Check className="w-4 h-4 text-white" />
-                )}
-              </span>
-
-              <div className="bg-slate-50/70 border border-slate-200 p-2.5 rounded-lg flex items-center justify-between gap-3 shadow-2xs opacity-65 min-h-[52px] transition-all">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    {isEscolaItem && <School className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />}
-                    <h4 className="text-[11px] font-bold text-left break-words leading-tight pr-2 text-[#1a3a5c]">
-                      {isEscolaItem
-                        ? parada.escola?.nome
-                        : formatShortName(parada.passageiro?.nome || "", true)}
-                    </h4>
-                  </div>
-                  <p className="text-[9px] text-slate-400 font-semibold leading-none mt-0.5 text-left truncate">
-                    {subtitleText}
-                  </p>
-                </div>
-
-                <Badge className={cn(
-                  "text-[9px] font-bold border px-1.5 py-0.5 rounded-md shrink-0 leading-none uppercase",
-                  isAusente ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
-                )}>
-                  {statusLabel}
-                </Badge>
-              </div>
-            </div>
+            <RouteCompletedStopItem
+              key={parada.id}
+              parada={parada}
+              showTopLine={showTopLine}
+              showBottomLine={showBottomLine}
+            />
           );
         })}
 

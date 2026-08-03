@@ -102,10 +102,11 @@ export function CobrancaFormContent({
     // --- Logic for Create Mode (Mes/Ano Sync) ---
     const currentYear = getNowBR().getFullYear();
 
-    const isFutureMonth = (mes?: string, ano?: string) => {
+    const isFutureMonth = (mes?: string | number, ano?: string | number) => {
         if (!mes || !ano) return false;
-        const mesNum = parseInt(mes);
-        const anoNum = parseInt(ano);
+        const mesNum = typeof mes === "number" ? mes : parseInt(mes, 10);
+        const anoNum = typeof ano === "number" ? ano : parseInt(ano, 10);
+        if (isNaN(mesNum) || isNaN(anoNum)) return false;
         const dataSelecionada = anoNum * 100 + mesNum;
         const dataAtual = currentYear * 100 + (getNowBR().getMonth() + 1);
         return dataSelecionada > dataAtual;
@@ -116,10 +117,13 @@ export function CobrancaFormContent({
     // Sync Data Vencimento when Mes/Ano changes in Create Mode
     useEffect(() => {
         if (mode === "create" && mesSelecionado && anoSelecionado) {
+            const mesNum = typeof mesSelecionado === "number" ? mesSelecionado : parseInt(mesSelecionado, 10);
+            const anoNum = typeof anoSelecionado === "number" ? anoSelecionado : parseInt(anoSelecionado, 10);
+
             const novaData = calculateSafeDueDate(
                 diaVencimento,
-                parseInt(mesSelecionado) - 1,
-                parseInt(anoSelecionado)
+                mesNum - 1,
+                anoNum
             );
 
             form.setValue("data_vencimento", novaData, { shouldValidate: true });
@@ -155,7 +159,7 @@ export function CobrancaFormContent({
                                 <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Mês <span className="text-red-600">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={lockMesAno}>
+                                <Select onValueChange={field.onChange} value={field.value != null ? String(field.value) : undefined} disabled={lockMesAno}>
                                     <FormControl>
                                         <SelectTrigger
                                             className={cn(
@@ -192,7 +196,7 @@ export function CobrancaFormContent({
                                 <FormLabel className="text-slate-700 font-semibold ml-1">
                                     Ano <span className="text-red-600">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} disabled>
+                                <Select onValueChange={field.onChange} value={field.value != null ? String(field.value) : undefined} disabled>
                                     <FormControl>
                                         <SelectTrigger
                                             className={cn(

@@ -47,7 +47,7 @@ export const routeApi = {
   atualizarParadaStatus: (
     execucaoId: string,
     paradaId: string,
-    status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE
+    status: RouteStopStatus
   ): Promise<RouteExecution> =>
     apiClient
       .post(`${endpointBase}/execucoes/${execucaoId}/parada`, {
@@ -72,5 +72,20 @@ export const routeApi = {
   finalizarExecucao: (id: string): Promise<RouteExecution> =>
     apiClient
       .post(`${endpointBase}/execucoes/${id}/finalizar`)
+      .then(res => res.data),
+
+  createAusencia: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }): Promise<any> =>
+    apiClient
+      .post(`${endpointBase}/ausencias`, data)
+      .then(res => res.data),
+
+  deleteAusencia: (id: string, params?: { passageiro_id?: string; rota_id?: string; data_ausencia?: string }): Promise<void> =>
+    apiClient
+      .delete(`${endpointBase}/ausencias/${id}`, { params })
+      .then(res => res.data),
+
+  listAusencias: (rotaId: string, dataAusencia?: string): Promise<any[]> =>
+    apiClient
+      .get(`${endpointBase}/${rotaId}/ausencias`, { params: { data: dataAusencia } })
       .then(res => res.data),
 };

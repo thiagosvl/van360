@@ -31,7 +31,8 @@ export default function RouteExecutionPage() {
     handleCancel,
     handleReordenar,
     isPreview,
-    iniciarMutation
+    iniciarMutation,
+    refetch
   } = useActiveRouteViewModel({ execucaoId: id || "" });
 
   const concludedStops = paradasConcluidas?.length || 0;
@@ -68,7 +69,7 @@ export default function RouteExecutionPage() {
   const progressPercentage = totalStops > 0 ? Math.round((concludedStops / totalStops) * 100) : 0;
 
   return (
-    <PullToRefreshWrapper onRefresh={async () => { }}>
+    <PullToRefreshWrapper onRefresh={refetch}>
       <div className="space-y-4 text-left pb-16">
         {(isLoading && !showSuccessOverlay) || !execucao ? (
           <RouteTimelineSkeleton count={4} />

@@ -3,7 +3,8 @@ import { Passageiro, PassageiroResponsavel } from "./passageiro";
 export enum RouteExecutionStatus {
   INICIADA = "iniciada",
   CONCLUIDA = "concluida",
-  CANCELADA = "cancelada"
+  CANCELADA = "cancelada",
+  PREVIEW = "preview"
 }
 
 export enum RouteStopStatus {
@@ -27,6 +28,8 @@ export const ROUTE_SENTIDO_LABELS: Record<RouteSentido, string> = {
   [RouteSentido.VOLTANDO]: "Voltando"
 };
 
+export const DELETE_AUSENCIA_BY_QUERY_PARAM = "by-query";
+
 export interface RoutePassenger {
   id?: string;
   rota_id?: string;
@@ -35,6 +38,9 @@ export interface RoutePassenger {
   escola_id?: string | null;
   ordem: number;
   sentido?: RouteSentido | null;
+  status?: RouteStopStatus;
+  is_ausente?: boolean;
+  ausencia_id?: string | null;
   passageiro?: Passageiro;
   escola?: {
     id: string;
@@ -70,6 +76,8 @@ export interface RouteExecutionPassenger {
   passageiro_id?: string | null;
   escola_id?: string | null;
   status: RouteStopStatus;
+  is_ausente?: boolean;
+  ausencia_id?: string | null;
   ordem: number;
   sentido?: RouteSentido | null;
   notificado_em?: string;

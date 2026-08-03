@@ -8,19 +8,22 @@ import {
   XCircle, MapPin, Check, UserMinus, Route, ArrowUp, ArrowDown, Loader2, Play, AlertTriangle, School, User,
   Home, Edit
 } from "lucide-react";
+import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
+import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { GoogleMapsIcon } from "@/components/icons/GoogleMapsIcon";
 import { WazeIcon } from "@/components/icons/WazeIcon";
-import { RouteExecutionStatus, RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
+import { RouteExecutionStatus, RouteNodeType, RouteStopStatus, RouteSentido, DELETE_AUSENCIA_BY_QUERY_PARAM } from "@/types/route";
 
 import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatarEnderecoParcialRota, formatShortName } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useRouteRules } from "@/hooks/business/useRouteRules";
 import { useSession } from "@/hooks/business/useSession";
-import { useExecucoesRota } from "@/hooks/api/useRoutes";
+import { useExecucoesRota, useRemoverAusenciaMutation } from "@/hooks/api/useRoutes";
+import { useAtualizarParadaStatus } from "@/hooks/api/useRouteMutations";
 
 import { openExternalNavigation } from "@/utils/browser";
 import { NavigationApp } from "@/constants";
@@ -86,6 +89,7 @@ export function ActiveRouteExecutionView({
       return () => clearTimeout(timer);
     }
   }, [paradaAtual?.id, isPreview]);
+  const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
   const [selectedPreviewTabs, setSelectedPreviewTabs] = useState<Record<string, string>>({});
   const [selectedDialogRespTab, setSelectedDialogRespTab] = useState<string>(TAB_PRINCIPAL);
   const [addressDialogData, setAddressDialogData] = useState<{
@@ -110,6 +114,52 @@ export function ActiveRouteExecutionView({
   const outraRotaAtiva = execucoes.find(
     (e: any) => e.status === RouteExecutionStatus.INICIADA && e.rota_id !== execucao?.rota_id
   );
+
+  const removerAusenciaMutation = useRemoverAusenciaMutation();
+  const atualizarParadaStatusMutation = useAtualizarParadaStatus();
+  const [desfazendoStopId, setDesfazendoStopId] = useState<string | null>(null);
+
+  const handleDesfazerAusencia = (parada: any) => {
+    const isAusente = parada.status === RouteStopStatus.AUSENTE || parada.is_ausente;
+    if (!isAusente) return;
+
+    const nomeAluno = formatFirstName(parada.passageiro?.nome || "este passageiro");
+
+    openConfirmationDialog({
+      title: "Desfazer Ausência?",
+      description: `Tem certeza que deseja desfazer a ausência de ${nomeAluno} e retorná-lo para a rota?`,
+      confirmText: "Desfazer",
+      cancelText: "Cancelar",
+      variant: "default",
+      onConfirm: async () => {
+        setDesfazendoStopId(parada.id);
+
+        try {
+          if (isPreview) {
+            await removerAusenciaMutation.mutateAsync({
+              id: parada.ausencia_id || DELETE_AUSENCIA_BY_QUERY_PARAM,
+              passageiro_id: parada.passageiro_id,
+              rota_id: execucao?.rota_id,
+            });
+            toast.success("Ausência desfeita! Passageiro retornado ao itinerário.");
+          } else if (execucao?.id) {
+            await atualizarParadaStatusMutation.mutateAsync({
+              execucaoId: execucao.id,
+              paradaId: parada.id,
+              status: RouteStopStatus.PENDENTE,
+            });
+            toast.success("Ausência desfeita! Passageiro retornado ao trajeto.");
+          }
+          safeCloseDialog(closeConfirmationDialog);
+        } catch (err: unknown) {
+          const errorMsg = err instanceof Error ? err.message : "Erro ao desfazer ausência.";
+          toast.error(errorMsg);
+        } finally {
+          setDesfazendoStopId(null);
+        }
+      }
+    });
+  };
 
   const [submittingStopId, setSubmittingStopId] = useState<string | null>(null);
   const [isFinishingLastStop, setIsFinishingLastStop] = useState(false);
@@ -392,17 +442,31 @@ export function ActiveRouteExecutionView({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex flex-col gap-2 pt-1">
             {execucao?.rota_id && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
-                className="h-12 px-3 sm:px-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                title="Configurar itinerário e passageiros"
-              >
-                <Edit className="w-4 h-4 text-slate-500 shrink-0" />
-              </Button>
+              <div className="flex items-center gap-2 w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAusenciaDialogOpen(true)}
+                  className="flex-1 min-w-0 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 px-3.5"
+                  title="Informar ausência antecipada de um passageiro"
+                >
+                  <UserMinus className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span className="truncate">Informar Ausência</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
+                  className="h-11 w-11 shrink-0 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center"
+                  title="Configurar itinerário e passageiros"
+                >
+                  <Edit className="w-4 h-4 text-[#1a3a5c] shrink-0" />
+                </Button>
+              </div>
             )}
 
             <Button
@@ -416,14 +480,14 @@ export function ActiveRouteExecutionView({
                 }
               }}
               disabled={!!outraRotaAtiva || isLoading}
-              className="flex-1 min-w-0 h-12 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-lg shadow-md flex items-center justify-center gap-1.5 border-none transition-all active:scale-95 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
+              className="h-12 w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-extrabold text-sm sm:text-base shadow-md flex items-center justify-center gap-2 border-none transition-all active:scale-[0.98] cursor-pointer"
             >
               {iniciarMutation?.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <Loader2 className="w-5 h-5 animate-spin shrink-0" />
               ) : (
-                <Play className="w-4 h-4 fill-white shrink-0" />
+                <Play className="w-5 h-5 fill-white shrink-0" />
               )}
-              <span className="truncate">INICIAR ROTA</span>
+              <span>INICIAR ROTA</span>
             </Button>
           </div>
 
@@ -493,60 +557,16 @@ export function ActiveRouteExecutionView({
             const absIndex = index;
             const showTopLine = absIndex > 0;
             const showBottomLine = absIndex < totalTimelineItems - 1;
-            const isAusente = parada.status === RouteStopStatus.AUSENTE;
-            const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
-            const statusLabel = isAusente ? "AUSENTE" : "CONCLUÍDO";
 
             return (
-              <div key={parada.id} className="relative w-full">
-                {showTopLine && (
-                  <div className="absolute left-[-26px] top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
-                )}
-                {showBottomLine && (
-                  <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
-                )}
-
-                <span className={cn(
-                  "absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-[11px] border-2 shadow-sm z-10",
-                  isAusente ? "bg-white border-rose-400 text-rose-500" : "bg-emerald-500 border-emerald-500 text-white"
-                )}>
-                  {isAusente ? (
-                    <UserMinus className="w-4 h-4 text-rose-500" />
-                  ) : isEscolaItem ? (
-                    <School className="w-4 h-4 text-white" />
-                  ) : (
-                    <Check className="w-4 h-4 text-white" />
-                  )}
-                </span>
-
-                <div className="bg-slate-50/70 border border-slate-200 p-2.5 rounded-lg flex items-center justify-between gap-3 shadow-2xs opacity-65 min-h-[52px] transition-all">
-                  <div className="min-w-0 flex-1">
-                    <h4 className={cn(
-                      "text-[11px] font-bold text-left break-words leading-tight pr-2",
-                      isEscolaItem ? "text-blue-950" : "text-slate-700"
-                    )}>
-                      {isEscolaItem
-                        ? `${parada.escola?.nome}`
-                        : formatShortName(parada.passageiro?.nome || "", true)}
-                    </h4>
-                    <p className="text-[9px] text-slate-400 font-semibold leading-none mt-0.5 text-left">
-                      {isEscolaItem
-                        ? "Parada na escola"
-                        : isAusente
-                          ? "Passageiro não embarcou"
-                          : parada.sentido === RouteSentido.VOLTANDO
-                            ? "Desembarque realizado"
-                            : "Embarque realizado"}
-                    </p>
-                  </div>
-                  <Badge className={cn(
-                    "text-[9px] font-bold border px-1.5 py-0.5 rounded-md shrink-0 leading-none uppercase",
-                    isAusente ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
-                  )}>
-                    {statusLabel}
-                  </Badge>
-                </div>
-              </div>
+              <RouteCompletedStopItem
+                key={parada.id}
+                parada={parada}
+                showTopLine={showTopLine}
+                showBottomLine={showBottomLine}
+                onDesfazer={() => handleDesfazerAusencia(parada)}
+                isDesfazendo={desfazendoStopId === parada.id}
+              />
             );
           })}
 
@@ -1330,6 +1350,12 @@ export function ActiveRouteExecutionView({
           })()}
         </BaseDialog.Body>
       </BaseDialog>
+
+      <RegistrarAusenciaDialog
+        isOpen={isAusenciaDialogOpen}
+        onClose={() => setIsAusenciaDialogOpen(false)}
+        lockedRotaId={execucao?.rota_id}
+      />
     </div>
   );
 }

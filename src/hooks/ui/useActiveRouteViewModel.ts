@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReordenarExecucao, useFinalizarExecucao } from "../api/useRouteMutations";
-import { RouteStopStatus, RouteExecutionPassenger } from "@/types/route";
+import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger, RoutePassenger } from "@/types/route";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
   const location = useLocation();
@@ -33,43 +33,45 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
   const isPreview = isExplicitPreview || (!!execQuery.isError && !!routeQuery.data);
 
   let execucao = execQuery.data;
-  let paradas = execQuery.data?.paradas || [];
+  let paradas: RouteExecutionPassenger[] = execQuery.data?.paradas || [];
 
   if (isPreview && routeQuery.data) {
     execucao = {
       id: "",
       rota_id: routeQuery.data.id,
       usuario_id: routeQuery.data.usuario_id,
-      status: "preview" as any,
+      status: RouteExecutionStatus.PREVIEW,
       iniciada_em: "",
       created_at: routeQuery.data.created_at,
       rota: {
         id: routeQuery.data.id,
         nome: routeQuery.data.nome
       }
-    } as any;
+    };
 
-    paradas = (routeQuery.data.passageiros || []).map((p) => ({
+    paradas = (routeQuery.data.passageiros || []).map((p: RoutePassenger): RouteExecutionPassenger => ({
       id: p.id || "",
       execucao_rota_id: "",
       tipo_no: p.tipo_no,
       passageiro_id: p.passageiro_id,
       escola_id: p.escola_id,
-      status: RouteStopStatus.PENDENTE,
+      status: p.status || (p.is_ausente ? RouteStopStatus.AUSENTE : RouteStopStatus.PENDENTE),
+      is_ausente: p.is_ausente,
+      ausencia_id: p.ausencia_id,
       ordem: p.ordem,
       passageiro: p.passageiro,
       escola: p.escola,
       sentido: p.sentido || null
-    })) as any[];
+    }));
   }
 
-  const paradasPendentes = paradas.filter((p: RouteExecutionPassenger) => !p.visitado_em && p.status !== RouteStopStatus.AUSENTE);
-  const paradasConcluidas = paradas.filter((p: RouteExecutionPassenger) => !!p.visitado_em || p.status === RouteStopStatus.AUSENTE);
+  const paradasConcluidas = paradas.filter((p: RouteExecutionPassenger) => !!p.visitado_em || p.status === RouteStopStatus.AUSENTE || p.is_ausente);
+  const paradasPendentes = paradas.filter((p: RouteExecutionPassenger) => !p.visitado_em && p.status !== RouteStopStatus.AUSENTE && !p.is_ausente);
 
   const paradaAtual = !isPreview && paradasPendentes.length > 0 ? paradasPendentes[0] : null;
 
   const proximasParadas = isPreview
-    ? paradas
+    ? paradasPendentes
     : paradasPendentes.length > 1
       ? paradasPendentes.slice(1)
       : [];
@@ -137,6 +139,14 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
   const isStartingRoute = iniciarMutation.isPending || (iniciarMutation.isSuccess && isPreview);
 
+  const refetch = async () => {
+    if (isPreview) {
+      await routeQuery.refetch();
+    } else {
+      await execQuery.refetch();
+    }
+  };
+
   return {
     execucao,
     paradaAtual,
@@ -153,6 +163,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     handleReordenar,
     handleCancel,
     isPreview,
-    iniciarMutation
+    iniciarMutation,
+    refetch
   };
 }

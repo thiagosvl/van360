@@ -93,7 +93,7 @@ export function useAtualizarParadaStatus() {
     }: {
       execucaoId: string;
       paradaId: string;
-      status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE;
+      status: RouteStopStatus;
     }) => routeApi.atualizarParadaStatus(execucaoId, paradaId, status),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });

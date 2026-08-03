@@ -7,7 +7,8 @@ import { RotasSkeleton, ListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { useRoutes, useExecucoesRota } from "@/hooks/api/useRoutes";
 import { useDeleteRoute, useCancelarExecucao } from "@/hooks/api/useRouteMutations";
-import { Route as RouteIcon, Play, Trash2, Edit, History, Calendar, Clock, Plus, Loader2, XCircle, Check, X } from "lucide-react";
+import { Route as RouteIcon, Play, Trash2, Edit, History, Calendar, Clock, Plus, Loader2, Check, X, UserMinus } from "lucide-react";
+import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/business/useSession";
@@ -24,6 +25,7 @@ const TAB_HISTORICO = "historico";
 export default function Rotas() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TAB_MINHAS_ROTAS);
+  const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
 
   const { openConfirmationDialog, closeConfirmationDialog, setPageTitle, openRouteFormDialog } = useLayout();
 
@@ -167,15 +169,26 @@ export default function Rotas() {
             </div>
 
             <TabsContent value={TAB_MINHAS_ROTAS} className="space-y-4 mt-0">
-              <div className="flex items-center justify-between px-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
                 <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">{rotas.length > 0 ? "Rotas Cadastradas" : ""}</h2>
-                <Button
-                  onClick={handleOpenCreateRouteDialog}
-                  className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95 flex items-center gap-1.5"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Nova Rota</span>
-                </Button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAusenciaDialogOpen(true)}
+                    className="flex-1 sm:flex-initial border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <UserMinus className="h-4 w-4 text-rose-500 shrink-0" />
+                    <span>Informar Ausência</span>
+                  </Button>
+
+                  <Button
+                    onClick={handleOpenCreateRouteDialog}
+                    className="flex-1 sm:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4 shrink-0" />
+                    <span>Nova Rota</span>
+                  </Button>
+                </div>
               </div>
 
               {isLoadingRotas || isLoadingProfile ? (
@@ -385,6 +398,11 @@ export default function Rotas() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
+
+      <RegistrarAusenciaDialog
+        isOpen={isAusenciaDialogOpen}
+        onClose={() => setIsAusenciaDialogOpen(false)}
+      />
     </>
   );
 }
