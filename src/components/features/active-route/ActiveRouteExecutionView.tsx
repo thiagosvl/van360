@@ -1243,7 +1243,7 @@ export function ActiveRouteExecutionView({
             const formattedParentesco = rawParentesco ? formatParentesco(rawParentesco) : "";
             const parentescoLabel = (formattedParentesco && formattedParentesco.trim().length > 0)
               ? formattedParentesco
-              : (isPrincipal ? "Principal" : "Responsável");
+              : (isPrincipal ? "Financeiro" : "Responsável");
 
             const isVolta = addressDialogData.sentido === RouteSentido.VOLTANDO;
             const casaAddress = activeAddress;
@@ -1255,13 +1255,16 @@ export function ActiveRouteExecutionView({
             return (
               <>
                 {/* 0. Nome e Avatar Inline do Passageiro */}
-                <div className="flex items-center justify-start gap-2 py-0.5 text-left">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#1a3a5c] shrink-0">
-                    <User className="w-3.5 h-3.5" />
+                <div className="flex items-center justify-start gap-2.5 py-1 text-left border-b border-slate-100 pb-3">
+                  <div className="w-8 h-8 rounded-full bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 flex items-center justify-center text-[#1a3a5c] shrink-0">
+                    <User className="w-4 h-4" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#1a3a5c] font-headline tracking-tight">
-                    {formatShortName(pass?.nome || addressDialogData.title, true)}
-                  </h3>
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-400 block leading-none mb-0.5">Passageiro</span>
+                    <h3 className="text-sm font-bold text-[#1a3a5c] tracking-tight">
+                      {formatShortName(pass?.nome || addressDialogData.title, true)}
+                    </h3>
+                  </div>
                 </div>
 
                 {/* 1. Tabs de Responsáveis Adicionais (Somente se existirem adicionais) */}
@@ -1271,15 +1274,15 @@ export function ActiveRouteExecutionView({
                       <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                         <TabsTrigger
                           value={TAB_PRINCIPAL}
-                          className="rounded-full border border-slate-200 bg-white text-slate-600 px-3.5 py-1 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs shrink-0 cursor-pointer"
+                          className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer"
                         >
-                          Principal
+                          Responsável Financeiro
                         </TabsTrigger>
                         {pass.responsaveis.map((resp: any) => (
                           <TabsTrigger
                             key={resp.id}
                             value={resp.id!}
-                            className="rounded-full border border-slate-200 bg-white text-slate-600 px-3.5 py-1 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs shrink-0 cursor-pointer"
+                            className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer"
                           >
                             {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
                           </TabsTrigger>
@@ -1291,41 +1294,42 @@ export function ActiveRouteExecutionView({
 
                 {/* 2. Alerta de Atenção para Responsável Alternativo (ex: Pai/Mãe) */}
                 {!isPrincipal && respObj && (
-                  <div className="flex items-start gap-2 bg-amber-50/90 border border-amber-200/80 p-2.5 rounded-lg text-amber-900 text-[11px] font-normal leading-tight animate-in fade-in duration-200 text-left shadow-2xs">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2.5 bg-amber-50/90 border border-amber-200/80 p-3 rounded-2xl text-amber-900 text-xs leading-relaxed text-left shadow-xs">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-semibold text-amber-950 block mb-0.5">Aviso de endereço alternativo:</span>
-                      Você está visualizando e navegando para o endereço de <strong className="font-semibold">{formatFirstName(respObj.nome)}</strong> ({parentescoLabel}).
+                      <span className="font-bold text-amber-950 block mb-0.5">Aviso de endereço alternativo:</span>
+                      Você está visualizando o endereço de <strong className="font-bold">{formatFirstName(respObj.nome)}</strong> ({parentescoLabel}).
                     </div>
                   </div>
                 )}
 
                 {/* 3. Card de Endereço Ativo (Com os Botões de Navegação Maps e Waze) */}
-                <div className="bg-white border border-slate-200/90 p-3.5 rounded-lg space-y-2.5 text-left shadow-2xs">
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                      Endereço
-                    </span>
+                <div className="bg-slate-50/80 border border-slate-100/80 p-4 rounded-2xl space-y-3.5 text-left">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-[#1a3a5c]" />
+                      <span className="text-xs uppercase font-semibold text-slate-500">
+                        Endereço
+                      </span>
+                    </div>
                     {activeRespFirstName && (
-                      <span className={cn(
-                        "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border leading-none shadow-2xs bg-slate-100 text-slate-700 border-slate-200"
-                      )}>
+                      <span className="text-[10px] font-normal tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
                         {activeRespFirstName} ({parentescoLabel})
                       </span>
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-[#1a3a5c] leading-relaxed break-words">
-                    {activeAddress || "Endereço não informado"}
+                  <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
+                    {activeAddress || <span className="text-slate-400 font-normal">—</span>}
                   </p>
 
                   {/* Botões de Navegação com Cores Oficiais */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-1.5 border-t border-slate-100">
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
                     <Button
                       type="button"
                       onClick={() => {
                         openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress, activeLat, activeLng);
                       }}
-                      className="h-10 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-full flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
+                      className="h-11 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
                     >
                       <GoogleMapsIcon className="w-4 h-4 shrink-0" />
                       <span>Maps</span>
@@ -1335,7 +1339,7 @@ export function ActiveRouteExecutionView({
                       onClick={() => {
                         openNavigation(NavigationApp.WAZE, activeAddress, activeLat, activeLng);
                       }}
-                      className="h-10 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-full flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 w-full cursor-pointer"
+                      className="h-11 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
                     >
                       <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />
                       <span>Waze</span>
@@ -1344,49 +1348,51 @@ export function ActiveRouteExecutionView({
                 </div>
 
                 {/* 4. Trajeto da Rota (Com Linha Conectora) */}
-                <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-lg space-y-3 text-left shadow-2xs">
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                      Trajeto da Rota
-                    </span>
+                <div className="bg-slate-50/80 border border-slate-100/80 p-4 rounded-2xl space-y-3.5 text-left">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Route className="w-4 h-4 text-[#1a3a5c]" />
+                      <span className="text-xs font-bold uppercase text-slate-500">
+                        Trajeto da rota
+                      </span>
+                    </div>
                     <span className={cn(
-                      "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border leading-none shadow-2xs",
-                      !isVolta ? "bg-slate-100 text-slate-700 border-slate-200" : "bg-red text-[#1a3a5c] border-[#1a3a5c]/20"
+                      "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border bg-primary-50 text-primary border-primary-200/60"
                     )}>
                       {isVolta ? "Voltando" : "Indo"}
                     </span>
                   </div>
 
-                  <div className="relative pl-0.5 space-y-4 pt-1 text-xs">
-                    {/* Saindo de */}
+                  <div className="relative pl-1 space-y-4 pt-1 text-xs">
+                    {/* Ponto de partida */}
                     <div className="flex items-start gap-3 relative">
-                      <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-2xs z-10">
-                        {isVolta ? <School className="w-3.5 h-3.5" /> : <Home className="w-3.5 h-3.5" />}
+                      <div className="w-7 h-7 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-xs z-10">
+                        {isVolta ? <School className="w-4 h-4" /> : <Home className="w-4 h-4" />}
                       </div>
                       {/* Linha Conectora Vertical */}
-                      <div className="absolute left-[11px] top-6 bottom-[-16px] w-[2px] bg-slate-200" />
+                      <div className="absolute left-[13px] top-7 bottom-[-16px] w-[2px] bg-slate-300 border-l border-dashed border-slate-300" />
                       <div className="space-y-0.5 flex-1 min-w-0">
-                        <span className="font-semibold text-slate-400 uppercase text-[9px] tracking-wider block">
-                          Saindo de:
+                        <span className="text-xs font-semibold text-slate-500 block">
+                          Ponto de partida
                         </span>
-                        <span className="font-semibold text-[#1a3a5c] break-words block leading-snug">
-                          {saindoDe}
-                        </span>
+                        <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
+                          {saindoDe || <span className="text-slate-400 font-normal">—</span>}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Chegando em */}
+                    {/* Destino final */}
                     <div className="flex items-start gap-3 relative">
-                      <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-2xs z-10">
-                        {isVolta ? <Home className="w-3.5 h-3.5" /> : <School className="w-3.5 h-3.5" />}
+                      <div className="w-7 h-7 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-xs z-10">
+                        {isVolta ? <Home className="w-4 h-4" /> : <School className="w-4 h-4" />}
                       </div>
                       <div className="space-y-0.5 flex-1 min-w-0">
-                        <span className="font-semibold text-slate-400 uppercase text-[9px] tracking-wider block">
-                          Chegando em:
+                        <span className="text-xs font-semibold text-slate-500 block">
+                          Destino final
                         </span>
-                        <span className="font-semibold text-[#1a3a5c] break-words block leading-snug">
-                          {chegandoEm}
-                        </span>
+                        <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
+                          {chegandoEm || <span className="text-slate-400 font-normal">—</span>}
+                        </p>
                       </div>
                     </div>
                   </div>

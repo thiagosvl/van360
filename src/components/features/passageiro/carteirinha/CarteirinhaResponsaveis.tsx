@@ -72,7 +72,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
               value="principal"
               className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
             >
-              Financeiro
+              Responsável Financeiro
             </TabsTrigger>
             {responsaveisAdicionais.map((resp) => (
               <TabsTrigger
