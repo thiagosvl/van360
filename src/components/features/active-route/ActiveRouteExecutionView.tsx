@@ -900,7 +900,7 @@ export function ActiveRouteExecutionView({
 
                       {/* Botoes de Acao do Passageiro (Lado a Lado no Mobile) */}
                       <div className="pt-2 border-t border-slate-100 w-full">
-                        {sentidoPassageiroAtivo !== RouteSentido.VOLTANDO && activeParadaToRender.status !== RouteStopStatus.EMBARCADO ? (
+                        {activeParadaToRender.status !== RouteStopStatus.EMBARCADO ? (
                           <div className="grid grid-cols-2 gap-2.5 w-full">
                             <Button
                               type="button"
