@@ -11,33 +11,43 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { formatGenero, formatModalidade, formatPeriodo, formatarEnderecoCompleto, formatDateToBR, formatMonthYearToBR } from "@/utils/formatters";
+import {
+  formatGenero,
+  formatModalidade,
+  formatPeriodo,
+  formatarEnderecoCompleto,
+  formatDateToBR,
+  formatMonthYearToBR,
+  formatParentesco,
+} from "@/utils/formatters";
+import { cpfMask, phoneMask } from "@/utils/masks";
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
 import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { openBrowserLink } from "@/utils/browser";
 import {
-  Bus,
-  Calendar,
-  CalendarClock,
   Check,
-  Clock,
   Copy,
   GraduationCap,
   MapPin,
   Pencil,
   Power,
   PowerOff,
-  Route,
   Trash2,
   User,
   UserCheck,
-  Users,
   Bot,
   BotOff,
-  BookOpen,
   MoreHorizontal,
   Wallet,
+  Clock,
+  BookOpen,
+  Bus,
+  Calendar,
+  CalendarClock,
+  Users,
+  Phone,
 } from "lucide-react";
+import React from "react";
 
 export interface CarteirinhaInfoProps {
   passageiro: Passageiro;
@@ -102,17 +112,12 @@ const CarteirinhaTopCard = ({
           <h2 className="text-xl md:text-[22px] font-bold text-white tracking-tight leading-snug">
             {passageiro.nome}
           </h2>
-          {passageiro.nome_responsavel && (
-            <p className="text-[13px] md:text-sm text-slate-300/90 font-medium mt-0.5">
-              {formatNomeResponsavelCompletoExibicao(passageiro.nome_responsavel)}
-            </p>
-          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-1.5 mt-5 pointer-events-none">
           <Badge
             className={cn(
-              "border-none px-2 py-0.5 text-[9px] font-bold uppercase",
+              "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
               passageiro.ativo
                 ? "text-emerald-700 bg-[#d8f0e1]"
                 : "text-rose-700 bg-rose-100"
@@ -121,13 +126,13 @@ const CarteirinhaTopCard = ({
             {passageiro.ativo ? "Ativo" : "Inativo"}
           </Badge>
           {temCobrancasVencidas && (
-            <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2 py-0.5 text-[9px] font-bold uppercase animate-pulse">
+            <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-pulse">
               Possui Débitos
             </Badge>
           )}
           <Badge
             className={cn(
-              "border-none px-2 py-0.5 text-[9px] font-bold uppercase",
+              "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
               passageiro.enviar_notificacoes
                 ? "text-emerald-700 bg-[#d8f0e1]"
                 : "text-rose-700 bg-rose-100"
@@ -289,7 +294,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
         onToggleNotificacoesClick={props.onToggleNotificacoesClick}
         onEnviarWhatsApp={props.onEnviarWhatsApp}
       />
-      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-4 md:p-6 pb-6">
+      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-4 md:p-6 pb-6">
         <CarteirinhaDadosPessoais
           passageiro={props.passageiro}
           isCopiedEndereco={props.isCopiedEndereco}
@@ -306,8 +311,55 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
 };
 
 /**
- * Dados pessoais detalhados: período, modalidade, escola, veículo, nascimento,
- * gênero, contrato, início transporte, representante legal, endereço, botão editar.
+ * Item de informação padronizado no estilo CarteirinhaResponsaveis
+ */
+const InfoField = ({
+  icon,
+  label,
+  value,
+  fullWidth = false,
+  hasBorder = false,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value?: React.ReactNode | null;
+  fullWidth?: boolean;
+  hasBorder?: boolean;
+}) => {
+  const isInvalidOrEmpty =
+    value === null ||
+    value === undefined ||
+    (typeof value === "string" &&
+      (value.trim() === "" || value.trim() === "-" || value.trim() === "—"));
+
+  return (
+    <div
+      className={cn(
+        "min-w-0 space-y-1 text-left",
+        fullWidth && "col-span-2 sm:col-span-2",
+        hasBorder && "pt-2.5 border-t border-slate-200/50"
+      )}
+    >
+      <div className="flex items-center gap-1.5">
+        {icon && <span className="text-slate-400 shrink-0">{icon}</span>}
+        <span className="text-xs font-medium text-slate-500 leading-none">
+          {label}
+        </span>
+      </div>
+      <p
+        className={cn(
+          "text-xs sm:text-sm font-bold text-[#1a3a5c] leading-tight break-words",
+          isInvalidOrEmpty && "text-slate-400 font-normal"
+        )}
+      >
+        {isInvalidOrEmpty ? "—" : value}
+      </p>
+    </div>
+  );
+};
+
+/**
+ * Dados pessoais detalhados: 100% alinhados ao estilo visual de CarteirinhaResponsaveis.
  */
 export const CarteirinhaDadosPessoais = ({
   passageiro,
@@ -324,198 +376,253 @@ export const CarteirinhaDadosPessoais = ({
   | "onEnviarWhatsApp"
   | "onEditClick"
 >) => {
-  const getEnderecoFormatado = () => {
-    if (!passageiro.logradouro) return "-";
-    return formatarEnderecoCompleto(passageiro);
-  };
-  const enderecoFormatado = getEnderecoFormatado();
-
+  const enderecoFormatado = passageiro.logradouro ? formatarEnderecoCompleto(passageiro) : null;
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
-  const valorCobrancaFormatado =
+  const valorCobrancaTexto =
     !isIncomplete && passageiro.valor_cobranca && Number(passageiro.valor_cobranca) > 0
       ? Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
       })
-      : "-";
+      : null;
 
-  const diaVencimentoFormatado =
+  const diaVencimentoTexto =
     !isIncomplete && passageiro.dia_vencimento
       ? `Dia ${passageiro.dia_vencimento}`
-      : "-";
+      : null;
 
-  const inicioCobrancaFormatado =
+  const inicioTransporteTexto = passageiro.data_inicio_transporte
+    ? formatDateToBR(passageiro.data_inicio_transporte)
+    : null;
+
+  const fimTransporteTexto = passageiro.data_fim_transporte
+    ? formatDateToBR(passageiro.data_fim_transporte)
+    : null;
+
+  const inicioCobrancaTexto =
     !isIncomplete && passageiro.data_inicio_cobranca
       ? formatMonthYearToBR(passageiro.data_inicio_cobranca)
-      : "-";
+      : null;
 
-  const fimCobrancaFormatado =
+  const fimCobrancaTexto =
     !isIncomplete && passageiro.data_fim_cobranca
       ? formatMonthYearToBR(passageiro.data_fim_cobranca)
-      : "-";
+      : null;
+
+  const cpfResponsavelTexto = passageiro.cpf_responsavel
+    ? cpfMask(passageiro.cpf_responsavel)
+    : null;
+
+  const telefoneResponsavelTexto = passageiro.telefone_responsavel
+    ? phoneMask(passageiro.telefone_responsavel)
+    : null;
 
   return (
-    <div className="space-y-3 transform-gpu will-change-transform pt-2">
-      {/* Grupo Escolar & Transporte */}
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Escola"
-          value={passageiro.escola?.nome || "-"}
-          icon={<GraduationCap className="h-3.5 w-3.5" />}
-        />
-
-        <InfoTile
-          label="Período"
-          value={formatPeriodo(passageiro.periodo)}
-          icon={<Clock className="h-3.5 w-3.5" />}
-        />
-
-        <InfoTile
-          label="Turma"
-          value={passageiro.turma || "-"}
-          icon={<BookOpen className="h-3.5 w-3.5" />}
-        />
-
-        <InfoTile
-          label="Professor(a)"
-          value={passageiro.nome_professor || "-"}
-          icon={<UserCheck className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Modalidade"
-          value={
-            passageiro.modalidade
-              ? formatModalidade(passageiro.modalidade)
-              : "-"
-          }
-          icon={<Route className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Veículo"
-          value={passageiro.veiculo?.placa || "-"}
-          icon={<Bus className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Início Transporte"
-          value={passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "-"}
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Término Transporte"
-          value={passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "-"}
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      {/* Grupo Financeiro & Cobrança */}
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Valor da Parcela"
-          value={valorCobrancaFormatado}
-          icon={<Wallet className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Dia do Vencimento"
-          value={diaVencimentoFormatado}
-          icon={<CalendarClock className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Início Cobrança"
-          value={inicioCobrancaFormatado}
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Término Cobrança"
-          value={fimCobrancaFormatado}
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      {/* Grupo Dados Pessoais */}
-      <div className="grid grid-cols-2 gap-3">
-        <InfoTile
-          label="Data de Nascimento"
-          value={
-            passageiro.data_nascimento
-              ? `${formatDateToBR(passageiro.data_nascimento)}`
-              : "-"
-          }
-          icon={<Calendar className="h-3.5 w-3.5" />}
-        />
-        <InfoTile
-          label="Gênero"
-          value={passageiro.genero ? formatGenero(passageiro.genero) : "-"}
-          icon={<Users className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      {/* Endereço */}
-      <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-slate-500" />
-          <span className="text-xs font-normal text-slate-500">
-            Endereço
-          </span>
+    <div className="space-y-6 text-left">
+      {/* 1. Bloco: Escola e Transporte */}
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-[#16314f]">Escola e Transporte</h3>
+        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <InfoField
+            icon={<GraduationCap className="h-3.5 w-3.5" />}
+            label="Escola"
+            value={passageiro.escola?.nome}
+            fullWidth
+          />
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Período"
+              value={formatPeriodo(passageiro.periodo)}
+            />
+            <InfoField
+              icon={<Bus className="h-3.5 w-3.5" />}
+              label="Modalidade"
+              value={formatModalidade(passageiro.modalidade)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<BookOpen className="h-3.5 w-3.5" />}
+              label="Turma"
+              value={passageiro.turma}
+            />
+            <InfoField
+              icon={<User className="h-3.5 w-3.5" />}
+              label="Professor(a)"
+              value={passageiro.nome_professor}
+            />
+          </div>
+          <InfoField
+            icon={<Bus className="h-3.5 w-3.5" />}
+            label="Veículo / Placa"
+            value={passageiro.veiculo?.placa}
+            fullWidth
+            hasBorder
+          />
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<Calendar className="h-3.5 w-3.5" />}
+              label="Início do transporte"
+              value={inicioTransporteTexto}
+            />
+            <InfoField
+              icon={<Calendar className="h-3.5 w-3.5" />}
+              label="Término do transporte"
+              value={fimTransporteTexto}
+            />
+          </div>
         </div>
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
-            {enderecoFormatado}
-          </p>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onCopyToClipboard(enderecoFormatado, "Endereço")}
-            className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
-          >
-            {isCopiedEndereco ? (
-              <Check className="h-3.5 w-3.5 text-emerald-500" />
-            ) : (
-              <Copy className="h-3.5 w-3.5 text-slate-400" />
+      </div>
+
+      {/* 2. Bloco: Parcelas */}
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
+        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <InfoField
+              icon={<Wallet className="h-3.5 w-3.5" />}
+              label="Valor da parcela"
+              value={valorCobrancaTexto}
+            />
+            <InfoField
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Dia de vencimento"
+              value={diaVencimentoTexto}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<CalendarClock className="h-3.5 w-3.5" />}
+              label="Início das cobranças"
+              value={inicioCobrancaTexto}
+            />
+            <InfoField
+              icon={<CalendarClock className="h-3.5 w-3.5" />}
+              label="Término das cobranças"
+              value={fimCobrancaTexto}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Bloco: Responsável Financeiro */}
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-[#16314f]">Responsável Financeiro</h3>
+        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <InfoField
+            icon={<UserCheck className="h-3.5 w-3.5" />}
+            label="Nome do Responsável"
+            value={passageiro.nome_responsavel}
+            fullWidth
+          />
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<Users className="h-3.5 w-3.5" />}
+              label="Parentesco"
+              value={formatParentesco(passageiro.parentesco_responsavel)}
+            />
+            <InfoField
+              icon={<UserCheck className="h-3.5 w-3.5" />}
+              label="CPF"
+              value={cpfResponsavelTexto}
+            />
+          </div>
+          <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-3 min-w-0">
+            <div className="min-w-0 flex-1">
+              <InfoField
+                icon={<Phone className="h-3.5 w-3.5" />}
+                label="Telefone / WhatsApp"
+                value={telefoneResponsavelTexto}
+              />
+            </div>
+            {passageiro.telefone_responsavel && (
+              <Button
+                type="button"
+                size="icon"
+                onClick={() => {
+                  const cleanPhone = passageiro.telefone_responsavel!.replace(/\D/g, "");
+                  const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
+                  openBrowserLink(`https://wa.me/${formattedPhone}`);
+                }}
+                className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
+                title="Abrir no WhatsApp"
+              >
+                <WhatsAppIcon className="w-3.5 h-3.5" />
+              </Button>
             )}
-          </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Bloco: Endereço de Embarque */}
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-[#16314f]">Endereço de Embarque</h3>
+        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                <span className="text-xs font-medium text-slate-500">Endereço completo</span>
+              </div>
+              <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
+                {enderecoFormatado || <span className="text-slate-400 font-normal">—</span>}
+              </p>
+            </div>
+            {enderecoFormatado && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onCopyToClipboard(enderecoFormatado, "Endereço")}
+                className="h-8 w-8 rounded-xl shrink-0 hover:bg-white border border-slate-200/60"
+                title="Copiar endereço"
+              >
+                {isCopiedEndereco ? (
+                  <Check className="h-4 w-4 text-emerald-500" />
+                ) : (
+                  <Copy className="h-4 w-4 text-slate-400" />
+                )}
+              </Button>
+            )}
+          </div>
+
+          <div className="pt-2.5 border-t border-slate-200/50 space-y-1">
+            <span className="text-xs font-medium text-slate-500 block mb-1.5">Ponto de referência</span>
+            <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
+              {passageiro.referencia || <span className="text-slate-400 font-normal">—</span>}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Bloco: Outros Dados */}
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-[#16314f]">Outros Dados</h3>
+        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <InfoField
+              icon={<Calendar className="h-3.5 w-3.5" />}
+              label="Data de nascimento"
+              value={passageiro.data_nascimento ? formatDateToBR(passageiro.data_nascimento) : null}
+            />
+            <InfoField
+              icon={<Users className="h-3.5 w-3.5" />}
+              label="Gênero"
+              value={passageiro.genero ? formatGenero(passageiro.genero) : null}
+            />
+          </div>
+          {passageiro.observacoes && (
+            <div className="pt-2.5 border-t border-slate-200/50 space-y-1">
+              <span className="text-xs font-medium text-slate-500 block">Observações</span>
+              <p className="text-xs sm:text-sm font-bold text-[#1a3a5c] leading-relaxed whitespace-pre-wrap">
+                {passageiro.observacoes}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-/* Componente auxiliar para tiles de informação */
-const InfoTile = ({
-  label,
-  value,
-  icon,
-  fullWidth,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  fullWidth?: boolean;
-}) => (
-  <div
-    className={cn(
-      "bg-slate-50/80 rounded-2xl p-3.5 transition-colors hover:bg-slate-100/80",
-      fullWidth && "col-span-2",
-    )}
-  >
-    <div className="flex items-center gap-1.5 mb-1.5">
-      <span className="text-slate-500">{icon}</span>
-      <span className="text-xs font-normal text-slate-500">
-        {label}
-      </span>
-    </div>
-    <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
-      {value}
-    </span>
-  </div>
-);
-

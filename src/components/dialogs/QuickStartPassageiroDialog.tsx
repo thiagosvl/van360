@@ -165,7 +165,7 @@ export function QuickStartPassageiroDialog({
     <BaseDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      maxWidth={isCompleto ? "2xl" : "lg"}
+      maxWidth={isCompleto ? "2xl" : "2xl"}
     >
       <BaseDialog.Header
         title="Cadastro de Passageiro"
@@ -471,7 +471,7 @@ export function QuickStartPassageiroDialog({
                       <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
                         <DollarSign className="w-5 h-5" />
                       </div>
-                      Financeiro e Vencimento
+                      Parcelas
                     </div>
 
                     <div className="space-y-4">

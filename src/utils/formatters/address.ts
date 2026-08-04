@@ -29,7 +29,7 @@ export function formatarEnderecoCompleto(obj: {
   const estadoUf = obj.estado || obj.uf ? ` - ${obj.estado || obj.uf}` : "";
   const cepStr = obj.cep ? `, ${formatarCEP(obj.cep)}` : "";
 
-  const mainAddress = `${logradouro}${numero}${complemento}${referencia}`.trim();
+  const mainAddress = `${logradouro}${numero}${complemento}`.trim();
   if (!mainAddress && !cidade && !bairro) return "";
 
   if (mainAddress.startsWith(",")) {

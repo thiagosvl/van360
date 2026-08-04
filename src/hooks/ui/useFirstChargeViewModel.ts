@@ -9,6 +9,8 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useCreateContrato } from "@/hooks/api/useContratos";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 
 interface FirstChargeViewModelProps {
@@ -93,6 +95,8 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
     }
   }, [passageiro, customValue, paymentMethod, createCobranca, onClose]);
 
+  const navigate = useNavigate();
+
   const finalizeFlow = useCallback(async (status?: CobrancaStatus) => {
     setIsGeneratingContract(true);
     try {
@@ -109,12 +113,15 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
         });
       }
       onClose();
+      if (passageiro?.id) {
+        navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+      }
     } catch (error) {
       console.error("Falha ao finalizar fluxo:", error);
     } finally {
       setIsGeneratingContract(false);
     }
-  }, [passageiro.id, wantsContract, submitCobranca, openGerarContratoValidadorDialog, createContrato, onClose]);
+  }, [passageiro?.id, wantsContract, submitCobranca, openGerarContratoValidadorDialog, createContrato, onClose, navigate]);
 
   const handleNext = useCallback(async () => {
     if (step === "CONTRACT_CHECK") {

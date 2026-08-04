@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info } from "lucide-react";
+import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -26,6 +26,13 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
   const { openConfirmationDialog, closeConfirmationDialog, openResponsavelFormDialog } = useLayout();
   const TAB_PRINCIPAL = "principal";
   const [selectedRespId, setSelectedRespId] = useState<string>(TAB_PRINCIPAL);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopyAddress = (address: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(address);
+    setTimeout(() => setCopiedAddress(null), 2000);
+  };
 
   useEffect(() => {
     setSelectedRespId(TAB_PRINCIPAL);
@@ -59,13 +66,13 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
       </div>
 
       {hasMultiple && (
-        <Tabs value={selectedRespId} onValueChange={setSelectedRespId} className="w-full">
+        <Tabs value={selectedRespId} onValueChange={setSelectedRespId} className="w-full mt-4">
           <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1">
             <TabsTrigger
               value="principal"
               className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
             >
-              Principal
+              Financeiro
             </TabsTrigger>
             {responsaveisAdicionais.map((resp) => (
               <TabsTrigger
@@ -103,6 +110,9 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
         if (!currentResp) return null;
 
         const respAddress = currentResp.logradouro ? formatarEnderecoCompleto(currentResp) : null;
+        const respParentesco = isPrincipalTab
+          ? formatParentesco(passageiro.parentesco_responsavel)
+          : formatParentesco(currentResp.parentesco);
 
         const handleSetPrincipal = () => {
           if (isCadastroPassageiroIncompleto(passageiro)) {
@@ -194,25 +204,13 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
         };
 
         return (
-          <div className="space-y-3.5 animate-in fade-in duration-200 text-left w-full min-w-0">
-            <div className="flex items-start justify-between gap-4 min-w-0 px-1 pt-1">
-              <div className="min-w-0 flex-1">
-                <h4 className="text-base font-bold text-[#16314f] break-words leading-tight">
-                  {formatNomeResponsavelCompletoExibicao(currentResp.nome)}
-                </h4>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  {isPrincipalTab ? (
-                    <Badge className="bg-blue-600/10 text-blue-600 border-none text-[10px] font-bold h-5 px-2.5 rounded-full hover:bg-blue-600/10">
-                      {formatParentesco(passageiro.parentesco_responsavel) || "Parentesco não informado"}
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-[#1a3a5c]/5 text-[#1a3a5c] border-none text-[10px] font-bold h-5 px-2.5 rounded-full hover:bg-[#1a3a5c]/5">
-                      {formatParentesco(currentResp.parentesco) || "Outro"}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-1 shrink-0 mt-0.5">
+          <div className="space-y-3 animate-in fade-in duration-200 text-left w-full min-w-0">
+            {/* Header de ações fora do card */}
+            <div className="flex items-center justify-between gap-3 min-w-0 px-1">
+              <span className="text-xs font-semibold text-slate-500">
+                {respParentesco || "Outro Responsável"}
+              </span>
+              <div className="flex items-center gap-1 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -250,15 +248,28 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
               </div>
             </div>
 
+            {/* Card interno com dados estruturados */}
             <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3 text-left w-full min-w-0">
-              <div className="flex items-center justify-between gap-3 min-w-0">
+              {/* Linha 1: Nome do responsável */}
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <UserCheck className="h-3.5 w-3.5 text-slate-500" />
+                  <span className="text-xs font-normal text-slate-500">Nome do responsável</span>
+                </div>
+                <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                  {formatNomeResponsavelCompletoExibicao(currentResp.nome) || "—"}
+                </span>
+              </div>
+
+              {/* Linha 2: Telefone */}
+              <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-3 min-w-0">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Phone className="h-3.5 w-3.5 text-slate-500" />
-                    <span className="text-xs font-normal text-slate-500">Telefone</span>
+                    <span className="text-xs font-normal text-slate-500">Telefone / WhatsApp</span>
                   </div>
                   <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
-                    {isResponsavelMockTelefone(currentResp.telefone) ? "Não informado" : phoneMask(currentResp.telefone)}
+                    {isResponsavelMockTelefone(currentResp.telefone) ? "—" : (phoneMask(currentResp.telefone) || "—")}
                   </span>
                 </div>
                 {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
@@ -269,31 +280,61 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                       const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
                       openBrowserLink(`https://wa.me/${formattedPhone}`);
                     }}
-                    className="h-8 w-8 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
+                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
+                    title="Abrir no WhatsApp"
                   >
-                    <WhatsAppIcon className="w-4 h-4" />
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
                   </Button>
                 )}
               </div>
 
+              {/* Linha 4: CPF */}
               <div className="pt-2.5 border-t border-slate-200/50 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <IdCard className="h-3.5 w-3.5 text-slate-500" />
                   <span className="text-xs font-normal text-slate-500">CPF</span>
                 </div>
                 <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
-                  {cpfMask(currentResp.cpf) || '-'}
+                  {cpfMask(currentResp.cpf) || "—"}
                 </span>
               </div>
 
-              <div className="pt-2.5 border-t border-slate-200/50 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-slate-500" />
-                  <span className="text-xs font-normal text-slate-500">Endereço</span>
+              {/* Linha 5: Endereço */}
+              <div className="pt-2.5 border-t border-slate-200/50 space-y-2.5 min-w-0">
+                <div className="flex items-start justify-between gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <span className="text-xs font-normal text-slate-500">Endereço</span>
+                    </div>
+                    <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
+                      {respAddress || "—"}
+                    </p>
+                  </div>
+                  {respAddress && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyAddress(respAddress)}
+                      className="h-7 w-7 rounded-xl shrink-0 hover:bg-white border border-slate-200/60"
+                      title="Copiar endereço"
+                    >
+                      {copiedAddress === respAddress ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-500" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5 text-slate-400" />
+                      )}
+                    </Button>
+                  )}
                 </div>
-                <p className="text-xs text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
-                  {respAddress || '-'}
-                </p>
+
+                <div className="pt-2 border-t border-slate-200/40 space-y-1">
+                  <span className="text-xs font-medium text-slate-500 block">Ponto de referência</span>
+                  <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
+                    {currentResp.referencia || <span className="text-slate-400 font-normal">—</span>}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
