@@ -39,6 +39,7 @@ import {
   useDeletePassageiro,
   useDesfazerPagamento,
   useIsMobile, usePassageiro,
+  usePassageiros,
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
@@ -130,6 +131,11 @@ export default function PassageiroCarteirinha() {
 
   const passageiro = passageiroData as Passageiro;
 
+  const { data: listaPassageirosData } = usePassageiros({
+    usuarioId: profile?.id,
+  });
+  const totalPassageiros = listaPassageirosData?.total ?? 0;
+
 
 
   const {
@@ -143,8 +149,6 @@ export default function PassageiroCarteirinha() {
   });
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
-
-  const availableYears = [currentYear];
 
   const loading =
     isSessionLoading ||
@@ -642,7 +646,7 @@ export default function PassageiroCarteirinha() {
           <div className="space-y-6">
             {isCadastroPassageiroIncompleto(passageiro) ? (
               <IncompletePassengerBanner onEdit={handleEditClick} />
-            ) : !profile?.chave_pix ? (
+            ) : !profile?.chave_pix && totalPassageiros > 1 ? (
               <PixNudgeBanner hasPix={false} />
             ) : null}
 

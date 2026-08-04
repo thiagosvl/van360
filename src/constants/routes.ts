@@ -36,6 +36,7 @@ export const ROUTES = {
       VEHICLES: "/veiculos",
       EXPENSES: "/gastos",
       REPORTS: "/relatorios",
+      SETTINGS: "/configuracoes",
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
       ROUTES: "/rotas",

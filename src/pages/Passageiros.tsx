@@ -6,7 +6,6 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
@@ -51,7 +50,7 @@ export default function Passageiros() {
   let countLabel = "";
   if (isMainTab) {
     const hasSearch = searchTerm || hasActiveFilters;
-    countLabel = hasSearch 
+    countLabel = hasSearch
       ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
       : (sectionCount === 1 ? "PASSAGEIRO" : "PASSAGEIROS");
   } else {

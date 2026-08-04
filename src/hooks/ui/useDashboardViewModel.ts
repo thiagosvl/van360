@@ -1,12 +1,10 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile, useSession } from "@/hooks";
 import { useSubscriptionStatus, useSubscriptionPlans } from "@/hooks/api/useSubscription";
-import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 
 export function useDashboardViewModel() {
@@ -31,8 +29,6 @@ export function useDashboardViewModel() {
 
   const { subscription } = useSubscriptionStatus(profile?.id);
   const { plans } = useSubscriptionPlans();
-
-  const [isCopied, setIsCopied] = useState(false);
 
   const financeiro = useMemo(() => ({
     recebido: systemSummary?.financeiro?.receita?.realizada ?? 0,
@@ -98,26 +94,8 @@ export function useDashboardViewModel() {
     ]);
   };
 
-  const handleCopyLink = useCallback(() => {
-    if (!profile?.id) return;
-
-    try {
-      navigator.clipboard.writeText(buildPrepassageiroLink(profile.id));
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (error) {
-      console.error("Erro ao copiar link:", error);
-    }
-  }, [profile?.id]);
-
-  const handleSuccessFormPassageiro = useCallback((passageiro?: any) => {
-    if (passageiro) {
-      openFirstChargeDialog({ passageiro });
-    }
-  }, [openFirstChargeDialog]);
-
   const handleOpenPassageiroDialog = useCallback(() => {
-    const isFirstPassageiro = onboarding.showOnboarding || ((contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageirosTotal ?? 0) === 0);
+    const isFirstPassageiro = onboarding.showOnboarding || ((contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageiros ?? 0) === 0);
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro) => {
@@ -165,9 +143,7 @@ export function useDashboardViewModel() {
     contadores,
     onboarding,
     dateContext,
-    isCopied,
     handlePullToRefresh,
-    handleCopyLink,
     handleOpenPassageiroDialog,
     handleOpenGastoDialog,
     handleOpenVeiculoDialog,

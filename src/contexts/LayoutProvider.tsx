@@ -6,7 +6,6 @@ import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
-import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
@@ -220,7 +219,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
-  const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
   const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
@@ -420,7 +418,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
-        openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
         openEditarPixDialog: () => setEditarPixDialogOpen(true),
         openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
         openReferAndEarnDialog: () => setReferAndEarnDialogOpen(true),
@@ -751,13 +748,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <AlterarSenhaDialog
           isOpen={alterarSenhaDialogOpen}
           onClose={() => safeCloseDialog(() => setAlterarSenhaDialogOpen(false))}
-        />
-      )}
-
-      {editarCadastroDialogOpen && (
-        <EditarCadastroDialog
-          isOpen={editarCadastroDialogOpen}
-          onClose={() => safeCloseDialog(() => setEditarCadastroDialogOpen(false))}
         />
       )}
 

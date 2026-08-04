@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { getMesNome } from "@/utils/formatters";
 import {
-  Copy,
-  CopyCheck,
   FileText,
   Plus,
   TrendingDown,
@@ -25,6 +23,7 @@ import {
   GraduationCap,
   Car,
   Rocket,
+  Settings,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { PassageiroTab } from "@/types/enums";
@@ -44,9 +43,7 @@ const Home = () => {
     contadores,
     onboarding,
     dateContext,
-    isCopied,
     handlePullToRefresh,
-    handleCopyLink,
     handleOpenPassageiroDialog,
     handleOpenGastoDialog,
     handleOpenVeiculoDialog,
@@ -57,10 +54,8 @@ const Home = () => {
 
   const { openAcquisitionChannelDialog } = useLayout();
 
-  // Só aciona algumas lógicas a partir de N dias de uso da conta
   const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
 
-  // Efeito de Confetes na primeira vez que o usuário entra após o cadastro
   useEffect(() => {
     if (sessionStorage.getItem("van360_just_registered") === "true") {
       sessionStorage.removeItem("van360_just_registered");
@@ -118,17 +113,25 @@ const Home = () => {
         <div className="space-y-6">
           {/* Header Contextual */}
           {!onboarding.showOnboarding && (
-            <div className="px-1">
-              <p className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
+            <div className="px-1 space-y-0.5">
+              <p className="text-xs font-medium text-slate-500 capitalize">
                 {dateContext}
               </p>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
-                {
-                  financeiro.countAtrasos > 0
-                    ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
-                    : `Parcelas do mês em dia!`
-                }
-              </p>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full shrink-0",
+                    financeiro.countAtrasos > 0 ? "bg-rose-500" : "bg-emerald-500"
+                  )}
+                />
+                <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
+                  {
+                    financeiro.countAtrasos > 0
+                      ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
+                      : "Parcelas do mês em dia!"
+                  }
+                </h1>
+              </div>
             </div>
           )}
 
@@ -271,14 +274,6 @@ const Home = () => {
                 variant="rose"
               />
               <ShortcutCard
-                onClick={handleCopyLink}
-                icon={Copy}
-                activeIcon={CopyCheck}
-                label={isCopied ? "Copiado!" : "Link de Cadastro"}
-                isActive={isCopied}
-                variant="violet"
-              />
-              <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.ROUTES}
                 icon={Route}
                 label="Rotas"
@@ -289,6 +284,12 @@ const Home = () => {
                 icon={TrendingDown}
                 label="Gastos"
                 variant="sky"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.SETTINGS}
+                icon={Settings}
+                label="Configurações"
+                variant="violet"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
@@ -329,23 +330,6 @@ const Home = () => {
             </h2>
             <ReferAndEarnCard />
           </section>
-
-          {/* Onboarding em Vídeo (Contextual) */}
-          {/* {onboarding.showOnboarding && (
-            <VideoCommerce
-              previewUrl="https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-preview.mp4"
-              videoUrls={[
-                "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-1.mp4",
-                "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-2.mp4",
-                "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos/home-3.mp4"
-              ]}
-              tooltipText="Comece por aqui"
-              showCta={false}
-              loop={true}
-              requireScrollOnMobile={false}
-              positionClasses="fixed z-50 left-4 sm:left-6 bottom-[130px] sm:bottom-10"
-            />
-          )} */}
         </div>
       </PullToRefreshWrapper>
     </>

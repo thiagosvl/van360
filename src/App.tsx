@@ -35,6 +35,7 @@ const Escolas = lazyLoad(() => import("./pages/Escolas"));
 const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
 const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
+const Configuracoes = lazyLoad(() => import("./pages/Configuracoes"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const Rotas = lazyLoad(() => import("./pages/Rotas"));
 const ConfigurarRota = lazyLoad(() => import("./pages/ConfigurarRota"));
@@ -326,6 +327,7 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.SETTINGS} element={<Configuracoes />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP} element={<ConfigurarRota />} />

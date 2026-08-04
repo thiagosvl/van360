@@ -184,7 +184,6 @@ export interface LayoutContextType {
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
-  openEditarCadastroDialog: () => void;
   openEditarPixDialog: () => void;
   openAcquisitionChannelDialog: () => void;
   openReferAndEarnDialog: () => void;

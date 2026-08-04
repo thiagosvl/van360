@@ -1,4 +1,4 @@
-import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route } from "lucide-react";
+import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
 const pagesItems = [
@@ -46,6 +46,11 @@ const pagesItems = [
         title: "Relatórios",
         href: ROUTES.PRIVATE.MOTORISTA.REPORTS,
         icon: ChartArea,
+    },
+    {
+        title: "Configurações",
+        href: ROUTES.PRIVATE.MOTORISTA.SETTINGS,
+        icon: Settings,
     },
     {
         title: "Minha Assinatura",

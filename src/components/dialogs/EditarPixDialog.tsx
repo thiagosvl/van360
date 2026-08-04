@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { TipoChavePix } from "@/types/pix";
-import { pixKeySchemaRequired } from "@/schemas/pix";
+import { pixKeySchema } from "@/schemas/pix";
 import {
   Select,
   SelectContent,
@@ -34,7 +34,7 @@ interface EditarPixDialogProps {
   onClose: () => void;
 }
 
-type FormData = z.infer<typeof pixKeySchemaRequired>;
+type FormData = z.infer<typeof pixKeySchema>;
 
 export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProps) {
   const { user } = useSession();
@@ -46,8 +46,8 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
   const initializedRef = React.useRef<boolean>(false);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(pixKeySchemaRequired),
-    defaultValues: { tipo_chave_pix: undefined as unknown as TipoChavePix, chave_pix: "" },
+    resolver: zodResolver(pixKeySchema),
+    defaultValues: { tipo_chave_pix: undefined, chave_pix: "" },
   });
 
   React.useEffect(() => {
@@ -82,8 +82,13 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
   const handleSubmit = async (data: FormData) => {
     try {
       if (!profile?.id) return;
-      const chave_pix = data.chave_pix || null;
-      const tipo_chave_pix = data.tipo_chave_pix || null;
+      let chave_pix = data.chave_pix || null;
+      let tipo_chave_pix = data.tipo_chave_pix || null;
+
+      if (!chave_pix || chave_pix.trim() === "") {
+        chave_pix = null;
+        tipo_chave_pix = null;
+      }
 
       await usuarioApi.atualizarPixUsuario(profile.id, {
         chave_pix,

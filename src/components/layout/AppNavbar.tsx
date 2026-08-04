@@ -16,12 +16,11 @@ import {
   Lock,
   Loader2,
   LogOut,
-  UserPen,
-  Key,
   Rocket,
   IdCard,
   Route,
   User,
+  Settings,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -32,8 +31,6 @@ import { formatFirstName } from "@/utils/formatters";
 export function AppNavbar({ role }: { role: "motorista" }) {
   const {
     openAlterarSenhaDialog,
-    openEditarCadastroDialog,
-    openEditarPixDialog,
     setIsHelpOpen,
     setIsGlobalLoading,
     pageTitle
@@ -113,7 +110,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                   )}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <h2 className="text-lg font-bold text-[#1a3a5c] tracking-tight leading-none truncate">
+                  <h2 className="text-xl font-bold text-[#1a3a5c] tracking-tight leading-none truncate">
                     {displayTitle}
                   </h2>
                 </div>
@@ -154,21 +151,18 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                 ) : (
                   <p className="text-sm font-semibold text-slate-700 truncate">{formatFirstName(profile?.nome)}</p>
                 )}
-              </div><DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+              </div>
+              <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SETTINGS)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+                <Settings className="h-4 w-4 text-slate-400" />
+                Configurações
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Rocket className="h-4 w-4 text-slate-400" />
                 Minha Assinatura
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={openEditarCadastroDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
-                <UserPen className="h-4 w-4 text-slate-400" />
-                Editar Cadastro
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openAlterarSenhaDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Lock className="h-4 w-4 text-slate-400" />
                 Alterar Senha
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={openEditarPixDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
-                <Key className="h-4 w-4 text-slate-400" />
-                Chave Pix
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsHelpOpen(true)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <HelpCircle className="h-4 w-4 text-slate-400" />
