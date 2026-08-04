@@ -1,5 +1,6 @@
 import { apiClient } from "../client";
 import { DriverContractConfigStatus, WhatsappStatus } from "@/types/enums";
+import { MetadadosCadastroData } from "@/types/usuario";
 
 export interface AdminDashboardStats {
   totalMotoristas: number;
@@ -207,6 +208,8 @@ export interface AdminUserDetailsResponse {
     chave_pix?: string | null;
     chave_pix_tipo?: string | null;
     canal_aquisicao?: string | null;
+    dispositivo_cadastro?: string | null;
+    metadados_cadastro?: MetadadosCadastroData | null;
     cep?: string | null;
     logradouro?: string | null;
     endereco?: string | null;
