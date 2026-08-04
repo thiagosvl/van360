@@ -24,7 +24,7 @@ export function DuplicateErrorBanner({
           {error.message}
         </p>
         <p className="text-[12px] text-amber-800/80 font-medium leading-relaxed mb-3">
-          Parece que você já possui um cadastro no sistema. Faça login para acessar sua conta.
+          Parece que você já possui um cadastro. Faça login para acessar sua conta.
         </p>
         <button
           type="button"

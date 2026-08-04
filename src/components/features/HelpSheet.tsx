@@ -67,7 +67,7 @@ export function HelpSheet() {
     },
     {
       question: "Como enviar recibo pelo WhatsApp?",
-      answer: "Ao registrar um pagamento, o sistema gera o recibo automaticamente. Basta clicar no ícone de compartilhar e escolher o WhatsApp."
+      answer: "Ao registrar um pagamento, o Van360 gera e envia o recibo automaticamente para o responsável do passageiro via WhatsApp."
     }
   ];
 

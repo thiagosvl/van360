@@ -177,7 +177,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
             Dados Cadastrais
           </h2>
           <p className="text-xs text-slate-500">
-            Mantenha suas informações pessoais e de contato atualizadas no sistema.
+            Mantenha suas informações pessoais e de contato atualizadas no aplicativo.
           </p>
         </div>
       </div>
