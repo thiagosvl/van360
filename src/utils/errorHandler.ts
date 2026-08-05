@@ -16,28 +16,37 @@ export function getErrorMessage(
   
 
 
+  const formatMsg = (val: unknown): string | null => {
+    if (!val) return null;
+    if (typeof val === "string") {
+      if (val === "[object Object]") return null;
+      return val;
+    }
+    if (typeof val === "object") {
+      const obj = val as Record<string, any>;
+      if (obj.message && typeof obj.message === "string" && obj.message !== "[object Object]") {
+        return obj.message;
+      }
+    }
+    return null;
+  };
+
   // Tenta extrair mensagem de erro da resposta da API (Axios)
-  // Prioridade alta pois contém a regra de negócio/validação do backend
-  const axiosError = error as any; // Cast para any para facilitar acesso seguro
+  const axiosError = error as any;
   
-  // Backend retorna { error: "mensagem" } ?
-  if (axiosError?.response?.data?.error) {
-    return axiosError.response.data.error;
-  }
+  const errFromDataError = formatMsg(axiosError?.response?.data?.error);
+  if (errFromDataError) return errFromDataError;
 
-  // Backend retorna { message: "mensagem" } ?
-  if (axiosError?.response?.data?.message) {
-    return axiosError.response.data.message;
-  }
+  const errFromDataMsg = formatMsg(axiosError?.response?.data?.message);
+  if (errFromDataMsg) return errFromDataMsg;
   
-  // Tratamento para erro genérico (Error) ou msg de rede do Axios
   if (error instanceof Error) {
-    return error.message || fallbackMessage;
+    const msg = formatMsg(error.message);
+    if (msg) return msg;
   }
 
-  if (axiosError?.message) {
-    return axiosError.message;
-  }
+  const msgFromAxios = formatMsg(axiosError?.message);
+  if (msgFromAxios) return msgFromAxios;
 
   return fallbackMessage;
 }

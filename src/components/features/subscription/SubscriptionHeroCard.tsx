@@ -185,7 +185,7 @@ export function SubscriptionHeroCard({
                   onSubscribe();
                 }}
               >
-                Assinar um Plano
+                Ver Planos
               </Button>
             </div>
           )}

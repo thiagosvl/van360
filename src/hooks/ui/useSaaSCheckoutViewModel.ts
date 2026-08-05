@@ -168,19 +168,24 @@ export function useSaaSCheckoutViewModel({
     }
   }, [invoices, subscription?.status, activeInvoice]);
 
-  // Polling de fallback a cada 45s — cobre PIX e Cartão, caso o Realtime falhe
+  // Polling de 3s no Step 4 (PIX e Cartão) — Garante atualização rápida mesmo se Realtime Supabase estiver inativo no banco
   useEffect(() => {
     if (!isOpen || step !== 4 || isHandlingConfirmation.current) return;
+
+    // Dispara refetch imediato ao entrar no Step 4
+    refetchInvoices();
+    refetchStatus();
 
     fallbackIntervalRef.current = setInterval(() => {
       if (isHandlingConfirmation.current) return;
       refetchInvoices();
-    }, 45000);
+      refetchStatus();
+    }, 15000);
 
     return () => {
       if (fallbackIntervalRef.current) clearInterval(fallbackIntervalRef.current);
     };
-  }, [isOpen, step, activeInvoice?.id]);
+  }, [isOpen, step, activeInvoice?.id, refetchInvoices, refetchStatus]);
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => {
