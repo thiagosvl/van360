@@ -309,15 +309,19 @@ export function ActiveRouteExecutionView({
         if (isLastStop) {
           setIsFinishingLastStop(true);
         }
-        await handleStep(paradaId, RouteStopStatus.AUSENTE);
-        setSelectedRespTab(TAB_DEFAULT);
-        if (isLastStop && handleFinalizarRota) {
-          await handleFinalizarRota(() => {
-            setIsFinishingLastStop(false);
-            onShowSuccess?.();
-          });
+        try {
+          await handleStep(paradaId, RouteStopStatus.AUSENTE);
+          setSelectedRespTab(TAB_DEFAULT);
+          if (isLastStop && handleFinalizarRota) {
+            await handleFinalizarRota(() => {
+              setIsFinishingLastStop(false);
+              onShowSuccess?.();
+            });
+          }
+        } finally {
+          setSubmittingStopId(null);
+          safeCloseDialog(closeConfirmationDialog);
         }
-        safeCloseDialog(closeConfirmationDialog);
       }
     });
   };
@@ -330,13 +334,17 @@ export function ActiveRouteExecutionView({
     if (isLastStop) {
       setIsFinishingLastStop(true);
     }
-    await handleStep(paradaId, RouteStopStatus.EMBARCADO);
-    setSelectedRespTab(TAB_DEFAULT);
-    if (isLastStop && handleFinalizarRota) {
-      await handleFinalizarRota(() => {
-        setIsFinishingLastStop(false);
-        onShowSuccess?.();
-      });
+    try {
+      await handleStep(paradaId, RouteStopStatus.EMBARCADO);
+      setSelectedRespTab(TAB_DEFAULT);
+      if (isLastStop && handleFinalizarRota) {
+        await handleFinalizarRota(() => {
+          setIsFinishingLastStop(false);
+          onShowSuccess?.();
+        });
+      }
+    } finally {
+      setSubmittingStopId(null);
     }
   };
 
