@@ -47,13 +47,18 @@ export const routeApi = {
   atualizarParadaStatus: (
     execucaoId: string,
     paradaId: string,
-    status: RouteStopStatus
+    status: RouteStopStatus,
+    options?: { timeout?: number }
   ): Promise<RouteExecution> =>
     apiClient
-      .post(`${endpointBase}/execucoes/${execucaoId}/parada`, {
-        parada_id: paradaId,
-        status
-      })
+      .post(
+        `${endpointBase}/execucoes/${execucaoId}/parada`,
+        {
+          parada_id: paradaId,
+          status
+        },
+        options?.timeout ? { timeout: options.timeout } : undefined
+      )
       .then(res => res.data),
 
   reordenarExecucao: (

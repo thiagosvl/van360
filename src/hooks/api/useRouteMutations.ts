@@ -90,7 +90,7 @@ export function useAtualizarParadaStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       execucaoId,
       paradaId,
       status
@@ -98,7 +98,24 @@ export function useAtualizarParadaStatus() {
       execucaoId: string;
       paradaId: string;
       status: RouteStopStatus;
-    }) => routeApi.atualizarParadaStatus(execucaoId, paradaId, status),
+    }) => {
+      const STOP_TIMEOUT = 5000; // 5s timeout por tentativa
+      try {
+        return await routeApi.atualizarParadaStatus(execucaoId, paradaId, status, { timeout: STOP_TIMEOUT });
+      } catch (err: any) {
+        const isNetworkOrTimeout = err.code === 'ECONNABORTED' || !err.response || err.message?.includes('timeout');
+        if (isNetworkOrTimeout) {
+          try {
+            // Auto-retry 1 (tentativa 2 imediata)
+            return await routeApi.atualizarParadaStatus(execucaoId, paradaId, status, { timeout: STOP_TIMEOUT });
+          } catch (retryErr: any) {
+            // Auto-retry 2 (tentativa 3 final)
+            return await routeApi.atualizarParadaStatus(execucaoId, paradaId, status, { timeout: STOP_TIMEOUT });
+          }
+        }
+        throw err;
+      }
+    },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId], refetchType: "all" });
       queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
@@ -107,7 +124,7 @@ export function useAtualizarParadaStatus() {
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar status da parada", {
-        description: getErrorMessage(error, "Por favor, tente novamente."),
+        description: getErrorMessage(error, "Verifique sua conexão de internet e tente novamente."),
       });
     },
   });
@@ -147,6 +164,9 @@ export function useCancelarExecucao() {
         return oldData.map((e: any) => (e.id === data.id ? { ...e, status: data.status } : e));
       });
       queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"], refetchType: "all" });
       queryClient.removeQueries({ queryKey: ["route-execution", data.id] });
       toast.success("Rota encerrada com sucesso!");
     },
@@ -169,6 +189,9 @@ export function useFinalizarExecucao() {
         return oldData.map((e: any) => (e.id === data.id ? { ...e, status: data.status } : e));
       });
       queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias"], refetchType: "all" });
       queryClient.removeQueries({ queryKey: ["route-execution", data.id] });
     },
     onError: (error: any) => {

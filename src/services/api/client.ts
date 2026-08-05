@@ -12,6 +12,9 @@ sessionManager.onAuthStateChange((_event, session) => {
 });
 
 async function getAccessToken() {
+  if (cachedToken) {
+    return cachedToken;
+  }
   const { data } = await sessionManager.getSession();
   cachedToken = data.session?.access_token ?? null;
   return cachedToken;
