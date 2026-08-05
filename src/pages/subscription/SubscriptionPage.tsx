@@ -313,7 +313,7 @@ export default function SubscriptionPage() {
                                   className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 transition-colors bg-primary/5 px-4 py-3 rounded-xl border border-primary/10"
                                   onClick={() => handleSubscribe()}
                                 >
-                                  Alterar forma de pagamento
+                                  Tentar Novamente
                                 </button>
                               </div>
                             ) : (
@@ -321,7 +321,7 @@ export default function SubscriptionPage() {
                                 className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
                                 onClick={() => handleSubscribe()}
                               >
-                                Alterar forma de pagamento
+                                Tentar Novamente
                               </button>
                             )}
                           </div>
