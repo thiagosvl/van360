@@ -13,6 +13,7 @@ import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { RouteExecutionStatus } from "@/types/route";
@@ -28,6 +29,7 @@ export default function Rotas() {
   const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
 
   const { openConfirmationDialog, closeConfirmationDialog, setPageTitle, openRouteFormDialog } = useLayout();
+  const { can } = usePermissions();
 
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
@@ -181,13 +183,15 @@ export default function Rotas() {
                     <span>Registrar Ausência</span>
                   </Button>
 
-                  <Button
-                    onClick={handleOpenCreateRouteDialog}
-                    className="flex-1 sm:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus className="h-4 w-4 shrink-0" />
-                    <span>Nova Rota</span>
-                  </Button>
+                  {can("rotas.criar_editar") && (
+                    <Button
+                      onClick={handleOpenCreateRouteDialog}
+                      className="flex-1 sm:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4 shrink-0" />
+                      <span>Nova Rota</span>
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -198,10 +202,10 @@ export default function Rotas() {
                   icon={RouteIcon}
                   title="Nenhuma rota configurada"
                   description="Configure suas rotas de ida e volta para gerenciar os itinerários diários e organizar a prancheta de paradas."
-                  action={{
+                  action={can("rotas.criar_editar") ? {
                     label: "CONFIGURAR PRIMEIRA ROTA",
                     onClick: handleOpenCreateRouteDialog
-                  }}
+                  } : undefined}
                 />
               ) : (
                 <div className="grid gap-3">
@@ -250,51 +254,55 @@ export default function Rotas() {
                           )}
                         </div>
 
-                        <div className="flex-shrink-0 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            title="Editar rota"
-                            className="rounded-lg text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 h-8 w-8 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isDestaRotaAtiva) {
-                                toast.error("Rota em andamento. Para editar, encerre ou conclua a execução primeiro.");
-                                return;
-                              }
-                              navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", rota.id));
-                            }}
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </Button>
-                          {(() => {
-                            const isDestaRotaDeletando = deleteRouteMutation.isPending && deleteRouteMutation.variables === rota.id;
-
-                            return (
+                        {(can("rotas.criar_editar") || can("rotas.excluir")) && (
+                          <div className="flex-shrink-0 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            {can("rotas.criar_editar") && (
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 h-8 w-8 cursor-pointer"
+                                title="Editar rota"
+                                className="rounded-lg text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 h-8 w-8 cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (isDestaRotaAtiva) {
-                                    toast.error("Rota em andamento. Para excluir, encerre ou conclua a execução primeiro.");
+                                    toast.error("Rota em andamento. Para editar, encerre ou conclua a execução primeiro.");
                                     return;
                                   }
-                                  handleDelete(rota.id, e);
+                                  navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", rota.id));
                                 }}
-                                disabled={deleteRouteMutation.isPending}
-                                title="Excluir rota"
                               >
-                                {isDestaRotaDeletando ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" />
-                                ) : (
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                )}
+                                <Edit className="w-3.5 h-3.5" />
                               </Button>
-                            );
-                          })()}
-                        </div>
+                            )}
+                            {can("rotas.excluir") && (() => {
+                              const isDestaRotaDeletando = deleteRouteMutation.isPending && deleteRouteMutation.variables === rota.id;
+
+                              return (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 h-8 w-8 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isDestaRotaAtiva) {
+                                      toast.error("Rota em andamento. Para excluir, encerre ou conclua a execução primeiro.");
+                                      return;
+                                    }
+                                    handleDelete(rota.id, e);
+                                  }}
+                                  disabled={deleteRouteMutation.isPending}
+                                  title="Excluir rota"
+                                >
+                                  {isDestaRotaDeletando ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" />
+                                  ) : (
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  )}
+                                </Button>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     );
                   })}

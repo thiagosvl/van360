@@ -1,7 +1,7 @@
 import { parseCurrencyToNumber } from "./formatters/currency";
 
-export const phoneMask = (value: string): string => {
-  if (!value) return value;
+export const phoneMask = (value?: string | null): string => {
+  if (!value) return "";
   
   const numericValue = value.replace(/\D/g, '').slice(0, 11);
   
@@ -13,7 +13,6 @@ export const phoneMask = (value: string): string => {
 export const moneyMask = (value: string | number): string => {
   if (value === undefined || value === null) return '';
   
-  // Se for número, formatamos como se fosse a entrada do usuário (sem pontos/vírgulas)
   const stringValue = typeof value === 'number' 
     ? Math.round(value * 100).toString() 
     : value.toString();
@@ -38,16 +37,16 @@ export const moneyToNumber = (value: string | number | null | undefined): number
   return parseCurrencyToNumber(value);
 };
 
-export const cepMask = (value: string): string => {
-  if (!value) return value;
+export const cepMask = (value?: string | null): string => {
+  if (!value) return "";
   
   const numericValue = value.replace(/\D/g, '');
   
   return numericValue.replace(/(\d{5})(\d{1,3})/, '$1-$2');
 };
 
-export const cpfMask = (value: string): string => {
-  if (!value) return value;
+export const cpfMask = (value?: string | null): string => {
+  if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 11);
 
   return numericValue
@@ -56,8 +55,8 @@ export const cpfMask = (value: string): string => {
     .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 };
 
-export const cnpjMask = (value: string): string => {
-  if (!value) return value;
+export const cnpjMask = (value?: string | null): string => {
+  if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 14);
 
   return numericValue
@@ -67,23 +66,18 @@ export const cnpjMask = (value: string): string => {
     .replace(/(\d{4})(\d)/, "$1-$2");
 };
 
-export const cpfCnpjMask = (value: string): string => {
-  if (!value) return value;
+export const cpfCnpjMask = (value?: string | null): string => {
+  if (!value) return "";
   const numericValue = value.replace(/\D/g, "");
   return numericValue.length <= 11 ? cpfMask(value) : cnpjMask(value);
 };
 
-export const evpMask = (value: string): string => {
-  if (!value) return value;
+export const evpMask = (value?: string | null): string => {
+  if (!value) return "";
   
-  // Remove non-alphanumeric
   const cleanValue = value.replace(/[^a-zA-Z0-9]/g, '');
-  
-  // Limit to 32 chars
   const limitedValue = cleanValue.slice(0, 32);
   
-  // 8-4-4-4-12 format
-  // Capture groups: (8) (4) (4) (4) (12)
   return limitedValue
     .replace(/^([a-zA-Z0-9]{8})([a-zA-Z0-9])/, '$1-$2')
     .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3')
@@ -91,12 +85,11 @@ export const evpMask = (value: string): string => {
     .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3-$4-$5');
 };
 
-export const dateMask = (value: string): string => {
-  if (!value) return value;
-  const numericValue = value.replace(/\D/g, "").slice(0, 8); // Limit to 8 digits
+export const dateMask = (value?: string | null): string => {
+  if (!value) return "";
+  const numericValue = value.replace(/\D/g, "").slice(0, 8);
 
   return numericValue
-    .replace(/(\d{2})(\d)/, "$1/$2") // Add slash after 2nd digit
-    .replace(/(\d{2})(\d)/, "$1/$2"); // Add slash after 4th digit (2nd part)
-    // .replace(/(\d{4})(\d)/, "$1"); // No need, slice handles length
+    .replace(/(\d{2})(\d)/, "$1/$2")
+    .replace(/(\d{2})(\d)/, "$1/$2");
 };

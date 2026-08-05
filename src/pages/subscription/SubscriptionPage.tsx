@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import {
   SaaSPlan,
 } from "@/types/subscription";
@@ -38,15 +38,21 @@ import {
   formatLocalDate,
   differenceInCalendarDaysBR
 } from "@/utils/dateUtils";
-import { Button } from "@/components/ui/button";
 import { useLayout } from "@/hooks";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/business/useSession";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { ROUTES } from "@/constants/routes";
 
-const SubscriptionPage = () => {
+export default function SubscriptionPage() {
+  const { can } = usePermissions();
+  if (!can("assinatura.gerenciar")) {
+    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
+  }
+
   const { user } = useSession();
   const queryClient = useQueryClient();
 
@@ -458,8 +464,4 @@ const SubscriptionPage = () => {
       </div>
     </PullToRefreshWrapper>
   );
-};
-
-
-
-export default SubscriptionPage;
+}

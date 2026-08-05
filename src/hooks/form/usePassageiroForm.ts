@@ -60,6 +60,7 @@ export const passageiroSchema = z
     cpf_responsavel: z
       .string()
       .optional()
+      .nullable()
       .or(z.literal(""))
       .refine((val) => !val || isValidCPF(val), {
         message: "CPF inválido",
@@ -241,11 +242,11 @@ export function usePassageiroForm({
         ]);
       } else if (isFinalizeMode && prePassageiro) {
         form.reset({
-          nome: prePassageiro.nome,
-          nome_responsavel: prePassageiro.nome_responsavel,
+          nome: prePassageiro.nome || "",
+          nome_responsavel: prePassageiro.nome_responsavel || "",
 
-          cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
-          telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
+          cpf_responsavel: prePassageiro.cpf_responsavel ? cpfMask(prePassageiro.cpf_responsavel) : "",
+          telefone_responsavel: prePassageiro.telefone_responsavel ? phoneMask(prePassageiro.telefone_responsavel) : "",
           periodo: prePassageiro.periodo || "",
           modalidade: prePassageiro.modalidade || "",
           turma: prePassageiro.turma || "",
@@ -258,7 +259,7 @@ export function usePassageiroForm({
           bairro: prePassageiro.bairro || "",
           cidade: prePassageiro.cidade || "",
           estado: prePassageiro.estado || "",
-          cep: prePassageiro.cep || "",
+          cep: prePassageiro.cep ? cepMask(prePassageiro.cep) : "",
           referencia: prePassageiro.referencia || "",
           complemento: prePassageiro.complemento || "",
           observacoes: prePassageiro.observacoes || "",

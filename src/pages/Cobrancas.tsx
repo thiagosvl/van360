@@ -8,14 +8,21 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { useCobrancasViewModel, useLayout } from "@/hooks";
+import { useCobrancasViewModel, useLayout, useProfile } from "@/hooks";
 import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
-import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { Navigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 export default function Cobrancas() {
+  const { can } = usePermissions();
+  if (!can("cobrancas.gerenciar")) {
+    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
+  }
+
   const {
     mesFilter,
     anoFilter,

@@ -36,8 +36,8 @@ export interface Usuario {
   canal_aquisicao?: string;
   dispositivo_cadastro?: DispositivoCadastro;
   metadados_cadastro?: MetadadosCadastroData;
-
-
+  veiculo_id?: string;
+  conta_pai_id?: string;
 
   ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
 

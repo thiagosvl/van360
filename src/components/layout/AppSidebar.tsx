@@ -3,22 +3,30 @@ import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
 import { Gift } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
 
 interface AppSidebarProps {
-  role: UserType.MOTORISTA | "motorista";
+  role?: UserType | string;
   onLinkClick?: () => void;
   excludeBottomNavItems?: boolean;
 }
 
 export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarProps) {
   const { openReferAndEarnDialog } = useLayout();
+  const { can, isGestor, isMonitor, isMotoristaAuxiliar } = usePermissions();
 
   const isMobile = !!excludeBottomNavItems;
 
-  const itemsToRender = isMobile
+  const itemsToRender = (isMobile
     ? pagesItems.filter((item) => !(bottomNavHrefs as string[]).includes(item.href))
-    : pagesItems;
+    : pagesItems
+  ).filter((item) => {
+    if (isMonitor && item.href === ROUTES.PRIVATE.MOTORISTA.SETTINGS) return false;
+    if (!item.permission) return true;
+    return can(item.permission as any);
+  });
 
   return (
     <div className="flex h-full flex-col justify-between">
@@ -60,20 +68,22 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
           </NavLink>
         ))}
 
-        <button
-          type="button"
-          onClick={() => {
-            onLinkClick?.();
-            openReferAndEarnDialog();
-          }}
-          className={cn(
-            "w-full flex items-center gap-3.5 text-left rounded-2xl px-4 text-amber-400 font-semibold transition-colors hover:bg-white/5 hover:text-amber-300",
-            isMobile ? "py-3 sm:py-3.5 text-[15px] sm:text-[16px]" : "py-2.5 text-[15px]"
-          )}
-        >
-          <Gift className="h-5 w-5 shrink-0 text-amber-400" />
-          <span className="truncate">Indique e Ganhe</span>
-        </button>
+        {isGestor && (
+          <button
+            type="button"
+            onClick={() => {
+              onLinkClick?.();
+              openReferAndEarnDialog();
+            }}
+            className={cn(
+              "w-full flex items-center gap-3.5 text-left rounded-2xl px-4 text-amber-400 font-semibold transition-colors hover:bg-white/5 hover:text-amber-300",
+              isMobile ? "py-3 sm:py-3.5 text-[15px] sm:text-[16px]" : "py-2.5 text-[15px]"
+            )}
+          >
+            <Gift className="h-5 w-5 shrink-0 text-amber-400" />
+            <span className="truncate">Indique e Ganhe</span>
+          </button>
+        )}
       </nav>
     </div>
   );

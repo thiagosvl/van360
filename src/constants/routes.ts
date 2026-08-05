@@ -40,6 +40,7 @@ export const ROUTES = {
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
       ROUTES: "/rotas",
+      TEAM: "/equipe",
       ROUTE_SETUP: "/rotas/configurar",
       ROUTE_EDIT: "/rotas/configurar/:id",
       ROUTE_EXECUTE: "/rotas/executar/:id",

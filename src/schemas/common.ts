@@ -34,11 +34,11 @@ import { isValidDateBr } from "@/utils/validators";
 
 export function dateSchema(required: boolean = false, allowFuture: boolean = false) {
   if (required) {
-    return z.string().min(1, "Campo obrigatório").refine((val) => isValidDateBr(val, allowFuture), {
+    return z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório").refine((val) => isValidDateBr(val, allowFuture), {
       message: "Data inválida ou inexistente",
     });
   }
-  return z.string().optional().refine((val) => {
+  return z.string().optional().nullable().refine((val) => {
     if (!val) return true;
     return isValidDateBr(val, allowFuture);
   }, "Data inválida ou inexistente");

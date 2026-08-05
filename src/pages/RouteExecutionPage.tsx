@@ -11,6 +11,8 @@ import { ActiveRouteExecutionView } from "@/components/features/active-route/Act
 import { RouteSuccessOverlay } from "@/components/features/active-route/RouteSuccessOverlay";
 import { RouteExecutionStatus } from "@/types/route";
 
+import { supabase } from "@/integrations/supabase/client";
+
 export default function RouteExecutionPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -36,6 +38,43 @@ export default function RouteExecutionPage() {
   } = useActiveRouteViewModel({ execucaoId: id || "" });
 
   const concludedStops = paradasConcluidas?.length || 0;
+
+  // Supabase Realtime Sync para Motorista Auxiliar + Monitor
+  useEffect(() => {
+    if (!id || isPreview) return;
+
+    const channel = supabase
+      .channel(`route-exec-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'execucoes_rota_passageiros',
+          filter: `execucao_id=eq.${id}`
+        },
+        () => {
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'execucoes_rota',
+          filter: `id=eq.${id}`
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, isPreview, refetch]);
 
   useEffect(() => {
     setPageTitle(isPreview ? "Prévia da Rota" : "Rota em Andamento");

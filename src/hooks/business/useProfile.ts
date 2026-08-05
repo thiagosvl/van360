@@ -37,6 +37,12 @@ export function useProfile(userId?: string) {
     { staleTime: 5000, enabled: !!shouldFetchSummary }
   );
 
+  const isGestor = profile?.tipo === UserType.MOTORISTA;
+  const isMotoristaAuxiliar = profile?.tipo === UserType.MOTORISTA_AUXILIAR;
+  const isMonitor = profile?.tipo === UserType.MONITOR;
+  const isSubConta = Boolean(profile?.conta_pai_id);
+  const donoContaId = profile?.conta_pai_id || profile?.id;
+
   return {
     profile,
     summary,
@@ -44,6 +50,11 @@ export function useProfile(userId?: string) {
     isError, 
     error,
     isAuthenticated: !!profile,
+    isGestor,
+    isMotoristaAuxiliar,
+    isMonitor,
+    isSubConta,
+    donoContaId,
     refreshProfile,
   };
 }

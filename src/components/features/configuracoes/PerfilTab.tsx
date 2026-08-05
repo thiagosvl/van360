@@ -315,7 +315,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
                     <div className="relative">
                       <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                       <Input
-                        placeholder="Ex: Tio Fulano / Van do Tio Fulano"
+                        placeholder="Ex: Tio Fulano"
                         {...field}
                         className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
                       />

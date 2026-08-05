@@ -38,6 +38,7 @@ const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
 const Configuracoes = lazyLoad(() => import("./pages/Configuracoes"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const Rotas = lazyLoad(() => import("./pages/Rotas"));
+const MinhaEquipe = lazyLoad(() => import("./pages/MinhaEquipe"));
 const ConfigurarRota = lazyLoad(() => import("./pages/ConfigurarRota"));
 const RouteExecutionPage = lazyLoad(() => import("./pages/RouteExecutionPage"));
 const RouteDetailsPage = lazyLoad(() => import("./pages/RouteDetailsPage"));
@@ -307,7 +308,7 @@ const App = () => {
                 <Route
                   element={
                     <AppGate>
-                      <RoleProtectedRoute allowedRoles={[UserType.MOTORISTA]}>
+                      <RoleProtectedRoute allowedRoles={[UserType.MOTORISTA, UserType.MOTORISTA_AUXILIAR, UserType.MONITOR]}>
                         <AppLayout />
                       </RoleProtectedRoute>
                     </AppGate>
@@ -330,6 +331,7 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.MOTORISTA.SETTINGS} element={<Configuracoes />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
+                    <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP} element={<ConfigurarRota />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT} element={<ConfigurarRota />} />
                     <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE} element={<RouteExecutionPage />} />

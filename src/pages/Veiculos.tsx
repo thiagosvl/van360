@@ -5,8 +5,16 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
 import { VeiculosToolbar } from "@/components/features/veiculo/VeiculosToolbar";
 import { useVeiculosViewModel } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { Navigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 export default function Veiculos() {
+  const { can } = usePermissions();
+  if (!can("veiculos.gerenciar")) {
+    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
+  }
+
   const {
     isVeiculosLoading,
     veiculos,

@@ -5,11 +5,31 @@ import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 
 import { useLayout } from "@/contexts/LayoutContext";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { ROUTES } from "@/constants/routes";
+
 export function BottomNavbar() {
   const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
+  const { isMotoristaAuxiliar, isMonitor } = usePermissions();
 
-  const navItems = bottomNavHrefs
+  let targetHrefs: string[] = bottomNavHrefs;
+
+  if (isMonitor) {
+    targetHrefs = [
+      ROUTES.PRIVATE.MOTORISTA.HOME,
+      ROUTES.PRIVATE.MOTORISTA.ROUTES,
+    ];
+  } else if (isMotoristaAuxiliar) {
+    targetHrefs = [
+      ROUTES.PRIVATE.MOTORISTA.HOME,
+      ROUTES.PRIVATE.MOTORISTA.ROUTES,
+      ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
+      ROUTES.PRIVATE.MOTORISTA.EXPENSES,
+    ];
+  }
+
+  const navItems = targetHrefs
     .map(href => pagesItems.find(item => item.href === href))
     .filter(Boolean) as typeof pagesItems;
   const isMoreActive = !navItems.some(item => location.pathname === item.href);

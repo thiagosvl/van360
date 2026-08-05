@@ -33,7 +33,10 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 const Home = () => {
+  const { isSubConta, can } = usePermissions();
   const {
     profile,
     subscription,
@@ -112,7 +115,7 @@ const Home = () => {
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
         <div className="space-y-6">
           {/* Header Contextual */}
-          {!onboarding.showOnboarding && (
+          {!isSubConta && !onboarding.showOnboarding && (
             <div className="px-1 space-y-0.5">
               <p className="text-xs font-medium text-slate-500 capitalize">
                 {dateContext}
@@ -121,12 +124,12 @@ const Home = () => {
                 <span
                   className={cn(
                     "h-2 w-2 rounded-full shrink-0",
-                    financeiro.countAtrasos > 0 ? "bg-rose-500" : "bg-emerald-500"
+                    (financeiro?.countAtrasos || 0) > 0 ? "bg-rose-500" : "bg-emerald-500"
                   )}
                 />
                 <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
                   {
-                    financeiro.countAtrasos > 0
+                    (financeiro?.countAtrasos || 0) > 0
                       ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
                       : "Parcelas do mês em dia!"
                   }
@@ -135,8 +138,19 @@ const Home = () => {
             </div>
           )}
 
+          {isSubConta && (
+            <div className="px-1 space-y-0.5">
+              <p className="text-xs font-medium text-slate-500 capitalize">
+                {dateContext}
+              </p>
+              <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
+                Olá, {profile?.nome || "bem-vindo(a)"}!
+              </h1>
+            </div>
+          )}
+
           {/* Banner de Carência (SaaS) */}
-          {subscription?.status === SubscriptionStatus.PAST_DUE && (
+          {!isSubConta && subscription?.status === SubscriptionStatus.PAST_DUE && (
             <PastDueBanner
               onRegularize={() => {
                 if (plans && plans.length > 0) {
@@ -153,7 +167,7 @@ const Home = () => {
           )}
 
           {/* Notificação de Solicitações Pendentes */}
-          {contadores.passageirosSolicitacoes > 0 && (
+          {!isSubConta && contadores.passageirosSolicitacoes > 0 && (
             <section className="mb-4">
               <DashboardStatusCard
                 type="info"
@@ -170,7 +184,7 @@ const Home = () => {
           )}
 
           {/* Onboarding - Primeiros Passos */}
-          {onboarding.showOnboarding && (
+          {!isSubConta && onboarding.showOnboarding && (
             <section>
               <QuickStartCard
                 onOpenVeiculoDialog={handleOpenVeiculoDialog}
@@ -181,7 +195,7 @@ const Home = () => {
           )}
 
           {/* Notificação de Parcelas pendentes */}
-          {!onboarding.showOnboarding && financeiro.countAtrasos > 0 && (
+          {!isSubConta && !onboarding.showOnboarding && (financeiro?.countAtrasos || 0) > 0 && (
             <section>
               <DashboardStatusCard
                 type="pending"
@@ -195,13 +209,15 @@ const Home = () => {
 
           <div className="px-1 mb-4 relative">
             <div className={cn("transition-all duration-300 space-y-4", onboarding.showOnboarding && "opacity-40 blur-[2px] pointer-events-none")}>
-              <FinancialDashboardCard
-                totalEsperado={financeiro.aReceber + financeiro.recebido}
-                recebido={financeiro.recebido}
-                pendente={financeiro.aReceber}
-                atrasado={financeiro.totalEmAtraso}
-                loading={isLoading}
-              />
+              {!isSubConta && financeiro && (
+                <FinancialDashboardCard
+                  totalEsperado={financeiro.aReceber + financeiro.recebido}
+                  recebido={financeiro.recebido}
+                  pendente={financeiro.aReceber}
+                  atrasado={financeiro.totalEmAtraso}
+                  loading={isLoading}
+                />
+              )}
 
               <div className="grid gap-4 grid-cols-2">
                 {(contadores.passageirosAtivos > 0 || onboarding.showOnboarding) && (
@@ -238,7 +254,7 @@ const Home = () => {
           )}
 
           {/* Banner de Trial (SaaS) - Oculto nos primeiros 5 dias */}
-          {subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && daysSinceCreation >= 5 && (
+          {!isSubConta && subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && daysSinceCreation >= 5 && (
             <TrialBanner
               daysLeft={subscription.trialDaysLeft}
               onSubscribe={() => {
@@ -291,12 +307,14 @@ const Home = () => {
                 label="Configurações"
                 variant="violet"
               />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
-                icon={FileText}
-                label="Relatórios"
-                variant="slate"
-              />
+              {can("relatorios.visualizar") && (
+                <ShortcutCard
+                  to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
+                  icon={FileText}
+                  label="Relatórios"
+                  variant="slate"
+                />
+              )}
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
                 icon={GraduationCap}
@@ -309,12 +327,14 @@ const Home = () => {
                 label="Veículos"
                 variant="amber"
               />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
-                icon={Rocket}
-                label="Minha Assinatura"
-                variant="orange"
-              />
+              {can("assinatura.gerenciar") && (
+                <ShortcutCard
+                  to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
+                  icon={Rocket}
+                  label="Minha Assinatura"
+                  variant="orange"
+                />
+              )}
             </div>
           </section>
 
@@ -324,12 +344,14 @@ const Home = () => {
           </section>
 
           {/* Indique e Ganhe Banner */}
-          <section className="pt-2">
-            <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
-              Indique e Ganhe
-            </h2>
-            <ReferAndEarnCard />
-          </section>
+          {!isSubConta && (
+            <section className="pt-2">
+              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                Indique e Ganhe
+              </h2>
+              <ReferAndEarnCard />
+            </section>
+          )}
         </div>
       </PullToRefreshWrapper>
     </>
