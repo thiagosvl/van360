@@ -6,15 +6,24 @@ export const parseLocalDate = (date: Date | string | null | undefined): Date => 
   if (!date) return new Date();
 
   if (typeof date === 'string') {
-    // Caso 1: Apenas data YYYY-MM-DD (ex: nascimento, vencimento)
-    // Forçamos para o meio do dia (12h) para evitar qualquer oscilação de fuso mudar o dia
     if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [y, m, d] = date.split('-').map(Number);
+      const lastDay = new Date(y, m, 0).getDate();
+      if (m < 1 || m > 12 || d < 1 || d > lastDay) return new Date(NaN);
       return new Date(`${date}T12:00:00-03:00`);
     }
 
-    // Caso 2: String ISO completa ou parcial
+    if (date.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [d, m, y] = date.split('/').map(Number);
+      const lastDay = new Date(y, m, 0).getDate();
+      if (m < 1 || m > 12 || d < 1 || d > lastDay) return new Date(NaN);
+      const monthStr = m.toString().padStart(2, '0');
+      const dayStr = d.toString().padStart(2, '0');
+      return new Date(`${y}-${monthStr}-${dayStr}T12:00:00-03:00`);
+    }
+
     const d = new Date(date);
-    if (isNaN(d.getTime())) return new Date();
+    if (isNaN(d.getTime())) return new Date(NaN);
     return parseLocalDate(d);
   }
 
@@ -212,3 +221,26 @@ export const differenceInCalendarDaysBR = (later: Date | string, earlier: Date |
   const diffTime = d1.getTime() - d2.getTime();
   return Math.round(diffTime / (1000 * 60 * 60 * 24));
 };
+
+export const calcularIdadePassageiro = (dataNascimento?: string | Date | null): number | null => {
+  if (!dataNascimento) return null;
+  const nascimento = parseLocalDate(dataNascimento);
+  if (isNaN(nascimento.getTime())) return null;
+  const hoje = getNowBR();
+  if (nascimento > hoje) return null;
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const mesAtual = hoje.getMonth();
+  const mesNascimento = nascimento.getMonth();
+  if (mesAtual < mesNascimento || (mesAtual === mesNascimento && hoje.getDate() < nascimento.getDate())) {
+    idade--;
+  }
+  return idade < 0 ? null : idade;
+};
+
+export const isAniversarianteDoMes = (dataNascimento?: string | Date | null, mesReferencia?: number): boolean => {
+  if (!dataNascimento) return false;
+  const d = parseLocalDate(dataNascimento);
+  const mes = mesReferencia ?? (getNowBR().getMonth() + 1);
+  return (d.getMonth() + 1) === mes;
+};
+

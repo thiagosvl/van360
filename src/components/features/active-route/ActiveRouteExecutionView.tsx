@@ -82,7 +82,7 @@ export function ActiveRouteExecutionView({
       const timer = setTimeout(() => {
         if (activeCardRef.current) {
           const rect = activeCardRef.current.getBoundingClientRect();
-          const targetY = window.scrollY + rect.top - 80;
+          const targetY = window.scrollY + rect.top - 70;
           window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
         }
       }, 150);

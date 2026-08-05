@@ -1,5 +1,6 @@
 import { SaaSPlan } from "@/types/subscription";
 import { SubscriptionIdentifer } from "@/types/enums";
+import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 
 export const SubscriptionUtils = {
   /**
@@ -61,5 +62,15 @@ export const SubscriptionUtils = {
 
   getPlanById: (plans: SaaSPlan[], planId: string) => {
     return plans.find((p) => p.id === planId);
-  }
+  },
+
+  /**
+   * Calcula os dias restantes de trial. Retorna 0 se expirado ou nulo.
+   */
+  calculateTrialDaysLeft: (trialEndsAt?: string | Date | null, referenceDate?: Date): number => {
+    if (!trialEndsAt) return 0;
+    const ref = referenceDate || getNowBR();
+    return Math.max(0, differenceInCalendarDaysBR(trialEndsAt, ref));
+  },
 };
+

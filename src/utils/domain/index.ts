@@ -22,3 +22,7 @@ export * from "./passageiro/passageiroValidation";
 
 // Contrato
 export * from "./contrato/contratoUtils";
+
+// Relatórios
+export * from "./reportsCalculator";
+

@@ -12,7 +12,7 @@ import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { formatShortName } from "@/utils/formatters";
+import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
 import { Outlet } from "react-router-dom";
@@ -25,9 +25,8 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
-  const displayName = profile?.apelido || formatShortName(profile?.nome);
-
-  const statusLabel = "Motorista";
+  const displayName = profile?.apelido || formatFirstName(profile?.nome);
+  const statusLabel = formatUserRoleLabel(profile?.tipo);
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);

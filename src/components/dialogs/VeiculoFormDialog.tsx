@@ -32,28 +32,14 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { safeCloseDialog } from "@/hooks";
 
-const veiculoSchema = z.object({
-  placa: z
-    .string({ required_error: "Campo obrigatório" })
-    .min(7, "Campo obrigatório")
-    .refine((val) => validarPlaca(val), "Placa inválida"),
-  marca: z
-    .string({ required_error: "Campo obrigatório" })
-    .min(1, "Campo obrigatório"),
-  modelo: z
-    .string({ required_error: "Campo obrigatório" })
-    .min(1, "Campo obrigatório"),
-  ativo: z.boolean().optional(),
-});
-
-type VeiculoFormData = z.infer<typeof veiculoSchema>;
+import { veiculoSchema, VeiculoFormData } from "@/hooks/form/useVeiculoForm";
 
 interface VeiculoFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingVeiculo?: Veiculo | null;
   onSuccess: (veiculo: Veiculo, keepOpen?: boolean) => void;
-  profile?: any;
+  profile?: Usuario | null;
   allowBatchCreation?: boolean;
 }
 

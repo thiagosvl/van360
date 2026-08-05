@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { useMemo } from "react";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface UsePassageiroActionsProps {
   passageiro: Passageiro;
@@ -36,19 +37,22 @@ export function usePassageiroActions({
   isDesativado = false,
 }: UsePassageiroActionsProps): ActionItem[] {
   const isMobile = useIsMobile();
+  const { can } = usePermissions();
+  const canManage = can("passageiros.gerenciar");
 
   return useMemo(() => {
     const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
     const isPendente =
       statusContrato === ContratoStatus.PENDENTE ||
-      statusContrato === 'pendente' ||
       statusContrato === '1' ||
       (!!passageiro.contrato_id && !passageiro.status_contrato);
 
     const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
 
-    const actions: ActionItem[] = [
-      {
+    const actions: ActionItem[] = [];
+
+    if (canManage) {
+      actions.push({
         label: passageiro.ativo ? "Desativar" : "Reativar",
         icon: passageiro.ativo ? (
           <ToggleLeft className="h-4 w-4" />
@@ -58,24 +62,26 @@ export function usePassageiroActions({
         onClick: () => onToggleStatus(passageiro),
         swipeColor: passageiro.ativo ? "bg-amber-500" : "bg-emerald-500",
         hasSeparatorAfter: true
-      },
-      {
+      });
+
+      actions.push({
         label: "Editar",
         icon: <Pencil className="h-4 w-4" />,
         onClick: () => onEdit(passageiro),
         swipeColor: "bg-blue-500",
         hasSeparatorAfter: true
-      },
-      {
-        label: "Ver Carteirinha",
-        icon: <User className="h-4 w-4" />,
-        onClick: () => onHistorico(passageiro),
-        swipeColor: "bg-gray-500",
-        hasSeparatorAfter: true
-      },
-    ];
+      });
+    }
 
-    if (isPendente && onEnviarWhatsApp) {
+    actions.push({
+      label: "Ver Carteirinha",
+      icon: <User className="h-4 w-4" />,
+      onClick: () => onHistorico(passageiro),
+      swipeColor: "bg-gray-500",
+      hasSeparatorAfter: true
+    });
+
+    if (canManage && isPendente && onEnviarWhatsApp) {
       if (isMobile) {
         actions.push({
           label: "Reenviar Contrato",
@@ -97,15 +103,17 @@ export function usePassageiroActions({
       }
     }
 
-    actions.push({
-      label: "Excluir",
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => onDelete(passageiro),
-      isDestructive: true,
-      swipeColor: "bg-red-500",
-      className: "text-red-600"
-    });
+    if (canManage) {
+      actions.push({
+        label: "Excluir",
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: () => onDelete(passageiro),
+        isDestructive: true,
+        swipeColor: "bg-red-500",
+        className: "text-red-600"
+      });
+    }
 
     return actions;
-  }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onEnviarWhatsApp, usarContratos, isDesativado, isMobile]);
+  }, [passageiro, onToggleStatus, onEdit, onHistorico, onDelete, onEnviarWhatsApp, usarContratos, isDesativado, isMobile, canManage]);
 }

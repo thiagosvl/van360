@@ -20,8 +20,6 @@ interface CobrancaEditDialogProps {
 }
 
 export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobrancaUpdated }: CobrancaEditDialogProps) {
-  if (!cobranca) return null;
-
   const handleClose = () => {
     safeCloseDialog(onClose);
   };
@@ -34,6 +32,8 @@ export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobran
       handleClose();
     },
   });
+
+  if (!cobranca) return null;
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>

@@ -5,8 +5,11 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { EscolasList } from "@/components/features/escola/EscolasList";
 import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
 import { useEscolasViewModel } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
 export default function Escolas() {
+  const { can } = usePermissions();
   const {
     isEscolasLoading,
     escolas,
@@ -25,6 +28,10 @@ export default function Escolas() {
     navigate,
     hasActiveFilters,
   } = useEscolasViewModel();
+
+  if (!can("escolas.visualizar")) {
+    return <AccessRestrictedState moduleName="Escolas" />;
+  }
 
   const handleRefresh = async () => {
     await refetch();

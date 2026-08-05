@@ -22,6 +22,8 @@ export interface MobileAction {
   isDestructive?: boolean;
   /** If true, shows a loader and disables the action */
   isLoading?: boolean;
+  /** If true, hides the action */
+  hidden?: boolean;
 }
 
 interface MobileActionItemProps {
@@ -50,8 +52,7 @@ export function MobileActionItem({
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Filter out any hidden actions if they exist
-  const visibleActions = actions.filter((a: any) => !a.hidden);
+  const visibleActions = actions.filter((a) => !a.hidden);
 
   if (visibleActions.length === 0 && !onClickItem) {
     return <div className={cn("relative", className)}>{children}</div>;

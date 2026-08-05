@@ -42,18 +42,16 @@ interface ItineraryItem {
 }
 
 export default function ConfigurarRota() {
+  const { can } = usePermissions();
+
   const { id } = useParams<{ id: string }>();
-  const isEditing = !!id;
+  const isEditing = Boolean(id);
   const navigate = useNavigate();
-  const { setPageTitle, openRouteFormDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const usuarioId = profile?.id || "";
-
-  useEffect(() => {
-    setPageTitle(isEditing ? "Configuração da Rota" : "Nova Rota");
-  }, [isEditing, setPageTitle]);
+  const usuarioId = profile?.id;
 
   const { data: routeData, isLoading: isLoadingRoute } = useRouteDetail(id || "");
 
@@ -61,13 +59,15 @@ export default function ConfigurarRota() {
   const stateData = location.state as { nome: string; veiculoId: string; escolaFixaId?: string } | null;
 
   const [nome, setNome] = useState(stateData?.nome || "");
-  const [veiculoId, setVeiculoId] = useState(stateData?.veiculoId || "");
+  const [veiculoId, setVeiculoId] = useState(stateData?.veiculoId || profile?.veiculo_id || "");
 
   useEffect(() => {
     if (routeData?.veiculo_id && !veiculoId) {
       setVeiculoId(routeData.veiculo_id);
+    } else if (profile?.veiculo_id && !veiculoId) {
+      setVeiculoId(profile.veiculo_id);
     }
-  }, [routeData?.veiculo_id, veiculoId]);
+  }, [routeData?.veiculo_id, profile?.veiculo_id, veiculoId]);
 
   const { data: passageirosQueryData, refetch: refetchPassageiros } = usePassageiros({
     usuarioId,
@@ -75,10 +75,10 @@ export default function ConfigurarRota() {
   });
   const passageirosList = passageirosQueryData?.list || [];
 
-  const { data: escolasQueryData } = useEscolas({ usuarioId });
+  const { data: escolasQueryData } = useEscolas({ usuarioId }, { enabled: !!usuarioId && can("escolas.visualizar") });
   const escolasList = escolasQueryData?.list || [];
 
-  const { data: veiculosQueryData, isLoading: isLoadingVeiculos } = useVeiculos({ usuarioId });
+  const { data: veiculosQueryData, isLoading: isLoadingVeiculos } = useVeiculos({ usuarioId }, { enabled: !!usuarioId && (can("veiculos.gerenciar") || can("rotas.visualizar")) });
   const veiculosList = veiculosQueryData?.list || [];
 
   const createRouteMutation = useCreateRoute();
@@ -323,6 +323,10 @@ export default function ConfigurarRota() {
       setSearchEscolas("");
     }
   }, [isDialogOpen]);
+
+  if (!can("rotas.criar_editar")) {
+    return <AccessRestrictedState moduleName="Configuração de Rotas" />;
+  }
 
   const passageirosAtivos = passageirosList.filter(p => p.ativo !== false);
   const filteredPassageiros = passageirosAtivos.filter(p => {

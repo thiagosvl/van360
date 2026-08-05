@@ -37,50 +37,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const escolaSchema = z
-  .object({
-    nome: z.string().min(1, "Campo obrigatório"),
-    logradouro: z.string().optional(),
-    numero: z.string().optional(),
-    bairro: z.string().optional(),
-    cidade: z.string().optional(),
-    estado: z.string().optional(),
-    cep: cepSchema.or(z.literal("")).optional(),
-    referencia: z.string().optional(),
-    complemento: z.string().optional(),
-    ativo: z.boolean().optional(),
-  })
-  .superRefine((data, ctx) => {
-    const validation = validateEnderecoFields(
-      data.cep || "",
-      data.logradouro,
-      data.numero,
-    );
-
-    if (validation.errors.cep) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.cep,
-        path: ["cep"],
-      });
-    }
-    if (validation.errors.logradouro) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.logradouro,
-        path: ["logradouro"],
-      });
-    }
-    if (validation.errors.numero) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.numero,
-        path: ["numero"],
-      });
-    }
-  });
-
-type EscolaFormData = z.infer<typeof escolaSchema>;
+import { escolaSchema, EscolaFormData } from "@/hooks/form/useEscolaForm";
 
 interface EscolaFormDialogProps {
   isOpen: boolean;
@@ -88,7 +45,7 @@ interface EscolaFormDialogProps {
   editingEscola?: Escola | null;
   onSuccess: (escola: Escola, keepOpen?: boolean) => void;
   allowBatchCreation?: boolean;
-  profile?: any;
+  profile?: Usuario | null;
 }
 
 export default function EscolaFormDialog({

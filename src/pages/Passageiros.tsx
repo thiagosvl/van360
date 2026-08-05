@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
 export default function Passageiros() {
-  const { isSubConta } = usePermissions();
+  const { isSubConta, can } = usePermissions();
   const {
     profile,
     activeTab,
@@ -45,6 +46,10 @@ export default function Passageiros() {
     pullToRefreshReload,
     hasActiveFilters,
   } = usePassageirosViewModel();
+
+  if (!can("passageiros.visualizar")) {
+    return <AccessRestrictedState moduleName="Passageiros" />;
+  }
 
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
   const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
@@ -104,7 +109,7 @@ export default function Passageiros() {
 
               <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
                 <div className="space-y-6">
-                  {(isMainTab ? countPassageiros < 10 : true) && (
+                  {(isMainTab ? countPassageiros < 10 : true) && can("passageiros.gerenciar") && (
                     <QuickRegistrationLink
                       profile={profile}
                       pendingCount={countPrePassageiros}
@@ -129,7 +134,7 @@ export default function Passageiros() {
                     onApplyFilters={setFilters}
                     onRegister={handleOpenNewDialog}
                     showAdvancedFilters={isMainTab}
-                    showRegister={isMainTab}
+                    showRegister={isMainTab && can("passageiros.gerenciar")}
                     searchPlaceholder="Buscar por nome ou responsável..."
                   />
                 </div>
@@ -138,9 +143,9 @@ export default function Passageiros() {
                   <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
                     {sectionTitle}
                   </h2>
-                  {sectionCount != null && (
+                  {passageiros.length > 0 && (
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                      {sectionCount} {countLabel}
+                      {passageiros.length} {countLabel}
                     </span>
                   )}
                 </div>
@@ -153,14 +158,14 @@ export default function Passageiros() {
                       <UnifiedEmptyState
                         icon={Users2}
                         title="Nenhum passageiro encontrado"
-                        description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."}
+                        description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
                         action={(hasActiveFilters || searchTerm.length > 0) ? {
                           label: "Limpar Filtros",
                           onClick: clearFilters
-                        } : {
+                        } : (can("passageiros.gerenciar") ? {
                           label: "Cadastrar Passageiro",
                           onClick: handleOpenNewDialog
-                        }}
+                        } : undefined)}
                       />
                     ) : (
                       <PassageirosList
@@ -203,13 +208,13 @@ export default function Passageiros() {
                 onApplyFilters={setFilters}
                 onRegister={handleOpenNewDialog}
                 showAdvancedFilters={true}
-                showRegister={true}
+                showRegister={can("passageiros.gerenciar")}
                 searchPlaceholder="Buscar por nome..."
               />
 
               <div className="flex items-center justify-between px-1">
                 <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                  Passageiros da Sua Van
+                  Passageiros
                 </h2>
                 {passageiros.length > 0 && (
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">

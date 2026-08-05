@@ -188,7 +188,7 @@ export function MotoristaAuxiliarFormDialog({
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Motorista cadastrado com sucesso!");
+      toast.success("Motorista cadastrado com sucesso! As credenciais de acesso foram enviadas no WhatsApp.");
       queryClient.invalidateQueries({ queryKey: ["motoristas-equipe"] });
       if (onSuccess) onSuccess();
       onClose();

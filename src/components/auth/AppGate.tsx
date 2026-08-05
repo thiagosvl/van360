@@ -21,28 +21,22 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     publicPaths.includes(location.pathname) ||
     location.pathname.startsWith("/cadastro-passageiro");
 
-
-  // 🔹 Para não impactar o motorista, verificamos se o tipo já existe na sessão (metadados).
-  // Só bloqueamos com profileLoading se não soubermos quem é o usuário ou se ele for admin (que exige validação DB).
-  const isDriverInSession = (session?.user as any)?.tipo === UserType.MOTORISTA;
+  const userWithTipo = session?.user as (typeof session.user & { tipo?: UserType }) | null;
+  const isDriverInSession = userWithTipo?.tipo === UserType.MOTORISTA;
   const isLoading = sessionLoading || (!!session && profileLoading && !isDriverInSession);
 
   if (isLoading) {
     return <InitialLoading darkMode={location.pathname.startsWith("/admin")} />;
   }
 
-  // 🔹 Se não está logado e a rota é pública → libera
   if (!session && isPublic) {
     return <>{children}</>;
   }
 
-  // 🔹 Se não está logado e a rota é protegida → manda pro login
   if (!session && !isPublic) {
     return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
   }
 
-  // 🔹 Se já está logado e tentar acessar login/cadastro → manda pro dashboard correto
-  // Usamos o 'tipo' vindo do perfil (banco de dados)
   const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
 
   if (session && authPaths.includes(location.pathname)) {

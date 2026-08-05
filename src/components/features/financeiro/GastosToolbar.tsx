@@ -98,24 +98,26 @@ export const GastosToolbar = memo(function GastosToolbar({
         ]}
       />
 
-      <DataTableFilterSelect
-        label="Veículo"
-        placeholder="Veículo"
-        value={isMobile ? tempFilters.veiculo : veiculoFilter}
-        onValueChange={(val) => {
-          if (isMobile) {
-            setTempFilters((prev) => ({ ...prev, veiculo: val }));
-          } else {
-            onVeiculoChange(val);
-          }
-        }}
-        icon={<Car className="w-3.5 h-3.5 shrink-0" />}
-        options={[
-          { label: "Todos Veículos", value: FilterDefaults.TODOS },
-          { label: "Não Especificado", value: "unspecified" },
-          ...veiculos.map((v) => ({ label: formatarPlacaExibicao(v.placa), value: v.id })),
-        ]}
-      />
+      {veiculos.length > 0 && (
+        <DataTableFilterSelect
+          label="Veículo"
+          placeholder="Veículo"
+          value={isMobile ? tempFilters.veiculo : veiculoFilter}
+          onValueChange={(val) => {
+            if (isMobile) {
+              setTempFilters((prev) => ({ ...prev, veiculo: val }));
+            } else {
+              onVeiculoChange(val);
+            }
+          }}
+          icon={<Car className="w-3.5 h-3.5 shrink-0" />}
+          options={[
+            { label: "Todos Veículos", value: FilterDefaults.TODOS },
+            { label: "Não Especificado", value: "unspecified" },
+            ...veiculos.map((v) => ({ label: formatarPlacaExibicao(v.placa), value: v.id })),
+          ]}
+        />
+      )}
     </>
   );
 

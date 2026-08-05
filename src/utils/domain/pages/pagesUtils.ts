@@ -1,4 +1,4 @@
-import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2 } from "lucide-react";
+import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
 
@@ -68,6 +68,12 @@ const pagesItems: PageItem[] = [
     href: ROUTES.PRIVATE.MOTORISTA.REPORTS,
     icon: ChartArea,
     permission: "relatorios.visualizar",
+  },
+  {
+    title: "Aniversariantes",
+    href: ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS,
+    icon: Cake,
+    permission: "aniversarios.visualizar",
   },
   {
     title: "Configurações",

@@ -7,8 +7,7 @@ interface PullToRefreshProps {
   children: React.ReactNode;
 }
 
-const PULL_THRESHOLD = 60; // Reduzido para 60px (gatilho mais rápido)
-const MAX_PULL = 130; // Máximo reduzido
+import { PULL_THRESHOLD, MAX_PULL, calculatePullDistance } from "@/hooks/ui/usePullToRefresh";
 
 export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -78,8 +77,7 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         if (isScrollingHorizontal) return;
 
         if (diffY > 0 && window.scrollY <= 0) {
-          // Fator 0.8: Mais leve de puxar
-          const resistance = Math.min(diffY * 0.8, MAX_PULL);
+          const resistance = calculatePullDistance(diffY, MAX_PULL, 0.8);
 
           if (resistance > 0) {
             if (e.cancelable) {

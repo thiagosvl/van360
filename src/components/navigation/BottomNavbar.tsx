@@ -19,6 +19,7 @@ export function BottomNavbar() {
     targetHrefs = [
       ROUTES.PRIVATE.MOTORISTA.HOME,
       ROUTES.PRIVATE.MOTORISTA.ROUTES,
+      ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS,
     ];
   } else if (isMotoristaAuxiliar) {
     targetHrefs = [

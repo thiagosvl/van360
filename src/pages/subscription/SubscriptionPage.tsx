@@ -45,13 +45,11 @@ import { useSession } from "@/hooks/business/useSession";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { ROUTES } from "@/constants/routes";
 
 export default function SubscriptionPage() {
   const { can } = usePermissions();
-  if (!can("assinatura.gerenciar")) {
-    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
-  }
 
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -141,6 +139,10 @@ export default function SubscriptionPage() {
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, plans]);
+
+  if (!can("assinatura.gerenciar")) {
+    return <AccessRestrictedState moduleName="Assinatura" />;
+  }
 
   const handleCancelSubscription = () => {
     openConfirmationDialog({

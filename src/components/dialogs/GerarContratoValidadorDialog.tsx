@@ -20,12 +20,19 @@ import { useGerarContratoValidadorViewModel } from "@/hooks/ui/useGerarContratoV
 
 import { cpfMask } from "@/utils/masks";
 
+interface GerarContratoValidadorDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  passageiroId: string | null;
+  onSuccess?: () => void;
+}
+
 export function GerarContratoValidadorDialog({
   isOpen,
   onClose,
   passageiroId,
   onSuccess,
-}: any) {
+}: GerarContratoValidadorDialogProps) {
   const {
     form,
     passageiro,

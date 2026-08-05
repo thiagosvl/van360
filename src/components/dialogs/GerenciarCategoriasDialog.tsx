@@ -46,7 +46,7 @@ export default function GerenciarCategoriasDialog({
     });
   }, [categoriasData]);
 
-  const handleStartEdit = (cat: any) => {
+  const handleStartEdit = (cat: CategoriaGasto) => {
     setIsAdding(false); // Recolhe o bloco de cadastro do topo se estiver aberto
     setEditingId(cat.id);
   };

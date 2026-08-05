@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateGasto, useUpdateGasto, useVeiculos, useGastoCategorias, useCreateGastoCategoria } from "@/hooks";
+import { useCreateGasto, useUpdateGasto, useVeiculos, useGastoCategorias, useCreateGastoCategoria, useProfile, useSession } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { GastoEscopoAcao, GastoTipoCalculoParcela } from "@/types/enums";
@@ -81,22 +81,29 @@ interface GastoFormDialogProps {
   onSuccess?: () => void;
 }
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 export default function GastoFormDialog({
   isOpen,
   onClose,
   gastoToEdit,
   veiculos: veiculosProp,
-  usuarioId,
+  usuarioId: usuarioIdProp,
   onSuccess,
 }: GastoFormDialogProps) {
+  const { can, isSubConta } = usePermissions();
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
+  const usuarioId = usuarioIdProp || profile?.id || "";
+
   const [openCalendar, setOpenCalendar] = useState(false);
   const createGasto = useCreateGasto();
   const updateGasto = useUpdateGasto();
 
   const [isAddingNewCat, setIsAddingNewCat] = useState(false);
 
-  const { data: veiculosData } = useVeiculos({ usuarioId }, {
-    enabled: isOpen && veiculosProp.length === 0 && !!usuarioId
+  const { data: veiculosData, isLoading: isLoadingVeiculos } = useVeiculos({ usuarioId }, {
+    enabled: isOpen && veiculosProp.length === 0 && !!usuarioId && (can("veiculos.gerenciar") || can("gastos.visualizar"))
   });
 
   const { data: categoriasData, isLoading: isLoadingCategorias } = useGastoCategorias({
@@ -107,6 +114,8 @@ export default function GastoFormDialog({
 
   const veiculos = veiculosProp.length > 0 ? veiculosProp : (veiculosData?.list || []);
 
+  const defaultVeiculoId = profile?.veiculo_id || (profile as any)?.veiculo?.id || (veiculos.length === 1 ? veiculos[0].id : "none");
+
   const isActionLoading = createGasto.isPending || updateGasto.isPending || createCategoriaMutation.isPending;
 
   const form = useForm<GastoFormData>({
@@ -115,7 +124,7 @@ export default function GastoFormDialog({
       valor: "",
       categoria: "",
       descricao: "",
-      veiculo_id: "none",
+      veiculo_id: defaultVeiculoId,
       parcelado: false,
       parcelas: 2,
       tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
@@ -133,7 +142,7 @@ export default function GastoFormDialog({
           data: parseLocalDate(gastoToEdit.data),
           categoria: gastoToEdit.categoria,
           descricao: descLimpa,
-          veiculo_id: gastoToEdit.veiculo_id || "none",
+          veiculo_id: gastoToEdit.veiculo_id || defaultVeiculoId,
           parcelado: false,
           parcelas: 2,
           tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
@@ -145,7 +154,7 @@ export default function GastoFormDialog({
           data: undefined,
           categoria: "",
           descricao: "",
-          veiculo_id: "none",
+          veiculo_id: defaultVeiculoId,
           parcelado: false,
           parcelas: 2,
           tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
@@ -153,7 +162,17 @@ export default function GastoFormDialog({
         });
       }
     }
-  }, [isOpen, gastoToEdit, form]);
+  }, [isOpen, gastoToEdit, form, defaultVeiculoId]);
+
+  // Se houver apenas 1 veículo ou veículo do perfil, autoseleciona automaticamente
+  useEffect(() => {
+    if (isOpen && defaultVeiculoId !== "none") {
+      const currentVal = form.getValues("veiculo_id");
+      if (!currentVal || currentVal === "none") {
+        form.setValue("veiculo_id", defaultVeiculoId);
+      }
+    }
+  }, [isOpen, defaultVeiculoId, form]);
 
   const handleSubmit = async (data: GastoFormData) => {
     if (!usuarioId) return;
@@ -360,8 +379,8 @@ export default function GastoFormDialog({
                                   field.value === GastoTipoCalculoParcela.TOTAL
                                     ? "border-[#1a3a5c] bg-blue-50/70 ring-1 ring-[#1a3a5c]/30 shadow-xs"
                                     : fieldState.error
-                                    ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                    : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                      ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
+                                      : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
                                 )}
                               >
                                 <div className="flex items-center gap-2.5">
@@ -370,8 +389,8 @@ export default function GastoFormDialog({
                                     field.value === GastoTipoCalculoParcela.TOTAL
                                       ? "border-[#1a3a5c] bg-[#1a3a5c]"
                                       : fieldState.error
-                                      ? "border-red-400 bg-white"
-                                      : "border-slate-300 bg-white"
+                                        ? "border-red-400 bg-white"
+                                        : "border-slate-300 bg-white"
                                   )}>
                                     {field.value === GastoTipoCalculoParcela.TOTAL && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </div>
@@ -396,8 +415,8 @@ export default function GastoFormDialog({
                                   field.value === GastoTipoCalculoParcela.PARCELA
                                     ? "border-[#1a3a5c] bg-blue-50/70 ring-1 ring-[#1a3a5c]/30 shadow-xs"
                                     : fieldState.error
-                                    ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                    : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                      ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
+                                      : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
                                 )}
                               >
                                 <div className="flex items-center gap-2.5">
@@ -406,8 +425,8 @@ export default function GastoFormDialog({
                                     field.value === GastoTipoCalculoParcela.PARCELA
                                       ? "border-[#1a3a5c] bg-[#1a3a5c]"
                                       : fieldState.error
-                                      ? "border-red-400 bg-white"
-                                      : "border-slate-300 bg-white"
+                                        ? "border-red-400 bg-white"
+                                        : "border-slate-300 bg-white"
                                   )}>
                                     {field.value === GastoTipoCalculoParcela.PARCELA && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </div>
@@ -577,14 +596,21 @@ export default function GastoFormDialog({
                       Veículo
                     </FormLabel>
                     <Select
+                      disabled={isLoadingVeiculos}
                       onValueChange={field.onChange}
-                      value={field.value || "none"}
+                      value={field.value || defaultVeiculoId || "none"}
                     >
                       <FormControl>
                         <div className="relative">
                           <Bus className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
-                            <SelectValue placeholder="Selecione um veículo" />
+                          <SelectTrigger
+                            loading={isLoadingVeiculos}
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left",
+                              isLoadingVeiculos && "bg-gray-100 opacity-80 cursor-not-allowed"
+                            )}
+                          >
+                            <SelectValue placeholder={isLoadingVeiculos ? "Carregando veículos..." : "Selecione um veículo"} />
                           </SelectTrigger>
                         </div>
                       </FormControl>
@@ -594,7 +620,7 @@ export default function GastoFormDialog({
                         </SelectItem>
                         {veiculos.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
-                            {formatarPlacaExibicao(v.placa)}
+                            {v.modelo ? `${v.modelo} (${formatarPlacaExibicao(v.placa)})` : formatarPlacaExibicao(v.placa)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -627,8 +653,8 @@ export default function GastoFormDialog({
                               field.value === GastoEscopoAcao.UNICA
                                 ? "border-[#1a3a5c] bg-blue-50/70 text-[#1a3a5c] shadow-xs ring-1 ring-[#1a3a5c]/30"
                                 : fieldState.error
-                                ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                  ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
+                                  : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
                             )}
                           >
                             <div className={cn(
@@ -636,8 +662,8 @@ export default function GastoFormDialog({
                               field.value === GastoEscopoAcao.UNICA
                                 ? "border-[#1a3a5c] bg-[#1a3a5c]"
                                 : fieldState.error
-                                ? "border-red-400 bg-white"
-                                : "border-slate-300 bg-white"
+                                  ? "border-red-400 bg-white"
+                                  : "border-slate-300 bg-white"
                             )}>
                               {field.value === GastoEscopoAcao.UNICA && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
@@ -657,8 +683,8 @@ export default function GastoFormDialog({
                                 field.value === GastoEscopoAcao.FUTURAS
                                   ? "border-[#1a3a5c] bg-blue-50/70 text-[#1a3a5c] shadow-xs ring-1 ring-[#1a3a5c]/30"
                                   : fieldState.error
-                                  ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                  : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                    ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
+                                    : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
                               )}
                             >
                               <div className={cn(
@@ -666,8 +692,8 @@ export default function GastoFormDialog({
                                 field.value === GastoEscopoAcao.FUTURAS
                                   ? "border-[#1a3a5c] bg-[#1a3a5c]"
                                   : fieldState.error
-                                  ? "border-red-400 bg-white"
-                                  : "border-slate-300 bg-white"
+                                    ? "border-red-400 bg-white"
+                                    : "border-slate-300 bg-white"
                               )}>
                                 {field.value === GastoEscopoAcao.FUTURAS && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                               </div>
@@ -687,8 +713,8 @@ export default function GastoFormDialog({
                               field.value === GastoEscopoAcao.TODAS
                                 ? "border-[#1a3a5c] bg-blue-50/70 text-[#1a3a5c] shadow-xs ring-1 ring-[#1a3a5c]/30"
                                 : fieldState.error
-                                ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                  ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
+                                  : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
                             )}
                           >
                             <div className={cn(
@@ -696,8 +722,8 @@ export default function GastoFormDialog({
                               field.value === GastoEscopoAcao.TODAS
                                 ? "border-[#1a3a5c] bg-[#1a3a5c]"
                                 : fieldState.error
-                                ? "border-red-400 bg-white"
-                                : "border-slate-300 bg-white"
+                                  ? "border-red-400 bg-white"
+                                  : "border-slate-300 bg-white"
                             )}>
                               {field.value === GastoEscopoAcao.TODAS && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>

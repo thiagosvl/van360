@@ -14,7 +14,7 @@ import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { getMesNome } from "@/utils/formatters";
+import { getMesNome, formatFirstName } from "@/utils/formatters";
 import {
   FileText,
   Plus,
@@ -144,7 +144,7 @@ const Home = () => {
                 {dateContext}
               </p>
               <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
-                Olá, {profile?.nome || "bem-vindo(a)"}!
+                Olá, {profile?.apelido || formatFirstName(profile?.nome) || "bem-vindo(a)"}!
               </h1>
             </div>
           )}
@@ -208,7 +208,7 @@ const Home = () => {
           )}
 
           <div className="px-1 mb-4 relative">
-            <div className={cn("transition-all duration-300 space-y-4", onboarding.showOnboarding && "opacity-40 blur-[2px] pointer-events-none")}>
+            <div className={cn("transition-all duration-300 space-y-4", !isSubConta && onboarding.showOnboarding && "opacity-40 blur-[2px] pointer-events-none")}>
               {!isSubConta && financeiro && (
                 <FinancialDashboardCard
                   totalEsperado={financeiro.aReceber + financeiro.recebido}
@@ -220,14 +220,14 @@ const Home = () => {
               )}
 
               <div className="grid gap-4 grid-cols-2">
-                {(contadores.passageirosAtivos > 0 || onboarding.showOnboarding) && (
+                {(contadores.passageirosAtivos > 0 || (!isSubConta && onboarding.showOnboarding)) && (
                   <SecondaryKPICard
                     label="Passageiros Ativos"
                     value={contadores.passageirosAtivos}
                     loading={isLoading}
                   />
                 )}
-                {(contadores.escolasAtivas > 0 || onboarding.showOnboarding) && (
+                {(contadores.escolasAtivas > 0 || (!isSubConta && onboarding.showOnboarding)) && (
                   <SecondaryKPICard
                     label="Escolas Ativas"
                     value={contadores.escolasAtivas}
@@ -236,7 +236,7 @@ const Home = () => {
                 )}
               </div>
             </div>
-            {onboarding.showOnboarding && (
+            {!isSubConta && onboarding.showOnboarding && (
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
                 <div className="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-xl shadow-sm border border-slate-200/60 max-w-[280px]">
                   <p className="text-[12px] font-bold text-slate-700">
@@ -247,7 +247,7 @@ const Home = () => {
             )}
           </div>
 
-          {!onboarding.showOnboarding && contadores.passageirosAtivos < 10 && (
+          {!isSubConta && !onboarding.showOnboarding && contadores.passageirosAtivos < 10 && (
             <div className="px-1 mt-6 mb-2">
               <QuickRegistrationLink profile={profile} pendingCount={contadores.passageirosSolicitacoes} />
             </div>
@@ -277,30 +277,38 @@ const Home = () => {
               Acesso Rápido
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
-              <ShortcutCard
-                onClick={handleOpenPassageiroDialog}
-                icon={Plus}
-                label="Cadastrar Passageiro"
-                variant="blue"
-              />
-              <ShortcutCard
-                onClick={handleOpenGastoDialog}
-                icon={Plus}
-                label="Registrar Gasto"
-                variant="rose"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.ROUTES}
-                icon={Route}
-                label="Rotas"
-                variant="emerald"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
-                icon={TrendingDown}
-                label="Gastos"
-                variant="sky"
-              />
+              {can("passageiros.gerenciar") && (
+                <ShortcutCard
+                  onClick={handleOpenPassageiroDialog}
+                  icon={Plus}
+                  label="Cadastrar Passageiro"
+                  variant="blue"
+                />
+              )}
+              {can("gastos.criar") && (
+                <ShortcutCard
+                  onClick={handleOpenGastoDialog}
+                  icon={Plus}
+                  label="Registrar Gasto"
+                  variant="rose"
+                />
+              )}
+              {can("rotas.visualizar") && (
+                <ShortcutCard
+                  to={ROUTES.PRIVATE.MOTORISTA.ROUTES}
+                  icon={Route}
+                  label="Rotas"
+                  variant="emerald"
+                />
+              )}
+              {can("gastos.visualizar") && (
+                <ShortcutCard
+                  to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
+                  icon={TrendingDown}
+                  label="Gastos"
+                  variant="sky"
+                />
+              )}
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.SETTINGS}
                 icon={Settings}
@@ -315,18 +323,22 @@ const Home = () => {
                   variant="slate"
                 />
               )}
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
-                icon={GraduationCap}
-                label="Escolas"
-                variant="white"
-              />
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.VEHICLES}
-                icon={Car}
-                label="Veículos"
-                variant="amber"
-              />
+              {can("escolas.visualizar") && (
+                <ShortcutCard
+                  to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
+                  icon={GraduationCap}
+                  label="Escolas"
+                  variant="white"
+                />
+              )}
+              {can("veiculos.gerenciar") && (
+                <ShortcutCard
+                  to={ROUTES.PRIVATE.MOTORISTA.VEHICLES}
+                  icon={Car}
+                  label="Veículos"
+                  variant="amber"
+                />
+              )}
               {can("assinatura.gerenciar") && (
                 <ShortcutCard
                   to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}

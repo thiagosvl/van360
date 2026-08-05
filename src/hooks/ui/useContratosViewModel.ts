@@ -10,6 +10,7 @@ import {
   useSubstituirContrato,
 } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
@@ -75,10 +76,13 @@ export function useContratosViewModel() {
   }, [setSearchParams]);
 
   // Queries e Mutations
-  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs();
+  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
+    enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")),
+  });
 
   const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
-    { tab: activeTab, search: debouncedSearch }
+    { tab: activeTab, search: debouncedSearch },
+    { enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")) }
   );
 
   const deleteMutation = useDeleteContrato();

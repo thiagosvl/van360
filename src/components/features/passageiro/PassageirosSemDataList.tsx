@@ -5,6 +5,7 @@ import { ChevronRight, User } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { Aniversariante } from "@/types/passageiro";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface PassageirosSemDataListProps {
   passageiros: Omit<Aniversariante, "dia">[];
@@ -12,6 +13,8 @@ interface PassageirosSemDataListProps {
 
 export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListProps) {
   const navigate = useNavigate();
+  const { can } = usePermissions();
+  const canEditPassageiro = can("passageiros.gerenciar") || can("passageiros.visualizar");
 
   if (!passageiros || passageiros.length === 0) return null;
 
@@ -22,10 +25,16 @@ export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListPr
         return (
           <div
             key={p.id}
-            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", p.id))}
-            className={`flex items-center justify-between py-3 px-4 hover:bg-slate-50 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors ${
-              !isLast ? "border-b border-slate-100 dark:border-zinc-800" : ""
-            }`}
+            onClick={() => {
+              if (canEditPassageiro) {
+                navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", p.id));
+              }
+            }}
+            className={cn(
+              "flex items-center justify-between py-3 px-4 hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors",
+              !isLast && "border-b border-slate-100 dark:border-zinc-800",
+              canEditPassageiro ? "cursor-pointer" : "cursor-default"
+            )}
           >
             <div className="flex items-center gap-3 overflow-hidden">
               <div className={cn(
@@ -56,7 +65,7 @@ export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListPr
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+            {canEditPassageiro && <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 ml-2" />}
           </div>
         );
       })}

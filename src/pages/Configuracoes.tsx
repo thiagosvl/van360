@@ -11,11 +11,7 @@ import { ROUTES } from "@/constants/routes";
 export const Configuracoes = memo(function Configuracoes() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const { isSubConta, isMonitor } = usePermissions();
-
-  if (isMonitor) {
-    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
-  }
+  const { isSubConta } = usePermissions();
 
   const handleSelectTab = (tab: string) => {
     setSearchParams({ tab });

@@ -69,7 +69,7 @@ export function useRelatoriosViewModel() {
     data: systemSummary, 
     refetch: refetchSummary, 
     isLoading: isLoadingSummary 
-  } = useUsuarioResumo(usuarioId, { mes, ano, veiculoId });
+  } = useUsuarioResumo(usuarioId, { mes, ano, veiculoId }, { enabled: !!usuarioId && can("relatorios.visualizar") });
 
   // Conditional Fetches based on Active Tab
   const shouldFetchEntradas = activeTab === RelatorioTab.ENTRADAS;
@@ -78,28 +78,28 @@ export function useRelatoriosViewModel() {
 
   const { data: cobrancasData, refetch: refetchCobrancas, isLoading: isLoadingCobrancas } = useCobrancas(
     { usuarioId, mes, ano, veiculoId },
-    { enabled: !!usuarioId && shouldFetchEntradas }
+    { enabled: !!usuarioId && shouldFetchEntradas && (can("cobrancas.gerenciar") || can("financeiro.visualizar")) }
   );
 
   const { data: gastosData, refetch: refetchGastos, isLoading: isLoadingGastos } = useGastos(
     { usuarioId, mes, ano, veiculoId },
-    { enabled: !!usuarioId && shouldFetchSaidas }
+    { enabled: !!usuarioId && shouldFetchSaidas && can("gastos.visualizar") }
   );
 
   // Operational Data (Passageiros/Escolas/Veiculos) - Needed for 'Operacional'
   const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
     { usuarioId, veiculo: veiculoId },
-    { enabled: !!usuarioId && shouldFetchOperacional }
+    { enabled: !!usuarioId && shouldFetchOperacional && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
   );
 
   const { data: escolasData, refetch: refetchEscolas, isLoading: isLoadingEscolas } = useEscolas(
     { usuarioId },
-    { enabled: !!usuarioId && shouldFetchOperacional }
+    { enabled: !!usuarioId && shouldFetchOperacional && (can("escolas.visualizar") || can("escolas.gerenciar")) }
   );
 
   const { data: veiculosData, refetch: refetchVeiculos, isLoading: isLoadingVeiculos } = useVeiculos(
     { usuarioId },
-    { enabled: !!usuarioId }
+    { enabled: !!usuarioId && can("veiculos.gerenciar") }
   );
 
   // 4. Data Processing (Calculations)

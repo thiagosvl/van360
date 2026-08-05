@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Route as RouteIcon, Wand2 } from "lucide-react";
+import { Route as RouteIcon, Wand2, Loader2 } from "lucide-react";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { toast } from "@/utils/notifications/toast";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -33,33 +34,47 @@ export default function RouteFormDialog({
   editingRoute,
   onSuccess,
 }: RouteFormDialogProps) {
+  const { can, isSubConta } = usePermissions();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const usuarioId = profile?.id || "";
 
-  const { data: veiculosQueryData } = useVeiculos({ usuarioId }, { enabled: !!usuarioId });
+  const { data: veiculosQueryData, isLoading: isLoadingVeiculos } = useVeiculos(
+    { usuarioId },
+    { enabled: !!usuarioId && (can("veiculos.gerenciar") || can("rotas.visualizar")) }
+  );
   const veiculosList = veiculosQueryData?.list || [];
 
+  const userAssignedVeiculoId = profile?.veiculo_id || (profile as any)?.veiculo?.id || "";
+  const defaultVeiculoId = editingRoute?.veiculoId || userAssignedVeiculoId || (veiculosList.length > 0 ? veiculosList[0].id : "");
+
   const [nome, setNome] = useState(() => editingRoute?.nome || "");
-  const [veiculoId, setVeiculoId] = useState(() => editingRoute?.veiculoId || "");
+  const [veiculoId, setVeiculoId] = useState(() => defaultVeiculoId);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const wasOpenRef = useRef(false);
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpenRef.current) {
       if (editingRoute) {
         setNome(editingRoute.nome || "");
-        setVeiculoId(editingRoute.veiculoId || "");
+        setVeiculoId(editingRoute.veiculoId || userAssignedVeiculoId || (veiculosList.length > 0 ? veiculosList[0].id : ""));
       } else {
         setNome("");
-        if (veiculosList.length === 1) {
-          setVeiculoId(veiculosList[0].id);
-        } else {
-          setVeiculoId("");
-        }
+        const selectedId = userAssignedVeiculoId || (veiculosList.length === 1 ? veiculosList[0].id : "");
+        setVeiculoId(selectedId);
       }
       setErrors({});
     }
-  }, [isOpen, editingRoute, veiculosList]);
+    wasOpenRef.current = isOpen;
+  }, [isOpen, editingRoute, userAssignedVeiculoId, veiculosList]);
+
+  // Se veiculoId ainda estiver vazio e tivermos default, preencher automaticamente
+  useEffect(() => {
+    if (isOpen && !veiculoId && defaultVeiculoId) {
+      setVeiculoId(defaultVeiculoId);
+    }
+  }, [isOpen, veiculoId, defaultVeiculoId]);
 
   const handleFillMock = () => {
     const mockData = mockGenerator.rota();
@@ -67,6 +82,8 @@ export default function RouteFormDialog({
     if (veiculosList.length > 0) {
       const randomIndex = Math.floor(Math.random() * veiculosList.length);
       setVeiculoId(veiculosList[randomIndex]?.id || "");
+    } else if (defaultVeiculoId) {
+      setVeiculoId(defaultVeiculoId);
     }
     setErrors({});
   };
@@ -74,7 +91,8 @@ export default function RouteFormDialog({
   const handleConfirm = () => {
     const errs: Record<string, string> = {};
     if (!nome.trim()) errs.nome = "O nome da rota é obrigatório.";
-    if (!veiculoId || veiculoId === "none") errs.veiculoId = "Selecione o veículo da rota.";
+    const targetVeiculoId = veiculoId || defaultVeiculoId;
+    if (!targetVeiculoId || targetVeiculoId === "none") errs.veiculoId = "Selecione o veículo da rota.";
 
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -85,10 +103,12 @@ export default function RouteFormDialog({
     setErrors({});
     onSuccess({
       nome: nome.trim(),
-      veiculoId,
+      veiculoId: targetVeiculoId,
       escolaFixaId: "",
     });
   };
+
+
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(val) => !val && onClose()} maxWidth="md">
@@ -136,19 +156,22 @@ export default function RouteFormDialog({
               Veículo <span className="text-red-500">*</span>
             </Label>
             <Select
-              value={veiculoId}
+              disabled={isLoadingVeiculos}
+              value={veiculoId || userAssignedVeiculoId || (veiculosList.length > 0 ? veiculosList[0].id : "")}
               onValueChange={(val) => {
                 setVeiculoId(val);
                 setErrors(prev => ({ ...prev, veiculoId: "" }));
               }}
             >
               <SelectTrigger
+                loading={isLoadingVeiculos}
                 className={cn(
                   "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                  isLoadingVeiculos && "bg-slate-100 opacity-80 cursor-not-allowed",
                   errors.veiculoId && "border-red-500"
                 )}
               >
-                <SelectValue placeholder="Selecione o veículo" />
+                <SelectValue placeholder={isLoadingVeiculos ? "Carregando veículos..." : "Selecione o veículo"} />
               </SelectTrigger>
               <SelectContent>
                 {veiculosList.map((v) => (
@@ -156,11 +179,6 @@ export default function RouteFormDialog({
                     {v.modelo} - {v.placa}
                   </SelectItem>
                 ))}
-                {veiculosList.length === 0 && (
-                  <SelectItem value="none" disabled>
-                    Nenhum veículo ativo
-                  </SelectItem>
-                )}
               </SelectContent>
             </Select>
             {errors.veiculoId && (

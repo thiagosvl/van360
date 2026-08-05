@@ -6,6 +6,7 @@ import { ROUTES } from "@/constants/routes";
 import { Aniversariante } from "@/types/passageiro";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface PassageiroAniversarianteCardProps {
   passageiro: Aniversariante;
@@ -19,22 +20,31 @@ export function PassageiroAniversarianteCard({
   mesAtual,
 }: PassageiroAniversarianteCardProps) {
   const navigate = useNavigate();
+  const { can } = usePermissions();
+  const canEditPassageiro = can("passageiros.gerenciar") || can("passageiros.visualizar");
   const hoje = new Date();
 
   const isToday =
     hoje.getDate() === passageiro.dia && hoje.getMonth() + 1 === mesAtual;
 
+  const handleClick = () => {
+    if (canEditPassageiro) {
+      navigate(
+        ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
+          ":passageiro_id",
+          passageiro.id
+        )
+      );
+    }
+  };
+
   return (
     <div
-      onClick={() =>
-        navigate(
-          ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
-            ":passageiro_id",
-            passageiro.id
-          )
-        )
-      }
-      className="flex items-center justify-between py-2.5 sm:p-3 sm:rounded-xl border-b sm:border border-slate-50 sm:border-slate-100/80 bg-white hover:bg-slate-50 cursor-pointer transition-all group sm:shadow-[0_1px_2px_rgba(0,0,0,0.01)] last:border-b-0 sm:last:border-b"
+      onClick={handleClick}
+      className={cn(
+        "flex items-center justify-between py-2.5 sm:p-3 sm:rounded-xl border-b sm:border border-slate-50 sm:border-slate-100/80 bg-white hover:bg-slate-50 transition-all group sm:shadow-[0_1px_2px_rgba(0,0,0,0.01)] last:border-b-0 sm:last:border-b",
+        canEditPassageiro ? "cursor-pointer" : "cursor-default"
+      )}
     >
       <div className="flex items-center gap-3">
         <div className={cn(

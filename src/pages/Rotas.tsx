@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { RouteExecutionStatus } from "@/types/route";
@@ -24,18 +25,18 @@ const TAB_MINHAS_ROTAS = "minhas-rotas";
 const TAB_HISTORICO = "historico";
 
 export default function Rotas() {
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TAB_MINHAS_ROTAS);
   const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
 
   const { openConfirmationDialog, closeConfirmationDialog, setPageTitle, openRouteFormDialog } = useLayout();
-  const { can } = usePermissions();
 
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
   const usuarioId = profile?.id || "";
 
-  const { data: rotas = [], isLoading: isLoadingRotas, isFetching: isFetchingRotas, refetch: refetchRotas } = useRoutes(usuarioId);
+  const { data: rotas = [], isLoading: isLoadingRotas, isFetching: isFetchingRotas, refetch: refetchRotas } = useRoutes(usuarioId, { enabled: !!usuarioId && can("rotas.visualizar") });
   const handleOpenCreateRouteDialog = () => {
     openRouteFormDialog({
       onSuccess: (data) => {
@@ -49,7 +50,7 @@ export default function Rotas() {
       }
     });
   };
-  const { data: execucoes = [], isLoading: isLoadingExecs, isFetching: isFetchingExecs, refetch: refetchExecs } = useExecucoesRota(usuarioId);
+  const { data: execucoes = [], isLoading: isLoadingExecs, isFetching: isFetchingExecs, refetch: refetchExecs } = useExecucoesRota(usuarioId, { enabled: !!usuarioId && can("rotas.visualizar") });
   const deleteRouteMutation = useDeleteRoute(usuarioId);
   const cancelarExecucaoMutation = useCancelarExecucao();
 
@@ -101,6 +102,10 @@ export default function Rotas() {
   const execucoesHistorico = useMemo(() => {
     return execucoes.filter(e => e.status !== RouteExecutionStatus.INICIADA);
   }, [execucoes]);
+
+  if (!can("rotas.visualizar")) {
+    return <AccessRestrictedState moduleName="Rotas e Paradas" />;
+  }
 
   const isCanceling = cancelarExecucaoMutation.isPending;
   const isInitialOrRefetchLoading = isLoadingRotas || isLoadingExecs || isCanceling || (isFetchingExecs && !!execucaoAtiva);

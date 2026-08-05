@@ -6,6 +6,8 @@ import { useSEO } from "@/hooks/useSEO";
 import { toast } from "sonner";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 
+import { extractCheckoutBridgeParams } from "@/utils/checkoutBridgeUtils";
+
 export default function ExternalCheckoutBridge() {
   useSEO({
     title: "Conectando ao van360...",
@@ -17,10 +19,9 @@ export default function ExternalCheckoutBridge() {
 
   useEffect(() => {
     const handleAuthBridge = async () => {
-      const accessToken = searchParams.get("access_token");
-      const refreshToken = searchParams.get("refresh_token");
+      const { accessToken, refreshToken, isValid, targetRoute } = extractCheckoutBridgeParams(searchParams);
 
-      if (!accessToken || !refreshToken) {
+      if (!isValid || !accessToken || !refreshToken) {
         toast.error("Sessão expirada ou inválida. Faça login novamente.");
         navigate(ROUTES.PUBLIC.LOGIN, { replace: true });
         return;
@@ -36,8 +37,7 @@ export default function ExternalCheckoutBridge() {
           throw error;
         }
 
-        const autoOpen = searchParams.get("auto_open") === "true";
-        navigate(`${ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}${autoOpen ? "?open_checkout=true" : ""}`, { replace: true });
+        navigate(targetRoute, { replace: true });
       } catch (err) {
         console.error("Erro na ponte de autenticação externa:", err);
         toast.error("Não foi possível autenticar. Faça login manualmente.");

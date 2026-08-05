@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useCobrancas, useDeleteCobranca, useFilters, usePassageiros } from "@/hooks";
 import { CobrancaOrigem, CobrancaStatus, CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
@@ -14,6 +15,7 @@ import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import { isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
 
 export function useCobrancasViewModel() {
+  const { can } = usePermissions();
   const {
     setPageTitle,
     openCobrancaDeleteDialog,
@@ -117,7 +119,7 @@ export function useCobrancasViewModel() {
       search: debouncedSearchTerm,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && (can("cobrancas.gerenciar") || can("financeiro.visualizar")),
       onError: () => {
         toast.error("cobranca.erro.carregar");
       },
@@ -126,7 +128,7 @@ export function useCobrancasViewModel() {
 
   const { data: passageirosData, isLoading: isPassageirosLoading } = usePassageiros(
     { usuarioId: profile?.id, status: "true" },
-    { enabled: !!profile?.id }
+    { enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
   );
 
   const activePassageiros = useMemo(() => {

@@ -1,18 +1,6 @@
-import { useLocation } from "react-router-dom";
-
 export const InitialLoading = ({ darkMode, message }: { darkMode?: boolean; message?: string }) => {
-  let isDark = darkMode;
-
-  if (isDark === undefined) {
-    try {
-      const location = useLocation();
-      isDark = location.pathname.startsWith("/admin");
-    } catch {
-      if (typeof window !== "undefined") {
-        isDark = window.location.pathname.startsWith("/admin");
-      }
-    }
-  }
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+  const isDark = darkMode !== undefined ? darkMode : currentPath.startsWith("/admin");
 
   const textToDisplay = message || "Carregando sua jornada";
 

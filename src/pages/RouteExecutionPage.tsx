@@ -13,7 +13,11 @@ import { RouteExecutionStatus } from "@/types/route";
 
 import { supabase } from "@/integrations/supabase/client";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+
 export default function RouteExecutionPage() {
+  const { can } = usePermissions();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
@@ -85,6 +89,10 @@ export default function RouteExecutionPage() {
       setShowSuccessOverlay(true);
     }
   }, [execucao?.status, isPreview, showSuccessOverlay]);
+
+  if (!can("rotas.visualizar")) {
+    return <AccessRestrictedState moduleName="Execução de Rotas" />;
+  }
 
   if (isError) {
     return (

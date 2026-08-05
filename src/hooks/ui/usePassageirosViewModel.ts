@@ -14,7 +14,6 @@ import {
   useFilters,
   usePassageiros,
   useToggleAtivoPassageiro,
-  useUpdatePassageiro,
   useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -31,10 +30,13 @@ import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { isResponsavelMockTelefone } from "@/utils/formatters/name";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { usePermissions } from "../business/usePermissions";
 
 export function usePassageirosViewModel() {
+  const { can, isSubConta } = usePermissions();
+  const hasInitializedSubContaVeiculo = useRef(false);
   const {
     setPageTitle,
     openConfirmationDialog,
@@ -117,11 +119,24 @@ export function usePassageirosViewModel() {
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending;
 
+  useEffect(() => {
+    if (
+      isSubConta &&
+      profile?.veiculo_id &&
+      !hasInitializedSubContaVeiculo.current &&
+      !searchParams.has("veiculo") &&
+      setSelectedVeiculo
+    ) {
+      hasInitializedSubContaVeiculo.current = true;
+      setSelectedVeiculo(profile.veiculo_id);
+    }
+  }, [isSubConta, profile?.veiculo_id, searchParams, setSelectedVeiculo]);
+
   const passageiroFilters = {
     usuarioId: profile?.id,
     search: debouncedSearchTerm,
     escola: selectedEscola === FilterDefaults.TODAS ? undefined : selectedEscola,
-    veiculo: selectedVeiculo === FilterDefaults.TODOS ? undefined : selectedVeiculo,
+    veiculo: selectedVeiculo === FilterDefaults.TODOS ? (isSubConta ? "all" : undefined) : selectedVeiculo,
     status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
     periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
   };
@@ -131,7 +146,7 @@ export function usePassageirosViewModel() {
     isLoading: isPassageirosLoading,
     refetch: refetchPassageiros,
   } = usePassageiros(passageiroFilters, {
-    enabled: !!profile?.id,
+    enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")),
     onError: () =>
       toast.error("passageiro.erro.carregar", {
         description: "passageiro.erro.carregarDetalhe",
@@ -144,7 +159,7 @@ export function usePassageirosViewModel() {
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
     { usuarioId: profile?.id },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && (can("escolas.visualizar") || can("escolas.gerenciar")),
       onError: () => toast.error("escola.erro.carregar"),
     },
   );
@@ -152,7 +167,7 @@ export function usePassageirosViewModel() {
   const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(
     { usuarioId: profile?.id },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && (can("veiculos.gerenciar") || can("passageiros.visualizar")),
       onError: () => toast.error("veiculo.erro.carregar"),
     },
   );

@@ -75,7 +75,7 @@ export function SwipeableItem({
   };
 
   const handleDragEnd = async (
-    _: any,
+    _: unknown,
     info: PanInfo
   ) => {
     document.body.style.overflow = ""; // Restore scroll
@@ -225,16 +225,11 @@ export function SwipeableItem({
   );
 }
 
-/**
- * Helper to render an icon that could be either a JSX element or a component reference
- */
-function IconRenderer({ icon, className }: { icon: any, className?: string }) {
+function IconRenderer({ icon, className }: { icon: ReactNode | React.ElementType; className?: string }) {
   if (!icon) return null;
-  // If it's a component reference (function or object with render)
-  if (typeof icon === 'function' || (typeof icon === 'object' && icon.render)) {
-    const IconComponent = icon;
+  if (typeof icon === 'function' || (typeof icon === 'object' && icon !== null && 'render' in icon)) {
+    const IconComponent = icon as React.ComponentType<{ className?: string }>;
     return <IconComponent className={className} />;
   }
-  // Otherwise assume it's already a React element (jsx)
-  return icon;
+  return <>{icon}</>;
 }

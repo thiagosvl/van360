@@ -63,8 +63,12 @@ import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
 
 const currentYear = getNowBR().getFullYear().toString();
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const {
@@ -81,8 +85,9 @@ export default function PassageiroCarteirinha() {
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
+  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.mensalidade_visualizar") || can("passageiros.gerenciar");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [mobileTab, setMobileTab] = useState("parcelas");
+  const [mobileTab, setMobileTab] = useState(() => canViewFinancials ? "parcelas" : "dados");
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -450,6 +455,10 @@ export default function PassageiroCarteirinha() {
     );
   }, [cobrancas]);
 
+  if (!can("passageiros.visualizar")) {
+    return <AccessRestrictedState moduleName="Passageiros" />;
+  }
+
   const isNotFoundError =
     isPassageiroError &&
     ((passageiroError as any)?.response?.status === 404 ||
@@ -668,22 +677,24 @@ export default function PassageiroCarteirinha() {
 
                 {/* Abas: Dados Pessoais / Parcelas — logo na primeira dobra */}
                 <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full pt-4">
-                  <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                    <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
-                      <TabsTrigger
-                        value="parcelas"
-                        className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
-                      >
-                        Parcelas
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="dados"
-                        className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
-                      >
-                        Dados Pessoais
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
+                  {canViewFinancials && (
+                    <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
+                      <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
+                        <TabsTrigger
+                          value="parcelas"
+                          className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
+                        >
+                          Parcelas
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="dados"
+                          className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
+                        >
+                          Dados Pessoais
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+                  )}
 
                   <TabsContent value="dados" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                     {/* Dados pessoais detalhados */}
@@ -728,18 +739,20 @@ export default function PassageiroCarteirinha() {
                     </Suspense>
                   </TabsContent>
 
-                  <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                    <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                      <CarteirinhaCobrancas {...cobrancasProps} />
-                    </Suspense>
-                  </TabsContent>
+                  {canViewFinancials && (
+                    <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                      <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+                        <CarteirinhaCobrancas {...cobrancasProps} />
+                      </Suspense>
+                    </TabsContent>
+                  )}
                 </Tabs>
               </div>
             ) : (
               /* Desktop Layout: Side by Side */
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Lado Esquerdo: Perfil + Observações */}
-                <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 lg:h-fit">
+                <div className={cn("space-y-6 lg:sticky lg:top-6 lg:h-fit", canViewFinancials ? "lg:col-span-4" : "lg:col-span-12")}>
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaInfo {...infoProps} />
                   </Suspense>
@@ -770,11 +783,13 @@ export default function PassageiroCarteirinha() {
                 </div>
 
                 {/* Lado Direito: Parcelas */}
-                <div className="lg:col-span-8 space-y-6">
-                  <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                    <CarteirinhaCobrancas {...cobrancasProps} />
-                  </Suspense>
-                </div>
+                {canViewFinancials && (
+                  <div className="lg:col-span-8 space-y-6">
+                    <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+                      <CarteirinhaCobrancas {...cobrancasProps} />
+                    </Suspense>
+                  </div>
+                )}
               </div>
             )}
           </div>

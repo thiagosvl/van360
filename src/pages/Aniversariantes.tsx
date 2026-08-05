@@ -15,7 +15,12 @@ import { PassageiroAniversarianteCard } from "@/components/features/passageiro/P
 import { UnifiedEmptyState } from "@/components/empty";
 import { useNavigate } from "react-router-dom";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+
 const Aniversariantes = () => {
+  const { can } = usePermissions();
+
   const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
   const [agrupamento, setAgrupamento] = useState<"van" | "escola">("van");
 
@@ -26,6 +31,10 @@ const Aniversariantes = () => {
   }, [setPageTitle]);
 
   const { data, isLoading, refetch } = useAniversariantes(mesAtual);
+
+  if (!can("aniversarios.visualizar")) {
+    return <AccessRestrictedState moduleName="Aniversariantes do Mês" />;
+  }
 
   const handleNavigation = (mes: number, ano: number) => {
     setMesAtual(mes);

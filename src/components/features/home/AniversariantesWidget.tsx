@@ -15,7 +15,10 @@ import { ROUTES } from "@/constants/routes";
 import { PassageirosSemDataList } from "@/components/features/passageiro/PassageirosSemDataList";
 import { PassageiroAniversarianteCard } from "@/components/features/passageiro/PassageiroAniversarianteCard";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 export function AniversariantesWidget() {
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
@@ -26,7 +29,7 @@ export function AniversariantesWidget() {
   const dataInicio = (semanaAtualNoMes - 1) * 7 + 1;
   const dataFim = Math.min(semanaAtualNoMes * 7, new Date(hoje.getFullYear(), mesAtual, 0).getDate());
 
-  const { data, isLoading, isError } = useAniversariantes(mesAtual);
+  const { data, isLoading, isError } = useAniversariantes(mesAtual, { enabled: can("aniversarios.visualizar") });
 
   const [agrupamento, setAgrupamento] = useState<"van" | "escola">("van");
 

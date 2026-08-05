@@ -63,7 +63,7 @@ export function useVeiculosViewModel() {
       status: selectedStatus,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && can("veiculos.gerenciar"),
       onError: () => toast.error("veiculo.erro.carregar"),
     }
   );

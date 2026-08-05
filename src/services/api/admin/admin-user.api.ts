@@ -138,11 +138,6 @@ export interface AdminUserVehicleItem {
   modelo: string;
   placa: string;
   marca: string | null;
-  ano_fabricacao: number | null;
-  ano_modelo: number | null;
-  capacidade_passageiros: number | null;
-  renavam: string | null;
-  cor: string | null;
   ativo: boolean;
   created_at: string;
 }

@@ -7,8 +7,10 @@ import { Gasto } from "@/types/gasto";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { getNowBR } from "@/utils/dateUtils";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 export function useGastosViewModel() {
+  const { can } = usePermissions();
   const {
     setPageTitle,
     openGastoFormDialog,
@@ -54,17 +56,17 @@ export function useGastosViewModel() {
       veiculoId: veiculoFilter !== FilterDefaults.TODOS ? veiculoFilter : undefined,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && can("gastos.visualizar"),
       onError: () => toast.error("gasto.erro.carregar"),
     }
   );
 
   const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id }, {
-    enabled: !!profile?.id,
+    enabled: !!profile?.id && can("veiculos.gerenciar"),
   });
 
   const { data: categoriasData } = useGastoCategorias({
-    enabled: !!profile?.id,
+    enabled: !!profile?.id && can("gastos.visualizar"),
   });
 
   const veiculos = useMemo(() => veiculosData?.list || [], [veiculosData]);

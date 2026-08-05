@@ -23,6 +23,8 @@ export { useContratosViewModel } from "./ui/useContratosViewModel";
 export { useAssinarContratoViewModel } from "./ui/useAssinarContratoViewModel";
 export { usePassageiroFormViewModel } from "./ui/usePassageiroFormViewModel";
 export { usePassageiroFormDadosCadastraisViewModel } from "./ui/usePassageiroFormDadosCadastraisViewModel";
+export { useConfirmDialog } from "./ui/useConfirmDialog";
+export { useToast } from "./ui/useToast";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";

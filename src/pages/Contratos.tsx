@@ -9,14 +9,10 @@ import { AlertCircle } from "lucide-react";
 import { useContratosViewModel } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
 const Contratos = () => {
   const { can } = usePermissions();
-  if (!can("contratos.gerenciar")) {
-    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
-  }
 
   const {
     activeTab,

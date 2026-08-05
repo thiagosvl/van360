@@ -9,7 +9,11 @@ import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ActiveRouteHistoryView } from "@/components/features/active-route/ActiveRouteHistoryView";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+
 export default function RouteDetailsPage() {
+  const { can } = usePermissions();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
@@ -27,6 +31,10 @@ export default function RouteDetailsPage() {
   useEffect(() => {
     setPageTitle("Histórico da Rota");
   }, [setPageTitle]);
+
+  if (!can("rotas.visualizar")) {
+    return <AccessRestrictedState moduleName="Histórico de Rotas" />;
+  }
 
   if (isError) {
     return (

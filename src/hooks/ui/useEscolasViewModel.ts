@@ -63,7 +63,7 @@ export function useEscolasViewModel() {
       status: selectedStatus,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && (can("escolas.visualizar") || can("escolas.gerenciar")),
       onError: () => toast.error("escola.erro.carregar"),
     }
   );

@@ -17,15 +17,10 @@ import { useRelatoriosViewModel } from "@/hooks/ui/useRelatoriosViewModel";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { RelatorioTab, FilterDefaults } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
 export default function Relatorios() {
   const { can } = usePermissions();
-  if (!can("relatorios.visualizar")) {
-    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
-  }
-
   const {
     mes,
     ano,
@@ -42,6 +37,10 @@ export default function Relatorios() {
     isLoadingSaidas,
     isLoadingOperacional,
   } = useRelatoriosViewModel();
+
+  if (!can("relatorios.visualizar")) {
+    return <AccessRestrictedState moduleName="Relatórios Financeiros" />;
+  }
 
   if (isLoading) {
     return <RelatoriosSkeleton activeTab={activeTab} />;

@@ -16,8 +16,8 @@ export function obterUrlDocumentoContrato(item?: ContratoDocumentoLike | null): 
     .toString()
     .toLowerCase();
 
-  const isAssinado = rawStatus === ContratoStatus.ASSINADO || rawStatus === "assinado";
-  const isPendente = rawStatus === ContratoStatus.PENDENTE || rawStatus === "pendente";
+  const isAssinado = rawStatus === ContratoStatus.ASSINADO;
+  const isPendente = rawStatus === ContratoStatus.PENDENTE;
 
   if (isAssinado) {
     return item.contrato_final_url || item.minuta_url || item.contrato_url || null;
@@ -29,3 +29,18 @@ export function obterUrlDocumentoContrato(item?: ContratoDocumentoLike | null): 
 
   return item.contrato_final_url || item.minuta_url || item.contrato_url || null;
 }
+
+export function substituirPlaceholdersContrato(
+  texto?: string | null,
+  dados?: Record<string, unknown> | null
+): string {
+  if (!texto) return "";
+  if (!dados) return texto;
+
+  return texto.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, chave: string) => {
+    const valor = dados[chave];
+    if (valor === null || valor === undefined) return "";
+    return String(valor);
+  });
+}
+

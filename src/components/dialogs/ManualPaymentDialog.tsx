@@ -38,7 +38,7 @@ export interface ManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded: (updatedCobranca?: any, dataSent?: RegistrarPagamentoManualDTO) => void;
+  onPaymentRecorded: (updatedCobranca?: CobrancaDTO | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
 export default function ManualPaymentDialog({

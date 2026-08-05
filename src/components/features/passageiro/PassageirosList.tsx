@@ -20,8 +20,7 @@ import { formatPeriodo } from "@/utils/formatters/periodo";
 import { ChevronRight, User } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
-
-
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface PassageirosListProps {
   passageiros: Passageiro[];
@@ -46,7 +45,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   return (
     <div
       onClick={() => onHistorico(passageiro)}
-      className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4"
+      className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4 cursor-pointer"
     >
       <div className={cn(
         "rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center transition-all",
@@ -97,6 +96,9 @@ export function PassageirosList({
   passageiros,
   ...props
 }: PassageirosListProps) {
+  const { can } = usePermissions();
+  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.mensalidade_visualizar");
+
   return (
     <ResponsiveDataList
       data={passageiros}
@@ -121,9 +123,11 @@ export function PassageirosList({
               <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Status
               </TableHead>
-              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Valor
-              </TableHead>
+              {canViewFinancials && (
+                <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  Valor
+                </TableHead>
+              )}
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] w-[300px]">
                 Escola
               </TableHead>
@@ -180,14 +184,16 @@ export function PassageirosList({
                   <TableCell className="px-6 py-4 text-center">
                     <StatusBadge status={passageiro.ativo} />
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-                      {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </span>
-                  </TableCell>
+                  {canViewFinancials && (
+                    <TableCell className="px-6 py-4 text-right">
+                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+                        {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </span>
+                    </TableCell>
+                  )}
                   <TableCell className="px-8 py-5 text-left">
                     <div className="flex flex-col items-start gap-1">
                       <span

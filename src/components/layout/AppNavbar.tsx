@@ -28,7 +28,10 @@ import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatFirstName } from "@/utils/formatters";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 export function AppNavbar({ role }: { role: "motorista" }) {
+  const { can } = usePermissions();
   const {
     openAlterarSenhaDialog,
     setIsHelpOpen,
@@ -156,10 +159,12 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                 <Settings className="h-4 w-4 text-slate-400" />
                 Configurações
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
-                <Rocket className="h-4 w-4 text-slate-400" />
-                Minha Assinatura
-              </DropdownMenuItem>
+              {can("assinatura.gerenciar") && (
+                <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
+                  <Rocket className="h-4 w-4 text-slate-400" />
+                  Minha Assinatura
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={openAlterarSenhaDialog} className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer font-medium text-sm">
                 <Lock className="h-4 w-4 text-slate-400" />
                 Alterar Senha

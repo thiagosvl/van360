@@ -12,6 +12,7 @@ import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { isResponsavelMockNome, isResponsavelMockTelefone } from "@/utils/formatters/name";
+import { mapearPrePassageiroParaFormulario } from "@/utils/domain/passageiro/prePassageiroConverter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
@@ -241,43 +242,7 @@ export function usePassageiroForm({
           "observacoes",
         ]);
       } else if (isFinalizeMode && prePassageiro) {
-        form.reset({
-          nome: prePassageiro.nome || "",
-          nome_responsavel: prePassageiro.nome_responsavel || "",
-
-          cpf_responsavel: prePassageiro.cpf_responsavel ? cpfMask(prePassageiro.cpf_responsavel) : "",
-          telefone_responsavel: prePassageiro.telefone_responsavel ? phoneMask(prePassageiro.telefone_responsavel) : "",
-          periodo: prePassageiro.periodo || "",
-          modalidade: prePassageiro.modalidade || "",
-          turma: prePassageiro.turma || "",
-          nome_professor: prePassageiro.nome_professor || "",
-          data_nascimento: prePassageiro.data_nascimento ? formatDateToBR(prePassageiro.data_nascimento) : "",
-          genero: prePassageiro.genero || "",
-          parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
-          logradouro: prePassageiro.logradouro || "",
-          numero: prePassageiro.numero || "",
-          bairro: prePassageiro.bairro || "",
-          cidade: prePassageiro.cidade || "",
-          estado: prePassageiro.estado || "",
-          cep: prePassageiro.cep ? cepMask(prePassageiro.cep) : "",
-          referencia: prePassageiro.referencia || "",
-          complemento: prePassageiro.complemento || "",
-          observacoes: prePassageiro.observacoes || "",
-          veiculo_id: prePassageiro.veiculo_id || "",
-          escola_id: prePassageiro.escola_id || "",
-          valor_cobranca: prePassageiro.valor_cobranca
-            ? moneyMask(
-              String(Math.round(Number(prePassageiro.valor_cobranca) * 100))
-            )
-            : "",
-          dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
-          data_inicio_transporte: prePassageiro.data_inicio_transporte ? formatDateToBR(prePassageiro.data_inicio_transporte) : "",
-          data_fim_transporte: prePassageiro.data_fim_transporte ? formatDateToBR(prePassageiro.data_fim_transporte) : "",
-          mes_inicio_cobranca: getMonthFromDate(prePassageiro.data_inicio_cobranca) || "",
-          mes_fim_cobranca: getMonthFromDate(prePassageiro.data_fim_cobranca) || "",
-
-          ativo: true,
-        });
+        form.reset(mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData);
 
         form.trigger([
           "escola_id",

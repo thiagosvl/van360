@@ -8,4 +8,5 @@ export * from "./passenger";
 export * from "./periodo";
 export * from "./phone";
 export * from "./status";
+export * from "./user";
 

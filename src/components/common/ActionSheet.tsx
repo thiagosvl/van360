@@ -113,23 +113,19 @@ export function ActionSheet({
   );
 }
 
-function IconRenderer({ icon, className }: { icon: any; className?: string }) {
+function IconRenderer({ icon, className }: { icon: ReactNode | React.ElementType; className?: string }) {
   if (!icon) return null;
 
-  if (typeof icon === "function" || (typeof icon === "object" && icon.render)) {
-    const IconComponent = icon;
+  if (typeof icon === "function" || (typeof icon === "object" && icon !== null && "render" in icon)) {
+    const IconComponent = icon as React.ComponentType<{ className?: string }>;
     return <IconComponent className={className} />;
   }
   
-  if (typeof icon === "object") {
-      try {
-        return React.cloneElement(icon as any, { 
-          className: cn((icon as any).props?.className, className) 
-        });
-      } catch (e) {
-        return icon;
-      }
+  if (React.isValidElement(icon)) {
+    return React.cloneElement(icon as React.ReactElement<{ className?: string }>, { 
+      className: cn(icon.props?.className, className) 
+    });
   }
 
-  return icon;
+  return <>{icon}</>;
 }

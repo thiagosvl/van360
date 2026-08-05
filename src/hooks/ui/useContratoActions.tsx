@@ -49,8 +49,8 @@ export function useContratoActions({
   return useMemo(() => {
     const status = (rawStatus || item?.status_contrato || item?.contrato_status || item?.status)?.toString().toLowerCase();
 
-    const isPendente = status === ContratoStatus.PENDENTE || status === 'pendente' || status === '1';
-    const isAssinado = status === ContratoStatus.ASSINADO || status === 'assinado' || status === '2';
+    const isPendente = status === ContratoStatus.PENDENTE || status === '1';
+    const isAssinado = status === ContratoStatus.ASSINADO || status === '2';
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
 
     const respNome = item?.nome_responsavel || item?.passageiro?.nome_responsavel;

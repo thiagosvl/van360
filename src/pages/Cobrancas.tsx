@@ -14,14 +14,8 @@ import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
-
 export default function Cobrancas() {
   const { can } = usePermissions();
-  if (!can("cobrancas.gerenciar")) {
-    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
-  }
 
   const {
     mesFilter,
@@ -55,6 +49,10 @@ export default function Cobrancas() {
   const { openReceiptDialog } = useLayout();
 
   const { profile } = useProfile();
+
+  if (!can("cobrancas.gerenciar")) {
+    return <AccessRestrictedState moduleName="Cobranças e Finanças" />;
+  }
 
   const isPending = activeTab === CobrancaTab.ARECEBER;
   const busca = isPending ? buscaAReceber : buscaRecebidos;

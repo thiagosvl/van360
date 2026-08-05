@@ -15,14 +15,10 @@ import {
 } from "lucide-react";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
 export default function Gastos() {
   const { can, isMonitor } = usePermissions();
-  if (!can("gastos.visualizar")) {
-    return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
-  }
 
   const {
     mesFilter,
@@ -49,13 +45,7 @@ export default function Gastos() {
   } = useGastosViewModel();
 
   if (isMonitor || !can("gastos.visualizar")) {
-    return (
-      <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl max-w-md mx-auto my-12">
-        <TrendingDown className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-        <p className="text-sm font-bold text-slate-700">Acesso Restrito</p>
-        <p className="text-xs text-slate-400 mt-1">Apenas o motorista da van pode visualizar e registrar gastos do veículo.</p>
-      </div>
-    );
+    return <AccessRestrictedState moduleName="Gastos e Despesas" />;
   }
 
   return (

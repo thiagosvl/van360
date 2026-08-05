@@ -10,7 +10,7 @@ interface SignatureDialogProps {
   onAssinar: () => void;
   isSigning: boolean;
   sigCanvas: React.RefObject<SignaturePadRef>;
-  contrato: any;
+  contrato?: unknown;
 }
 
 export function SignatureDialog({

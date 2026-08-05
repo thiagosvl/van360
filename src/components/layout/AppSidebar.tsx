@@ -23,7 +23,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
     ? pagesItems.filter((item) => !(bottomNavHrefs as string[]).includes(item.href))
     : pagesItems
   ).filter((item) => {
-    if (isMonitor && item.href === ROUTES.PRIVATE.MOTORISTA.SETTINGS) return false;
+    if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
     if (!item.permission) return true;
     return can(item.permission as any);
   });
