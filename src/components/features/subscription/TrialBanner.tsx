@@ -29,11 +29,11 @@ export const TrialBanner = ({ daysLeft, onSubscribe }: TrialBannerProps) => {
           onClick={onSubscribe}
           className="h-11 px-4 md:px-5 bg-amber-500 text-white text-[13px] font-bold rounded-xl hover:bg-amber-600/90 transition-all shadow-sm shadow-amber-200/50 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
         >
-          Assinar um Plano
+          Ver Planos
         </button>
       ) : (
         <div className="h-11 px-4 md:px-5 bg-amber-500/50 text-white text-[13px] font-bold rounded-xl shrink-0 opacity-50 w-full sm:w-auto flex justify-center items-center cursor-not-allowed">
-          Assinar
+          Ver Planos
         </div>
       )}
     </div>

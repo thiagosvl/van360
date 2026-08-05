@@ -572,19 +572,20 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 <p className="text-xs text-[#43474e]">Aguarde um momento</p>
               </div>
             ) : isCardStep4 ? (
-              <div className="flex flex-col items-center justify-center py-12 space-y-4 text-center">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                  <CreditCardIcon className="w-8 h-8 text-[#002444]" />
+              <div className="flex flex-col items-center justify-center py-10 space-y-4 text-center animate-in fade-in duration-300">
+                <div className="relative w-20 h-20 rounded-full bg-blue-50/80 flex items-center justify-center border border-blue-100 shadow-sm">
+                  <Loader2 className="w-20 h-20 text-[#002444]/30 animate-spin absolute inset-0" />
+                  <CreditCardIcon className="w-9 h-9 text-[#002444]" />
                 </div>
-                <div className="space-y-1 max-w-sm">
+                <div className="space-y-1.5 max-w-sm">
                   <h4 className="text-base font-bold text-[#002444]">Pagamento em Processamento</h4>
                   <p className="text-xs text-[#43474e] leading-relaxed">
                     Seu pagamento foi enviado. Aguardando a confirmação da operadora do cartão para ativar a assinatura.
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-full">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">Não feche esta tela</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">Não feche esta tela</span>
                 </div>
               </div>
             ) : activeInvoice?.pix_copy_paste ? (
