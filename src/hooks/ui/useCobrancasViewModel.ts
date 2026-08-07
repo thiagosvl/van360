@@ -10,7 +10,7 @@ import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
-import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
+import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
 
 export function useCobrancasViewModel() {
@@ -214,7 +214,7 @@ export function useCobrancasViewModel() {
   );
 
   const totalRecebido = useMemo(
-    () => cobrancasRecebidas.reduce((acc, curr) => acc + Number(curr.valor), 0),
+    () => cobrancasRecebidas.reduce((acc, curr) => acc + getCobrancaValorExibicao(curr), 0),
     [cobrancasRecebidas]
   );
 
