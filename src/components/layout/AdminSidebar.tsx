@@ -35,8 +35,8 @@ const adminNavItems = [
     icon: Settings,
   },
   {
-    title: "WhatsApp",
-    href: ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES,
+    title: "Evolution",
+    href: ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES,
     icon: MessageSquare,
   },
   {

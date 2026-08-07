@@ -12,3 +12,5 @@ export const WHATSAPP_STATUS = {
 } as const;
 
 export type ConnectionState = typeof WHATSAPP_STATUS[keyof typeof WHATSAPP_STATUS];
+
+export const LAST_UPDATE_TRIGGER = "2026-08-07T16:53:00";

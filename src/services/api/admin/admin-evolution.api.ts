@@ -1,6 +1,6 @@
 import { apiClient } from "../client";
 
-export interface AdminWhatsappInstanceItem {
+export interface AdminEvolutionInstanceItem {
   id: string;
   instance_name: string;
   description: string | null;
@@ -17,7 +17,7 @@ export interface AdminWhatsappInstanceItem {
 
 const BASE = "/admin";
 
-export const adminWhatsappApi = {
-  getWhatsappInstances: () =>
-    apiClient.get<AdminWhatsappInstanceItem[]>(`${BASE}/whatsapp-instances`).then(r => r.data),
+export const adminEvolutionApi = {
+  getEvolutionInstances: () =>
+    apiClient.get<AdminEvolutionInstanceItem[]>(`${BASE}/evolution-instances`).then(r => r.data),
 };

@@ -14,9 +14,9 @@ import {
   getMesNome,
 } from "@/utils/formatters";
 import { formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
-import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
+import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
 import { openBrowserLink } from "@/utils/browser";
-import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
+import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -277,6 +277,7 @@ const CobrancaItemPassageiro = forwardRef<
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const isPaid = cobranca.status === CobrancaStatus.PAGO;
   const isAtrasado = !isPaid && !isIncomplete && checkCobrancaEmAtraso(cobranca.data_vencimento);
+  const valorExibicao = getCobrancaValorExibicao(cobranca);
 
   const statusColor = isPaid
     ? "bg-emerald-50 text-emerald-600"
@@ -291,7 +292,7 @@ const CobrancaItemPassageiro = forwardRef<
       nomeResponsavel: formatNomeResponsavelCompletoExibicao(passageiro.nome_responsavel),
       nomePassageiro: passageiro.nome,
       mes: cobranca.mes,
-      valor: cobranca.valor,
+      valor: valorExibicao,
       dataVencimento: cobranca.data_vencimento,
       chavePix,
       tipoChavePix,
@@ -370,8 +371,8 @@ const CobrancaItemPassageiro = forwardRef<
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-8 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
             <div className="flex flex-col items-end gap-1">
               <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-                {Number(cobranca.valor) > 0
-                  ? Number(cobranca.valor).toLocaleString("pt-BR", {
+                {valorExibicao > 0
+                  ? valorExibicao.toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL",
                   })

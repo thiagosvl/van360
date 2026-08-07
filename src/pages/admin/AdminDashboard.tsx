@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAdminStats, useAdminWhatsappInstances, useAdminLogs } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminEvolutionInstances, useAdminLogs } from "@/hooks/api/adminHooks";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
-  const { data: instances, isLoading: isLoadingInstances } = useAdminWhatsappInstances();
+  const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
   const { data: loginAttemptsResponse, isLoading: isLoadingLoginAttempts } = useQuery({
@@ -806,7 +806,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES)}
+                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES)}
                   className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
                 >
                   Gerenciar
@@ -828,7 +828,7 @@ export default function AdminDashboard() {
                     return (
                       <div
                         key={instance.id}
-                        onClick={() => navigate(ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES)}
+                        onClick={() => navigate(ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES)}
                         className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors text-left"
                       >
                         <div className="flex items-center gap-3">

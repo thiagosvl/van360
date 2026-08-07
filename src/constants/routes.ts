@@ -24,7 +24,7 @@ export const ROUTES = {
       CALCULATOR: "/admin/calculadora",
       LOGIN_ATTEMPTS: "/admin/tentativas-login",
       ACTIVITY_HISTORY: "/admin/atividades",
-      WHATSAPP_INSTANCES: "/admin/whatsapp",
+      EVOLUTION_INSTANCES: "/admin/evolution",
       BLOG: "/admin/blog",
     },
     MOTORISTA: {

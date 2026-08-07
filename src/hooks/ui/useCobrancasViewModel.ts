@@ -11,7 +11,7 @@ import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
-import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
+import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
 
 export function useCobrancasViewModel() {
@@ -186,9 +186,19 @@ export function useCobrancasViewModel() {
     const combined = [...realList, ...projList];
 
     combined.sort((a, b) => {
+      const isAtrasadoA = checkCobrancaEmAtraso(a.data_vencimento);
+      const isAtrasadoB = checkCobrancaEmAtraso(b.data_vencimento);
+
+      if (isAtrasadoA && !isAtrasadoB) return -1;
+      if (!isAtrasadoA && isAtrasadoB) return 1;
+
       const timeA = a.data_vencimento ? new Date(a.data_vencimento).getTime() : 0;
       const timeB = b.data_vencimento ? new Date(b.data_vencimento).getTime() : 0;
-      return timeA - timeB;
+      if (timeA !== timeB) return timeA - timeB;
+
+      const nomeA = a.passageiro?.nome || "";
+      const nomeB = b.passageiro?.nome || "";
+      return nomeA.localeCompare(nomeB, "pt-BR");
     });
 
     if (debouncedSearchTerm.trim()) {
@@ -203,7 +213,35 @@ export function useCobrancasViewModel() {
     return combined;
   }, [cobrancasData, passageirosData, activePassageiros, isPastMonth, mesFilter, anoFilter, debouncedSearchTerm, profile?.created_at]);
 
-  const cobrancasRecebidas = useMemo(() => cobrancasData?.recebidos ?? [], [cobrancasData]);
+  const cobrancasRecebidas = useMemo(() => {
+    const list = cobrancasData?.recebidos ?? [];
+
+    const sorted = [...list].sort((a, b) => {
+      const timeA = a.data_pagamento
+        ? new Date(a.data_pagamento).getTime()
+        : (a.data_vencimento ? new Date(a.data_vencimento).getTime() : 0);
+      const timeB = b.data_pagamento
+        ? new Date(b.data_pagamento).getTime()
+        : (b.data_vencimento ? new Date(b.data_vencimento).getTime() : 0);
+
+      if (timeA !== timeB) return timeB - timeA;
+
+      const nomeA = a.passageiro?.nome || "";
+      const nomeB = b.passageiro?.nome || "";
+      return nomeA.localeCompare(nomeB, "pt-BR");
+    });
+
+    if (debouncedSearchTerm.trim()) {
+      const term = debouncedSearchTerm.toLowerCase();
+      return sorted.filter(
+        (c) =>
+          c.passageiro?.nome?.toLowerCase().includes(term) ||
+          c.passageiro?.nome_responsavel?.toLowerCase().includes(term)
+      );
+    }
+
+    return sorted;
+  }, [cobrancasData, debouncedSearchTerm]);
   const isInitialLoading = isCobrancasLoading || isPassageirosLoading || isProfileLoading || !cobrancasData || !passageirosData;
 
   useEffect(() => {
@@ -216,7 +254,7 @@ export function useCobrancasViewModel() {
   );
 
   const totalRecebido = useMemo(
-    () => cobrancasRecebidas.reduce((acc, curr) => acc + Number(curr.valor), 0),
+    () => cobrancasRecebidas.reduce((acc, curr) => acc + getCobrancaValorExibicao(curr), 0),
     [cobrancasRecebidas]
   );
 

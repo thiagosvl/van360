@@ -24,11 +24,11 @@ import {
   formatShortName,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
-import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
-import { DollarSign, Wallet, User, CalendarClock, History, Info, CheckCircle2 } from "lucide-react";
-import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
+import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
+import { DollarSign, Wallet, CalendarClock, History } from "lucide-react";
+import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
 import { openBrowserLink } from "@/utils/browser";
-import { memo, useMemo, useState } from "react";
+import { memo, useState } from "react";
 import { CobrancaSummary } from "./CobrancaSummary";
 interface CobrancasListProps {
   cobrancas: Cobranca[];
@@ -52,7 +52,6 @@ interface CobrancasListProps {
   onClearSearch?: () => void;
 }
 
-import { getNowBR } from "@/utils/dateUtils";
 import { isPassageiroIncompleto } from "@/utils/domain";
 
 function getVencimentoDia(cobranca: Cobranca) {
@@ -163,8 +162,8 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
           <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-            {Number(cobranca?.valor) > 0
-              ? Number(cobranca?.valor).toLocaleString("pt-BR", {
+            {getCobrancaValorExibicao(cobranca) > 0
+              ? getCobrancaValorExibicao(cobranca).toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
               })
@@ -309,8 +308,8 @@ export function CobrancasList({
         </TableCell>
         <TableCell className="px-6 py-4 text-right">
           <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-            {Number(cobranca?.valor) > 0
-              ? Number(cobranca?.valor).toLocaleString("pt-BR", {
+            {getCobrancaValorExibicao(cobranca) > 0
+              ? getCobrancaValorExibicao(cobranca).toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
               })

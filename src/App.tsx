@@ -56,7 +56,7 @@ const AdminSettings = lazyLoad(() => import("./pages/admin/AdminSettings"));
 const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 const AdminLoginAttempts = lazyLoad(() => import("./pages/admin/AdminLoginAttempts"));
 const AdminActivityHistory = lazyLoad(() => import("./pages/admin/AdminActivityHistory"));
-const AdminWhatsappInstances = lazyLoad(() => import("./pages/admin/AdminWhatsappInstances"));
+const AdminEvolutionInstances = lazyLoad(() => import("./pages/admin/AdminEvolutionInstances"));
 const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 
 const App = () => {
@@ -121,7 +121,7 @@ const App = () => {
               if (listener && typeof (listener as { remove: () => Promise<void> }).remove === "function") {
                 try {
                   await (listener as { remove: () => Promise<void> }).remove();
-                } catch {}
+                } catch { }
               }
               throw err;
             }
@@ -301,7 +301,7 @@ const App = () => {
                   <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.WHATSAPP_INSTANCES} element={<AdminWhatsappInstances />} />
+                  <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
                   <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
                 </Route>
 

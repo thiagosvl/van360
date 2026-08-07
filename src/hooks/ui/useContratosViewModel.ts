@@ -15,7 +15,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
-import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
+import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { isResponsavelMockTelefone } from "@/utils/formatters/name";

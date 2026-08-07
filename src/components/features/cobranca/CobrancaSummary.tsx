@@ -1,13 +1,12 @@
 import { Cobranca } from "@/types/cobranca";
-import { formatCurrency, formatDateToBR, formatFirstName, formatShortName, getMesNome, formatDiasAtraso } from "@/utils/formatters";
+import { formatCurrency, formatDateToBR, formatShortName, getMesNome, formatDiasAtraso } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { cn } from "@/lib/utils";
 import { CobrancaStatus } from "@/types/enums";
-import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
+import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import {
   Calendar,
 } from "lucide-react";
-import { getNowBR } from "@/utils/dateUtils";
 
 interface CobrancaSummaryProps {
   cobranca: Cobranca;
@@ -72,7 +71,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
 
         <div className="flex items-center shrink-0">
           <span className="text-lg sm:text-[20px] font-bold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
-            {formatCurrency(cobranca.valor)}
+            {formatCurrency(getCobrancaValorExibicao(cobranca))}
           </span>
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
 } from "@/types/enums";
 import { useGastoCategorias } from "@/hooks";
 import { formatPaymentType } from "@/utils/formatters";
+import { getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { parseLocalDate } from "@/utils/dateUtils";
 
 // Constantes para agrupamento
@@ -116,7 +117,7 @@ export const useRelatoriosCalculations = ({
 
     // Visão Geral
     const recebido = financeiro?.receita.realizada ?? cobrancasPagas.reduce(
-      (acc: number, c: any) => acc + Number(c.valor || 0),
+      (acc: number, c: any) => acc + getCobrancaValorExibicao(c),
       0
     );
     const gasto = financeiro?.saidas.total ?? gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
@@ -174,7 +175,7 @@ export const useRelatoriosCalculations = ({
         if (!formasPagamentoMap[tipo]) {
           formasPagamentoMap[tipo] = { valor: 0, count: 0 };
         }
-        formasPagamentoMap[tipo].valor += Number(c.valor || 0);
+        formasPagamentoMap[tipo].valor += getCobrancaValorExibicao(c);
         formasPagamentoMap[tipo].count += 1;
       }
     });

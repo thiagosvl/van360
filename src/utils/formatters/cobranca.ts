@@ -24,3 +24,16 @@ export const checkCobrancaEmAtraso = (dataVencimento: string) => {
   return vencimento < hoje;
 };
 
+/**
+ * Retorna o valor de exibição da cobrança.
+ * Se a cobrança possui um `valor_pago` gravado (ex: pagamento parcial ou baixa manual),
+ * retorna o `valor_pago`. Caso contrário, retorna o `valor` original.
+ */
+export function getCobrancaValorExibicao(cobranca?: { valor?: number; valor_pago?: number } | null): number {
+  if (!cobranca) return 0;
+  if (cobranca.valor_pago !== undefined && cobranca.valor_pago !== null && Number(cobranca.valor_pago) > 0) {
+    return Number(cobranca.valor_pago);
+  }
+  return Number(cobranca.valor || 0);
+}
+
