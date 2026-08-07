@@ -14,7 +14,7 @@ import {
   getMesNome,
 } from "@/utils/formatters";
 import { formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
-import { buildCobrancaWhatsAppUrl } from "@/utils/whatsapp";
+import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
 import { openBrowserLink } from "@/utils/browser";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { AnimatePresence, motion } from "framer-motion";

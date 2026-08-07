@@ -19,7 +19,7 @@ import {
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
+import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { openBrowserLink } from "@/utils/browser";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";

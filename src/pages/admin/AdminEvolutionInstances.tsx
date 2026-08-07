@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAdminWhatsappInstances } from "@/hooks/api/adminHooks";
+import { useAdminEvolutionInstances } from "@/hooks/api/adminHooks";
 import { Loader2, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
-import { formatWhatsappPurpose } from "@/utils/whatsapp";
+import { formatWhatsappPurpose } from "@/utils/evolution";
 
-export default function AdminWhatsappInstances() {
+export default function AdminEvolutionInstances() {
   const { setPageTitle } = useLayout();
-  const { data: instances, isLoading } = useAdminWhatsappInstances();
+  const { data: instances, isLoading } = useAdminEvolutionInstances();
 
   useEffect(() => {
     setPageTitle("Instâncias do WhatsApp");

@@ -58,7 +58,7 @@ import { Cobranca } from "@/types/cobranca";
 
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
-import { buildContratoWhatsAppUrl } from "@/utils/whatsapp";
+import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
 
 const currentYear = getNowBR().getFullYear().toString();
