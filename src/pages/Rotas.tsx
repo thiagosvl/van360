@@ -18,13 +18,18 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { RouteExecutionStatus } from "@/types/route";
+import { UserType } from "@/types/enums";
 import { formatDateTime } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const TAB_MINHAS_ROTAS = "minhas-rotas";
 const TAB_HISTORICO = "historico";
 
 export default function Rotas() {
+  const queryClient = useQueryClient();
   const { can } = usePermissions();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TAB_MINHAS_ROTAS);
@@ -54,23 +59,104 @@ export default function Rotas() {
   const deleteRouteMutation = useDeleteRoute(usuarioId);
   const cancelarExecucaoMutation = useCancelarExecucao();
 
-  const handleEncerrarExecucao = (execucaoId: string) => {
-    openConfirmationDialog({
-      title: "Encerrar rota?",
-      description: "Tem certeza que deseja encerrar a execução da rota em andamento?",
-      confirmText: "Encerrar Rota",
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          await cancelarExecucaoMutation.mutateAsync(execucaoId);
-          safeCloseDialog(closeConfirmationDialog);
-          refetchExecs();
-        } catch (error) {
-          safeCloseDialog(closeConfirmationDialog);
-        }
+  const userVeiculoId = profile?.veiculo_id;
+  const isGestor = profile?.tipo === UserType.MOTORISTA || !profile?.conta_pai_id;
+
+  // Supabase Realtime Sync para a Lista de Rotas (Broadcast + Postgres Changes)
+  useEffect(() => {
+    const isEventForThisDevice = (payloadData: any) => {
+      if (isGestor) return true;
+      if (!userVeiculoId) return false;
+
+      const matchesCurrent = payloadData?.veiculoId && payloadData.veiculoId === userVeiculoId;
+      const matchesPrevious = payloadData?.previousVeiculoId && payloadData.previousVeiculoId === userVeiculoId;
+
+      if (matchesCurrent || matchesPrevious) {
+        return true;
       }
-    });
-  };
+
+      if (payloadData?.veiculoId || payloadData?.previousVeiculoId) {
+        return false;
+      }
+
+      return true;
+    };
+
+    const channel = supabase
+      .channel("van360-fleet-sync")
+      .on(
+        "broadcast",
+        { event: "route_execution_changed" },
+        (payload: any) => {
+          const payloadData = payload?.payload || payload;
+          if (!isEventForThisDevice(payloadData)) return;
+          refetchExecs();
+          refetchRotas();
+        }
+      )
+      .on(
+        "broadcast",
+        { event: "route_definition_changed" },
+        (payload: any) => {
+          const payloadData = payload?.payload || payload;
+          if (!isEventForThisDevice(payloadData)) return;
+          refetchExecs();
+          refetchRotas();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rotas"
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+          queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "execucoes_rota"
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+          queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "execucoes_rota_passageiros"
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rota_ausencias"
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+          queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetchExecs, refetchRotas, queryClient]);
 
   useEffect(() => {
     setPageTitle("Rotas");
@@ -98,19 +184,53 @@ export default function Rotas() {
     });
   };
 
-  const execucaoAtiva = execucoes.find(e => e.status === RouteExecutionStatus.INICIADA);
+  const execucoesAtivas = useMemo(() => {
+    return execucoes.filter(e => {
+      if (e.status !== RouteExecutionStatus.INICIADA) return false;
+      if (!isGestor && userVeiculoId && e.rota?.veiculo_id) {
+        return e.rota.veiculo_id === userVeiculoId;
+      }
+      return true;
+    });
+  }, [execucoes, isGestor, userVeiculoId]);
+
   const execucoesHistorico = useMemo(() => {
-    return execucoes.filter(e => e.status !== RouteExecutionStatus.INICIADA);
-  }, [execucoes]);
+    return execucoes.filter(e => {
+      if (e.status === RouteExecutionStatus.INICIADA) return false;
+      if (!isGestor && userVeiculoId && e.rota?.veiculo_id) {
+        return e.rota.veiculo_id === userVeiculoId;
+      }
+      return true;
+    });
+  }, [execucoes, isGestor, userVeiculoId]);
+
+  const veiculosDisponiveis = useMemo(() => {
+    if (!isGestor) return [];
+    const map = new Map<string, string>();
+    rotas.forEach(r => {
+      if (r.veiculo_id && r.veiculo) {
+        const label = r.veiculo.placa ? `${r.veiculo.modelo || 'Veículo'} (${r.veiculo.placa})` : (r.veiculo.modelo || r.veiculo_id);
+        map.set(r.veiculo_id, label);
+      }
+    });
+    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
+  }, [rotas, isGestor]);
+
+  const [selectedVeiculoFilter, setSelectedVeiculoFilter] = useState<string>("TODOS");
+
+  const rotasExibidas = useMemo(() => {
+    if (!isGestor || selectedVeiculoFilter === "TODOS") return rotas;
+    return rotas.filter(r => r.veiculo_id === selectedVeiculoFilter);
+  }, [rotas, isGestor, selectedVeiculoFilter]);
 
   if (!can("rotas.visualizar")) {
     return <AccessRestrictedState moduleName="Rotas e Paradas" />;
   }
 
   const isCanceling = cancelarExecucaoMutation.isPending;
-  const isInitialOrRefetchLoading = isLoadingRotas || isLoadingExecs || isCanceling || (isFetchingExecs && !!execucaoAtiva);
+  const isInitialLoading = (isLoadingRotas && !rotas.length) || (isLoadingExecs && !execucoes.length) || isCanceling;
 
-  if (isInitialOrRefetchLoading && (!rotas.length || !execucoes.length || isCanceling || (isFetchingExecs && !!execucaoAtiva))) {
+  if (isInitialLoading) {
     return <RotasSkeleton />;
   }
 
@@ -119,28 +239,17 @@ export default function Rotas() {
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
 
-          {/* Banner de Rota Ativa */}
-          {execucaoAtiva && (
-            <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="space-y-1 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
-                  <h3 className="text-sm font-bold text-emerald-900 font-headline">Rota em Andamento</h3>
-                </div>
-                <p className="text-[11px] text-emerald-800 font-medium">
-                  Atenção: <strong className="font-bold">{execucaoAtiva.rota?.nome}</strong> está em execução.
-                </p>
-              </div>
-
-              <div className="flex items-center shrink-0 w-full sm:w-auto">
-                <Button
-                  size="sm"
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-sm h-10 px-4 cursor-pointer flex items-center justify-center gap-1.5"
-                  onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", execucaoAtiva.id))}
-                >
-                  <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>Ver Execução</span>
-                </Button>
+          {/* Indicador Discreto de Rotas em Andamento */}
+          {execucoesAtivas.length > 0 && (
+            <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-center gap-2.5 shadow-2xs text-left">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              </span>
+              <div className="text-xs sm:text-sm font-bold text-emerald-950 font-headline truncate">
+                {execucoesAtivas.length === 1
+                  ? "1 rota está em andamento."
+                  : `${execucoesAtivas.length} rotas estão em andamento.`}
               </div>
             </div>
           )}
@@ -157,7 +266,7 @@ export default function Rotas() {
                     "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
                     activeTab === TAB_MINHAS_ROTAS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                   )}>
-                    {rotas.length || 0}
+                    {rotasExibidas.length || 0}
                   </span>
                 </TabsTrigger>
                 <TabsTrigger
@@ -176,28 +285,58 @@ export default function Rotas() {
             </div>
 
             <TabsContent value={TAB_MINHAS_ROTAS} className="space-y-4 mt-0">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-                <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">{rotas.length > 0 ? "Rotas Cadastradas" : ""}</h2>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsAusenciaDialogOpen(true)}
-                    className="flex-1 sm:flex-initial border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+              {/* Filtro por Veículo para o Gestor da Frota */}
+              {isGestor && veiculosDisponiveis.length > 0 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVeiculoFilter("TODOS")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer",
+                      selectedVeiculoFilter === "TODOS"
+                        ? "bg-[#1a3a5c] text-white shadow-xs"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    )}
                   >
-                    <UserMinus className="h-4 w-4 text-rose-500 shrink-0" />
-                    <span>Registrar Ausência</span>
-                  </Button>
-
-                  {can("rotas.criar_editar") && (
-                    <Button
-                      onClick={handleOpenCreateRouteDialog}
-                      className="flex-1 sm:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                    Todas as Vans
+                  </button>
+                  {veiculosDisponiveis.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setSelectedVeiculoFilter(v.id)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer",
+                        selectedVeiculoFilter === v.id
+                          ? "bg-[#1a3a5c] text-white shadow-xs"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      )}
                     >
-                      <Plus className="h-4 w-4 shrink-0" />
-                      <span>Nova Rota</span>
-                    </Button>
-                  )}
+                      {v.label}
+                    </button>
+                  ))}
                 </div>
+              )}
+
+              <div className="flex items-center gap-2 w-full">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAusenciaDialogOpen(true)}
+                  className="flex-1 border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <UserMinus className="h-4 w-4 text-rose-500 shrink-0" />
+                  <span>Registrar Ausência</span>
+                </Button>
+
+                {can("rotas.criar_editar") && (
+                  <Button
+                    onClick={handleOpenCreateRouteDialog}
+                    className="flex-1 border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4 shrink-0" />
+                    <span>Nova Rota</span>
+                  </Button>
+                )}
               </div>
 
               {isLoadingRotas || isLoadingProfile ? (
@@ -214,15 +353,16 @@ export default function Rotas() {
                 />
               ) : (
                 <div className="grid gap-3">
-                  {rotas.map((rota) => {
-                    const isDestaRotaAtiva = execucaoAtiva && execucaoAtiva.rota_id === rota.id;
+                  {rotasExibidas.map((rota) => {
+                    const execucaoDestaRota = execucoesAtivas.find(e => e.rota_id === rota.id);
+                    const isDestaRotaAtiva = !!execucaoDestaRota;
 
                     return (
                       <div
                         key={rota.id}
                         onClick={() => {
-                          if (isDestaRotaAtiva && execucaoAtiva) {
-                            navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", execucaoAtiva.id));
+                          if (isDestaRotaAtiva && execucaoDestaRota) {
+                            navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", execucaoDestaRota.id));
                           } else {
                             navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", rota.id)}?preview=true`);
                           }

@@ -323,7 +323,7 @@ const Home = () => {
                   variant="slate"
                 />
               )}
-              {can("escolas.visualizar") && (
+              {can("escolas.gerenciar") && (
                 <ShortcutCard
                   to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
                   icon={GraduationCap}

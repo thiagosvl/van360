@@ -65,10 +65,11 @@ const currentYear = getNowBR().getFullYear().toString();
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { cn } from "@/lib/utils";
 
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
-  const { can } = usePermissions();
+  const { can, isSubConta } = usePermissions();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const {
@@ -150,7 +151,7 @@ export default function PassageiroCarteirinha() {
     refetch: refetchCobrancas,
     isError: isCobrancasError,
   } = useCobrancasByPassageiro(passageiro_id, yearFilter, {
-    enabled: !!passageiro_id,
+    enabled: !!passageiro_id && canViewFinancials,
   });
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
@@ -159,7 +160,7 @@ export default function PassageiroCarteirinha() {
     isSessionLoading ||
     isProfileLoading ||
     isPassageiroLoading ||
-    isCobrancasLoading;
+    (canViewFinancials && isCobrancasLoading);
 
 
   useEffect(() => {
@@ -655,7 +656,7 @@ export default function PassageiroCarteirinha() {
           <div className="space-y-6">
             {isCadastroPassageiroIncompleto(passageiro) ? (
               <IncompletePassengerBanner onEdit={handleEditClick} />
-            ) : !profile?.chave_pix && totalPassageiros > 1 ? (
+            ) : !isSubConta && !profile?.chave_pix && totalPassageiros > 1 ? (
               <PixNudgeBanner hasPix={false} />
             ) : null}
 

@@ -330,6 +330,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     mesParam,
     anoParam,
     categoriaParam,
+    searchTerm,
+    selectedStatus,
+    selectedEscola,
+    selectedVeiculo,
+    selectedPeriodo,
+    selectedMes,
+    selectedAno,
+    selectedCategoria,
   ]);
 
   const setFilters = useCallback(

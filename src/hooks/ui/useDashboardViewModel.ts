@@ -91,6 +91,8 @@ export function useDashboardViewModel() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
       queryClient.invalidateQueries({ queryKey: ["subscription", profile.id] }),
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] }),
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] }),
     ]);
   };
 

@@ -37,6 +37,7 @@ import { toast } from "@/utils/notifications/toast";
 import { phoneMask, cpfCnpjMask } from "@/utils/masks";
 import { formatShortName } from "@/utils/formatters/name";
 import { apiClient } from "@/services/api/client";
+import { cn } from "@/lib/utils";
 export default function MinhaEquipe() {
   const { can, isGestor } = usePermissions();
   const hasAccess = can("equipe.gerenciar_monitores") || can("equipe.gerenciar_todos");

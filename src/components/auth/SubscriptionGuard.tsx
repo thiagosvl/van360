@@ -34,7 +34,7 @@ export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({ children }
       return (
         <AccessRestrictedState
           moduleName="Acesso Temporariamente Suspenso"
-          description="O acesso aos módulos da sua frota está temporariamente suspenso devido à assinatura do gestor. Entre em contato com o dono da frota para a regularização."
+          description="O acesso está temporariamente suspenso devido à assinatura ainda não ter sido renovada. Entre em contato com o dono da frota para a regularização."
         />
       );
     }

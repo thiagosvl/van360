@@ -14,12 +14,16 @@ interface CarteirinhaContratoProps {
 
 import { isResponsavelIncompleto } from "@/utils/domain";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 export const CarteirinhaContrato = ({
   passageiro,
   contratosAtivos = true,
   onContractAction,
   onEnviarWhatsApp,
 }: CarteirinhaContratoProps) => {
+  const { can } = usePermissions();
+  const canManage = can("passageiros.gerenciar") || can("contratos.gerenciar");
   const isMissingResponsible = isResponsavelIncompleto(passageiro.nome_responsavel, passageiro.telefone_responsavel);
 
   const isContractActionDisabled =
@@ -100,6 +104,8 @@ export const CarteirinhaContrato = ({
     onContractAction();
   };
 
+  const showActionButton = canManage || passageiro.status_contrato === ContratoStatus.ASSINADO;
+
   return (
     <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between text-left">
@@ -125,18 +131,20 @@ export const CarteirinhaContrato = ({
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleContratoClick}
-          disabled={isContractActionDisabled && passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO}
-          className={cn(
-            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-lg text-[13px] font-bold transition-all duration-200 shadow-sm hover:shadow active:scale-[0.99] shrink-0",
-            contratoConfig.actionColor
-          )}
-        >
-          <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
-          <span>{contratoConfig.actionLabel}</span>
-        </button>
+        {showActionButton && (
+          <button
+            type="button"
+            onClick={handleContratoClick}
+            disabled={isContractActionDisabled && passageiro.status_contrato !== ContratoStatus.PENDENTE && passageiro.status_contrato !== ContratoStatus.ASSINADO}
+            className={cn(
+              "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-lg text-[13px] font-bold transition-all duration-200 shadow-sm hover:shadow active:scale-[0.99] shrink-0",
+              contratoConfig.actionColor
+            )}
+          >
+            <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
+            <span>{contratoConfig.actionLabel}</span>
+          </button>
+        )}
       </div>
     </div>
   );

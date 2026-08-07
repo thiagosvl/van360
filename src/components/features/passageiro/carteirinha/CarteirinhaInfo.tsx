@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
@@ -83,6 +84,8 @@ const CarteirinhaTopCard = ({
   | "onEnviarWhatsApp"
 >) => {
   const isMobile = useIsMobile();
+  const { can, isSubConta } = usePermissions();
+  const canManage = can("passageiros.gerenciar");
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
   const isPendente =
     statusContrato === ContratoStatus.PENDENTE ||
@@ -125,38 +128,42 @@ const CarteirinhaTopCard = ({
           >
             {passageiro.ativo ? "Ativo" : "Inativo"}
           </Badge>
-          {temCobrancasVencidas && (
+          {!isSubConta && temCobrancasVencidas && (
             <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-pulse">
               Possui Débitos
             </Badge>
           )}
-          <Badge
-            className={cn(
-              "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-              passageiro.enviar_notificacoes
-                ? "text-emerald-700 bg-[#d8f0e1]"
-                : "text-rose-700 bg-rose-100"
-            )}
-          >
-            {passageiro.enviar_notificacoes ? "Lembretes Ativos" : "Lembretes Inativos"}
-          </Badge>
+          {!isSubConta && (
+            <Badge
+              className={cn(
+                "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                passageiro.enviar_notificacoes
+                  ? "text-emerald-700 bg-[#d8f0e1]"
+                  : "text-rose-700 bg-rose-100"
+              )}
+            >
+              {passageiro.enviar_notificacoes ? "Lembretes Ativos" : "Lembretes Inativos"}
+            </Badge>
+          )}
         </div>
       </div>
 
       <div className="absolute -bottom-6 left-0 w-full flex justify-center gap-3 z-20">
-        <Button
-          size="icon"
-          onClick={() => onToggleClick(!!passageiro.ativo)}
-          className={cn(
-            "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
-            passageiro.ativo
-              ? "bg-[#f04f64] text-white hover:bg-rose-600"
-              : "bg-emerald-500 text-white hover:bg-emerald-600"
-          )}
-          title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
-        >
-          {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
-        </Button>
+        {canManage && (
+          <Button
+            size="icon"
+            onClick={() => onToggleClick(!!passageiro.ativo)}
+            className={cn(
+              "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
+              passageiro.ativo
+                ? "bg-[#f04f64] text-white hover:bg-rose-600"
+                : "bg-emerald-500 text-white hover:bg-emerald-600"
+            )}
+            title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
+          >
+            {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
+          </Button>
+        )}
         <Button
           size="icon"
           disabled={isWhatsAppDisabled}
@@ -176,82 +183,86 @@ const CarteirinhaTopCard = ({
         >
           <WhatsAppIcon size={26} className="h-[26px] w-[26px]" />
         </Button>
-        <Button
-          size="icon"
-          title="Editar"
-          onClick={onEditClick}
-          className="h-12 w-12 rounded-full bg-[#2c7be5] text-white hover:bg-[#1a5bba] transition-all shadow-md hover:shadow-lg"
-        >
-          <Pencil size={28} className="h-7 w-7" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="icon"
-              title="Mais opções"
-              className="h-12 w-12 rounded-full bg-white text-slate-600 hover:bg-slate-100 transition-all shadow-md hover:shadow-lg"
-            >
-              <MoreHorizontal size={28} className="h-7 w-7" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="center"
-            className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
+        {canManage && (
+          <Button
+            size="icon"
+            title="Editar"
+            onClick={onEditClick}
+            className="h-12 w-12 rounded-full bg-[#2c7be5] text-white hover:bg-[#1a5bba] transition-all shadow-md hover:shadow-lg"
           >
-            {isPendente && onEnviarWhatsApp && (
-              <DropdownMenuItem
-                disabled={isWhatsAppDisabled}
-                onClick={() => {
-                  if (isWhatsAppDisabled) return;
-                  onEnviarWhatsApp(passageiro);
-                }}
-                className={cn(
-                  "flex items-center gap-2 p-2.5 rounded-lg font-medium",
-                  isWhatsAppDisabled
-                    ? "opacity-50 cursor-not-allowed text-gray-400"
-                    : "cursor-pointer text-gray-700"
-                )}
+            <Pencil size={28} className="h-7 w-7" />
+          </Button>
+        )}
+        {canManage && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon"
+                title="Mais opções"
+                className="h-12 w-12 rounded-full bg-white text-slate-600 hover:bg-slate-100 transition-all shadow-md hover:shadow-lg"
               >
-                {isMobile ? (
+                <MoreHorizontal size={28} className="h-7 w-7" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
+            >
+              {isPendente && onEnviarWhatsApp && (
+                <DropdownMenuItem
+                  disabled={isWhatsAppDisabled}
+                  onClick={() => {
+                    if (isWhatsAppDisabled) return;
+                    onEnviarWhatsApp(passageiro);
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 p-2.5 rounded-lg font-medium",
+                    isWhatsAppDisabled
+                      ? "opacity-50 cursor-not-allowed text-gray-400"
+                      : "cursor-pointer text-gray-700"
+                  )}
+                >
+                  {isMobile ? (
+                    <>
+                      <WhatsAppIcon className="h-4 w-4 text-slate-400" />
+                      Reenviar Contrato
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 text-slate-400" />
+                      Copiar Link para Assinatura do Contrato
+                    </>
+                  )}
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuItem
+                onClick={onToggleNotificacoesClick}
+                className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
+              >
+                {passageiro.enviar_notificacoes ? (
                   <>
-                    <WhatsAppIcon className="h-4 w-4 text-slate-400" />
-                    Reenviar Contrato
+                    <BotOff className="h-4 w-4 text-slate-400" />
+                    Desativar Lembretes
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4 text-slate-400" />
-                    Copiar Link para Assinatura do Contrato
+                    <Bot className="h-4 w-4 text-slate-400" />
+                    Ativar Lembretes
                   </>
                 )}
               </DropdownMenuItem>
-            )}
 
-            <DropdownMenuItem
-              onClick={onToggleNotificacoesClick}
-              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
-            >
-              {passageiro.enviar_notificacoes ? (
-                <>
-                  <BotOff className="h-4 w-4 text-slate-400" />
-                  Desativar Lembretes
-                </>
-              ) : (
-                <>
-                  <Bot className="h-4 w-4 text-slate-400" />
-                  Ativar Lembretes
-                </>
-              )}
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={onDeleteClick}
-              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
-            >
-              <Trash2 className="h-3.5 w-3.5 opacity-60" />
-              Excluir passageiro
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem
+                onClick={onDeleteClick}
+                className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="h-3.5 w-3.5 opacity-60" />
+                Excluir passageiro
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </div>
   );
@@ -376,6 +387,8 @@ export const CarteirinhaDadosPessoais = ({
   | "onEnviarWhatsApp"
   | "onEditClick"
 >) => {
+  const { can } = usePermissions();
+  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.mensalidade_visualizar") || can("passageiros.gerenciar");
   const enderecoFormatado = passageiro.logradouro ? formatarEnderecoCompleto(passageiro) : null;
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
@@ -477,35 +490,37 @@ export const CarteirinhaDadosPessoais = ({
       </div>
 
       {/* 2. Bloco: Parcelas */}
-      <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
-        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <InfoField
-              icon={<Wallet className="h-3.5 w-3.5" />}
-              label="Valor da parcela"
-              value={valorCobrancaTexto}
-            />
-            <InfoField
-              icon={<Clock className="h-3.5 w-3.5" />}
-              label="Dia de vencimento"
-              value={diaVencimentoTexto}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-            <InfoField
-              icon={<CalendarClock className="h-3.5 w-3.5" />}
-              label="Início das cobranças"
-              value={inicioCobrancaTexto}
-            />
-            <InfoField
-              icon={<CalendarClock className="h-3.5 w-3.5" />}
-              label="Término das cobranças"
-              value={fimCobrancaTexto}
-            />
+      {canViewFinancials && (
+        <div className="space-y-3">
+          <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
+          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <InfoField
+                icon={<Wallet className="h-3.5 w-3.5" />}
+                label="Valor da parcela"
+                value={valorCobrancaTexto}
+              />
+              <InfoField
+                icon={<Clock className="h-3.5 w-3.5" />}
+                label="Dia de vencimento"
+                value={diaVencimentoTexto}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Início das cobranças"
+                value={inicioCobrancaTexto}
+              />
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Término das cobranças"
+                value={fimCobrancaTexto}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 3. Bloco: Responsável Financeiro */}
       <div className="space-y-3">

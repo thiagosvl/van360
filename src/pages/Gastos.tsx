@@ -90,8 +90,9 @@ export default function Gastos() {
                 });
               }}
               onRegistrarGasto={() => {
-                handleOpenForm();
+                if (can("gastos.criar")) handleOpenForm();
               }}
+              disabled={!can("gastos.criar")}
               categorias={categorias}
               veiculos={veiculos}
               hasActiveFilters={hasActiveFilters}
@@ -148,10 +149,12 @@ export default function Gastos() {
                         label: "Limpar Filtros",
                         onClick: clearFilters,
                       }
-                      : {
+                      : can("gastos.criar")
+                      ? {
                         label: "Registrar Gasto",
                         onClick: () => handleOpenForm(),
                       }
+                      : undefined
                   }
                 />
               )}

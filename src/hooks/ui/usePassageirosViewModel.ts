@@ -120,33 +120,50 @@ export function usePassageirosViewModel() {
     toggleAtivoPassageiro.isPending;
 
   useEffect(() => {
-    if (
-      isSubConta &&
-      profile?.veiculo_id &&
-      !hasInitializedSubContaVeiculo.current &&
-      !searchParams.has("veiculo") &&
-      setSelectedVeiculo
-    ) {
+    if (isSubConta && profile?.veiculo_id && !hasInitializedSubContaVeiculo.current) {
       hasInitializedSubContaVeiculo.current = true;
-      setSelectedVeiculo(profile.veiculo_id);
+      if (!searchParams.has("veiculo") && setSelectedVeiculo) {
+        setSelectedVeiculo(profile.veiculo_id);
+      }
     }
   }, [isSubConta, profile?.veiculo_id, searchParams, setSelectedVeiculo]);
 
-  const passageiroFilters = {
-    usuarioId: profile?.id,
-    search: debouncedSearchTerm,
-    escola: selectedEscola === FilterDefaults.TODAS ? undefined : selectedEscola,
-    veiculo: selectedVeiculo === FilterDefaults.TODOS ? (isSubConta ? "all" : undefined) : selectedVeiculo,
-    status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
-    periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
-  };
+  const passageiroFilters = useMemo(
+    () => ({
+      usuarioId: profile?.id,
+      search: debouncedSearchTerm,
+      escola: selectedEscola === FilterDefaults.TODAS ? undefined : selectedEscola,
+      veiculo: selectedVeiculo === FilterDefaults.TODOS ? (isSubConta ? "all" : undefined) : selectedVeiculo,
+      status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
+      periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
+    }),
+    [
+      profile?.id,
+      debouncedSearchTerm,
+      selectedEscola,
+      selectedVeiculo,
+      selectedStatus,
+      selectedPeriodo,
+      isSubConta,
+    ]
+  );
+
+  const isSubContaInitializingVeiculo = Boolean(
+    isSubConta &&
+      profile?.veiculo_id &&
+      !hasInitializedSubContaVeiculo.current &&
+      !searchParams.has("veiculo")
+  );
 
   const {
     data: passageirosData,
     isLoading: isPassageirosLoading,
     refetch: refetchPassageiros,
   } = usePassageiros(passageiroFilters, {
-    enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")),
+    enabled:
+      !!profile?.id &&
+      !isSubContaInitializingVeiculo &&
+      (can("passageiros.visualizar") || can("passageiros.gerenciar")),
     onError: () =>
       toast.error("passageiro.erro.carregar", {
         description: "passageiro.erro.carregarDetalhe",

@@ -25,6 +25,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function useContratosViewModel() {
+  const { can } = usePermissions();
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openGerarContratoValidadorDialog } = useLayout();
   const { user } = useSession();
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);

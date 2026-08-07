@@ -6,6 +6,8 @@ import { DataTableToolbar } from "../common/DataTableToolbar";
 import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 interface EscolasToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
@@ -30,6 +32,8 @@ export const EscolasToolbar = memo(function EscolasToolbar({
   isRegisterDisabled = false,
 }: EscolasToolbarProps) {
   const isMobile = useIsMobile();
+  const { can } = usePermissions();
+  const canManage = can("escolas.gerenciar");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     status: selectedStatus || FilterDefaults.TODOS,
@@ -96,15 +100,17 @@ export const EscolasToolbar = memo(function EscolasToolbar({
       }}
       filterChildren={filterChildren}
       actions={
-        <Button
-          onClick={onRegister}
-          disabled={isRegisterDisabled}
-          className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden md:inline">Cadastrar</span>
-          <span className="md:hidden">Cadastrar</span>
-        </Button>
+        canManage ? (
+          <Button
+            onClick={onRegister}
+            disabled={isRegisterDisabled}
+            className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden md:inline">Cadastrar</span>
+            <span className="md:hidden">Cadastrar</span>
+          </Button>
+        ) : undefined
       }
     />
   );

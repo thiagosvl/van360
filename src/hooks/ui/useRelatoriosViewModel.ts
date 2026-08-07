@@ -3,12 +3,14 @@ import { useCobrancas, useEscolas, useGastos, usePassageiros, useVeiculos } from
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { RelatorioTab, FilterDefaults } from "@/types/enums";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getNowBR } from "@/utils/dateUtils";
 
 export function useRelatoriosViewModel() {
+  const { can } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
   const { setPageTitle } = useLayout();
   

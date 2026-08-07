@@ -3,6 +3,7 @@ import { ActionItem } from "@/types/actions";
 import { Veiculo } from "@/types/veiculo";
 import { Pencil, ToggleLeft, ToggleRight, Trash2, Users } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface UseVeiculoActionsProps {
   veiculo: Veiculo;
@@ -19,35 +20,47 @@ export function useVeiculoActions({
   onToggleAtivo,
   onDelete,
 }: UseVeiculoActionsProps): ActionItem[] {
-  return [
-    {
+  const { can } = usePermissions();
+  const canManage = can("veiculos.gerenciar");
+
+  const actions: ActionItem[] = [];
+
+  if (canManage) {
+    actions.push({
       label: veiculo.ativo ? "Desativar" : "Reativar",
       icon: veiculo.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleAtivo(veiculo),
       swipeColor: veiculo.ativo ? "bg-amber-500" : "bg-emerald-500",
       hasSeparatorAfter: true,
-    },
-    {
+    });
+
+    actions.push({
       label: "Editar",
       icon: <Pencil className="h-4 w-4" />,
       onClick: () => onEdit(veiculo),
       swipeColor: "bg-blue-600",
       hasSeparatorAfter: true,
-    },
-    {
-      label: "Ver Passageiros",
-      icon: <Users className="h-4 w-4" />,
-      onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?veiculo=${veiculo.id}`),
-      disabled: !veiculo.passageiros_ativos_count,
-      swipeColor: "bg-purple-600",
-      hasSeparatorAfter: true,
-    },
-    {
+    });
+  }
+
+  actions.push({
+    label: "Ver Passageiros",
+    icon: <Users className="h-4 w-4" />,
+    onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?veiculo=${veiculo.id}`),
+    disabled: !veiculo.passageiros_ativos_count,
+    swipeColor: "bg-purple-600",
+    hasSeparatorAfter: canManage,
+  });
+
+  if (canManage) {
+    actions.push({
       label: "Excluir",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(veiculo),
       isDestructive: true,
       swipeColor: "bg-red-500",
-    },
-  ];
+    });
+  }
+
+  return actions;
 }

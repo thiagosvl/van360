@@ -2,27 +2,35 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { RouteExecutionStatus } from "@/types/route";
 
-export function useRoutes(usuarioId: string) {
+export function useRoutes(usuarioId: string, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ["routes", usuarioId],
+    queryKey: ["routes-list", usuarioId],
     queryFn: () => routeApi.listRoutes(usuarioId),
-    enabled: !!usuarioId,
+    enabled: options?.enabled !== undefined ? options.enabled : !!usuarioId,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 15,
+    refetchOnWindowFocus: false,
   });
 }
 
 export function useRouteDetail(id: string) {
   return useQuery({
-    queryKey: ["route", id],
+    queryKey: ["route-detail", id],
     queryFn: () => routeApi.getRoute(id),
     enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useExecucoesRota(usuarioId: string) {
+export function useExecucoesRota(usuarioId: string, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ["routes", "execucoes", usuarioId],
+    queryKey: ["execucoes-list", usuarioId],
     queryFn: () => routeApi.listExecucoes(usuarioId),
-    enabled: !!usuarioId,
+    enabled: options?.enabled !== undefined ? options.enabled : !!usuarioId,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 15,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -31,6 +39,8 @@ export function useExecucaoDetail(id: string) {
     queryKey: ["route-execution", id],
     queryFn: () => routeApi.getExecucao(id),
     enabled: !!id,
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: false,
     refetchInterval: false
   });
 }
@@ -40,8 +50,8 @@ export function useAusenciasRota(rotaId: string, dataAusencia?: string) {
     queryKey: ["route-ausencias", rotaId, dataAusencia],
     queryFn: () => routeApi.listAusencias(rotaId, dataAusencia),
     enabled: !!rotaId,
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -50,8 +60,8 @@ export function usePassageiroAusencias(passageiroId: string) {
     queryKey: ["passageiro-ausencias", passageiroId],
     queryFn: () => routeApi.listAusenciasByPassageiro(passageiroId),
     enabled: !!passageiroId,
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -60,39 +70,9 @@ export function usePassageiroRotas(passageiroId: string) {
     queryKey: ["passageiro-rotas", passageiroId],
     queryFn: () => routeApi.listRotasByPassageiro(passageiroId),
     enabled: !!passageiroId,
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useRegistrarAusenciaMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }) =>
-      routeApi.createAusencia(data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["route"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["route-ausencias"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["routes"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["route-execution"], refetchType: "all" });
-    },
-  });
-}
-
-export function useRemoverAusenciaMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, passageiro_id, rota_id, data_ausencia }: { id: string; passageiro_id?: string; rota_id?: string; data_ausencia?: string }) =>
-      routeApi.deleteAusencia(id, { passageiro_id, rota_id, data_ausencia }),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["route"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["route-ausencias"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["routes"], refetchType: "all" });
-      queryClient.invalidateQueries({ queryKey: ["route-execution"], refetchType: "all" });
-    },
-  });
-}
+export { useRegistrarAusenciaMutation, useRemoverAusenciaMutation } from "./useRouteMutations";

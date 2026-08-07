@@ -14,6 +14,7 @@ import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 export default function Cobrancas() {
   const { can } = usePermissions();
 

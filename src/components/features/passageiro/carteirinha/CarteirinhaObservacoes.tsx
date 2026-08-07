@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Pencil, StickyNote } from "lucide-react";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { cn } from "@/lib/utils";
+import { Pencil } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 interface CarteirinhaObservacoesProps {
@@ -23,6 +25,8 @@ export const CarteirinhaObservacoes = ({
   onChangeText,
   onSave,
 }: CarteirinhaObservacoesProps) => {
+  const { can } = usePermissions();
+  const canManage = can("passageiros.gerenciar");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -49,7 +53,7 @@ export const CarteirinhaObservacoes = ({
           <h3 className="text-base font-bold text-[#16314f]">Observações</h3>
         </div>
 
-        {!isEditing && (
+        {!isEditing && canManage && (
           <Button
             variant="ghost"
             size="icon"
@@ -62,7 +66,7 @@ export const CarteirinhaObservacoes = ({
       </div>
 
       <div className="px-6 py-5">
-        {isEditing ? (
+        {isEditing && canManage ? (
           <div className="space-y-3">
             <textarea
               ref={textareaRef}
@@ -93,8 +97,11 @@ export const CarteirinhaObservacoes = ({
           </div>
         ) : (
           <div
-            onClick={onStartEdit}
-            className="cursor-pointer group/obs rounded-xl transition-colors hover:bg-slate-50 -mx-2 px-2 py-1"
+            onClick={canManage ? onStartEdit : undefined}
+            className={cn(
+              "-mx-2 px-2 py-1 rounded-xl transition-colors",
+              canManage && "cursor-pointer group/obs hover:bg-slate-50"
+            )}
           >
             {observacoes ? (
               <p className="text-xs font-medium text-slate-500 leading-relaxed italic border-l-2 border-amber-200 pl-3 py-1">
@@ -102,7 +109,7 @@ export const CarteirinhaObservacoes = ({
               </p>
             ) : (
               <p className="text-[11px] text-slate-300 italic py-2">
-                Toque para adicionar observações...
+                {canManage ? "Toque para adicionar observações..." : "Nenhuma observação cadastrada."}
               </p>
             )}
           </div>

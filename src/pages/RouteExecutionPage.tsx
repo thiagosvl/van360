@@ -16,7 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/utils/notifications/toast";
+
 export default function RouteExecutionPage() {
+  const queryClient = useQueryClient();
   const { can } = usePermissions();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -36,7 +40,11 @@ export default function RouteExecutionPage() {
     handleFinalizarRota,
     handleCancel,
     handleReordenar,
+    totalStops,
+    progressPercentage,
     isPreview,
+    isVehicleOccupied,
+    occupiedRouteName,
     iniciarMutation,
     refetch
   } = useActiveRouteViewModel({ execucaoId: id || "" });
@@ -45,20 +53,160 @@ export default function RouteExecutionPage() {
 
   // Supabase Realtime Sync para Motorista Auxiliar + Monitor
   useEffect(() => {
-    if (!id || isPreview) return;
+    const targetExecId = execucao?.id || id;
+    const targetRotaId = (execucao as any)?.rota_id || execucao?.id || id;
+    if (!targetExecId && !targetRotaId) return;
+
+    if (isPreview) {
+      const previewChannel = supabase
+        .channel("van360-fleet-sync")
+        .on(
+          "broadcast",
+          { event: "route_execution_changed" },
+          (payload: any) => {
+            const payloadData = payload?.payload || payload;
+            if (payloadData?.rotaId === targetRotaId && payloadData?.status === RouteExecutionStatus.INICIADA && payloadData?.execucaoId) {
+              toast.info("Esta rota foi iniciada.");
+              queryClient.invalidateQueries({ queryKey: ["routes"] });
+              navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", payloadData.execucaoId), { replace: true });
+            }
+          }
+        )
+        .on(
+          "broadcast",
+          { event: "absence_changed" },
+          (payload: any) => {
+            const payloadData = payload?.payload || payload;
+            if (!payloadData?.rotaId || payloadData?.rotaId === targetRotaId) {
+              refetch();
+            }
+          }
+        )
+        .on(
+          "broadcast",
+          { event: "route_definition_changed" },
+          (payload: any) => {
+            const payloadData = payload?.payload || payload;
+            if (payloadData?.rotaId === targetRotaId) {
+              if (payloadData?.action === "delete") {
+                toast.info("Esta rota foi excluída.");
+                queryClient.invalidateQueries({ queryKey: ["routes"] });
+                navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
+              } else {
+                refetch();
+              }
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'rota_ausencias'
+          },
+          () => {
+            refetch();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'execucoes_rota',
+            filter: `rota_id=eq.${targetRotaId}`
+          },
+          (payload: any) => {
+            queryClient.invalidateQueries({ queryKey: ["routes"] });
+            queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
+            const newExecId = payload.new?.id;
+            const newStatus = payload.new?.status;
+            if (newExecId && newStatus === RouteExecutionStatus.INICIADA) {
+              toast.info("Esta rota foi iniciada.");
+              navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", newExecId), { replace: true });
+            } else {
+              refetch();
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'rotas',
+            filter: `id=eq.${targetRotaId}`
+          },
+          () => {
+            toast.info("Esta rota foi excluída.");
+            queryClient.invalidateQueries({ queryKey: ["routes"] });
+            navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(previewChannel);
+      };
+    }
 
     const channel = supabase
-      .channel(`route-exec-${id}`)
+      .channel("van360-fleet-sync")
+      .on(
+        'broadcast',
+        { event: 'route_execution_changed' },
+        (payload: any) => {
+          const payloadData = payload?.payload || payload;
+          if (!payloadData?.execucaoId || payloadData?.execucaoId === id) {
+            refetch();
+            queryClient.invalidateQueries({ queryKey: ["routes"] });
+          }
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'absence_changed' },
+        (payload: any) => {
+          const payloadData = payload?.payload || payload;
+          if (!payloadData?.rotaId || payloadData?.rotaId === targetRotaId) {
+            refetch();
+          }
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'stop_status_changed' },
+        (payload: any) => {
+          const payloadData = payload?.payload || payload;
+          if (!payloadData?.execucaoId || payloadData?.execucaoId === id) {
+            refetch();
+          }
+        }
+      )
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'execucoes_rota_passageiros',
-          filter: `execucao_id=eq.${id}`
+          table: 'rota_ausencias'
         },
         () => {
           refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'execucoes_rota_passageiros',
+          filter: `execucao_rota_id=eq.${targetExecId}`
+        },
+        () => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: ["routes"] });
+          queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
         }
       )
       .on(
@@ -67,10 +215,12 @@ export default function RouteExecutionPage() {
           event: '*',
           schema: 'public',
           table: 'execucoes_rota',
-          filter: `id=eq.${id}`
+          filter: `id=eq.${targetExecId}`
         },
         () => {
           refetch();
+          queryClient.invalidateQueries({ queryKey: ["routes"] });
+          queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
         }
       )
       .subscribe();
@@ -78,17 +228,30 @@ export default function RouteExecutionPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id, isPreview, refetch]);
+  }, [id, execucao?.id, (execucao as any)?.rota_id, isPreview, refetch, queryClient]);
 
   useEffect(() => {
     setPageTitle(isPreview ? "Prévia da Rota" : "Rota em Andamento");
   }, [setPageTitle, isPreview]);
 
   useEffect(() => {
-    if (execucao?.status === RouteExecutionStatus.CONCLUIDA && !isPreview && !showSuccessOverlay) {
+    const currentStatus = (execucao as any)?.status;
+    if (currentStatus === RouteExecutionStatus.CONCLUIDA && !isPreview && !showSuccessOverlay) {
       setShowSuccessOverlay(true);
     }
-  }, [execucao?.status, isPreview, showSuccessOverlay]);
+    if (currentStatus === RouteExecutionStatus.CANCELADA && !isPreview) {
+      toast.info("A execução desta rota foi encerrada.");
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.resetQueries({ queryKey: ["routes"] });
+      navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
+    }
+    if (isPreview && isError) {
+      toast.info("Esta rota foi excluída.");
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.resetQueries({ queryKey: ["routes"] });
+      navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
+    }
+  }, [(execucao as any)?.status, isPreview, isError, showSuccessOverlay, navigate, queryClient]);
 
   if (!can("rotas.visualizar")) {
     return <AccessRestrictedState moduleName="Execução de Rotas" />;
@@ -112,12 +275,9 @@ export default function RouteExecutionPage() {
     );
   }
 
-  const totalStops = execucao?.paradas?.length || 0;
-  const progressPercentage = totalStops > 0 ? Math.round((concludedStops / totalStops) * 100) : 0;
-
   return (
     <PullToRefreshWrapper onRefresh={refetch}>
-      <div className="space-y-4 text-left pb-16">
+      <div className="-mx-2.5 sm:mx-0 space-y-4 text-left pb-16">
         {(isLoading && !showSuccessOverlay) || !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (
@@ -137,6 +297,8 @@ export default function RouteExecutionPage() {
             totalStops={totalStops}
             progressPercentage={progressPercentage}
             isPreview={isPreview}
+            isVehicleOccupied={isVehicleOccupied}
+            occupiedRouteName={occupiedRouteName}
             iniciarMutation={iniciarMutation}
             onShowSuccess={() => setShowSuccessOverlay(true)}
           />

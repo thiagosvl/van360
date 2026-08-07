@@ -14,6 +14,10 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 const Contratos = () => {
   const { can } = usePermissions();
 
+  if (!can("contratos.gerenciar")) {
+    return <AccessRestrictedState moduleName="Gestão de Contratos" />;
+  }
+
   const {
     activeTab,
     busca,

@@ -53,7 +53,8 @@ export default function Escolas() {
           onClearFilters={clearFilters}
           hasActiveFilters={hasActiveFilters}
           onApplyFilters={setFilters}
-          onRegister={handleRegister}
+          onRegister={can("escolas.gerenciar") ? handleRegister : () => {}}
+          isRegisterDisabled={!can("escolas.gerenciar")}
         />
 
         <div className="flex items-center justify-between px-1">
@@ -86,12 +87,14 @@ export default function Escolas() {
                   label: "Limpar Filtros",
                   onClick: clearFilters,
                 }
-                : {
+                : can("escolas.gerenciar")
+                ? {
                   label: "Cadastrar Escola",
                   onClick: () => {
                     openEscolaFormDialog();
                   },
                 }
+                : undefined
             }
           />
         ) : (

@@ -10,6 +10,7 @@ import {
   safeCloseDialog,
 } from "@/hooks";
 import { useProfile, useSession } from "@/hooks";
+import { usePermissions } from "../business/usePermissions";
 import { FilterDefaults } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -18,6 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function useEscolasViewModel() {
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const {

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
+import { pagesItems, getBottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
 import { Gift } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -15,12 +15,13 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarProps) {
   const { openReferAndEarnDialog } = useLayout();
-  const { can, isGestor, isMonitor, isMotoristaAuxiliar } = usePermissions();
+  const { can, isGestor, isSubConta, isMonitor, isMotoristaAuxiliar } = usePermissions();
 
   const isMobile = !!excludeBottomNavItems;
+  const activeBottomHrefs = getBottomNavHrefs(isSubConta, isMotoristaAuxiliar, isMonitor);
 
   const itemsToRender = (isMobile
-    ? pagesItems.filter((item) => !(bottomNavHrefs as string[]).includes(item.href))
+    ? pagesItems.filter((item) => !activeBottomHrefs.includes(item.href))
     : pagesItems
   ).filter((item) => {
     if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;

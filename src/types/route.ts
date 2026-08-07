@@ -71,11 +71,15 @@ export interface Route {
 
 export interface RouteExecutionPassenger {
   id: string;
-  execucao_rota_id: string;
+  execucao_rota_id?: string;
   tipo_no: RouteNodeType;
   passageiro_id?: string | null;
   escola_id?: string | null;
-  status: RouteStopStatus;
+  nome?: string;
+  detalhe?: string;
+  temEndereco?: boolean;
+  responsaveisAdicionais?: any[];
+  status?: RouteStopStatus;
   is_ausente?: boolean;
   ausencia_id?: string | null;
   ordem: number;
@@ -98,6 +102,7 @@ export interface RouteExecution {
   rota_id: string;
   usuario_id: string;
   status: RouteExecutionStatus;
+  tipo?: string;
   iniciada_em: string;
   finalizada_em?: string;
   created_at: string;
@@ -106,5 +111,9 @@ export interface RouteExecution {
   rota?: {
     id: string;
     nome: string;
+    veiculo_id?: string;
+    veiculo?: any;
   };
 }
+
+export type ExecucaoParada = RouteExecutionPassenger;

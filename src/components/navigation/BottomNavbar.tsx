@@ -1,34 +1,18 @@
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 import { useLocation, NavLink } from "react-router-dom";
-import { pagesItems, bottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
+import { pagesItems, getBottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 
 import { useLayout } from "@/contexts/LayoutContext";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { ROUTES } from "@/constants/routes";
 
 export function BottomNavbar() {
   const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
-  const { isMotoristaAuxiliar, isMonitor } = usePermissions();
+  const { isSubConta, isMotoristaAuxiliar, isMonitor } = usePermissions();
 
-  let targetHrefs: string[] = bottomNavHrefs;
-
-  if (isMonitor) {
-    targetHrefs = [
-      ROUTES.PRIVATE.MOTORISTA.HOME,
-      ROUTES.PRIVATE.MOTORISTA.ROUTES,
-      ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS,
-    ];
-  } else if (isMotoristaAuxiliar) {
-    targetHrefs = [
-      ROUTES.PRIVATE.MOTORISTA.HOME,
-      ROUTES.PRIVATE.MOTORISTA.ROUTES,
-      ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-      ROUTES.PRIVATE.MOTORISTA.EXPENSES,
-    ];
-  }
+  const targetHrefs = getBottomNavHrefs(isSubConta, isMotoristaAuxiliar, isMonitor);
 
   const navItems = targetHrefs
     .map(href => pagesItems.find(item => item.href === href))

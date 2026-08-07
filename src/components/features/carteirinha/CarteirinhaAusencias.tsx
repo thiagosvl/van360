@@ -55,7 +55,7 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
     openConfirmationDialog({
       title: "Remover Registro de Ausência?",
       description: `Tem certeza que deseja remover o agendamento de ausência do dia ${dateFormatted}?`,
-      confirmText: "Remover Ausência",
+      confirmText: "Confirmar",
       cancelText: "Cancelar",
       variant: "warning",
       onConfirm: async () => {

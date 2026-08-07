@@ -350,7 +350,7 @@ const CobrancaItemPassageiro = forwardRef<
                 <Clock className="h-4 w-4 text-white" />}
           </div>
 
-          <div className="flex-grow min-w-0 pr-2 sm:pr-4">
+          <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
             <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
               {getMesNome(cobranca.mes)}
             </p>
@@ -367,7 +367,7 @@ const CobrancaItemPassageiro = forwardRef<
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-3 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-8 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
             <div className="flex flex-col items-end gap-1">
               <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
                 {Number(cobranca.valor) > 0

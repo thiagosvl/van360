@@ -88,12 +88,33 @@ const pagesItems: PageItem[] = [
   },
 ];
 
-// Centraliza a configuração dos itens que aparecem no rodapé mobile
-const bottomNavHrefs: string[] = [
+const defaultBottomNavHrefs: string[] = [
   ROUTES.PRIVATE.MOTORISTA.HOME,
   ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
   ROUTES.PRIVATE.MOTORISTA.BILLING,
   ROUTES.PRIVATE.MOTORISTA.ROUTES,
 ];
 
-export { pagesItems, bottomNavHrefs };
+// Centraliza a configuração dos itens que aparecem no rodapé mobile por perfil
+export function getBottomNavHrefs(isSubConta: boolean, isMotoristaAuxiliar: boolean, isMonitor: boolean): string[] {
+  if (isMonitor) {
+    return [
+      ROUTES.PRIVATE.MOTORISTA.HOME,
+      ROUTES.PRIVATE.MOTORISTA.ROUTES,
+      ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
+    ];
+  }
+  if (isMotoristaAuxiliar) {
+    return [
+      ROUTES.PRIVATE.MOTORISTA.HOME,
+      ROUTES.PRIVATE.MOTORISTA.ROUTES,
+      ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
+      ROUTES.PRIVATE.MOTORISTA.EXPENSES,
+    ];
+  }
+  return defaultBottomNavHrefs;
+}
+
+export const bottomNavHrefs = defaultBottomNavHrefs;
+
+export { pagesItems };

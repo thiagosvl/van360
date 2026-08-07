@@ -10,6 +10,7 @@ import {
   safeCloseDialog,
 } from "@/hooks";
 import { useProfile, useSession } from "@/hooks";
+import { usePermissions } from "../business/usePermissions";
 import { Veiculo } from "@/types/veiculo";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -17,6 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function useVeiculosViewModel() {
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const {

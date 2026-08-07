@@ -228,8 +228,15 @@ export default function Passageiros() {
               ) : passageiros.length === 0 ? (
                 <UnifiedEmptyState
                   icon={Users2}
-                  title="Nenhum passageiro nesta van"
-                  description="Não encontramos passageiros vinculados a este veículo."
+                  title="Nenhum passageiro encontrado"
+                  description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
+                  action={(hasActiveFilters || searchTerm.length > 0) ? {
+                    label: "Limpar Filtros",
+                    onClick: clearFilters
+                  } : (can("passageiros.gerenciar") ? {
+                    label: "Cadastrar Passageiro",
+                    onClick: handleOpenNewDialog
+                  } : undefined)}
                 />
               ) : (
                 <PassageirosList
