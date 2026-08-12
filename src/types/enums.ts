@@ -358,8 +358,6 @@ export enum TipoChavePix {
   ALEATORIA = "ALEATORIA",
 }
 
-export type PixKeyType = TipoChavePix;
-
 export enum GastoTipoCalculoParcela {
   TOTAL = "total",
   PARCELA = "parcela",
