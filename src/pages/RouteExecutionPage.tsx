@@ -18,6 +18,7 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/utils/notifications/toast";
+import { isRecentLocalMutation, debounceRealtimeSync } from "@/hooks/api/useRouteMutations";
 
 export default function RouteExecutionPage() {
   const queryClient = useQueryClient();
@@ -67,7 +68,7 @@ export default function RouteExecutionPage() {
             const payloadData = payload?.payload || payload;
             if (payloadData?.rotaId === targetRotaId && payloadData?.status === RouteExecutionStatus.INICIADA && payloadData?.execucaoId) {
               toast.info("Esta rota foi iniciada.");
-              queryClient.invalidateQueries({ queryKey: ["routes"] });
+              queryClient.invalidateQueries({ queryKey: ["routes-list"] });
               navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", payloadData.execucaoId), { replace: true });
             }
           }
@@ -76,9 +77,10 @@ export default function RouteExecutionPage() {
           "broadcast",
           { event: "absence_changed" },
           (payload: any) => {
+            if (isRecentLocalMutation()) return;
             const payloadData = payload?.payload || payload;
             if (!payloadData?.rotaId || payloadData?.rotaId === targetRotaId) {
-              refetch();
+              debounceRealtimeSync(`preview-${targetRotaId}`, () => refetch());
             }
           }
         )
@@ -86,14 +88,15 @@ export default function RouteExecutionPage() {
           "broadcast",
           { event: "route_definition_changed" },
           (payload: any) => {
+            if (isRecentLocalMutation()) return;
             const payloadData = payload?.payload || payload;
             if (payloadData?.rotaId === targetRotaId) {
               if (payloadData?.action === "delete") {
                 toast.info("Esta rota foi excluída.");
-                queryClient.invalidateQueries({ queryKey: ["routes"] });
+                queryClient.invalidateQueries({ queryKey: ["routes-list"] });
                 navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
               } else {
-                refetch();
+                debounceRealtimeSync(`preview-${targetRotaId}`, () => refetch());
               }
             }
           }
@@ -106,7 +109,8 @@ export default function RouteExecutionPage() {
             table: 'rota_ausencias'
           },
           () => {
-            refetch();
+            if (isRecentLocalMutation()) return;
+            debounceRealtimeSync(`preview-${targetRotaId}`, () => refetch());
           }
         )
         .on(
@@ -118,7 +122,8 @@ export default function RouteExecutionPage() {
             filter: `rota_id=eq.${targetRotaId}`
           },
           (payload: any) => {
-            queryClient.invalidateQueries({ queryKey: ["routes"] });
+            if (isRecentLocalMutation()) return;
+            queryClient.invalidateQueries({ queryKey: ["routes-list"] });
             queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
             const newExecId = payload.new?.id;
             const newStatus = payload.new?.status;
@@ -126,7 +131,7 @@ export default function RouteExecutionPage() {
               toast.info("Esta rota foi iniciada.");
               navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", newExecId), { replace: true });
             } else {
-              refetch();
+              debounceRealtimeSync(`preview-${targetRotaId}`, () => refetch());
             }
           }
         )
@@ -140,7 +145,7 @@ export default function RouteExecutionPage() {
           },
           () => {
             toast.info("Esta rota foi excluída.");
-            queryClient.invalidateQueries({ queryKey: ["routes"] });
+            queryClient.invalidateQueries({ queryKey: ["routes-list"] });
             navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
           }
         )
@@ -151,6 +156,15 @@ export default function RouteExecutionPage() {
       };
     }
 
+    const triggerRealtimeSync = () => {
+      if (isStepping || isRecentLocalMutation()) return;
+      debounceRealtimeSync(`execution-${targetExecId}`, () => {
+        queryClient.invalidateQueries({ queryKey: ["route-execution", id || targetExecId] });
+        queryClient.invalidateQueries({ queryKey: ["routes-list"], refetchType: "none" });
+        queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"], refetchType: "none" });
+      });
+    };
+
     const channel = supabase
       .channel("van360-fleet-sync")
       .on(
@@ -159,8 +173,7 @@ export default function RouteExecutionPage() {
         (payload: any) => {
           const payloadData = payload?.payload || payload;
           if (!payloadData?.execucaoId || payloadData?.execucaoId === id) {
-            refetch();
-            queryClient.invalidateQueries({ queryKey: ["routes"] });
+            triggerRealtimeSync();
           }
         }
       )
@@ -170,7 +183,7 @@ export default function RouteExecutionPage() {
         (payload: any) => {
           const payloadData = payload?.payload || payload;
           if (!payloadData?.rotaId || payloadData?.rotaId === targetRotaId) {
-            refetch();
+            triggerRealtimeSync();
           }
         }
       )
@@ -180,7 +193,7 @@ export default function RouteExecutionPage() {
         (payload: any) => {
           const payloadData = payload?.payload || payload;
           if (!payloadData?.execucaoId || payloadData?.execucaoId === id) {
-            refetch();
+            triggerRealtimeSync();
           }
         }
       )
@@ -192,7 +205,7 @@ export default function RouteExecutionPage() {
           table: 'rota_ausencias'
         },
         () => {
-          refetch();
+          triggerRealtimeSync();
         }
       )
       .on(
@@ -204,9 +217,7 @@ export default function RouteExecutionPage() {
           filter: `execucao_rota_id=eq.${targetExecId}`
         },
         () => {
-          refetch();
-          queryClient.invalidateQueries({ queryKey: ["routes"] });
-          queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
+          triggerRealtimeSync();
         }
       )
       .on(
@@ -218,9 +229,7 @@ export default function RouteExecutionPage() {
           filter: `id=eq.${targetExecId}`
         },
         () => {
-          refetch();
-          queryClient.invalidateQueries({ queryKey: ["routes"] });
-          queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
+          triggerRealtimeSync();
         }
       )
       .subscribe();
@@ -241,13 +250,13 @@ export default function RouteExecutionPage() {
     }
     if (currentStatus === RouteExecutionStatus.CANCELADA && !isPreview) {
       toast.info("A execução desta rota foi encerrada.");
-      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       queryClient.resetQueries({ queryKey: ["routes"] });
       navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
     }
     if (isPreview && isError) {
       toast.info("Esta rota foi excluída.");
-      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       queryClient.resetQueries({ queryKey: ["routes"] });
       navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES, { replace: true });
     }
@@ -277,7 +286,7 @@ export default function RouteExecutionPage() {
 
   return (
     <PullToRefreshWrapper onRefresh={refetch}>
-      <div className="-mx-2.5 sm:mx-0 space-y-4 text-left pb-16">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         {(isLoading && !showSuccessOverlay) || !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (

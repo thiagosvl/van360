@@ -86,7 +86,7 @@ export default function Cobrancas() {
 
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-      <div className="space-y-6">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         {!profile?.chave_pix && (
           <PixNudgeBanner hasPix={false} />
         )}

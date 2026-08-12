@@ -11,7 +11,7 @@ interface UseContratosOptions {
 }
 
 export function useContratos(
-  filters?: Record<string, any>,
+  filters?: Record<string, unknown>,
   options?: UseContratosOptions
 ) {
   return useQuery({
@@ -56,9 +56,10 @@ export function useCreateContrato() {
       queryClient.invalidateQueries({ queryKey: ["passageiro"] });
       toast.success("contrato.sucesso.gerado");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
       const message =
-        error.response?.data?.error || getMessage("contrato.erro.criar");
+        err.response?.data?.error || getMessage("contrato.erro.gerar");
       toast.error(message);
     },
   });
@@ -77,9 +78,10 @@ export function useDeleteContrato() {
       queryClient.invalidateQueries({ queryKey: ["passageiro"] });
       toast.success("contrato.sucesso.removido");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
       const message =
-        error.response?.data?.error || getMessage("contrato.erro.excluir");
+        err.response?.data?.error || getMessage("contrato.erro.excluir");
       toast.error(message);
     },
   });
@@ -98,9 +100,10 @@ export function useSubstituirContrato() {
       queryClient.invalidateQueries({ queryKey: ["passageiro"] });
       toast.success("contrato.sucesso.substituido");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
       const message =
-        error.response?.data?.error || getMessage("contrato.erro.substituir");
+        err.response?.data?.error || getMessage("contrato.erro.substituir");
       toast.error(message);
     },
   });
@@ -120,13 +123,14 @@ export function usePreviewContrato() {
   return useMutation({
     mutationFn: async (draftConfig?: PreviewConfig) => {
       const data = await contratoApi.previewContrato(draftConfig);
-      const blob = new Blob([data as any], { type: "application/pdf" });
+      const blob = new Blob([data as unknown as BlobPart], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       return { url, blob };
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
       const message =
-        error.response?.data?.error || getMessage("contrato.erro.carregar");
+        err.response?.data?.error || getMessage("contrato.erro.carregar");
       toast.error(message);
     },
   });

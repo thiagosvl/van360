@@ -25,6 +25,13 @@ export const isCadastroPassageiroIncompleto = (
 ): boolean => {
   if (!passageiro) return true;
 
+  if (passageiro.isento === true) {
+    return isResponsavelIncompleto(
+      passageiro.nome_responsavel,
+      passageiro.telefone_responsavel
+    );
+  }
+
   const isValorInvalido = !passageiro.valor_cobranca || Number(passageiro.valor_cobranca) <= 0;
   const isResponsavelPrincipalIncompleto = isResponsavelIncompleto(
     passageiro.nome_responsavel,

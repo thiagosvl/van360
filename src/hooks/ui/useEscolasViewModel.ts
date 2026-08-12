@@ -54,21 +54,23 @@ export function useEscolasViewModel() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  const escolasFilters = useMemo(
+    () => ({
+      usuarioId: profile?.id,
+      search: debouncedSearchTerm,
+      status: selectedStatus,
+    }),
+    [profile?.id, debouncedSearchTerm, selectedStatus]
+  );
+
   const {
     data: escolasData,
     isLoading: isEscolasLoading,
     refetch,
-  } = useEscolas(
-    {
-      usuarioId: profile?.id,
-      search: debouncedSearchTerm,
-      status: selectedStatus,
-    },
-    {
-      enabled: !!profile?.id && (can("escolas.visualizar") || can("escolas.gerenciar")),
-      onError: () => toast.error("escola.erro.carregar"),
-    }
-  );
+  } = useEscolas(escolasFilters, {
+    enabled: !!profile?.id && (can("escolas.visualizar") || can("escolas.gerenciar")),
+    onError: () => toast.error("escola.erro.carregar"),
+  });
 
   const escolas = useMemo(
     () => escolasData?.list ?? [],

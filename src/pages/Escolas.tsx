@@ -38,13 +38,13 @@ export default function Escolas() {
   };
 
   const sectionCount = escolas.length;
-  const countLabel = searchTerm || hasActiveFilters 
+  const countLabel = searchTerm || hasActiveFilters
     ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
     : (sectionCount === 1 ? "ESCOLA" : "ESCOLAS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="space-y-6">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         <EscolasToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -53,13 +53,13 @@ export default function Escolas() {
           onClearFilters={clearFilters}
           hasActiveFilters={hasActiveFilters}
           onApplyFilters={setFilters}
-          onRegister={can("escolas.gerenciar") ? handleRegister : () => {}}
+          onRegister={can("escolas.gerenciar") ? handleRegister : () => { }}
           isRegisterDisabled={!can("escolas.gerenciar")}
         />
 
         <div className="flex items-center justify-between px-1">
           <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-            Escolas
+            {/* Escolas */}
           </h2>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
             {sectionCount} {countLabel}
@@ -88,13 +88,13 @@ export default function Escolas() {
                   onClick: clearFilters,
                 }
                 : can("escolas.gerenciar")
-                ? {
-                  label: "Cadastrar Escola",
-                  onClick: () => {
-                    openEscolaFormDialog();
-                  },
-                }
-                : undefined
+                  ? {
+                    label: "Cadastrar Escola",
+                    onClick: () => {
+                      openEscolaFormDialog();
+                    },
+                  }
+                  : undefined
             }
           />
         ) : (

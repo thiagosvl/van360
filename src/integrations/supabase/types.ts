@@ -132,6 +132,7 @@ export type Database = {
       passageiros: {
         Row: {
           ativo: boolean
+          isento: boolean
           bairro: string | null
           cep: string | null
           cidade: string | null
@@ -168,6 +169,7 @@ export type Database = {
           telefone_responsavel: string
           valor_cobranca: number
           ativo?: boolean
+          isento?: boolean
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
@@ -182,6 +184,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          isento?: boolean
           bairro?: string | null
           cep?: string | null
           cidade?: string | null

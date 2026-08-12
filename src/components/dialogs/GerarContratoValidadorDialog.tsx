@@ -1,4 +1,6 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
+import { isDevEnv } from "@/utils/detectPlatform";
 import {
   Form,
   FormControl,
@@ -68,7 +70,7 @@ export function GerarContratoValidadorDialog({
         title="Dados do Contrato"
         icon={<FileCheck className="w-5 h-5 opacity-80" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
@@ -94,19 +96,15 @@ export function GerarContratoValidadorDialog({
               onSubmit={form.handleSubmit(handleSubmit, onFormError)}
               className="space-y-6 pb-2 px-1 pt-2"
             >
-              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-start gap-4 shadow-sm">
-                <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-100/50 text-amber-600 shrink-0 border border-amber-200/50">
-                  <Info className="w-5 h-5" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-[13px] font-bold text-amber-900 mb-0.5">
-                    Essencial para o Contrato
-                  </h4>
-                  <p className="text-[12px] text-amber-900/90 leading-relaxed font-medium">
+              <Banner
+                variant="warning"
+                title="Essencial para o Contrato"
+                description={
+                  <>
                     Para conseguirmos emitir o contrato agora, preencha as informações que estão faltando no cadastro de <strong>{passageiro?.nome?.split(' ')[0]}. Se você pular, o contrato não será gerado.</strong>
-                  </p>
-                </div>
-              </div>
+                  </>
+                }
+              />
 
               <div className="space-y-4">
                 <FormField

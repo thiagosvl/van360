@@ -56,6 +56,12 @@ export function isNativeApp(): boolean {
   return Capacitor.getPlatform() !== "web";
 }
 
+export function isDevEnv(): boolean {
+  return Boolean(import.meta.env.DEV || import.meta.env.MODE === "development");
+}
+
+export const IS_DEV = isDevEnv();
+
 export function isMobilePlatform(): boolean {
   return detectPlatform() !== "desktop";
 }

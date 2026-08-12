@@ -1,9 +1,18 @@
+import { Capacitor } from "@capacitor/core";
 import { ROUTES } from "@/constants/routes";
 import { sessionManager } from "@/services/sessionManager";
 import { handleApiError } from "@/utils/errorHandler";
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+let rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+
+// Se estiver rodando no Navegador Web (não nativo), mas o VITE_API_BASE_URL tiver o IP 10.0.2.2 do emulador Android,
+// substitui automaticamente 10.0.2.2 por localhost para funcionar perfeitamente no navegador!
+if (!Capacitor.isNativePlatform() && rawApiBaseUrl.includes("10.0.2.2")) {
+  rawApiBaseUrl = rawApiBaseUrl.replace("10.0.2.2", "localhost");
+}
+
+const API_BASE_URL = rawApiBaseUrl;
 
 let cachedToken: string | null = null;
 

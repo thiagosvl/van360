@@ -100,11 +100,6 @@ export interface OpenFirstChargeDialogProps {
   onSuccess?: () => void;
 }
 
-export interface OpenCobrancaHistoryProps {
-  cobrancaId: string;
-  passageiroNome: string;
-}
-
 export interface OpenContractSetupDialogProps {
   forceOpen?: boolean;
   onSuccess?: (usarContratos?: boolean) => void;
@@ -172,7 +167,6 @@ export interface LayoutContextType {
   openReceiptDialog: (props: OpenReceiptDialogProps) => void;
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
-  openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
   openPixPaymentDialog: (props: OpenPixPaymentDialogProps) => void;
   openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
   openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;

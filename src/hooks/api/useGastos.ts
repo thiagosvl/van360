@@ -2,7 +2,7 @@ import { gastoApi } from "@/services/api/gasto.api";
 import { FilterDefaults } from "@/types/enums";
 import { Gasto } from "@/types/gasto";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getDaysInMonthBR } from "@/utils/dateUtils";
 
 export interface UseGastosFilters {
@@ -63,11 +63,16 @@ export function useGastos(
     }),
   });
 
+  const onErrorRef = useRef(options?.onError);
   useEffect(() => {
-    if (query.error && options?.onError) {
-      options.onError(query.error);
+    onErrorRef.current = options?.onError;
+  });
+
+  useEffect(() => {
+    if (query.error && onErrorRef.current) {
+      onErrorRef.current(query.error);
     }
-  }, [query.error, options]);
+  }, [query.error]);
 
   return query;
 }

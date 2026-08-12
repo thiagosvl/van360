@@ -1,4 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { Form } from "@/components/ui/form";
 import { FormEnderecoFields } from "@/components/forms";
 import { useForm } from "react-hook-form";
@@ -6,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useUpdatePassageiro } from "@/hooks/api/usePassageiroMutations";
 import { toast } from "@/utils/notifications/toast";
-import { MapPin, Wand2, AlertCircle } from "lucide-react";
+import { MapPin, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { mockGenerator } from "@/utils/mocks/generator";
 
@@ -29,16 +30,13 @@ interface PassageiroEnderecoFormDialogProps {
   passageiroId: string;
   nomePassageiro: string;
   onSuccess: (addressData?: PassageiroEnderecoFormData) => void;
-  showRouteNotice?: boolean;
 }
 
 export default function PassageiroEnderecoFormDialog({
   isOpen,
   onClose,
   passageiroId,
-  nomePassageiro,
   onSuccess,
-  showRouteNotice = false,
 }: PassageiroEnderecoFormDialogProps) {
   const updatePassageiro = useUpdatePassageiro();
   const isSaving = updatePassageiro.isPending;
@@ -102,7 +100,7 @@ export default function PassageiroEnderecoFormDialog({
         title={`Incluir Endereço`}
         icon={<MapPin className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
@@ -116,17 +114,6 @@ export default function PassageiroEnderecoFormDialog({
         )}
       />
       <BaseDialog.Body>
-        {showRouteNotice && (
-          <div className="bg-amber-50 border border-amber-200/50 rounded-xl p-3 flex items-start gap-2.5 mb-5">
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-left">
-              <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">Atenção:</span>
-              <p className="text-[11px] text-amber-700 font-medium leading-relaxed mt-0.5">
-                Após preencher e salvar, o passageiro será incluído automaticamente na rota.
-              </p>
-            </div>
-          </div>
-        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
             <FormEnderecoFields required />

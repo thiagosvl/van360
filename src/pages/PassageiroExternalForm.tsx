@@ -8,6 +8,7 @@ import { PassageiroFormDadosCadastrais } from "@/components/features/passageiro/
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
 import { getNowBR } from "@/utils/dateUtils";
+import { isDevEnv } from "@/utils/detectPlatform";
 
 export default function PassageiroExternalForm() {
   useAnalyticsInjector({ clarity: true, force: true });
@@ -65,7 +66,7 @@ export default function PassageiroExternalForm() {
         <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-200">
           <div className="text-center p-6 pb-2 relative">
             {/* Botão de Mock discreto */}
-            {import.meta.env.DEV && (
+            {isDevEnv() && (
               <div className="absolute right-2 top-2 z-10">
                 <Button
                   type="button"

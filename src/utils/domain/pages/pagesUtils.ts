@@ -1,3 +1,4 @@
+import { ComponentType } from "react";
 import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
@@ -5,7 +6,7 @@ import { PermissionKey } from "@/config/permissions";
 export interface PageItem {
   title: string;
   href: string;
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
   permission?: PermissionKey;
 }
 
@@ -49,7 +50,7 @@ const pagesItems: PageItem[] = [
     title: "Escolas",
     href: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,
     icon: GraduationCap,
-    permission: "escolas.visualizar",
+    permission: "escolas.gerenciar",
   },
   {
     title: "Veículos",

@@ -174,6 +174,7 @@ export function useCreateResponsavelAdicional() {
       passageiroApi.addResponsavelAdicional(passageiroId, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       toast.success("sucesso.adicionar");
     },
     onError: (error: any) => {
@@ -192,6 +193,7 @@ export function useUpdateResponsavelAdicional() {
       passageiroApi.updateResponsavelAdicional(responsavelId, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       toast.success("sucesso.atualizar");
     },
     onError: (error: any) => {
@@ -210,6 +212,7 @@ export function useDeleteResponsavelAdicional() {
       passageiroApi.deleteResponsavelAdicional(responsavelId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       toast.success("sucesso.excluir");
     },
     onError: (error: any) => {

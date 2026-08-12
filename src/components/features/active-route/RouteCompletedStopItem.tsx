@@ -46,23 +46,30 @@ export function RouteCompletedStopItem({
         <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
       )}
 
-      {/* Ícone Indicador Discreto */}
-      <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-100/90 border border-slate-200/80 flex items-center justify-center z-10 shadow-2xs">
+      {/* Ícone Indicador da Timeline (Padronizado: Ausente em Vermelho/Branco, Concluído/Escola Concluída em Verde/Branco) */}
+      <div
+        className={cn(
+          "absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 border-white flex items-center justify-center z-10 shadow-xs transition-colors",
+          isAusente
+            ? "bg-rose-500 text-white"
+            : "bg-emerald-600 text-white"
+        )}
+      >
         {isEscolaItem ? (
-          <School className="w-3 h-3 text-slate-400" />
+          <School className="w-3.5 h-3.5 text-white stroke-[2.2]" />
         ) : isAusente ? (
-          <UserMinus className="w-3 h-3 text-rose-500" />
+          <UserMinus className="w-3.5 h-3.5 text-white stroke-[2.5]" />
         ) : (
-          <Check className="w-3 h-3 text-emerald-600 stroke-[2.5]" />
+          <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
         )}
       </div>
 
-      {/* Card da Parada Concluída Discreto (Sem opacity/alpha compositing) */}
-      <div className="bg-slate-50 border border-slate-200/80 p-2.5 px-3 rounded-xl flex items-center justify-between gap-3 text-left min-h-[48px]">
+      {/* Card da Parada Concluída Discreto */}
+      <div className="bg-slate-50 border border-slate-200/80 p-2.5 px-3 rounded-xl flex items-center justify-between gap-2.5 text-left min-h-[48px]">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-700 truncate">
-              {formatShortName(isEscolaItem ? parada.escola?.nome : (parada.passageiro?.nome || parada.nome), true)}
+            <span className="text-xs font-bold text-slate-800 break-words">
+              {isEscolaItem ? parada.escola?.nome : (parada.passageiro?.nome || parada.nome)}
             </span>
           </div>
           <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
@@ -70,19 +77,8 @@ export function RouteCompletedStopItem({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Badge
-            className={cn(
-              "text-[9px] font-bold border px-1.5 py-0.5 rounded-md shrink-0 leading-none uppercase pointer-events-none select-none shadow-none cursor-default",
-              isAusente
-                ? "bg-rose-50 text-rose-600 border-rose-200"
-                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-            )}
-          >
-            {statusLabel}
-          </Badge>
-
-          {isAusente && onDesfazer && (
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isAusente && onDesfazer ? (
             <Button
               type="button"
               variant="outline"
@@ -92,16 +88,27 @@ export function RouteCompletedStopItem({
                 e.stopPropagation();
                 onDesfazer();
               }}
-              className="h-6 px-2 text-[10px] font-bold border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 rounded-md flex items-center gap-1 shrink-0 active:scale-95"
+              className="h-7.5 px-2.5 py-1 text-[11px] font-bold border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-1.5 shrink-0 active:scale-95 shadow-2xs"
               title="Desfazer registro de ausência"
             >
               {isDesfazendo ? (
-                <Loader2 className="w-3 h-3 animate-spin shrink-0 text-rose-500" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0 text-rose-500" />
               ) : (
-                <RotateCcw className="w-3 h-3 text-rose-500 shrink-0" />
+                <RotateCcw className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               )}
               <span>Desfazer</span>
             </Button>
+          ) : (
+            <Badge
+              className={cn(
+                "text-[9px] font-bold border px-1.5 py-0.5 rounded-md shrink-0 leading-none uppercase pointer-events-none select-none shadow-none cursor-default",
+                isAusente
+                  ? "bg-rose-50 text-rose-600 border-rose-200"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+              )}
+            >
+              {statusLabel}
+            </Badge>
           )}
         </div>
       </div>

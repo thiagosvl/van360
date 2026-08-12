@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -157,23 +159,34 @@ export function MonitorFormDialog({
         errorMsg.includes("already")
       ));
 
+    let hasFieldError = false;
+
     if (isDuplicateEmail) {
       form.setError("email", { message: "E-mail já cadastrado." });
-      return;
+      hasFieldError = true;
     }
 
     if (isDuplicateCpf) {
       form.setError("cpf", { message: "CPF/CNPJ já cadastrado." });
-      return;
+      hasFieldError = true;
     }
 
     if (isDuplicatePhone) {
       form.setError("telefone", { message: "Telefone já cadastrado." });
-      return;
+      hasFieldError = true;
     }
 
-    const msg = respData?.message || respData?.error || err.message || defaultMsg;
-    toast.error(msg);
+    if (respData?.field && !hasFieldError) {
+      form.setError(respData.field as any, { message: respData.error || respData.message || "Valor inválido." });
+      hasFieldError = true;
+    }
+
+    if (hasFieldError) {
+      toast.error("validacao.formularioComErros");
+    } else {
+      const msg = respData?.message || respData?.error || err.message || defaultMsg;
+      toast.error(msg);
+    }
   };
 
   const createMutation = useMutation({
@@ -188,7 +201,7 @@ export function MonitorFormDialog({
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Monitor cadastrado com sucesso! As credenciais de acesso foram enviadas no WhatsApp.");
+      toast.success("Monitor cadastrado com sucesso!", { description: 'As credenciais de acesso foram enviadas por e-mail.' });
       queryClient.invalidateQueries({ queryKey: ["motoristas-equipe"] });
       if (onSuccess) onSuccess();
       onClose();
@@ -266,7 +279,7 @@ export function MonitorFormDialog({
         title={editingMembro ? "Editar Monitor" : "Novo Monitor"}
         onClose={onClose}
         hideCloseButton={isSaving}
-        leftAction={import.meta.env.DEV && !editingMembro && (
+        leftAction={isDevEnv() && !editingMembro && (
           <Button
             type="button"
             variant="ghost"
@@ -283,17 +296,15 @@ export function MonitorFormDialog({
       <BaseDialog.Body>
         <div className="space-y-4 pb-2">
           {/* Card explicativo de nivel de acesso do Monitor */}
-          <div className="p-4 bg-blue-50/80 border border-blue-100 rounded-2xl flex gap-3 text-left">
-            <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">
-                Escopo de Acesso do Monitor
-              </p>
-              <p className="text-xs text-blue-800 leading-relaxed font-medium">
+          <Banner
+            variant="info"
+            title="Acesso do Monitor"
+            description={
+              <>
                 O monitor terá acesso à <strong>prancheta digital de alunos</strong> nas rotas do veículo atribuído para registrar presença e embarque. O usuário não possui acesso a relatórios, gastos ou dados financeiros.
-              </p>
-            </div>
-          </div>
+              </>
+            }
+          />
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">

@@ -8,9 +8,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ROUTES } from "@/constants/routes";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import AppLayout from "@/layouts/AppLayout";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { usePushNotifications } from "@/hooks/ui/usePushNotifications";
 import { apiClient } from "@/services/api/client";
 import { queryClient } from "@/services/queryClient";
 import { UserType } from "@/types/enums";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { lazyLoad } from "@/utils/lazyLoad";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
@@ -20,6 +23,11 @@ import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
+
+const PushNotificationController = () => {
+  usePushNotifications();
+  return null;
+};
 
 const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
@@ -66,6 +74,7 @@ const App = () => {
   useEffect(() => {
     const runUpdater = async () => {
       if (!Capacitor.isNativePlatform()) return;
+      if (isDevEnv()) return;
 
       try {
         const current = await CapacitorUpdater.current();
@@ -216,6 +225,7 @@ const App = () => {
         <AppErrorBoundary>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <BackButtonController />
+            <PushNotificationController />
             <ScrollToTop />
             <Suspense fallback={<InitialLoading />}>
               <Routes>

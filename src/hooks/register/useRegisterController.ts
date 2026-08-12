@@ -5,6 +5,7 @@ import { RegistrarPayloadDTO } from "@/services/api/usuario.api";
 import { sessionManager } from "@/services/sessionManager";
 import { getDispositivoCadastro, isNativeApp } from "@/utils/detectPlatform";
 import { useAttribution, getStoredAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
+import { getCachedPushTokenInfo } from "@/hooks/ui/usePushNotifications";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
@@ -74,6 +75,8 @@ export function useRegisterController() {
       const attribution = getStoredAttribution();
       const dispositivo_cadastro = getDispositivoCadastro();
 
+      const cachedPush = await getCachedPushTokenInfo();
+
       const payload: RegistrarPayloadDTO = {
         nome: data.nome,
         email: data.email,
@@ -86,6 +89,8 @@ export function useRegisterController() {
         indicador_id: referralCode,
         indicador_telefone: data.indicador_telefone ? data.indicador_telefone.replace(/\D/g, "") : undefined,
         dispositivo_cadastro,
+        push_token: cachedPush?.token,
+        platform: cachedPush?.platform,
         metadados_cadastro: attribution ? {
           referrer: attribution.referrer,
           utm: attribution.utm,
@@ -134,24 +139,25 @@ export function useRegisterController() {
       }
     } catch (err: any) {
       const respData = err.response?.data;
-      const errorMsg = (respData?.error || err.message || "").toLowerCase();
+      const errorMsg = (respData?.error || respData?.message || err.message || "").toLowerCase();
 
       // Erro de indicação
       if (respData?.field === "indicador_telefone" || errorMsg.includes("motorista") || errorMsg.includes("whatsapp")) {
-        form.setError("indicador_telefone", { message: respData?.error || "Não encontramos esse motorista. Verifique se o WhatsApp está correto." });
+        form.setError("indicador_telefone", { message: respData?.message || respData?.error || "Não encontramos esse motorista. Verifique se o WhatsApp está correto." });
+        toast.error("validacao.formularioComErros");
         return;
       }
 
       // Detectar erro de duplicidade
       const isDuplicateEmail =
         respData?.field === "email" ||
-        (errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
+        (errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já") || errorMsg.includes("uso")));
       const isDuplicateCpf =
-        respData?.field === "cpfcnpj" ||
-        (errorMsg.includes("cpf") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
+        respData?.field === "cpfcnpj" || respData?.field === "cpf" ||
+        (errorMsg.includes("cpf") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já") || errorMsg.includes("uso")));
       const isDuplicatePhone =
         respData?.field === "telefone" ||
-        (errorMsg.includes("telefone") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
+        (errorMsg.includes("telefone") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já") || errorMsg.includes("uso")));
 
       if (isDuplicateEmail) {
         form.setError("email", { message: "E-mail já cadastrado." });
@@ -159,6 +165,7 @@ export function useRegisterController() {
           field: "email",
           message: "E-mail já cadastrado.",
         });
+        toast.error("validacao.formularioComErros");
         return;
       }
 
@@ -168,6 +175,7 @@ export function useRegisterController() {
           field: "cpfcnpj",
           message: "CPF/CNPJ já cadastrado.",
         });
+        toast.error("validacao.formularioComErros");
         return;
       }
 
@@ -177,25 +185,29 @@ export function useRegisterController() {
           field: "telefone",
           message: "Telefone já cadastrado.",
         });
+        toast.error("validacao.formularioComErros");
         return;
       }
 
       // Fallback: checar se é erro genérico de duplicidade
-      if (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate")) {
+      if (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("uso")) {
         setDuplicateError({
           field: "generic",
           message: "Este cadastro já existe no sistema.",
         });
+        toast.error("validacao.formularioComErros");
         return;
       }
 
       // Erro não relacionado a duplicidade
       if (respData?.field) {
-        form.setError(respData.field as any, { message: respData.error });
+        form.setError(respData.field as any, { message: respData.message || respData.error || "Campo inválido" });
+        toast.error("validacao.formularioComErros");
+      } else {
+        toast.error("cadastro.erro.criar", {
+          description: respData?.error || respData?.message || err.message || "Ocorreu um problema ao criar seu usuário.",
+        });
       }
-      toast.error("cadastro.erro.criar", {
-        description: respData?.error || err.message || "Ocorreu um problema ao criar seu usuário.",
-      });
     } finally {
       setLoading(false);
     }

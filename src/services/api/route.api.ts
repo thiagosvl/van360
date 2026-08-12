@@ -29,9 +29,14 @@ export const routeApi = {
       .delete(`${endpointBase}/${id}`)
       .then(res => res.data),
 
-  listExecucoes: (usuarioId: string): Promise<RouteExecution[]> =>
+  listExecucoes: (usuarioId: string, params?: { limit?: number; page?: number }): Promise<RouteExecution[]> =>
     apiClient
-      .get(`${endpointBase}/execucoes/usuario/${usuarioId}`)
+      .get(`${endpointBase}/execucoes/usuario/${usuarioId}`, { params })
+      .then(res => res.data),
+
+  getExecucaoAtivaVeiculo: (veiculoId: string): Promise<RouteExecution | null> =>
+    apiClient
+      .get(`${endpointBase}/execucoes/ativa-veiculo/${veiculoId}`)
       .then(res => res.data),
 
   getExecucao: (id: string): Promise<RouteExecution> =>

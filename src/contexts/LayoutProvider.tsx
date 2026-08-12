@@ -1,5 +1,4 @@
 import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
-import HistoricoDialog from "@/components/dialogs/HistoricoDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
@@ -183,13 +182,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  const [cobrancaHistoryDialogState, setCobrancaHistoryDialogState] = useState<{
-    open: boolean;
-    props?: OpenCobrancaHistoryProps;
-  }>({
-    open: false,
-  });
-
   const [contractSetupDialogState, setContractSetupDialogState] = useState<{
     open: boolean;
     props?: OpenContractSetupDialogProps;
@@ -349,9 +341,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => setFirstChargeDialogState({ open: true, props });
 
-  const openCobrancaHistoryDialog = (props: OpenCobrancaHistoryProps) => setCobrancaHistoryDialogState({ open: true, props });
-  const closeCobrancaHistoryDialog = () => safeCloseDialog(() => setCobrancaHistoryDialogState(prev => ({ ...prev, open: false })));
-
   const openContractSetupDialog = (props?: OpenContractSetupDialogProps) => {
     setContractSetupDialogState({ open: true, props });
   };
@@ -409,7 +398,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openReceiptDialog,
         openCobrancaFormDialog,
         openFirstChargeDialog,
-        openCobrancaHistoryDialog,
         openPixPaymentDialog,
         openSaaSCheckoutDialog,
         openAdminCreateUserDialog,
@@ -712,14 +700,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           ano={cobrancaFormDialogState.props.ano}
           lockFoiPago={cobrancaFormDialogState.props.lockFoiPago}
           lockMesAno={cobrancaFormDialogState.props.lockMesAno}
-        />
-      )}
-
-      {cobrancaHistoryDialogState.open && cobrancaHistoryDialogState.props && (
-        <HistoricoDialog
-          isOpen={true}
-          onClose={closeCobrancaHistoryDialog}
-          cobrancaId={cobrancaHistoryDialogState.props.cobrancaId}
         />
       )}
 

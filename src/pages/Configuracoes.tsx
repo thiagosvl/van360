@@ -5,8 +5,6 @@ import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { ArrowLeft, Bell, ChevronRight, CreditCard, User } from "lucide-react";
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
 
 export const Configuracoes = memo(function Configuracoes() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -113,7 +111,7 @@ export const Configuracoes = memo(function Configuracoes() {
   const isSubPage = Boolean(tabParam && ["notificacoes", "perfil", "pagamentos"].includes(tabParam));
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pt-2 sm:pt-6 pb-12">
+    <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
       {/* Botão de Voltar nas Subpáginas */}
       {isSubPage && (
         <button

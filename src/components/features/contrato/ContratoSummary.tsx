@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
-import { formatCurrency, formatDateToBR, formatFirstName, formatShortName } from "@/utils/formatters";
+import { formatCurrency, formatDateToBR, formatFirstName, formatMonthYearToBR, formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { Calendar } from "lucide-react";
@@ -60,9 +60,9 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
           {(isAssinado || isPendente) && (
             <div className="flex items-center gap-1.5 min-w-0">
               <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-              <span className="text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
-                {isAssinado ? "ASSINADO EM" : "GERADO EM"}{" "}
-                {formatDateToBR(isAssinado ? (item.data_assinatura || item.updated_at) : item.created_at)}
+              <span className="max-[320px]:text-[10px] text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
+                {isAssinado ? "Assinado em" : "Emitido em"}{" "}
+                {formatMonthYearToBR(isAssinado ? (item.data_assinatura || item.updated_at) : item.created_at)}
               </span>
             </div>
           )}
@@ -70,7 +70,7 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
         {valor && (
           <div className="flex items-center shrink-0">
-            <span className="text-lg sm:text-[20px] font-bold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
+            <span className="max-[320px]:text-sm text-lg sm:text-[20px] font-bold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
               {formatCurrency(valor)}
               <span className="text-[11px] font-bold text-slate-400 ml-0.5">/MÊS</span>
             </span>

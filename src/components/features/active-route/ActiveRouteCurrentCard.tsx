@@ -2,15 +2,17 @@ import { RefObject } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MapPin, School, User, Check, UserMinus, ArrowUp, ArrowDown, Loader2, Play, UserCheck, CheckCheck, ListOrdered } from "lucide-react";
-import { RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
-import { formatShortName, formatarEnderecoCompleto, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { RouteNodeType, RouteStopStatus, RouteSentido, ExecucaoParada } from "@/types/route";
+import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { podeReordenarParada } from "@/utils/domain/route/routeRules";
+import { cn } from "@/lib/utils";
 import { AddressDialogData } from "./AddressDetailsDialog";
 
 const TAB_DEFAULT = "default";
 const TAB_PRINCIPAL = "principal";
 
 interface ActiveRouteCurrentCardProps {
-  parada: any;
+  parada: ExecucaoParada;
   activeCardRef?: RefObject<HTMLDivElement | null>;
   showTopLine: boolean;
   showBottomLine: boolean;
@@ -21,6 +23,7 @@ interface ActiveRouteCurrentCardProps {
   totalPendentesReal: any[];
   isAnyActionBusy: boolean;
   reorderingTarget: { index: number; direction: "up" | "down" } | null;
+  reorderingSheetStopId?: string | null;
   validarMovimentoPermitido: (tipo: string, index: number, direction: "up" | "down", pendentes: any[], concluidas: any[]) => boolean;
   paradasConcluidas: any[];
   proximasParadas: any[];
@@ -43,15 +46,13 @@ export function ActiveRouteCurrentCard({
   showTopLine,
   showBottomLine,
   isLastStop,
-  selectedRespTab,
-  setSelectedRespTab,
   execucaoTipo,
   totalPendentesReal,
   isAnyActionBusy,
   reorderingTarget,
+  reorderingSheetStopId,
   validarMovimentoPermitido,
   paradasConcluidas,
-  proximasParadas,
   alunosParaEmbarcar,
   alunosParaDesembarcar,
   isLoading,
@@ -67,33 +68,20 @@ export function ActiveRouteCurrentCard({
   const isEscola = parada.tipo_no === RouteNodeType.ESCOLA;
   const displayOrdem = parada.ordem || 0;
   const pass = parada.passageiro;
-  const responsaveisAdicionais = pass?.responsaveis || [];
-  const isPrincipal = selectedRespTab === TAB_DEFAULT || selectedRespTab === TAB_PRINCIPAL;
-  const respObj = !isPrincipal ? responsaveisAdicionais.find((r: any) => r.id === selectedRespTab) : null;
 
-  let currentAddressStr = isEscola
-    ? formatarEnderecoCompleto(parada.escola) || ""
-    : formatarEnderecoParcialRota(pass) || "";
-
-  if (!isEscola && pass) {
-    if (isPrincipal) {
-      currentAddressStr = formatarEnderecoParcialRota(pass) || "";
-    } else if (respObj) {
-      currentAddressStr = respObj.logradouro
-        ? formatarEnderecoParcialRota(respObj)
-        : (formatarEnderecoParcialRota(pass) || "");
-    }
-  }
+  const currentAddressStr = isEscola
+    ? formatarEnderecoParcialRota(parada.escola)
+    : formatarEnderecoParcialRota(pass);
 
   const activeAddressStr = isEscola
     ? formatarEnderecoParcialRota(parada.escola)
     : formatarEnderecoParcialRota(pass);
 
-  const cardClass = "bg-gradient-to-b from-slate-50/90 via-white to-slate-50/60 p-3.5 sm:p-4 rounded-2xl shadow-md space-y-3 animate-in fade-in zoom-in-95 duration-200 text-left border-2 border-[#1a3a5c] relative z-10";
+  const cardClass = "bg-white p-3.5 sm:p-4 rounded-2xl shadow-md space-y-3 animate-in fade-in zoom-in-95 duration-200 text-left border-2 border-[#1a3a5c] relative z-10";
 
   let actionLabel = isLastStop ? "CONCLUIR" : "CONFIRMAR";
   if (parada.sentido === RouteSentido.VOLTANDO && !isEscola) {
-    actionLabel = isLastStop ? "CONCLUIR" : "REGISTRAR";
+    actionLabel = isLastStop ? "CONCLUIR" : "CONFIRMAR";
   }
 
   return (
@@ -113,29 +101,28 @@ export function ActiveRouteCurrentCard({
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5 gap-1">
           <div className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider shrink-0 bg-[#1a3a5c]/8 px-2 py-0.5 rounded-md border border-[#1a3a5c]/15">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="truncate">{isLastStop ? "Última Parada" : "Parada Atual"}</span>
+            <span className="truncate">{isLastStop ? "Atual" : "Atual"}</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-1.5 ml-auto shrink-0">
             {!isEscola && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="icon"
+                disabled={isAnyActionBusy}
                 onClick={() => {
                   onOpenAddressDialog({
                     open: true,
-                    title: parada.passageiro?.nome || "Passageiro",
-                    address: currentAddressStr,
-                    latitude: respObj?.latitude || parada.passageiro?.latitude,
-                    longitude: respObj?.longitude || parada.passageiro?.longitude,
+                    title: parada.passageiro?.nome,
+                    address: currentAddressStr || "",
                     tipoNo: RouteNodeType.PASSAGEIRO,
                     sentido: parada.sentido,
                     escolaNome: parada.passageiro?.escola?.nome,
                     passageiro: parada.passageiro
                   });
                 }}
-                className="h-8 w-8 rounded-lg border border-slate-200 bg-slate-50 text-[#1a3a5c] hover:bg-slate-100 flex items-center justify-center shrink-0 cursor-pointer transition-all shadow-2xs"
-                title="Ver endereço e detalhes"
+                className="h-8 w-8 rounded-lg border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Ver endereço e detalhes da parada"
               >
                 <MapPin className="w-4 h-4 text-[#1a3a5c]" />
               </Button>
@@ -153,48 +140,66 @@ export function ActiveRouteCurrentCard({
                 !validarMovimentoPermitido(execucaoTipo, index, "down", totalPendentesReal, paradasConcluidas);
 
               return (
-                <div className="h-8 flex items-center gap-0.5 border border-slate-200 rounded-lg p-0.5 bg-slate-50 shrink-0 shadow-2xs">
+                <div className="flex items-center gap-1 border border-slate-200/80 rounded-lg max-[338px]:px-0 px-2 py-1 bg-slate-50/80 shrink-0 shadow-2xs h-9">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     disabled={isUpDisabled || isAnyActionBusy}
-                    className="h-7 w-6.5 sm:w-7 rounded-md text-slate-400 opacity-20 shrink-0 cursor-not-allowed flex items-center justify-center p-0"
+                    className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-400 opacity-20 shrink-0 cursor-not-allowed flex items-center justify-center p-0"
                     title="Subir parada (já está ativa)"
                   >
                     {isUpReordering ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                      <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
                     ) : (
-                      <ArrowUp className="w-3.5 h-3.5" />
+                      <ArrowUp className="w-4 h-4 stroke-[2.25]" />
                     )}
                   </Button>
+                  <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     disabled={isDownDisabled || isAnyActionBusy}
                     onClick={() => onMoveParada(index, "down")}
-                    className="h-7 w-6.5 sm:w-7 rounded-md text-slate-500 hover:bg-slate-200/80 disabled:opacity-20 shrink-0 flex items-center justify-center p-0"
+                    className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-600 hover:bg-slate-200/80 active:bg-slate-300 disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors"
                     title="Descer parada ativa"
                   >
                     {isDownReordering ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                      <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
                     ) : (
-                      <ArrowDown className="w-3.5 h-3.5" />
+                      <ArrowDown className="w-4 h-4 stroke-[2.25]" />
                     )}
                   </Button>
-                  {onOpenReordenarSheet && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onOpenReordenarSheet(parada)}
-                      className="h-7 w-6.5 sm:w-7 rounded-md text-[#1a3a5c] hover:bg-slate-200 shrink-0 flex items-center justify-center border-l border-slate-200/60 p-0"
-                      title="Reordenar posição da parada ativa"
-                    >
-                      <ListOrdered className="w-3.5 h-3.5" />
-                    </Button>
-                  )}
+                  {onOpenReordenarSheet && (() => {
+                    const canReorder = podeReordenarParada(execucaoTipo, index, totalPendentesReal, paradasConcluidas);
+                    const isSheetReorderingThisCard = reorderingSheetStopId === parada.id;
+                    return (
+                      <>
+                        <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={!canReorder || isAnyActionBusy}
+                          onClick={() => canReorder && !isAnyActionBusy && onOpenReordenarSheet(parada)}
+                          className={cn(
+                            "h-8 w-8 sm:w-8.5 rounded-lg shrink-0 flex items-center justify-center p-0 transition-colors",
+                            canReorder && !isAnyActionBusy
+                              ? "text-[#1a3a5c] hover:bg-slate-200/80 active:bg-slate-300 cursor-pointer"
+                              : "text-slate-400 opacity-20 cursor-not-allowed"
+                          )}
+                          title={canReorder ? "Reordenar posição da parada ativa" : "Nenhuma posição alternativa disponível"}
+                        >
+                          {isSheetReorderingThisCard ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                          ) : (
+                            <ListOrdered className="w-4 h-4 stroke-[2.25]" />
+                          )}
+                        </Button>
+                      </>
+                    );
+                  })()}
                 </div>
               );
             })()}
@@ -250,7 +255,7 @@ export function ActiveRouteCurrentCard({
                       <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
                         <div className="flex items-center gap-2 min-w-0 pr-2">
                           <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="text-xs font-medium text-[#1a3a5c] truncate">
+                          <span className="text-xs font-medium text-[#1a3a5c]">
                             {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
                           </span>
                         </div>
@@ -294,7 +299,7 @@ export function ActiveRouteCurrentCard({
                       <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
                         <div className="flex items-center gap-2 min-w-0 pr-2">
                           <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="text-xs font-medium text-[#1a3a5c] truncate">
+                          <span className="text-xs font-medium text-[#1a3a5c]">
                             {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
                           </span>
                         </div>
@@ -321,15 +326,15 @@ export function ActiveRouteCurrentCard({
         ) : (
           <div className="flex flex-col gap-1 text-left min-w-0">
             <div className="flex items-center justify-between gap-2 w-full">
-              <span className="text-[#1a3a5c] font-bold text-base sm:text-lg tracking-tight truncate block">
-                {formatShortName(parada.passageiro?.nome || parada.nome, true)}
+              <span className="text-[#1a3a5c] font-bold text-base sm:text-lg tracking-tight block">
+                {parada.passageiro?.nome || parada.nome}
               </span>
             </div>
 
             {currentAddressStr && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium truncate mt-0.5 text-left">
+              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium mt-0.5 text-left">
                 <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">{currentAddressStr}</span>
+                <span className="break-words">{currentAddressStr}</span>
               </div>
             )}
           </div>
@@ -358,19 +363,19 @@ export function ActiveRouteCurrentCard({
                 type="button"
                 onClick={onConfirmEmbarqueDialog}
                 disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
-                className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] sm:text-xs rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5  whitespace-nowrap overflow-hidden"
+                className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-bold max-[320px]:text-[10px] text-[11px] sm:text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5  whitespace-nowrap overflow-hidden"
               >
                 {isStepping || isFinalizing ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
                 ) : isLastStop ? (
                   <>
                     <CheckCheck className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{actionLabel}</span>
+                    <span className="">{actionLabel}</span>
                   </>
                 ) : (
                   <>
                     <UserCheck className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{actionLabel}</span>
+                    <span className="">{actionLabel}</span>
                   </>
                 )}
               </Button>
@@ -380,19 +385,19 @@ export function ActiveRouteCurrentCard({
               type="button"
               onClick={onDirectStep}
               disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
-              className="h-10 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] sm:text-xs rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 px-3 min-w-0"
+              className="h-10 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold font-bold max-[320px]:text-[10px] text-[11px] sm:text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 px-3 min-w-0"
             >
               {isStepping || isFinalizing ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
               ) : isLastStop ? (
                 <>
                   <CheckCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">CONCLUIR PARADA NA ESCOLA</span>
+                  <span className="">CONCLUIR ROTA</span>
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5 shrink-0 fill-current" />
-                  <span className="truncate">CONFIRMAR PARADA NA ESCOLA</span>
+                  <span className="">CONTINUAR</span>
                 </>
               )}
             </Button>

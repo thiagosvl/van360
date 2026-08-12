@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -116,7 +117,7 @@ export default function RouteFormDialog({
         title={editingRoute ? "EDIÇÃO DE ROTA" : "NOVA ROTA"}
         icon={<RouteIcon className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
@@ -156,11 +157,13 @@ export default function RouteFormDialog({
               Veículo <span className="text-red-500">*</span>
             </Label>
             <Select
-              disabled={isLoadingVeiculos}
+              disabled={isLoadingVeiculos || isSubConta}
               value={veiculoId || userAssignedVeiculoId || (veiculosList.length > 0 ? veiculosList[0].id : "")}
               onValueChange={(val) => {
-                setVeiculoId(val);
-                setErrors(prev => ({ ...prev, veiculoId: "" }));
+                if (!isSubConta) {
+                  setVeiculoId(val);
+                  setErrors(prev => ({ ...prev, veiculoId: "" }));
+                }
               }}
             >
               <SelectTrigger

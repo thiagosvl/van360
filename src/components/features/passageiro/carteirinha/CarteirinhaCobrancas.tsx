@@ -25,12 +25,13 @@ import {
   History,
   Info,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { UnifiedEmptyState } from "@/components/empty";
 import { forwardRef } from "react";
 import { getNowBR } from "@/utils/dateUtils";
-import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
+import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 
 interface CarteirinhaCobrancasProps {
@@ -83,7 +84,6 @@ export const CarteirinhaCobrancas = ({
     const startMonth = selectedYear === currentYear ? currentMonth : 1;
     const endMonth = 12;
     const dbMonths = new Set(list.filter((c) => c.ano === selectedYear).map((c) => c.mes));
-    const diaVenc = passageiro.dia_vencimento ? String(passageiro.dia_vencimento).padStart(2, "0") : "10";
 
     for (let m = startMonth; m <= endMonth; m++) {
       if (!dbMonths.has(m)) {
@@ -95,7 +95,7 @@ export const CarteirinhaCobrancas = ({
         });
 
         if (canGenerate) {
-          const mesStr = String(m).padStart(2, "0");
+          const dataVenc = getSafeDueDateString(passageiro.dia_vencimento, m, selectedYear);
           list.push({
             id: `proj_pass_${passageiro.id}_${m}_${selectedYear}`,
             passageiro_id: passageiro.id!,
@@ -103,7 +103,7 @@ export const CarteirinhaCobrancas = ({
             ano: selectedYear,
             valor: Number(passageiro.valor_cobranca),
             status: CobrancaStatus.PENDENTE,
-            data_vencimento: `${selectedYear}-${mesStr}-${diaVenc}`,
+            data_vencimento: dataVenc,
             origem: CobrancaOrigem.AUTOMATICA,
             isProjection: true,
             passageiro,
@@ -175,7 +175,7 @@ export const CarteirinhaCobrancas = ({
         )}
       </div>
 
-      {isIncomplete && (
+      {!passageiro.isento && isIncomplete && (
         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60 text-amber-900 text-[11px] leading-tight">
           <Info className="h-3.5 w-3.5 text-amber-600 shrink-0" />
           <span>Conclua o cadastro para que as parcelas exibam corretamente o valor e o dia de vencimento.</span>
@@ -185,9 +185,13 @@ export const CarteirinhaCobrancas = ({
       <div className="space-y-3">
         {displayCobrancas.length === 0 ? (
           <UnifiedEmptyState
-            icon={History}
-            title="Sem parcelas configuradas"
-            description="Defina o valor da parcela nas informações do passageiro para ativar a geração automática."
+            icon={passageiro.isento ? ShieldCheck : History}
+            title={passageiro.isento ? "Passageiro Isento de Parcelas" : "Sem parcelas configuradas"}
+            description={
+              passageiro.isento
+                ? "Este passageiro foi cadastrado com isenção de parcelas. Nenhuma cobrança ou parcela é gerada automaticamente."
+                : "Defina o valor da parcela nas informações do passageiro para ativar a geração automática."
+            }
           />
         ) : (
           <AnimatePresence mode="popLayout">

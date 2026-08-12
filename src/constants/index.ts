@@ -1,5 +1,7 @@
-
 export const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN || (typeof window !== "undefined" ? window.location.origin : "");
+
+/** Duração do período de teste grátis (Trial) em dias. */
+export const TRIAL_DURATION_DAYS = 15;
 
 /** Número do WhatsApp de suporte (sem formatação). Futuramente virá do banco (configuracao_interna). */
 export const WHATSAPP_SUPORTE = "5511962508068";
@@ -8,4 +10,5 @@ export const WHATSAPP_SUPORTE = "5511962508068";
 export function getWhatsAppUrl(message = "Olá, preciso de ajuda com o Van360") {
   return `https://wa.me/${WHATSAPP_SUPORTE}?text=${encodeURIComponent(message)}`;
 }
+
 export * from "./navigation";

@@ -1,4 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, User, AlertTriangle, Route, School, Home } from "lucide-react";
@@ -143,13 +144,15 @@ export function AddressDetailsDialog({
 
         {/* Alerta de Atenção para Responsável Alternativo */}
         {!isPrincipal && respObj && (
-          <div className="flex items-start gap-2.5 bg-amber-50/90 border border-amber-200/80 p-3 rounded-2xl text-amber-900 text-xs leading-relaxed text-left shadow-xs">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold text-amber-950 block mb-0.5">Aviso de endereço alternativo:</span>
-              Você está visualizando o endereço de <strong className="font-bold">{formatFirstName(respObj.nome)}</strong> ({parentescoLabel}).
-            </div>
-          </div>
+          <Banner
+            variant="warning"
+            title="Aviso de endereço alternativo:"
+            description={
+              <>
+                Você está visualizando o endereço de <strong className="font-bold">{formatFirstName(respObj.nome)}</strong> ({parentescoLabel}).
+              </>
+            }
+          />
         )}
 
         {/* Card de Endereço Ativo (Com Waze e Google Maps) */}
@@ -200,7 +203,7 @@ export function AddressDetailsDialog({
                 Trajeto da rota
               </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border bg-primary-50 text-primary border-primary-200/60">
+            <span className="text-[10px] font-normal tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
               {isVolta ? "Voltando" : "Indo"}
             </span>
           </div>

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { emailSchema, phoneSchema } from "@/schemas/common";
@@ -230,15 +231,16 @@ export const PerfilTab = React.memo(function PerfilTab() {
           </div>
 
           {/* Banner Informativo sobre alteracao de CPF e Email */}
-          <div className="flex items-start gap-2.5 text-xs text-amber-800 bg-amber-50/50 border border-amber-200/60 p-3.5 rounded-xl">
-            <Info className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
-            <p className="leading-relaxed font-medium">
-              Por motivos de segurança, para alterar seu{" "}
-              <span className="font-semibold text-slate-800">CPF/CNPJ</span> ou{" "}
-              <span className="font-semibold text-slate-800">E-mail</span> cadastrados, é
-              necessário entrar em contato com o suporte.
-            </p>
-          </div>
+          <Banner
+            variant="warning"
+            description={
+              <>
+                Por motivos de segurança, para alterar seu{" "}
+                <span className="font-black">CPF/CNPJ</span> ou{" "}
+                <span className="font-black">E-mail</span> cadastrados, é necessário entrar em contato com o suporte.
+              </>
+            }
+          />
 
           {/* 2. Razao Social (Exibido apenas se for CNPJ, posicionado abaixo do CNPJ e antes do Nome) */}
           {isCnpj && (
@@ -309,7 +311,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Apelido / Nome da Van
+                    Apelido / Nome de Exibição
                   </FormLabel>
                   <FormControl>
                     <div className="relative">

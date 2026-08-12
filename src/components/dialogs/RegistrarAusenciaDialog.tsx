@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -32,10 +33,12 @@ export default function RegistrarAusenciaDialog({
   lockedPassageiro,
 }: RegistrarAusenciaDialogProps) {
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
-  const usuarioId = profile?.id || "";
+  const { donoContaId } = useProfile(user?.id);
+  const usuarioId = donoContaId || user?.id || "";
 
-  const { data: rotasList = [], isLoading: isLoadingRotas } = useRoutes(usuarioId);
+  const { data: rotasList = [], isLoading: isLoadingRotas } = useRoutes(usuarioId, {
+    enabled: isOpen && !!usuarioId,
+  });
 
   const [rotaId, setRotaId] = useState("");
   const [passageiroId, setPassageiroId] = useState("");
@@ -89,11 +92,17 @@ export default function RegistrarAusenciaDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen && lockedPassageiro?.id && passageiroRotas.length === 1 && !rotaId) {
+      setRotaId(passageiroRotas[0].id);
+    }
+  }, [isOpen, lockedPassageiro?.id, passageiroRotas, rotaId]);
+
   const passageirosDisponiveis = useMemo(() => {
-    if (!rotaId || !routeDetail?.passageiros) return [];
+    if (!rotaId || !routeDetail?.paradas) return [];
 
     const passageirosMap = new Map<string, Passageiro>();
-    routeDetail.passageiros.forEach((p: any) => {
+    routeDetail.paradas.forEach((p: any) => {
       const pid = p.passageiro_id || p.passageiro?.id;
       if (pid && p.passageiro) {
         passageirosMap.set(pid, p.passageiro as Passageiro);
@@ -169,12 +178,10 @@ export default function RegistrarAusenciaDialog({
       <BaseDialog.Body>
         <div className="space-y-4 text-left">
           {hasNoRoutesForStudent && (
-            <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-3 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-800 font-medium leading-snug">
-                Este passageiro não está vinculado a nenhuma rota.
-              </p>
-            </div>
+            <Banner
+              variant="warning"
+              description="Este passageiro não está vinculado a nenhuma rota."
+            />
           )}
 
           {/* Campo Rota */}

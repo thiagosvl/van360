@@ -48,7 +48,7 @@ export default function Relatorios() {
 
   return (
     <PullToRefreshWrapper onRefresh={refreshAll}>
-      <div className="space-y-6">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         {/* Header & Navigation */}
         <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
 

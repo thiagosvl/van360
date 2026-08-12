@@ -86,7 +86,7 @@ export default function PassageiroCarteirinha() {
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
-  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.mensalidade_visualizar") || can("passageiros.gerenciar");
+  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const [isDeleting, setIsDeleting] = useState(false);
   const [mobileTab, setMobileTab] = useState(() => canViewFinancials ? "parcelas" : "dados");
 
@@ -566,8 +566,8 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: action === "ativar" ? "Ativar notificações?" : "Desativar notificações?",
         description: action === "ativar"
-          ? "O passageiro voltará a receber lembretes e notificações de cobrança via WhatsApp."
-          : "O passageiro não receberá mais lembretes e notificações de cobrança via WhatsApp.",
+          ? "O passageiro voltará a receber lembretes e notificações de cobrança."
+          : "O passageiro não receberá mais lembretes e notificações de cobrança.",
         confirmText: action === "ativar" ? "Ativar" : "Desativar",
         variant: action === "desativar" ? "warning" : "default",
         onConfirm: async () => {
@@ -728,6 +728,7 @@ export default function PassageiroCarteirinha() {
                         contratosAtivos={infoProps.contratosAtivos}
                         onContractAction={infoProps.onContractAction}
                         onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                        onEditClick={handleEditClick}
                       />
                     </Suspense>
 
@@ -771,6 +772,7 @@ export default function PassageiroCarteirinha() {
                       contratosAtivos={infoProps.contratosAtivos}
                       onContractAction={infoProps.onContractAction}
                       onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                      onEditClick={handleEditClick}
                     />
                   </Suspense>
 

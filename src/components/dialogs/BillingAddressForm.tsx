@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Sparkles, Building2, User, FileText, Loader2 } from 'lucide-react';
+import { isDevEnv } from '@/utils/detectPlatform';
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
@@ -141,7 +142,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
 
   return (
     <div className="space-y-6 pt-2 animate-in fade-in duration-500">
-      {import.meta.env.DEV && (
+      {isDevEnv() && (
         <div className="flex flex-wrap gap-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
           <span className="w-full text-[10px] font-bold text-slate-500 uppercase">Dev Magic Fill</span>
           <button

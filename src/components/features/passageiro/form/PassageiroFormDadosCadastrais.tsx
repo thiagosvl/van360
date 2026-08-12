@@ -36,6 +36,7 @@ import { StitchField } from "@/components/forms";
 
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
+import { Switch } from "@/components/ui/switch";
 
 interface PassageiroFormDadosCadastraisProps {
   profile: Usuario | null | undefined;
@@ -216,19 +217,19 @@ export function PassageiroFormDadosCadastrais({
               control={form.control}
               name="ativo"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
-                  <Checkbox
-                    id="ativo"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <FormLabel
-                    htmlFor="ativo"
-                    className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
-                  >
-                    Passageiro Ativo
-                  </FormLabel>
+                <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-4 shadow-sm">
+                  <div className="space-y-0.5 pr-4">
+                    <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer flex items-center gap-2">
+                      Passageiro Ativo
+                    </FormLabel>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                      className="data-[state=checked]:bg-[#1a3a5c]"
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
@@ -244,7 +245,7 @@ export function PassageiroFormDadosCadastrais({
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
             <Car className="w-5 h-5" />
           </div>
-          Veículo e Escola
+          Escola e Transporte
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
@@ -305,7 +306,7 @@ export function PassageiroFormDadosCadastrais({
             control={form.control}
             name="escola_id"
             render={({ field, fieldState }) => (
-              <FormItem className="col-span-1 md:col-span-2">
+              <FormItem className={cn("col-span-1", hideVeiculo && "md:col-span-2")}>
                 <Select
                   value={field.value || undefined}
                   onValueChange={(value) => {

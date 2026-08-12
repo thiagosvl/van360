@@ -1,4 +1,5 @@
 import { AlertOctagon } from "lucide-react";
+import { Banner } from "@/components/ui/Banner";
 
 interface PastDueBannerProps {
   onRegularize?: () => void;
@@ -6,30 +7,20 @@ interface PastDueBannerProps {
 
 export const PastDueBanner = ({ onRegularize }: PastDueBannerProps) => {
   return (
-    <div className="mb-6 bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
-      <div className="flex items-center gap-4 flex-1 w-full">
-        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-rose-100 text-rose-600 shrink-0">
-          <AlertOctagon className="h-5 w-5" />
-        </div>
-        <div className="flex-1">
-          <p className="text-xs font-bold text-rose-900">Assinatura em Atraso</p>
-          <p className="text-[11px] text-rose-700">
-            Sua assinatura ainda não foi renovada. Regularize agora para evitar o bloqueio do seu acesso.
-          </p>
-        </div>
-      </div>
-      {onRegularize ? (
-        <button
-          onClick={onRegularize}
-          className="h-11 px-4 md:px-5 bg-rose-600 text-white text-[13px] font-bold rounded-xl hover:bg-rose-600/90 transition-all shadow-sm shadow-rose-200/50 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
-        >
-          Regularizar
-        </button>
-      ) : (
-        <div className="h-11 px-4 md:px-5 bg-rose-600/50 text-white text-[13px] font-bold rounded-xl shrink-0 opacity-50 w-full sm:w-auto flex justify-center items-center cursor-not-allowed">
-          Regularizar
-        </div>
-      )}
-    </div>
+    <Banner
+      variant="danger"
+      icon={<AlertOctagon className="h-5 w-5" />}
+      title="Assinatura em Atraso"
+      description="Sua assinatura ainda não foi renovada. Regularize agora para evitar o bloqueio do seu acesso."
+      action={
+        onRegularize
+          ? {
+              label: "Regularizar",
+              onClick: onRegularize,
+            }
+          : undefined
+      }
+      className="mb-6"
+    />
   );
 };

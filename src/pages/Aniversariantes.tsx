@@ -115,7 +115,7 @@ const Aniversariantes = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
-        <div className="space-y-6 pb-24">
+        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
           <DateNavigation
             mes={mesAtual}
             ano={new Date().getFullYear()}

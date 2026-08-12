@@ -4,7 +4,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 import { ContratosList } from "@/components/features/contrato/ContratosList";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
-import { AlertCircle } from "lucide-react";
+import { Banner } from "@/components/ui/Banner";
 
 import { useContratosViewModel } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
@@ -44,7 +44,7 @@ const Contratos = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <div className="space-y-6">
+        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -68,49 +68,31 @@ const Contratos = () => {
 
             {/* Banner: Não Configurado */}
             {!isContratoAtivo && !isContratoConfigurado && (
-              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
-                    <AlertCircle className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-[#1a3a5c] tracking-tight">Ative seus contratos digitais</p>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus passageiros.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleOpenContractSetup}
-                  className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-[#1a3a5c]/20 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center"
-                >
-                  Ativar Uso de Contratos
-                </button>
-              </div>
+              <Banner
+                variant="info"
+                title="Ative seus contratos digitais"
+                description="Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus passageiros."
+                action={{
+                  label: "Ativar Uso de Contratos",
+                  onClick: handleOpenContractSetup,
+                }}
+                className="mx-1"
+              />
             )}
 
             {/* Banner: Desativado (Mas já configurado) */}
             {!isContratoAtivo && isContratoConfigurado && (
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm mx-1 animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-200 text-slate-600 shrink-0">
-                    <AlertCircle className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-slate-900 tracking-tight">Uso de Contratos Desativado</p>
-                    <p className="text-[11px] text-slate-700 leading-relaxed">
-                      Reative para voltar a gerar contratos para os passageiros.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleToggleContracts(true)}
-                  disabled={isToggling}
-                  className="h-11 px-4 md:px-5 bg-[#1a3a5c] text-white text-[13px] font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm shadow-slate-200/50 shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center disabled:opacity-50"
-                >
-                  Reativar Contratos
-                </button>
-              </div>
+              <Banner
+                variant="neutral"
+                title="Uso de Contratos Desativado"
+                description="Reative para voltar a gerar contratos para os passageiros."
+                action={{
+                  label: "Reativar Contratos",
+                  onClick: () => handleToggleContracts(true),
+                  isLoading: isToggling,
+                }}
+                className="mx-1"
+              />
             )}
 
             <div className="flex items-center justify-between px-1 mt-2">

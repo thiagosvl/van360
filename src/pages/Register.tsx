@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { useSEO } from "@/hooks/useSEO";
 import { getNowBR } from "@/utils/dateUtils";
 import { Wand2, Loader2, Calendar, Eye, EyeOff, Lock, Mail, User, Phone, Award, Sparkles, X, Gift } from "lucide-react";
@@ -50,7 +51,7 @@ export default function Register() {
 
           {/* Header */}
           <div className="text-center p-6 pb-0 relative">
-            {import.meta.env.DEV && (
+            {isDevEnv() && (
               <div className="absolute right-2 top-2 z-10">
                 <Button
                   type="button"

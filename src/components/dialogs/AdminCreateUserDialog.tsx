@@ -6,6 +6,7 @@ import {
   User, Mail, Calendar, Key, RefreshCw, Copy, Check, Eye, EyeOff, Wand2
 } from "lucide-react";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from "@/components/ui/form";
@@ -205,7 +206,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
         subtitle="Preencha os dados abaixo para cadastrar um novo motorista"
         icon={<User className="w-5 h-5 text-blue-400" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"

@@ -57,16 +57,20 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60 dark:border-zinc-800/80 w-full min-w-0 gap-2">
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
-            <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-            <span className="text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
-              {`Vence ${formatDateToBR(cobranca.data_vencimento)}`}
+            <Calendar className={cn("h-4 w-4 shrink-0", isAtrasado ? "text-red-500 dark:text-red-400" : "text-slate-400")} />
+            <span
+              className={cn(
+                "max-[320px]:text-[10px] text-[11px] sm:text-[12px] font-bold uppercase tracking-wide truncate",
+                isAtrasado
+                  ? "text-red-600 dark:text-red-400 font-extrabold"
+                  : "text-slate-400 dark:text-zinc-400"
+              )}
+            >
+              {isAtrasado
+                ? formatDiasAtraso(cobranca.data_vencimento)
+                : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
             </span>
           </div>
-          {isAtrasado && (
-            <p className="text-[10px] sm:text-[11px] font-extrabold text-red-600 uppercase tracking-wide truncate">
-              {formatDiasAtraso(cobranca.data_vencimento)}
-            </p>
-          )}
         </div>
 
         <div className="flex items-center shrink-0">

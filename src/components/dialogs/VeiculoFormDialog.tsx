@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import {
   Form,
   FormControl,
@@ -202,7 +203,7 @@ export default function VeiculoFormDialog({
         title={editingVeiculo ? "Editar Veículo" : "Novo Veículo"}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={isSaving}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"

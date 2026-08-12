@@ -21,9 +21,8 @@ import {
   formatMonthYearToBR,
   formatParentesco,
 } from "@/utils/formatters";
-import { cpfMask, phoneMask } from "@/utils/masks";
+import { cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
-import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { openBrowserLink } from "@/utils/browser";
 import {
   Check,
@@ -128,22 +127,26 @@ const CarteirinhaTopCard = ({
           >
             {passageiro.ativo ? "Ativo" : "Inativo"}
           </Badge>
-          {!isSubConta && temCobrancasVencidas && (
-            <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-pulse">
-              Possui Débitos
-            </Badge>
-          )}
-          {!isSubConta && (
-            <Badge
-              className={cn(
-                "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-                passageiro.enviar_notificacoes
-                  ? "text-emerald-700 bg-[#d8f0e1]"
-                  : "text-rose-700 bg-rose-100"
+          {!passageiro.isento && (
+            <>
+              {!isSubConta && temCobrancasVencidas && (
+                <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-pulse">
+                  Possui Débitos
+                </Badge>
               )}
-            >
-              {passageiro.enviar_notificacoes ? "Lembretes Ativos" : "Lembretes Inativos"}
-            </Badge>
+              {!isSubConta && (
+                <Badge
+                  className={cn(
+                    "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                    passageiro.enviar_notificacoes
+                      ? "text-emerald-700 bg-[#d8f0e1]"
+                      : "text-rose-700 bg-rose-100"
+                  )}
+                >
+                  {passageiro.enviar_notificacoes ? "Lembretes Ativos" : "Lembretes Inativos"}
+                </Badge>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -388,22 +391,21 @@ export const CarteirinhaDadosPessoais = ({
   | "onEditClick"
 >) => {
   const { can } = usePermissions();
-  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.mensalidade_visualizar") || can("passageiros.gerenciar");
+  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const enderecoFormatado = passageiro.logradouro ? formatarEnderecoCompleto(passageiro) : null;
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
-  const valorCobrancaTexto =
-    !isIncomplete && passageiro.valor_cobranca && Number(passageiro.valor_cobranca) > 0
-      ? Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      })
-      : null;
+  const valorCobrancaTexto = passageiro.isento
+    ? "Isento"
+    : (!isIncomplete && passageiro.valor_cobranca && Number(passageiro.valor_cobranca) > 0
+      ? moneyMask(passageiro.valor_cobranca)
+      : null);
 
-  const diaVencimentoTexto =
-    !isIncomplete && passageiro.dia_vencimento
+  const diaVencimentoTexto = passageiro.isento
+    ? "Isento"
+    : (!isIncomplete && passageiro.dia_vencimento
       ? `Dia ${passageiro.dia_vencimento}`
-      : null;
+      : null);
 
   const inicioTransporteTexto = passageiro.data_inicio_transporte
     ? formatDateToBR(passageiro.data_inicio_transporte)
@@ -423,11 +425,11 @@ export const CarteirinhaDadosPessoais = ({
       ? formatMonthYearToBR(passageiro.data_fim_cobranca)
       : null;
 
-  const cpfResponsavelTexto = passageiro.cpf_responsavel
+  const cpfResponsavelTexto = !isIncomplete && passageiro.cpf_responsavel
     ? cpfMask(passageiro.cpf_responsavel)
     : null;
 
-  const telefoneResponsavelTexto = passageiro.telefone_responsavel
+  const telefoneResponsavelTexto = !isIncomplete && passageiro.telefone_responsavel
     ? phoneMask(passageiro.telefone_responsavel)
     : null;
 

@@ -23,6 +23,8 @@ export { useContratosViewModel } from "./ui/useContratosViewModel";
 export { useAssinarContratoViewModel } from "./ui/useAssinarContratoViewModel";
 export { usePassageiroFormViewModel } from "./ui/usePassageiroFormViewModel";
 export { usePassageiroFormDadosCadastraisViewModel } from "./ui/usePassageiroFormDadosCadastraisViewModel";
+export { useConfigurarRotaViewModel } from "./ui/useConfigurarRotaViewModel";
+export { useRotasViewModel } from "./ui/useRotasViewModel";
 export { useConfirmDialog } from "./ui/useConfirmDialog";
 export { useToast } from "./ui/useToast";
 
@@ -32,7 +34,7 @@ export { usePassageiroForm } from "./form/usePassageiroForm";
 // API hooks (queries)
 
 export { useBuscarResponsavel } from "./api/useBuscarResponsavel";
-export { useCobranca, useCobrancaNotificacoes } from "./api/useCobranca";
+export { useCobranca } from "./api/useCobranca";
 export { useCobrancas } from "./api/useCobrancas";
 export { useCobrancasByPassageiro } from "./api/useCobrancasByPassageiro";
 export { useEscolas } from "./api/useEscolas";

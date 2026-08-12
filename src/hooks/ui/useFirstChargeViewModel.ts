@@ -125,6 +125,10 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
 
   const handleNext = useCallback(async () => {
     if (step === "CONTRACT_CHECK") {
+      if (passageiro.isento) {
+        await finalizeFlow();
+        return;
+      }
       setStep("REGISTER_CHECK");
       return;
     }

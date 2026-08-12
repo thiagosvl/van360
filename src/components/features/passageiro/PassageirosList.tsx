@@ -13,7 +13,6 @@ import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatShortName,
-  getInitials,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatPeriodo } from "@/utils/formatters/periodo";
@@ -97,7 +96,7 @@ export function PassageirosList({
   ...props
 }: PassageirosListProps) {
   const { can } = usePermissions();
-  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.mensalidade_visualizar");
+  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar");
 
   return (
     <ResponsiveDataList

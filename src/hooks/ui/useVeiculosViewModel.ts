@@ -54,21 +54,23 @@ export function useVeiculosViewModel() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  const veiculosFilters = useMemo(
+    () => ({
+      usuarioId: profile?.id,
+      search: debouncedSearchTerm,
+      status: selectedStatus,
+    }),
+    [profile?.id, debouncedSearchTerm, selectedStatus]
+  );
+
   const {
     data: veiculosData,
     isLoading: isVeiculosLoading,
     refetch,
-  } = useVeiculos(
-    {
-      usuarioId: profile?.id,
-      search: debouncedSearchTerm,
-      status: selectedStatus,
-    },
-    {
-      enabled: !!profile?.id && can("veiculos.gerenciar"),
-      onError: () => toast.error("veiculo.erro.carregar"),
-    }
-  );
+  } = useVeiculos(veiculosFilters, {
+    enabled: !!profile?.id && can("veiculos.gerenciar"),
+    onError: () => toast.error("veiculo.erro.carregar"),
+  });
 
   const veiculos = useMemo(
     () => veiculosData?.list ?? [],

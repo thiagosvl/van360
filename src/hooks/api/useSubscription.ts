@@ -119,10 +119,11 @@ export const useSubscriptionStatus = (userId?: string) => {
   };
 };
 
-export const useSubscriptionPlans = () => {
+export const useSubscriptionPlans = (options?: { enabled?: boolean }) => {
   const query = useQuery<PlansResponse>({
     queryKey: ["subscription-plans"],
     queryFn: () => subscriptionApi.getPlans(),
+    enabled: options?.enabled ?? true,
     staleTime: 0, // Sempre re-busca para garantir preços atualizados (útil no alt-tab)
   });
 

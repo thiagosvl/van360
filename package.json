@@ -6,11 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build:dev": "vite build --mode development && npx cap copy android",
     "build:android": "vite build --mode production && npx cap sync android",
+    "build:android:dev": "vite build --mode development && npx cap sync android",
     "build:android:clean": "vite build --mode production && npx cap sync android",
-    "test": "vitest run",
-    "test:watch": "vitest",
     "lint": "eslint .",
     "preview": "vite preview",
     "analyze": "vite build --mode analyze"
@@ -21,7 +20,9 @@
     "@capacitor/browser": "^7.0.3",
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
+    "@capacitor/device": "^7.0.5",
     "@capacitor/filesystem": "^7.1.8",
+    "@capacitor/push-notifications": "^7.0.7",
     "@capacitor/share": "^7.0.4",
     "@capgo/capacitor-updater": "^7.18.14",
     "@hookform/resolvers": "^3.10.0",
@@ -114,7 +115,6 @@
     "tsx": "^4.20.6",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^5.4.19",
-    "vitest": "^3.0.5"
+    "vite": "^5.4.19"
   }
 }

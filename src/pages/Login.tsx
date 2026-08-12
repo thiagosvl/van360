@@ -39,6 +39,7 @@ import { detectPlatform, isNativeApp, PLAY_STORE_URL, PLAY_STORE_BADGE_URL } fro
 import { cpfCnpjMask } from "@/utils/masks";
 import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaDialog";
 import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
+import { isDevEnv } from "@/utils/detectPlatform";
 
 // Internal Components
 
@@ -217,7 +218,7 @@ export default function Login() {
         <div className="w-full max-w-[420px] relative z-10">
           <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 sm:p-10 border border-slate-200">
 
-            {import.meta.env.DEV && (
+            {isDevEnv() && (
               <div className="absolute right-6 top-6 z-10">
                 <Button
                   type="button"

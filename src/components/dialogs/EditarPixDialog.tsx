@@ -1,4 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import {
   Form,
   FormControl,
@@ -121,14 +122,11 @@ export default function EditarPixDialog({ isOpen, onClose }: EditarPixDialogProp
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6 mt-1">
               {showWarningRef.current && (
-                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2 flex items-center gap-4 shadow-sm">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
-                    <Info className="w-5 h-5" />
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-                    A chave Pix cadastrada será utilizada nos lembretes e cobranças automáticas enviadas para os responsáveis via WhatsApp.
-                  </p>
-                </div>
+                <Banner
+                  variant="info"
+                  description="A chave Pix cadastrada será utilizada nos lembretes e cobranças automáticas enviadas para os responsáveis."
+                  className="mb-2"
+                />
               )}
 
               <FormField

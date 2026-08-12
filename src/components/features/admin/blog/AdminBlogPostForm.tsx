@@ -229,7 +229,7 @@ export default function AdminBlogPostForm({
         <p>Evite cruzar a cidade desnecessariamente. Tente planejar o trajeto em formato de circuito (anél), minimizando o tempo que a van circula vazia.</p>
         <h3>2. Defina tolerâncias de atraso com os pais</h3>
         <p>A pontualidade é crucial. Alinhe com os responsáveis um limite máximo de tolerância de 2 a 3 minutos em cada parada, de modo que atrasos individuais não prejudiquem toda a rota.</p>
-        <p>Utilize ferramentas como o <strong>Van360</strong> para gerenciar seus passageiros, mensalidades e rotas escolares de forma centralizada e profissional!</p>`;
+        <p>Utilize ferramentas como o <strong>Van360</strong> para gerenciar seus passageiros, pagamentos de parcelas, cobranças, controle de passageiros e rotas escolares de forma centralizada e profissional!</p>`;
       editor.commands.setContent(htmlStr);
       setHtmlContent(htmlStr);
     }
@@ -401,7 +401,7 @@ export default function AdminBlogPostForm({
                       <ImageIcon className="h-4 w-4 text-slate-400" />
                       Escolher Imagem
                     </Button>
-                    
+
                     <span className="text-[10px] font-bold text-slate-500 uppercase">ou cole uma URL</span>
                   </div>
                   <Input

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { usuarioApi } from "../../services/api/usuario.api";
 import { Usuario } from "../../types/usuario";
 import { UserType } from "../../types/enums";
@@ -30,18 +30,24 @@ export function useProfile(userId?: string) {
     ]);
   }, [queryClient]);
 
-  const shouldFetchSummary = profile?.id && profile?.tipo === UserType.MOTORISTA;
-  const { data: summary } = useUsuarioResumo(
-    profile?.id, 
-    undefined, 
-    { staleTime: 5000, enabled: !!shouldFetchSummary }
-  );
-
   const isGestor = profile?.tipo === UserType.MOTORISTA;
   const isMotoristaAuxiliar = profile?.tipo === UserType.MOTORISTA_AUXILIAR;
   const isMonitor = profile?.tipo === UserType.MONITOR;
   const isSubConta = Boolean(profile?.conta_pai_id);
   const donoContaId = profile?.conta_pai_id || profile?.id;
+
+  const shouldFetchSummary = profile?.id && (isGestor || isSubConta);
+  
+  const summaryParams = useMemo(
+    () => (profile?.veiculo_id ? { veiculoId: profile.veiculo_id } : undefined),
+    [profile?.veiculo_id]
+  );
+
+  const { data: summary } = useUsuarioResumo(
+    profile?.id, 
+    summaryParams, 
+    { staleTime: 5000, enabled: !!shouldFetchSummary }
+  );
 
   return {
     profile,

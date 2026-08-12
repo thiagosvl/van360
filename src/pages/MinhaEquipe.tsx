@@ -15,6 +15,7 @@ import { MotoristaAuxiliarFormDialog } from "@/components/dialogs/MotoristaAuxil
 import { MonitorFormDialog } from "@/components/dialogs/MonitorFormDialog";
 import { MobileActionItem, MobileAction } from "@/components/common/MobileActionItem";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { Banner } from "@/components/ui/Banner";
 import {
   UserPlus,
   Car,
@@ -27,11 +28,11 @@ import {
   UserCheck,
   Users2,
   FileText,
-  Info,
-  AlertTriangle,
+  Plus,
   Eye,
   EyeOff,
   Trash2,
+  Lock,
 } from "lucide-react";
 import { toast } from "@/utils/notifications/toast";
 import { phoneMask, cpfCnpjMask } from "@/utils/masks";
@@ -103,7 +104,7 @@ export default function MinhaEquipe() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Status atualizado com sucesso! A notificação foi enviada no WhatsApp.");
+      toast.success("Acesso atualizado com sucesso", { description: 'O usuário será informado via e-mail.' });
       setConfirmStatusMember(null);
       queryClient.invalidateQueries({ queryKey: ["motoristas-equipe"] });
     },
@@ -118,7 +119,7 @@ export default function MinhaEquipe() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Usuário excluído e histórico transferido com sucesso!");
+      toast.success("Usuário excluído com sucesso!");
       setDeleteConfirmMember(null);
       queryClient.invalidateQueries({ queryKey: ["motoristas-equipe"] });
     },
@@ -188,7 +189,7 @@ export default function MinhaEquipe() {
           <div
             className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-sm transition-colors",
-              membro.ativo === false ? "bg-slate-400" : isMonitorType ? "bg-blue-600" : "bg-[#1a3a5c]"
+              membro.ativo === false ? "bg-slate-400" : isMonitorType ? "bg-[#1a3a5c]" : "bg-[#1a3a5c]"
             )}
           >
             {isMonitorType ? <Users2 className="w-6 h-6" /> : <UserCheck className="w-6 h-6" />}
@@ -242,7 +243,7 @@ export default function MinhaEquipe() {
             <span>{phoneMask(membro.telefone || "")}</span>
           </div>
           {membro.veiculos && (
-            <div className="flex items-center gap-2 text-[#1a3a5c] font-semibold pt-1 border-t border-slate-200/60">
+            <div className="flex flex-wrap items-center gap-2 text-[#1a3a5c] font-semibold pt-2 border-t border-slate-200/60">
               <Car className="w-4 h-4 text-[#1a3a5c] shrink-0" />
               <span>Veículo: {membro.veiculos.modelo} ({membro.veiculos.placa})</span>
             </div>
@@ -262,7 +263,7 @@ export default function MinhaEquipe() {
             <div
               className={cn(
                 "w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs transition-colors",
-                membro.ativo === false ? "bg-slate-400" : isMonitorType ? "bg-blue-600" : "bg-[#1a3a5c]"
+                membro.ativo === false ? "bg-slate-400" : isMonitorType ? "bg-[#1a3a5c]" : "bg-[#1a3a5c]"
               )}
             >
               {isMonitorType ? <Users2 className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />}
@@ -322,7 +323,7 @@ export default function MinhaEquipe() {
   const showSkeleton = isLoading || (isFetching && (toggleStatusMutation.isPending || deleteMutation.isPending));
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
         <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
           <TabsList className={cn(
@@ -365,7 +366,7 @@ export default function MinhaEquipe() {
               <div>
                 {motoristasAuxiliares.length > 0 && (
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                    {motoristasAuxiliares.length} {motoristasAuxiliares.length === 1 ? "MOTORISTA" : "MOTORISTAS"}
+                    {/* {motoristasAuxiliares.length} {motoristasAuxiliares.length === 1 ? "MOTORISTA" : "MOTORISTAS"} */}
                   </span>
                 )}
               </div>
@@ -375,10 +376,10 @@ export default function MinhaEquipe() {
                   setEditingMotorista(null);
                   setMotoristaDialogOpen(true);
                 }}
-                className="bg-[#16314f] hover:bg-[#1a3a5c] text-white font-bold rounded-xl text-xs h-10 px-4 flex items-center gap-2 cursor-pointer shadow-sm ml-auto"
+                className="border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ml-auto"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>Cadastrar</span>
+                <Plus className="h-4 w-4 shrink-0" />
+                <span>Novo Motorista</span>
               </Button>
             </div>
 
@@ -386,29 +387,26 @@ export default function MinhaEquipe() {
               renderSkeletonGrid()
             ) : motoristasAuxiliares.length === 0 ? (
               <div className="space-y-4">
-                <div className="p-4 bg-blue-50/80 border border-blue-100 rounded-2xl flex gap-3 text-left">
-                  <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">
-                      Como funciona a conta de Motorista
-                    </p>
-                    <p className="text-xs text-blue-800 leading-relaxed font-medium">
+                <Banner
+                  variant="info"
+                  title="Como funciona a conta de motorista"
+                  description={
+                    <>
                       A conta de motorista dará acesso ao aplicativo para <strong>executar rotas e registrar gastos</strong> do veículo atribuído a ele. O usuário não terá acesso aos dados financeiros, contratos, parcelas ou passageiros de outros veículos da sua empresa.
-                    </p>
-                  </div>
-                </div>
+                    </>
+                  }
+                />
 
                 <UnifiedEmptyState
                   icon={UserCheck}
                   title="Nenhum motorista cadastrado"
                   description="Adicione motoristas à sua equipe para operar os veículos da frota."
                   action={{
-                    label: "CADASTRAR MOTORISTA",
+                    label: "Cadastrar Motorista",
                     onClick: () => {
                       setEditingMotorista(null);
                       setMotoristaDialogOpen(true);
                     },
-                    icon: UserPlus,
                   }}
                 />
               </div>
@@ -426,7 +424,7 @@ export default function MinhaEquipe() {
             <div>
               {monitores.length > 0 && (
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                  {monitores.length} {monitores.length === 1 ? "MONITOR" : "MONITORES"}
+                  {/* {monitores.length} {monitores.length === 1 ? "MONITOR" : "MONITORES"} */}
                 </span>
               )}
             </div>
@@ -436,10 +434,10 @@ export default function MinhaEquipe() {
                 setEditingMonitor(null);
                 setMonitorDialogOpen(true);
               }}
-              className="bg-[#16314f] hover:bg-[#1a3a5c] text-white font-bold rounded-xl text-xs h-10 px-4 flex items-center gap-2 cursor-pointer shadow-sm ml-auto"
+              className="border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ml-auto"
             >
-              <UserPlus className="w-4 h-4" />
-              <span>Cadastrar</span>
+              <Plus className="h-4 w-4 shrink-0" />
+              <span>Novo Monitor</span>
             </Button>
           </div>
 
@@ -447,29 +445,26 @@ export default function MinhaEquipe() {
             renderSkeletonGrid()
           ) : monitores.length === 0 ? (
             <div className="space-y-4">
-              <div className="p-4 bg-blue-50/80 border border-blue-100 rounded-2xl flex gap-3 text-left">
-                <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">
-                    Como funciona a conta de Monitor
-                  </p>
-                  <p className="text-xs text-blue-800 leading-relaxed font-medium">
+              <Banner
+                variant="info"
+                title="Como funciona a conta de monitor"
+                description={
+                  <>
                     O monitor terá acesso à <strong>prancheta digital de alunos</strong> nas rotas do veículo atribuído para registrar presença e embarque. O usuário não possui acesso a relatórios, gastos ou dados financeiros.
-                  </p>
-                </div>
-              </div>
+                  </>
+                }
+              />
 
               <UnifiedEmptyState
                 icon={Users2}
                 title="Nenhum monitor cadastrado"
                 description="Adicione monitores à sua equipe para acompanhar as paradas da rota."
                 action={{
-                  label: "CADASTRAR MONITOR",
+                  label: "Cadastrar Monitor",
                   onClick: () => {
                     setEditingMonitor(null);
                     setMonitorDialogOpen(true);
                   },
-                  icon: UserPlus,
                 }}
               />
             </div>
@@ -516,30 +511,36 @@ export default function MinhaEquipe() {
           hideCloseButton={resetPasswordMutation.isPending}
         />
         <BaseDialog.Body>
-          <div className="space-y-4 py-2">
-            <p className="text-xs text-slate-600">
-              Informe a nova senha para <strong>{resetPasswordMember?.nome}</strong>. O usuário passará a utilizar esta nova senha para acessar o aplicativo.
+          <div className="space-y-4 py-2 text-left">
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              Informe a nova senha para <strong className="text-[#1a3a5c]">{resetPasswordMember?.nome}</strong>. O usuário passará a utilizar esta nova senha para acessar o aplicativo.
             </p>
-            <div className="relative">
-              <Input
-                type={showNovaSenha ? "text" : "password"}
-                placeholder="Digite a nova senha (mínimo 6 caracteres)"
-                value={novaSenhaInput}
-                onChange={(e) => setNovaSenhaInput(e.target.value)}
-                className="rounded-xl text-xs h-12 pr-12 bg-slate-50 border-slate-200"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNovaSenha(!showNovaSenha)}
-                className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                tabIndex={-1}
-              >
-                {showNovaSenha ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 ml-1">
+                Sua Nova Senha
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 pointer-events-none" />
+                <Input
+                  type={showNovaSenha ? "text" : "password"}
+                  placeholder="Mínimo 6 caracteres"
+                  value={novaSenhaInput}
+                  onChange={(e) => setNovaSenhaInput(e.target.value)}
+                  className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNovaSenha(!showNovaSenha)}
+                  className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0 cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showNovaSenha ? (
+                    <EyeOff className="h-5 w-5 opacity-60" />
+                  ) : (
+                    <Eye className="h-5 w-5 opacity-60" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </BaseDialog.Body>
@@ -586,15 +587,11 @@ export default function MinhaEquipe() {
               <strong className="text-[#1a3a5c]">{confirmStatusMember?.nome}</strong>?
             </p>
             {confirmStatusMember?.ativo !== false && (
-              <div className="p-4 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex gap-3 text-left">
-                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-[11px] font-bold text-amber-900 uppercase tracking-tight">Aviso importante</p>
-                  <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                    Ao desativar, o usuário não conseguirá realizar login no aplicativo até que sua conta seja reativada.
-                  </p>
-                </div>
-              </div>
+              <Banner
+                variant="warning"
+                title="Aviso importante"
+                description="Ao desativar, o usuário não conseguirá realizar login no aplicativo até que sua conta seja reativada."
+              />
             )}
           </div>
         </BaseDialog.Body>
@@ -634,15 +631,11 @@ export default function MinhaEquipe() {
             <p className="text-sm text-slate-600 leading-relaxed">
               Deseja realmente excluir <strong className="text-[#1a3a5c]">{deleteConfirmMember?.nome}</strong>?
             </p>
-            <div className="p-4 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex gap-3 text-left">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-[11px] font-bold text-amber-900 uppercase tracking-tight">Aviso importante</p>
-                <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                  Todos os lançamentos históricos de gastos e execuções de rotas realizados por este usuário serão transferidos para a sua conta principal e mantidos no sistema.
-                </p>
-              </div>
-            </div>
+            <Banner
+              variant="warning"
+              title="Aviso importante"
+              description="Todos os lançamentos históricos de gastos e execuções de rotas realizados por este usuário serão transferidos para a sua conta principal e mantidos no sistema."
+            />
           </div>
         </BaseDialog.Body>
         <BaseDialog.Footer>

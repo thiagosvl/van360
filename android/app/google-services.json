@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "847278212221",
+    "project_id": "van360-app",
+    "storage_bucket": "van360-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847278212221:android:5f3a29d4be4f1978d7dd14",
+        "android_client_info": {
+          "package_name": "com.tibis.van360"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA80_PaoR4LfPXZx5Z_DijompD7qzYjrsc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

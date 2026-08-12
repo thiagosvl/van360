@@ -25,7 +25,7 @@ interface UsePassageiroFormViewModelProps {
   editingPassageiro: Passageiro | null;
   mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
-  onSuccess: (passageiro?: any, formData?: any) => void;
+  onSuccess: (passageiro?: Passageiro, options?: { formData?: Record<string, unknown>; hasCriticalContractChanges?: boolean }) => void;
   profile: Usuario | null | undefined;
 }
 
@@ -159,20 +159,20 @@ export function usePassageiroFormViewModel({
   const handleSubmit = useCallback(async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
-    const purePayload: any = { ...data };
+    const purePayload: Record<string, unknown> = { ...data };
 
-    purePayload.cep = purePayload.cep?.replace(/\D/g, "") || null;
-    purePayload.cpf_responsavel = purePayload.cpf_responsavel?.replace(/\D/g, "") || null;
+    purePayload.cep = typeof purePayload.cep === "string" ? purePayload.cep.replace(/\D/g, "") || null : null;
+    purePayload.cpf_responsavel = typeof purePayload.cpf_responsavel === "string" ? purePayload.cpf_responsavel.replace(/\D/g, "") || null : null;
 
-    purePayload.data_nascimento = purePayload.data_nascimento
+    purePayload.data_nascimento = typeof purePayload.data_nascimento === "string" && purePayload.data_nascimento
       ? convertDateBrToISO(purePayload.data_nascimento)
       : null;
 
-    purePayload.data_inicio_transporte = purePayload.data_inicio_transporte
+    purePayload.data_inicio_transporte = typeof purePayload.data_inicio_transporte === "string" && purePayload.data_inicio_transporte
       ? convertDateBrToISO(purePayload.data_inicio_transporte)
       : null;
 
-    purePayload.data_fim_transporte = purePayload.data_fim_transporte
+    purePayload.data_fim_transporte = typeof purePayload.data_fim_transporte === "string" && purePayload.data_fim_transporte
       ? convertDateBrToISO(purePayload.data_fim_transporte)
       : null;
 
@@ -197,23 +197,23 @@ export function usePassageiroFormViewModel({
     purePayload.observacoes = purePayload.observacoes || null;
 
     if (typeof purePayload.valor_cobranca === "string") {
-      purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca) as any;
+      purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca);
     }
 
     const commonOptions = {
-      onSuccess: (responseData?: any) => {
+      onSuccess: (responseData?: Passageiro) => {
         // Business Logic: Detect if critical contract fields changed
         const isEdit = mode === PassageiroFormModes.EDIT;
         const isContractActive = !!profile?.config_contrato?.usar_contratos;
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {
-          const cleanString = (val: any) => {
+          const cleanString = (val: unknown) => {
             if (val === null || val === undefined) return "";
             return String(val).trim().toLowerCase();
           };
 
-          const checkStringChange = (formVal: any, dbVal: any) => {
+          const checkStringChange = (formVal: unknown, dbVal: unknown) => {
             return cleanString(formVal) !== cleanString(dbVal);
           };
 

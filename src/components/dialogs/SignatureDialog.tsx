@@ -1,5 +1,6 @@
 import React from "react";
 import { BaseDialog } from "../ui/BaseDialog";
+import { Banner } from "../ui/Banner";
 import { SignaturePad, SignaturePadRef } from "../common/SignaturePad";
 import { Loader2, Trash2, PenTool, ShieldCheck, AlertCircle } from "lucide-react";
 import { Button } from "../ui/button";
@@ -45,12 +46,15 @@ export function SignatureDialog({
             className="w-full"
           />
         </div>
-        <div className="bg-amber-50 rounded-3xl p-4 border border-amber-100 flex gap-3 mx-2">
-          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-          <p className="text-[10px] text-amber-700 leading-relaxed font-medium">
-            <strong>Atenção:</strong> Esta assinatura tem validade jurídica. Certifique-se de que ela esteja legível e represente sua assinatura oficial.
-          </p>
-        </div>
+        <Banner
+          variant="warning"
+          description={
+            <>
+              <strong>Atenção:</strong> Esta assinatura tem validade jurídica. Certifique-se de que ela esteja legível e represente sua assinatura oficial.
+            </>
+          }
+          className="mx-2"
+        />
       </BaseDialog.Body>
 
       <BaseDialog.Footer>

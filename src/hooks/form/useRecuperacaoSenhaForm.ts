@@ -31,7 +31,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
   const [loading, setLoading] = useState(false);
   const [recoveryId, setRecoveryId] = useState<string | null>(null);
   const [cpf, setCpf] = useState(initialCpf || "");
-  const [telefoneMascarado, setTelefoneMascarado] = useState<string | null>(null);
+  const [emailMascarado, setEmailMascarado] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const formStep1 = useForm<Step1Data>({
@@ -62,7 +62,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
     try {
       const response = await apiClient.post('/auth/recuperacao/solicitar', { cpf: data.cpf.replace(/\D/g, "") });
       setCpf(data.cpf);
-      setTelefoneMascarado(response.data.telefoneMascarado || null);
+      setEmailMascarado(response.data.emailMascarado || null);
       setStep(2);
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || "CPF/CNPJ não encontrado ou inválido.";
@@ -148,7 +148,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
     setStep(1);
     setLoading(false);
     setRecoveryId(null);
-    setTelefoneMascarado(null);
+    setEmailMascarado(null);
     formStep1.reset({ cpf: initialCpf || "" });
     formStep2.reset({ codigo: "" });
     formStep3.reset({ password: "" });
@@ -166,7 +166,7 @@ export function useRecuperacaoSenhaForm(onSuccess: () => void, initialCpf?: stri
     handleResetar,
     handleVoltarStep1,
     cpf,
-    telefoneMascarado,
+    emailMascarado,
     reset
   };
 }

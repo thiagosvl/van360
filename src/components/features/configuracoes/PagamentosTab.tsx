@@ -17,6 +17,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { TipoChavePix } from "@/types/pix";
@@ -133,14 +134,10 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
         </div>
 
         {!profile?.chave_pix && (
-          <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex items-center gap-4 shadow-sm">
-            <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
-              <Info className="w-5 h-5" />
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              A chave PIX cadastrada será exibida nos lembretes automáticos de cobrança e na carteirinha digital enviada aos responsáveis via WhatsApp.
-            </p>
-          </div>
+          <Banner
+            variant="info"
+            description="A chave PIX cadastrada será exibida nos lembretes automáticos de cobrança e na carteirinha digital enviada aos responsáveis."
+          />
         )}
 
         <Form {...form}>

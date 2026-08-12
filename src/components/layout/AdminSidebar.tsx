@@ -12,6 +12,7 @@ import {
   FileText
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
+import { isDevEnv } from "@/utils/detectPlatform";
 
 const adminNavItems = [
   {
@@ -73,7 +74,7 @@ export function AdminSidebar({ onLinkClick }: AdminSidebarProps) {
           />
 
           <div className="flex items-center justify-center">
-            {import.meta.env.DEV ? (
+            {isDevEnv() ? (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] font-black uppercase tracking-widest shadow-[0_0_12px_rgba(245,158,11,0.25)]">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>

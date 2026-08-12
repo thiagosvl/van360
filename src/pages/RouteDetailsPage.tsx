@@ -59,7 +59,7 @@ export default function RouteDetailsPage() {
 
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
-      <div className="space-y-4 text-left pb-16">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         {isLoading && !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (

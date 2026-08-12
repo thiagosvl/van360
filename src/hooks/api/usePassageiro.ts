@@ -1,8 +1,7 @@
 import { passageiroApi } from "@/services/api/passageiro.api";
 import { Passageiro } from "@/types/passageiro";
 import { useQuery } from "@tanstack/react-query";
-
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export function usePassageiro(
   passageiroId?: string,
@@ -27,12 +26,16 @@ export function usePassageiro(
     staleTime: 0,
   });
 
+  const onErrorRef = useRef(options?.onError);
   useEffect(() => {
-    if (query.error && options?.onError) {
-      options.onError(query.error);
+    onErrorRef.current = options?.onError;
+  });
+
+  useEffect(() => {
+    if (query.error && onErrorRef.current) {
+      onErrorRef.current(query.error);
     }
-  }, [query.error, options]);
+  }, [query.error]);
 
   return query;
 }
-

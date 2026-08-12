@@ -3,6 +3,7 @@ import { TrendingUp, Lock, AlertOctagon, CheckCircle2, Tag } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { formatLocalDate, parseLocalDate } from "@/utils/dateUtils";
 import { SubscriptionIdentifer } from "@/types/enums";
+import { TRIAL_DURATION_DAYS } from "@/constants";
 
 interface SubscriptionHeroCardProps {
   subscription: any;
@@ -75,7 +76,7 @@ export function SubscriptionHeroCard({
           </h3>
           <p className="text-slate-600 text-sm sm:text-base font-normal leading-relaxed">
             {isTrialExpired
-              ? "Seu período de teste de 15 dias acabou. Assine um plano para continuar usando todas as funcionalidades."
+              ? `Seu período de teste de ${TRIAL_DURATION_DAYS} dias acabou. Assine um plano para continuar usando todas as funcionalidades.`
               : "Sua assinatura expirou. Renove para continuar usando todas as funcionalidades."}
           </p>
         </div>

@@ -5,6 +5,9 @@ const config: CapacitorConfig = {
   appName: 'Van360',
   webDir: 'dist',
   plugins: {
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
+    },
     CapacitorUpdater: {
       autoUpdate: false,
       stats: false,
@@ -21,7 +24,8 @@ const config: CapacitorConfig = {
   server: {
     hostname: 'app.van360.com.br',
     androidScheme: 'https',
-    iosScheme: 'https'
+    iosScheme: 'https',
+    cleartext: true
   }
 };
 

@@ -24,7 +24,6 @@ export default function Veiculos() {
     handleDeleteClick,
     handleToggleAtivo,
     handleRegister,
-    openVeiculoFormDialog,
     refetch,
     navigate,
   } = useVeiculosViewModel();
@@ -38,13 +37,13 @@ export default function Veiculos() {
   };
 
   const sectionCount = veiculos.length;
-  const countLabel = searchTerm || hasActiveFilters 
-    ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS") 
+  const countLabel = searchTerm || hasActiveFilters
+    ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
     : (sectionCount === 1 ? "VEÍCULO" : "VEÍCULOS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="space-y-6">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         <VeiculosToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -58,7 +57,7 @@ export default function Veiculos() {
 
         <div className="flex items-center justify-between px-1">
           <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-            Veículos
+            {/* Veículos */}
           </h2>
           {sectionCount != null && (
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">

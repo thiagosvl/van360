@@ -9,6 +9,7 @@ import { toast } from "@/utils/notifications/toast";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { phoneMask } from "@/utils/masks";
 import { Passageiro } from "@/types/passageiro";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { ONBOARDING_MOCK_RESPONSAVEL_NOME, ONBOARDING_MOCK_RESPONSAVEL_TELEFONE } from "@/utils/constants";
 
 export const quickStartPassageiroBaseSchema = z.object({
@@ -17,6 +18,7 @@ export const quickStartPassageiroBaseSchema = z.object({
   veiculo_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
   nome_responsavel: z.string().optional(),
   telefone_responsavel: z.string().optional(),
+  isento: z.boolean().optional().default(false),
   valor_cobranca: z.string().optional(),
   dia_vencimento: z.string().optional(),
   mes_inicio_cobranca: z.string().optional(),
@@ -46,33 +48,28 @@ export const getQuickStartPassageiroSchema = (isOnboarding?: boolean) => {
             return nums.length >= 10 && nums.length <= 11;
           }, "Telefone inválido"),
           
-    valor_cobranca: isOnboarding
-      ? z.string().optional()
-      : z.string({ required_error: "Campo obrigatório" })
-          .min(1, "Campo obrigatório")
-          .refine((val) => {
-            const num = moneyToNumber(val);
-            return num >= 0;
-          }, "Valor inválido"),
-          
-    dia_vencimento: isOnboarding 
-      ? z.string().optional() 
-      : z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-      
-    mes_inicio_cobranca: isOnboarding 
-      ? z.string().optional() 
-      : z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-      
-    mes_fim_cobranca: isOnboarding 
-      ? z.string().optional() 
-      : z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-  }).refine((data) => {
-    if (isOnboarding) return true;
-    if (!data.mes_inicio_cobranca || !data.mes_fim_cobranca) return true;
-    return parseInt(data.mes_fim_cobranca, 10) >= parseInt(data.mes_inicio_cobranca, 10);
-  }, {
-    message: "Término da cobrança deve ser igual ou posterior ao início",
-    path: ["mes_fim_cobranca"],
+    isento: z.boolean().optional().default(false),
+    valor_cobranca: z.string().optional(),
+    dia_vencimento: z.string().optional(),
+    mes_inicio_cobranca: z.string().optional(),
+    mes_fim_cobranca: z.string().optional(),
+  }).superRefine((data, ctx) => {
+    if (isOnboarding || data.isento) return;
+
+    if (!data.valor_cobranca || data.valor_cobranca.trim() === "") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["valor_cobranca"] });
+    }
+    if (!data.dia_vencimento || data.dia_vencimento.trim() === "") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["dia_vencimento"] });
+    }
+    if (!data.mes_inicio_cobranca || data.mes_inicio_cobranca.trim() === "") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["mes_inicio_cobranca"] });
+    }
+    if (!data.mes_fim_cobranca || data.mes_fim_cobranca.trim() === "") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["mes_fim_cobranca"] });
+    } else if (data.mes_inicio_cobranca && parseInt(data.mes_fim_cobranca, 10) < parseInt(data.mes_inicio_cobranca, 10)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Término da cobrança deve ser igual ou posterior ao início", path: ["mes_fim_cobranca"] });
+    }
   });
 };
 
@@ -94,6 +91,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       nome: "",
       nome_responsavel: "",
       telefone_responsavel: "",
+      isento: false,
       valor_cobranca: "",
       dia_vencimento: "",
       escola_id: "",
@@ -107,19 +105,21 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
   const handleSubmit = async (data: QuickStartPassageiroFormData, keepOpen?: boolean) => {
     try {
       setIsSubmitting(true);
-
       const currentYear = new Date().getFullYear();
+
+      const isIsento = !!data.isento;
 
       const payload = {
         nome: data.nome,
         nome_responsavel: data.nome_responsavel || ONBOARDING_MOCK_RESPONSAVEL_NOME,
         telefone_responsavel: String(data.telefone_responsavel || ONBOARDING_MOCK_RESPONSAVEL_TELEFONE).replace(/\D/g, ""),
-        valor_cobranca: data.valor_cobranca ? moneyToNumber(String(data.valor_cobranca)) : 0,
-        dia_vencimento: data.dia_vencimento ? parseInt(String(data.dia_vencimento)) : 1,
+        isento: isIsento,
+        valor_cobranca: isIsento ? 0 : (data.valor_cobranca ? moneyToNumber(String(data.valor_cobranca)) : 0),
+        dia_vencimento: isIsento ? null : (data.dia_vencimento ? parseInt(String(data.dia_vencimento)) : null),
         escola_id: data.escola_id,
         veiculo_id: data.veiculo_id,
-        data_inicio_cobranca: data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
-        data_fim_cobranca: data.mes_fim_cobranca ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
+        data_inicio_cobranca: (!isIsento && data.mes_inicio_cobranca) ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
+        data_fim_cobranca: (!isIsento && data.mes_fim_cobranca) ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
         ativo: true,
         usuario_id: usuarioId,
       };
@@ -147,8 +147,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
     toast.error("validacao.formularioComErros");
   };
 
-    const handleFillMock = (escolas?: any[], veiculos?: any[]) => {
-    if (import.meta.env.DEV) {
+  const handleFillMock = (escolas?: any[], veiculos?: any[]) => {
+    if (isDevEnv()) {
       let escolaId = "";
       if (escolas && escolas.length > 0) {
         escolaId = escolas[0].id;
@@ -170,6 +170,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       if (!isOnboarding) {
         form.setValue("nome_responsavel", mockPassenger.nome_responsavel || ONBOARDING_MOCK_RESPONSAVEL_NOME);
         form.setValue("telefone_responsavel", phoneMask(mockPassenger.telefone_responsavel || ONBOARDING_MOCK_RESPONSAVEL_TELEFONE));
+        form.setValue("isento", false);
         form.setValue("valor_cobranca", mockPassenger.valor_cobranca);
         form.setValue("dia_vencimento", mockPassenger.dia_vencimento);
         form.setValue("mes_inicio_cobranca", "2");

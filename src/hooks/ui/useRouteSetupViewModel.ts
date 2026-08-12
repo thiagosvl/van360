@@ -65,8 +65,8 @@ export function useRouteSetupViewModel({
     if (routeToEdit) {
       form.setValue("nome", routeToEdit.nome);
       form.setValue("periodo", routeToEdit.periodo);
-      if (routeToEdit.passageiros) {
-        const mapped = routeToEdit.passageiros.map((p) => ({
+      if (routeToEdit.paradas) {
+        const mapped = routeToEdit.paradas.map((p) => ({
           id: p.passageiro_id || "",
           nome: p.nome || "",
           bairro: p.bairro || "",

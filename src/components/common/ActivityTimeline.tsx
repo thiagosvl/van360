@@ -20,6 +20,8 @@ import {
   AlertCircle,
   BadgeDollarSign,
   CheckCircle2,
+  Play,
+  XCircle,
 } from "lucide-react";
 
 interface ActivityTimelineProps {
@@ -32,6 +34,16 @@ interface ActivityTimelineProps {
 
 const getActionStyles = (acao: string | AtividadeAcao) => {
   switch (acao) {
+    case AtividadeAcao.ROTA_INICIADA:
+      return {
+        icon: <Play className="w-3.5 h-3.5" />,
+        color: "text-blue-600 bg-blue-50 border-blue-100",
+      };
+    case AtividadeAcao.ROTA_CANCELADA:
+      return {
+        icon: <XCircle className="w-3.5 h-3.5" />,
+        color: "text-rose-600 bg-rose-50 border-rose-100",
+      };
     case AtividadeAcao.PAGAMENTO_MANUAL:
       return {
         icon: <BadgeDollarSign className="w-3.5 h-3.5" />,

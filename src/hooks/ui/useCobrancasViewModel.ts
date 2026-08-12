@@ -12,10 +12,10 @@ import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
-import { isPassageiroIncompleto, shouldGeneratePassengerProjection } from "@/utils/domain";
+import { isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
 
 export function useCobrancasViewModel() {
-  const { can } = usePermissions();
+  const { can, isSubConta } = usePermissions();
   const {
     setPageTitle,
     openCobrancaDeleteDialog,
@@ -107,27 +107,39 @@ export function useCobrancasViewModel() {
     [anoFilter, mesFilter, currentYear, currentMonth]
   );
 
+  const cobrancaFilters = useMemo(
+    () => ({
+      usuarioId: profile?.id,
+      mes: mesFilter,
+      ano: anoFilter,
+      veiculoId: isSubConta && profile?.veiculo_id ? profile.veiculo_id : undefined,
+      search: debouncedSearchTerm,
+    }),
+    [profile?.id, profile?.veiculo_id, mesFilter, anoFilter, debouncedSearchTerm, isSubConta]
+  );
+
   const {
     data: cobrancasData,
     isLoading: isCobrancasLoading,
     refetch: refetchCobrancas,
-  } = useCobrancas(
-    {
-      usuarioId: profile?.id,
-      mes: mesFilter,
-      ano: anoFilter,
-      search: debouncedSearchTerm,
+  } = useCobrancas(cobrancaFilters, {
+    enabled: !!profile?.id && (can("cobrancas.gerenciar") || can("financeiro.visualizar")),
+    onError: () => {
+      toast.error("cobranca.erro.carregar");
     },
-    {
-      enabled: !!profile?.id && (can("cobrancas.gerenciar") || can("financeiro.visualizar")),
-      onError: () => {
-        toast.error("cobranca.erro.carregar");
-      },
-    }
+  });
+
+  const passageiroFilters = useMemo(
+    () => ({
+      usuarioId: profile?.id,
+      status: "true",
+      veiculo: isSubConta && profile?.veiculo_id ? profile.veiculo_id : undefined,
+    }),
+    [profile?.id, profile?.veiculo_id, isSubConta]
   );
 
   const { data: passageirosData, isLoading: isPassageirosLoading } = usePassageiros(
-    { usuarioId: profile?.id, status: "true" },
+    passageiroFilters,
     { enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
   );
 
@@ -165,9 +177,7 @@ export function useCobrancasViewModel() {
         });
       })
       .map((p) => {
-        const diaVenc = p.dia_vencimento ? String(p.dia_vencimento).padStart(2, "0") : "10";
-        const mesStr = String(mesFilter).padStart(2, "0");
-        const dataVenc = `${anoFilter}-${mesStr}-${diaVenc}`;
+        const dataVenc = getSafeDueDateString(p.dia_vencimento, mesFilter, anoFilter);
 
         return {
           id: `proj_${p.id}_${mesFilter}_${anoFilter}`,

@@ -1,13 +1,22 @@
 package com.tibis.van360;
 
 import android.os.Bundle;
-import androidx.core.view.WindowCompat;
+import android.webkit.WebSettings;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Permite que o app carregue conteúdo HTTP (seu backend) dentro de uma página HTTPS
+        if (bridge != null && bridge.getWebView() != null) {
+            WebSettings settings = bridge.getWebView().getSettings();
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
     }
 }

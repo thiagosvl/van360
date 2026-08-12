@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Play, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TRIAL_DURATION_DAYS } from "@/constants";
 
 export interface VideoCommerceProps {
-  previewUrl: string;
-  videoUrls?: string[]; // Suporte para múltiplos vídeos (Stories)
-  fullUrl?: string; // Mantido por compatibilidade
+  previewUrl?: string;
+  videoUrls?: string[];
+  fullUrl?: string;
   tooltipText?: string;
   positionClasses?: string;
   showCta?: boolean;
@@ -23,7 +24,7 @@ export function VideoCommerce({
   tooltipText = "Veja como funciona",
   positionClasses = "fixed bottom-6 left-6 z-50",
   showCta = true,
-  ctaText = "Testar grátis por 15 dias",
+  ctaText = `Testar grátis por ${TRIAL_DURATION_DAYS} dias`,
   ctaLink = "/cadastro",
   loop = false,
   requireScrollOnMobile = true

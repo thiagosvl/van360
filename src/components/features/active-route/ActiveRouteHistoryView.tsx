@@ -133,8 +133,8 @@ export function ActiveRouteHistoryView({
                 <div className="absolute left-[-26px] top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
               )}
 
-              <span className="absolute left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-100 border-2 border-slate-300 text-slate-400 flex items-center justify-center font-bold text-[11px] shadow-2xs z-10">
-                {isEscolaItem ? <School className="w-4 h-4 text-slate-400" /> : (parada.ordem || absIndex + 1)}
+              <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-100 border-2 border-white text-slate-400 flex items-center justify-center font-bold text-[11px] shadow-2xs z-10">
+                {isEscolaItem ? <School className="w-3.5 h-3.5 text-slate-400" /> : (parada.ordem || absIndex + 1)}
               </span>
 
               <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between gap-3 shadow-2xs opacity-50 min-h-[52px] transition-all">

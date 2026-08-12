@@ -28,6 +28,7 @@ export interface Passageiro {
   veiculo_id: string;
   usuario_id?: string;
   ativo?: boolean;
+  isento?: boolean;
   enviar_notificacoes?: boolean;
   referencia?: string;
   complemento?: string;

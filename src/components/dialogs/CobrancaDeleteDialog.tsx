@@ -1,4 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { AlertCircle, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -52,15 +53,15 @@ export default function CobrancaDeleteDialog({
             Esta ação é irreversível. Tem certeza que deseja excluir esta parcela?
           </p>
 
-          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">Alternativa sugerida</p>
-              <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
-                Se você precisa corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
-              </p>
-            </div>
-          </div>
+          <Banner
+            variant="info"
+            title="Nao precisa excluir!"
+            description={
+              <>
+                Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
+              </>
+            }
+          />
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>

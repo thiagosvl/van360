@@ -34,17 +34,20 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!session && !isPublic) {
-    return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
+    return <Navigate to={ROUTES.PUBLIC.LOGIN} state={{ from: location.pathname + location.search }} replace />;
   }
 
   const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
 
   if (session && authPaths.includes(location.pathname)) {
     const userRole = profile?.tipo || UserType.MOTORISTA;
+    const locationState = location.state as { from?: string } | null;
 
-    const targetPath = userRole === UserType.ADMIN
-      ? ROUTES.PRIVATE.ADMIN.DASHBOARD
-      : ROUTES.PRIVATE.MOTORISTA.HOME;
+    const targetPath = locationState?.from 
+      ? locationState.from 
+      : userRole === UserType.ADMIN
+        ? ROUTES.PRIVATE.ADMIN.DASHBOARD
+        : ROUTES.PRIVATE.MOTORISTA.HOME;
 
     return <Navigate to={targetPath} replace />;
   }

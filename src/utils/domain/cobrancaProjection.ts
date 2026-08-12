@@ -36,10 +36,23 @@ export function parseMonthYearFromDateString(dateStr?: string | null): { year: n
 }
 
 /**
+ * Retorna uma string YYYY-MM-DD segura para o vencimento projetado de um mês/ano,
+ * ajustando o dia para o último dia do mês caso o mês seja menor (ex: dia 31 em Fev -> 28).
+ */
+export function getSafeDueDateString(diaVencimento: number | null | undefined, month: number, year: number): string {
+  const lastDay = new Date(year, month, 0).getDate();
+  const rawDia = Number(diaVencimento || 10);
+  const diaFinal = Math.min(rawDia, lastDay);
+  const mesStr = String(month).padStart(2, "0");
+  const diaStr = String(diaFinal).padStart(2, "0");
+  return `${year}-${mesStr}-${diaStr}`;
+}
+
+/**
  * Verifica se o passageiro possui cadastro incompleto (sem valor de cobrança definido).
  */
 export function isPassageiroIncompleto(passageiro?: Partial<Passageiro> | null): boolean {
-  if (!passageiro) return false;
+  if (!passageiro || passageiro.isento === true) return false;
   return !passageiro.valor_cobranca || Number(passageiro.valor_cobranca) <= 0;
 }
 
@@ -61,8 +74,8 @@ export function shouldGeneratePassengerProjection({
   targetMonth,
   targetYear,
 }: ProjectionContextParams): boolean {
-  // 1. Deve estar ativo
-  if (passageiro.ativo === false) {
+  // 1. Deve estar ativo e NÃO ser isento
+  if (passageiro.ativo === false || passageiro.isento === true) {
     return false;
   }
 
@@ -108,7 +121,7 @@ export function getAvailableRetroactiveMonths({
   cobrancas = [],
   currentMonth,
 }: AvailableRetroactiveMonthsParams): number[] {
-  if (!passageiro) return [];
+  if (!passageiro || passageiro.isento === true) return [];
 
   const startMonth = 1; // Janeiro
   const endMonth = currentMonth - 1; // Mês anterior ao atual

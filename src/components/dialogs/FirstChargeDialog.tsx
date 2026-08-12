@@ -54,11 +54,14 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
   const firstNamePassageiro = formatShortName(passageiro.nome);
   const firstNameResponsavel = formatNomeResponsavelExibicao(passageiro.nome_responsavel);
 
-  const totalSteps = showContractStep ? 4 : 3;
-  const stepIndex = showContractStep ? STEP_INDEX[step] : STEP_INDEX[step] - 1;
+  const totalSteps = passageiro.isento ? 1 : (showContractStep ? 4 : 3);
+  const stepIndex = passageiro.isento ? 0 : (showContractStep ? STEP_INDEX[step] : STEP_INDEX[step] - 1);
 
   const primaryButtonText = () => {
-    if (step === "CONTRACT_CHECK") return wantsContract ? "Gerar e Enviar" : "Próximo";
+    if (step === "CONTRACT_CHECK") {
+      if (passageiro.isento) return wantsContract ? "Gerar e Enviar" : "Concluir";
+      return wantsContract ? "Gerar e Enviar" : "Próximo";
+    }
     if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Confirmar";
     if (step === "PAYMENT_METHOD") return "Confirmar";
     if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Confirmar";
@@ -70,16 +73,24 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
     (step === "PAYMENT_STATUS" && !paymentStatus) ||
     (step === "PAYMENT_METHOD" && !paymentMethod);
 
-  const isFirstStep =
+  const isFirstStep = passageiro.isento ||
     (showContractStep && step === "CONTRACT_CHECK") ||
     (!showContractStep && step === "REGISTER_CHECK");
+
+  const dialogTitle = passageiro.isento
+    ? "Emissão de Contrato"
+    : (showContractStep ? "Contrato e Parcela" : "Parcela do Mês");
+
+  const dialogIcon = passageiro.isento
+    ? <FileText className="w-5 h-5 opacity-80" />
+    : <Wallet className="w-5 h-5 opacity-80" />;
 
   return (
     <BaseDialog open={isOpen} onOpenChange={() => { }} lockClose>
       <BaseDialog.Header
-        title={showContractStep ? "Contrato e Parcela" : "Parcela do Mês"}
-        icon={<Wallet className="w-5 h-5 opacity-80" />}
-        showSteps
+        title={dialogTitle}
+        icon={dialogIcon}
+        showSteps={!passageiro.isento}
         currentStep={stepIndex + 1}
         totalSteps={totalSteps}
         hideCloseButton

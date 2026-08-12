@@ -1,4 +1,6 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
+import { isDevEnv } from "@/utils/detectPlatform";
 import {
   Form,
   FormControl,
@@ -13,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
 import { MoneyInput, PhoneInput } from "@/components/forms";
-import { Car, Rocket, School, User, CalendarDays, Wand2, Info, DollarSign, Zap, FileText, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Car, Rocket, School, User, CalendarDays, Wand2, Info, DollarSign, Zap, FileText, Loader2, ShieldCheck } from "lucide-react";
 import { useEscolasWithFilters, useVeiculosWithFilters, usePassageiroFormViewModel, useProfile } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -171,7 +174,7 @@ export function QuickStartPassageiroDialog({
         title="Cadastro de Passageiro"
         icon={<Rocket className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
@@ -227,6 +230,7 @@ export function QuickStartPassageiroDialog({
                     profile={profile}
                     escolas={fullFormViewModel.escolas}
                     veiculos={fullFormViewModel.veiculos}
+                    hideAtivo={true}
                   />
                 </section>
 
@@ -256,9 +260,9 @@ export function QuickStartPassageiroDialog({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((data) => handleSubmit(data, false), onFormError)}
-              className="space-y-8 pb-6"
+              className={cn("pb-6", isOnboarding ? "space-y-4" : "space-y-8")}
             >
-              <div className="space-y-5">
+              <div className={cn(!isOnboarding && "space-y-5")}>
                 {!isOnboarding && (
                   <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
                     <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
@@ -268,7 +272,7 @@ export function QuickStartPassageiroDialog({
                   </div>
                 )}
 
-                <div className="space-y-4">
+                <div className={cn(!isOnboarding && "space-y-4")}>
                   <FormField
                     control={form.control}
                     name="nome"
@@ -339,7 +343,7 @@ export function QuickStartPassageiroDialog({
 
               {!isOnboarding && <hr className="border-slate-100" />}
 
-              <div className="space-y-5">
+              <div className={cn(!isOnboarding && "space-y-5")}>
                 {!isOnboarding && (
                   <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
                     <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
@@ -475,145 +479,169 @@ export function QuickStartPassageiroDialog({
                     </div>
 
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="valor_cobranca"
-                          render={({ field }) => (
-                            <MoneyInput
-                              field={field}
-                              label="Valor"
-                              required
-                              labelClassName="text-slate-700 font-semibold ml-1"
-                              inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                      <FormField
+                        control={form.control}
+                        name="isento"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-4 shadow-sm">
+                            <div className="space-y-0.5 pr-4">
+                              <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
+                                Passageiro Isento
+                              </FormLabel>
+                              <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                                Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.
+                              </div>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={!!field.value}
+                                onCheckedChange={field.onChange}
+                                className="data-[state=checked]:bg-[#1a3a5c]"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      {!form.watch("isento") && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="valor_cobranca"
+                              render={({ field }) => (
+                                <MoneyInput
+                                  field={field}
+                                  label="Valor"
+                                  required
+                                  labelClassName="text-slate-700 font-semibold ml-1"
+                                  inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                                />
+                              )}
                             />
-                          )}
-                        />
 
-                        <FormField
-                          control={form.control}
-                          name="dia_vencimento"
-                          render={({ field, fieldState }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 font-semibold ml-1">
-                                Dia do Vencimento <span className="text-red-600">*</span>
-                              </FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <div className="relative">
-                                    <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger
-                                      className={cn(
-                                        "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                        fieldState.error && "border-red-500",
-                                      )}
-                                      aria-invalid={!!fieldState.error}
-                                    >
-                                      <SelectValue placeholder="Selecione o dia" />
-                                    </SelectTrigger>
-                                  </div>
-                                </FormControl>
-                                <SelectContent className="max-h-60 overflow-y-auto">
-                                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                                    <SelectItem key={day} value={day.toString()}>
-                                      Dia {day}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                            <FormField
+                              control={form.control}
+                              name="dia_vencimento"
+                              render={({ field, fieldState }) => (
+                                <FormItem>
+                                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                                    Dia do Vencimento <span className="text-red-600">*</span>
+                                  </FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                        <SelectTrigger
+                                          className={cn(
+                                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                            fieldState.error && "border-red-500",
+                                          )}
+                                          aria-invalid={!!fieldState.error}
+                                        >
+                                          <SelectValue placeholder="Selecione o dia" />
+                                        </SelectTrigger>
+                                      </div>
+                                    </FormControl>
+                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                                        <SelectItem key={day} value={day.toString()}>
+                                          Dia {day}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="mes_inicio_cobranca"
-                          render={({ field, fieldState }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 font-semibold ml-1">
-                                Mês de Início da Cobrança <span className="text-red-600">*</span>
-                              </FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <div className="relative">
-                                    <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger
-                                      className={cn(
-                                        "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                        fieldState.error && "border-red-500",
-                                      )}
-                                      aria-invalid={!!fieldState.error}
-                                    >
-                                      <SelectValue placeholder="Selecione o mês" />
-                                    </SelectTrigger>
-                                  </div>
-                                </FormControl>
-                                <SelectContent className="max-h-60 overflow-y-auto">
-                                  {monthOptions.map((m) => (
-                                    <SelectItem key={m.value} value={m.value}>
-                                      {m.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="mes_inicio_cobranca"
+                              render={({ field, fieldState }) => (
+                                <FormItem>
+                                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                                    Mês de Início da Cobrança <span className="text-red-600">*</span>
+                                  </FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                        <SelectTrigger
+                                          className={cn(
+                                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                            fieldState.error && "border-red-500",
+                                          )}
+                                          aria-invalid={!!fieldState.error}
+                                        >
+                                          <SelectValue placeholder="Selecione o mês" />
+                                        </SelectTrigger>
+                                      </div>
+                                    </FormControl>
+                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                      {monthOptions.map((m) => (
+                                        <SelectItem key={m.value} value={m.value}>
+                                          {m.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                        <FormField
-                          control={form.control}
-                          name="mes_fim_cobranca"
-                          render={({ field, fieldState }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 font-semibold ml-1">
-                                Mês de Término da Cobrança <span className="text-red-600">*</span>
-                              </FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <div className="relative">
-                                    <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger
-                                      className={cn(
-                                        "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                        fieldState.error && "border-red-500",
-                                      )}
-                                      aria-invalid={!!fieldState.error}
-                                    >
-                                      <SelectValue placeholder="Selecione o mês" />
-                                    </SelectTrigger>
-                                  </div>
-                                </FormControl>
-                                <SelectContent className="max-h-60 overflow-y-auto">
-                                  {monthOptions.map((m) => (
-                                    <SelectItem key={m.value} value={m.value}>
-                                      {m.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                            <FormField
+                              control={form.control}
+                              name="mes_fim_cobranca"
+                              render={({ field, fieldState }) => (
+                                <FormItem>
+                                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                                    Mês de Término da Cobrança <span className="text-red-600">*</span>
+                                  </FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                        <SelectTrigger
+                                          className={cn(
+                                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                                            fieldState.error && "border-red-500",
+                                          )}
+                                          aria-invalid={!!fieldState.error}
+                                        >
+                                          <SelectValue placeholder="Selecione o mês" />
+                                        </SelectTrigger>
+                                      </div>
+                                    </FormControl>
+                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                      {monthOptions.map((m) => (
+                                        <SelectItem key={m.value} value={m.value}>
+                                          {m.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </section>
                 </>
               )}
 
               {isOnboarding && (
-                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex items-center gap-4 shadow-sm mt-4">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100/50 text-[#1a3a5c] shrink-0 border border-blue-200/50">
-                    <Info className="w-5 h-5" />
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-                    Esses são apenas os dados essenciais. Você poderá completar o cadastro depois acessando a carteirinha digital.
-                  </p>
-                </div>
+                <Banner
+                  variant="info"
+                  description="Esses são apenas os dados essenciais. Você poderá completar o cadastro depois acessando a carteirinha digital."
+                />
               )}
             </form>
           </Form>

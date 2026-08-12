@@ -13,6 +13,7 @@ import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFo
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
 import { PassageiroFormResponsavel } from "../features/passageiro/form/PassageiroFormResponsavel";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 
 interface PassengerFormDialogProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export default function PassengerFormDialog({
         title={title}
         icon={<User className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
@@ -99,6 +100,7 @@ export default function PassengerFormDialog({
                   profile={profile}
                   escolas={escolas}
                   veiculos={veiculos}
+                  hideAtivo={mode !== PassageiroFormModes.EDIT}
                 />
               </section>
 

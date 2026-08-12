@@ -17,6 +17,8 @@ export interface RegistrarPayloadDTO {
   indicador_telefone?: string;
   dispositivo_cadastro?: DispositivoCadastro;
   metadados_cadastro?: MetadadosCadastroData;
+  push_token?: string;
+  platform?: string;
 }
 
 const endpointBase = "/usuarios";

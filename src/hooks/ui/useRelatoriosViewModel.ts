@@ -10,9 +10,11 @@ import { useSearchParams } from "react-router-dom";
 import { getNowBR } from "@/utils/dateUtils";
 
 export function useRelatoriosViewModel() {
-  const { can } = usePermissions();
+  const { can, isSubConta } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
   const { setPageTitle } = useLayout();
+  const { profile } = useProfile();
+  const usuarioId = profile?.id;
   
   // 1. URL State Management (Tabs)
   const activeTab = useMemo(() => {
@@ -28,8 +30,11 @@ export function useRelatoriosViewModel() {
   }, [searchParams, setSearchParams]);
 
   const veiculoId = useMemo(() => {
-    return searchParams.get("veiculo_id") || undefined;
-  }, [searchParams]);
+    const param = searchParams.get("veiculo_id");
+    if (param && param !== FilterDefaults.TODOS) return param;
+    if (isSubConta && profile?.veiculo_id) return profile.veiculo_id;
+    return undefined;
+  }, [searchParams, isSubConta, profile?.veiculo_id]);
 
   const setVeiculoId = useCallback((value: string) => {
     const newParams = new URLSearchParams(searchParams);
@@ -63,44 +68,66 @@ export function useRelatoriosViewModel() {
   }, []);
 
   // 3. Smart Data Fetching
-  const { profile } = useProfile();
-  const usuarioId = profile?.id;
+  const summaryParams = useMemo(
+    () => ({ mes, ano, veiculoId }),
+    [mes, ano, veiculoId]
+  );
 
   // Always fetch Summary (Base for Visão Geral and Metadata)
   const { 
     data: systemSummary, 
     refetch: refetchSummary, 
     isLoading: isLoadingSummary 
-  } = useUsuarioResumo(usuarioId, { mes, ano, veiculoId }, { enabled: !!usuarioId && can("relatorios.visualizar") });
+  } = useUsuarioResumo(usuarioId, summaryParams, { enabled: !!usuarioId && can("relatorios.visualizar") });
 
   // Conditional Fetches based on Active Tab
   const shouldFetchEntradas = activeTab === RelatorioTab.ENTRADAS;
   const shouldFetchSaidas = activeTab === RelatorioTab.SAIDAS;
   const shouldFetchOperacional = activeTab === RelatorioTab.OPERACIONAL;
 
+  const cobrancasFilters = useMemo(
+    () => ({ usuarioId, mes, ano, veiculoId }),
+    [usuarioId, mes, ano, veiculoId]
+  );
+
   const { data: cobrancasData, refetch: refetchCobrancas, isLoading: isLoadingCobrancas } = useCobrancas(
-    { usuarioId, mes, ano, veiculoId },
+    cobrancasFilters,
     { enabled: !!usuarioId && shouldFetchEntradas && (can("cobrancas.gerenciar") || can("financeiro.visualizar")) }
   );
 
+  const gastosFilters = useMemo(
+    () => ({ usuarioId, mes, ano, veiculoId }),
+    [usuarioId, mes, ano, veiculoId]
+  );
+
   const { data: gastosData, refetch: refetchGastos, isLoading: isLoadingGastos } = useGastos(
-    { usuarioId, mes, ano, veiculoId },
+    gastosFilters,
     { enabled: !!usuarioId && shouldFetchSaidas && can("gastos.visualizar") }
   );
 
   // Operational Data (Passageiros/Escolas/Veiculos) - Needed for 'Operacional'
+  const passageirosFilters = useMemo(
+    () => ({ usuarioId, veiculo: veiculoId }),
+    [usuarioId, veiculoId]
+  );
+
   const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
-    { usuarioId, veiculo: veiculoId },
+    passageirosFilters,
     { enabled: !!usuarioId && shouldFetchOperacional && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
   );
 
+  const userQueryFilters = useMemo(
+    () => ({ usuarioId }),
+    [usuarioId]
+  );
+
   const { data: escolasData, refetch: refetchEscolas, isLoading: isLoadingEscolas } = useEscolas(
-    { usuarioId },
+    userQueryFilters,
     { enabled: !!usuarioId && shouldFetchOperacional && (can("escolas.visualizar") || can("escolas.gerenciar")) }
   );
 
   const { data: veiculosData, refetch: refetchVeiculos, isLoading: isLoadingVeiculos } = useVeiculos(
-    { usuarioId },
+    userQueryFilters,
     { enabled: !!usuarioId && can("veiculos.gerenciar") }
   );
 

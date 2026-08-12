@@ -1,4 +1,5 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -8,12 +9,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { ESTADOS_BRASILEIROS } from "@/constants/defaults";
 import { CepInput } from "./CepInput";
 import { StitchField } from "./StitchField";
-import { Hash, Home, MapPin } from "lucide-react";
+import { Hash, Home, Info, Loader2, MapPin, Search } from "lucide-react";
+import { cepService, EnderecoSugestao } from "@/services/cepService";
 
 interface FormEnderecoFieldsProps {
   required?: boolean;
@@ -24,15 +26,74 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
   const form = useFormContext();
   const [isCepLoading, setIsCepLoading] = useState(false);
 
+  const [sugestoes, setSugestoes] = useState<EnderecoSugestao[]>([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const userTypedRef = useRef(false);
+  const isFocusedRef = useRef(false);
+
+  const logradouroValue = form.watch("logradouro");
+
+  useEffect(() => {
+    // Só faz a requisição HTTP se a alteração veio de uma digitação ativa do usuário (não por foco ou reset)
+    if (!userTypedRef.current || !logradouroValue || logradouroValue.trim().length < 3) {
+      setSugestoes([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    // Debounce padrão de mercado (400ms): aguarda o usuário pausar a digitação antes de chamar a API
+    const timer = setTimeout(async () => {
+      setIsSearchingAddress(true);
+      const uf = form.getValues("estado");
+      const cidade = form.getValues("cidade");
+      const results = await cepService.buscarEnderecoPorTexto(logradouroValue, uf, cidade);
+      setSugestoes(results);
+      setShowDropdown(results.length > 0 && isFocusedRef.current);
+      setIsSearchingAddress(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [logradouroValue, form]);
+
+  const handleSelectSugestao = (sugestao: EnderecoSugestao) => {
+    userTypedRef.current = false;
+    form.setValue("logradouro", sugestao.logradouro, { shouldValidate: true });
+    if (sugestao.bairro) form.setValue("bairro", sugestao.bairro, { shouldValidate: true });
+    if (sugestao.cidade) form.setValue("cidade", sugestao.cidade, { shouldValidate: true });
+    if (sugestao.estado) form.setValue("estado", sugestao.estado, { shouldValidate: true });
+    if (sugestao.cep) form.setValue("cep", sugestao.cep, { shouldValidate: true });
+
+    setShowDropdown(false);
+    setTimeout(() => {
+      form.setFocus("numero");
+    }, 100);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-6">
+      {!isExternal && (
+        <div className="md:col-span-6">
+          <Banner
+            variant="info"
+            title="O CEP não é obrigatório!"
+            description={
+              <>
+                Se você não souber o CEP, pode digitar o nome da rua direto no campo <strong>Logradouro</strong> para buscar as sugestões de endereço.
+              </>
+            }
+          />
+        </div>
+      )}
+
       <FormField
         control={form.control}
         name="cep"
         render={({ field }) => (
           <CepInput
             field={field}
-            required={required}
+            required={false}
             label="CEP"
             className="md:col-span-2"
             labelClassName="text-slate-700 font-semibold ml-1"
@@ -47,17 +108,36 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
         control={form.control}
         name="logradouro"
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-4">
+          <FormItem className="md:col-span-4 relative">
             {isExternal ? (
               <FormControl>
                 <StitchField icon={MapPin} label="Logradouro" required={required} error={!!fieldState.error}>
-                  <Input
-                    {...field}
-                    placeholder="Ex: Rua Comendador"
-                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isCepLoading}
-                  />
+                  <div className="relative w-full">
+                    <Input
+                      {...field}
+                      placeholder="Ex: Rua Comendador"
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full pr-6"
+                      aria-invalid={!!fieldState.error}
+                      disabled={isCepLoading}
+                      onChange={(e) => {
+                        userTypedRef.current = true;
+                        field.onChange(e);
+                      }}
+                      onFocus={() => {
+                        isFocusedRef.current = true;
+                        if (userTypedRef.current && sugestoes.length > 0) {
+                          setShowDropdown(true);
+                        }
+                      }}
+                      onBlur={() => {
+                        isFocusedRef.current = false;
+                        setTimeout(() => setShowDropdown(false), 200);
+                      }}
+                    />
+                    {isSearchingAddress && (
+                      <Loader2 className="absolute right-0 top-1 h-4 w-4 animate-spin text-[#1a3a5c]" />
+                    )}
+                  </div>
                 </StitchField>
               </FormControl>
             ) : (
@@ -67,17 +147,69 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
+                    <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                     <Input
                       {...field}
                       placeholder="Ex: Rua Comendador"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                      className="pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
                       aria-invalid={!!fieldState.error}
                       disabled={isCepLoading}
+                      onChange={(e) => {
+                        userTypedRef.current = true;
+                        field.onChange(e);
+                      }}
+                      onFocus={() => {
+                        isFocusedRef.current = true;
+                        if (userTypedRef.current && sugestoes.length > 0) {
+                          setShowDropdown(true);
+                        }
+                      }}
+                      onBlur={() => {
+                        isFocusedRef.current = false;
+                        setTimeout(() => setShowDropdown(false), 200);
+                      }}
                     />
+                    {isSearchingAddress && (
+                      <div className="absolute right-3 top-3.5 flex items-center pointer-events-none">
+                        <Loader2 className="h-5 w-5 animate-spin text-[#1a3a5c]" />
+                      </div>
+                    )}
                   </div>
                 </FormControl>
               </>
             )}
+
+            {showDropdown && sugestoes.length > 0 && (
+              <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+                {sugestoes.map((sugestao, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 text-xs text-slate-700 font-medium group"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelectSugestao(sugestao);
+                    }}
+                  >
+                    <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60">
+                      <Search className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="truncate flex-1">
+                      <span className="font-bold text-[#1a3a5c] block text-xs truncate">
+                        {sugestao.logradouro}
+                      </span>
+                      <span className="text-slate-500 font-normal block text-[11px] truncate mt-0.5">
+                        {[sugestao.bairro, sugestao.cidade, sugestao.estado]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {sugestao.cep ? ` • CEP: ${sugestao.cep}` : ""}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
           </FormItem>
         )}

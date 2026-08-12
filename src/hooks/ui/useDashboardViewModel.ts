@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 
+import { UserType } from "@/types/enums";
+
 export function useDashboardViewModel() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -27,8 +29,10 @@ export function useDashboardViewModel() {
     summary: systemSummary,
   } = useProfile();
 
-  const { subscription } = useSubscriptionStatus(profile?.id);
-  const { plans } = useSubscriptionPlans();
+  const isGestor = profile?.tipo === UserType.MOTORISTA && !profile?.conta_pai_id;
+
+  const { subscription } = useSubscriptionStatus(isGestor ? profile?.id : undefined);
+  const { plans } = useSubscriptionPlans({ enabled: isGestor });
 
   const financeiro = useMemo(() => ({
     recebido: systemSummary?.financeiro?.receita?.realizada ?? 0,
@@ -104,7 +108,12 @@ export function useDashboardViewModel() {
         queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
         queryClient.invalidateQueries({ queryKey: ["passageiros"] });
         if (passageiro && !isFirstPassageiro) {
-          openFirstChargeDialog({ passageiro });
+          const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+          if (!passageiro.isento || hasContractConfig) {
+            openFirstChargeDialog({ passageiro });
+          } else {
+            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+          }
         } else if (passageiro && isFirstPassageiro) {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }

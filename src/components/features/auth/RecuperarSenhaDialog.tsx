@@ -13,7 +13,8 @@ import {
   Smartphone,
   Eye,
   EyeOff,
-  Lock
+  Lock,
+  ShieldCheck
 } from "lucide-react"
 import {
   Form,
@@ -51,7 +52,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
     handleSolicitar,
     handleValidar,
     handleResetar,
-    telefoneMascarado,
+    emailMascarado,
   } = useRecuperacaoSenhaForm(() => onOpenChange(false))
   const [showPassword, setShowPassword] = useState(false)
 
@@ -110,14 +111,14 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
           <Form {...formStep2}>
             <form id="form-recuperar-step2" onSubmit={formStep2.handleSubmit(handleValidar)} className="space-y-6">
               <div className="space-y-6 py-4">
-                <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 flex gap-3">
-                  <Smartphone className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
+                  <Mail className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      O código foi enviado para o número:
+                      O código foi enviado para o e-mail:
                     </p>
-                    <p className="font-headline font-black text-[#1a3a5c] text-sm">
-                      {telefoneMascarado || "(**) *****-****"}
+                    <p className="font-headline font-black text-[#1a3a5c] text-sm break-all">
+                      {emailMascarado}
                     </p>
                   </div>
                 </div>
@@ -186,10 +187,10 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
           <Form {...formStep3}>
             <form id="form-recuperar-step3" onSubmit={formStep3.handleSubmit(handleResetar)} className="space-y-4">
               <div className="space-y-4 py-4">
-                <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50 flex gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
+                  <ShieldCheck className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
                   <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    Tudo certo! Agora crie uma nova senha segura para acessar sua conta.
+                    Código validado com sucesso! Agora crie uma nova senha segura para acessar sua conta.
                   </p>
                 </div>
 
@@ -287,7 +288,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
         <div className="flex w-full gap-3">
           {step === 1 ? (
             <BaseDialog.Action
-              label="SOLICITAR CÓDIGO"
+              label="Solicitar Código"
               variant="primary"
               form="form-recuperar-step1"
               type="submit"
@@ -296,7 +297,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
             />
           ) : step === 2 ? (
             <BaseDialog.Action
-              label="VALIDAR CÓDIGO"
+              label="Validar"
               variant="primary"
               form="form-recuperar-step2"
               type="submit"
@@ -305,7 +306,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
             />
           ) : (
             <BaseDialog.Action
-              label="ALTERAR SENHA"
+              label="Confirmar"
               variant="primary"
               form="form-recuperar-step3"
               type="submit"

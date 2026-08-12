@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
-import { CreditCard, MapPin, Info, Loader2, AlertCircle } from "lucide-react";
+import { CreditCard, Lock, Calendar, ShieldCheck, User, MapPin, Info, Loader2, AlertCircle } from 'lucide-react';
+import { isDevEnv } from '@/utils/detectPlatform';
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
@@ -249,7 +250,7 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError, 
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {import.meta.env.DEV && (
+      {isDevEnv() && (
         <div className="flex flex-wrap gap-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
           <span className="w-full text-[10px] font-bold text-slate-500 uppercase">Dev Magic Fill</span>
           <button

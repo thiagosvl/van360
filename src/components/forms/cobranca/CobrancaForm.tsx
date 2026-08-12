@@ -1,4 +1,5 @@
 import { MoneyInput } from "@/components/forms";
+import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -224,13 +225,11 @@ export function CobrancaFormContent({
 
             {/* --- Aviso de Mês Futuro --- */}
             {mode === "create" && isMesFuturo && (
-                <div className="flex items-start gap-2 text-xs text-yellow-900 bg-yellow-50 border border-yellow-200 p-3 rounded-xl">
-                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
-                    <p className="font-medium leading-snug">
-                        <span className="font-bold">Aviso: Mês Futuro.</span>{" "}
-                        Só registre agora caso seja um adiantamento.
-                    </p>
-                </div>
+                <Banner
+                    variant="warning"
+                    title="ATENÇÃO: Mês futuro"
+                    description="Só registre agora caso seja um adiantamento."
+                />
             )}
 
             {/* --- Valor --- */}

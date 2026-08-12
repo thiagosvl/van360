@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { veiculoApi } from "@/services/api/veiculo.api";
 import { Veiculo } from "@/types/veiculo";
+import { useEffect, useRef } from "react";
 
 /**
  * Hook para buscar veículos com filtros customizados (usado em formulários)
@@ -16,7 +17,7 @@ export function useVeiculosWithFilters(
   // Criar uma chave estável para o queryKey baseada nos filtros
   const filterKey = filtros ? JSON.stringify(filtros) : undefined;
   
-  return useQuery({
+  const query = useQuery({
     queryKey: ["veiculos-form", usuarioId, filterKey],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
     // Sempre refazer a requisição quando os filtros mudarem ou quando o componente montar
@@ -27,7 +28,19 @@ export function useVeiculosWithFilters(
       const data = await veiculoApi.listVeiculos(usuarioId, filtros);
       return (data as Veiculo[]) ?? [];
     },
-    onError: options?.onError,
   });
+
+  const onErrorRef = useRef(options?.onError);
+  useEffect(() => {
+    onErrorRef.current = options?.onError;
+  });
+
+  useEffect(() => {
+    if (query.error && onErrorRef.current) {
+      onErrorRef.current(query.error);
+    }
+  }, [query.error]);
+
+  return query;
 }
 

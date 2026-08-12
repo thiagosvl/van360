@@ -1,5 +1,6 @@
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
+import { AcessoRapido } from "@/components/features/home/AcessoRapido";
 import confetti from "canvas-confetti";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { SecondaryKPICard } from "@/components/features/home/SecondaryKPICard";
@@ -113,7 +114,7 @@ const Home = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
-        <div className="space-y-6">
+        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
           {/* Header Contextual */}
           {!isSubConta && !onboarding.showOnboarding && (
             <div className="px-1 space-y-0.5">
@@ -219,22 +220,24 @@ const Home = () => {
                 />
               )}
 
-              <div className="grid gap-4 grid-cols-2">
-                {(contadores.passageirosAtivos > 0 || (!isSubConta && onboarding.showOnboarding)) && (
-                  <SecondaryKPICard
-                    label="Passageiros Ativos"
-                    value={contadores.passageirosAtivos}
-                    loading={isLoading}
-                  />
-                )}
-                {(contadores.escolasAtivas > 0 || (!isSubConta && onboarding.showOnboarding)) && (
-                  <SecondaryKPICard
-                    label="Escolas Ativas"
-                    value={contadores.escolasAtivas}
-                    loading={isLoading}
-                  />
-                )}
-              </div>
+              {!isSubConta && (
+                <div className="grid gap-4 grid-cols-2">
+                  {(contadores.passageirosAtivos > 0 || onboarding.showOnboarding) && (
+                    <SecondaryKPICard
+                      label="Passageiros Ativos"
+                      value={contadores.passageirosAtivos}
+                      loading={isLoading}
+                    />
+                  )}
+                  {(contadores.escolasAtivas > 0 || onboarding.showOnboarding) && (
+                    <SecondaryKPICard
+                      label="Escolas Ativas"
+                      value={contadores.escolasAtivas}
+                      loading={isLoading}
+                    />
+                  )}
+                </div>
+              )}
             </div>
             {!isSubConta && onboarding.showOnboarding && (
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
@@ -272,83 +275,10 @@ const Home = () => {
           )}
 
           {/* Acessos Rápidos */}
-          <section className="mt-6 px-1">
-            <h2 className="text-[17px] font-bold text-slate-800 mb-4">
-              Acesso Rápido
-            </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
-              {can("passageiros.gerenciar") && (
-                <ShortcutCard
-                  onClick={handleOpenPassageiroDialog}
-                  icon={Plus}
-                  label="Cadastrar Passageiro"
-                  variant="blue"
-                />
-              )}
-              {can("gastos.criar") && (
-                <ShortcutCard
-                  onClick={handleOpenGastoDialog}
-                  icon={Plus}
-                  label="Registrar Gasto"
-                  variant="rose"
-                />
-              )}
-              {can("rotas.visualizar") && (
-                <ShortcutCard
-                  to={ROUTES.PRIVATE.MOTORISTA.ROUTES}
-                  icon={Route}
-                  label="Rotas"
-                  variant="emerald"
-                />
-              )}
-              {can("gastos.visualizar") && (
-                <ShortcutCard
-                  to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
-                  icon={TrendingDown}
-                  label="Gastos"
-                  variant="sky"
-                />
-              )}
-              <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.SETTINGS}
-                icon={Settings}
-                label="Configurações"
-                variant="violet"
-              />
-              {can("relatorios.visualizar") && (
-                <ShortcutCard
-                  to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
-                  icon={FileText}
-                  label="Relatórios"
-                  variant="slate"
-                />
-              )}
-              {can("escolas.gerenciar") && (
-                <ShortcutCard
-                  to={ROUTES.PRIVATE.MOTORISTA.SCHOOLS}
-                  icon={GraduationCap}
-                  label="Escolas"
-                  variant="white"
-                />
-              )}
-              {can("veiculos.gerenciar") && (
-                <ShortcutCard
-                  to={ROUTES.PRIVATE.MOTORISTA.VEHICLES}
-                  icon={Car}
-                  label="Veículos"
-                  variant="amber"
-                />
-              )}
-              {can("assinatura.gerenciar") && (
-                <ShortcutCard
-                  to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
-                  icon={Rocket}
-                  label="Minha Assinatura"
-                  variant="orange"
-                />
-              )}
-            </div>
-          </section>
+          <AcessoRapido
+            onCadastrarPassageiro={handleOpenPassageiroDialog}
+            onRegistrarGasto={handleOpenGastoDialog}
+          />
 
           {/* Aniversariantes */}
           <section className="pt-3">

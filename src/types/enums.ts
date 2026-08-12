@@ -6,6 +6,23 @@ export enum UserType {
   RESPONSAVEL = "responsavel",
 }
 
+export enum PushNotificationAction {
+  OPEN_HOME = "OPEN_HOME",
+  OPEN_SUBSCRIPTION = "OPEN_SUBSCRIPTION",
+  OPEN_CONTRACTS = "OPEN_CONTRACTS",
+  OPEN_ROUTE = "OPEN_ROUTE",
+  OPEN_TEAM = "OPEN_TEAM",
+  OPEN_BILLING = "OPEN_BILLING",
+  OPEN_PASSENGERS = "OPEN_PASSENGERS",
+  OPEN_SCHOOLS = "OPEN_SCHOOLS",
+  OPEN_VEHICLES = "OPEN_VEHICLES",
+  OPEN_EXPENSES = "OPEN_EXPENSES",
+  OPEN_REPORTS = "OPEN_REPORTS",
+  OPEN_SETTINGS = "OPEN_SETTINGS",
+  OPEN_BIRTHDAYS = "OPEN_BIRTHDAYS",
+  OPEN_PASSENGER_REQUESTS = "OPEN_PASSENGER_REQUESTS"
+}
+
 export enum ContractMultaTipo {
   PERCENTUAL = "percentual",
   FIXO = "fixo"
@@ -29,6 +46,22 @@ export enum WhatsappStatus {
   CLOSE = "close",
   UNKNOWN = "UNKNOWN",
   NOT_FOUND = "NOT_FOUND"
+}
+
+export enum WabaTemplateNameEnum {
+  PAIS_VENCIMENTO_PROXIMO = "van360_pais_vencimento_proximo",
+  PAIS_VENCIMENTO_PROXIMO_PIX = "van360_pais_vencimento_proximo_pix",
+  PAIS_VENCIMENTO_PROXIMO_SEM_PIX = "van360_pais_vencimento_proximo_sem_pix",
+  PAIS_VENCIMENTO_HOJE = "van360_pais_vencimento_hoje",
+  PAIS_VENCIMENTO_HOJE_PIX = "van360_pais_vencimento_hoje_pix",
+  PAIS_VENCIMENTO_HOJE_SEM_PIX = "van360_pais_vencimento_hoje_sem_pix",
+  PAIS_ATRASADO = "van360_pais_atrasado",
+  PAIS_ATRASADO_PIX = "van360_pais_atrasado_pix",
+  PAIS_ATRASADO_SEM_PIX = "van360_pais_atrasado_sem_pix",
+  PAIS_RECIBO = "van360_pais_recibo",
+  PAIS_CONTRATO = "van360_pais_contrato",
+  MOTORISTA_RENOVACAO_PIX = "van360_motorista_renovacao_pix",
+  MOTORISTA_FALHA_CARTAO = "van360_motorista_falha_cartao",
 }
 
 export enum PixKeyStatus {
@@ -181,7 +214,9 @@ export enum AtividadeAcao {
   ROTA_CRIADA = "ROTA_CRIADA",
   ROTA_EDITADA = "ROTA_EDITADA",
   ROTA_EXCLUIDA = "ROTA_EXCLUIDA",
+  ROTA_INICIADA = "ROTA_INICIADA",
   ROTA_CONCLUIDA = "ROTA_CONCLUIDA",
+  ROTA_CANCELADA = "ROTA_CANCELADA",
 
   COBRANCAS_GERADAS = "COBRANCAS_GERADAS",
 
@@ -314,7 +349,7 @@ export enum AdminUserSubTab {
   INDICACOES = "indicacoes",
 }
 
-export enum PixKeyType {
+export enum TipoChavePix {
   CPF = "CPF",
   CNPJ = "CNPJ",
   TELEFONE = "TELEFONE",
@@ -322,6 +357,8 @@ export enum PixKeyType {
   EVP = "EVP",
   ALEATORIA = "ALEATORIA",
 }
+
+export type PixKeyType = TipoChavePix;
 
 export enum GastoTipoCalculoParcela {
   TOTAL = "total",

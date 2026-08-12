@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Banner } from "@/components/ui/Banner";
 import { useConfiguracoes } from "@/hooks";
 import { Users, Smartphone, ShieldCheck, Loader2 } from "lucide-react";
 
@@ -77,12 +78,11 @@ export const NotificacoesTab = memo(function NotificacoesTab() {
         </div>
 
         {!(configuracoes?.notificar_pais_cobrancas ?? true) && (
-          <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200/60 flex items-start gap-3 text-amber-800 text-xs animate-in fade-in duration-300">
-            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <span>
-              <strong>Aviso:</strong> O envio automático está desativado. Nenhum lembrete de parcela será enviado para os pais, mesmo que o passageiro esteja com lembretes ativados na carteirinha.
-            </span>
-          </div>
+          <Banner
+            variant="warning"
+            title="Atenção:"
+            description="O envio automático está desativado. Nenhum lembrete de parcela será enviado para os pais, mesmo que o passageiro esteja com lembretes ativados na carteirinha."
+          />
         )}
       </div>
 

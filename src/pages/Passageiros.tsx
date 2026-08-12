@@ -71,7 +71,7 @@ export default function Passageiros() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
+        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
           {!isSubConta ? (
             <Tabs
               value={activeTab}
@@ -141,7 +141,7 @@ export default function Passageiros() {
 
                 <div className="flex items-center justify-between px-1">
                   <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                    {sectionTitle}
+                    {/* {sectionTitle} */}
                   </h2>
                   {passageiros.length > 0 && (
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
@@ -158,7 +158,7 @@ export default function Passageiros() {
                       <UnifiedEmptyState
                         icon={Users2}
                         title="Nenhum passageiro encontrado"
-                        description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
+                        description={searchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Não encontramos nenhum passageiro cadastrado em sua frota."}
                         action={(hasActiveFilters || searchTerm.length > 0) ? {
                           label: "Limpar Filtros",
                           onClick: clearFilters

@@ -68,12 +68,18 @@ export function usePassageirosViewModel() {
 
   useEffect(() => {
     const currentTab = searchParams.get("tab");
+    if (isSubConta && currentTab === PassageiroTab.SOLICITACOES) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", PassageiroTab.PASSAGEIROS);
+      setSearchParams(newParams, { replace: true });
+      return;
+    }
     if (!currentTab || !Object.values(PassageiroTab).includes(currentTab as PassageiroTab)) {
       const newParams = new URLSearchParams(searchParams);
       newParams.set("tab", PassageiroTab.PASSAGEIROS);
       setSearchParams(newParams, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, isSubConta]);
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -133,12 +139,20 @@ export function usePassageirosViewModel() {
       usuarioId: profile?.id,
       search: debouncedSearchTerm,
       escola: selectedEscola === FilterDefaults.TODAS ? undefined : selectedEscola,
-      veiculo: selectedVeiculo === FilterDefaults.TODOS ? (isSubConta ? "all" : undefined) : selectedVeiculo,
+      veiculo:
+        selectedVeiculo === FilterDefaults.TODOS
+          ? isSubConta && profile?.veiculo_id
+            ? profile.veiculo_id
+            : isSubConta
+              ? "all"
+              : undefined
+          : selectedVeiculo,
       status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
       periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
     }),
     [
       profile?.id,
+      profile?.veiculo_id,
       debouncedSearchTerm,
       selectedEscola,
       selectedVeiculo,
@@ -173,8 +187,13 @@ export function usePassageirosViewModel() {
   const countPrePassageiros = resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
   const totalPassageirosResumo = resumo?.contadores.passageiros.total;
 
+  const userQueryFilters = useMemo(
+    () => ({ usuarioId: profile?.id }),
+    [profile?.id]
+  );
+
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
-    { usuarioId: profile?.id },
+    userQueryFilters,
     {
       enabled: !!profile?.id && (can("escolas.visualizar") || can("escolas.gerenciar")),
       onError: () => toast.error("escola.erro.carregar"),
@@ -182,7 +201,7 @@ export function usePassageirosViewModel() {
   );
 
   const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(
-    { usuarioId: profile?.id },
+    userQueryFilters,
     {
       enabled: !!profile?.id && (can("veiculos.gerenciar") || can("passageiros.visualizar")),
       onError: () => toast.error("veiculo.erro.carregar"),
@@ -292,7 +311,12 @@ export function usePassageirosViewModel() {
         if (passageiro && isFirstPassageiro) {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         } else if (passageiro && !isFirstPassageiro) {
-          openFirstChargeDialog({ passageiro });
+          const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+          if (!passageiro.isento || hasContractConfig) {
+            openFirstChargeDialog({ passageiro });
+          } else {
+            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+          }
         }
       },
     });
@@ -311,8 +335,8 @@ export function usePassageirosViewModel() {
           usuarioId: profile.id,
           data: { ...fakeEscola, ativo: true },
         });
-        if (novaEscola && (novaEscola as any).id) {
-          escolaId = (novaEscola as any).id;
+        if (novaEscola && (novaEscola as { id?: string }).id) {
+          escolaId = (novaEscola as { id: string }).id;
         }
       }
 
@@ -326,8 +350,8 @@ export function usePassageirosViewModel() {
           usuarioId: profile.id,
           data: { ...fakeVeiculo, ativo: true },
         });
-        if (novoVeiculo && (novoVeiculo as any).id) {
-          veiculoId = (novoVeiculo as any).id;
+        if (novoVeiculo && (novoVeiculo as { id?: string }).id) {
+          veiculoId = (novoVeiculo as { id: string }).id;
         }
       }
     } catch (e) {
@@ -445,10 +469,10 @@ export function usePassageirosViewModel() {
 
     const telefone = isResponsavelMockTelefone(
       passageiro.telefone_responsavel ||
-      (passageiro as any).dados_contrato?.telefone_responsavel
+      (passageiro as { dados_contrato?: { telefone_responsavel?: string } }).dados_contrato?.telefone_responsavel
     ) ? undefined : (
       passageiro.telefone_responsavel ||
-      (passageiro as any).dados_contrato?.telefone_responsavel
+      (passageiro as { dados_contrato?: { telefone_responsavel?: string } }).dados_contrato?.telefone_responsavel
     );
 
     if (!telefone) {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -264,7 +263,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                   <UserCheck className="h-3.5 w-3.5 text-slate-500" />
                   <span className="text-xs font-normal text-slate-500">Nome do responsável</span>
                 </div>
-                <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                   {formatNomeResponsavelCompletoExibicao(currentResp.nome) || "—"}
                 </span>
               </div>
@@ -276,7 +275,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                     <Phone className="h-3.5 w-3.5 text-slate-500" />
                     <span className="text-xs font-normal text-slate-500">Telefone / WhatsApp</span>
                   </div>
-                  <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                  <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                     {isResponsavelMockTelefone(currentResp.telefone) ? "—" : (phoneMask(currentResp.telefone) || "—")}
                   </span>
                 </div>
@@ -302,7 +301,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                   <IdCard className="h-3.5 w-3.5 text-slate-500" />
                   <span className="text-xs font-normal text-slate-500">CPF</span>
                 </div>
-                <span className="text-sm font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                   {cpfMask(currentResp.cpf) || "—"}
                 </span>
               </div>

@@ -1,5 +1,6 @@
 import { MoneyInput } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -242,7 +243,7 @@ export default function GastoFormDialog({
         title={gastoToEdit ? "Editar Gasto" : "Registrar Gasto"}
         icon={<TrendingDown className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
@@ -596,8 +597,12 @@ export default function GastoFormDialog({
                       Veículo
                     </FormLabel>
                     <Select
-                      disabled={isLoadingVeiculos}
-                      onValueChange={field.onChange}
+                      disabled={isLoadingVeiculos || isSubConta}
+                      onValueChange={(val) => {
+                        if (!isSubConta) {
+                          field.onChange(val);
+                        }
+                      }}
                       value={field.value || defaultVeiculoId || "none"}
                     >
                       <FormControl>

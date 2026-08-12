@@ -235,6 +235,11 @@ export function validateEnderecoFields(
   let logradouroRequired = false;
   let numeroRequired = false;
 
+  // Se CEP possui valor (preenchido parcialmente ou completo)
+  if (cep && cep.trim().length > 0 && !hasValidCEP) {
+    errors.cep = "Formato inválido (00000-000)";
+  }
+
   // Se CEP válido → logradouro e número obrigatórios
   if (hasValidCEP) {
     logradouroRequired = true;
@@ -247,13 +252,9 @@ export function validateEnderecoFields(
     }
   }
 
-  // Se logradouro preenchido → CEP e número obrigatórios
+  // Se logradouro preenchido → apenas número é obrigatório (CEP permanece opcional)
   if (hasLogradouro) {
-    cepRequired = true;
     numeroRequired = true;
-    if (!hasValidCEP) {
-      errors.cep = "Campo obrigatório";
-    }
     if (!hasNumero) {
       errors.numero = "Campo obrigatório";
     }

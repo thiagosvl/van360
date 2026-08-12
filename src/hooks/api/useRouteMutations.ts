@@ -2,16 +2,46 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { toast } from "@/utils/notifications/toast";
 import { getErrorMessage } from "@/utils/errorHandler";
-import { RouteStopStatus } from "@/types/route";
+import { RouteStopStatus, RouteExecutionStatus } from "@/types/route";
+
+let lastLocalMutationTime = 0;
+const lastRealtimeSyncMap = new Map<string, number>();
+
+export function markLocalMutation() {
+  lastLocalMutationTime = Date.now();
+}
+
+export function isRecentLocalMutation(thresholdMs = 2500): boolean {
+  return Date.now() - lastLocalMutationTime < thresholdMs;
+}
+
+export function debounceRealtimeSync(key: string, callback: () => void, windowMs = 1500): boolean {
+  const now = Date.now();
+  const lastSync = lastRealtimeSyncMap.get(key) || 0;
+  if (now - lastSync < windowMs) {
+    return false;
+  }
+  lastRealtimeSyncMap.get(key);
+  lastRealtimeSyncMap.set(key, now);
+  callback();
+  return true;
+}
 
 export function useCreateRoute() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => routeApi.createRoute(data),
-    onSuccess: () => {
+    mutationFn: (data: any) => {
+      markLocalMutation();
+      return routeApi.createRoute(data);
+    },
+    onSuccess: (data: any) => {
+      markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
-      toast.success("Rota criada com sucesso!");
+      if (data?.id) {
+        queryClient.setQueryData(["route-detail", data.id], data);
+      }
+      toast.success("Rota salva com sucesso!");
     },
     onError: (error: any) => {
       toast.error("Erro ao criar rota", {
@@ -25,11 +55,18 @@ export function useUpdateRoute() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      routeApi.updateRoute(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => {
+      markLocalMutation();
+      return routeApi.updateRoute(id, data);
+    },
     onSuccess: (data, variables) => {
+      markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
-      queryClient.invalidateQueries({ queryKey: ["route-detail", variables.id] });
+      if (data) {
+        queryClient.setQueryData(["route-detail", variables.id], data);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-detail", variables.id] });
+      }
       queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias"] });
       queryClient.invalidateQueries({ queryKey: ["route-ausencias"] });
       toast.success("Rota atualizada com sucesso!");
@@ -46,8 +83,12 @@ export function useDeleteRoute(usuarioId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => routeApi.deleteRoute(id),
+    mutationFn: (id: string) => {
+      markLocalMutation();
+      return routeApi.deleteRoute(id);
+    },
     onSuccess: () => {
+      markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
       toast.success("Rota excluída com sucesso!");
@@ -64,10 +105,14 @@ export function useIniciarRota() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => routeApi.iniciarRota(id),
+    mutationFn: (id: string) => {
+      markLocalMutation();
+      return routeApi.iniciarRota(id);
+    },
     onSuccess: (data) => {
+      markLocalMutation();
       queryClient.setQueryData(["route-execution", data.id], data);
-      queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+      queryClient.resetQueries({ queryKey: ["execucoes-list"] });
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       if (data.alertaInativos) {
         toast.info("Atenção na inicialização", { description: data.alertaInativos });
@@ -94,6 +139,7 @@ export function useAtualizarParadaStatus() {
       paradaId: string;
       status: RouteStopStatus;
     }) => {
+      markLocalMutation();
       const STOP_TIMEOUT = 12000;
       try {
         return await routeApi.atualizarParadaStatus(execucaoId, paradaId, status, { timeout: STOP_TIMEOUT });
@@ -110,7 +156,20 @@ export function useAtualizarParadaStatus() {
       }
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
+      markLocalMutation();
+      if (data) {
+        queryClient.setQueryData(["route-execution", variables.execucaoId], data);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
+      }
+      if (variables.status === RouteStopStatus.AUSENTE) {
+        const rotaId = (data as any)?.rota_id || (data as any)?.rota?.id;
+        if (rotaId) {
+          queryClient.invalidateQueries({ queryKey: ["route-detail", rotaId] });
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["route-detail"] });
+        }
+      }
     },
     onError: (error: any) => {
       const isTimeout = error?.code === 'ECONNABORTED' || error?.message?.includes('timeout');
@@ -132,8 +191,12 @@ export function useReordenarExecucao() {
     }: {
       execucaoId: string;
       paradas: Array<{ id: string; ordem: number }>;
-    }) => routeApi.reordenarExecucao(execucaoId, paradas),
+    }) => {
+      markLocalMutation();
+      return routeApi.reordenarExecucao(execucaoId, paradas);
+    },
     onMutate: async (variables) => {
+      markLocalMutation();
       await queryClient.cancelQueries({ queryKey: ["route-execution", variables.execucaoId] });
 
       const previousExec = queryClient.getQueryData(["route-execution", variables.execucaoId]);
@@ -167,6 +230,7 @@ export function useReordenarExecucao() {
       });
     },
     onSettled: (data, error, variables) => {
+      markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
     },
   });
@@ -176,11 +240,21 @@ export function useCancelarExecucao() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => routeApi.cancelarExecucao(id),
+    mutationFn: (id: string) => {
+      markLocalMutation();
+      return routeApi.cancelarExecucao(id);
+    },
     onSuccess: (data) => {
+      markLocalMutation();
       queryClient.removeQueries({ queryKey: ["route-execution", data.id] });
-      queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+      queryClient.resetQueries({ queryKey: ["execucoes-list"] });
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+      const rotaId = (data as any)?.rota_id || (data as any)?.rota?.id;
+      if (rotaId) {
+        queryClient.invalidateQueries({ queryKey: ["route-detail", rotaId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-detail"] });
+      }
       toast.success("Rota encerrada com sucesso!");
     },
     onError: (error: any) => {
@@ -195,11 +269,21 @@ export function useFinalizarExecucao() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => routeApi.finalizarExecucao(id),
+    mutationFn: (id: string) => {
+      markLocalMutation();
+      return routeApi.finalizarExecucao(id);
+    },
     onSuccess: (data) => {
+      markLocalMutation();
       queryClient.removeQueries({ queryKey: ["route-execution", data.id] });
-      queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+      queryClient.resetQueries({ queryKey: ["execucoes-list"] });
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+      const rotaId = (data as any)?.rota_id || (data as any)?.rota?.id;
+      if (rotaId) {
+        queryClient.invalidateQueries({ queryKey: ["route-detail", rotaId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-detail"] });
+      }
     },
     onError: (error: any) => {
       toast.error("Erro ao finalizar rota", {
@@ -212,12 +296,21 @@ export function useFinalizarExecucao() {
 export function useRegistrarAusenciaMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }) =>
-      routeApi.createAusencia(data),
+    mutationFn: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }) => {
+      markLocalMutation();
+      return routeApi.createAusencia(data);
+    },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["route-detail", variables.rota_id] });
-      queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
-      queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
+      markLocalMutation();
+      if (variables.rota_id) {
+        queryClient.invalidateQueries({ queryKey: ["route-detail", variables.rota_id] });
+        queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-detail"] });
+      }
+      if (variables.passageiro_id) {
+        queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
+      }
       queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution"] });
@@ -228,12 +321,17 @@ export function useRegistrarAusenciaMutation() {
 export function useRemoverAusenciaMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, passageiro_id, rota_id, data_ausencia }: { id: string; passageiro_id?: string; rota_id?: string; data_ausencia?: string }) =>
-      routeApi.deleteAusencia(id, { passageiro_id, rota_id, data_ausencia }),
+    mutationFn: ({ id, passageiro_id, rota_id, data_ausencia }: { id: string; passageiro_id?: string; rota_id?: string; data_ausencia?: string }) => {
+      markLocalMutation();
+      return routeApi.deleteAusencia(id, { passageiro_id, rota_id, data_ausencia });
+    },
     onSuccess: (_, variables) => {
+      markLocalMutation();
       if (variables.rota_id) {
         queryClient.invalidateQueries({ queryKey: ["route-detail", variables.rota_id] });
         queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-detail"] });
       }
       if (variables.passageiro_id) {
         queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });

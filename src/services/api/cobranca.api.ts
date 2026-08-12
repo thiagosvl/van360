@@ -54,11 +54,6 @@ export const cobrancaApi = {
 
 
 
-    fetchNotificacoesByCobrancaId: (cobrancaId: string) =>
-        apiClient
-            .get(`${endpointBase}/${cobrancaId}/notificacoes`)
-            .then(res => res.data),
-
     toggleNotificacoes: (passageiroId: string, novoStatus: boolean) =>
         apiClient
             .patch(`${endpointBase}/${passageiroId}/toggle-notificacoes`, { novoStatus })

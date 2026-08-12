@@ -1,6 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { BASE_DOMAIN } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
+import { obterStatusConfiguracaoContrato, StatusConfiguracaoContrato } from "@/utils/domain";
 import {
   useContratos,
   useContratosKPIs,
@@ -19,7 +20,7 @@ import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { isResponsavelMockTelefone } from "@/utils/formatters/name";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -81,8 +82,13 @@ export function useContratosViewModel() {
     enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")),
   });
 
+  const contratosFilters = useMemo(
+    () => ({ tab: activeTab, search: debouncedSearch }),
+    [activeTab, debouncedSearch]
+  );
+
   const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
-    { tab: activeTab, search: debouncedSearch },
+    contratosFilters,
     { enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")) }
   );
 
@@ -95,8 +101,9 @@ export function useContratosViewModel() {
     await Promise.all([refetchKPIs(), refetchContratos()]);
   };
 
-  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
-  const isContratoConfigurado = !!profile?.assinatura_digital_url;
+  const statusConfig = obterStatusConfiguracaoContrato(profile);
+  const isContratoConfigurado = statusConfig !== StatusConfiguracaoContrato.NAO_CONFIGURADO;
+  const isContratoAtivo = statusConfig === StatusConfiguracaoContrato.ATIVO;
 
   const handleOpenContractSetup = useCallback(() => {
     openContractSetupDialog({

@@ -3,9 +3,9 @@ import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReordenarExecucao, useFinalizarExecucao } from "../api/useRouteMutations";
-import { useExecucoesRota } from "../api/useRoutes";
+import { useExecucaoAtivaVeiculo } from "../api/useRoutes";
 import { useSession } from "../business/useSession";
-import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger, RoutePassenger } from "@/types/route";
+import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger, RoutePassenger, RouteExecution } from "@/types/route";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
   const location = useLocation();
@@ -18,6 +18,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     queryKey: ["route-execution", execucaoId],
     queryFn: () => routeApi.getExecucao(execucaoId),
     enabled: !isExplicitPreview && !!execucaoId,
+    staleTime: 1000 * 30,
     retry: false,
     refetchInterval: false
   });
@@ -26,6 +27,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     queryKey: ["route-detail", execucaoId],
     queryFn: () => routeApi.getRoute(execucaoId),
     enabled: (isExplicitPreview || !!execQuery.isError) && !!execucaoId,
+    staleTime: 1000 * 60 * 2,
     retry: false,
   });
   const stepMutation = useAtualizarParadaStatus();
@@ -36,31 +38,13 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
   const isPreview = isExplicitPreview || (!!execQuery.isError && !!routeQuery.data);
 
-  const { data: execucoesList = [] } = useExecucoesRota(userId, { enabled: isPreview && !!userId });
+  let execucao: RouteExecution | undefined = undefined;
+  let paradas: RouteExecutionPassenger[] = [];
 
-  let execucao = (!isPreview && execQuery.data) ? execQuery.data : routeQuery.data;
-  let paradas: RouteExecutionPassenger[] = (!isPreview && execQuery.data?.paradas) ? execQuery.data.paradas : [];
-
-  const targetVeiculoId = routeQuery.data?.veiculo_id || execQuery.data?.rota?.veiculo_id || (execucao as any)?.veiculo_id || (execucao as any)?.rota?.veiculo_id;
-  const currentRouteId = routeQuery.data?.id || (execQuery.data as any)?.rota_id || execucaoId;
-
-  const occupiedExec = useMemo(() => {
-    if (!isPreview || !execucoesList || execucoesList.length === 0) return null;
-    return execucoesList.find(e => {
-      if (e.status !== RouteExecutionStatus.INICIADA) return false;
-      if (e.rota_id === currentRouteId || e.rota?.id === currentRouteId) return false;
-      const execVeiculoId = e.rota?.veiculo_id;
-      if (targetVeiculoId && execVeiculoId) {
-        return targetVeiculoId === execVeiculoId;
-      }
-      return false;
-    });
-  }, [isPreview, targetVeiculoId, execucoesList, currentRouteId]);
-
-  const isVehicleOccupied = !!occupiedExec;
-  const occupiedRouteName = occupiedExec?.rota?.nome || "";
-
-  if (isPreview && routeQuery.data) {
+  if (!isPreview && execQuery.data) {
+    execucao = execQuery.data;
+    paradas = execQuery.data.paradas || [];
+  } else if (routeQuery.data) {
     execucao = {
       id: "",
       rota_id: routeQuery.data.id,
@@ -71,11 +55,11 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
       rota: {
         id: routeQuery.data.id,
         nome: routeQuery.data.nome,
-        veiculo_id: routeQuery.data.veiculo_id
+        veiculo_id: routeQuery.data.veiculo_id ?? undefined
       }
     };
 
-    paradas = (routeQuery.data.passageiros || []).map((p: RoutePassenger): RouteExecutionPassenger => ({
+    paradas = (routeQuery.data.paradas || []).map((p: RoutePassenger): RouteExecutionPassenger => ({
       id: p.id || "",
       execucao_rota_id: "",
       tipo_no: p.tipo_no,
@@ -91,7 +75,19 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     }));
   }
 
-  const isDataLoading = isExplicitPreview ? routeQuery.isLoading : (execQuery.isLoading || (execQuery.isError && routeQuery.isLoading));
+  const targetVeiculoId = (routeQuery.data?.veiculo_id || execQuery.data?.rota?.veiculo_id || execucao?.rota?.veiculo_id) ?? undefined;
+  const currentRouteId = routeQuery.data?.id || execQuery.data?.rota_id || execucao?.rota_id || execucaoId;
+
+  const { data: activeExecVeiculo, isLoading: isLoadingActiveVeiculo } = useExecucaoAtivaVeiculo(targetVeiculoId, {
+    enabled: isPreview && !!targetVeiculoId,
+  });
+
+  const isVehicleOccupied = !!activeExecVeiculo && activeExecVeiculo.rota_id !== currentRouteId;
+  const occupiedRouteName = (activeExecVeiculo?.rota as any)?.nome || "";
+
+  const isDataLoading = isExplicitPreview
+    ? (routeQuery.isLoading || (!!targetVeiculoId && isLoadingActiveVeiculo))
+    : (execQuery.isLoading || (execQuery.isError && (routeQuery.isLoading || (!!targetVeiculoId && isLoadingActiveVeiculo))));
   const isStartingRoute = iniciarMutation.isPending;
 
   const refetch = () => {

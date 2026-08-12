@@ -50,7 +50,7 @@ export default function Gastos() {
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="space-y-6">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         {/* 1. Header & Navigation */}
         <DateNavigation
           mes={mesFilter}
@@ -70,6 +70,7 @@ export default function Gastos() {
               valueClassName="text-rose-600"
               icon={TrendingDown}
               countLabel="no Mês"
+              loading={loading}
             />
           </div>
 
@@ -103,7 +104,7 @@ export default function Gastos() {
 
         <div className="flex items-center justify-between px-1">
           <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-            Gastos
+            {/* Gastos */}
           </h2>
           {(() => {
             const sectionCount = gastos.length;
@@ -150,11 +151,11 @@ export default function Gastos() {
                         onClick: clearFilters,
                       }
                       : can("gastos.criar")
-                      ? {
-                        label: "Registrar Gasto",
-                        onClick: () => handleOpenForm(),
-                      }
-                      : undefined
+                        ? {
+                          label: "Registrar Gasto",
+                          onClick: () => handleOpenForm(),
+                        }
+                        : undefined
                   }
                 />
               )}

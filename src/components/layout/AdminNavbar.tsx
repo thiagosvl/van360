@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/business/useSession";
 import { sessionManager } from "@/services/sessionManager";
-import { useNavigate } from "react-router-dom";
+import { apiClient } from "@/services/api/client";
 import { ROUTES } from "@/constants/routes";
 
 interface AdminNavbarProps {
@@ -21,11 +21,15 @@ interface AdminNavbarProps {
 export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
   const { user } = useSession();
   const { pageTitle } = useLayout();
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
+    try {
+      await apiClient.post("/auth/logout");
+    } catch {
+      // Ignora erro de backend no logout para garantir saída do usuário
+    }
     await sessionManager.signOut();
-    navigate(ROUTES.PUBLIC.LOGIN);
+    window.location.href = ROUTES.PUBLIC.LOGIN;
   };
 
   return (

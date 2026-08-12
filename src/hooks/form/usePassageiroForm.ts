@@ -57,58 +57,113 @@ export const passageiroSchema = z
     nome_responsavel: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(2, "Deve ter pelo menos 2 caracteres"),
     turma: z.string().optional().nullable().or(z.literal("")),
     nome_professor: z.string().optional().nullable().or(z.literal("")),
-    parentesco_responsavel: z.string().optional().nullable().or(z.literal("")),
-    cpf_responsavel: z
-      .string()
-      .optional()
-      .nullable()
-      .or(z.literal(""))
-      .refine((val) => !val || isValidCPF(val), {
-        message: "CPF inválido",
-      }),
-    telefone_responsavel: phoneSchema,
-
-    valor_cobranca: z
+    parentesco_responsavel: z
       .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
-      .min(1, "Campo obrigatório")
-      .refine((val) => {
-        const num = moneyToNumber(val);
-        return num >= 1;
-      }, "O valor deve ser no mínimo R$ 1,00"),
-    dia_vencimento: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+      .min(1, "Campo obrigatório"),
+    cpf_responsavel: z
+      .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
+      .min(1, "Campo obrigatório"),
+    telefone_responsavel: z
+      .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
+      .min(1, "Campo obrigatório"),
+
+    isento: z.boolean().optional().default(false),
+    valor_cobranca: z.string().optional().or(z.literal("")),
+    dia_vencimento: z.string().optional().or(z.literal("")),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
-    mes_inicio_cobranca: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-    mes_fim_cobranca: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+    mes_inicio_cobranca: z.string().optional().or(z.literal("")),
+    mes_fim_cobranca: z.string().optional().or(z.literal("")),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
-  .refine(
-    (data) => {
-      if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
+  .superRefine((data, ctx) => {
+    if (data.cpf_responsavel && data.cpf_responsavel.trim() !== "") {
+      if (!isValidCPF(data.cpf_responsavel)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "CPF inválido",
+          path: ["cpf_responsavel"],
+        });
+      }
+    }
+
+    if (data.telefone_responsavel && data.telefone_responsavel.trim() !== "") {
+      const nums = data.telefone_responsavel.replace(/\D/g, "");
+      if (nums.length < 10 || nums.length > 11) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Telefone inválido",
+          path: ["telefone_responsavel"],
+        });
+      }
+    }
+
+    if (data.data_inicio_transporte && data.data_fim_transporte) {
       try {
         const start = parseLocalDate(convertDateBrToISO(data.data_inicio_transporte)!);
         const end = parseLocalDate(convertDateBrToISO(data.data_fim_transporte)!);
-        return end > start;
+        if (end <= start) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Término deve ser maior que o Início",
+            path: ["data_fim_transporte"],
+          });
+        }
       } catch {
-        return true;
+        // Silencioso
       }
-    },
-    {
-      message: "Término deve ser maior que o Início",
-      path: ["data_fim_transporte"],
     }
-  )
-  .refine(
-    (data) => {
-      if (!data.mes_inicio_cobranca || !data.mes_fim_cobranca) return true;
-      return parseInt(data.mes_fim_cobranca, 10) >= parseInt(data.mes_inicio_cobranca, 10);
-    },
-    {
-      message: "Término da cobrança deve ser igual ou posterior ao início",
-      path: ["mes_fim_cobranca"],
+
+    if (!data.isento) {
+      if (!data.valor_cobranca || data.valor_cobranca.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Campo obrigatório",
+          path: ["valor_cobranca"],
+        });
+      } else {
+        const num = moneyToNumber(data.valor_cobranca);
+        if (num < 1) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "O valor deve ser no mínimo R$ 1,00",
+            path: ["valor_cobranca"],
+          });
+        }
+      }
+
+      if (!data.dia_vencimento || data.dia_vencimento.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Campo obrigatório",
+          path: ["dia_vencimento"],
+        });
+      }
+
+      if (!data.mes_inicio_cobranca || data.mes_inicio_cobranca.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Campo obrigatório",
+          path: ["mes_inicio_cobranca"],
+        });
+      }
+
+      if (!data.mes_fim_cobranca || data.mes_fim_cobranca.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Campo obrigatório",
+          path: ["mes_fim_cobranca"],
+        });
+      } else if (data.mes_inicio_cobranca && parseInt(data.mes_fim_cobranca, 10) < parseInt(data.mes_inicio_cobranca, 10)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Término da cobrança deve ser igual ou posterior ao início",
+          path: ["mes_fim_cobranca"],
+        });
+      }
     }
-  );
+  });
 
 export type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
@@ -161,6 +216,7 @@ export function usePassageiroForm({
 
       telefone_responsavel: "",
       cpf_responsavel: "",
+      isento: false,
       valor_cobranca: "",
       dia_vencimento: "",
       data_inicio_transporte: "",
@@ -200,6 +256,7 @@ export function usePassageiroForm({
             telefone_responsavel: isResponsavelMockTelefone(editingPassageiro.telefone_responsavel)
               ? ""
               : phoneMask(editingPassageiro.telefone_responsavel),
+            isento: editingPassageiro.isento ?? false,
             valor_cobranca: editingPassageiro.valor_cobranca
               ? moneyMask(
                 String(
@@ -242,7 +299,10 @@ export function usePassageiroForm({
           "observacoes",
         ]);
       } else if (isFinalizeMode && prePassageiro) {
-        form.reset(mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData);
+        form.reset({
+          ...(mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData),
+          isento: false,
+        });
 
         form.trigger([
           "escola_id",
@@ -292,15 +352,17 @@ export function usePassageiroForm({
 
           telefone_responsavel: "",
           cpf_responsavel: "",
+          isento: false,
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",
           data_fim_transporte: "",
+          mes_inicio_cobranca: "",
+          mes_fim_cobranca: "",
 
           ativo: true,
         });
 
-        // Reset accordion default on create (All open by default as requested)
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
@@ -321,12 +383,10 @@ export function usePassageiroForm({
     form,
   ]);
 
-  // Load data when dialog opens
   useEffect(() => {
     if (isOpen) {
       carregarDados();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingPassageiro?.id, prePassageiro?.id]);
 
   return {

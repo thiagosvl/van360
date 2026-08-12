@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   SaaSPlan,
 } from "@/types/subscription";
@@ -46,7 +46,6 @@ import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
-import { ROUTES } from "@/constants/routes";
 
 export default function SubscriptionPage() {
   const { can } = usePermissions();
@@ -210,7 +209,7 @@ export default function SubscriptionPage() {
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
 
         {/* Subscription Status Hero */}
         <section className="px-1 mb-10">

@@ -1,5 +1,6 @@
 import { FormEnderecoFields } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -252,12 +253,12 @@ export default function EscolaFormDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={() => !isSaving && safeCloseDialog(onClose)} lockClose={isSaving} maxWidth="xl">
+    <BaseDialog open={isOpen} onOpenChange={() => !isSaving && safeCloseDialog(onClose)} lockClose={isSaving} maxWidth="2xl">
       <BaseDialog.Header
         title={editingEscola ? "Editar Escola" : "Nova Escola"}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={isSaving}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"

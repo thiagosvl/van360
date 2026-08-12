@@ -57,6 +57,7 @@ export interface Route {
   usuario_id: string;
   nome: string;
   veiculo_id?: string | null;
+  escola_fixa_id?: string | null;
   numero_passageiros?: number;
   veiculo: {
     id: string;
@@ -64,7 +65,7 @@ export interface Route {
     modelo: string;
     placa: string;
   };
-  passageiros?: RoutePassenger[];
+  paradas?: RoutePassenger[];
   created_at: string;
   updated_at: string;
 }

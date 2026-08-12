@@ -2,10 +2,12 @@ import {
   gerarErrosPorNo,
   validarItinerarioPronto,
   validarMovimentoPermitido,
+  podeReordenarParada,
   calcularOrdenacaoItinerario,
   alterarSentidoRota,
   calcularTempoEstimadoPercurso,
   calcularSentidoInicial,
+  getAlunosEscolaPorPosicao,
   ItineraryNode,
   TempoEstimadoOptions,
   TempoEstimadoResultado,
@@ -15,10 +17,12 @@ export {
   gerarErrosPorNo,
   validarItinerarioPronto,
   validarMovimentoPermitido,
+  podeReordenarParada,
   calcularOrdenacaoItinerario,
   alterarSentidoRota,
   calcularTempoEstimadoPercurso,
   calcularSentidoInicial,
+  getAlunosEscolaPorPosicao,
 };
 
 /**
@@ -30,10 +34,12 @@ export function useRouteRules() {
     gerarErrosPorNo,
     validarItinerarioPronto,
     validarMovimentoPermitido,
+    podeReordenarParada,
     calcularOrdenacaoItinerario,
     alterarSentidoRota,
     calcularTempoEstimadoPercurso,
     calcularSentidoInicial,
+    getAlunosEscolaPorPosicao,
   };
 }
 

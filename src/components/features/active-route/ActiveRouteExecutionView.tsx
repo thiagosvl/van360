@@ -31,7 +31,7 @@ interface ActiveRouteExecutionViewProps {
   isLoading: boolean;
   isStepping?: boolean;
   isFinalizing?: boolean;
-  handleStep: (paradaId: string, status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE, callback?: () => void) => Promise<void>;
+  handleStep: (paradaId: string, status: RouteStopStatus.EMBARCADO | RouteStopStatus.AUSENTE | RouteStopStatus.PENDENTE, callback?: () => void) => Promise<void>;
   handleFinalizarRota?: (callback?: () => void) => Promise<void>;
   handleCancel: (callback?: () => void) => Promise<void>;
   handleReordenar: (novaOrdem: Array<{ id: string; ordem: number }>, callback?: () => void) => Promise<void>;
@@ -137,14 +137,10 @@ export function ActiveRouteExecutionView({
               passageiro_id: pid,
               rota_id: rid,
             });
-            toast.success("Ausência desfeita! Passageiro retornado ao itinerário.");
+            toast.success("Registro de Ausência desfeito!", { description: "Passageiro retornado ao itinerário." });
           } else if (execucao?.id) {
-            await atualizarParadaStatusMutation.mutateAsync({
-              execucaoId: execucao.id,
-              paradaId: parada.id,
-              status: RouteStopStatus.PENDENTE,
-            });
-            toast.success("Ausência desfeita! Passageiro retornado ao trajeto.");
+            await handleStep(parada.id, RouteStopStatus.PENDENTE);
+            toast.success("Registro de Ausência desfeito!", { description: "Passageiro retornado ao trajeto." });
           }
 
           safeCloseDialog(closeConfirmationDialog);
@@ -177,9 +173,6 @@ export function ActiveRouteExecutionView({
   }, [paradaAtual?.id, submittingStopId]);
 
   const isActionDisabled = isLoading || isStepping || isFinalizing || (!!submittingStopId && submittingStopId === activeParadaToRender?.id);
-
-  const sentidoPassageiroAtivo = activeParadaToRender?.sentido || RouteSentido.INDO;
-  const actionLabel = sentidoPassageiroAtivo === RouteSentido.VOLTANDO ? "CONFIRMAR" : "CONFIRMAR";
 
   const todasParadas = [
     ...(paradasConcluidas || []),
@@ -366,18 +359,19 @@ export function ActiveRouteExecutionView({
     activeAddressStr = formatarEnderecoParcialRota(esc) || "Endereço da escola";
   }
 
-  const displayAddressStr = activeAddressStr;
-
   const displayProximasParadas = [...proximasParadas];
 
   const [reorderingTarget, setReorderingTarget] = useState<{ index: number; direction: "up" | "down" } | null>(null);
+  const [isReorderingViaSheetStopId, setIsReorderingViaSheetStopId] = useState<string | null>(null);
 
   const isAnyActionBusy =
     isLoading ||
     isActionDisabled ||
     desfazendoStopId !== null ||
     submittingStopId !== null ||
-    isFinishingLastStop;
+    isFinishingLastStop ||
+    reorderingTarget !== null ||
+    isReorderingViaSheetStopId !== null;
 
   const handleMoveParada = async (index: number, direction: "up" | "down") => {
     const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
@@ -422,6 +416,10 @@ export function ActiveRouteExecutionView({
   };
 
   const handleConfirmReordenacaoSheet = async (novasPendentes: ExecucaoParada[]) => {
+    const targetStopId = reordenarSheetTarget?.id || null;
+    if (targetStopId) {
+      setIsReorderingViaSheetStopId(targetStopId);
+    }
     const allStops = [
       ...paradasConcluidas,
       ...novasPendentes
@@ -436,6 +434,8 @@ export function ActiveRouteExecutionView({
       await handleReordenar(novaOrdem);
     } catch (err) {
       toast.error("Erro ao reordenar trajeto.");
+    } finally {
+      setIsReorderingViaSheetStopId(null);
     }
   };
 
@@ -446,8 +446,6 @@ export function ActiveRouteExecutionView({
   }, [activeParadaToRender?.id, paradaAtual?.id, paradasConcluidas]);
 
   const totalTimelineItems = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + displayProximasParadas.length;
-
-  const isLastNode = (proximasParadas.length === 0);
 
   return (
     <div className="space-y-4">
@@ -463,6 +461,7 @@ export function ActiveRouteExecutionView({
         iniciarMutation={iniciarMutation}
         isLoading={isLoading}
         can={can}
+        isAnyActionBusy={isAnyActionBusy}
         onOpenAusenciaDialog={() => setIsAusenciaDialogOpen(true)}
         onCancel={onCancel}
         onEditRoute={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
@@ -519,6 +518,7 @@ export function ActiveRouteExecutionView({
                 totalPendentesReal={totalPendentesReal}
                 isAnyActionBusy={isAnyActionBusy}
                 reorderingTarget={reorderingTarget}
+                reorderingSheetStopId={isReorderingViaSheetStopId}
                 validarMovimentoPermitido={validarMovimentoPermitido}
                 paradasConcluidas={paradasConcluidas}
                 proximasParadas={proximasParadas}
@@ -560,6 +560,7 @@ export function ActiveRouteExecutionView({
                 execucaoTipo={execucao.tipo}
                 isAnyActionBusy={isAnyActionBusy}
                 reorderingTarget={reorderingTarget}
+                reorderingSheetStopId={isReorderingViaSheetStopId}
                 validarMovimentoPermitido={validarMovimentoPermitido}
                 paradasConcluidas={paradasConcluidas}
                 isLoading={isLoading}

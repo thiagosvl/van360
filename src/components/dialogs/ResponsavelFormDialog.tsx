@@ -1,5 +1,6 @@
 import { FormEnderecoFields, PhoneInput } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { isDevEnv } from "@/utils/detectPlatform";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,8 +50,10 @@ const responsavelSchema = z.object({
   parentesco: z.nativeEnum(ParentescoResponsavel, { errorMap: () => ({ message: "Campo obrigatório" }) }),
   cep: z
     .string()
-    .min(1, "CEP é obrigatório")
-    .refine((val) => isValidCEPFormat(val), {
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .refine((val) => !val || isValidCEPFormat(val), {
       message: "Formato inválido (00000-000)",
     }),
   logradouro: z.string().min(1, "Logradouro é obrigatório"),
@@ -247,7 +250,7 @@ export default function ResponsavelFormDialog({
         title={title}
         icon={<Contact className="w-5 h-5" />}
         onClose={onClose}
-        leftAction={import.meta.env.DEV && (
+        leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"

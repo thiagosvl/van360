@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { MapPin, School, UserMinus, ArrowUp, ArrowDown, Loader2, Home, ListOrdered } from "lucide-react";
 import { RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
 import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { podeReordenarParada } from "@/utils/domain/route/routeRules";
+import { cn } from "@/lib/utils";
 import { AddressDialogData } from "./AddressDetailsDialog";
 
 const TAB_PRINCIPAL = "principal";
@@ -19,6 +21,7 @@ interface ActiveRouteUpcomingCardProps {
   execucaoTipo: string;
   isAnyActionBusy: boolean;
   reorderingTarget: { index: number; direction: "up" | "down" } | null;
+  reorderingSheetStopId?: string | null;
   validarMovimentoPermitido: (tipo: string, index: number, direction: "up" | "down", pendentes: any[], concluidas: any[]) => boolean;
   paradasConcluidas: any[];
   isLoading: boolean;
@@ -42,6 +45,7 @@ export function ActiveRouteUpcomingCard({
   execucaoTipo,
   isAnyActionBusy,
   reorderingTarget,
+  reorderingSheetStopId,
   validarMovimentoPermitido,
   paradasConcluidas,
   isLoading,
@@ -106,16 +110,14 @@ export function ActiveRouteUpcomingCard({
                     : formatShortName(parada.passageiro?.nome || parada.nome || "", true)}
                 </h4>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1 text-left">
-                {!isEscolaItem && (
-                  <>
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="break-words">
-                      {currentAddressStr}
-                    </span>
-                  </>
-                )}
-              </div>
+              {!isEscolaItem && (
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium mt-0.5 text-left">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="break-words">
+                    {currentAddressStr}
+                  </span>
+                </div>
+              )}
             </div>
 
             {!isEscolaItem && (
@@ -123,6 +125,7 @@ export function ActiveRouteUpcomingCard({
                 type="button"
                 variant="outline"
                 size="icon"
+                disabled={isAnyActionBusy}
                 onClick={() => {
                   onOpenAddressDialog({
                     open: true,
@@ -137,10 +140,10 @@ export function ActiveRouteUpcomingCard({
                     escolaNome: pass?.escola?.nome || pass?.escola_nome
                   });
                 }}
-                className="h-8 w-8 rounded-lg border-slate-200 text-[#1a3a5c] hover:bg-slate-50 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs -mt-0.5"
-                title="Ver endereço e detalhes"
+                className="h-8 w-8 rounded-lg border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs active:scale-95 transition-all -mt-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Ver endereço e detalhes da parada"
               >
-                <MapPin className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                <MapPin className="w-4 h-4 text-[#1a3a5c]" />
               </Button>
             )}
           </div>
@@ -149,22 +152,25 @@ export function ActiveRouteUpcomingCard({
             const paradaIndexInTodas = todasParadas.findIndex(p => p.id === parada.id);
             const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
+            const descesAtivos = desces.filter(d => d.status !== RouteStopStatus.AUSENTE);
+            const subesAtivos = subes.filter(s => s.status !== RouteStopStatus.AUSENTE);
+
             return (
               <div className="mt-1 space-y-1 w-full text-left">
                 <div className="space-y-1 text-left">
                   <div className="text-[11px] leading-snug">
-                    <span className="font-semibold text-slate-700">⬇️ Desembarque ({desces.length}):{" "}</span>
-                    {desces.length > 0 && (
+                    <span className="font-semibold text-slate-700">⬇️ Desembarque ({descesAtivos.length}):{" "}</span>
+                    {descesAtivos.length > 0 && (
                       <span className="text-slate-500 font-normal">
-                        {desces.map(d => formatShortName(d.passageiro?.nome || d.nome || "", true)).join(", ")}
+                        {descesAtivos.map(d => formatShortName(d.passageiro?.nome || d.nome || "", true)).join(", ")}
                       </span>
                     )}
                   </div>
                   <div className="text-[11px] leading-snug">
-                    <span className="font-semibold text-slate-700">⬆️ Embarque ({subes.length}):{" "}</span>
-                    {subes.length > 0 && (
+                    <span className="font-semibold text-slate-700">⬆️ Embarque ({subesAtivos.length}):{" "}</span>
+                    {subesAtivos.length > 0 && (
                       <span className="text-slate-500 font-normal">
-                        {subes.map(s => formatShortName(s.passageiro?.nome || s.nome || "", true)).join(", ")}
+                        {subesAtivos.map(s => formatShortName(s.passageiro?.nome || s.nome || "", true)).join(", ")}
                       </span>
                     )}
                   </div>
@@ -212,49 +218,67 @@ export function ActiveRouteUpcomingCard({
                   !validarMovimentoPermitido(execucaoTipo, realIndex, "down", totalPendentesReal, paradasConcluidas);
 
                 return (
-                  <div className="flex items-center gap-0.5 border border-slate-100 rounded-lg p-0.5 bg-slate-50 shrink-0">
+                  <div className="flex items-center gap-1 border border-slate-200/80 rounded-lg max-[338px]:px-0 px-2  py-1 bg-slate-50/80 shrink-0 shadow-2xs h-9">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       disabled={isUpDisabled || isAnyActionBusy}
                       onClick={() => onMoveParada(realIndex, "up")}
-                      className="h-7 w-6.5 sm:w-7 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0 flex items-center justify-center p-0"
+                      className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-600 hover:bg-slate-200/80 active:bg-slate-300 disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors"
                       title="Subir 1 posição"
                     >
                       {isUpReordering ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                        <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
                       ) : (
-                        <ArrowUp className="w-3.5 h-3.5" />
+                        <ArrowUp className="w-4 h-4 stroke-[2.25]" />
                       )}
                     </Button>
+                    <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       disabled={isDownDisabled || isAnyActionBusy}
                       onClick={() => onMoveParada(realIndex, "down")}
-                      className="h-7 w-6.5 sm:w-7 rounded-md text-slate-500 hover:bg-slate-200 disabled:opacity-20 shrink-0 flex items-center justify-center p-0"
+                      className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-600 hover:bg-slate-200/80 active:bg-slate-300 disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors"
                       title="Descer 1 posição"
                     >
                       {isDownReordering ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                        <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
                       ) : (
-                        <ArrowDown className="w-3.5 h-3.5" />
+                        <ArrowDown className="w-4 h-4 stroke-[2.25]" />
                       )}
                     </Button>
-                    {onOpenReordenarSheet && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onOpenReordenarSheet(parada)}
-                        className="h-7 w-6.5 sm:w-7 rounded-md text-[#1a3a5c] hover:bg-slate-200 shrink-0 flex items-center justify-center border-l border-slate-200/60 p-0"
-                        title="Reordenar posição da parada"
-                      >
-                        <ListOrdered className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
+                    {onOpenReordenarSheet && (() => {
+                      const canReorder = podeReordenarParada(execucaoTipo, realIndex, totalPendentesReal, paradasConcluidas);
+                      const isSheetReorderingThisCard = reorderingSheetStopId === parada.id;
+                      return (
+                        <>
+                          <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={!canReorder || isAnyActionBusy}
+                            onClick={() => canReorder && !isAnyActionBusy && onOpenReordenarSheet(parada)}
+                            className={cn(
+                              "h-8 w-8 sm:w-8.5 rounded-lg shrink-0 flex items-center justify-center p-0 transition-colors",
+                              canReorder && !isAnyActionBusy
+                                ? "text-[#1a3a5c] hover:bg-slate-200/80 active:bg-slate-300 cursor-pointer"
+                                : "text-slate-400 opacity-20 cursor-not-allowed"
+                            )}
+                            title={canReorder ? "Reordenar posição da parada" : "Nenhuma posição alternativa disponível"}
+                          >
+                            {isSheetReorderingThisCard ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                            ) : (
+                              <ListOrdered className="w-4 h-4 stroke-[2.25]" />
+                            )}
+                          </Button>
+                        </>
+                      );
+                    })()}
                   </div>
                 );
               })()}

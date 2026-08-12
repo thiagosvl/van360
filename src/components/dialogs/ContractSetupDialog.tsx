@@ -581,7 +581,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           setState: setMultaAtraso,
           icon: Timer,
           iconColor: "text-[#1a3a5c]",
-          simBaseLabel: "Exemplo Parcela",
+          simBaseLabel: "Exemplo",
           simResultLabel: "Total com Atraso",
           simBaseValue: 200,
           simValue:
@@ -597,7 +597,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           setState: setJurosAtraso,
           icon: Timer,
           iconColor: "text-[#1a3a5c]",
-          simBaseLabel: "Exemplo Parcela",
+          simBaseLabel: "Exemplo",
           simResultLabel: jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? "Juros p/ mês" : "Juros p/ dia",
           simBaseValue: 200,
           simValue:
