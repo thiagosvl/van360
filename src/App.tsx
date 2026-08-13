@@ -29,6 +29,12 @@ const PushNotificationController = () => {
   return null;
 };
 
+import { ResponsavelAuthProvider } from "@/contexts/ResponsavelAuthContext";
+import { ResponsavelProtectedRoute } from "@/components/routes/ResponsavelProtectedRoute";
+
+const ResponsavelSelecionarPassageiro = lazyLoad(() => import("./pages/ResponsavelSelecionarPassageiro").then(m => ({ default: m.ResponsavelSelecionarPassageiro })));
+const ResponsavelCarteirinhaBase = lazyLoad(() => import("./pages/ResponsavelCarteirinhaBase").then(m => ({ default: m.ResponsavelCarteirinhaBase })));
+
 const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
 const Splash = lazyLoad(() => import("./pages/Splash"));
@@ -222,8 +228,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner />
-        <AppErrorBoundary>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ResponsavelAuthProvider>
+          <AppErrorBoundary>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <BackButtonController />
             <PushNotificationController />
             <ScrollToTop />
@@ -350,12 +357,31 @@ const App = () => {
                   </Route>
                 </Route>
 
+                {/* Rotas do Responsavel */}
+                <Route
+                  path={ROUTES.PRIVATE.RESPONSAVEL.SELECT}
+                  element={
+                    <ResponsavelProtectedRoute>
+                      <ResponsavelSelecionarPassageiro />
+                    </ResponsavelProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.PRIVATE.RESPONSAVEL.HOME}
+                  element={
+                    <ResponsavelProtectedRoute>
+                      <ResponsavelCarteirinhaBase />
+                    </ResponsavelProtectedRoute>
+                  }
+                />
+
                 <Route path="/" element={<Navigate to={ROUTES.PUBLIC.LOGIN} replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
         </AppErrorBoundary>
+      </ResponsavelAuthProvider>
 
         {updating && (
           <div className="fixed inset-0 z-[9999]">

@@ -43,6 +43,8 @@ import { isDevEnv } from "@/utils/detectPlatform";
 
 // Internal Components
 
+import { ResponsavelLoginForm } from "@/components/features/auth/ResponsavelLoginForm";
+
 function LoginPlatformSuggestion() {
   const platform = detectPlatform();
 
@@ -92,6 +94,7 @@ export default function Login() {
     title: "Entrar | Van360"
   });
   useAnalyticsInjector({ gtm: true, clarity: true });
+  const [activeTab, setActiveTab] = useState<"motorista" | "responsavel">("motorista");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -234,7 +237,7 @@ export default function Login() {
             )}
 
             {/* Header / Logo */}
-            <div className="flex flex-col items-center mb-8">
+            <div className="flex flex-col items-center mb-6">
               <img
                 src="/assets/logo-van360.webp"
                 alt="Van360"
@@ -248,8 +251,37 @@ export default function Login() {
               </p>
             </div>
 
-            <Form {...formMotorista}>
-              <form onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}>
+            {/* Seletor de Perfil */}
+            <div className="flex rounded-xl bg-slate-200/80 p-1 mb-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab("motorista")}
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
+                  activeTab === "motorista"
+                    ? "bg-white text-[#1a3a5c] shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Equipe / Motorista
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("responsavel")}
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
+                  activeTab === "responsavel"
+                    ? "bg-white text-[#1a3a5c] shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Pais / Responsáveis
+              </button>
+            </div>
+
+            {activeTab === "responsavel" ? (
+              <ResponsavelLoginForm />
+            ) : (
+              <Form {...formMotorista}>
+                <form onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}>
                 <div className="space-y-4">
                   {/* CPF Field */}
                   <FormField
@@ -380,6 +412,7 @@ export default function Login() {
                 {!isNativeApp() && <LoginPlatformSuggestion />}
               </form>
             </Form>
+          )}
           </div>
         </div>
       </div>

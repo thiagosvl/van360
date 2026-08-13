@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy } from "lucide-react";
+import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { openBrowserLink } from "@/utils/browser";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useSetPrincipalResponsavel, useDeleteResponsavelAdicional } from "@/hooks";
+import { useResetPinResponsavelMutation } from "@/hooks/api/useResponsavelAuthApi";
 import { isCadastroPassageiroIncompleto, isResponsavelIncompleto } from "@/utils/domain";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
   const canManage = can("passageiros.gerenciar");
   const setPrincipal = useSetPrincipalResponsavel();
   const deleteResponsavel = useDeleteResponsavelAdicional();
+  const resetPin = useResetPinResponsavelMutation();
   const { openConfirmationDialog, closeConfirmationDialog, openResponsavelFormDialog } = useLayout();
   const TAB_PRINCIPAL = "principal";
   const [selectedRespId, setSelectedRespId] = useState<string>(TAB_PRINCIPAL);
@@ -207,6 +209,23 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
             },
           });
         };
+        const handleResetPin = () => {
+          openConfirmationDialog({
+            title: "Resetar PIN do Responsável",
+            description: `Tem certeza que deseja resetar o PIN de acesso de "${formatFirstName(currentResp.nome)}"? O responsável poderá criar um novo PIN de 4 dígitos no próximo acesso.`,
+            confirmText: "Resetar PIN",
+            cancelText: "Cancelar",
+            variant: "destructive",
+            onConfirm: async () => {
+              await resetPin.mutateAsync({
+                passageiroId: passageiro.id!,
+                responsavelId: isPrincipalTab ? undefined : currentResp.id,
+              });
+              toast.success("PIN resetado com sucesso! O responsável poderá definir um novo PIN no próximo acesso.");
+              closeConfirmationDialog();
+            },
+          });
+        };
 
         return (
           <div className="space-y-3 animate-in fade-in duration-200 text-left w-full min-w-0">
@@ -217,6 +236,15 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
               </span>
               {canManage && (
                 <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleResetPin}
+                    title="Resetar PIN de Acesso do Responsável"
+                    className="h-8 w-8 rounded-full bg-amber-50 text-amber-700 hover:text-amber-900 hover:bg-amber-100"
+                  >
+                    <KeyRound className="h-3.5 w-3.5" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -244,6 +272,9 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                       <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
                         <DropdownMenuItem onClick={handleSetPrincipal} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
                           <Check className="h-4 w-4 text-emerald-500" /> Definir como Principal
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleResetPin} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-amber-600">
+                          <KeyRound className="h-4 w-4 text-amber-500" /> Resetar PIN de Acesso
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
                           <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
