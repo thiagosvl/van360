@@ -450,7 +450,7 @@ export default function MinhaEquipe() {
                 title="Como funciona a conta de monitor"
                 description={
                   <>
-                    O monitor terá acesso à <strong>prancheta digital de alunos</strong> nas rotas do veículo atribuído para registrar presença e embarque. O usuário não possui acesso a relatórios, gastos ou dados financeiros.
+                    O monitor terá acesso apenas às rotas e a lista dos passageiros vinculadas ao veículo em que irá trabalhar. O usuário <strong>não terá acesso</strong> ao financeiro, contratos, gastos ou relatórios.
                   </>
                 }
               />

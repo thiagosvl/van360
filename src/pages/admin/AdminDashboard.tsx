@@ -101,7 +101,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
-  const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
+  // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
   const { data: loginAttemptsResponse, isLoading: isLoadingLoginAttempts } = useQuery({
@@ -726,9 +726,9 @@ export default function AdminDashboard() {
 
         {/* ABA 3: OPERACIONAL */}
         <TabsContent value="operacional" className="space-y-6 m-0 outline-none">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* TENTATIVAS DE LOGIN */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] w-full">
               <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
                 <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
                   TENTATIVAS DE LOGIN
@@ -788,64 +788,6 @@ export default function AdminDashboard() {
                             <span className="font-bold">
                               {formatRelativeTime(attempt.created_at)}
                             </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
-
-            {/* INSTÂNCIAS WHATSAPP */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-              <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                  INSTÂNCIAS WHATSAPP
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES)}
-                  className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
-                >
-                  Gerenciar
-                </Button>
-              </CardHeader>
-              <CardContent className="p-6 pt-2 space-y-3">
-                {isLoadingInstances ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-                  </div>
-                ) : !instances || instances.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-12 text-center">Nenhuma instância cadastrada.</p>
-                ) : (
-                  instances.map((instance) => {
-                    const statusStr = (instance.evolution_status || "").toLowerCase();
-                    const isOnline = statusStr === "open" || statusStr === "connected" || statusStr === "connecting";
-                    const isAlert = statusStr === "connecting";
-
-                    return (
-                      <div
-                        key={instance.id}
-                        onClick={() => navigate(ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES)}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-xl border ${isOnline ? (isAlert ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20') : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                            <Radio className="h-4 w-4 animate-pulse" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-bold text-white">{instance.instance_name}</h4>
-                            <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5">
-                              {isOnline ? (
-                                <span className={isAlert ? "text-amber-400" : "text-emerald-400"}>
-                                  {isAlert ? "ALERTA" : "ONLINE"} - Taxa: {instance.rate_limit_max}/min
-                                </span>
-                              ) : (
-                                <span className="text-red-400">OFFLINE - Taxa: 0/min</span>
-                              )}
-                            </p>
                           </div>
                         </div>
                       </div>

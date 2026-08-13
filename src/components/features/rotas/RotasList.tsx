@@ -40,13 +40,13 @@ export function RotasList({
       <UnifiedEmptyState
         icon={RouteIcon}
         title="Nenhuma rota configurada"
-        description="Configure suas rotas de ida e volta para gerenciar os itinerários diários e organizar a prancheta de paradas."
+        description="Configure suas rotas de ida e volta para gerenciar os itinerários diários e organizar as paradas dos passageiros e escolas."
         action={
           canGerenciar
             ? {
-                label: "Configurar Primeira Rota",
-                onClick: onOpenCreateRoute,
-              }
+              label: "Configurar Primeira Rota",
+              onClick: onOpenCreateRoute,
+            }
             : undefined
         }
       />
