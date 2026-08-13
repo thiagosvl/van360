@@ -35,11 +35,11 @@ const adminNavItems = [
     href: ROUTES.PRIVATE.ADMIN.SETTINGS,
     icon: Settings,
   },
-  {
+  /* {
     title: "Evolution",
     href: ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES,
     icon: MessageSquare,
-  },
+  }, */
   {
     title: "Blog",
     href: ROUTES.PRIVATE.ADMIN.BLOG,
