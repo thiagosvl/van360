@@ -5,12 +5,12 @@ import {
   ChevronRight,
   Users2,
   TrendingDown,
-  FileCheck,
   FileText,
   GraduationCap,
   Car,
   Settings,
   Rocket,
+  ChartArea,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -83,14 +83,14 @@ export const AcessoRapido = ({
       {
         id: AcessoRapidoItemKey.CONTRATOS,
         label: "Contratos",
-        icon: FileCheck,
+        icon: FileText,
         to: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
         show: can(PERMISSIONS.CONTRATOS_GERENCIAR),
       },
       {
         id: AcessoRapidoItemKey.RELATORIOS,
         label: "Relatórios",
-        icon: FileText,
+        icon: ChartArea,
         to: ROUTES.PRIVATE.MOTORISTA.REPORTS,
         show: can(PERMISSIONS.RELATORIOS_VISUALIZAR),
       },

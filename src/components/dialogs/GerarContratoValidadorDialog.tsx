@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Info, Loader2, X, Hash, CalendarIcon, FileCheck, Wand2 } from "lucide-react";
+import { Loader2, X, Hash, CalendarIcon, Wand2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ptBR } from "date-fns/locale";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
@@ -68,7 +68,7 @@ export function GerarContratoValidadorDialog({
     >
       <BaseDialog.Header
         title="Dados do Contrato"
-        icon={<FileCheck className="w-5 h-5 opacity-80" />}
+        icon={<FileText className="w-5 h-5 opacity-80" />}
         onClose={onClose}
         leftAction={isDevEnv() && (
           <Button

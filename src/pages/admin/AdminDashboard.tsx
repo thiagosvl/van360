@@ -1,13 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAdminStats, useAdminEvolutionInstances, useAdminLogs } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminLogs } from "@/hooks/api/adminHooks";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
-import { phoneMask, cpfMask, cpfCnpjMask } from "@/utils/masks";
+import { phoneMask, cpfCnpjMask } from "@/utils/masks";
 import { apiClient } from "@/services/api/client";
 import { ROUTES } from "@/constants/routes";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
@@ -33,7 +33,6 @@ import {
   Terminal,
   Share2,
   UserPlus,
-  FileCheck,
   Gift,
 } from "lucide-react";
 import {
@@ -256,7 +255,7 @@ export default function AdminDashboard() {
               </SelectItem>
               <SelectItem value="contratos" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
                 <span className="flex items-center gap-2">
-                  <FileCheck className="h-4 w-4 text-emerald-400" />
+                  <FileText className="h-4 w-4 text-emerald-400" />
                   <span>Contratos</span>
                 </span>
               </SelectItem>
@@ -292,7 +291,7 @@ export default function AdminDashboard() {
               value="contratos"
               className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
             >
-              <FileCheck className="h-4 w-4 text-emerald-300" />
+              <FileText className="h-4 w-4 text-emerald-300" />
               <span>Contratos</span>
             </TabsTrigger>
           </TabsList>

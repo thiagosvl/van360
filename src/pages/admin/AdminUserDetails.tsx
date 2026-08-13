@@ -34,7 +34,6 @@ import {
   Users,
   Clock,
   LayoutDashboard,
-  FileCheck,
   Share2,
   Settings,
   FolderKanban,
@@ -752,7 +751,7 @@ export default function AdminUserDetails() {
               subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "passageiro sem contrato" : "passageiros sem contrato"}`}
               cardBorder="border-sky-500/40 shadow-sky-500/10"
               iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
-              icon={<FileCheck className="h-5 w-5" />}
+              icon={<FileText className="h-5 w-5" />}
               onClick={() => handleSubTabChange(AdminUserSubTab.CONTRATOS)}
             />
           </div>
@@ -1980,7 +1979,7 @@ export default function AdminUserDetails() {
                     : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                     }`}
                 >
-                  <FileCheck className={`h-4 w-4 shrink-0 ${activeSubTab === "contratos" ? "text-white" : "text-emerald-400"}`} />
+                  <FileText className={`h-4 w-4 shrink-0 ${activeSubTab === "contratos" ? "text-white" : "text-emerald-400"}`} />
                   <span className="flex-1">Contratos</span>
                   <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "contratos" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
                     }`}>
