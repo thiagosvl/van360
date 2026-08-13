@@ -9,6 +9,7 @@ export interface PrePassageiro {
 
     cpf_responsavel: string;
     telefone_responsavel: string;
+    email_responsavel?: string | null;
     periodo: string;
 
     logradouro: string | null;

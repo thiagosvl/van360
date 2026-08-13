@@ -392,7 +392,7 @@ export default function MinhaEquipe() {
                   title="Como funciona a conta de motorista"
                   description={
                     <>
-                      A conta de motorista dará acesso ao aplicativo para <strong>executar rotas e registrar gastos</strong> do veículo atribuído a ele. O usuário não terá acesso aos dados financeiros, contratos, parcelas ou passageiros de outros veículos da sua empresa.
+                      A conta de motorista concede acesso restrito ao aplicativo para operar os veículos atribuídos, sem acesso aos dados da gestão principal da empresa.
                     </>
                   }
                 />
@@ -450,7 +450,7 @@ export default function MinhaEquipe() {
                 title="Como funciona a conta de monitor"
                 description={
                   <>
-                    O monitor terá acesso apenas às rotas e a lista dos passageiros vinculadas ao veículo em que irá trabalhar. O usuário <strong>não terá acesso</strong> ao financeiro, contratos, gastos ou relatórios.
+                    A conta de monitor concede acesso operacional restrito às atividades dos veículos atribuídos, conforme as permissões estabelecidas.
                   </>
                 }
               />

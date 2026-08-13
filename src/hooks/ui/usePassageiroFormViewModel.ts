@@ -92,11 +92,19 @@ export function usePassageiroFormViewModel({
       const responsavel = await lookupResponsavel({ cpf });
 
       if (responsavel) {
-        form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
-        form.setValue(
-          "telefone_responsavel",
-          phoneMask(responsavel.telefone_responsavel) || ""
-        );
+        if (responsavel.nome_responsavel) {
+          form.setValue("nome_responsavel", responsavel.nome_responsavel);
+        }
+        if (responsavel.telefone_responsavel) {
+          form.setValue("telefone_responsavel", phoneMask(responsavel.telefone_responsavel));
+        }
+        if (responsavel.email_responsavel) {
+          form.setValue("email_responsavel", responsavel.email_responsavel);
+        }
+        if (responsavel.parentesco_responsavel) {
+          form.setValue("parentesco_responsavel", responsavel.parentesco_responsavel);
+        }
+        toast.info("Dados do responsável encontrados e preenchidos automaticamente!");
       }
     } catch (error) {
       // Silencioso

@@ -25,12 +25,15 @@ import {
   Car,
   Rocket,
   Settings,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { PassageiroTab } from "@/types/enums";
 import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 import { useLayout } from "@/contexts/LayoutContext";
+import { usePrivacy } from "@/contexts/PrivacyContext";
 import { useEffect } from "react";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 
@@ -38,6 +41,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 
 const Home = () => {
   const { isSubConta, can } = usePermissions();
+  const { hideValues, toggleHideValues, formatPrivateCurrency, formatPrivateNumber } = usePrivacy();
   const {
     profile,
     subscription,
@@ -118,9 +122,20 @@ const Home = () => {
           {/* Header Contextual */}
           {!isSubConta && !onboarding.showOnboarding && (
             <div className="px-1 space-y-0.5">
-              <p className="text-xs font-medium text-slate-500 capitalize">
-                {dateContext}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-slate-500 capitalize">
+                  {dateContext}
+                </p>
+                <button
+                  type="button"
+                  onClick={toggleHideValues}
+                  className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer"
+                  title={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                  aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                >
+                  {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+                </button>
+              </div>
               <div className="flex items-center gap-2">
                 <span
                   className={cn(
@@ -131,7 +146,7 @@ const Home = () => {
                 <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
                   {
                     (financeiro?.countAtrasos || 0) > 0
-                      ? `${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
+                      ? `${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
                       : "Parcelas do mês em dia!"
                   }
                 </h1>
@@ -141,9 +156,20 @@ const Home = () => {
 
           {isSubConta && (
             <div className="px-1 space-y-0.5">
-              <p className="text-xs font-medium text-slate-500 capitalize">
-                {dateContext}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-slate-500 capitalize">
+                  {dateContext}
+                </p>
+                <button
+                  type="button"
+                  onClick={toggleHideValues}
+                  className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer"
+                  title={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                  aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                >
+                  {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+                </button>
+              </div>
               <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
                 Olá, {profile?.apelido || formatFirstName(profile?.nome) || "bem-vindo(a)"}!
               </h1>
@@ -200,8 +226,8 @@ const Home = () => {
             <section>
               <DashboardStatusCard
                 type="pending"
-                title={`${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "Parcela em Atraso" : "Parcelas em Atraso"}`}
-                description={`Você possui ${financeiro.countAtrasos} ${financeiro.countAtrasos === 1 ? "parcela vencida" : "parcelas vencidas"}, totalizando ${formatCurrency(financeiro.totalEmAtraso)}, referentes ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
+                title={`${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "Parcela em Atraso" : "Parcelas em Atraso"}`}
+                description={`Você possui ${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "parcela vencida" : "parcelas vencidas"}, totalizando ${formatPrivateCurrency(financeiro.totalEmAtraso)}, referentes ao mês de ${getMesNome(getNowBR().getMonth() + 1)}.`}
                 actionLabel="Ver Parcelas"
                 onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
               />

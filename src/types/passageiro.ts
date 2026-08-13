@@ -20,6 +20,7 @@ export interface Passageiro {
 
   telefone_responsavel: string;
   cpf_responsavel: string;
+  email_responsavel?: string | null;
   valor_cobranca: number;
   dia_vencimento: number;
   created_at?: string;
@@ -59,6 +60,7 @@ export interface Passageiro {
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
   responsaveis?: PassageiroResponsavel[];
+  pin_acesso?: string | null;
 }
 
 export interface PassageiroResponsavel {
@@ -67,7 +69,9 @@ export interface PassageiroResponsavel {
   nome: string;
   telefone: string;
   cpf: string;
+  email?: string | null;
   parentesco: ParentescoResponsavel;
+  pin_acesso?: string | null;
   logradouro?: string;
   numero?: string;
   bairro?: string;

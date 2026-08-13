@@ -8,6 +8,10 @@ export const prePassageiroSchema = z.object({
   nome_responsavel: z.string().min(2, "Campo obrigatório"),
   cpf_responsavel: cpfSchema,
   telefone_responsavel: phoneSchema,
+  email_responsavel: z
+    .string({ required_error: "E-mail é obrigatório" })
+    .min(1, "E-mail é obrigatório")
+    .email("E-mail inválido"),
 
   logradouro: z.string().min(1, "Campo obrigatório"),
   numero: z.string().min(1, "Campo obrigatório"),

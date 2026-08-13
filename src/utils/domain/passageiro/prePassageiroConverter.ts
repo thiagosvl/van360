@@ -19,6 +19,7 @@ export function mapearPrePassageiroParaFormulario(pre: PrePassageiro): Partial<P
     nome_responsavel: pre.nome_responsavel || "",
     cpf_responsavel: pre.cpf_responsavel ? cpfMask(pre.cpf_responsavel) : "",
     telefone_responsavel: pre.telefone_responsavel ? phoneMask(pre.telefone_responsavel) : "",
+    email_responsavel: pre.email_responsavel || "",
     periodo: pre.periodo || "",
     modalidade: pre.modalidade || "",
     turma: pre.turma || "",

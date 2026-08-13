@@ -18,4 +18,6 @@ export interface ResponsavelCarteirinhaData {
   id: string;
   nome: string;
   ativo: boolean;
+  cpf_responsavel?: string | null;
+  email_responsavel?: string | null;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound } from "lucide-react";
+import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -102,7 +102,9 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
             nome: passageiro.nome_responsavel,
             telefone: passageiro.telefone_responsavel,
             cpf: passageiro.cpf_responsavel,
+            email: passageiro.email_responsavel,
             parentesco: passageiro.parentesco_responsavel,
+            pin_acesso: passageiro.pin_acesso,
             logradouro: passageiro.logradouro,
             numero: passageiro.numero,
             bairro: passageiro.bairro,
@@ -212,7 +214,17 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
         const handleResetPin = () => {
           openConfirmationDialog({
             title: "Resetar PIN do Responsável",
-            description: `Tem certeza que deseja resetar o PIN de acesso de "${formatFirstName(currentResp.nome)}"? O responsável poderá criar um novo PIN de 4 dígitos no próximo acesso.`,
+            description: (
+              <div className="space-y-3 pt-1 text-left">
+                <p className="text-slate-600 text-xs leading-relaxed">
+                  Tem certeza que deseja resetar o PIN de <strong>{formatFirstName(currentResp.nome)}</strong>?
+                </p>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-700 leading-relaxed font-normal">
+                  💡 <strong>Como orientar o responsável:</strong><br />
+                  Basta ele acessar o app novamente com o telefone (<strong>{phoneMask(currentResp.telefone)}</strong>) para cadastrar um novo PIN de 4 dígitos.
+                </div>
+              </div>
+            ),
             confirmText: "Resetar PIN",
             cancelText: "Cancelar",
             variant: "destructive",
@@ -221,7 +233,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                 passageiroId: passageiro.id!,
                 responsavelId: isPrincipalTab ? undefined : currentResp.id,
               });
-              toast.success("PIN resetado com sucesso! O responsável poderá definir um novo PIN no próximo acesso.");
+              toast.success("PIN resetado! O responsável cadastrará um novo PIN no próximo acesso.");
               closeConfirmationDialog();
             },
           });
@@ -239,15 +251,6 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={handleResetPin}
-                    title="Resetar PIN de Acesso do Responsável"
-                    className="h-8 w-8 rounded-full bg-amber-50 text-amber-700 hover:text-amber-900 hover:bg-amber-100"
-                  >
-                    <KeyRound className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
                     onClick={() => {
                       if (isPrincipalTab) {
                         onEditClick();
@@ -259,6 +262,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                       }
                     }}
                     className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
+                    title="Editar Responsável"
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
@@ -272,9 +276,6 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                       <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
                         <DropdownMenuItem onClick={handleSetPrincipal} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
                           <Check className="h-4 w-4 text-emerald-500" /> Definir como Principal
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleResetPin} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-amber-600">
-                          <KeyRound className="h-4 w-4 text-amber-500" /> Resetar PIN de Acesso
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
                           <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
@@ -312,13 +313,14 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                 </div>
                 {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
                   <Button
+                    type="button"
                     size="icon"
                     onClick={() => {
                       const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
                       const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
                       openBrowserLink(`https://wa.me/${formattedPhone}`);
                     }}
-                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
+                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-xs shrink-0 border-none flex items-center justify-center transition-all cursor-pointer"
                     title="Abrir no WhatsApp"
                   >
                     <WhatsAppIcon className="w-3.5 h-3.5" />
@@ -334,6 +336,17 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                 </div>
                 <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
                   {cpfMask(currentResp.cpf) || "—"}
+                </span>
+              </div>
+
+              {/* Linha 5: E-mail */}
+              <div className="pt-2.5 border-t border-slate-200/50 min-w-0">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Mail className="h-3.5 w-3.5 text-slate-500" />
+                  <span className="text-xs font-normal text-slate-500">E-mail</span>
+                </div>
+                <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
+                  {currentResp.email || "—"}
                 </span>
               </div>
 
@@ -372,6 +385,76 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                   <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
                     {currentResp.referencia || <span className="text-slate-400 font-normal">—</span>}
                   </p>
+                </div>
+
+                {/* Linha 6: Acesso ao App */}
+                <div className="pt-2.5 border-t border-slate-200/50 space-y-2 min-w-0">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Smartphone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <span className="text-xs font-semibold text-[#1a3a5c]">Acesso ao App</span>
+                    </div>
+
+                    {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
+                            title="Opções de acesso"
+                          >
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
+                              const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
+                              const respNome = formatFirstName(currentResp.nome);
+                              const passNome = formatFirstName(passageiro.nome);
+                              const mensagem = `Olá, ${respNome}! Acesse a carteirinha digital do(a) ${passNome} no Van360 pelo link: https://van360.com.br/login. No seu primeiro acesso, informe o seu telefone (${phoneMask(currentResp.telefone)}) e crie a sua senha PIN de 4 dígitos.`;
+                              openBrowserLink(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(mensagem)}`);
+                            }}
+                            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
+                          >
+                            <WhatsAppIcon className="h-4 w-4" />
+                            <span>{currentResp.pin_acesso ? "Reenviar Instruções WhatsApp" : "Enviar Convite WhatsApp"}</span>
+                          </DropdownMenuItem>
+
+                          {canManage && currentResp.pin_acesso && (
+                            <DropdownMenuItem
+                              onClick={handleResetPin}
+                              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer"
+                            >
+                              <KeyRound className="h-4 w-4" />
+                              <span>Resetar PIN de Acesso</span>
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-medium text-slate-500 block mb-0.5">Telefone para Login (WhatsApp):</span>
+                    <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words">
+                      {isResponsavelMockTelefone(currentResp.telefone) || !currentResp.telefone
+                        ? "Telefone não cadastrado"
+                        : phoneMask(currentResp.telefone)}
+                    </span>
+                  </div>
+
+                  <div className="pt-1">
+                    <span className="w-full block py-1.5 px-3 rounded-lg text-[11px] font-normal bg-slate-100/70 text-slate-600 border border-slate-200/60 leading-tight">
+                      {currentResp.pin_acesso ? (
+                        <span>O responsável <strong className="font-semibold text-slate-700">já acessou</strong> o app.</span>
+                      ) : (
+                        <span>O responsável <strong className="font-semibold text-slate-700">ainda não acessou</strong> o app.</span>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

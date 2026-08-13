@@ -110,7 +110,6 @@ export function getBottomNavHrefs(isSubConta: boolean, isMotoristaAuxiliar: bool
       ROUTES.PRIVATE.MOTORISTA.HOME,
       ROUTES.PRIVATE.MOTORISTA.ROUTES,
       ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-      ROUTES.PRIVATE.MOTORISTA.EXPENSES,
     ];
   }
   return defaultBottomNavHrefs;

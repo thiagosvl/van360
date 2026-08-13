@@ -41,11 +41,42 @@ export function PassageiroFormResponsavel({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        {/* 1. Nome do Responsável (No form externo ocupa 100%, no interno vem após o CPF) */}
+        {!isExternal && (
+          <FormField
+            control={form.control}
+            name="cpf_responsavel"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel className="text-slate-700 font-semibold ml-1">
+                  CPF <span className="text-red-600">*</span>
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Hash className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                    <Input
+                      {...field}
+                      inputMode="numeric"
+                      placeholder="000.000.000-00"
+                      onChange={(e) => {
+                        field.onChange(cpfMask(e.target.value));
+                      }}
+                      className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                      aria-invalid={!!fieldState.error}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="nome_responsavel"
           render={({ field, fieldState }) => (
-            <FormItem>
+            <FormItem className={isExternal ? "md:col-span-2" : ""}>
               {isExternal ? (
                 <FormControl>
                   <StitchField icon={User} label="Nome do Responsável" required error={!!fieldState.error}>
@@ -61,7 +92,7 @@ export function PassageiroFormResponsavel({
               ) : (
                 <>
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome do Responsável Financeiro <span className="text-red-600">*</span>
+                    Nome <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -88,7 +119,7 @@ export function PassageiroFormResponsavel({
           render={({ field }) => (
             <PhoneInput
               field={field}
-              label="Telefone do Responsável Financeiro"
+              label="Telefone (WhatsApp)"
               required
               labelClassName="text-slate-700 font-semibold ml-1"
               inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
@@ -98,12 +129,12 @@ export function PassageiroFormResponsavel({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="cpf_responsavel"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              {isExternal ? (
+        {isExternal && (
+          <FormField
+            control={form.control}
+            name="cpf_responsavel"
+            render={({ field, fieldState }) => (
+              <FormItem>
                 <FormControl>
                   <StitchField icon={Hash} label="CPF" required={isExternal} error={!!fieldState.error}>
                     <Input
@@ -118,32 +149,11 @@ export function PassageiroFormResponsavel({
                     />
                   </StitchField>
                 </FormControl>
-              ) : (
-                <>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    CPF <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Hash className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                      <Input
-                        {...field}
-                        inputMode="numeric"
-                        placeholder="000.000.000-00"
-                        onChange={(e) => {
-                          field.onChange(cpfMask(e.target.value));
-                        }}
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                        aria-invalid={!!fieldState.error}
-                      />
-                    </div>
-                  </FormControl>
-                </>
-              )}
-              <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
-            </FormItem>
-          )}
-        />
+                <FormMessage className="text-xs ml-1 mt-1 text-red-500" />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
@@ -187,6 +197,49 @@ export function PassageiroFormResponsavel({
                   ))}
                 </SelectContent>
               </Select>
+              <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="email_responsavel"
+          render={({ field, fieldState }) => (
+            <FormItem className={isExternal ? "" : "md:col-span-2"}>
+              {isExternal ? (
+                <FormControl>
+                  <StitchField icon={Mail} label="E-mail" required={true} error={!!fieldState.error}>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="exemplo@email.com"
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      aria-invalid={!!fieldState.error}
+                      disabled={isSearching}
+                    />
+                  </StitchField>
+                </FormControl>
+              ) : (
+                <>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    E-mail
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="exemplo@email.com"
+                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                        aria-invalid={!!fieldState.error}
+                        disabled={isSearching}
+                      />
+                    </div>
+                  </FormControl>
+                </>
+              )}
               <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
             </FormItem>
           )}

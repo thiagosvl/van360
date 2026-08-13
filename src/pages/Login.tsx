@@ -126,8 +126,6 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    sessionManager.signOut();
-
     // Carregar CPF salvo se existir
     const savedCpf = localStorage.getItem("van360_saved_cpf");
     if (savedCpf) {
@@ -251,31 +249,32 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Seletor de Perfil */}
+            {/* 
             <div className="flex rounded-xl bg-slate-200/80 p-1 mb-6">
               <button
                 type="button"
                 onClick={() => setActiveTab("motorista")}
-                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all truncate ${
                   activeTab === "motorista"
-                    ? "bg-white text-[#1a3a5c] shadow-sm"
+                    ? "bg-[#1a3a5c] text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                Equipe / Motorista
+                Motorista / Monitor
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("responsavel")}
-                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all truncate ${
                   activeTab === "responsavel"
-                    ? "bg-white text-[#1a3a5c] shadow-sm"
+                    ? "bg-[#1a3a5c] text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                Pais / Responsáveis
+                Responsável
               </button>
             </div>
+            */}
 
             {activeTab === "responsavel" ? (
               <ResponsavelLoginForm />

@@ -9,6 +9,7 @@ import { HelpSheet } from "@/components/features/HelpSheet";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 
 import { LayoutProvider } from "@/contexts/LayoutProvider";
+import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -183,8 +184,10 @@ export default function AppLayout() {
   if (!user) return null;
 
   return (
-    <LayoutProvider>
-      <AppLayoutContent role={UserType.MOTORISTA} />
-    </LayoutProvider>
+    <PrivacyProvider>
+      <LayoutProvider>
+        <AppLayoutContent role={UserType.MOTORISTA} />
+      </LayoutProvider>
+    </PrivacyProvider>
   );
 }

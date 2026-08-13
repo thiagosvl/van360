@@ -305,7 +305,7 @@ export function QuickStartPassageiroDialog({
                         render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Nome do Responsável Financeiro <span className="text-red-600">*</span>
+                              Nome do Responsável <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
@@ -329,7 +329,7 @@ export function QuickStartPassageiroDialog({
                         render={({ field }) => (
                           <PhoneInput
                             field={field}
-                            label="Telefone do Responsável Financeiro"
+                            label="Telefone do Responsável"
                             required
                             labelClassName="text-slate-700 font-semibold ml-1"
                             inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"

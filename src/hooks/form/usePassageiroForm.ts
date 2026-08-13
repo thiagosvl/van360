@@ -66,6 +66,14 @@ export const passageiroSchema = z
     telefone_responsavel: z
       .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
       .min(1, "Campo obrigatório"),
+    email_responsavel: z
+      .string()
+      .optional()
+      .nullable()
+      .or(z.literal(""))
+      .refine((val) => !val || z.string().email().safeParse(val).success, {
+        message: "E-mail inválido",
+      }),
 
     isento: z.boolean().optional().default(false),
     valor_cobranca: z.string().optional().or(z.literal("")),
@@ -256,6 +264,7 @@ export function usePassageiroForm({
             telefone_responsavel: isResponsavelMockTelefone(editingPassageiro.telefone_responsavel)
               ? ""
               : phoneMask(editingPassageiro.telefone_responsavel),
+            email_responsavel: editingPassageiro.email_responsavel || "",
             isento: editingPassageiro.isento ?? false,
             valor_cobranca: editingPassageiro.valor_cobranca
               ? moneyMask(
@@ -318,6 +327,7 @@ export function usePassageiroForm({
 
           "telefone_responsavel",
           "cpf_responsavel",
+          "email_responsavel",
         ]);
 
         setOpenAccordionItems([

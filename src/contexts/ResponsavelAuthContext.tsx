@@ -1,9 +1,10 @@
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { ResponsavelPassageiro } from "@/types/responsavel";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { STORAGE_KEYS } from "@/constants";
+import { responsavelApi } from "@/services/api/responsavel.api";
 
-const STORAGE_TOKEN_KEY = "@van360:responsavel_token";
-const STORAGE_PASSAGEIROS_KEY = "@van360:responsavel_passageiros";
-const STORAGE_PASSAGEIRO_ID_KEY = "@van360:responsavel_passageiro_id";
+const STORAGE_TOKEN_KEY = STORAGE_KEYS.RESPONSAVEL_TOKEN;
+const STORAGE_PASSAGEIRO_ID_KEY = STORAGE_KEYS.RESPONSAVEL_PASSAGEIRO_ID;
 
 interface ResponsavelAuthContextData {
   token: string | null;
@@ -13,6 +14,7 @@ interface ResponsavelAuthContextData {
   isLoading: boolean;
   setSession: (token: string, passageiros: ResponsavelPassageiro[]) => void;
   selectPassageiro: (passageiro: ResponsavelPassageiro) => void;
+  refetchPassageiros: () => Promise<void>;
   logout: () => void;
 }
 
@@ -26,39 +28,52 @@ export const ResponsavelAuthProvider: React.FC<{ children: React.ReactNode }> = 
   const [passageiroSelecionado, setPassageiroSelecionado] = useState<ResponsavelPassageiro | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    try {
-      const storedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
-      const storedPassageirosRaw = localStorage.getItem(STORAGE_PASSAGEIROS_KEY);
-      const storedPassageiroId = localStorage.getItem(STORAGE_PASSAGEIRO_ID_KEY);
+  const logout = useCallback(() => {
+    setToken(null);
+    setPassageiros([]);
+    setPassageiroSelecionado(null);
 
-      if (storedToken && storedPassageirosRaw) {
-        const parsedPassageiros: ResponsavelPassageiro[] = JSON.parse(storedPassageirosRaw);
-        setToken(storedToken);
-        setPassageiros(parsedPassageiros);
-
-        if (storedPassageiroId) {
-          const selected = parsedPassageiros.find(p => p.id === storedPassageiroId);
-          setPassageiroSelecionado(selected || parsedPassageiros[0] || null);
-        } else if (parsedPassageiros.length > 0) {
-          setPassageiroSelecionado(parsedPassageiros[0]);
-        }
-      }
-    } catch {
-      localStorage.removeItem(STORAGE_TOKEN_KEY);
-      localStorage.removeItem(STORAGE_PASSAGEIROS_KEY);
-      localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);
-    } finally {
-      setIsLoading(false);
-    }
+    localStorage.removeItem(STORAGE_TOKEN_KEY);
+    localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);
   }, []);
 
-  const setSession = (newToken: string, newPassageiros: ResponsavelPassageiro[]) => {
+  const syncPassageiros = useCallback(async (authToken: string) => {
+    try {
+      const activePassageiros = await responsavelApi.getPassageiros(authToken);
+      setToken(authToken);
+      setPassageiros(activePassageiros);
+
+      const storedPassageiroId = localStorage.getItem(STORAGE_PASSAGEIRO_ID_KEY);
+      if (storedPassageiroId) {
+        const selected = activePassageiros.find(p => p.id === storedPassageiroId);
+        setPassageiroSelecionado(selected || activePassageiros[0] || null);
+      } else if (activePassageiros.length === 1) {
+        setPassageiroSelecionado(activePassageiros[0]);
+        localStorage.setItem(STORAGE_PASSAGEIRO_ID_KEY, activePassageiros[0].id);
+      } else {
+        setPassageiroSelecionado(null);
+      }
+    } catch {
+      logout();
+    }
+  }, [logout]);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
+      if (storedToken) {
+        await syncPassageiros(storedToken);
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
+  }, [syncPassageiros]);
+
+  const setSession = useCallback((newToken: string, newPassageiros: ResponsavelPassageiro[]) => {
     setToken(newToken);
     setPassageiros(newPassageiros);
-
     localStorage.setItem(STORAGE_TOKEN_KEY, newToken);
-    localStorage.setItem(STORAGE_PASSAGEIROS_KEY, JSON.stringify(newPassageiros));
 
     if (newPassageiros.length === 1) {
       setPassageiroSelecionado(newPassageiros[0]);
@@ -67,22 +82,19 @@ export const ResponsavelAuthProvider: React.FC<{ children: React.ReactNode }> = 
       setPassageiroSelecionado(null);
       localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);
     }
-  };
+  }, []);
 
-  const selectPassageiro = (passageiro: ResponsavelPassageiro) => {
+  const selectPassageiro = useCallback((passageiro: ResponsavelPassageiro) => {
     setPassageiroSelecionado(passageiro);
     localStorage.setItem(STORAGE_PASSAGEIRO_ID_KEY, passageiro.id);
-  };
+  }, []);
 
-  const logout = () => {
-    setToken(null);
-    setPassageiros([]);
-    setPassageiroSelecionado(null);
-
-    localStorage.removeItem(STORAGE_TOKEN_KEY);
-    localStorage.removeItem(STORAGE_PASSAGEIROS_KEY);
-    localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);
-  };
+  const refetchPassageiros = useCallback(async () => {
+    const storedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
+    if (storedToken) {
+      await syncPassageiros(storedToken);
+    }
+  }, [syncPassageiros]);
 
   return (
     <ResponsavelAuthContext.Provider
@@ -94,6 +106,7 @@ export const ResponsavelAuthProvider: React.FC<{ children: React.ReactNode }> = 
         isLoading,
         setSession,
         selectPassageiro,
+        refetchPassageiros,
         logout
       }}
     >

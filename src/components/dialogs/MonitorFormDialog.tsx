@@ -301,7 +301,7 @@ export function MonitorFormDialog({
             title="Acesso do Monitor"
             description={
               <>
-                O monitor terá acesso apenas às rotas e a lista dos passageiros vinculadas ao veículo em que irá trabalhar. O usuário <strong>não terá acesso</strong> ao financeiro, contratos, gastos ou relatórios.
+                Esta conta possui acesso restrito às operações do veículo atribuído, de acordo com o nível do perfil.
               </>
             }
           />

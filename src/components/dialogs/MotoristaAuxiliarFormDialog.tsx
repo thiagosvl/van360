@@ -301,7 +301,7 @@ export function MotoristaAuxiliarFormDialog({
             title="Acesso do Motorista"
             description={
               <>
-                Esta conta terá acesso para <strong>executar rotas e registrar gastos</strong> do veículo atribuído. O usuário não possui acesso a dados financeiros gerais, contratos ou passageiros de outros veículos.
+                Esta conta possui acesso operacional restrito, vinculado aos veículos atribuídos pela gestão da frota.
               </>
             }
           />

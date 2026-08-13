@@ -445,6 +445,7 @@ export const mockGenerator = {
 
       cpf_responsavel: generateCPF(),
       telefone_responsavel: "(11) 95118-6951",
+      email_responsavel: "thiago-svl@hotmail.com",
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
       ...address,

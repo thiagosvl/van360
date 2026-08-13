@@ -88,7 +88,8 @@ apiClient.interceptors.response.use(
     const isPublicAuthRoute =
       originalRequest.url.includes('/auth/recuperacao') ||
       originalRequest.url.includes('/auth/login') ||
-      originalRequest.url.includes('/auth/registro');
+      originalRequest.url.includes('/auth/registro') ||
+      originalRequest.url.includes('/public/responsavel/');
 
     if (error.response.status === 401 && !originalRequest._retry && !isPublicAuthRoute) {
       originalRequest._retry = true;

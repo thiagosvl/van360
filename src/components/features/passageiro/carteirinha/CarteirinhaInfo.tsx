@@ -524,54 +524,7 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       )}
 
-      {/* 3. Bloco: Responsável Financeiro */}
-      <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Responsável Financeiro</h3>
-        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
-          <InfoField
-            icon={<UserCheck className="h-3.5 w-3.5" />}
-            label="Nome do Responsável"
-            value={passageiro.nome_responsavel}
-            fullWidth
-          />
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-            <InfoField
-              icon={<Users className="h-3.5 w-3.5" />}
-              label="Parentesco"
-              value={formatParentesco(passageiro.parentesco_responsavel)}
-            />
-            <InfoField
-              icon={<UserCheck className="h-3.5 w-3.5" />}
-              label="CPF"
-              value={cpfResponsavelTexto}
-            />
-          </div>
-          <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-3 min-w-0">
-            <div className="min-w-0 flex-1">
-              <InfoField
-                icon={<Phone className="h-3.5 w-3.5" />}
-                label="Telefone / WhatsApp"
-                value={telefoneResponsavelTexto}
-              />
-            </div>
-            {passageiro.telefone_responsavel && (
-              <Button
-                type="button"
-                size="icon"
-                onClick={() => {
-                  const cleanPhone = passageiro.telefone_responsavel!.replace(/\D/g, "");
-                  const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
-                  openBrowserLink(`https://wa.me/${formattedPhone}`);
-                }}
-                className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-sm shrink-0 border-none flex items-center justify-center transition-all"
-                title="Abrir no WhatsApp"
-              >
-                <WhatsAppIcon className="w-3.5 h-3.5" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+
 
       {/* 4. Bloco: Endereço de Embarque */}
       <div className="space-y-3">

@@ -64,6 +64,7 @@ export function usePassageiroExternalForm() {
 
       cpf_responsavel: "",
       telefone_responsavel: "",
+      email_responsavel: "",
       logradouro: "",
       numero: "",
       bairro: "",
