@@ -39,7 +39,7 @@ export const AcessoRapido = ({
   const { can, isMotoristaAuxiliar, isMonitor } = usePermissions();
 
   // Para monitor, NÃO exibimos o Acesso Rápido
-  if (isMonitor) {
+  if (isMonitor || isMotoristaAuxiliar) {
     return null;
   }
 

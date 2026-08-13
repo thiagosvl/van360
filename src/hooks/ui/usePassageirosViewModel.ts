@@ -256,7 +256,6 @@ export function usePassageirosViewModel() {
         onConfirm: async () => {
           try {
             await deletePassageiro.mutateAsync(passageiro.id);
-            refetchPassageiros();
             safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
@@ -264,7 +263,7 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog, refetchPassageiros],
+    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog],
   );
 
   const handleToggleClick = useCallback(
@@ -281,7 +280,6 @@ export function usePassageirosViewModel() {
         onConfirm: async () => {
           try {
             await toggleAtivoPassageiro.mutateAsync({ id: passageiro.id, novoStatus: !passageiro.ativo });
-            refetchPassageiros();
             safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
@@ -289,7 +287,7 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro, refetchPassageiros],
+    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro],
   );
 
   const handleEdit = useCallback(
@@ -299,7 +297,7 @@ export function usePassageirosViewModel() {
         editingPassageiro: passageiro,
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros],
+    [openPassageiroFormDialog],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -307,7 +305,6 @@ export function usePassageirosViewModel() {
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro) => {
-        refetchPassageiros();
         if (passageiro && isFirstPassageiro) {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         } else if (passageiro && !isFirstPassageiro) {
@@ -320,7 +317,7 @@ export function usePassageirosViewModel() {
         }
       },
     });
-  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, navigate, refetchPassageiros]);
+  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, navigate, profile?.config_contrato?.usar_contratos]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -402,12 +399,11 @@ export function usePassageirosViewModel() {
           valorMensal: passageiro.valor_cobranca,
           diaVencimento: passageiro.dia_vencimento
         });
-        refetchPassageiros();
       } catch (error) {
         // Erro já tratado no hook
       }
     },
-    [createContrato, refetchPassageiros]
+    [createContrato]
   );
 
   const handleExcluirContrato = useCallback(
@@ -422,7 +418,6 @@ export function usePassageirosViewModel() {
         onConfirm: async () => {
           try {
             await deleteContrato.mutateAsync(passageiro.contrato_id!);
-            refetchPassageiros();
             safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
@@ -430,7 +425,7 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [deleteContrato, closeConfirmationDialog, openConfirmationDialog, refetchPassageiros]
+    [deleteContrato, closeConfirmationDialog, openConfirmationDialog]
   );
 
   const handleSubstituirContrato = useCallback(
@@ -444,7 +439,6 @@ export function usePassageirosViewModel() {
         onConfirm: async () => {
           try {
             await substituirContrato.mutateAsync(passageiro.contrato_id!);
-            refetchPassageiros();
             safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
@@ -452,7 +446,7 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [substituirContrato, closeConfirmationDialog, openConfirmationDialog, refetchPassageiros]
+    [substituirContrato, closeConfirmationDialog, openConfirmationDialog]
   );
 
   const isMobile = useIsMobile();

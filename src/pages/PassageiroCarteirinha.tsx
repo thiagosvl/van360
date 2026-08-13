@@ -215,11 +215,7 @@ export default function PassageiroCarteirinha() {
       setPageTitle(`Carteirinha Digital`);
     }
   }, [passageiro, setPageTitle]);
-
-
   const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
-    refetchPassageiro();
-
     const hasChanges = meta?.hasCriticalContractChanges === true;
     const usarContratos = !!profile?.config_contrato?.usar_contratos;
 
@@ -252,9 +248,9 @@ export default function PassageiroCarteirinha() {
             }
           },
         });
-      }, 400);
+      }, 300);
     }
-  }, [refetchPassageiro, passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
+  }, [passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -619,7 +615,6 @@ export default function PassageiroCarteirinha() {
                       diaVencimento: passageiro.dia_vencimento
                     });
                     safeCloseDialog(closeConfirmationDialog);
-                    refetchPassageiro();
                   } catch (error) {
                     safeCloseDialog(closeConfirmationDialog);
                   }
@@ -630,7 +625,7 @@ export default function PassageiroCarteirinha() {
                 passageiroId: id,
                 valorMensal: passageiro.valor_cobranca,
                 diaVencimento: passageiro.dia_vencimento
-              }).then(() => refetchPassageiro());
+              });
             }
           }
         });
