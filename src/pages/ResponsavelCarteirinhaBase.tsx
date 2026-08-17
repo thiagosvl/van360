@@ -65,7 +65,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/90 text-slate-800 flex flex-col">
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-3.5 sticky top-0 z-50 shadow-xs">
+      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <div className="flex items-center gap-2">
             <img
@@ -101,7 +101,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
       </header>
 
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <main className="flex-1 p-4 max-w-md mx-auto w-full space-y-5">
+        <main className="flex-1 p-4 max-w-md mx-auto w-full space-y-5 pb-[calc(2.5rem+var(--safe-area-bottom))]">
           {isLoading ? (
             <div className="py-4">
               <CarteirinhaSkeleton />

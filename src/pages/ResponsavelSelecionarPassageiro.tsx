@@ -23,7 +23,7 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/90 text-slate-800 flex flex-col">
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-3.5 sticky top-0 z-50 shadow-xs">
+      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <div className="flex items-center gap-2">
             <img
@@ -47,7 +47,7 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
       </header>
 
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <main className="flex-1 p-3.5 sm:p-6 mx-auto w-full max-w-2xl min-w-0">
+        <main className="flex-1 p-3.5 sm:p-6 mx-auto w-full max-w-2xl min-w-0 pb-[calc(2.5rem+var(--safe-area-bottom))]">
           <div className="space-y-6 min-w-0">
             <div>
               <h1 className="text-xl font-bold text-[#1a3a5c]">Selecione o Passageiro</h1>
