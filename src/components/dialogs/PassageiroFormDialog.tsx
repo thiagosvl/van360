@@ -21,7 +21,7 @@ interface PassengerFormDialogProps {
   editingPassageiro: Passageiro | null;
   mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
-  onSuccess: (passageiro?: Passageiro | Record<string, unknown>, formData?: Record<string, unknown>) => void;
+  onSuccess: (passageiro?: Passageiro, options?: { formData?: Record<string, unknown>; hasCriticalContractChanges?: boolean }) => void;
   profile: Usuario | null | undefined;
 }
 

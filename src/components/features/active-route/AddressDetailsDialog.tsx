@@ -50,23 +50,18 @@ export function AddressDetailsDialog({
   const isPrincipal = selectedDialogRespTab === TAB_PRINCIPAL;
   const respObj = !isPrincipal ? pass?.responsaveis?.find((r: any) => r.id === selectedDialogRespTab) : null;
 
-  let activeRespName = isPrincipal ? pass?.nome_responsavel : respObj?.nome;
-  let rawParentesco = isPrincipal ? pass?.parentesco_responsavel : respObj?.parentesco;
+  let activeRespName = isPrincipal ? pass?.responsavel_principal?.nome : respObj?.nome;
+  let rawParentesco = isPrincipal ? pass?.responsavel_principal?.parentesco : respObj?.parentesco;
   let activeAddress = addressDialogData.address;
-  let activeLat = addressDialogData.latitude;
-  let activeLng = addressDialogData.longitude;
 
   if (pass) {
     if (isPrincipal) {
-      activeAddress = formatarEnderecoCompleto(pass) || formatarEnderecoParcialRota(pass) || addressDialogData.address;
-      activeLat = pass.latitude ?? addressDialogData.latitude;
-      activeLng = pass.longitude ?? addressDialogData.longitude;
+      const respP = pass.responsavel_principal;
+      activeAddress = respP?.logradouro ? (formatarEnderecoCompleto(respP) || formatarEnderecoParcialRota(respP)) : addressDialogData.address;
     } else if (respObj) {
       activeAddress = respObj.logradouro
-        ? formatarEnderecoCompleto(respObj)
-        : (formatarEnderecoCompleto(pass) || formatarEnderecoParcialRota(pass) || addressDialogData.address);
-      activeLat = (respObj as any).latitude ?? pass.latitude ?? addressDialogData.latitude;
-      activeLng = (respObj as any).longitude ?? pass.longitude ?? addressDialogData.longitude;
+        ? (formatarEnderecoCompleto(respObj) || formatarEnderecoParcialRota(respObj))
+        : (pass.responsavel_principal?.logradouro ? formatarEnderecoCompleto(pass.responsavel_principal) : addressDialogData.address);
     }
   }
 
@@ -177,7 +172,7 @@ export function AddressDetailsDialog({
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
             <Button
               type="button"
-              onClick={() => openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress, activeLat, activeLng)}
+              onClick={() => openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress)}
               className="h-11 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
             >
               <GoogleMapsIcon className="w-4 h-4 shrink-0" />
@@ -185,7 +180,7 @@ export function AddressDetailsDialog({
             </Button>
             <Button
               type="button"
-              onClick={() => openNavigation(NavigationApp.WAZE, activeAddress, activeLat, activeLng)}
+              onClick={() => openNavigation(NavigationApp.WAZE, activeAddress)}
               className="h-11 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
             >
               <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />

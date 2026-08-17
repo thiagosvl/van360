@@ -1,15 +1,12 @@
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MapPin, School, User, Check, UserMinus, ArrowUp, ArrowDown, Loader2, Play, UserCheck, CheckCheck, ListOrdered } from "lucide-react";
+import { MapPin, School, User, Check, UserMinus, ArrowUp, ArrowDown, Loader2, Play, UserCheck, CheckCheck, ListOrdered, Users, ChevronDown } from "lucide-react";
 import { RouteNodeType, RouteStopStatus, RouteSentido, ExecucaoParada } from "@/types/route";
 import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
 import { podeReordenarParada } from "@/utils/domain/route/routeRules";
 import { cn } from "@/lib/utils";
 import { AddressDialogData } from "./AddressDetailsDialog";
-
-const TAB_DEFAULT = "default";
-const TAB_PRINCIPAL = "principal";
 
 interface ActiveRouteCurrentCardProps {
   parada: ExecucaoParada;
@@ -37,6 +34,7 @@ interface ActiveRouteCurrentCardProps {
   onConfirmFalta: (id: string, nome: string) => void;
   onConfirmEmbarqueDialog: () => void;
   onDirectStep: () => void;
+  onOpenChamadaDialog?: () => void;
   onOpenReordenarSheet?: (parada: any) => void;
 }
 
@@ -63,8 +61,10 @@ export function ActiveRouteCurrentCard({
   onConfirmFalta,
   onConfirmEmbarqueDialog,
   onDirectStep,
+  onOpenChamadaDialog,
   onOpenReordenarSheet,
 }: ActiveRouteCurrentCardProps) {
+  const [isEmbarquesExpanded, setIsEmbarquesExpanded] = useState(false);
   const isEscola = parada.tipo_no === RouteNodeType.ESCOLA;
   const displayOrdem = parada.ordem || 0;
   const pass = parada.passageiro;
@@ -247,40 +247,71 @@ export function ActiveRouteCurrentCard({
                     Nenhum embarque nesta parada
                   </p>
                 ) : (
-                  alunosParaEmbarcar.map((aluno) => {
-                    const isPendente = aluno.status === RouteStopStatus.PENDENTE;
-                    const isABordo = aluno.status === RouteStopStatus.EMBARCADO;
+                  <>
+                    {(() => {
+                      const MAX_VISIBLE_EMBARQUES = 7;
+                      const hasManyEmbarques = alunosParaEmbarcar.length > MAX_VISIBLE_EMBARQUES;
+                      const visibleEmbarques = (hasManyEmbarques && !isEmbarquesExpanded)
+                        ? alunosParaEmbarcar.slice(0, MAX_VISIBLE_EMBARQUES)
+                        : alunosParaEmbarcar;
 
-                    return (
-                      <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
-                        <div className="flex items-center gap-2 min-w-0 pr-2">
-                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="text-xs font-medium text-[#1a3a5c]">
-                            {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
-                          </span>
-                        </div>
-                        {isPendente ? (
-                          <Button
-                            type="button"
-                            onClick={() => onConfirmFalta(aluno.id, aluno.passageiro?.nome || aluno.nome)}
-                            disabled={isLoading}
-                            className="h-8 px-2.5 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-lg shadow-2xs cursor-pointer flex items-center gap-1 shrink-0 transition-all active:scale-95"
-                          >
-                            <UserMinus className="w-3 h-3 text-rose-500" />
-                            <span>AUSENTE</span>
-                          </Button>
-                        ) : isABordo ? (
-                          <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs" title="Embarcado">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-rose-100 bg-rose-50 text-rose-600 shrink-0 leading-none">
-                            AUSENTE
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })
+                      return (
+                        <>
+                          {visibleEmbarques.map((aluno) => {
+                            const isPendente = aluno.status === RouteStopStatus.PENDENTE;
+                            const isABordo = aluno.status === RouteStopStatus.EMBARCADO;
+
+                            return (
+                              <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                                <div className="flex items-center gap-2 min-w-0 pr-2">
+                                  <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span className="text-xs font-medium text-[#1a3a5c]">
+                                    {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
+                                  </span>
+                                </div>
+                                {isPendente ? (
+                                  <Button
+                                    type="button"
+                                    onClick={() => onConfirmFalta(aluno.id, aluno.passageiro?.nome || aluno.nome)}
+                                    disabled={isLoading}
+                                    className="h-8 px-2.5 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-lg shadow-2xs cursor-pointer flex items-center gap-1 shrink-0 transition-all active:scale-95"
+                                  >
+                                    <UserMinus className="w-3 h-3 text-rose-500" />
+                                    <span>AUSENTE</span>
+                                  </Button>
+                                ) : isABordo ? (
+                                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs" title="Embarcado">
+                                    <Check className="w-3 h-3 stroke-[3]" />
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-rose-100 bg-rose-50 text-rose-600 shrink-0 leading-none">
+                                    AUSENTE
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {hasManyEmbarques && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setIsEmbarquesExpanded((prev) => !prev)}
+                              className="w-full h-8 text-xs font-bold text-[#1a3a5c] hover:bg-slate-100/80 rounded-lg flex items-center justify-center gap-1.5 transition-all mt-1 cursor-pointer"
+                            >
+                              <span>
+                                {isEmbarquesExpanded
+                                  ? "Ocultar embarques"
+                                  : `Exibir mais ${alunosParaEmbarcar.length - MAX_VISIBLE_EMBARQUES} embarque${(alunosParaEmbarcar.length - MAX_VISIBLE_EMBARQUES) > 1 ? "s" : ""}`}
+                              </span>
+                              <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isEmbarquesExpanded && "rotate-180")} />
+                            </Button>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </>
                 )}
               </TabsContent>
 
@@ -327,7 +358,7 @@ export function ActiveRouteCurrentCard({
           <div className="flex flex-col gap-1 text-left min-w-0">
             <div className="flex items-center justify-between gap-2 w-full">
               <span className="text-[#1a3a5c] font-bold text-base sm:text-lg tracking-tight block">
-                {parada.passageiro?.nome || parada.nome}
+                {formatShortName(parada.passageiro?.nome || parada.nome, true)}
               </span>
             </div>
 
@@ -381,26 +412,42 @@ export function ActiveRouteCurrentCard({
               </Button>
             </div>
           ) : (
-            <Button
-              type="button"
-              onClick={onDirectStep}
-              disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
-              className="h-10 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold font-bold max-[320px]:text-[10px] text-[11px] sm:text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 px-3 min-w-0"
-            >
-              {isStepping || isFinalizing ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
-              ) : isLastStop ? (
-                <>
-                  <CheckCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span className="">CONCLUIR ROTA</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-3.5 h-3.5 shrink-0 fill-current" />
-                  <span className="">CONTINUAR</span>
-                </>
+            <div className="flex items-center gap-2 w-full min-w-0">
+              {alunosParaEmbarcar.length > 0 && onOpenChamadaDialog && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
+                  onClick={onOpenChamadaDialog}
+                  className="h-10 border-[#1a3a5c]/30 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 font-bold max-[320px]:text-[10px] text-[11px] sm:text-xs rounded-xl shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 px-3 shrink-0 transition-all active:scale-[0.98]"
+                  title="Fazer chamada dos alunos para embarque"
+                >
+                  <Users className="w-4 h-4 text-[#1a3a5c]" />
+                  <span>CHAMADA</span>
+                </Button>
               )}
-            </Button>
+
+              <Button
+                type="button"
+                onClick={onDirectStep}
+                disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
+                className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold font-bold max-[320px]:text-[10px] text-[11px] sm:text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3"
+              >
+                {isStepping || isFinalizing ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                ) : isLastStop ? (
+                  <>
+                    <CheckCheck className="w-3.5 h-3.5 shrink-0" />
+                    <span className="">CONCLUIR ROTA</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 shrink-0 fill-current" />
+                    <span className="">CONTINUAR</span>
+                  </>
+                )}
+              </Button>
+            </div>
           )}
         </div>
       </div>

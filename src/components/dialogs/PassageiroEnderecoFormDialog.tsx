@@ -75,14 +75,16 @@ export default function PassageiroEnderecoFormDialog({
       await updatePassageiro.mutateAsync({
         id: passageiroId,
         data: {
-          logradouro: data.logradouro.trim(),
-          numero: data.numero.trim(),
-          bairro: data.bairro.trim(),
-          cidade: data.cidade.trim(),
-          estado: data.estado,
-          cep: data.cep?.trim() || undefined,
-          complemento: data.complemento?.trim() || undefined,
-          referencia: data.referencia?.trim() || undefined,
+          responsavel_principal: {
+            logradouro: data.logradouro.trim(),
+            numero: data.numero.trim(),
+            bairro: data.bairro.trim(),
+            cidade: data.cidade.trim(),
+            estado: data.estado,
+            cep: data.cep?.trim() || undefined,
+            complemento: data.complemento?.trim() || undefined,
+            referencia: data.referencia?.trim() || undefined,
+          } as any,
         },
         showToast: false,
       });

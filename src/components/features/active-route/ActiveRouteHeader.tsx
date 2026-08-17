@@ -15,6 +15,7 @@ interface ActiveRouteHeaderProps {
   iniciarMutation?: { isPending?: boolean; mutate?: (id: string, options?: any) => void };
   isLoading: boolean;
   can: (permission: string) => boolean;
+  isAnyActionBusy?: boolean;
   onOpenAusenciaDialog: () => void;
   onCancel: () => void;
   onEditRoute: () => void;
@@ -33,6 +34,7 @@ export function ActiveRouteHeader({
   iniciarMutation,
   isLoading,
   can,
+  isAnyActionBusy = false,
   onOpenAusenciaDialog,
   onCancel,
   onEditRoute,
@@ -72,7 +74,7 @@ export function ActiveRouteHeader({
                 ) : (
                   <Button
                     onClick={onIniciarRota}
-                    disabled={isLoading || iniciarMutation?.isPending}
+                    disabled={isLoading || isAnyActionBusy || iniciarMutation?.isPending}
                     className="h-14 w-full rounded-lg font-extrabold text-base flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-[0.98] cursor-pointer transition-all border-none"
                   >
                     {iniciarMutation?.isPending ? (
@@ -135,7 +137,7 @@ export function ActiveRouteHeader({
                 variant="outline"
                 className="rounded-lg border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-[11px] shrink-0 h-8 px-2.5 gap-1 shadow-2xs cursor-pointer transition-all active:scale-95"
                 onClick={onCancel}
-                disabled={isLoading}
+                disabled={isLoading || isAnyActionBusy}
               >
                 <XCircle className="w-3.5 h-3.5 text-rose-500" />
                 <span>ENCERRAR</span>

@@ -3,6 +3,7 @@ import {
     useCreatePassageiro, 
     useEscolasWithFilters, 
     useFinalizePreCadastro, 
+    usePassageiro,
     usePassageiroForm, 
     useUpdatePassageiro, 
     useVeiculosWithFilters 
@@ -12,8 +13,9 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { convertDateBrToISO } from "@/utils/formatters/date";
-import { phoneMask } from "@/utils/masks";
+import { phoneMask, cpfMask, cepMask } from "@/utils/masks";
 import { parseCurrencyToNumber } from "@/utils/formatters";
+import { cleanString } from "@/utils/string";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
@@ -43,24 +45,30 @@ export function usePassageiroFormViewModel({
   const finalizePreCadastro = useFinalizePreCadastro();
   const { mutateAsync: lookupResponsavel, isPending: isSearchingResponsavel } = useBuscarResponsavel();
   
-  const searchedCpfRef = useRef<string>("");
+  const searchedTermsSet = useRef<Set<string>>(new Set());
+  const isFillingMockRef = useRef<boolean>(false);
 
-  // Determine include IDs for lists based on mode
+  const { data: fullPassageiro, isLoading: isLoadingFullPassageiro } = usePassageiro(
+    editingPassageiro?.id || "",
+    { enabled: isOpen && mode === PassageiroFormModes.EDIT && !!editingPassageiro?.id }
+  );
+
+  const targetPassageiro = (fullPassageiro as Passageiro) || editingPassageiro;
+
   const includeEscolaId =
     mode === PassageiroFormModes.EDIT
-      ? editingPassageiro?.escola_id
+      ? targetPassageiro?.escola_id
       : mode === PassageiroFormModes.FINALIZE
         ? prePassageiro?.escola_id
         : undefined;
 
   const includeVeiculoId =
     mode === PassageiroFormModes.EDIT
-      ? editingPassageiro?.veiculo_id
+      ? targetPassageiro?.veiculo_id
       : mode === PassageiroFormModes.FINALIZE
         ? prePassageiro?.veiculo_id
         : undefined;
 
-  // Fetch lists
   const { data: escolasData = [] } = useEscolasWithFilters(
     profile?.id,
     { ativo: "true", includeId: includeEscolaId || undefined },
@@ -77,52 +85,99 @@ export function usePassageiroFormViewModel({
     usePassageiroForm({
       isOpen,
       mode,
-      editingPassageiro,
+      editingPassageiro: targetPassageiro,
       prePassageiro,
     });
 
-  // Search Responsável Logic
-  const handleSearchResponsavel = useCallback(async (cpf: string) => {
+  useEffect(() => {
+    if (!isOpen) {
+      searchedTermsSet.current.clear();
+    }
+  }, [isOpen]);
+
+  const handleSearchResponsavel = useCallback(async (term: string) => {
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
-    if (cpf.length !== 11 || !profile?.id) return;
-    if (searchedCpfRef.current === cpf) return;
+    const pureTerm = term.replace(/\D/g, "");
+    if (pureTerm.length !== 11 || !profile?.id) return;
+    if (searchedTermsSet.current.has(pureTerm)) return;
 
     try {
-      searchedCpfRef.current = cpf;
-      const responsavel = await lookupResponsavel({ cpf });
+      searchedTermsSet.current.add(pureTerm);
+      const responsavel = await lookupResponsavel({ term: pureTerm });
 
       if (responsavel) {
-        if (responsavel.nome_responsavel) {
-          form.setValue("nome_responsavel", responsavel.nome_responsavel);
+        if (responsavel.cpf) {
+          searchedTermsSet.current.add(responsavel.cpf.replace(/\D/g, ""));
         }
-        if (responsavel.telefone_responsavel) {
-          form.setValue("telefone_responsavel", phoneMask(responsavel.telefone_responsavel));
+        if (responsavel.telefone) {
+          searchedTermsSet.current.add(responsavel.telefone.replace(/\D/g, ""));
         }
-        if (responsavel.email_responsavel) {
-          form.setValue("email_responsavel", responsavel.email_responsavel);
+
+        if (responsavel.nome) {
+          form.setValue("responsavel_principal.nome", responsavel.nome, { shouldValidate: true });
         }
-        if (responsavel.parentesco_responsavel) {
-          form.setValue("parentesco_responsavel", responsavel.parentesco_responsavel);
+        if (responsavel.telefone) {
+          form.setValue("responsavel_principal.telefone", phoneMask(responsavel.telefone), { shouldValidate: true });
         }
-        toast.info("Dados do responsável encontrados e preenchidos automaticamente!");
+        if (responsavel.cpf) {
+          form.setValue("responsavel_principal.cpf", cpfMask(responsavel.cpf), { shouldValidate: true });
+        }
+        if (responsavel.email) {
+          form.setValue("responsavel_principal.email", responsavel.email, { shouldValidate: true });
+        }
+        if (responsavel.parentesco) {
+          form.setValue("responsavel_principal.parentesco", responsavel.parentesco, { shouldValidate: true });
+        }
+        if (responsavel.logradouro) {
+          form.setValue("responsavel_principal.logradouro", responsavel.logradouro);
+        }
+        if (responsavel.numero) {
+          form.setValue("responsavel_principal.numero", responsavel.numero);
+        }
+        if (responsavel.bairro) {
+          form.setValue("responsavel_principal.bairro", responsavel.bairro);
+        }
+        if (responsavel.cidade) {
+          form.setValue("responsavel_principal.cidade", responsavel.cidade);
+        }
+        if (responsavel.estado) {
+          form.setValue("responsavel_principal.estado", responsavel.estado);
+        }
+        if (responsavel.cep) {
+          form.setValue("responsavel_principal.cep", cepMask(responsavel.cep));
+        }
+        if (responsavel.referencia) {
+          form.setValue("responsavel_principal.referencia", responsavel.referencia);
+        }
+        if (responsavel.complemento) {
+          form.setValue("responsavel_principal.complemento", responsavel.complemento);
+        }
+
+        toast.info("Dados do responsável encontrados e preenchidos automaticamente!", {
+          id: "lookup-responsavel-found"
+        });
       }
-    } catch (error) {
-      // Silencioso
+    } catch {
     }
   }, [mode, profile?.id, lookupResponsavel, form]);
 
-  // Monitor CPF changes
-  const cpfResponsavelValue = form.watch("cpf_responsavel");
+  const cpfResponsavelValue = form.watch("responsavel_principal.cpf");
+  const telefoneResponsavelValue = form.watch("responsavel_principal.telefone");
+
   useEffect(() => {
     const pureCpf = cpfResponsavelValue?.replace(/\D/g, "");
-    const { invalid } = form.getFieldState("cpf_responsavel", form.formState);
-    
-    if (pureCpf && pureCpf.length === 11 && !invalid) {
+    if (pureCpf && pureCpf.length === 11) {
       handleSearchResponsavel(pureCpf);
     }
-  }, [cpfResponsavelValue, handleSearchResponsavel, form.formState]);
+  }, [cpfResponsavelValue, handleSearchResponsavel]);
 
-  // Mock Filling
+  useEffect(() => {
+    const purePhone = telefoneResponsavelValue?.replace(/\D/g, "");
+    if (purePhone && purePhone.length === 11) {
+      handleSearchResponsavel(purePhone);
+    }
+  }, [telefoneResponsavelValue, handleSearchResponsavel]);
+
   const handleFillMock = useCallback(() => {
     const currentValues = form.getValues();
 
@@ -143,6 +198,10 @@ export function usePassageiroFormViewModel({
 
     form.reset(mockData);
 
+    setTimeout(() => {
+      isFillingMockRef.current = false;
+    }, 400);
+
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -152,7 +211,6 @@ export function usePassageiroFormViewModel({
     ]);
   }, [form, escolasData, veiculosData, setOpenAccordionItems]);
 
-  // Submission Logic
   const onFormError = useCallback(() => {
     toast.error("validacao.formularioComErros");
     setOpenAccordionItems([
@@ -169,8 +227,23 @@ export function usePassageiroFormViewModel({
 
     const purePayload: Record<string, unknown> = { ...data };
 
-    purePayload.cep = typeof purePayload.cep === "string" ? purePayload.cep.replace(/\D/g, "") || null : null;
-    purePayload.cpf_responsavel = typeof purePayload.cpf_responsavel === "string" ? purePayload.cpf_responsavel.replace(/\D/g, "") || null : null;
+    if (data.responsavel_principal) {
+      purePayload.responsavel_principal = {
+        nome: cleanString(data.responsavel_principal.nome),
+        telefone: String(data.responsavel_principal.telefone || "").replace(/\D/g, ""),
+        cpf: typeof data.responsavel_principal.cpf === "string" ? data.responsavel_principal.cpf.replace(/\D/g, "") || null : null,
+        email: data.responsavel_principal.email || null,
+        parentesco: data.responsavel_principal.parentesco || null,
+        logradouro: data.responsavel_principal.logradouro || null,
+        numero: data.responsavel_principal.numero || null,
+        bairro: data.responsavel_principal.bairro || null,
+        cidade: data.responsavel_principal.cidade || null,
+        estado: data.responsavel_principal.estado || null,
+        cep: typeof data.responsavel_principal.cep === "string" ? data.responsavel_principal.cep.replace(/\D/g, "") || null : null,
+        referencia: data.responsavel_principal.referencia || null,
+        complemento: data.responsavel_principal.complemento || null,
+      };
+    }
 
     purePayload.data_nascimento = typeof purePayload.data_nascimento === "string" && purePayload.data_nascimento
       ? convertDateBrToISO(purePayload.data_nascimento)
@@ -194,14 +267,7 @@ export function usePassageiroFormViewModel({
     purePayload.genero = purePayload.genero || null;
     purePayload.periodo = purePayload.periodo || null;
     purePayload.modalidade = purePayload.modalidade || null;
-    purePayload.parentesco_responsavel = purePayload.parentesco_responsavel || null;
 
-    purePayload.logradouro = purePayload.logradouro || null;
-    purePayload.numero = purePayload.numero || null;
-    purePayload.bairro = purePayload.bairro || null;
-    purePayload.cidade = purePayload.cidade || null;
-    purePayload.estado = purePayload.estado || null;
-    purePayload.referencia = purePayload.referencia || null;
     purePayload.observacoes = purePayload.observacoes || null;
 
     if (typeof purePayload.valor_cobranca === "string") {
@@ -210,22 +276,21 @@ export function usePassageiroFormViewModel({
 
     const commonOptions = {
       onSuccess: (responseData?: Passageiro) => {
-        // Business Logic: Detect if critical contract fields changed
         const isEdit = mode === PassageiroFormModes.EDIT;
         const isContractActive = !!profile?.config_contrato?.usar_contratos;
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {
-          const cleanString = (val: unknown) => {
+          const normalizeForCompare = (val: unknown) => {
             if (val === null || val === undefined) return "";
             return String(val).trim().toLowerCase();
           };
 
           const checkStringChange = (formVal: unknown, dbVal: unknown) => {
-            return cleanString(formVal) !== cleanString(dbVal);
+            return normalizeForCompare(formVal) !== normalizeForCompare(dbVal);
           };
 
-          const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca);
+          const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca as string | number | null | undefined);
           const vencimentoForm = Number(purePayload.dia_vencimento);
           
           const valorAtual = Number(editingPassageiro.valor_cobranca || 0);
@@ -235,9 +300,9 @@ export function usePassageiroFormViewModel({
             Math.abs(valorForm - valorAtual) > 0.01 ||
             vencimentoForm !== vencimentoAtual ||
             checkStringChange(purePayload.nome, editingPassageiro.nome) ||
-            checkStringChange(purePayload.nome_responsavel, editingPassageiro.nome_responsavel) ||
-            checkStringChange(purePayload.parentesco_responsavel, editingPassageiro.parentesco_responsavel) ||
-            checkStringChange(purePayload.cpf_responsavel, editingPassageiro.cpf_responsavel) ||
+            checkStringChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
+            checkStringChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
+            checkStringChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
             checkStringChange(purePayload.escola_id, editingPassageiro.escola_id) ||
             checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
             checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
@@ -246,13 +311,12 @@ export function usePassageiroFormViewModel({
             checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
             checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
             checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
-            checkStringChange(purePayload.data_fim_cobranca, editingPassageiro.data_fim_cobranca) ||
-            checkStringChange(purePayload.logradouro, editingPassageiro.logradouro) ||
-            checkStringChange(purePayload.numero, editingPassageiro.numero) ||
-            checkStringChange(purePayload.bairro, editingPassageiro.bairro) ||
-            checkStringChange(purePayload.cidade, editingPassageiro.cidade) ||
-            checkStringChange(purePayload.estado, editingPassageiro.estado) ||
-            checkStringChange(purePayload.cep, editingPassageiro.cep);
+            checkStringChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
+            checkStringChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
+            checkStringChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||
+            checkStringChange(data.responsavel_principal?.cidade, editingPassageiro.responsavel_principal?.cidade) ||
+            checkStringChange(data.responsavel_principal?.estado, editingPassageiro.responsavel_principal?.estado) ||
+            checkStringChange(data.responsavel_principal?.cep, editingPassageiro.responsavel_principal?.cep);
         }
 
         onSuccess(responseData, {
@@ -261,9 +325,7 @@ export function usePassageiroFormViewModel({
         });
         onClose();
       },
-      onError: () => {
-        // Handled globally or specifically if needed
-      },
+      onError: () => {},
     };
 
     if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
@@ -275,7 +337,10 @@ export function usePassageiroFormViewModel({
             usuario_id: prePassageiro.usuario_id,
           },
         },
-        commonOptions
+        {
+          onSuccess: (res) => commonOptions.onSuccess(res.passageiro),
+          onError: commonOptions.onError,
+        }
       );
     } else if (editingPassageiro) {
       updatePassageiro.mutate(
@@ -305,7 +370,7 @@ export function usePassageiroFormViewModel({
 
   return {
     form,
-    refreshing,
+    refreshing: refreshing || (mode === PassageiroFormModes.EDIT && isLoadingFullPassageiro && !fullPassageiro),
     openAccordionItems,
     setOpenAccordionItems,
     escolas: escolasData,

@@ -27,27 +27,54 @@ import { parentescos } from "@/utils/formatters";
 import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText, Mail } from "lucide-react";
+import { useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { mockGenerator } from "@/utils/mocks/generator";
+import { toast } from "sonner";
 import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
   useSetPrincipalResponsavel,
+  useBuscarResponsavel,
 } from "@/hooks";
+import {
+  useAddResponsavelResponsavelMutation,
+  useUpdateResponsavelResponsavelMutation,
+  useSetPrincipalResponsavelResponsavelMutation,
+} from "@/hooks/api/useResponsavelAuthApi";
+import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
+import { STORAGE_KEYS } from "@/constants";
 
 const responsavelSchema = z.object({
-  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  telefone: phoneSchema,
+  nome: z.string().min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
+  telefone: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => !val || val.replace(/\D/g, "").length >= 10, {
+      message: "Telefone inválido",
+    }),
   cpf: z
     .string()
     .min(1, "Campo obrigatório")
     .refine((val) => !val || isValidCPF(val), {
       message: "CPF inválido",
     }),
+  email: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .refine((val) => !val || z.string().email().safeParse(val).success, {
+      message: "E-mail inválido",
+    }),
   parentesco: z.nativeEnum(ParentescoResponsavel, { errorMap: () => ({ message: "Campo obrigatório" }) }),
+  logradouro: z.string().optional().nullable().or(z.literal("")),
+  numero: z.string().optional().nullable().or(z.literal("")),
+  bairro: z.string().optional().nullable().or(z.literal("")),
+  cidade: z.string().optional().nullable().or(z.literal("")),
+  estado: z.string().optional().nullable().or(z.literal("")),
   cep: z
     .string()
     .optional()
@@ -56,11 +83,6 @@ const responsavelSchema = z.object({
     .refine((val) => !val || isValidCEPFormat(val), {
       message: "Formato inválido (00000-000)",
     }),
-  logradouro: z.string().min(1, "Logradouro é obrigatório"),
-  numero: z.string().min(1, "Número é obrigatório"),
-  bairro: z.string().min(1, "Bairro é obrigatório"),
-  cidade: z.string().min(1, "Cidade é obrigatório"),
-  estado: z.string().min(1, "Estado é obrigatório"),
   referencia: z.string().optional().nullable().or(z.literal("")),
   complemento: z.string().optional().nullable().or(z.literal("")),
   tornar_principal: z.boolean().optional().default(false),
@@ -72,8 +94,9 @@ interface ResponsavelFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   passageiroId: string;
-  editingResponsavel: PassageiroResponsavel | null;
+  editingResponsavel?: PassageiroResponsavel | null;
   onSuccess?: () => void;
+  isResponsavelPortal?: boolean;
 }
 
 export default function ResponsavelFormDialog({
@@ -82,13 +105,28 @@ export default function ResponsavelFormDialog({
   passageiroId,
   editingResponsavel,
   onSuccess,
+  isResponsavelPortal = false,
 }: ResponsavelFormDialogProps) {
+  const { token } = useResponsavelAuth();
   const createResponsavel = useCreateResponsavelAdicional();
   const updateResponsavel = useUpdateResponsavelAdicional();
   const setPrincipal = useSetPrincipalResponsavel();
+
+  const addResponsavelResponsavel = useAddResponsavelResponsavelMutation();
+  const updateResponsavelResponsavel = useUpdateResponsavelResponsavelMutation();
+  const setPrincipalResponsavel = useSetPrincipalResponsavelResponsavelMutation();
+
   const alertRef = useRef<HTMLDivElement>(null);
 
-  const isSubmitting = createResponsavel.isPending || updateResponsavel.isPending || setPrincipal.isPending;
+  const isSubmitting =
+    createResponsavel.isPending ||
+    updateResponsavel.isPending ||
+    setPrincipal.isPending ||
+    addResponsavelResponsavel.isPending ||
+    updateResponsavelResponsavel.isPending ||
+    setPrincipalResponsavel.isPending;
+
+  const searchedTermsSet = useRef<Set<string>>(new Set());
 
   const handleFillMock = () => {
     const mockName = mockGenerator.name();
@@ -106,6 +144,7 @@ export default function ResponsavelFormDialog({
       nome: mockName,
       telefone: mockGenerator.phone(),
       cpf: mockGenerator.cpf(),
+      email: mockGenerator.email("thiago"),
       parentesco: randomParentesco,
       cep: cepMask(mockAddress.cep),
       logradouro: mockAddress.logradouro,
@@ -125,6 +164,7 @@ export default function ResponsavelFormDialog({
       nome: "",
       telefone: "",
       cpf: "",
+      email: "",
       parentesco: "" as ParentescoResponsavel,
       logradouro: "",
       numero: "",
@@ -138,6 +178,64 @@ export default function ResponsavelFormDialog({
     },
   });
 
+  const { mutateAsync: lookupResponsavel } = useBuscarResponsavel();
+
+  const handleSearchResponsavel = useCallback(async (term: string) => {
+    if (editingResponsavel) return;
+    const pureTerm = String(term || "").replace(/\D/g, "");
+    if (pureTerm.length !== 11) return;
+    if (searchedTermsSet.current.has(pureTerm)) return;
+
+    try {
+      searchedTermsSet.current.add(pureTerm);
+      const responsavel = await lookupResponsavel({ term: pureTerm });
+
+      if (responsavel) {
+        if (responsavel.cpf) {
+          searchedTermsSet.current.add(String(responsavel.cpf).replace(/\D/g, ""));
+        }
+        if (responsavel.telefone) {
+          searchedTermsSet.current.add(String(responsavel.telefone).replace(/\D/g, ""));
+        }
+
+        if (responsavel.nome) {
+          form.setValue("nome", responsavel.nome, { shouldValidate: true });
+        }
+        if (responsavel.telefone) {
+          form.setValue("telefone", phoneMask(responsavel.telefone), { shouldValidate: true });
+        }
+        if (responsavel.cpf) {
+          form.setValue("cpf", cpfMask(responsavel.cpf), { shouldValidate: true });
+        }
+        if (responsavel.email) {
+          form.setValue("email", responsavel.email, { shouldValidate: true });
+        }
+        if (responsavel.parentesco) {
+          form.setValue("parentesco", responsavel.parentesco as ParentescoResponsavel, { shouldValidate: true });
+        }
+        if (responsavel.logradouro) form.setValue("logradouro", responsavel.logradouro);
+        if (responsavel.numero) form.setValue("numero", responsavel.numero);
+        if (responsavel.bairro) form.setValue("bairro", responsavel.bairro);
+        if (responsavel.cidade) form.setValue("cidade", responsavel.cidade);
+        if (responsavel.estado) form.setValue("estado", responsavel.estado);
+        if (responsavel.cep) form.setValue("cep", cepMask(responsavel.cep));
+        if (responsavel.referencia) form.setValue("referencia", responsavel.referencia);
+        if (responsavel.complemento) form.setValue("complemento", responsavel.complemento);
+
+        toast.info("Dados do responsável encontrados e preenchidos automaticamente!", {
+          id: "lookup-responsavel-found"
+        });
+      }
+    } catch {
+    }
+  }, [editingResponsavel, lookupResponsavel, form]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      searchedTermsSet.current.clear();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       if (editingResponsavel) {
@@ -145,6 +243,7 @@ export default function ResponsavelFormDialog({
           nome: editingResponsavel.nome,
           telefone: phoneMask(editingResponsavel.telefone),
           cpf: cpfMask(editingResponsavel.cpf),
+          email: editingResponsavel.email || "",
           parentesco: editingResponsavel.parentesco,
           logradouro: editingResponsavel.logradouro || "",
           numero: editingResponsavel.numero || "",
@@ -161,6 +260,7 @@ export default function ResponsavelFormDialog({
           nome: "",
           telefone: "",
           cpf: "",
+          email: "",
           parentesco: "" as ParentescoResponsavel,
           logradouro: "",
           numero: "",
@@ -176,6 +276,23 @@ export default function ResponsavelFormDialog({
     }
   }, [isOpen, editingResponsavel, form]);
 
+  const cpfValue = form.watch("cpf");
+  const telefoneValue = form.watch("telefone");
+
+  useEffect(() => {
+    const pureCpf = cpfValue ? String(cpfValue).replace(/\D/g, "") : "";
+    if (pureCpf && pureCpf.length === 11) {
+      handleSearchResponsavel(pureCpf);
+    }
+  }, [cpfValue, handleSearchResponsavel]);
+
+  useEffect(() => {
+    const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
+    if (purePhone && purePhone.length === 11) {
+      handleSearchResponsavel(purePhone);
+    }
+  }, [telefoneValue, handleSearchResponsavel]);
+
   const tornarPrincipalValue = form.watch("tornar_principal");
   useEffect(() => {
     if (tornarPrincipalValue && alertRef.current) {
@@ -188,15 +305,16 @@ export default function ResponsavelFormDialog({
   const handleSubmit = async (data: ResponsavelFormData) => {
     const payload = {
       nome: data.nome,
-      telefone: data.telefone.replace(/\D/g, ""),
-      cpf: data.cpf.replace(/\D/g, ""),
+      telefone: String(data.telefone || "").replace(/\D/g, ""),
+      cpf: String(data.cpf || "").replace(/\D/g, ""),
+      email: data.email || null,
       parentesco: data.parentesco as ParentescoResponsavel,
       logradouro: data.logradouro || null,
       numero: data.numero || null,
       bairro: data.bairro || null,
       cidade: data.cidade || null,
       estado: data.estado || null,
-      cep: data.cep?.replace(/\D/g, "") || null,
+      cep: data.cep ? String(data.cep).replace(/\D/g, "") : null,
       referencia: data.referencia || null,
       complemento: data.complemento || null,
     };
@@ -207,34 +325,68 @@ export default function ResponsavelFormDialog({
     };
 
     try {
-      if (editingResponsavel && editingResponsavel.id) {
-        await updateResponsavel.mutateAsync({
-          responsavelId: editingResponsavel.id,
-          passageiroId,
-          data: payload,
-        });
-
-        if (data.tornar_principal) {
-          await setPrincipal.mutateAsync({
+      if (isResponsavelPortal) {
+        const authToken = token || localStorage.getItem(STORAGE_KEYS.RESPONSAVEL_TOKEN) || "";
+        if (editingResponsavel && editingResponsavel.id) {
+          await updateResponsavelResponsavel.mutateAsync({
             passageiroId,
             responsavelId: editingResponsavel.id,
+            payload,
+            token: authToken,
           });
+
+          if (data.tornar_principal) {
+            await setPrincipalResponsavel.mutateAsync({
+              passageiroId,
+              responsavelId: editingResponsavel.id,
+              token: authToken,
+            });
+          }
+        } else {
+          const response = await addResponsavelResponsavel.mutateAsync({
+            passageiroId,
+            payload,
+            token: authToken,
+          });
+
+          if (data.tornar_principal && response?.id) {
+            await setPrincipalResponsavel.mutateAsync({
+              passageiroId,
+              responsavelId: response.id,
+              token: authToken,
+            });
+          }
         }
         successCallback();
       } else {
-        const response = await createResponsavel.mutateAsync({
-          passageiroId,
-          data: payload,
-        });
-
-        // Backend should return the created object. Assuming it contains an `id` field.
-        if (data.tornar_principal && response?.id) {
-          await setPrincipal.mutateAsync({
+        if (editingResponsavel && editingResponsavel.id) {
+          await updateResponsavel.mutateAsync({
+            responsavelId: editingResponsavel.id,
             passageiroId,
-            responsavelId: response.id,
+            data: payload,
           });
+
+          if (data.tornar_principal) {
+            await setPrincipal.mutateAsync({
+              passageiroId,
+              responsavelId: editingResponsavel.id,
+            });
+          }
+          successCallback();
+        } else {
+          const response = await createResponsavel.mutateAsync({
+            passageiroId,
+            data: payload,
+          });
+
+          if (data.tornar_principal && response?.id) {
+            await setPrincipal.mutateAsync({
+              passageiroId,
+              responsavelId: response.id,
+            });
+          }
+          successCallback();
         }
-        successCallback();
       }
     } catch (error) {
       console.error("Erro ao processar responsável:", error);
@@ -269,32 +421,34 @@ export default function ResponsavelFormDialog({
           <form
             id="responsavel-adicional-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-8 pt-4 pb-6"
+            className="space-y-4 mt-2"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="nome"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <Input
-                          {...field}
-                          placeholder="Digite o nome completo"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                          aria-invalid={!!fieldState.error}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="col-span-1 sm:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col space-y-2">
+                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                        Nome <span className="text-red-600">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            placeholder="Digite o nome completo"
+                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -302,10 +456,10 @@ export default function ResponsavelFormDialog({
                 render={({ field }) => (
                   <PhoneInput
                     field={field}
-                    label="Telefone"
+                    label="Telefone (WhatsApp)"
                     required
                     labelClassName="text-slate-700 font-semibold ml-1"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 text-base"
                   />
                 )}
               />
@@ -314,7 +468,7 @@ export default function ResponsavelFormDialog({
                 control={form.control}
                 name="cpf"
                 render={({ field, fieldState }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col space-y-2">
                     <FormLabel className="text-slate-700 font-semibold ml-1">
                       CPF <span className="text-red-600">*</span>
                     </FormLabel>
@@ -328,7 +482,33 @@ export default function ResponsavelFormDialog({
                           onChange={(e) => {
                             field.onChange(cpfMask(e.target.value));
                           }}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col space-y-2">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      E-mail
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          {...field}
+                          type="email"
+                          value={field.value || ""}
+                          placeholder="email@exemplo.com.br"
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -342,7 +522,7 @@ export default function ResponsavelFormDialog({
                 control={form.control}
                 name="parentesco"
                 render={({ field, fieldState }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col space-y-2">
                     <FormLabel className="text-slate-700 font-semibold ml-1">
                       Parentesco <span className="text-red-600">*</span>
                     </FormLabel>
@@ -353,7 +533,7 @@ export default function ResponsavelFormDialog({
                       <FormControl>
                         <SelectTrigger
                           className={cn(
-                            "h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
+                            "h-12 rounded-xl bg-slate-50 border-slate-200 text-base focus:border-[#1a3a5c]",
                             fieldState.error && "border-red-500"
                           )}
                         >
@@ -376,14 +556,14 @@ export default function ResponsavelFormDialog({
 
             <hr className="border-slate-100" />
 
-            <section className="space-y-6">
-              <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                  <MapPin className="w-5 h-5" />
+            <section className="space-y-3">
+              <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+                  <MapPin className="w-4.5 h-4.5" />
                 </div>
                 Endereço do Responsável
               </div>
-              <FormEnderecoFields required={true} />
+              <FormEnderecoFields required={false} />
             </section>
 
             <FormField

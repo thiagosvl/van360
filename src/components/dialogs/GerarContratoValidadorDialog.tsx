@@ -26,7 +26,7 @@ interface GerarContratoValidadorDialogProps {
   isOpen: boolean;
   onClose: () => void;
   passageiroId: string | null;
-  onSuccess?: () => void;
+  onSuccess?: (passageiroId: string, bypassed?: boolean) => void;
 }
 
 export function GerarContratoValidadorDialog({
@@ -109,7 +109,7 @@ export function GerarContratoValidadorDialog({
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="cpf_responsavel"
+                  name="responsavel_principal.cpf"
                   render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-semibold ml-1">

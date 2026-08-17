@@ -207,14 +207,14 @@ export function AdminUserContractsTab({
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                            {p.nome_responsavel ? (
+                            {p.responsavel_principal?.nome ? (
                               <div>
                                 <p className="font-medium text-slate-300 truncate">
-                                  {formatShortName(p.nome_responsavel, true)}
+                                  {formatShortName(p.responsavel_principal.nome, true)}
                                 </p>
-                                {p.telefone_responsavel && (
+                                {p.responsavel_principal.telefone && (
                                   <p className="text-[10px] text-slate-400 font-medium font-mono">
-                                    {phoneMask(p.telefone_responsavel)}
+                                    {phoneMask(p.responsavel_principal.telefone)}
                                   </p>
                                 )}
                               </div>

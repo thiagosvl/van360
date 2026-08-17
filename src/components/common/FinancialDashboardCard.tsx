@@ -8,9 +8,17 @@ interface FinancialDashboardCardProps {
   pendente: number;
   atrasado?: number;
   loading?: boolean;
+  showPrivacyToggle?: boolean;
 }
 
-export function FinancialDashboardCard({ totalEsperado, recebido, pendente, atrasado, loading }: FinancialDashboardCardProps) {
+export function FinancialDashboardCard({
+  totalEsperado,
+  recebido,
+  pendente,
+  atrasado,
+  loading,
+  showPrivacyToggle = true,
+}: FinancialDashboardCardProps) {
   const { hideValues, toggleHideValues, formatPrivateCurrency } = usePrivacy();
 
   const recebidoPercent = totalEsperado > 0 ? (recebido / totalEsperado) * 100 : 0;
@@ -65,15 +73,17 @@ export function FinancialDashboardCard({ totalEsperado, recebido, pendente, atra
           <span className="text-[13px] font-medium text-slate-600">Total Esperado</span>
           <div className="flex items-center gap-2">
             <span className="text-[15px] font-bold text-slate-800">{formatPrivateCurrency(totalEsperado)}</span>
-            <button
-              type="button"
-              onClick={toggleHideValues}
-              className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer -mr-1"
-              title={hideValues ? "Mostrar valores" : "Ocultar valores"}
-              aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
-            >
-              {hideValues ? <EyeOff className="w-4 h-4 text-slate-500" /> : <Eye className="w-4 h-4 text-slate-500" />}
-            </button>
+            {showPrivacyToggle && (
+              <button
+                type="button"
+                onClick={toggleHideValues}
+                className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer -mr-1"
+                title={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
+              >
+                {hideValues ? <EyeOff className="w-4 h-4 text-slate-500" /> : <Eye className="w-4 h-4 text-slate-500" />}
+              </button>
+            )}
           </div>
         </div>
         {/* Progress Bar Total */}

@@ -68,17 +68,17 @@ export function ActiveRouteUpcomingCard({
     currentAddressStr = formatarEnderecoParcialRota(parada.escola) || "Endereço da escola";
   } else if (pass) {
     if (activeTabForCard === TAB_PRINCIPAL) {
-      currentAddressStr = formatarEnderecoParcialRota(pass) || "Endereço principal";
+      currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço principal";
       currentLat = pass.latitude;
       currentLng = pass.longitude;
     } else {
       const respObj = responsaveisAdicionais.find((r: any) => r.id === activeTabForCard);
       if (respObj) {
-        currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass) || "Mesmo endereço");
+        currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Mesmo endereço");
         currentLat = respObj.latitude || pass.latitude;
         currentLng = respObj.longitude || pass.longitude;
       } else {
-        currentAddressStr = formatarEnderecoParcialRota(pass) || "Endereço principal";
+        currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço principal";
         currentLat = pass.latitude;
         currentLng = pass.longitude;
       }

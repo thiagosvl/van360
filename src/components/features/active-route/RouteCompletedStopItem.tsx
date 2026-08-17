@@ -69,7 +69,7 @@ export function RouteCompletedStopItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-800 break-words">
-              {isEscolaItem ? parada.escola?.nome : (parada.passageiro?.nome || parada.nome)}
+              {isEscolaItem ? parada.escola?.nome : formatShortName(parada.passageiro?.nome || parada.nome, true)}
             </span>
           </div>
           <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">

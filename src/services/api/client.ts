@@ -41,11 +41,7 @@ apiClient.interceptors.request.use(
   async (config) => {
     const token = await getAccessToken();
     if (token) {
-      // @ts-ignore
-      config.headers = config.headers || {};
-      // @ts-ignore
       config.headers.Authorization = `Bearer ${token}`;
-    } else {
     }
     return config;
   },

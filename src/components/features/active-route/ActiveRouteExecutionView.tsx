@@ -4,7 +4,7 @@ import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialo
 import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
-import { RouteExecutionStatus, RouteNodeType, RouteStopStatus, RouteSentido, RouteExecution, ExecucaoParada, DELETE_AUSENCIA_BY_QUERY_PARAM } from "@/types/route";
+import { RouteNodeType, RouteStopStatus, RouteSentido, RouteExecution, ExecucaoParada, ChamadaEscolaItem, DELETE_AUSENCIA_BY_QUERY_PARAM } from "@/types/route";
 import { toast } from "@/utils/notifications/toast";
 import { useRouteRules } from "@/hooks/business/useRouteRules";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -14,10 +14,11 @@ import { AddressDetailsDialog, AddressDialogData } from "./AddressDetailsDialog"
 import { ActiveRouteCurrentCard } from "./ActiveRouteCurrentCard";
 import { ActiveRouteUpcomingCard } from "./ActiveRouteUpcomingCard";
 import { ReordenarParadaSheet } from "./ReordenarParadaSheet";
-import { formatFirstName } from "@/utils/formatters/name";
-import { useAtualizarParadaStatus } from "@/hooks/api/useRouteMutations";
+import { ChamadaEscolaDialog } from "@/components/dialogs/ChamadaEscolaDialog";
+import ConfirmStartRouteDialog from "@/components/dialogs/ConfirmStartRouteDialog";
+import { formatFirstName, formatShortName } from "@/utils/formatters/name";
+import { useProcessarChamadaEscola } from "@/hooks/api/useRouteMutations";
 import { formatarEnderecoParcialRota } from "@/utils/formatters/address";
-import { queryClient } from "@/services/queryClient";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 const TAB_DEFAULT = "default";
@@ -86,7 +87,10 @@ export function ActiveRouteExecutionView({
     }
   }, [paradaAtual?.id, isPreview]);
   const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
+  const [isChamadaDialogOpen, setIsChamadaDialogOpen] = useState(false);
+  const [isConfirmStartDialogOpen, setIsConfirmStartDialogOpen] = useState(false);
   const [reordenarSheetTarget, setReordenarSheetTarget] = useState<ExecucaoParada | null>(null);
+  const chamadaEscolaMutation = useProcessarChamadaEscola();
   const [selectedPreviewTabs, setSelectedPreviewTabs] = useState<Record<string, string>>({});
   const [selectedDialogRespTab, setSelectedDialogRespTab] = useState<string>(TAB_PRINCIPAL);
   const [addressDialogData, setAddressDialogData] = useState<{
@@ -109,14 +113,13 @@ export function ActiveRouteExecutionView({
   const { can } = usePermissions();
 
   const removerAusenciaMutation = useRemoverAusenciaMutation();
-  const atualizarParadaStatusMutation = useAtualizarParadaStatus();
   const [desfazendoStopId, setDesfazendoStopId] = useState<string | null>(null);
 
   const handleDesfazerAusencia = (parada: any) => {
     const isAusente = parada.status === RouteStopStatus.AUSENTE || parada.is_ausente;
     if (!isAusente) return;
 
-    const nomeAluno = formatFirstName(parada.passageiro?.nome || "este passageiro");
+    const nomeAluno = formatShortName(parada.passageiro?.nome);
 
     openConfirmationDialog({
       title: "Desfazer Ausência?",
@@ -319,6 +322,22 @@ export function ActiveRouteExecutionView({
     }
   };
 
+  const handleConfirmChamadaEscola = async (chamada: ChamadaEscolaItem[]) => {
+    if (!execucao?.id) return;
+    try {
+      await chamadaEscolaMutation.mutateAsync({
+        execucaoId: execucao.id,
+        escolaParadaId: activeParadaToRender?.id || paradaAtual?.id,
+        chamada,
+      });
+
+      setIsChamadaDialogOpen(false);
+      toast.success("Chamada processada com sucesso!");
+    } catch (err) {
+      // Erro notificado via onError da mutation
+    }
+  };
+
   let activeRespName = "";
   let activeRespPhone = "";
   let activeRespParentesco = "";
@@ -335,22 +354,22 @@ export function ActiveRouteExecutionView({
       : selectedRespTab;
 
     if (activeRespId === TAB_PRINCIPAL) {
-      activeRespName = pass.nome_responsavel || "Responsável Principal";
-      activeRespPhone = pass.telefone_responsavel || "";
-      activeRespParentesco = pass.parentesco_responsavel || "Principal";
-      activeAddressStr = formatarEnderecoParcialRota(pass) || "Endereço principal";
+      activeRespName = pass.responsavel_principal?.nome || "Responsável";
+      activeRespPhone = pass.responsavel_principal?.telefone || "";
+      activeRespParentesco = pass.responsavel_principal?.parentesco;
+      activeAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass);
     } else {
       const respObj = responsaveisAdicionais.find((r: any) => r.id === activeRespId);
       if (respObj) {
         activeRespName = respObj.nome;
         activeRespPhone = respObj.telefone;
         activeRespParentesco = respObj.parentesco;
-        activeAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass) || "Mesmo endereço");
+        activeAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Mesmo endereço");
       } else {
-        activeRespName = pass.nome_responsavel || "Responsável";
-        activeRespPhone = pass.telefone_responsavel || "";
-        activeRespParentesco = pass.parentesco_responsavel || "Principal";
-        activeAddressStr = formatarEnderecoParcialRota(pass) || "Endereço principal";
+        activeRespName = pass.responsavel_principal?.nome || "Responsável";
+        activeRespPhone = pass.responsavel_principal?.telefone || "";
+        activeRespParentesco = pass.responsavel_principal?.parentesco;
+        activeAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass);
       }
     }
   } else if (targetParadaForContext && targetParadaForContext.tipo_no === RouteNodeType.ESCOLA && targetParadaForContext.escola) {
@@ -467,11 +486,7 @@ export function ActiveRouteExecutionView({
         onEditRoute={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
         onIniciarRota={() => {
           if (!isVehicleOccupied && iniciarMutation && execucao?.rota_id) {
-            iniciarMutation.mutate(execucao.rota_id, {
-              onSuccess: (data: any) => {
-                navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", data.id), { replace: true });
-              }
-            });
+            setIsConfirmStartDialogOpen(true);
           }
         }}
       />
@@ -535,6 +550,7 @@ export function ActiveRouteExecutionView({
                 onConfirmFalta={handleConfirmFalta}
                 onConfirmEmbarqueDialog={() => handleConfirmAction(activeParadaToRender.id)}
                 onDirectStep={() => handleConfirmAction(activeParadaToRender.id)}
+                onOpenChamadaDialog={() => setIsChamadaDialogOpen(true)}
                 onOpenReordenarSheet={(p) => setReordenarSheetTarget(p)}
               />
             );
@@ -578,6 +594,15 @@ export function ActiveRouteExecutionView({
         </div>
       )}
 
+      <ChamadaEscolaDialog
+        open={isChamadaDialogOpen}
+        onOpenChange={setIsChamadaDialogOpen}
+        escolaNome={activeParadaToRender?.escola?.nome}
+        alunos={alunosParaEmbarcar}
+        isSubmitting={chamadaEscolaMutation.isPending}
+        onConfirmChamada={handleConfirmChamadaEscola}
+      />
+
       <RegistrarAusenciaDialog
         isOpen={isAusenciaDialogOpen}
         onClose={() => setIsAusenciaDialogOpen(false)}
@@ -600,6 +625,26 @@ export function ActiveRouteExecutionView({
         execucaoTipo={execucao.tipo}
         validarMovimentoPermitido={validarMovimentoPermitido}
         onConfirmReordenação={handleConfirmReordenacaoSheet}
+      />
+
+      <ConfirmStartRouteDialog
+        isOpen={isConfirmStartDialogOpen}
+        onClose={() => setIsConfirmStartDialogOpen(false)}
+        routeName={execucao?.rota?.nome || "Rota"}
+        isLoading={iniciarMutation?.isPending}
+        onConfirm={(notificarPais) => {
+          if (execucao?.rota_id && iniciarMutation) {
+            iniciarMutation.mutate(
+              { id: execucao.rota_id, notificar_pais: notificarPais },
+              {
+                onSuccess: (data: any) => {
+                  setIsConfirmStartDialogOpen(false);
+                  navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", data.id), { replace: true });
+                }
+              }
+            );
+          }
+        }}
       />
     </div>
   );

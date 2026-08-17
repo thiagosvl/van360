@@ -60,8 +60,10 @@ export function QuickStartPassageiroDialog({
       if (keepOpen) {
         form.reset({
           nome: "",
-          nome_responsavel: "",
-          telefone_responsavel: "",
+          responsavel_principal: {
+            nome: "",
+            telefone: "",
+          },
           valor_cobranca: "",
           dia_vencimento: "",
           escola_id: form.getValues("escola_id"),
@@ -99,8 +101,13 @@ export function QuickStartPassageiroDialog({
       fullFormViewModel.form.reset({
         ...fullValues,
         nome: quickValues.nome || fullValues.nome,
-        nome_responsavel: quickValues.nome_responsavel || fullValues.nome_responsavel,
-        telefone_responsavel: quickValues.telefone_responsavel || fullValues.telefone_responsavel,
+        responsavel_principal: {
+          nome: quickValues.responsavel_principal?.nome || fullValues.responsavel_principal?.nome || "",
+          telefone: quickValues.responsavel_principal?.telefone || fullValues.responsavel_principal?.telefone || "",
+          cpf: fullValues.responsavel_principal?.cpf || "",
+          email: fullValues.responsavel_principal?.email || "",
+          parentesco: fullValues.responsavel_principal?.parentesco || "",
+        },
         escola_id: quickValues.escola_id || fullValues.escola_id,
         veiculo_id: quickValues.veiculo_id || fullValues.veiculo_id,
         valor_cobranca: quickValues.valor_cobranca || fullValues.valor_cobranca,
@@ -115,8 +122,10 @@ export function QuickStartPassageiroDialog({
       form.reset({
         ...quickValues,
         nome: fullValues.nome || quickValues.nome,
-        nome_responsavel: fullValues.nome_responsavel || quickValues.nome_responsavel,
-        telefone_responsavel: fullValues.telefone_responsavel || quickValues.telefone_responsavel,
+        responsavel_principal: {
+          nome: fullValues.responsavel_principal?.nome || quickValues.responsavel_principal?.nome || "",
+          telefone: fullValues.responsavel_principal?.telefone || quickValues.responsavel_principal?.telefone || "",
+        },
         escola_id: fullValues.escola_id || quickValues.escola_id,
         veiculo_id: fullValues.veiculo_id || quickValues.veiculo_id,
         valor_cobranca: fullValues.valor_cobranca || quickValues.valor_cobranca,
@@ -137,8 +146,10 @@ export function QuickStartPassageiroDialog({
     if (isOpen) {
       form.reset({
         nome: "",
-        nome_responsavel: "",
-        telefone_responsavel: "",
+        responsavel_principal: {
+          nome: "",
+          telefone: "",
+        },
         valor_cobranca: "",
         dia_vencimento: "",
         escola_id: escolasList?.length === 1 ? escolasList[0].id : "",
@@ -301,7 +312,7 @@ export function QuickStartPassageiroDialog({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="nome_responsavel"
+                        name="responsavel_principal.nome"
                         render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="text-slate-700 font-semibold ml-1">
@@ -325,7 +336,7 @@ export function QuickStartPassageiroDialog({
 
                       <FormField
                         control={form.control}
-                        name="telefone_responsavel"
+                        name="responsavel_principal.telefone"
                         render={({ field }) => (
                           <PhoneInput
                             field={field}

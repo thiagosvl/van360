@@ -1033,7 +1033,6 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   );
 }
 
-// Componente para a Seção com Reordenação por Setas
 interface SectionItemCardProps {
   secao: ContractSectionUI;
   sIdx: number;
@@ -1230,7 +1229,6 @@ function SectionItemCard({
   );
 }
 
-// Componente para a Cláusula com Reordenação por Setas à Direita
 interface ClauseItemCardProps {
   clause: ClauseItemUI;
   cIdx: number;

@@ -15,8 +15,7 @@ import {
   FirstChargeStep as Step,
   useFirstChargeViewModel,
 } from "@/hooks/ui/useFirstChargeViewModel";
-import { formatFirstName, formatShortName } from "@/utils/formatters";
-import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
+import { formatShortName } from "@/utils/formatters";
 import { getNowBR } from "@/utils/dateUtils";
 
 export interface FirstChargeDialogProps {
@@ -52,7 +51,6 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
   const currentMonthName = getNowBR().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
   const firstNamePassageiro = formatShortName(passageiro.nome);
-  const firstNameResponsavel = formatNomeResponsavelExibicao(passageiro.nome_responsavel);
 
   const totalSteps = passageiro.isento ? 1 : (showContractStep ? 4 : 3);
   const stepIndex = passageiro.isento ? 0 : (showContractStep ? STEP_INDEX[step] : STEP_INDEX[step] - 1);

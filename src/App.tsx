@@ -8,7 +8,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ROUTES } from "@/constants/routes";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import AppLayout from "@/layouts/AppLayout";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { usePushNotifications } from "@/hooks/ui/usePushNotifications";
 import { apiClient } from "@/services/api/client";
 import { queryClient } from "@/services/queryClient";
@@ -23,6 +22,8 @@ import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
+
+import { LayoutProvider } from "@/contexts/LayoutProvider";
 
 const PushNotificationController = () => {
   usePushNotifications();
@@ -228,160 +229,162 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner />
-        <ResponsavelAuthProvider>
-          <AppErrorBoundary>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <BackButtonController />
-            <PushNotificationController />
-            <ScrollToTop />
-            <Suspense fallback={<InitialLoading />}>
-              <Routes>
-                <Route
-                  path={ROUTES.PUBLIC.LOGIN}
-                  element={
-                    <AppGate>
-                      <Login />
-                    </AppGate>
-                  }
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.REGISTER}
-                  element={
-                    <AppGate>
-                      <Register />
-                    </AppGate>
-                  }
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.EXTERNAL_PASSENGER_FORM}
-                  element={<PassageiroExternalForm />}
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.PRIVACY_POLICY}
-                  element={<PrivacyPolicy />}
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.TERMS_OF_USE}
-                  element={<TermsOfUse />}
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}
-                  element={<ExternalCheckoutBridge />}
-                />
-
-                <Route
-                  path="/assinar/:token"
-                  element={<AssinarContrato />}
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.SPLASH}
-                  element={
-                    <AppGate>
-                      <Splash />
-                    </AppGate>
-                  }
-                />
-
-                <Route
-                  path={ROUTES.PUBLIC.ROOT}
-                  element={
-                    Capacitor.isNativePlatform() ? (
-                      <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
-                    ) : (
-                      <Navigate to={ROUTES.PUBLIC.LOGIN} replace />
-                    )
-                  }
-                />
-
-                <Route
-                  element={
-                    <AppGate>
-                      <RoleProtectedRoute allowedRoles={[UserType.ADMIN]}>
-                        <AdminLayout>
-                          <Outlet />
-                        </AdminLayout>
-                      </RoleProtectedRoute>
-                    </AppGate>
-                  }
-                >
-                  <Route path="/admin" element={<Navigate to={ROUTES.PRIVATE.ADMIN.DASHBOARD} replace />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.DASHBOARD} element={<AdminDashboard />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.USERS} element={<AdminUsers />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.USER_DETAILS} element={<AdminUserDetails />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.SETTINGS} element={<AdminSettings />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
-                  <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
-                </Route>
-
-                <Route
-                  element={
-                    <AppGate>
-                      <RoleProtectedRoute allowedRoles={[UserType.MOTORISTA, UserType.MOTORISTA_AUXILIAR, UserType.MONITOR]}>
-                        <AppLayout />
-                      </RoleProtectedRoute>
-                    </AppGate>
-                  }
-                >
-                  <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
-
-                  <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ResponsavelAuthProvider>
+            <LayoutProvider>
+              <AppErrorBoundary>
+                <BackButtonController />
+                <PushNotificationController />
+                <ScrollToTop />
+                <Suspense fallback={<InitialLoading />}>
+                  <Routes>
                     <Route
-                      path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
-                      element={<PassageiroCarteirinha />}
+                      path={ROUTES.PUBLIC.LOGIN}
+                      element={
+                        <AppGate>
+                          <Login />
+                        </AppGate>
+                      }
                     />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.SETTINGS} element={<Configuracoes />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP} element={<ConfigurarRota />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT} element={<ConfigurarRota />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE} element={<RouteExecutionPage />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_DETAILS} element={<RouteDetailsPage />} />
-                    <Route path={ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS} element={<Aniversariantes />} />
-                  </Route>
-                </Route>
 
-                {/* Rotas do Responsavel */}
-                <Route
-                  path={ROUTES.PRIVATE.RESPONSAVEL.SELECT}
-                  element={
-                    <ResponsavelProtectedRoute>
-                      <ResponsavelSelecionarPassageiro />
-                    </ResponsavelProtectedRoute>
-                  }
-                />
-                <Route
-                  path={ROUTES.PRIVATE.RESPONSAVEL.HOME}
-                  element={
-                    <ResponsavelProtectedRoute>
-                      <ResponsavelCarteirinhaBase />
-                    </ResponsavelProtectedRoute>
-                  }
-                />
+                    <Route
+                      path={ROUTES.PUBLIC.REGISTER}
+                      element={
+                        <AppGate>
+                          <Register />
+                        </AppGate>
+                      }
+                    />
 
-                <Route path="/" element={<Navigate to={ROUTES.PUBLIC.LOGIN} replace />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </AppErrorBoundary>
-      </ResponsavelAuthProvider>
+                    <Route
+                      path={ROUTES.PUBLIC.EXTERNAL_PASSENGER_FORM}
+                      element={<PassageiroExternalForm />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.PRIVACY_POLICY}
+                      element={<PrivacyPolicy />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.TERMS_OF_USE}
+                      element={<TermsOfUse />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}
+                      element={<ExternalCheckoutBridge />}
+                    />
+
+                    <Route
+                      path="/assinar/:token"
+                      element={<AssinarContrato />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.SPLASH}
+                      element={
+                        <AppGate>
+                          <Splash />
+                        </AppGate>
+                      }
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.ROOT}
+                      element={
+                        Capacitor.isNativePlatform() ? (
+                          <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
+                        ) : (
+                          <Navigate to={ROUTES.PUBLIC.LOGIN} replace />
+                        )
+                      }
+                    />
+
+                    <Route
+                      element={
+                        <AppGate>
+                          <RoleProtectedRoute allowedRoles={[UserType.ADMIN]}>
+                            <AdminLayout>
+                              <Outlet />
+                            </AdminLayout>
+                          </RoleProtectedRoute>
+                        </AppGate>
+                      }
+                    >
+                      <Route path="/admin" element={<Navigate to={ROUTES.PRIVATE.ADMIN.DASHBOARD} replace />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.DASHBOARD} element={<AdminDashboard />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.USERS} element={<AdminUsers />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.USER_DETAILS} element={<AdminUserDetails />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.SETTINGS} element={<AdminSettings />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
+                    </Route>
+
+                    <Route
+                      element={
+                        <AppGate>
+                          <RoleProtectedRoute allowedRoles={[UserType.MOTORISTA, UserType.MOTORISTA_AUXILIAR, UserType.MONITOR]}>
+                            <AppLayout />
+                          </RoleProtectedRoute>
+                        </AppGate>
+                      }
+                    >
+                      <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
+
+                      <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
+                        <Route
+                          path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
+                          element={<PassageiroCarteirinha />}
+                        />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.SETTINGS} element={<Configuracoes />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP} element={<ConfigurarRota />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT} element={<ConfigurarRota />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE} element={<RouteExecutionPage />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_DETAILS} element={<RouteDetailsPage />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS} element={<Aniversariantes />} />
+                      </Route>
+                    </Route>
+
+                    {/* Rotas do Responsavel */}
+                    <Route
+                      path={ROUTES.PRIVATE.RESPONSAVEL.SELECT}
+                      element={
+                        <ResponsavelProtectedRoute>
+                          <ResponsavelSelecionarPassageiro />
+                        </ResponsavelProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path={ROUTES.PRIVATE.RESPONSAVEL.HOME}
+                      element={
+                        <ResponsavelProtectedRoute>
+                          <ResponsavelCarteirinhaBase />
+                        </ResponsavelProtectedRoute>
+                      }
+                    />
+
+                    <Route path="/" element={<Navigate to={ROUTES.PUBLIC.LOGIN} replace />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </AppErrorBoundary>
+            </LayoutProvider>
+          </ResponsavelAuthProvider>
+        </BrowserRouter>
 
         {updating && (
           <div className="fixed inset-0 z-[9999]">

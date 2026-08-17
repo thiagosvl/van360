@@ -114,8 +114,9 @@ export function AdicionarParadaDialog({
               <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
                 {filteredPassageiros.map((p) => {
                   const estaAdicionado = itinerario.some((item) => item.passageiro_id === p.id);
-                  const temEnderecoCompleto = !!(p.logradouro && p.numero);
-                  const passAddressStr = formatarEnderecoParcialRota(p);
+                  const addrObj = p.responsavel_principal?.logradouro ? p.responsavel_principal : p;
+                  const temEnderecoCompleto = !!(addrObj.logradouro && addrObj.numero);
+                  const passAddressStr = formatarEnderecoParcialRota(addrObj);
 
                   if (temEnderecoCompleto) {
                     return (
