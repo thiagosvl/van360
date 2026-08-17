@@ -36,33 +36,9 @@ export const getInitials = (name?: string) => {
   return name.trim().charAt(0).toUpperCase();
 };
 
-import { ONBOARDING_MOCK_RESPONSAVEL_NOME, ONBOARDING_MOCK_RESPONSAVEL_TELEFONE } from "../constants";
-
-export const isResponsavelMockNome = (nome?: string | null) => {
-  if (!nome) return false;
-
-  const normalizedNome = nome
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // Remove accents
-
-  return (
-    normalizedNome.includes("responsavel nao info") ||
-    normalizedNome.includes("responsavel teste") ||
-    nome === ONBOARDING_MOCK_RESPONSAVEL_NOME
-  );
-};
-
-export const isResponsavelMockTelefone = (telefone?: string | null) => {
-  if (!telefone) return false;
-  return telefone.replace(/\D/g, "") === ONBOARDING_MOCK_RESPONSAVEL_TELEFONE;
-};
-
 export const formatNomeResponsavelExibicao = (nome?: string | null, shortName: boolean = false) => {
   if (!nome) return "Não informado";
-  if (isResponsavelMockNome(nome)) return shortName ? formatFirstName(nome) : nome;
-  return formatFirstName(nome);
+  return shortName ? formatFirstName(nome) : nome;
 };
 
 export const formatNomeResponsavelCompletoExibicao = (nome?: string | null) => {

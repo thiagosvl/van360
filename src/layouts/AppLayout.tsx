@@ -185,9 +185,7 @@ export default function AppLayout() {
 
   return (
     <PrivacyProvider>
-      <LayoutProvider>
-        <AppLayoutContent role={UserType.MOTORISTA} />
-      </LayoutProvider>
+      <AppLayoutContent role={UserType.MOTORISTA} />
     </PrivacyProvider>
   );
 }

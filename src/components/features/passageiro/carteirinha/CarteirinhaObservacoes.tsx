@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
-import { Pencil } from "lucide-react";
+import { Pencil, FileText } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 interface CarteirinhaObservacoesProps {
@@ -13,6 +13,7 @@ interface CarteirinhaObservacoesProps {
   onCancelEdit: () => void;
   onChangeText: (text: string) => void;
   onSave: () => void;
+  canManageOverride?: boolean;
 }
 
 export const CarteirinhaObservacoes = ({
@@ -24,9 +25,10 @@ export const CarteirinhaObservacoes = ({
   onCancelEdit,
   onChangeText,
   onSave,
+  canManageOverride,
 }: CarteirinhaObservacoesProps) => {
   const { can } = usePermissions();
-  const canManage = can("passageiros.gerenciar");
+  const canManage = canManageOverride !== undefined ? canManageOverride : can("passageiros.gerenciar");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -47,10 +49,11 @@ export const CarteirinhaObservacoes = ({
   }, [isEditing, obsText]);
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden group">
-      <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-[#16314f]">Observações</h3>
+    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs overflow-hidden group">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4.5 h-4.5 text-[#1a3a5c]" />
+          <h3 className="text-sm font-bold text-[#16314f]">Observações</h3>
         </div>
 
         {!isEditing && canManage && (

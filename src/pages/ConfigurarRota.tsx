@@ -186,11 +186,16 @@ export default function ConfigurarRota() {
 
               const updatedPass = pass ? {
                 ...pass,
-                logradouro: addressData?.logradouro || pass.logradouro || "Endereço cadastrado",
-                numero: addressData?.numero || pass.numero || "",
-                bairro: addressData?.bairro || pass.bairro || "",
-                cidade: addressData?.cidade || pass.cidade || "",
-                estado: addressData?.estado || pass.estado || "",
+                responsavel_principal: {
+                  ...pass.responsavel_principal,
+                  nome: pass.responsavel_principal?.nome || "",
+                  telefone: pass.responsavel_principal?.telefone || "",
+                  logradouro: addressData?.logradouro || pass.responsavel_principal?.logradouro || "Endereço cadastrado",
+                  numero: addressData?.numero || pass.responsavel_principal?.numero || "",
+                  bairro: addressData?.bairro || pass.responsavel_principal?.bairro || "",
+                  cidade: addressData?.cidade || pass.responsavel_principal?.cidade || "",
+                  estado: addressData?.estado || pass.responsavel_principal?.estado || "",
+                },
               } : null;
 
               const newItem: ItineraryItem = {

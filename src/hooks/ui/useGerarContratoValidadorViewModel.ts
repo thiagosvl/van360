@@ -10,12 +10,13 @@ import { passageiroApi } from "@/services/api/passageiro.api";
 import { usePassageiro } from "@/hooks/api/usePassageiro";
 import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
-import { ONBOARDING_MOCK_RESPONSAVEL_NOME } from "@/utils/constants";
 
 const validadorSchema = z.object({
   data_inicio_transporte: z.string().min(1, "Data de início é obrigatória"),
   data_fim_transporte: z.string().min(1, "Data de término é obrigatória"),
-  cpf_responsavel: z.string().min(14, "CPF inválido"),
+  responsavel_principal: z.object({
+    cpf: z.string().min(14, "CPF inválido"),
+  }),
 }).refine(
   (data) => {
     if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
@@ -60,7 +61,9 @@ export function useGerarContratoValidadorViewModel({
     defaultValues: {
       data_inicio_transporte: "",
       data_fim_transporte: "",
-      cpf_responsavel: "",
+      responsavel_principal: {
+        cpf: "",
+      },
     },
   });
 
@@ -81,7 +84,7 @@ export function useGerarContratoValidadorViewModel({
   // Check and pre-fill data when passenger is loaded
   useEffect(() => {
     if (isOpen && isChecking && passageiro && passageiroId) {
-      if (passageiro.nome_responsavel === ONBOARDING_MOCK_RESPONSAVEL_NOME) {
+      if (!passageiro.responsavel_principal?.nome) {
         onCloseRef.current();
         toast.error("Complete o cadastro", {
           description: "Edite este passageiro e informe o nome real do responsável antes de gerar o contrato."
@@ -91,7 +94,7 @@ export function useGerarContratoValidadorViewModel({
 
       const hasInicio = !!passageiro.data_inicio_transporte;
       const hasFim = !!passageiro.data_fim_transporte;
-      const hasCpf = !!passageiro.cpf_responsavel;
+      const hasCpf = !!passageiro.responsavel_principal?.cpf;
 
       if (hasInicio && hasFim && hasCpf) {
         onCloseRef.current();
@@ -100,7 +103,9 @@ export function useGerarContratoValidadorViewModel({
         form.reset({
           data_inicio_transporte: passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "",
           data_fim_transporte: passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "",
-          cpf_responsavel: passageiro.cpf_responsavel ? cpfMask(passageiro.cpf_responsavel) : "",
+          responsavel_principal: {
+            cpf: passageiro.responsavel_principal?.cpf ? cpfMask(passageiro.responsavel_principal.cpf) : "",
+          },
         });
         setIsChecking(false);
       }
@@ -113,9 +118,11 @@ export function useGerarContratoValidadorViewModel({
     setIsSubmitting(true);
     try {
       const payload = {
-        ...data,
         data_inicio_transporte: convertDateBrToISO(data.data_inicio_transporte),
         data_fim_transporte: convertDateBrToISO(data.data_fim_transporte),
+        responsavel_principal: {
+          cpf: data.responsavel_principal?.cpf,
+        },
       };
       await passageiroApi.updatePassageiro(passageiroId, payload);
 
@@ -141,7 +148,9 @@ export function useGerarContratoValidadorViewModel({
     form.reset({
       data_inicio_transporte: start,
       data_fim_transporte: end,
-      cpf_responsavel: "395.423.918-38", // Mask will handle this normally but the input expects unmasked if using normal input, wait, mask handles it
+      responsavel_principal: {
+        cpf: "395.423.918-38",
+      },
     });
   };
 

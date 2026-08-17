@@ -35,9 +35,10 @@ export const CarteirinhaContrato = ({
     return null;
   }
 
+  const resp = passageiro.responsavel_principal;
   const isMissingResponsible = isResponsavelIncompleto(
-    passageiro.nome_responsavel,
-    passageiro.telefone_responsavel
+    resp?.nome,
+    resp?.telefone
   );
 
   const statusConfig = obterStatusConfiguracaoContrato(profile);
@@ -101,7 +102,7 @@ export const CarteirinhaContrato = ({
         color: "bg-amber-50/30 border-amber-200/60",
         iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/30 shadow-xs",
         icon: Pencil,
-        actionLabel: "Completar Dados do Responsável",
+        actionLabel: "Completar Cadastro",
         actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
         actionIcon: Pencil,
         onClick: handleNoContractClick,

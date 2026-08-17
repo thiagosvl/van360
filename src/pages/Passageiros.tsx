@@ -10,6 +10,7 @@ import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
+import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
@@ -45,6 +46,12 @@ export default function Passageiros() {
     handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    totalPages,
+    totalItems,
   } = usePassageirosViewModel();
 
   if (!can("passageiros.visualizar")) {
@@ -53,7 +60,7 @@ export default function Passageiros() {
 
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
   const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
-  const sectionCount = isMainTab ? passageiros.length : countPrePassageiros;
+  const sectionCount = isMainTab ? (totalItems || passageiros.length) : countPrePassageiros;
   let countLabel = "";
 
   if (isMainTab) {
@@ -145,7 +152,7 @@ export default function Passageiros() {
                   </h2>
                   {passageiros.length > 0 && (
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                      {passageiros.length} {countLabel}
+                      {sectionCount} {countLabel}
                     </span>
                   )}
                 </div>
@@ -168,15 +175,26 @@ export default function Passageiros() {
                         } : undefined)}
                       />
                     ) : (
-                      <PassageirosList
-                        passageiros={passageiros}
-                        onHistorico={handleHistorico}
-                        onEdit={handleEdit}
-                        onToggleClick={handleToggleClick}
-                        onDeleteClick={handleDeleteClick}
-                        onEnviarWhatsApp={handleEnviarWhatsApp}
-                        usarContratos={!!profile?.config_contrato?.usar_contratos}
-                      />
+                      <>
+                        <PassageirosList
+                          passageiros={passageiros}
+                          onHistorico={handleHistorico}
+                          onEdit={handleEdit}
+                          onToggleClick={handleToggleClick}
+                          onDeleteClick={handleDeleteClick}
+                          onEnviarWhatsApp={handleEnviarWhatsApp}
+                          usarContratos={!!profile?.config_contrato?.usar_contratos}
+                        />
+                        <PassageirosPagination
+                          currentPage={page}
+                          totalPages={totalPages}
+                          totalItems={totalItems}
+                          limit={limit}
+                          onPageChange={setPage}
+                          onLimitChange={setLimit}
+                          className="mt-4"
+                        />
+                      </>
                     )}
                   </>
                 ) : (
@@ -218,7 +236,7 @@ export default function Passageiros() {
                 </h2>
                 {passageiros.length > 0 && (
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                    {passageiros.length} PASSAGEIROS
+                    {totalItems || passageiros.length} PASSAGEIROS
                   </span>
                 )}
               </div>
@@ -239,15 +257,26 @@ export default function Passageiros() {
                   } : undefined)}
                 />
               ) : (
-                <PassageirosList
-                  passageiros={passageiros}
-                  onHistorico={handleHistorico}
-                  onEdit={handleEdit}
-                  onToggleClick={handleToggleClick}
-                  onDeleteClick={handleDeleteClick}
-                  onEnviarWhatsApp={handleEnviarWhatsApp}
-                  usarContratos={false}
-                />
+                <>
+                  <PassageirosList
+                    passageiros={passageiros}
+                    onHistorico={handleHistorico}
+                    onEdit={handleEdit}
+                    onToggleClick={handleToggleClick}
+                    onDeleteClick={handleDeleteClick}
+                    onEnviarWhatsApp={handleEnviarWhatsApp}
+                    usarContratos={false}
+                  />
+                  <PassageirosPagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    limit={limit}
+                    onPageChange={setPage}
+                    onLimitChange={setLimit}
+                    className="mt-4"
+                  />
+                </>
               )}
             </div>
           )}

@@ -105,9 +105,11 @@ export function useIniciarRota() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => {
+    mutationFn: (data: { id: string; notificar_pais?: boolean } | string) => {
       markLocalMutation();
-      return routeApi.iniciarRota(id);
+      const id = typeof data === "string" ? data : data.id;
+      const notificar_pais = typeof data === "string" ? true : (data.notificar_pais !== undefined ? data.notificar_pais : true);
+      return routeApi.iniciarRota(id, { notificar_pais });
     },
     onSuccess: (data) => {
       markLocalMutation();
@@ -177,6 +179,46 @@ export function useAtualizarParadaStatus() {
         ? "A conexão de internet oscilou. Por favor, toque novamente para confirmar."
         : getErrorMessage(error, "Verifique sua conexão de internet e tente novamente.");
       toast.error("Erro ao atualizar status da parada", { description });
+    },
+  });
+}
+
+export function useProcessarChamadaEscola() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      execucaoId,
+      escolaParadaId,
+      chamada
+    }: {
+      execucaoId: string;
+      escolaParadaId?: string;
+      chamada: Array<{ parada_id: string; status: RouteStopStatus }>;
+    }) => {
+      markLocalMutation();
+      const STOP_TIMEOUT = 15000;
+      return await routeApi.processarChamadaEscola(
+        execucaoId,
+        { escola_parada_id: escolaParadaId, chamada },
+        { timeout: STOP_TIMEOUT }
+      );
+    },
+    onSuccess: (data, variables) => {
+      markLocalMutation();
+      if (data) {
+        queryClient.setQueryData(["route-execution", variables.execucaoId], data);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["route-execution", variables.execucaoId] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["route-detail"] });
+    },
+    onError: (error: any) => {
+      const isTimeout = error?.code === 'ECONNABORTED' || error?.message?.includes('timeout');
+      const description = isTimeout
+        ? "A conexão de internet oscilou. Por favor, tente novamente."
+        : getErrorMessage(error, "Por favor, tente novamente.");
+      toast.error("Erro ao salvar chamada da escola", { description });
     },
   });
 }

@@ -1,15 +1,28 @@
-import { Passageiro } from "@/types/passageiro";
+import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { moneyToNumber } from "@/utils/masks";
 import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
 
 const endpointBase = "/passageiros";
 
+export interface ListPassageirosResponse {
+  list: Passageiro[];
+  total: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+}
+
 export const passageiroApi = {
-  listPassageiros: (usuarioId: string, filtros?: Record<string, any>): Promise<Passageiro[]> =>
+  listPassageiros: (usuarioId: string, filtros?: Record<string, unknown>): Promise<ListPassageirosResponse> =>
     apiClient
       .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
-      .then(res => res.data),
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          return { list: res.data, total: res.data.length };
+        }
+        return res.data;
+      }),
 
   getPassageiro: (passageiroId: string): Promise<Passageiro> =>
     apiClient
@@ -26,12 +39,11 @@ export const passageiroApi = {
       .patch(`${endpointBase}/${passageiroId}/toggle-ativo`, { novoStatus })
       .then(res => res.data),
 
-  updatePassageiro: (passageiroId: string, data: any): Promise<Passageiro> => {
-    const payload: any = { ...data };
+  updatePassageiro: (passageiroId: string, data: Record<string, unknown>): Promise<Passageiro> => {
+    const payload: Record<string, unknown> = { ...data };
 
-    if (data.valor_cobranca !== undefined) payload.valor_cobranca = moneyToNumber(data.valor_cobranca);
+    if (data.valor_cobranca !== undefined) payload.valor_cobranca = moneyToNumber(data.valor_cobranca as string);
     if (data.nome !== undefined) payload.nome = cleanString(data.nome);
-    if (data.nome_responsavel !== undefined) payload.nome_responsavel = cleanString(data.nome_responsavel);
 
     if (data.endereco !== undefined) payload.endereco = cleanString(data.endereco);
     if (data.bairro !== undefined) payload.bairro = cleanString(data.bairro);
@@ -43,12 +55,11 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  createPassageiro: (data: any): Promise<Passageiro> => {
+  createPassageiro: (data: Record<string, unknown>): Promise<Passageiro> => {
     const payload = {
       ...data,
-      valor_cobranca: moneyToNumber(data.valor_cobranca),
+      valor_cobranca: moneyToNumber(data.valor_cobranca as string),
       nome: cleanString(data.nome),
-      nome_responsavel: cleanString(data.nome_responsavel),
 
       endereco: cleanString(data.endereco),
       bairro: cleanString(data.bairro),
@@ -61,12 +72,11 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string): Promise<{ success: boolean; passageiro: Passageiro }> => {
+  finalizePreCadastro: (prePassageiroId: string, data: Record<string, unknown>, usuarioId: string): Promise<{ success: boolean; passageiro: Passageiro }> => {
     const payload = {
       ...data,
-      valor_cobranca: moneyToNumber(data.valor_cobranca),
+      valor_cobranca: moneyToNumber(data.valor_cobranca as string),
       nome: cleanString(data.nome),
-      nome_responsavel: cleanString(data.nome_responsavel),
 
       endereco: cleanString(data.endereco),
       bairro: cleanString(data.bairro),
@@ -82,27 +92,31 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  getAniversariantes: (mes: number): Promise<any> =>
+  getAniversariantes: (mes: number): Promise<Passageiro[]> =>
     apiClient
       .get(`${endpointBase}/aniversariantes`, { params: { mes } })
       .then(res => res.data),
 
-  addResponsavelAdicional: (passageiroId: string, data: any): Promise<any> =>
+  addResponsavelAdicional: (passageiroId: string, data: Record<string, unknown>): Promise<PassageiroResponsavel> =>
     apiClient
       .post(`${endpointBase}/${passageiroId}/responsaveis`, data)
       .then(res => res.data),
 
-  updateResponsavelAdicional: (responsavelId: string, data: any): Promise<any> =>
+  updateResponsavelAdicional: (
+    responsavelId: string,
+    data: Record<string, unknown>,
+    passageiroId?: string
+  ): Promise<PassageiroResponsavel> =>
     apiClient
-      .put(`${endpointBase}/responsaveis/${responsavelId}`, data)
+      .put(`${endpointBase}/responsaveis/${responsavelId}`, { ...data, passageiroId: passageiroId || data.passageiroId })
       .then(res => res.data),
 
-  deleteResponsavelAdicional: (responsavelId: string): Promise<any> =>
+  deleteResponsavelAdicional: (responsavelId: string): Promise<void> =>
     apiClient
       .delete(`${endpointBase}/responsaveis/${responsavelId}`)
       .then(res => res.data),
 
-  setPrincipalResponsavel: (passageiroId: string, responsavelId: string): Promise<any> =>
+  setPrincipalResponsavel: (passageiroId: string, responsavelId: string): Promise<void> =>
     apiClient
       .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/set-principal`)
       .then(res => res.data),

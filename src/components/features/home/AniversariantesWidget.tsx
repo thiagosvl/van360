@@ -73,7 +73,7 @@ export function AniversariantesWidget() {
   });
 
   return (
-    <div className="space-y-3">
+    <section className="px-1 space-y-3">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-[17px] font-bold text-[#1a3a5c]">
           Aniversariantes
@@ -163,6 +163,6 @@ export function AniversariantesWidget() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </section>
   );
 }

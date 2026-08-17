@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { openBrowserLink } from "@/utils/browser";
+import { openBrowserLink, copyToClipboard } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import {
@@ -23,7 +23,7 @@ export function QuickRegistrationLink({
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (!profile?.id) {
       toast.error("erro.operacao", {
         description: "ID do usuário não encontrado.",
@@ -31,13 +31,13 @@ export function QuickRegistrationLink({
       return;
     }
 
-    try {
-      navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
+    const success = await copyToClipboard(buildPrepassageiroLink(profile?.id));
+    if (success) {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 1000);
-    } catch (error: any) {
+    } else {
       toast.error("sistema.erro.falhaCopiar", {
-        description: error.message || "Não foi possível copiar o link.",
+        description: "Não foi possível copiar o link.",
       });
     }
   };
@@ -67,7 +67,7 @@ export function QuickRegistrationLink({
       <div className="flex gap-2 w-full lg:w-auto shrink-0">
         <button
           onClick={handleShareWhatsApp}
-          className="h-11 px-4 bg-emerald-600 text-white text-[13px] font-bold rounded-xl hover:bg-emerald-700/90 transition-all shadow-sm shadow-emerald-200/50 flex-1 lg:flex-none flex justify-center items-center gap-2 active:scale-95"
+          className="h-11 px-4 bg-[#25D366] hover:bg-[#20b858] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shadow-green-200/50 flex-1 lg:flex-none flex justify-center items-center gap-2 active:scale-95 cursor-pointer"
         >
           <WhatsAppIcon className="h-4 w-4 fill-current" />
           WhatsApp

@@ -12,10 +12,13 @@
  * - toast.success('veiculo.sucesso.criado', { description: 'Descrição customizada' }) // título chave, descrição customizada
  */
 
+import { createElement } from "react";
+import { Loader2 } from "lucide-react";
 import { getMessage, type MessageKey } from "@/constants/messages";
 import { toast as sonnerToast } from "sonner";
 
-type ToastOptions = {
+export type ToastOptions = {
+  id?: string | number;
   description?: string;
   duration?: number;
   action?: {
@@ -58,6 +61,7 @@ const formatOptions = (options?: ToastOptions) => {
   if (!options) return undefined;
   
   return {
+    id: options.id,
     description: getToastDescription(options.description),
     duration: options.duration,
     action: options.action ? {
@@ -111,6 +115,19 @@ export const toast = {
   warning: (message: string, options?: ToastOptions) => {
     sonnerToast.dismiss(); // Fecha anteriores
     return sonnerToast.warning(getToastMessage(message), formatOptions(options));
+  },
+
+  /**
+   * Exibe uma notificação de carregamento com spinner (deslizável no mobile)
+   */
+  loading: (message: string, options?: ToastOptions & { id?: string | number }) => {
+    const formatted = formatOptions(options);
+    return sonnerToast(getToastMessage(message), {
+      ...formatted,
+      id: options?.id,
+      icon: createElement(Loader2, { className: "h-4 w-4 animate-spin text-slate-600 shrink-0" }),
+      duration: options?.duration || 100000,
+    });
   },
 
   /**

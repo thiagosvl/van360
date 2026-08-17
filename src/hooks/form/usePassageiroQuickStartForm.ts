@@ -8,16 +8,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/utils/notifications/toast";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { phoneMask } from "@/utils/masks";
-import { Passageiro } from "@/types/passageiro";
 import { isDevEnv } from "@/utils/detectPlatform";
-import { ONBOARDING_MOCK_RESPONSAVEL_NOME, ONBOARDING_MOCK_RESPONSAVEL_TELEFONE } from "@/utils/constants";
 
 export const quickStartPassageiroBaseSchema = z.object({
   nome: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
   escola_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
   veiculo_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-  nome_responsavel: z.string().optional(),
-  telefone_responsavel: z.string().optional(),
+  responsavel_principal: z.object({
+    nome: z.string().optional(),
+    telefone: z.string().optional(),
+  }).optional(),
   isento: z.boolean().optional().default(false),
   valor_cobranca: z.string().optional(),
   dia_vencimento: z.string().optional(),
@@ -33,20 +33,22 @@ export const getQuickStartPassageiroSchema = (isOnboarding?: boolean) => {
     escola_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
     veiculo_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
     
-    nome_responsavel: isOnboarding 
-      ? z.string().optional() 
-      : z.string({ required_error: "Campo obrigatório" })
-          .min(1, "Campo obrigatório")
-          .min(2, "Deve ter pelo menos 2 caracteres"),
-          
-    telefone_responsavel: isOnboarding
-      ? z.string().optional()
-      : z.string({ required_error: "Campo obrigatório" })
-          .min(1, "Campo obrigatório")
-          .refine((val) => {
-            const nums = val.replace(/\D/g, "");
-            return nums.length >= 10 && nums.length <= 11;
-          }, "Telefone inválido"),
+    responsavel_principal: z.object({
+      nome: isOnboarding 
+        ? z.string().optional() 
+        : z.string({ required_error: "Campo obrigatório" })
+            .min(1, "Campo obrigatório")
+            .min(2, "Deve ter pelo menos 2 caracteres"),
+            
+      telefone: isOnboarding
+        ? z.string().optional()
+        : z.string({ required_error: "Campo obrigatório" })
+            .min(1, "Campo obrigatório")
+            .refine((val) => {
+              const nums = (val || "").replace(/\D/g, "");
+              return nums.length >= 10 && nums.length <= 11;
+            }, "Telefone inválido"),
+    }),
           
     isento: z.boolean().optional().default(false),
     valor_cobranca: z.string().optional(),
@@ -89,8 +91,10 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
     resolver: zodResolver(getQuickStartPassageiroSchema(isOnboarding)),
     defaultValues: {
       nome: "",
-      nome_responsavel: "",
-      telefone_responsavel: "",
+      responsavel_principal: {
+        nome: "",
+        telefone: "",
+      },
       isento: false,
       valor_cobranca: "",
       dia_vencimento: "",
@@ -109,10 +113,16 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
 
       const isIsento = !!data.isento;
 
+      const respPrincipalPayload = (data.responsavel_principal?.nome && data.responsavel_principal?.telefone)
+        ? {
+            nome: data.responsavel_principal.nome,
+            telefone: String(data.responsavel_principal.telefone).replace(/\D/g, ""),
+          }
+        : null;
+
       const payload = {
         nome: data.nome,
-        nome_responsavel: data.nome_responsavel || ONBOARDING_MOCK_RESPONSAVEL_NOME,
-        telefone_responsavel: String(data.telefone_responsavel || ONBOARDING_MOCK_RESPONSAVEL_TELEFONE).replace(/\D/g, ""),
+        responsavel_principal: respPrincipalPayload,
         isento: isIsento,
         valor_cobranca: isIsento ? 0 : (data.valor_cobranca ? moneyToNumber(String(data.valor_cobranca)) : 0),
         dia_vencimento: isIsento ? null : (data.dia_vencimento ? parseInt(String(data.dia_vencimento)) : null),
@@ -167,9 +177,9 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       form.setValue("escola_id", mockPassenger.escola_id || "");
       form.setValue("veiculo_id", mockPassenger.veiculo_id || "");
       
-      if (!isOnboarding) {
-        form.setValue("nome_responsavel", mockPassenger.nome_responsavel || ONBOARDING_MOCK_RESPONSAVEL_NOME);
-        form.setValue("telefone_responsavel", phoneMask(mockPassenger.telefone_responsavel || ONBOARDING_MOCK_RESPONSAVEL_TELEFONE));
+      if (!isOnboarding && mockPassenger.responsavel_principal) {
+        form.setValue("responsavel_principal.nome", mockPassenger.responsavel_principal.nome);
+        form.setValue("responsavel_principal.telefone", phoneMask(mockPassenger.responsavel_principal.telefone));
         form.setValue("isento", false);
         form.setValue("valor_cobranca", mockPassenger.valor_cobranca);
         form.setValue("dia_vencimento", mockPassenger.dia_vencimento);

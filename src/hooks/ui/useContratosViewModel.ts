@@ -19,7 +19,6 @@ import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
-import { isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -216,17 +215,8 @@ export function useContratosViewModel() {
       return;
     }
 
-    const telefone = isResponsavelMockTelefone(
-      item.passageiro?.telefone_responsavel ||
-      item.telefone_responsavel ||
-      item.dados_contrato?.telefone_responsavel ||
-      item.dados_contrato?.telefoneResponsavel
-    ) ? undefined : (
-      item.passageiro?.telefone_responsavel ||
-      item.telefone_responsavel ||
-      item.dados_contrato?.telefone_responsavel ||
-      item.dados_contrato?.telefoneResponsavel
-    );
+    const respObj = item.passageiro?.responsavel_principal || item.responsavel_principal;
+    const telefone = respObj?.telefone || item.dados_contrato?.telefoneResponsavel;
 
     if (!telefone) {
       toast.error("Telefone do responsável inválido ou não informado.");
@@ -235,7 +225,7 @@ export function useContratosViewModel() {
 
     const url = buildContratoWhatsAppUrl({
       telefoneResponsavel: telefone,
-      nomeResponsavel: item.passageiro?.nome_responsavel || item.nome_responsavel || "",
+      nomeResponsavel: respObj?.nome || "",
       nomePassageiro: item.passageiro?.nome || item.nome || "",
       link: finalLink,
     });

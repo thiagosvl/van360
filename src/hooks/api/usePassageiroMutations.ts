@@ -190,7 +190,7 @@ export function useUpdateResponsavelAdicional() {
 
   return useMutation({
     mutationFn: ({ responsavelId, passageiroId, data }: { responsavelId: string; passageiroId: string; data: any }) =>
-      passageiroApi.updateResponsavelAdicional(responsavelId, data),
+      passageiroApi.updateResponsavelAdicional(responsavelId, data, passageiroId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });

@@ -164,13 +164,11 @@ export function useRelatoriosViewModel() {
   ]);
 
   return {
-    // State
     mes,
     ano,
     activeTab,
     veiculoId,
     
-    // Actions
     setMes,
     setAno,
     handleNavigate,

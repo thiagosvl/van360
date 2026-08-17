@@ -23,7 +23,7 @@ import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import {
   formatShortName,
 } from "@/utils/formatters";
-import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
+import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet, CalendarClock, History } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
@@ -88,11 +88,14 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   onOpenCreateForProjection?: (cobranca: Cobranca) => void;
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
 
-  const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+  const respPrincipal = cobranca.passageiro?.responsavel_principal;
+  const telefoneResponsavel = respPrincipal?.telefone;
+  const nomeRespText = respPrincipal?.nome ?? "";
+
   const onEnviarCobranca = telefoneResponsavel
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
-      nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+      nomeResponsavel: nomeRespText,
       nomePassageiro: cobranca.passageiro?.nome ?? "",
       mes: cobranca.mes,
       valor: cobranca.valor,
@@ -122,7 +125,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
   const shortName = formatShortName(cobranca?.passageiro?.nome, true);
-  const firstNomeResponsavel = formatNomeResponsavelExibicao(cobranca?.passageiro?.nome_responsavel);
+  const firstNomeResponsavel = formatNomeResponsavelExibicao(respPrincipal?.nome);
 
   const statusColor = isPaid
     ? "bg-emerald-50 text-emerald-600"
@@ -207,7 +210,7 @@ export function CobrancasList({
     openCobrancaFormDialog({
       passageiroId: cobranca.passageiro_id,
       passageiroNome: formatShortName(cobranca.passageiro?.nome, true),
-      passageiroResponsavelNome: formatNomeResponsavelExibicao(cobranca.passageiro?.nome_responsavel),
+      passageiroResponsavelNome: formatNomeResponsavelExibicao(cobranca.passageiro?.responsavel_principal?.nome),
       valorCobranca: Number(cobranca.valor),
       diaVencimento: Number(cobranca.passageiro?.dia_vencimento || 10),
       mes: cobranca.mes,
@@ -261,14 +264,13 @@ export function CobrancasList({
   };
 
   const renderDesktopRow = (cobranca: Cobranca) => {
-    const telefoneResponsavel = isResponsavelMockTelefone(cobranca.passageiro?.telefone_responsavel)
-      ? undefined
-      : cobranca.passageiro?.telefone_responsavel;
+    const respPrincipal = cobranca.passageiro?.responsavel_principal;
+    const telefoneResponsavel = respPrincipal?.telefone;
 
     const onEnviarCobranca = telefoneResponsavel
       ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
         telefoneResponsavel,
-        nomeResponsavel: formatNomeResponsavelCompletoExibicao(cobranca.passageiro?.nome_responsavel),
+        nomeResponsavel: formatNomeResponsavelCompletoExibicao(respPrincipal?.nome),
         nomePassageiro: cobranca.passageiro?.nome ?? "",
         mes: cobranca.mes,
         valor: cobranca.valor,
@@ -301,7 +303,7 @@ export function CobrancasList({
                 {formatShortName(cobranca?.passageiro?.nome, true)}
               </p>
               <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                {formatNomeResponsavelExibicao(cobranca?.passageiro?.nome_responsavel)}
+                {formatNomeResponsavelExibicao(cobranca?.passageiro?.responsavel_principal?.nome)}
               </p>
             </div>
           </div>
@@ -429,11 +431,12 @@ function ActionSheetWrapper({
   chavePix?: string | null;
   tipoChavePix?: string | null;
 }) {
-  const telefoneResponsavel = cobranca.passageiro?.telefone_responsavel;
+  const respPrincipal = cobranca.passageiro?.responsavel_principal;
+  const telefoneResponsavel = respPrincipal?.telefone;
   const onEnviarCobranca = telefoneResponsavel
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
-      nomeResponsavel: cobranca.passageiro?.nome_responsavel ?? "",
+      nomeResponsavel: respPrincipal?.nome ?? "",
       nomePassageiro: cobranca.passageiro?.nome ?? "",
       mes: cobranca.mes,
       valor: cobranca.valor,

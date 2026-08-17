@@ -1,43 +1,67 @@
-import { ROUTES } from "@/constants/routes";
-import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
-import { useCarteirinhaQuery } from "@/hooks/api/useResponsavelAuthApi";
+import { toast } from "sonner";
 import { ResponsavelDadosComplementaresDialog } from "@/components/dialogs/ResponsavelDadosComplementaresDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { CarteirinhaSkeleton } from "@/components/skeletons/CarteirinhaSkeleton";
-import { ArrowLeftRight, LogOut, User } from "lucide-react";
+import { ArrowLeftRight, LogOut } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useResponsavelCarteirinhaViewModel } from "@/hooks/ui/useResponsavelCarteirinhaViewModel";
+import { ROUTES } from "@/constants/routes";
+
+import {
+  ResponsavelCarteirinhaHeader,
+  ResponsavelCarteirinhaCobrancas,
+  ResponsavelCarteirinhaResponsaveis,
+  ResponsavelCarteirinhaAusencias,
+  ResponsavelCarteirinhaGeral,
+  ResponsavelCarteirinhaDadosPessoais,
+  ResponsavelCarteirinhaContrato
+} from "@/components/features/responsavel/carteirinha";
 
 export const ResponsavelCarteirinhaBase: React.FC = () => {
   const navigate = useNavigate();
-  const { token, passageiros, passageiroSelecionado, logout, refetchPassageiros } = useResponsavelAuth();
+  const {
+    token,
+    passageiroId,
+    passageiros,
+    carteirinha,
+    isLoading,
+    error,
+    activeTab,
+    setActiveTab,
+    nomeExibicao,
+    isMissingComplementares,
+    handleLogout,
+    handleSwitchPassageiro,
+    handleRefresh,
+    handleVerRecibo,
+    refetch,
+    refetchPassageiros
+  } = useResponsavelCarteirinhaViewModel();
 
-  const passageiroId = passageiroSelecionado?.id || null;
-  const { data: carteirinha, isLoading, error, refetch } = useCarteirinhaQuery(passageiroId, token);
+  const tabListRef = React.useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    logout();
-    navigate(ROUTES.PUBLIC.LOGIN);
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    setTimeout(() => {
+      const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }, 50);
   };
 
-  const handleSwitchPassageiro = () => {
-    navigate(ROUTES.PRIVATE.RESPONSAVEL.SELECT);
-  };
-
-  const handleRefresh = async () => {
-    await Promise.all([
-      refetch(),
-      refetchPassageiros()
-    ]);
-  };
-
-  const nomeExibicao = carteirinha?.nome || passageiroSelecionado?.nome || "Passageiro";
-
-  const isMissingComplementares = Boolean(
-    carteirinha &&
-    (!carteirinha.cpf_responsavel || carteirinha.cpf_responsavel.trim() === "" ||
-     !carteirinha.email_responsavel || carteirinha.email_responsavel.trim() === "")
-  );
+  React.useEffect(() => {
+    if (activeTab) {
+      setTimeout(() => {
+        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
+      }, 100);
+    }
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-slate-50/90 text-slate-800 flex flex-col">
@@ -55,6 +79,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
           <div className="flex items-center gap-2">
             {passageiros.length > 1 && (
               <button
+                type="button"
                 onClick={handleSwitchPassageiro}
                 className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/80 px-3 py-1.5 text-xs font-semibold text-[#1a3a5c] hover:bg-blue-100 transition-all cursor-pointer"
               >
@@ -64,6 +89,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
             )}
 
             <button
+              type="button"
               onClick={handleLogout}
               className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/80 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-all cursor-pointer"
             >
@@ -75,42 +101,110 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
       </header>
 
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <main className="flex-1 p-4 max-w-md mx-auto w-full">
+        <main className="flex-1 p-4 max-w-md mx-auto w-full space-y-5">
           {isLoading ? (
             <div className="py-4">
               <CarteirinhaSkeleton />
             </div>
-          ) : error ? (
+          ) : error || !carteirinha ? (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600 text-sm font-medium text-center">
-              Erro ao carregar os dados do passageiro.
+              Erro ao carregar os dados do passageiro. Tente atualizar a página.
             </div>
           ) : (
-            <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm space-y-4">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-[#1a3a5c]">
-                <User className="h-10 w-10" />
-              </div>
-              <h1 className="text-2xl font-bold text-[#1a3a5c] tracking-tight">
-                {nomeExibicao}
-              </h1>
-            </div>
+            <>
+              {/* Header do Aluno */}
+              <ResponsavelCarteirinhaHeader carteirinha={carteirinha} />
+
+              {/* Abas com Scroll Lateral: Geral, Dados Pessoais, Parcelas, Ausências, Responsáveis, Contrato */}
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
+                  <TabsList ref={tabListRef} className="flex min-w-full w-max min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
+                    <TabsTrigger
+                      value="geral"
+                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                    >
+                      Geral
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="dados-pessoais"
+                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                    >
+                      Dados Pessoais
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="parcelas"
+                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                    >
+                      Parcelas
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="ausencias"
+                      disabled={(carteirinha.rotas || []).length === 0}
+                      title={(carteirinha.rotas || []).length === 0 ? "Passageiro não possui rota atribuída" : undefined}
+                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Ausências
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="responsaveis"
+                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                    >
+                      Responsáveis
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="contrato"
+                      disabled={!carteirinha.contrato}
+                      title={!carteirinha.contrato ? "Passageiro não possui contrato" : undefined}
+                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Contrato
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="geral" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaGeral carteirinha={carteirinha} onRefresh={refetch} onSelectTab={handleTabChange} />
+                </TabsContent>
+
+                <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaDadosPessoais carteirinha={carteirinha} />
+                </TabsContent>
+
+                <TabsContent value="parcelas" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaCobrancas carteirinha={carteirinha} />
+                </TabsContent>
+
+                <TabsContent value="ausencias" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaAusencias carteirinha={carteirinha} onRefresh={refetch} />
+                </TabsContent>
+
+                <TabsContent value="responsaveis" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaResponsaveis carteirinha={carteirinha} onRefresh={refetch} />
+                </TabsContent>
+
+                <TabsContent value="contrato" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaContrato carteirinha={carteirinha} />
+                </TabsContent>
+              </Tabs>
+            </>
           )}
         </main>
       </PullToRefreshWrapper>
 
-    {passageiroId && token && (
-      <ResponsavelDadosComplementaresDialog
-        open={isMissingComplementares}
-        passageiroId={passageiroId}
-        passageiroNome={nomeExibicao}
-        initialCpf={carteirinha?.cpf_responsavel || ""}
-        initialEmail={carteirinha?.email_responsavel || ""}
-        token={token}
-        onSuccess={() => {
-          refetch();
-          refetchPassageiros();
-        }}
-      />
-    )}
-  </div>
-);
+      {passageiroId && token && (
+        <ResponsavelDadosComplementaresDialog
+          open={isMissingComplementares}
+          passageiroId={passageiroId}
+          passageiroNome={nomeExibicao}
+          initialCpf={carteirinha?.responsavel_principal?.cpf || ""}
+          initialEmail={carteirinha?.responsavel_principal?.email || ""}
+          token={token}
+          onSuccess={async () => {
+            await Promise.all([refetch(), refetchPassageiros()]);
+            toast.success("Dados cadastrais atualizados com sucesso!");
+          }}
+        />
+      )}
+    </div>
+  );
 };

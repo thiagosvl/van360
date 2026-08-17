@@ -1,4 +1,4 @@
-import { PhoneInput, StitchField } from "@/components/forms";
+import { FormEnderecoFields, PhoneInput, StitchField } from "@/components/forms";
 import {
   FormControl,
   FormField,
@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { parentescos } from "@/utils/formatters";
 import { cpfMask } from "@/utils/masks";
-import { Contact, Hash, Loader2, Mail, User } from "lucide-react";
+import { Contact, Hash, Loader2, Mail, MapPin, User } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
 interface PassageiroFormResponsavelProps {
@@ -45,7 +45,7 @@ export function PassageiroFormResponsavel({
         {!isExternal && (
           <FormField
             control={form.control}
-            name="cpf_responsavel"
+            name="responsavel_principal.cpf"
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
@@ -56,6 +56,7 @@ export function PassageiroFormResponsavel({
                     <Hash className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                     <Input
                       {...field}
+                      value={field.value || ""}
                       inputMode="numeric"
                       placeholder="000.000.000-00"
                       onChange={(e) => {
@@ -74,7 +75,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="nome_responsavel"
+          name="responsavel_principal.nome"
           render={({ field, fieldState }) => (
             <FormItem className={isExternal ? "md:col-span-2" : ""}>
               {isExternal ? (
@@ -82,6 +83,7 @@ export function PassageiroFormResponsavel({
                   <StitchField icon={User} label="Nome do Responsável" required error={!!fieldState.error}>
                     <Input
                       {...field}
+                      value={field.value || ""}
                       placeholder="Digite o nome completo"
                       className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                       aria-invalid={!!fieldState.error}
@@ -99,6 +101,7 @@ export function PassageiroFormResponsavel({
                       <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                       <Input
                         {...field}
+                        value={field.value || ""}
                         placeholder="Digite o nome completo"
                         className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
                         aria-invalid={!!fieldState.error}
@@ -115,7 +118,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="telefone_responsavel"
+          name="responsavel_principal.telefone"
           render={({ field }) => (
             <PhoneInput
               field={field}
@@ -132,13 +135,14 @@ export function PassageiroFormResponsavel({
         {isExternal && (
           <FormField
             control={form.control}
-            name="cpf_responsavel"
+            name="responsavel_principal.cpf"
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormControl>
                   <StitchField icon={Hash} label="CPF" required={isExternal} error={!!fieldState.error}>
                     <Input
                       {...field}
+                      value={field.value || ""}
                       inputMode="numeric"
                       placeholder="000.000.000-00"
                       onChange={(e) => {
@@ -157,7 +161,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="parentesco_responsavel"
+          name="responsavel_principal.parentesco"
           render={({ field, fieldState }) => (
             <FormItem>
               <Select
@@ -204,7 +208,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="email_responsavel"
+          name="responsavel_principal.email"
           render={({ field, fieldState }) => (
             <FormItem className={isExternal ? "" : "md:col-span-2"}>
               {isExternal ? (
@@ -212,6 +216,7 @@ export function PassageiroFormResponsavel({
                   <StitchField icon={Mail} label="E-mail" required={true} error={!!fieldState.error}>
                     <Input
                       {...field}
+                      value={field.value || ""}
                       type="email"
                       placeholder="exemplo@email.com"
                       className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
@@ -230,6 +235,7 @@ export function PassageiroFormResponsavel({
                       <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                       <Input
                         {...field}
+                        value={field.value || ""}
                         type="email"
                         placeholder="exemplo@email.com"
                         className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
@@ -244,7 +250,14 @@ export function PassageiroFormResponsavel({
             </FormItem>
           )}
         />
+      </div>
 
+      <div className="pt-3 border-t border-slate-100 space-y-4">
+        <div className="flex items-center gap-2 text-[#1a3a5c] font-bold text-sm">
+          <MapPin className="w-4 h-4 text-slate-500" />
+          Endereço do Responsável
+        </div>
+        <FormEnderecoFields namePrefix="responsavel_principal." required={false} isExternal={isExternal} />
       </div>
     </div>
   );

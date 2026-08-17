@@ -57,6 +57,7 @@ export const PERMISSIONS = {
   ROTAS_EXECUTAR_PARADAS: "rotas.executar_paradas",
   ESCOLAS_VISUALIZAR: "escolas.visualizar",
   ESCOLAS_GERENCIAR: "escolas.gerenciar",
+  ANIVERSARIOS_VISUALIZAR: "aniversarios.visualizar",
 } as const satisfies Record<string, PermissionKey>;
 
 export const ALL_PERMISSIONS: PermissionKey[] = Object.values(PERMISSIONS);

@@ -157,7 +157,8 @@ export function Banner({
           onClick={action.onClick}
           disabled={action.disabled || action.isLoading}
           className={cn(
-            "h-11 px-4 md:px-5 mr-10 text-xs sm:text-[13px] font-bold rounded-xl transition-all shadow-xs shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+            "h-11 px-4 md:px-5 text-xs sm:text-[13px] font-bold rounded-xl transition-all shadow-xs shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+            onDismiss && "sm:mr-8",
             config.actionButton,
             action.className
           )}

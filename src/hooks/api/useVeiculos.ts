@@ -22,6 +22,7 @@ export function useVeiculos(
   const apiFilters = {
     search: search?.trim() ? search.trim() : undefined,
     ativo: status && status !== FilterDefaults.TODOS ? status : undefined,
+    comContagem: "true",
   };
 
   const queryKey = ["veiculos", usuarioId, JSON.stringify(apiFilters)];
@@ -43,7 +44,7 @@ export function useVeiculos(
     queryFn: async (): Promise<(Veiculo & { passageiros_ativos_count?: number })[]> => {
       if (!usuarioId) return [];
 
-      const data = await veiculoApi.listVeiculosComContagemAtivos(usuarioId, apiFilters);
+      const data = await veiculoApi.listVeiculos(usuarioId, apiFilters);
       return data ?? [];
     },
     select: (veiculos) => {

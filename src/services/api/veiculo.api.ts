@@ -16,14 +16,9 @@ export const veiculoApi = {
       .then(res => res.data);
   },
 
-  listVeiculos: (usuarioId: string, filtros?: Record<string, string>): Promise<Veiculo[]> =>
+  listVeiculos: (usuarioId: string, filtros?: Record<string, any>): Promise<(Veiculo & { passageiros_ativos_count?: number })[]> =>
     apiClient
       .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
-      .then(res => res.data),
-
-  listVeiculosComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>): Promise<(Veiculo & { passageiros_ativos_count?: number })[]> =>
-    apiClient
-      .get(`${endpointBase}/usuario/${usuarioId}/com-contagem`, { params: filtros })
       .then(res => res.data),
 
   deleteVeiculo: (veiculoId: string): Promise<void> =>

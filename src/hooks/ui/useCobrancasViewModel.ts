@@ -216,7 +216,7 @@ export function useCobrancasViewModel() {
       return combined.filter(
         (c) =>
           c.passageiro?.nome?.toLowerCase().includes(term) ||
-          c.passageiro?.nome_responsavel?.toLowerCase().includes(term)
+          c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
       );
     }
 
@@ -246,7 +246,7 @@ export function useCobrancasViewModel() {
       return sorted.filter(
         (c) =>
           c.passageiro?.nome?.toLowerCase().includes(term) ||
-          c.passageiro?.nome_responsavel?.toLowerCase().includes(term)
+          c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
       );
     }
 
@@ -292,12 +292,8 @@ export function useCobrancasViewModel() {
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
         onConfirm: async () => {
-          try {
-            await deleteCobranca.mutateAsync(cobranca.id);
-            refetchCobrancas();
-          } catch (error) {
-            throw error;
-          }
+          await deleteCobranca.mutateAsync(cobranca.id);
+          refetchCobrancas();
         },
         onEdit: () => {
           openCobrancaEditDialog({
@@ -315,7 +311,7 @@ export function useCobrancasViewModel() {
       openManualPaymentDialog({
         cobrancaId: cobranca.id,
         passageiroNome: cobranca.passageiro.nome,
-        responsavelNome: cobranca.passageiro.nome_responsavel,
+        responsavelNome: cobranca.passageiro.responsavel_principal?.nome || "",
         valorOriginal: Number(cobranca.valor),
         status: cobranca.status,
         dataVencimento: cobranca.data_vencimento,

@@ -28,27 +28,23 @@ const Toaster = ({ ...props }: ToasterProps) => {
     return () => mql.removeEventListener("change", onChange)
   }, [])
 
-  const toastStyles = {
-    classNames: {
-      toast:
-        "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg pointer-events-auto",
-      description: "group-[.toast]:text-muted-foreground",
-      actionButton:
-        "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-      cancelButton:
-        "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-    },
-  }
-
   return (
     <Sonner
       key={isMobile ? "mobile" : "desktop"}
-      theme={theme as ToasterProps["theme"]}
+      theme="light"
       className="toaster group !z-[99999]"
       position={isMobile ? "top-center" : "top-right"}
-      toastOptions={toastStyles}
-      // Permitir arrastar para os lados para fechar, além de baixo/cima
-      swipeDirections={['left', 'right', 'bottom', 'top']} 
+      richColors
+      closeButton
+      swipeDirections={['left', 'right', 'bottom', 'top']}
+      toastOptions={{
+        classNames: {
+          toast: "font-sans rounded-2xl shadow-lg border p-4 text-sm font-medium",
+          description: "text-xs opacity-90 font-normal mt-0.5",
+          actionButton: "font-semibold text-xs rounded-lg px-3 py-1.5",
+          cancelButton: "text-xs rounded-lg px-3 py-1.5",
+        },
+      }}
       {...props}
     />
   )

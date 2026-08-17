@@ -13,7 +13,7 @@ import {
   formatDiasAtraso,
   getMesNome,
 } from "@/utils/formatters";
-import { formatNomeResponsavelCompletoExibicao, isResponsavelMockTelefone } from "@/utils/formatters/name";
+import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
 import { openBrowserLink } from "@/utils/browser";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
@@ -289,11 +289,12 @@ const CobrancaItemPassageiro = forwardRef<
       ? "bg-red-50 text-red-600"
       : "bg-amber-50 text-amber-600";
 
-  const telefoneResponsavel = isResponsavelMockTelefone(passageiro.telefone_responsavel) ? undefined : passageiro.telefone_responsavel;
+  const respPrincipal = passageiro.responsavel_principal;
+  const telefoneResponsavel = respPrincipal?.telefone;
   const onEnviarCobranca = telefoneResponsavel && !cobranca.isProjection
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
-      nomeResponsavel: formatNomeResponsavelCompletoExibicao(passageiro.nome_responsavel),
+      nomeResponsavel: formatNomeResponsavelCompletoExibicao(respPrincipal?.nome),
       nomePassageiro: passageiro.nome,
       mes: cobranca.mes,
       valor: valorExibicao,

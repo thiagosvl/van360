@@ -1,36 +1,149 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
-import { formatFirstName, formatParentesco, formatarEnderecoCompleto, isResponsavelMockTelefone, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters";
+import { cn } from "@/lib/utils";
+import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters";
 import { phoneMask, cpfMask } from "@/utils/masks";
 import { openBrowserLink } from "@/utils/browser";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useSetPrincipalResponsavel, useDeleteResponsavelAdicional } from "@/hooks";
-import { useResetPinResponsavelMutation } from "@/hooks/api/useResponsavelAuthApi";
-import { isCadastroPassageiroIncompleto, isResponsavelIncompleto } from "@/utils/domain";
+import {
+  useResetPinResponsavelMutation,
+  useSetPrincipalResponsavelResponsavelMutation,
+  useDeleteResponsavelResponsavelMutation,
+} from "@/hooks/api/useResponsavelAuthApi";
 import { toast } from "sonner";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { TipoResponsavel } from "@/types/enums";
+import { UnifiedEmptyState } from "@/components/empty";
+import { STORAGE_KEYS, BASE_DOMAIN } from "@/constants";
+import { PLAY_STORE_URL } from "@/utils/detectPlatform";
 
 export interface CarteirinhaResponsaveisProps {
   passageiro: Passageiro;
   onEditClick: () => void;
+  canManageOverride?: boolean;
+  hideAppAccess?: boolean;
+  hideAddress?: boolean;
+  hideWhatsappButton?: boolean;
+  hideEditButton?: boolean;
+  isResponsavelPortal?: boolean;
+  onRefresh?: () => void;
 }
 
-export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: CarteirinhaResponsaveisProps) => {
+export const CarteirinhaResponsaveis = ({
+  passageiro,
+  onEditClick,
+  canManageOverride,
+  hideAppAccess = false,
+  hideAddress = false,
+  hideWhatsappButton = false,
+  hideEditButton = false,
+  isResponsavelPortal = false,
+  onRefresh,
+}: CarteirinhaResponsaveisProps) => {
   const { can } = usePermissions();
-  const canManage = can("passageiros.gerenciar");
+  const canManage = canManageOverride !== undefined ? canManageOverride : can("passageiros.gerenciar");
   const setPrincipal = useSetPrincipalResponsavel();
   const deleteResponsavel = useDeleteResponsavelAdicional();
+  const setPrincipalPortal = useSetPrincipalResponsavelResponsavelMutation();
+  const deleteResponsavelPortal = useDeleteResponsavelResponsavelMutation();
   const resetPin = useResetPinResponsavelMutation();
-  const { openConfirmationDialog, closeConfirmationDialog, openResponsavelFormDialog } = useLayout();
-  const TAB_PRINCIPAL = "principal";
-  const [selectedRespId, setSelectedRespId] = useState<string>(TAB_PRINCIPAL);
+  const {
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openResponsavelFormDialog,
+    openDefinirResponsavelPrincipalDialog,
+  } = useLayout();
+
+  // Lista unificada e deduplicada de responsáveis
+  const allResponsaveis: PassageiroResponsavel[] = useMemo(() => {
+    const list: PassageiroResponsavel[] = [];
+    const seenKeys = new Set<string>();
+
+    let principalObj: PassageiroResponsavel | null = null;
+    if (passageiro.responsavel_principal?.nome || passageiro.responsavel_principal?.id) {
+      const pId = passageiro.responsavel_principal.id || passageiro.responsavel_principal.responsavel_id || "resp-principal-key";
+      principalObj = {
+        id: pId,
+        responsavel_id: passageiro.responsavel_principal.id || passageiro.responsavel_principal.responsavel_id,
+        passageiro_id: passageiro.id,
+        nome: passageiro.responsavel_principal.nome || "",
+        telefone: passageiro.responsavel_principal.telefone || "",
+        cpf: passageiro.responsavel_principal.cpf || "",
+        email: passageiro.responsavel_principal.email || undefined,
+        parentesco: passageiro.responsavel_principal.parentesco,
+        logradouro: passageiro.responsavel_principal.logradouro || null,
+        numero: passageiro.responsavel_principal.numero || null,
+        bairro: passageiro.responsavel_principal.bairro || null,
+        cidade: passageiro.responsavel_principal.cidade || null,
+        estado: passageiro.responsavel_principal.estado || null,
+        cep: passageiro.responsavel_principal.cep || null,
+        referencia: passageiro.responsavel_principal.referencia || null,
+        complemento: passageiro.responsavel_principal.complemento || null,
+        pin_acesso: passageiro.responsavel_principal.pin_acesso,
+        tipo: TipoResponsavel.PRINCIPAL,
+      };
+    }
+
+    if (principalObj) {
+      list.push(principalObj);
+      if (principalObj.id) seenKeys.add(principalObj.id);
+      if (principalObj.responsavel_id) seenKeys.add(principalObj.responsavel_id);
+      if (principalObj.cpf) seenKeys.add(`cpf-${principalObj.cpf.replace(/\D/g, "")}`);
+      if (principalObj.telefone) seenKeys.add(`tel-${principalObj.telefone.replace(/\D/g, "")}`);
+    }
+
+    const rawList = (passageiro.responsaveis || []).filter((r): r is PassageiroResponsavel => Boolean(r && (r.nome || r.id)));
+
+    for (const r of rawList) {
+      const cleanCpf = r.cpf ? `cpf-${r.cpf.replace(/\D/g, "")}` : null;
+      const cleanTel = r.telefone ? `tel-${r.telefone.replace(/\D/g, "")}` : null;
+      const isPrincipal = r.tipo === TipoResponsavel.PRINCIPAL;
+
+      if (
+        (r.id && seenKeys.has(r.id)) ||
+        (r.responsavel_id && seenKeys.has(r.responsavel_id)) ||
+        (cleanCpf && seenKeys.has(cleanCpf)) ||
+        (cleanTel && seenKeys.has(cleanTel)) ||
+        isPrincipal
+      ) {
+        if (principalObj && (isPrincipal || (cleanTel && cleanTel === `tel-${principalObj.telefone?.replace(/\D/g, "")}`))) {
+          if (!principalObj.pin_acesso && r.pin_acesso) principalObj.pin_acesso = r.pin_acesso;
+          if (!principalObj.logradouro && r.logradouro) principalObj.logradouro = r.logradouro;
+          if (!principalObj.parentesco && r.parentesco) principalObj.parentesco = r.parentesco;
+        }
+        continue;
+      }
+
+      const keyId = r.id || r.responsavel_id || `r-${r.cpf ? r.cpf.replace(/\D/g, "") : r.nome}`;
+      seenKeys.add(keyId);
+      if (cleanCpf) seenKeys.add(cleanCpf);
+      if (cleanTel) seenKeys.add(cleanTel);
+      if (r.id) seenKeys.add(r.id);
+      if (r.responsavel_id) seenKeys.add(r.responsavel_id);
+
+      list.push({
+        ...r,
+        id: keyId,
+        tipo: r.tipo || TipoResponsavel.ADICIONAL,
+      });
+    }
+
+    return list.sort((a, b) => (a.tipo === TipoResponsavel.PRINCIPAL ? -1 : b.tipo === TipoResponsavel.PRINCIPAL ? 1 : 0));
+  }, [passageiro]);
+
+  const principalResp = useMemo(
+    () => allResponsaveis.find((r) => r.tipo === TipoResponsavel.PRINCIPAL) || allResponsaveis[0],
+    [allResponsaveis]
+  );
+
+  const [selectedRespId, setSelectedRespId] = useState<string>("");
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const handleCopyAddress = (address: string) => {
@@ -40,16 +153,22 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
   };
 
   useEffect(() => {
-    setSelectedRespId(TAB_PRINCIPAL);
-  }, [passageiro.id]);
-
-  const responsaveisAdicionais = passageiro.responsaveis || [];
-  const hasMultiple = responsaveisAdicionais.length > 0;
+    if (principalResp?.id) {
+      setSelectedRespId((prev) => {
+        if (prev && allResponsaveis.some((r) => r.id === prev || r.responsavel_id === prev)) {
+          return prev;
+        }
+        return principalResp.id!;
+      });
+    }
+  }, [passageiro.id, principalResp?.id, allResponsaveis]);
 
   const handleAddNew = () => {
     openResponsavelFormDialog({
       passageiroId: passageiro.id!,
       editingResponsavel: null,
+      isResponsavelPortal,
+      onSuccess: onRefresh,
     });
   };
 
@@ -72,129 +191,82 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
         )}
       </div>
 
-      {hasMultiple && (
-        <Tabs value={selectedRespId} onValueChange={setSelectedRespId} className="w-full mt-4">
+      {allResponsaveis.length > 1 && (
+        <Tabs value={selectedRespId || principalResp?.id} onValueChange={setSelectedRespId} className="w-full mt-2">
           <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1">
-            <TabsTrigger
-              value="principal"
-              className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
-            >
-              Responsável Financeiro
-            </TabsTrigger>
-            {responsaveisAdicionais.map((resp) => (
-              <TabsTrigger
-                key={resp.id}
-                value={resp.id!}
-                className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm"
-              >
-                {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
-              </TabsTrigger>
-            ))}
+            {allResponsaveis.map((resp) => {
+              const isPrincipal = resp.tipo === TipoResponsavel.PRINCIPAL;
+              const label = formatParentesco(resp.parentesco) || formatFirstName(resp.nome) || (isPrincipal ? "Responsável Financeiro" : "Outro Responsável");
+              return (
+                <TabsTrigger
+                  key={resp.id}
+                  value={resp.id!}
+                  className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  {label}
+                  {isPrincipal && <span className="text-[10px] opacity-75 font-normal">(Principal)</span>}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </Tabs>
       )}
 
       {(() => {
-        const isPrincipalTab = selectedRespId === TAB_PRINCIPAL;
-        const currentResp = isPrincipalTab
-          ? {
-            id: TAB_PRINCIPAL,
-            nome: passageiro.nome_responsavel,
-            telefone: passageiro.telefone_responsavel,
-            cpf: passageiro.cpf_responsavel,
-            email: passageiro.email_responsavel,
-            parentesco: passageiro.parentesco_responsavel,
-            pin_acesso: passageiro.pin_acesso,
-            logradouro: passageiro.logradouro,
-            numero: passageiro.numero,
-            bairro: passageiro.bairro,
-            cidade: passageiro.cidade,
-            estado: passageiro.estado,
-            cep: passageiro.cep,
-            referencia: passageiro.referencia,
-            complemento: passageiro.complemento,
-          }
-          : responsaveisAdicionais.find((r) => r.id === selectedRespId);
+        const currentResp = allResponsaveis.find((r) => r.id === selectedRespId) || principalResp || allResponsaveis[0];
 
-        if (!currentResp) return null;
+        if (!currentResp) {
+          return (
+            <UnifiedEmptyState
+              icon={Users}
+              title="Nenhum responsável cadastrado"
+              description="Complete o cadastro do passageiro ou clique em Adicionar para cadastrar o responsável principal."
+              className="my-1 border-slate-200/80 bg-slate-50/50"
+            />
+          );
+        }
 
-        const respAddress = currentResp.logradouro ? formatarEnderecoCompleto(currentResp) : null;
+        const isPrincipalTab = currentResp.tipo === TipoResponsavel.PRINCIPAL || currentResp.id === principalResp?.id;
+
+        const respAddress = currentResp.logradouro
+          ? formatarEnderecoCompleto(currentResp)
+          : null;
+        const respReferencia = currentResp.referencia || null;
+
         const respParentesco = isPrincipalTab
-          ? formatParentesco(passageiro.parentesco_responsavel)
-          : formatParentesco(currentResp.parentesco);
+          ? (formatParentesco(currentResp.parentesco) || "Responsável Principal")
+          : (formatParentesco(currentResp.parentesco) || "Outro Responsável");
 
         const handleSetPrincipal = () => {
-          if (isCadastroPassageiroIncompleto(passageiro)) {
-            toast.error("Complete o cadastro do passageiro antes de alterar o responsável principal.");
-            return;
-          }
+          const targetResponsavelId = currentResp.responsavel_id || currentResp.id;
+          if (!targetResponsavelId) return;
 
-          if (isResponsavelIncompleto(currentResp.nome, currentResp.telefone)) {
-            toast.error("Dados do responsável incompletos.", {
-              description: "Preencha o nome e o telefone deste responsável antes de defini-lo como principal.",
-            });
-            return;
-          }
-
-          const firstName = formatFirstName(currentResp.nome);
-          openConfirmationDialog({
-            title: "Definir como Principal",
-            description: (
-              <div className="space-y-5 pt-1 text-left">
-                <p className="text-slate-600 text-[13px] leading-relaxed">
-                  Deseja definir <strong>{firstName}</strong> como principal responsável?
-                  <span className="font-bold block mt-1">As seguintes informações serão atualizadas:</span>
-                </p>
-                <div className="grid grid-cols-1 gap-2.5">
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 shadow-sm border border-emerald-100/10">
-                      <MessageSquare className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[12px] font-bold text-slate-800">Notificações WhatsApp</p>
-                      <p className="text-[11px] text-slate-500 leading-normal">Lembretes de pagamento e avisos de rota serão enviados apenas para este contato.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 shadow-sm border border-blue-100/10">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[12px] font-bold text-slate-800">Contratos e Documentos</p>
-                      <p className="text-[11px] text-slate-500 leading-normal">Futuros contratos e documentos gerados utilizarão os dados deste novo responsável.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="w-8 h-8 rounded-xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] shrink-0 shadow-sm border border-[#1a3a5c]/5">
-                      <MapPin className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[12px] font-bold text-slate-800">Endereço Principal do Passageiro</p>
-                      <p className="text-[11px] text-slate-500 leading-normal">Por padrão, será utilizado o endereço deste responsável para rotas.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-3 p-4 rounded-2xl bg-blue-50/50 border border-blue-100/40 text-left">
-                  <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-800 leading-relaxed font-medium">Fique tranquilo! Os dados do responsável atual não serão perdidos, ele apenas deixará de ser o contato prioritário.</p>
-                </div>
-              </div>
-            ),
-            confirmText: "Sim, definir",
-            cancelText: "Cancelar",
-            variant: "default",
+          openDefinirResponsavelPrincipalDialog({
+            responsavelNome: currentResp.nome,
+            passageiroNome: passageiro.nome,
             onConfirm: async () => {
-              await setPrincipal.mutateAsync({
-                passageiroId: passageiro.id!,
-                responsavelId: currentResp.id!,
-              });
-              setSelectedRespId(TAB_PRINCIPAL);
-              closeConfirmationDialog();
+              if (isResponsavelPortal) {
+                const authToken = localStorage.getItem(STORAGE_KEYS.RESPONSAVEL_TOKEN) || "";
+                await setPrincipalPortal.mutateAsync({
+                  passageiroId: passageiro.id!,
+                  responsavelId: targetResponsavelId,
+                  token: authToken,
+                });
+              } else {
+                await setPrincipal.mutateAsync({
+                  passageiroId: passageiro.id!,
+                  responsavelId: targetResponsavelId,
+                });
+              }
+              if (onRefresh) onRefresh();
             },
           });
         };
 
         const handleDelete = () => {
+          const deleteTargetId = currentResp.responsavel_id || currentResp.id;
+          if (!deleteTargetId || !passageiro.id) return;
+
           openConfirmationDialog({
             title: "Excluir Responsável",
             description: `Tem certeza que deseja excluir o responsável "${formatFirstName(currentResp.nome)}"? Esta ação não pode ser desfeita.`,
@@ -202,16 +274,28 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
             cancelText: "Cancelar",
             variant: "destructive",
             onConfirm: async () => {
-              await deleteResponsavel.mutateAsync({
-                responsavelId: currentResp.id!,
-                passageiroId: passageiro.id!,
-              });
-              setSelectedRespId(TAB_PRINCIPAL);
+              if (isResponsavelPortal) {
+                const authToken = localStorage.getItem(STORAGE_KEYS.RESPONSAVEL_TOKEN) || "";
+                await deleteResponsavelPortal.mutateAsync({
+                  passageiroId: passageiro.id!,
+                  responsavelId: deleteTargetId,
+                  token: authToken,
+                });
+              } else {
+                await deleteResponsavel.mutateAsync({
+                  responsavelId: deleteTargetId,
+                  passageiroId: passageiro.id!,
+                });
+              }
+              if (onRefresh) onRefresh();
               closeConfirmationDialog();
             },
           });
         };
+
         const handleResetPin = () => {
+          const resetTargetRespId = currentResp.responsavel_id || currentResp.id;
+
           openConfirmationDialog({
             title: "Resetar PIN do Responsável",
             description: (
@@ -219,19 +303,18 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                 <p className="text-slate-600 text-xs leading-relaxed">
                   Tem certeza que deseja resetar o PIN de <strong>{formatFirstName(currentResp.nome)}</strong>?
                 </p>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-700 leading-relaxed font-normal">
-                  💡 <strong>Como orientar o responsável:</strong><br />
-                  Basta ele acessar o app novamente com o telefone (<strong>{phoneMask(currentResp.telefone)}</strong>) para cadastrar um novo PIN de 4 dígitos.
-                </div>
+                <p className="text-slate-500 text-[11px] leading-relaxed">
+                  O responsável precisará cadastrar um novo PIN no próximo acesso pelo aplicativo.
+                </p>
               </div>
             ),
-            confirmText: "Resetar PIN",
+            confirmText: "Sim, resetar PIN",
             cancelText: "Cancelar",
             variant: "destructive",
             onConfirm: async () => {
               await resetPin.mutateAsync({
                 passageiroId: passageiro.id!,
-                responsavelId: isPrincipalTab ? undefined : currentResp.id,
+                responsavelId: resetTargetRespId
               });
               toast.success("PIN resetado! O responsável cadastrará um novo PIN no próximo acesso.");
               closeConfirmationDialog();
@@ -246,20 +329,18 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
               <span className="text-xs font-semibold text-slate-500">
                 {respParentesco || "Outro Responsável"}
               </span>
-              {canManage && (
+              {canManage && !hideEditButton && (
                 <div className="flex items-center gap-1 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      if (isPrincipalTab) {
-                        onEditClick();
-                      } else {
-                        openResponsavelFormDialog({
-                          passageiroId: passageiro.id!,
-                          editingResponsavel: currentResp as PassageiroResponsavel,
-                        });
-                      }
+                      openResponsavelFormDialog({
+                        passageiroId: passageiro.id!,
+                        editingResponsavel: currentResp as PassageiroResponsavel,
+                        isResponsavelPortal,
+                        onSuccess: onRefresh,
+                      });
                     }}
                     className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
                     title="Editar Responsável"
@@ -308,10 +389,10 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                     <span className="text-xs font-normal text-slate-500">Telefone / WhatsApp</span>
                   </div>
                   <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words whitespace-pre-wrap">
-                    {isResponsavelMockTelefone(currentResp.telefone) ? "—" : (phoneMask(currentResp.telefone) || "—")}
+                    {phoneMask(currentResp.telefone) || "—"}
                   </span>
                 </div>
-                {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
+                {!hideWhatsappButton && currentResp.telefone && (
                   <Button
                     type="button"
                     size="icon"
@@ -320,7 +401,7 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                       const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
                       openBrowserLink(`https://wa.me/${formattedPhone}`);
                     }}
-                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-xs shrink-0 border-none flex items-center justify-center transition-all cursor-pointer"
+                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20b858] text-white shadow-xs shrink-0 border-none flex items-center justify-center transition-all cursor-pointer"
                     title="Abrir no WhatsApp"
                   >
                     <WhatsAppIcon className="w-3.5 h-3.5" />
@@ -351,51 +432,53 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
               </div>
 
               {/* Linha 5: Endereço */}
-              <div className="pt-2.5 border-t border-slate-200/50 space-y-2.5 min-w-0">
-                <div className="flex items-start justify-between gap-3 min-w-0">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                      <span className="text-xs font-normal text-slate-500">Endereço</span>
-                    </div>
-                    <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
-                      {respAddress || "—"}
-                    </p>
-                  </div>
-                  {respAddress && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleCopyAddress(respAddress)}
-                      className="h-7 w-7 rounded-xl shrink-0 hover:bg-white border border-slate-200/60"
-                      title="Copiar endereço"
-                    >
-                      {copiedAddress === respAddress ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5 text-slate-400" />
+              {!hideAddress && (
+                <div className="pt-2.5 border-t border-slate-200/50 min-w-0">
+                  <div className="flex items-start justify-between gap-3 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                        <span className="text-xs font-normal text-slate-500">Endereço</span>
+                      </div>
+                      <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
+                        {respAddress || "—"}
+                      </p>
+                      {respReferencia && (
+                        <p className="text-[11px] text-slate-500 font-normal leading-normal mt-1 block break-words">
+                          <span className="text-slate-400">Referência: </span>{respReferencia}
+                        </p>
                       )}
-                    </Button>
-                  )}
+                    </div>
+                    {respAddress && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleCopyAddress(respAddress)}
+                        className="h-7 w-7 rounded-xl shrink-0 hover:bg-white border border-slate-200/60"
+                        title="Copiar endereço"
+                      >
+                        {copiedAddress === respAddress ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5 text-slate-400" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
+              )}
 
-                <div className="pt-2 border-t border-slate-200/40 space-y-1">
-                  <span className="text-xs font-medium text-slate-500 block">Ponto de referência</span>
-                  <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
-                    {currentResp.referencia || <span className="text-slate-400 font-normal">—</span>}
-                  </p>
-                </div>
-
-                {/* Linha 6: Acesso ao App */}
+              {/* Linha 6: Acesso ao App */}
+              {!hideAppAccess && (
                 <div className="pt-2.5 border-t border-slate-200/50 space-y-2 min-w-0">
                   <div className="flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <Smartphone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                      <span className="text-xs font-semibold text-[#1a3a5c]">Acesso ao App</span>
+                      <span className="text-xs font-normal text-slate-500">Acesso ao App</span>
                     </div>
 
-                    {!isResponsavelMockTelefone(currentResp.telefone) && currentResp.telefone && (
+                    {currentResp.telefone && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -407,28 +490,32 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                             <MoreVertical className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
+                        <DropdownMenuContent align="end" className="w-60 rounded-xl border-gray-100 shadow-xl p-1">
                           <DropdownMenuItem
                             onClick={() => {
                               const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
                               const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
                               const respNome = formatFirstName(currentResp.nome);
                               const passNome = formatFirstName(passageiro.nome);
-                              const mensagem = `Olá, ${respNome}! Acesse a carteirinha digital do(a) ${passNome} no Van360 pelo link: https://van360.com.br/login. No seu primeiro acesso, informe o seu telefone (${phoneMask(currentResp.telefone)}) e crie a sua senha PIN de 4 dígitos.`;
+                              const appAndroidLink = PLAY_STORE_URL;
+                              const webLoginLink = `${BASE_DOMAIN}/login`;
+
+                              const mensagem = `Olá, ${respNome}! Você foi convidado(a) para acompanhar a rotina escolar de *${passNome}* pelo aplicativo *Van360*!\n\n📲 *Baixe o app para Android:* ${appAndroidLink}\n🌐 *Ou acesse pelo navegador:* ${webLoginLink}`;
+
                               openBrowserLink(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(mensagem)}`);
                             }}
                             className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
                           >
                             <WhatsAppIcon className="h-4 w-4" />
-                            <span>{currentResp.pin_acesso ? "Reenviar Instruções WhatsApp" : "Enviar Convite WhatsApp"}</span>
+                            <span>Convidar para usar o app</span>
                           </DropdownMenuItem>
 
-                          {canManage && currentResp.pin_acesso && (
+                          {canManage && Boolean(currentResp.pin_acesso) && (
                             <DropdownMenuItem
                               onClick={handleResetPin}
-                              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer"
+                              className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
                             >
-                              <KeyRound className="h-4 w-4" />
+                              <KeyRound className="h-4 w-4 text-red-500" />
                               <span>Resetar PIN de Acesso</span>
                             </DropdownMenuItem>
                           )}
@@ -437,26 +524,24 @@ export const CarteirinhaResponsaveis = ({ passageiro, onEditClick }: Carteirinha
                     )}
                   </div>
 
-                  <div className="min-w-0">
-                    <span className="text-[11px] font-medium text-slate-500 block mb-0.5">Telefone para Login (WhatsApp):</span>
-                    <span className="text-xs font-bold text-[#1a3a5c] leading-tight block break-words">
-                      {isResponsavelMockTelefone(currentResp.telefone) || !currentResp.telefone
-                        ? "Telefone não cadastrado"
-                        : phoneMask(currentResp.telefone)}
-                    </span>
-                  </div>
-
-                  <div className="pt-1">
-                    <span className="w-full block py-1.5 px-3 rounded-lg text-[11px] font-normal bg-slate-100/70 text-slate-600 border border-slate-200/60 leading-tight">
-                      {currentResp.pin_acesso ? (
-                        <span>O responsável <strong className="font-semibold text-slate-700">já acessou</strong> o app.</span>
-                      ) : (
-                        <span>O responsável <strong className="font-semibold text-slate-700">ainda não acessou</strong> o app.</span>
-                      )}
-                    </span>
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="text-xs text-[#1a3a5c] leading-tight block break-words">
+                      <span className="font-bold">Login: </span>
+                      <span className="font-bold">
+                        {!currentResp.telefone ? "Telefone não cadastrado" : phoneMask(currentResp.telefone)}
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#1a3a5c] leading-tight block break-words">
+                      <span className="font-bold">PIN de acesso: </span>
+                      <span className={currentResp.pin_acesso ? "font-normal text-slate-700" : "font-normal text-slate-500"}>
+                        {currentResp.pin_acesso
+                          ? "Definido pelo responsável"
+                          : "Não definido (será criado no 1º acesso)"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         );

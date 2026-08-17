@@ -3,10 +3,9 @@ import { useMutation } from "@tanstack/react-query";
 
 export function useBuscarResponsavel() {
   return useMutation({
-    mutationFn: async ({ cpf }: { cpf: string }) => {
-      // Buscar passageiro com este CPF de responsável vinculado ao usuário atual
+    mutationFn: async (params: { cpf?: string; telefone?: string; term?: string }) => {
       const { data } = await apiClient.get("/passageiros/responsavel/lookup", {
-        params: { cpf },
+        params,
       });
 
       return data;

@@ -153,7 +153,6 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
     }
   }, [phoneForm, handleSendOtp]);
 
-  // Sincronizar telefone inicial quando o diálogo for aberto
   useEffect(() => {
     if (open && initialPhone) {
       phoneForm.setValue("telefone", initialPhone);
@@ -214,7 +213,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                 />
 
                 {emailsEncontrados.length > 1 ? (
-                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/70 border border-slate-200/80">
+                  <div className="flex items-center justify-between p-[#0.875rem] rounded-2xl bg-slate-100/70 border border-slate-200/80">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Phone className="w-4 h-4 text-slate-500 shrink-0" />
                       <span className="text-sm font-bold text-slate-700 truncate">
@@ -242,13 +241,16 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                           Telefone (WhatsApp)
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            type="tel"
-                            placeholder="(00) 00000-0000"
-                            onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-base font-semibold text-slate-700"
-                          />
+                          <div className="relative">
+                            <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Input
+                              {...field}
+                              type="tel"
+                              placeholder="(00) 00000-0000"
+                              onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base font-semibold text-slate-700"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -275,14 +277,18 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                           <div
                             key={em.id}
                             onClick={() => setSelectedEmailIndex(em.id)}
-                            className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${isSelected
+                            className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                              isSelected
                                 ? "border-[#1a3a5c] bg-blue-50/70 ring-2 ring-[#1a3a5c]/15 shadow-sm"
                                 : "border-slate-200/90 bg-white hover:bg-slate-50/80 hover:border-slate-300"
-                              }`}
+                            }`}
                           >
                             <div className="flex items-center min-w-0 flex-1 mr-2">
-                              <div className={`flex items-center justify-center w-9 h-9 rounded-xl mr-3 shrink-0 transition-colors ${isSelected ? "bg-[#1a3a5c] text-white" : "bg-slate-100 text-slate-500"
-                                }`}>
+                              <div
+                                className={`flex items-center justify-center w-9 h-9 rounded-xl mr-3 shrink-0 transition-colors ${
+                                  isSelected ? "bg-[#1a3a5c] text-white" : "bg-slate-100 text-slate-500"
+                                }`}
+                              >
                                 <Mail className="w-4 h-4" />
                               </div>
                               <span className="text-sm font-semibold text-slate-700 tracking-tight truncate">
@@ -390,34 +396,34 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                 <FormField
                   control={pinForm.control}
                   name="newPin"
-                  render={({ field, fieldState }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-medium ml-1">
                         Novo PIN de 4 Dígitos
                       </FormLabel>
                       <FormControl>
-                        <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-xs transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                            <Lock className="w-5 h-5" />
-                          </div>
-                          <div className="flex flex-col flex-1 min-w-0">
-                            <Input
-                              {...field}
-                              type={showPin ? "text" : "password"}
-                              maxLength={4}
-                              onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                              placeholder="••••"
-                              className="h-9 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[20px] font-bold text-slate-700 tracking-widest shadow-none placeholder:tracking-normal placeholder:text-slate-300"
-                            />
-                          </div>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            type={showPin ? "text" : "password"}
+                            maxLength={4}
+                            onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+                            placeholder="••••"
+                            className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base font-semibold text-slate-700 tracking-widest"
+                          />
                           <button
                             type="button"
                             onClick={() => setShowPin(!showPin)}
-                            className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors shrink-0 mr-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+                            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0 cursor-pointer"
                             tabIndex={-1}
                             title={showPin ? "Ocultar PIN" : "Exibir PIN"}
                           >
-                            {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {showPin ? (
+                              <EyeOff className="h-5 w-5 opacity-60" />
+                            ) : (
+                              <Eye className="h-5 w-5 opacity-60" />
+                            )}
                           </button>
                         </div>
                       </FormControl>
@@ -450,6 +456,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
           icon: <RefreshCw className="w-6 h-6" />,
           leftAction: (
             <button
+              type="button"
               onClick={() => setStep(1)}
               className="h-10 w-10 rounded-2xl flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] border border-slate-100 transition-all cursor-pointer"
             >
@@ -488,8 +495,8 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                 emailsEncontrados.length > 1
                   ? "Solicitar por e-mail"
                   : loading
-                    ? "Consultando..."
-                    : "Solicitar Código"
+                  ? "Consultando..."
+                  : "Solicitar Código"
               }
               variant="primary"
               form="form-recuperar-pin-step1"

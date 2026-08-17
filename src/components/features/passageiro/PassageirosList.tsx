@@ -141,7 +141,7 @@ export function PassageirosList({
           <TableBody>
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome, true);
-              const respName = formatNomeResponsavelExibicao(passageiro?.nome_responsavel);
+              const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome);
 
               return (
                 <TableRow
@@ -217,7 +217,7 @@ export function PassageirosList({
                           {formatarPlacaExibicao(passageiro.veiculo.placa)}
                         </span>
                         <span className="text-[10px] text-gray-400 font-medium uppercase truncate w-32">
-                          {(passageiro.veiculo as any).modelo}
+                          {passageiro.veiculo.modelo}
                         </span>
                       </div>
                     ) : "-"}

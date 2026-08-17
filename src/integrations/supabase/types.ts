@@ -136,7 +136,6 @@ export type Database = {
           bairro: string | null
           cep: string | null
           cidade: string | null
-          cpf_responsavel: string
           periodo: string
           observacoes: string | null
           created_at: string
@@ -146,27 +145,22 @@ export type Database = {
           id: string
           usuario_id: string
           nome: string
-          nome_responsavel: string
 
           numero: string | null
           referencia: string | null
           complemento: string | null
           logradouro: string | null
-          telefone_responsavel: string
           updated_at: string
           valor_cobranca: number
         }
         Insert: {
-          cpf_responsavel: string
           dia_vencimento: number
           escola_id: string
           usuario_id: string
           nome: string
           periodo: string
           observacoes?: string | null
-          nome_responsavel: string
 
-          telefone_responsavel: string
           valor_cobranca: number
           ativo?: boolean
           isento?: boolean
@@ -188,7 +182,6 @@ export type Database = {
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
-          cpf_responsavel?: string
           periodo: string
           observacoes?: string | null
           created_at?: string
@@ -198,13 +191,11 @@ export type Database = {
           id?: string
           usuario_id?: string
           nome?: string
-          nome_responsavel?: string
 
           numero?: string | null
           referencia?: string | null
           complemento?: string | null
           logradouro?: string | null
-          telefone_responsavel?: string
           updated_at?: string
           valor_cobranca?: number
         }

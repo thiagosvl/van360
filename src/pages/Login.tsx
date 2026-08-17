@@ -249,169 +249,165 @@ export default function Login() {
               </p>
             </div>
 
-            {/* 
             <div className="flex rounded-xl bg-slate-200/80 p-1 mb-6">
               <button
                 type="button"
                 onClick={() => setActiveTab("motorista")}
-                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all truncate ${
-                  activeTab === "motorista"
-                    ? "bg-[#1a3a5c] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all truncate ${activeTab === "motorista"
+                  ? "bg-[#1a3a5c] text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
-                Motorista / Monitor
+                Motorista / Equipe
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("responsavel")}
-                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all truncate ${
-                  activeTab === "responsavel"
-                    ? "bg-[#1a3a5c] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all truncate ${activeTab === "responsavel"
+                  ? "bg-[#1a3a5c] text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
                 Responsável
               </button>
             </div>
-            */}
 
             {activeTab === "responsavel" ? (
               <ResponsavelLoginForm />
             ) : (
               <Form {...formMotorista}>
                 <form onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}>
-                <div className="space-y-4">
-                  {/* CPF Field */}
-                  <FormField
-                    control={formMotorista.control}
-                    name="cpfcnpj"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                              <User className="w-5 h-5" />
+                  <div className="space-y-4">
+                    {/* CPF Field */}
+                    <FormField
+                      control={formMotorista.control}
+                      name="cpfcnpj"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
+                                <User className="w-5 h-5" />
+                              </div>
+                              <div className="flex flex-col flex-1 min-w-0">
+                                <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                  Seu CPF ou CNPJ
+                                </label>
+                                <Input
+                                  autoFocus
+                                  {...field}
+                                  inputMode="numeric"
+                                  onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}
+                                  placeholder=""
+                                  className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
+                                />
+                              </div>
                             </div>
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                Seu CPF ou CNPJ
-                              </label>
-                              <Input
-                                autoFocus
-                                {...field}
-                                inputMode="numeric"
-                                onChange={(e: any) => field.onChange(cpfCnpjMask(e.target.value))}
-                                placeholder=""
-                                className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                              />
-                            </div>
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-xs ml-1" />
-                      </FormItem>
-                    )}
-                  />
+                          </FormControl>
+                          <FormMessage className="text-xs ml-1" />
+                        </FormItem>
+                      )}
+                    />
 
-                  {/* Password Field */}
-                  <FormField
-                    control={formMotorista.control}
-                    name="senha"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                              <Lock className="w-5 h-5" />
+                    {/* Password Field */}
+                    <FormField
+                      control={formMotorista.control}
+                      name="senha"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
+                                <Lock className="w-5 h-5" />
+                              </div>
+                              <div className="flex flex-col flex-1 min-w-0">
+                                <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                  Senha
+                                </label>
+                                <Input
+                                  {...field}
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="••••••••"
+                                  className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal placeholder:text-slate-300"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
+                                tabIndex={-1}
+                              >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                              </button>
                             </div>
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                Senha
-                              </label>
-                              <Input
-                                {...field}
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal placeholder:text-slate-300"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
-                              tabIndex={-1}
-                            >
-                              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-xs ml-1" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {formMotorista.formState.errors.root && (
-                  <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600">
-                    <span className="mt-0.5">⚠️</span>
-                    {formMotorista.formState.errors.root.message}
+                          </FormControl>
+                          <FormMessage className="text-xs ml-1" />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                )}
 
-                {/* Remember Me */}
-                <div className="flex items-center gap-2 mt-5 ml-1">
-                  <Checkbox
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    className="bg-white border-slate-300 shadow-sm rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px]"
-                  />
-                  <Label
-                    htmlFor="rememberMe"
-                    className="text-[13px] font-medium text-slate-600 cursor-pointer select-none"
-                  >
-                    Lembrar meu CPF / CNPJ
-                  </Label>
-                </div>
+                  {formMotorista.formState.errors.root && (
+                    <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600">
+                      <span className="mt-0.5">⚠️</span>
+                      {formMotorista.formState.errors.root.message}
+                    </div>
+                  )}
 
-                {/* Submit Button */}
-                <div className="pt-2 mt-4">
-                  <Button
-                    type="submit"
-                    className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all"
-                    disabled={loading}
-                  >
-                    {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
-                  </Button>
-                </div>
+                  {/* Remember Me */}
+                  <div className="flex items-center gap-2 mt-5 ml-1">
+                    <Checkbox
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      className="bg-white border-slate-300 shadow-sm rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px]"
+                    />
+                    <Label
+                      htmlFor="rememberMe"
+                      className="text-[13px] font-medium text-slate-600 cursor-pointer select-none"
+                    >
+                      Lembrar meu CPF / CNPJ
+                    </Label>
+                  </div>
 
-                {/* Links */}
-                <div className="flex flex-col items-center gap-2 mt-6">
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-[14px] text-[#2d5a88] hover:text-[#1a3a5c] hover:underline transition-colors font-medium"
-                  >
-                    Esqueci minha senha
-                  </button>
+                  {/* Submit Button */}
+                  <div className="pt-2 mt-4">
+                    <Button
+                      type="submit"
+                      className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all"
+                      disabled={loading}
+                    >
+                      {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
+                    </Button>
+                  </div>
 
-                  <p className="text-[13px] text-slate-500 mt-1">
-                    Não tem uma conta?{" "}
+                  {/* Links */}
+                  <div className="flex flex-col items-center gap-2 mt-6">
                     <button
                       type="button"
-                      onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
-                      className="text-[#1a3a5c] font-bold hover:underline transition-all"
+                      onClick={handleForgotPassword}
+                      className="text-[14px] text-[#2d5a88] hover:text-[#1a3a5c] hover:underline transition-colors font-medium"
                     >
-                      Cadastre-se
+                      Esqueci minha senha
                     </button>
-                  </p>
-                </div>
 
-                {/* Platform Suggestion */}
-                {!isNativeApp() && <LoginPlatformSuggestion />}
-              </form>
-            </Form>
-          )}
+                    <p className="text-[13px] text-slate-500 mt-1">
+                      Não tem uma conta?{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
+                        className="text-[#1a3a5c] font-bold hover:underline transition-all"
+                      >
+                        Cadastre-se
+                      </button>
+                    </p>
+                  </div>
+
+                  {/* Platform Suggestion */}
+                  {!isNativeApp() && <LoginPlatformSuggestion />}
+                </form>
+              </Form>
+            )}
           </div>
         </div>
       </div>

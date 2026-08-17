@@ -26,9 +26,10 @@ export function useEscolasWithFilters(
     queryFn: async () => {
       if (!usuarioId) return [];
       try {
+        const queryFilters = { slim: "true", ...filtros };
         const data = options?.isPublic
           ? await escolaApi.listEscolasPublic(usuarioId, filtros)
-          : await escolaApi.listEscolas(usuarioId, filtros);
+          : await escolaApi.listEscolas(usuarioId, queryFilters);
         return (data as Escola[]) ?? [];
       } catch (error) {
         options?.onError?.(error);

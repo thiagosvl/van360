@@ -231,7 +231,7 @@ export function validateEnderecoFields(
   }
 
   const errors: EnderecoValidationResult["errors"] = {};
-  let cepRequired = false;
+  const cepRequired = false;
   let logradouroRequired = false;
   let numeroRequired = false;
 

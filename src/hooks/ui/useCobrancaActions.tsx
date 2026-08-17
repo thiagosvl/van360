@@ -252,7 +252,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           label: "Enviar Recibo",
           icon: <WhatsAppIcon className="h-4 w-4" />,
           onClick: handleShareDirect,
-          swipeColor: "bg-emerald-600",
+          swipeColor: "bg-[#25D366]",
           hasSeparatorAfter: true,
         });
       }
@@ -281,7 +281,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Enviar Cobrança",
         icon: <WhatsAppIcon className="h-4 w-4" />,
         onClick: onEnviarCobranca,
-        swipeColor: "bg-green-600",
+        swipeColor: "bg-[#25D366]",
         hasSeparatorAfter: true,
       });
     }

@@ -47,9 +47,9 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
       </div>
 
       {/* Info Extra de Responsável */}
-      {cobranca.passageiro?.nome_responsavel && (
+      {cobranca.passageiro?.responsavel_principal?.nome && (
         <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
-          {formatNomeResponsavelExibicao(cobranca.passageiro.nome_responsavel)}
+          {formatNomeResponsavelExibicao(cobranca.passageiro.responsavel_principal.nome)}
         </p>
       )}
 

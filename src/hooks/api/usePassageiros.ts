@@ -1,4 +1,4 @@
-import { passageiroApi } from "@/services/api/passageiro.api";
+import { ListPassageirosResponse, passageiroApi } from "@/services/api/passageiro.api";
 import { FilterDefaults } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +11,8 @@ export interface UsePassageirosFilters {
   veiculo?: string;
   status?: string;
   periodo?: string;
+  page?: number;
+  limit?: number;
 }
 
 function normalizeFilters(filters: UsePassageirosFilters = {}) {
@@ -31,6 +33,8 @@ function normalizeFilters(filters: UsePassageirosFilters = {}) {
         : undefined,
     periodo:
       filters?.periodo && filters.periodo !== FilterDefaults.TODOS ? filters.periodo : undefined,
+    page: filters?.page && filters.page > 0 ? filters.page : undefined,
+    limit: filters?.limit && filters.limit > 0 ? filters.limit : undefined,
   };
 }
 
@@ -51,28 +55,35 @@ export function usePassageiros(
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    queryFn: async (): Promise<Passageiro[]> => {
-      if (!safeFilters.usuarioId) return [];
+    queryFn: async (): Promise<ListPassageirosResponse> => {
+      if (!safeFilters.usuarioId) return { list: [], total: 0 };
 
       const data = await passageiroApi.listPassageiros(
         safeFilters.usuarioId,
         normalizedFilters
       );
 
-      return data ?? [];
+      return data ?? { list: [], total: 0 };
     },
-    select: (passageiros): {
+    select: (data): {
       list: Passageiro[];
       total: number;
       ativos: number;
+      page?: number;
+      limit?: number;
+      totalPages?: number;
     } => {
-      const list = passageiros ?? [];
+      const list = data?.list ?? (Array.isArray(data) ? data : []);
+      const total = data?.total ?? list.length;
       const ativos = list.filter((p) => p.ativo).length;
 
       return {
         list,
-        total: list.length,
+        total,
         ativos,
+        page: data?.page,
+        limit: data?.limit,
+        totalPages: data?.totalPages,
       };
     },
   });

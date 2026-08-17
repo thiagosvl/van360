@@ -88,7 +88,7 @@ export function usePassageiroActions({
           icon: <WhatsAppIcon className="h-4 w-4" />,
           onClick: () => onEnviarWhatsApp(passageiro),
           disabled: isFeatureDisabled,
-          swipeColor: "bg-[#1a3a5c]",
+          swipeColor: "bg-[#25D366]",
           hasSeparatorAfter: true
         });
       } else {

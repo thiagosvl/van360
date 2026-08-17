@@ -20,9 +20,10 @@ import { cepService, EnderecoSugestao } from "@/services/cepService";
 interface FormEnderecoFieldsProps {
   required?: boolean;
   isExternal?: boolean;
+  namePrefix?: string;
 }
 
-export function FormEnderecoFields({ required = false, isExternal = false }: FormEnderecoFieldsProps) {
+export function FormEnderecoFields({ required = false, isExternal = false, namePrefix = "" }: FormEnderecoFieldsProps) {
   const form = useFormContext();
   const [isCepLoading, setIsCepLoading] = useState(false);
 
@@ -33,7 +34,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
   const userTypedRef = useRef(false);
   const isFocusedRef = useRef(false);
 
-  const logradouroValue = form.watch("logradouro");
+  const logradouroValue = form.watch(`${namePrefix}logradouro`);
 
   useEffect(() => {
     // Só faz a requisição HTTP se a alteração veio de uma digitação ativa do usuário (não por foco ou reset)
@@ -46,8 +47,8 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
     // Debounce padrão de mercado (400ms): aguarda o usuário pausar a digitação antes de chamar a API
     const timer = setTimeout(async () => {
       setIsSearchingAddress(true);
-      const uf = form.getValues("estado");
-      const cidade = form.getValues("cidade");
+      const uf = form.getValues(`${namePrefix}estado`);
+      const cidade = form.getValues(`${namePrefix}cidade`);
       const results = await cepService.buscarEnderecoPorTexto(logradouroValue, uf, cidade);
       setSugestoes(results);
       setShowDropdown(results.length > 0 && isFocusedRef.current);
@@ -55,19 +56,19 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [logradouroValue, form]);
+  }, [logradouroValue, namePrefix, form]);
 
   const handleSelectSugestao = (sugestao: EnderecoSugestao) => {
     userTypedRef.current = false;
-    form.setValue("logradouro", sugestao.logradouro, { shouldValidate: true });
-    if (sugestao.bairro) form.setValue("bairro", sugestao.bairro, { shouldValidate: true });
-    if (sugestao.cidade) form.setValue("cidade", sugestao.cidade, { shouldValidate: true });
-    if (sugestao.estado) form.setValue("estado", sugestao.estado, { shouldValidate: true });
-    if (sugestao.cep) form.setValue("cep", sugestao.cep, { shouldValidate: true });
+    form.setValue(`${namePrefix}logradouro`, sugestao.logradouro, { shouldValidate: true });
+    if (sugestao.bairro) form.setValue(`${namePrefix}bairro`, sugestao.bairro, { shouldValidate: true });
+    if (sugestao.cidade) form.setValue(`${namePrefix}cidade`, sugestao.cidade, { shouldValidate: true });
+    if (sugestao.estado) form.setValue(`${namePrefix}estado`, sugestao.estado, { shouldValidate: true });
+    if (sugestao.cep) form.setValue(`${namePrefix}cep`, sugestao.cep, { shouldValidate: true });
 
     setShowDropdown(false);
     setTimeout(() => {
-      form.setFocus("numero");
+      form.setFocus(`${namePrefix}numero`);
     }, 100);
   };
 
@@ -89,7 +90,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="cep"
+        name={`${namePrefix}cep`}
         render={({ field }) => (
           <CepInput
             field={field}
@@ -106,7 +107,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="logradouro"
+        name={`${namePrefix}logradouro`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-4 relative">
             {isExternal ? (
@@ -217,7 +218,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="numero"
+        name={`${namePrefix}numero`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-2">
             {isExternal ? (
@@ -255,7 +256,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="complemento"
+        name={`${namePrefix}complemento`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-2">
             {isExternal ? (
@@ -297,7 +298,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="bairro"
+        name={`${namePrefix}bairro`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-2">
             {isExternal ? (
@@ -337,7 +338,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="cidade"
+        name={`${namePrefix}cidade`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-4">
             {isExternal ? (
@@ -377,7 +378,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="estado"
+        name={`${namePrefix}estado`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-2">
             <Select
@@ -428,7 +429,7 @@ export function FormEnderecoFields({ required = false, isExternal = false }: For
 
       <FormField
         control={form.control}
-        name="referencia"
+        name={`${namePrefix}referencia`}
         render={({ field, fieldState }) => (
           <FormItem className="md:col-span-6">
             {isExternal ? (

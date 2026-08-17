@@ -4,23 +4,36 @@ import {
     PassageiroGenero,
     PassageiroModalidade,
     PassageiroPeriodo,
+    TipoResponsavel,
 } from "./enums";
+
+export interface Responsavel {
+  id?: string;
+  responsavel_id?: string;
+  telefone: string;
+  nome: string;
+  cpf?: string | null;
+  email?: string | null;
+  parentesco?: ParentescoResponsavel;
+  pin_acesso?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  cep?: string | null;
+  referencia?: string | null;
+  complemento?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface Passageiro {
   id?: string;
   nome: string;
-  logradouro: string;
-  numero: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  cep: string;
   periodo: PassageiroPeriodo;
-  nome_responsavel: string;
 
-  telefone_responsavel: string;
-  cpf_responsavel: string;
-  email_responsavel?: string | null;
+  responsavel_principal?: Responsavel;
   valor_cobranca: number;
   dia_vencimento: number;
   created_at?: string;
@@ -31,14 +44,12 @@ export interface Passageiro {
   ativo?: boolean;
   isento?: boolean;
   enviar_notificacoes?: boolean;
-  referencia?: string;
-  complemento?: string;
   observacoes?: string;
   latitude?: number;
   longitude?: number;
   escola?: { id?: string; nome?: string };
   escola_nome?: string;
-  veiculo?: { id?: string; placa?: string };
+  veiculo?: { id?: string; placa?: string; modelo?: string };
 
   status_contrato?: ContratoStatus;
   contrato_id?: string;
@@ -52,7 +63,6 @@ export interface Passageiro {
   modalidade?: PassageiroModalidade;
   data_nascimento?: string;
   genero?: PassageiroGenero;
-  parentesco_responsavel?: ParentescoResponsavel;
   data_inicio_transporte?: string;
   turma?: string;
   nome_professor?: string;
@@ -60,26 +70,27 @@ export interface Passageiro {
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
   responsaveis?: PassageiroResponsavel[];
-  pin_acesso?: string | null;
 }
 
 export interface PassageiroResponsavel {
   id?: string;
-  passageiro_id: string;
+  passageiro_id?: string;
+  responsavel_id?: string;
   nome: string;
   telefone: string;
-  cpf: string;
+  cpf?: string | null;
   email?: string | null;
   parentesco: ParentescoResponsavel;
+  tipo?: TipoResponsavel;
   pin_acesso?: string | null;
-  logradouro?: string;
-  numero?: string;
-  bairro?: string;
-  cidade?: string;
-  estado?: string;
-  cep?: string;
-  referencia?: string;
-  complemento?: string;
+  logradouro?: string | null;
+  numero?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  cep?: string | null;
+  referencia?: string | null;
+  complemento?: string | null;
   created_at?: string;
   updated_at?: string;
 }

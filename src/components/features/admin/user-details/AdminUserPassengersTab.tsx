@@ -48,7 +48,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
       const term = search.toLowerCase();
       const matchesSearch =
         p.nome.toLowerCase().includes(term) ||
-        (p.nome_responsavel && p.nome_responsavel.toLowerCase().includes(term)) ||
+        (p.responsavel_principal?.nome && p.responsavel_principal.nome.toLowerCase().includes(term)) ||
         (p.escolas?.nome && p.escolas.nome.toLowerCase().includes(term)) ||
         (p.endereco && p.endereco.toLowerCase().includes(term));
 
@@ -245,14 +245,14 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                           </td>
 
                           <td className="py-4 px-4">
-                            {p.nome_responsavel ? (
+                            {p.responsavel_principal?.nome ? (
                               <div>
                                 <p className="font-medium text-slate-300 truncate">
-                                  {formatShortName(p.nome_responsavel, true)}
+                                  {formatShortName(p.responsavel_principal.nome, true)}
                                 </p>
-                                {p.telefone_responsavel && (
+                                {p.responsavel_principal.telefone && (
                                   <p className="text-[10px] text-slate-400 font-medium font-mono">
-                                    {phoneMask(p.telefone_responsavel)}
+                                    {phoneMask(p.responsavel_principal.telefone)}
                                   </p>
                                 )}
                               </div>

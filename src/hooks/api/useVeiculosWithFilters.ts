@@ -25,7 +25,8 @@ export function useVeiculosWithFilters(
     refetchOnMount: "always",
     queryFn: async () => {
       if (!usuarioId) return [];
-      const data = await veiculoApi.listVeiculos(usuarioId, filtros);
+      const queryFilters = { slim: "true", ...filtros };
+      const data = await veiculoApi.listVeiculos(usuarioId, queryFilters);
       return (data as Veiculo[]) ?? [];
     },
   });

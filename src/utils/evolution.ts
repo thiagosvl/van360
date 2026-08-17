@@ -13,7 +13,8 @@ interface CobrancaWhatsAppParams {
 }
 
 export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string {
-  const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
+  const cleanDigits = params.telefoneResponsavel.replace(/\D/g, "");
+  const telefone = cleanDigits.startsWith("55") ? cleanDigits : `55${cleanDigits}`;
   const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
   const nomePassageiro = formatShortName(params.nomePassageiro, true);
   const mesNome = getMesNome(params.mes);
@@ -50,7 +51,8 @@ interface ContratoWhatsAppParams {
 }
 
 export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string {
-  const telefone = `55${params.telefoneResponsavel.replace(/\D/g, "")}`;
+  const cleanDigits = params.telefoneResponsavel.replace(/\D/g, "");
+  const telefone = cleanDigits.startsWith("55") ? cleanDigits : `55${cleanDigits}`;
   const link = params.link;
 
   const primeiroNomeResp = formatFirstName(params.nomeResponsavel);

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { phoneMask } from "@/utils/masks";
-import { ArrowLeft, Eye, EyeOff, KeyRound, Lock, Phone, ShieldCheck, UserCheck } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Lock, Phone } from "lucide-react";
 import { ResponsavelRecuperarPinDialog } from "./ResponsavelRecuperarPinDialog";
 import { useResponsavelLoginForm } from "@/hooks/form/useResponsavelLoginForm";
 
@@ -52,10 +52,11 @@ export const ResponsavelLoginForm: React.FC = () => {
                   <FormItem>
                     <FormControl>
                       <div
-                        className={`flex items-center border rounded-2xl p-2 bg-white shadow-xs transition-all ${fieldState.error
+                        className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${
+                          fieldState.error
                             ? "border-red-500 ring-2 ring-red-500/20"
                             : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
-                          }`}
+                        }`}
                       >
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
                           <Phone className="w-5 h-5" />
@@ -74,7 +75,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                             type="tel"
                             placeholder="(00) 00000-0000"
                             onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                            className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[16px] font-semibold text-slate-800 shadow-none placeholder:text-slate-300"
+                            className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-300"
                             disabled={isPending}
                           />
                         </div>
@@ -87,12 +88,12 @@ export const ResponsavelLoginForm: React.FC = () => {
             </div>
 
             {/* Checkbox "Lembrar meu telefone" com UI/UX identica a de motoristas */}
-            <div className="flex items-center gap-2 mt-4 ml-1">
+            <div className="flex items-center gap-2 mt-5 ml-1">
               <Checkbox
                 id="rememberPhone"
                 checked={rememberPhone}
                 onCheckedChange={(checked) => setRememberPhone(Boolean(checked))}
-                className="bg-white border-slate-300 shadow-xs rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px] cursor-pointer"
+                className="bg-white border-slate-300 shadow-sm rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px] cursor-pointer"
               />
               <Label
                 htmlFor="rememberPhone"
@@ -103,7 +104,7 @@ export const ResponsavelLoginForm: React.FC = () => {
             </div>
 
             {phoneForm.formState.errors.root && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-xs font-medium text-red-600">
+              <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-xs font-medium text-red-600">
                 <span className="mt-0.5">⚠️</span>
                 <span>{phoneForm.formState.errors.root.message}</span>
               </div>
@@ -146,10 +147,11 @@ export const ResponsavelLoginForm: React.FC = () => {
                 <FormItem>
                   <FormControl>
                     <div
-                      className={`flex items-center border rounded-2xl p-2 bg-white shadow-xs transition-all ${fieldState.error
+                      className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${
+                        fieldState.error
                           ? "border-red-500 ring-2 ring-red-500/20"
                           : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
                         <Lock className="w-5 h-5" />
@@ -165,18 +167,18 @@ export const ResponsavelLoginForm: React.FC = () => {
                           maxLength={4}
                           onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           placeholder="••••"
-                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[18px] font-bold text-slate-700 tracking-widest shadow-none placeholder:tracking-normal placeholder:text-slate-300"
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-widest placeholder:tracking-normal placeholder:text-slate-300"
                           disabled={isPending}
                         />
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowPin(!showPin)}
-                        className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors shrink-0 mr-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+                        className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
                         tabIndex={-1}
                         title={showPin ? "Ocultar PIN" : "Exibir PIN"}
                       >
-                        {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
                   </FormControl>
@@ -186,7 +188,7 @@ export const ResponsavelLoginForm: React.FC = () => {
             />
 
             {pinForm.formState.errors.root && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-xs font-medium text-red-600">
+              <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-xs font-medium text-red-600">
                 <span className="mt-0.5">⚠️</span>
                 <span>{pinForm.formState.errors.root.message}</span>
               </div>

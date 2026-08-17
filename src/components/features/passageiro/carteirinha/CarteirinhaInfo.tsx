@@ -20,6 +20,7 @@ import {
   formatDateToBR,
   formatMonthYearToBR,
   formatParentesco,
+  formatFirstName,
 } from "@/utils/formatters";
 import { cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
@@ -91,7 +92,7 @@ const CarteirinhaTopCard = ({
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
-  const phoneNumbersOnly = passageiro.telefone_responsavel?.replace(/\D/g, "");
+  const phoneNumbersOnly = passageiro.responsavel_principal?.telefone?.replace(/\D/g, "");
   const isWhatsAppDisabled =
     isIncomplete ||
     !phoneNumbersOnly ||
@@ -172,8 +173,9 @@ const CarteirinhaTopCard = ({
           disabled={isWhatsAppDisabled}
           onClick={() => {
             if (isWhatsAppDisabled) return;
+            const formattedPhone = phoneNumbersOnly.startsWith("55") ? phoneNumbersOnly : `55${phoneNumbersOnly}`;
             openBrowserLink(
-              `https://wa.me/55${phoneNumbersOnly}`
+              `https://wa.me/${formattedPhone}`
             );
           }}
           title={isWhatsAppDisabled ? undefined : "Enviar mensagem no WhatsApp"}
@@ -181,7 +183,7 @@ const CarteirinhaTopCard = ({
             "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
             isWhatsAppDisabled
               ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-40 shadow-none hover:bg-slate-300 pointer-events-none"
-              : "bg-[#25D366] text-white hover:bg-[#1da851]"
+              : "bg-[#25D366] text-white hover:bg-[#20b858]"
           )}
         >
           <WhatsAppIcon size={26} className="h-[26px] w-[26px]" />
@@ -392,7 +394,12 @@ export const CarteirinhaDadosPessoais = ({
 >) => {
   const { can } = usePermissions();
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
-  const enderecoFormatado = passageiro.logradouro ? formatarEnderecoCompleto(passageiro) : null;
+  const respPrincipal = passageiro.responsavel_principal;
+  const enderecoFormatado = respPrincipal?.logradouro
+    ? formatarEnderecoCompleto(respPrincipal)
+    : null;
+  const referenciaEmbarque = respPrincipal?.referencia || null;
+  const primeiroNomeResp = formatFirstName(respPrincipal?.nome);
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
   const valorCobrancaTexto = passageiro.isento
@@ -425,12 +432,12 @@ export const CarteirinhaDadosPessoais = ({
       ? formatMonthYearToBR(passageiro.data_fim_cobranca)
       : null;
 
-  const cpfResponsavelTexto = !isIncomplete && passageiro.cpf_responsavel
-    ? cpfMask(passageiro.cpf_responsavel)
+  const cpfResponsavelTexto = !isIncomplete && passageiro.responsavel_principal?.cpf
+    ? cpfMask(passageiro.responsavel_principal.cpf)
     : null;
 
-  const telefoneResponsavelTexto = !isIncomplete && passageiro.telefone_responsavel
-    ? phoneMask(passageiro.telefone_responsavel)
+  const telefoneResponsavelTexto = !isIncomplete && passageiro.responsavel_principal?.telefone
+    ? phoneMask(passageiro.responsavel_principal.telefone)
     : null;
 
   return (
@@ -534,11 +541,18 @@ export const CarteirinhaDadosPessoais = ({
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                <span className="text-xs font-medium text-slate-500">Endereço completo</span>
+                <span className="text-xs font-medium text-slate-500">
+                  {primeiroNomeResp ? `Endereço Principal (${primeiroNomeResp})` : "Endereço completo"}
+                </span>
               </div>
               <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
                 {enderecoFormatado || <span className="text-slate-400 font-normal">—</span>}
               </p>
+              {referenciaEmbarque && (
+                <p className="text-[11px] text-slate-500 font-normal leading-normal mt-1 block break-words">
+                  <span className="text-slate-400">Referência: </span>{referenciaEmbarque}
+                </p>
+              )}
             </div>
             {enderecoFormatado && (
               <Button
@@ -556,13 +570,6 @@ export const CarteirinhaDadosPessoais = ({
                 )}
               </Button>
             )}
-          </div>
-
-          <div className="pt-2.5 border-t border-slate-200/50 space-y-1">
-            <span className="text-xs font-medium text-slate-500 block mb-1.5">Ponto de referência</span>
-            <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
-              {passageiro.referencia || <span className="text-slate-400 font-normal">—</span>}
-            </p>
           </div>
         </div>
       </div>

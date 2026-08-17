@@ -24,7 +24,8 @@ import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenResponsavelFormProps } from "./LayoutContext";
+import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenResponsavelFormProps, OpenDefinirResponsavelPrincipalProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -40,7 +41,6 @@ import {
   OpenCobrancaDeleteDialogProps,
   OpenCobrancaEditDialogProps,
   OpenCobrancaFormProps,
-  OpenCobrancaHistoryProps,
   OpenConfirmationDialogProps,
   OpenContractSetupDialogProps,
   OpenEscolaFormProps,
@@ -130,6 +130,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [responsavelFormDialogState, setResponsavelFormDialogState] = useState<{
     open: boolean;
     props?: OpenResponsavelFormProps;
+  }>({
+    open: false,
+  });
+
+  const [definirResponsavelPrincipalState, setDefinirResponsavelPrincipalState] = useState<{
+    open: boolean;
+    props?: OpenDefinirResponsavelPrincipalProps;
   }>({
     open: false,
   });
@@ -239,6 +246,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const closeConfirmationDialog = () => {
     safeCloseDialog(() =>
       setConfirmationDialogState((prev) => ({ ...prev, open: false }))
+    );
+  };
+
+  const openDefinirResponsavelPrincipalDialog = (props: OpenDefinirResponsavelPrincipalProps) => {
+    setDefinirResponsavelPrincipalState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeDefinirResponsavelPrincipalDialog = () => {
+    safeCloseDialog(() =>
+      setDefinirResponsavelPrincipalState((prev) => ({ ...prev, open: false }))
     );
   };
 
@@ -383,6 +403,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         setPageSubtitle,
         openConfirmationDialog,
         closeConfirmationDialog,
+        openDefinirResponsavelPrincipalDialog,
+        closeDefinirResponsavelPrincipalDialog,
         openEscolaFormDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
@@ -447,6 +469,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isLoading={confirmationDialogState.props.isLoading}
           onCancel={confirmationDialogState.props.onCancel}
           allowClose={confirmationDialogState.props.allowClose}
+        />
+      )}
+
+      {definirResponsavelPrincipalState.open && definirResponsavelPrincipalState.props && (
+        <DefinirResponsavelPrincipalDialog
+          open={definirResponsavelPrincipalState.open}
+          onClose={closeDefinirResponsavelPrincipalDialog}
+          responsavelNome={definirResponsavelPrincipalState.props.responsavelNome}
+          passageiroNome={definirResponsavelPrincipalState.props.passageiroNome}
+          onConfirm={definirResponsavelPrincipalState.props.onConfirm}
         />
       )}
 
@@ -593,6 +625,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           passageiroId={responsavelFormDialogState.props.passageiroId}
           editingResponsavel={responsavelFormDialogState.props.editingResponsavel || null}
+          isResponsavelPortal={responsavelFormDialogState.props.isResponsavelPortal}
           onSuccess={() => {
             safeCloseDialog(() =>
               setResponsavelFormDialogState((prev) => ({ ...prev, open: false }))

@@ -133,7 +133,7 @@ export const AcessoRapido = ({
   const showRegistrarGasto = showPrimaryCards && can(PERMISSIONS.GASTOS_CRIAR);
 
   return (
-    <section className="mt-6 px-1">
+    <section className="px-1">
       <div className="mb-4">
         <h2 className="text-[17px] sm:text-lg font-bold text-[#1a3a5c]">
           Acesso Rápido
@@ -160,9 +160,6 @@ export const AcessoRapido = ({
                   <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1a3a5c] leading-snug">
                     Cadastrar Passageiro
                   </h3>
-                  <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
-                    Adicionar novo cliente
-                  </p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0" />

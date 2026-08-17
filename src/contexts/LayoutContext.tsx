@@ -23,8 +23,17 @@ export interface OpenConfirmationDialogProps {
   allowClose?: boolean;
 }
 
+export interface OpenDefinirResponsavelPrincipalProps {
+  responsavelNome: string;
+  passageiroNome: string;
+  onConfirm: () => Promise<void> | void;
+}
+
 export interface OpenPassageiroFormProps {
-  onSuccess?: (passageiro?: Passageiro, meta?: any) => void;
+  onSuccess?: (
+    passageiro?: Passageiro,
+    meta?: { formData?: Record<string, unknown>; hasCriticalContractChanges?: boolean }
+  ) => void;
   editingPassageiro?: Passageiro | null;
   mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
@@ -129,6 +138,7 @@ export interface OpenResponsavelFormProps {
   passageiroId: string;
   editingResponsavel?: PassageiroResponsavel | null;
   onSuccess?: () => void;
+  isResponsavelPortal?: boolean;
 }
 
 export interface OpenRouteFormProps {
@@ -152,6 +162,8 @@ export interface LayoutContextType {
 
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
+  openDefinirResponsavelPrincipalDialog: (props: OpenDefinirResponsavelPrincipalProps) => void;
+  closeDefinirResponsavelPrincipalDialog: () => void;
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;

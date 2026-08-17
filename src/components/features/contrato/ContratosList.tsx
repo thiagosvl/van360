@@ -95,7 +95,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
   const nomeExibicao = item.passageiro?.nome || item.nome || "";
-  const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "";
+  const responsavelExibicao = item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome || "";
 
   const iconConfig = getIconConfig(isAssinado, isSemContrato);
 
@@ -218,7 +218,7 @@ export const ContratosList = memo(function ContratosList({
           <TableBody>
             {data.map((item) => {
               const nomePassageiro = item.passageiro?.nome || item.nome;
-              const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel;
+              const nomeResponsavel = item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome;
 
               const isSemContrato = item.tipo === "passageiro";
               const status = item.status as ContratoStatus | null;

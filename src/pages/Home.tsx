@@ -121,58 +121,60 @@ const Home = () => {
         <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
           {/* Header Contextual */}
           {!isSubConta && !onboarding.showOnboarding && (
-            <div className="px-1 space-y-0.5">
-              <div className="flex items-center justify-between">
+            <div className="px-1 flex items-center justify-between gap-4">
+              <div className="space-y-0.5 flex-1 min-w-0">
                 <p className="text-xs font-medium text-slate-500 capitalize">
                   {dateContext}
                 </p>
-                <button
-                  type="button"
-                  onClick={toggleHideValues}
-                  className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer"
-                  title={hideValues ? "Mostrar valores" : "Ocultar valores"}
-                  aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
-                >
-                  {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
-                </button>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full shrink-0",
+                      (financeiro?.countAtrasos || 0) > 0 ? "bg-rose-500" : "bg-emerald-500"
+                    )}
+                  />
+                  <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight truncate">
+                    {
+                      (financeiro?.countAtrasos || 0) > 0
+                        ? `${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
+                        : "Parcelas do mês em dia!"
+                    }
+                  </h1>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "h-2 w-2 rounded-full shrink-0",
-                    (financeiro?.countAtrasos || 0) > 0 ? "bg-rose-500" : "bg-emerald-500"
-                  )}
-                />
-                <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
-                  {
-                    (financeiro?.countAtrasos || 0) > 0
-                      ? `${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "parcela" : "parcelas"} em atraso`
-                      : "Parcelas do mês em dia!"
-                  }
-                </h1>
-              </div>
+
+              <button
+                type="button"
+                onClick={toggleHideValues}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100/60 transition-colors rounded-xl focus:outline-hidden active:scale-95 cursor-pointer shrink-0"
+                title={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
+              >
+                {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+              </button>
             </div>
           )}
 
           {isSubConta && (
-            <div className="px-1 space-y-0.5">
-              <div className="flex items-center justify-between">
+            <div className="px-1 flex items-center justify-between gap-4">
+              <div className="space-y-0.5 flex-1 min-w-0">
                 <p className="text-xs font-medium text-slate-500 capitalize">
                   {dateContext}
                 </p>
-                <button
-                  type="button"
-                  onClick={toggleHideValues}
-                  className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer"
-                  title={hideValues ? "Mostrar valores" : "Ocultar valores"}
-                  aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
-                >
-                  {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
-                </button>
+                <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight truncate">
+                  Olá, {profile?.apelido || formatFirstName(profile?.nome) || "bem-vindo(a)"}!
+                </h1>
               </div>
-              <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight">
-                Olá, {profile?.apelido || formatFirstName(profile?.nome) || "bem-vindo(a)"}!
-              </h1>
+
+              <button
+                type="button"
+                onClick={toggleHideValues}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100/60 transition-colors rounded-xl focus:outline-hidden active:scale-95 cursor-pointer shrink-0"
+                title={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
+              >
+                {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+              </button>
             </div>
           )}
 
@@ -195,7 +197,7 @@ const Home = () => {
 
           {/* Notificação de Solicitações Pendentes */}
           {!isSubConta && contadores.passageirosSolicitacoes > 0 && (
-            <section className="mb-4">
+            <section>
               <DashboardStatusCard
                 type="info"
                 title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
@@ -234,20 +236,28 @@ const Home = () => {
             </section>
           )}
 
-          <div className="px-1 mb-4 relative">
-            <div className={cn("transition-all duration-300 space-y-4", !isSubConta && onboarding.showOnboarding && "opacity-40 blur-[2px] pointer-events-none")}>
+          <div className="px-1 relative">
+            <div
+              className={cn(
+                "transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch",
+                !isSubConta && onboarding.showOnboarding && "opacity-40 blur-[2px] pointer-events-none"
+              )}
+            >
               {!isSubConta && financeiro && (
-                <FinancialDashboardCard
-                  totalEsperado={financeiro.aReceber + financeiro.recebido}
-                  recebido={financeiro.recebido}
-                  pendente={financeiro.aReceber}
-                  atrasado={financeiro.totalEmAtraso}
-                  loading={isLoading}
-                />
+                <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
+                  <FinancialDashboardCard
+                    totalEsperado={financeiro.aReceber + financeiro.recebido}
+                    recebido={financeiro.recebido}
+                    pendente={financeiro.aReceber}
+                    atrasado={financeiro.totalEmAtraso}
+                    loading={isLoading}
+                    showPrivacyToggle={false}
+                  />
+                </div>
               )}
 
               {!isSubConta && (
-                <div className="grid gap-4 grid-cols-2">
+                <div className="lg:col-span-5 xl:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 h-full">
                   {(contadores.passageirosAtivos > 0 || onboarding.showOnboarding) && (
                     <SecondaryKPICard
                       label="Passageiros Ativos"
@@ -277,7 +287,7 @@ const Home = () => {
           </div>
 
           {!isSubConta && !onboarding.showOnboarding && contadores.passageirosAtivos < 10 && (
-            <div className="px-1 mt-6 mb-2">
+            <div className="px-1">
               <QuickRegistrationLink profile={profile} pendingCount={contadores.passageirosSolicitacoes} />
             </div>
           )}
@@ -307,13 +317,11 @@ const Home = () => {
           />
 
           {/* Aniversariantes */}
-          <section className="pt-3">
-            <AniversariantesWidget />
-          </section>
+          <AniversariantesWidget />
 
           {/* Indique e Ganhe Banner */}
           {!isSubConta && (
-            <section className="pt-2">
+            <section className="px-1">
               <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
                 Indique e Ganhe
               </h2>

@@ -16,7 +16,7 @@ export const escolaApi = {
       .then(res => res.data);
   },
 
-  listEscolas: (usuarioId: string, filtros?: Record<string, string>): Promise<Escola[]> =>
+  listEscolas: (usuarioId: string, filtros?: Record<string, any>): Promise<(Escola & { passageiros_ativos_count?: number })[]> =>
     apiClient
       .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
@@ -24,11 +24,6 @@ export const escolaApi = {
   listEscolasPublic: (usuarioId: string, filtros?: Record<string, string>): Promise<Escola[]> =>
     apiClient
       .get(`/public/motoristas/${usuarioId}/escolas`, { params: filtros })
-      .then(res => res.data),
-
-  listEscolasComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>): Promise<(Escola & { passageiros_ativos_count?: number })[]> =>
-    apiClient
-      .get(`${endpointBase}/usuario/${usuarioId}/com-contagem`, { params: filtros })
       .then(res => res.data),
 
   deleteEscola: (escolaId: string): Promise<void> =>

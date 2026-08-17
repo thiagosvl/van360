@@ -129,7 +129,7 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
                     <span className="text-xs font-bold text-slate-800">
                       {formattedDate}
                     </span>
-                    <span className="text-[10px] font-semibold capitalize text-slate-400">
+                    <span className="text-[10px] font-semibold capitalize text-slate-500">
                       • {dayOfWeek}
                     </span>
                   </div>
@@ -184,19 +184,19 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
                 return (
                   <div
                     key={ausencia.id}
-                    className="p-3 bg-slate-50/60 border border-slate-100 rounded-xl space-y-1 opacity-75"
+                    className="p-3 bg-slate-50/60 border border-slate-100 rounded-xl flex items-center justify-between gap-3 opacity-75"
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-semibold text-slate-700">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-semibold text-slate-700 block">
                         {formattedDate}
                       </span>
-                      <Badge variant="outline" className="text-[10px] font-semibold text-slate-500 border-slate-200 px-2 py-0.5 rounded-md shrink-0">
-                        Realizada
-                      </Badge>
+                      <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                        {ausencia.rota?.nome || "Rota vinculada"}
+                      </p>
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium truncate">
-                      {ausencia.rota?.nome || "Rota vinculada"}
-                    </p>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-slate-500 border-slate-200 px-2 py-0.5 rounded-md shrink-0 self-center">
+                      Realizada
+                    </Badge>
                   </div>
                 );
               })}

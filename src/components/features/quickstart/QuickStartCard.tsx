@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 
-// Hooks
 import { useProfile } from "@/hooks/business/useProfile";
 
 interface QuickStartCardProps {

@@ -53,8 +53,9 @@ export function useContratoActions({
     const isAssinado = status === ContratoStatus.ASSINADO || status === '2';
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
 
-    const respNome = item?.nome_responsavel || item?.passageiro?.nome_responsavel;
-    const respTelefone = item?.telefone_responsavel || item?.passageiro?.telefone_responsavel;
+    const respObj = item?.responsavel_principal || item?.passageiro?.responsavel_principal;
+    const respNome = respObj?.nome;
+    const respTelefone = respObj?.telefone;
     const isMissingResponsible = isResponsavelIncompleto(respNome, respTelefone);
 
     const isFeatureDisabled = !!(isDesativado || (usarContratos === false) || isMissingResponsible);
@@ -97,7 +98,7 @@ export function useContratoActions({
           icon: <WhatsAppIcon className="h-4 w-4" />,
           onClick: () => onEnviarWhatsApp(),
           disabled: isFeatureDisabled,
-          swipeColor: 'bg-green-600',
+          swipeColor: 'bg-[#25D366]',
           hasSeparatorAfter: true
         });
       } else {

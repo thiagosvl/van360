@@ -91,17 +91,20 @@ export interface AdminUserListResponse {
 export interface AdminUserPassengerItem {
   id: string;
   nome: string;
-  foto_url: string | null;
   data_nascimento: string | null;
   serie_ano: string | null;
   turma: string | null;
   nome_professor: string | null;
   turno: string | null;
   periodo_cobranca: string | null;
-  nome_responsavel: string | null;
-  cpf_responsavel: string | null;
-  telefone_responsavel: string | null;
-  parentesco_responsavel: string | null;
+  responsavel_principal?: {
+    id?: string;
+    nome?: string | null;
+    telefone?: string | null;
+    cpf?: string | null;
+    email?: string | null;
+    parentesco?: string | null;
+  } | null;
   endereco: string | null;
   numero: string | null;
   bairro: string | null;
@@ -181,8 +184,10 @@ export interface AdminUserContractItem {
     id: string;
     nome: string;
     cpf?: string | null;
-    responsavel_nome?: string | null;
-    responsavel_telefone?: string | null;
+    responsavel_principal?: {
+      nome?: string | null;
+      telefone?: string | null;
+    } | null;
   } | null;
 }
 

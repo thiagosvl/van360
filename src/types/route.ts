@@ -118,3 +118,8 @@ export interface RouteExecution {
 }
 
 export type ExecucaoParada = RouteExecutionPassenger;
+
+export interface ChamadaEscolaItem {
+  parada_id: string;
+  status: RouteStopStatus;
+}

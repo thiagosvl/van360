@@ -2,6 +2,7 @@ import {
   ParentescoResponsavel,
   PassageiroGenero,
   PassageiroModalidade,
+  PassageiroPeriodo,
 } from "@/types/enums";
 import { CATEGORIAS_GASTOS } from "@/types/gasto";
 import { addDays, getNowBR } from "@/utils/dateUtils";
@@ -244,6 +245,17 @@ const randomEnum = <T>(anEnum: T): T[keyof T] => {
   return enumValues[randomIndex];
 };
 
+function generateUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 const generateDate = (startYear: number, endYear: number) => {
   const year = randomNumber(startYear, endYear);
   const month = randomNumber(1, 12).toString().padStart(2, '0');
@@ -304,9 +316,13 @@ export const generateName = (): string => {
   return `${nome} ${sobrenome1} ${sobrenome2}`;
 };
 
-export const generatePhone = (): string => {
-  return "(11) 95118-6951";
-}
+export const generatePhone = (variant?: number): string => {
+  if (variant !== undefined) {
+    return `(11) 95118-695${variant % 10}`;
+  }
+  const lastDigit = randomNumber(1, 9);
+  return `(11) 95118-695${lastDigit}`;
+};
 
 /**
  * Gera um email aleatório baseado no nome
@@ -344,12 +360,8 @@ export const generateAddress = () => {
   };
 };
 
-/**
- * Gera um período aleatório
- */
-export const generatePeriodo = (): string => {
-  const periodos = ["manha", "tarde", "noite", "integral"];
-  return periodos[randomNumber(0, periodos.length - 1)];
+export const generatePeriodo = (): PassageiroPeriodo => {
+  return randomEnum(PassageiroPeriodo);
 };
 
 export const generateTurma = (): string => {
@@ -435,20 +447,23 @@ export const mockGenerator = {
       ...overrides,
     };
   },
-  passenger: (overrides?: any) => {
+  passenger: (overrides?: Record<string, unknown>) => {
     const name = generateName();
     const address = generateAddress();
     return {
       nome: name,
       periodo: generatePeriodo(),
-      nome_responsavel: generateName(),
-
-      cpf_responsavel: generateCPF(),
-      telefone_responsavel: "(11) 95118-6951",
-      email_responsavel: "thiago-svl@hotmail.com",
+      responsavel_principal: {
+        id: generateUUID(),
+        nome: generateName(),
+        telefone: "(11) 95118-6951",
+        cpf: generateCPF(),
+        email: "thiago-svl@hotmail.com",
+        parentesco: randomEnum(ParentescoResponsavel),
+        ...address,
+      },
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
-      ...address,
       ativo: true,
       observacoes: "é um teste",
 
@@ -457,12 +472,11 @@ export const mockGenerator = {
       nome_professor: generateProfessor(),
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),
-      parentesco_responsavel: randomEnum(ParentescoResponsavel),
       data_nascimento: generateDate(2010, 2020), // 4-14 years old
       data_inicio_transporte: generateDate(2024, 2026),
       data_fim_transporte: generateDate(2024, 2026),
-      mes_inicio_cobranca: 1,
-      mes_fim_cobranca: 12,
+      mes_inicio_cobranca: "1",
+      mes_fim_cobranca: "12",
 
       ...overrides
     };

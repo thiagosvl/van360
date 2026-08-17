@@ -216,7 +216,8 @@ export function useConfigurarRotaViewModel() {
       return;
     }
 
-    if (!pass.logradouro || !pass.numero) {
+    const resp = pass.responsavel_principal;
+    if (!resp?.logradouro || !resp?.numero) {
       setEditingInlinePassageiroId(pass.id);
       setShouldAutoAddPassageiro(true);
       return;

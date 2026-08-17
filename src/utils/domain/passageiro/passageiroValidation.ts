@@ -1,15 +1,14 @@
 import { Passageiro } from "@/types/passageiro";
-import { isResponsavelMockNome, isResponsavelMockTelefone } from "@/utils/formatters/name";
 
 /**
- * Verifica se um responsável (principal ou adicional) possui dados incompletos ou dados mock do onboarding.
+ * Verifica se um responsável (principal ou adicional) possui dados incompletos.
  */
 export const isResponsavelIncompleto = (
   nome?: string | null,
   telefone?: string | null
 ): boolean => {
-  const isNomeInvalido = !nome || nome.trim() === "" || isResponsavelMockNome(nome);
-  const isTelefoneInvalido = !telefone || telefone.trim() === "" || isResponsavelMockTelefone(telefone);
+  const isNomeInvalido = !nome || nome.trim() === "";
+  const isTelefoneInvalido = !telefone || telefone.trim() === "";
 
   return isNomeInvalido || isTelefoneInvalido;
 };
@@ -27,15 +26,15 @@ export const isCadastroPassageiroIncompleto = (
 
   if (passageiro.isento === true) {
     return isResponsavelIncompleto(
-      passageiro.nome_responsavel,
-      passageiro.telefone_responsavel
+      passageiro.responsavel_principal?.nome,
+      passageiro.responsavel_principal?.telefone
     );
   }
 
   const isValorInvalido = !passageiro.valor_cobranca || Number(passageiro.valor_cobranca) <= 0;
   const isResponsavelPrincipalIncompleto = isResponsavelIncompleto(
-    passageiro.nome_responsavel,
-    passageiro.telefone_responsavel
+    passageiro.responsavel_principal?.nome,
+    passageiro.responsavel_principal?.telefone
   );
 
   return isValorInvalido || isResponsavelPrincipalIncompleto;

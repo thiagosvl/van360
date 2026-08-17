@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
-import { formatCurrency, formatDateToBR, formatFirstName, formatMonthYearToBR, formatShortName } from "@/utils/formatters";
+import { formatCurrency, formatMonthYearToBR, formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { Calendar } from "lucide-react";
@@ -11,7 +11,7 @@ interface ContratoSummaryProps {
 
 export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
   const nomePassageiro = item.passageiro?.nome || item.nome;
-  const nomeResponsavel = formatNomeResponsavelExibicao(item.passageiro?.nome_responsavel || item.nome_responsavel);
+  const nomeResponsavel = formatNomeResponsavelExibicao(item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome);
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
   const isPendente = status === ContratoStatus.PENDENTE;

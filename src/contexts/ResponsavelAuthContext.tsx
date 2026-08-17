@@ -37,9 +37,14 @@ export const ResponsavelAuthProvider: React.FC<{ children: React.ReactNode }> = 
     localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);
   }, []);
 
+  const sortPassageiros = (list: ResponsavelPassageiro[]): ResponsavelPassageiro[] => {
+    return [...list].sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR", { sensitivity: "base" }));
+  };
+
   const syncPassageiros = useCallback(async (authToken: string) => {
     try {
-      const activePassageiros = await responsavelApi.getPassageiros(authToken);
+      const rawPassageiros = await responsavelApi.getPassageiros(authToken);
+      const activePassageiros = sortPassageiros(rawPassageiros);
       setToken(authToken);
       setPassageiros(activePassageiros);
 
@@ -71,13 +76,14 @@ export const ResponsavelAuthProvider: React.FC<{ children: React.ReactNode }> = 
   }, [syncPassageiros]);
 
   const setSession = useCallback((newToken: string, newPassageiros: ResponsavelPassageiro[]) => {
+    const sorted = sortPassageiros(newPassageiros);
     setToken(newToken);
-    setPassageiros(newPassageiros);
+    setPassageiros(sorted);
     localStorage.setItem(STORAGE_TOKEN_KEY, newToken);
 
-    if (newPassageiros.length === 1) {
-      setPassageiroSelecionado(newPassageiros[0]);
-      localStorage.setItem(STORAGE_PASSAGEIRO_ID_KEY, newPassageiros[0].id);
+    if (sorted.length === 1) {
+      setPassageiroSelecionado(sorted[0]);
+      localStorage.setItem(STORAGE_PASSAGEIRO_ID_KEY, sorted[0].id);
     } else {
       setPassageiroSelecionado(null);
       localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);

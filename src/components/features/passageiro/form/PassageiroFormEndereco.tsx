@@ -1,8 +1,8 @@
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, MapPin } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { FormEnderecoFields, StitchField } from "@/components/forms";
+import { StitchField } from "@/components/forms";
 
 interface PassageiroFormEnderecoProps {
   isExternal?: boolean;
@@ -15,14 +15,12 @@ export function PassageiroFormEndereco({ isExternal = false }: PassageiroFormEnd
     <div className="space-y-5">
       <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
         <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-          <MapPin className="w-5 h-5" />
+          <FileText className="w-5 h-5" />
         </div>
-        Endereço
+        Observações Adicionais
       </div>
 
-      <FormEnderecoFields required={isExternal} isExternal={isExternal} />
-
-      <div className="pt-2">
+      <div>
         <FormField
           control={form.control}
           name="observacoes"

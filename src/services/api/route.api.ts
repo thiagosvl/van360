@@ -44,9 +44,9 @@ export const routeApi = {
       .get(`${endpointBase}/execucoes/${id}`)
       .then(res => res.data),
 
-  iniciarRota: (id: string): Promise<RouteExecution> =>
+  iniciarRota: (id: string, payload?: { notificar_pais?: boolean }): Promise<RouteExecution> =>
     apiClient
-      .post(`${endpointBase}/${id}/iniciar`)
+      .post(`${endpointBase}/${id}/iniciar`, payload || { notificar_pais: true })
       .then(res => res.data),
 
   atualizarParadaStatus: (
@@ -62,6 +62,22 @@ export const routeApi = {
           parada_id: paradaId,
           status
         },
+        options?.timeout ? { timeout: options.timeout } : undefined
+      )
+      .then(res => res.data),
+
+  processarChamadaEscola: (
+    execucaoId: string,
+    payload: {
+      escola_parada_id?: string;
+      chamada: Array<{ parada_id: string; status: RouteStopStatus }>;
+    },
+    options?: { timeout?: number }
+  ): Promise<RouteExecution> =>
+    apiClient
+      .post(
+        `${endpointBase}/execucoes/${execucaoId}/chamada-escola`,
+        payload,
         options?.timeout ? { timeout: options.timeout } : undefined
       )
       .then(res => res.data),

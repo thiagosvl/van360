@@ -46,7 +46,7 @@ export const Configuracoes = memo(function Configuracoes() {
               </div>
               <div className="min-w-0">
                 <h2 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                  Meu Perfil
+                  Meus dados
                 </h2>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Seus dados cadastrais e informações de contato

@@ -29,7 +29,6 @@ import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { isResponsavelMockTelefone } from "@/utils/formatters/name";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "../business/usePermissions";
@@ -134,6 +133,13 @@ export function usePassageirosViewModel() {
     }
   }, [isSubConta, profile?.veiculo_id, searchParams, setSelectedVeiculo]);
 
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm, selectedEscola, selectedVeiculo, selectedStatus, selectedPeriodo]);
+
   const passageiroFilters = useMemo(
     () => ({
       usuarioId: profile?.id,
@@ -149,6 +155,8 @@ export function usePassageirosViewModel() {
           : selectedVeiculo,
       status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
       periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
+      page,
+      limit,
     }),
     [
       profile?.id,
@@ -159,6 +167,8 @@ export function usePassageirosViewModel() {
       selectedStatus,
       selectedPeriodo,
       isSubConta,
+      page,
+      limit,
     ]
   );
 
@@ -367,7 +377,6 @@ export function usePassageirosViewModel() {
     const fakeData = {
       ...mockPassenger,
       ...mockEndereco,
-      telefone_responsavel: phoneMask(mockPassenger.telefone_responsavel),
       escola_id: escolaId,
       veiculo_id: veiculoId,
       data_nascimento: convertDateBrToISO(mockPassenger.data_nascimento),
@@ -461,13 +470,7 @@ export function usePassageirosViewModel() {
       return;
     }
 
-    const telefone = isResponsavelMockTelefone(
-      passageiro.telefone_responsavel ||
-      (passageiro as { dados_contrato?: { telefone_responsavel?: string } }).dados_contrato?.telefone_responsavel
-    ) ? undefined : (
-      passageiro.telefone_responsavel ||
-      (passageiro as { dados_contrato?: { telefone_responsavel?: string } }).dados_contrato?.telefone_responsavel
-    );
+    const telefone = passageiro.responsavel_principal?.telefone;
 
     if (!telefone) {
       toast.error("Telefone do responsável inválido ou não informado.");
@@ -476,7 +479,7 @@ export function usePassageirosViewModel() {
 
     const url = buildContratoWhatsAppUrl({
       telefoneResponsavel: telefone,
-      nomeResponsavel: passageiro.nome_responsavel || "",
+      nomeResponsavel: passageiro.responsavel_principal?.nome || "",
       nomePassageiro: passageiro.nome || "",
       link: finalLink,
     });
@@ -529,5 +532,11 @@ export function usePassageirosViewModel() {
     handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    totalPages: passageirosData?.totalPages ?? 1,
+    totalItems: passageirosData?.total ?? 0,
   };
 }

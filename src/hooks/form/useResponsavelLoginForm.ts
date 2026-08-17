@@ -73,7 +73,6 @@ export function useResponsavelLoginForm() {
     try {
       const res = await checkPhoneMutation.mutateAsync(clean);
 
-      // Salvar ou remover telefone baseado na escolha do checkbox
       if (rememberPhone) {
         localStorage.setItem(STORAGE_KEYS.SAVED_RESPONSAVEL_PHONE, values.telefone);
       } else {

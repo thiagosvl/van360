@@ -29,6 +29,7 @@ export function useEscolas(
   const apiFilters = {
     search: searchStr?.trim() ? searchStr.trim() : undefined,
     ativo: status && status !== FilterDefaults.TODOS ? status : undefined,
+    comContagem: "true",
   };
 
   const queryKey = ["escolas", usuarioId, JSON.stringify(apiFilters)];
@@ -42,7 +43,7 @@ export function useEscolas(
     queryFn: async (): Promise<(Escola & { passageiros_ativos_count?: number })[]> => {
       if (!usuarioId) return [];
 
-      const data = await escolaApi.listEscolasComContagemAtivos(usuarioId, apiFilters);
+      const data = await escolaApi.listEscolas(usuarioId, apiFilters);
       return data ?? [];
     },
     select: (escolas): {

@@ -39,7 +39,6 @@ import {
   useDeletePassageiro,
   useDesfazerPagamento,
   useIsMobile, usePassageiro,
-  usePassageiros,
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
@@ -137,10 +136,7 @@ export default function PassageiroCarteirinha() {
 
   const passageiro = passageiroData as Passageiro;
 
-  const { data: listaPassageirosData } = usePassageiros({
-    usuarioId: profile?.id,
-  });
-  const totalPassageiros = listaPassageirosData?.total ?? 0;
+  const totalPassageiros = profile?.summary?.contadores?.passageiros?.total ?? 0;
 
 
 
@@ -351,9 +347,7 @@ export default function PassageiroCarteirinha() {
       return;
     }
 
-    const telefone =
-      passageiro.telefone_responsavel ||
-      (passageiro as any).dados_contrato?.telefone_responsavel;
+    const telefone = passageiro.responsavel_principal?.telefone;
 
     if (!telefone) {
       toast.error("Telefone do responsável não informado.");
@@ -363,7 +357,7 @@ export default function PassageiroCarteirinha() {
     openBrowserLink(
       buildContratoWhatsAppUrl({
         telefoneResponsavel: telefone,
-        nomeResponsavel: passageiro.nome_responsavel,
+        nomeResponsavel: passageiro.responsavel_principal?.nome || "",
         nomePassageiro: passageiro.nome,
         link: finalLink,
       })
@@ -407,11 +401,7 @@ export default function PassageiroCarteirinha() {
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
         onConfirm: async () => {
-          try {
-            await deleteCobranca.mutateAsync(cobranca.id);
-          } catch (error) {
-            throw error;
-          }
+          await deleteCobranca.mutateAsync(cobranca.id);
         },
         onEdit: () => {
           openCobrancaEditDialog({
@@ -428,7 +418,7 @@ export default function PassageiroCarteirinha() {
     openManualPaymentDialog({
       cobrancaId: cobranca.id,
       passageiroNome: passageiro.nome,
-      responsavelNome: passageiro.nome_responsavel,
+      responsavelNome: passageiro.responsavel_principal?.nome || "",
       valorOriginal: Number(cobranca.valor),
       status: cobranca.status,
       dataVencimento: cobranca.data_vencimento,
@@ -496,7 +486,7 @@ export default function PassageiroCarteirinha() {
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
         passageiroNome: formatShortName(passageiro?.nome, true),
-        passageiroResponsavelNome: formatFirstName(passageiro?.nome_responsavel),
+        passageiroResponsavelNome: formatFirstName(passageiro?.responsavel_principal?.nome),
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),
         mes,
