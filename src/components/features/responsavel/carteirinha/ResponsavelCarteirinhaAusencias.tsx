@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ResponsavelCarteirinhaData, ResponsavelAusenciaItem } from "@/types/responsavel";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -30,38 +29,22 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
   const closeConfirmationDialog = layoutContext?.closeConfirmationDialog;
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [showHistorico, setShowHistorico] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const removerAusenciaMutation = useRemoverAusenciaResponsavelMutation();
 
   const rotas = carteirinha.rotas || [];
-  const possuiRota = rotas.length > 0;
 
   const todayStr = useMemo(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }, []);
 
-  const { ausenciasFuturas, ausenciasPassadas } = useMemo(() => {
-    const futuras: ResponsavelAusenciaItem[] = [];
-    const passadas: ResponsavelAusenciaItem[] = [];
-
-    (carteirinha.ausencias || []).forEach((item) => {
-      if (item.data_ausencia >= todayStr) {
-        futuras.push(item);
-      } else {
-        passadas.push(item);
-      }
-    });
-
-    futuras.sort((a, b) => a.data_ausencia.localeCompare(b.data_ausencia));
-    passadas.sort((a, b) => b.data_ausencia.localeCompare(a.data_ausencia));
-
-    return { ausenciasFuturas: futuras, ausenciasPassadas: passadas };
+  const ausenciasFuturas = useMemo(() => {
+    return (carteirinha.ausencias || [])
+      .filter((item) => item.data_ausencia >= todayStr)
+      .sort((a, b) => a.data_ausencia.localeCompare(b.data_ausencia));
   }, [carteirinha.ausencias, todayStr]);
-
-
 
   const rotasMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -172,48 +155,6 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
               </div>
             );
           })}
-        </div>
-      )}
-
-      {ausenciasPassadas.length > 0 && (
-        <div className="pt-2 border-t border-slate-100 space-y-2">
-          <button
-            type="button"
-            onClick={() => setShowHistorico((prev) => !prev)}
-            className="flex items-center justify-between w-full text-left text-[11px] font-bold text-slate-500 hover:text-slate-700 transition-colors py-1 cursor-pointer"
-          >
-            <span>Histórico ({ausenciasPassadas.length})</span>
-            {showHistorico ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
-          </button>
-
-          {showHistorico && (
-            <div className="space-y-2 pt-1 animate-in fade-in duration-200">
-              {ausenciasPassadas.map((ausencia) => {
-                const dateObj = parseISO(ausencia.data_ausencia);
-                const formattedDate = format(dateObj, "dd/MM/yyyy");
-                const rotaNome = ausencia.rota?.nome || (ausencia.rota_id ? rotasMap.get(ausencia.rota_id) : null) || "Rota vinculada";
-
-                return (
-                  <div
-                    key={ausencia.id}
-                    className="p-3 bg-slate-50/60 border border-slate-100 rounded-xl flex items-center justify-between gap-3 opacity-75"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <span className="text-xs font-semibold text-slate-700 block">
-                        {formattedDate}
-                      </span>
-                      <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
-                        {rotaNome}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="text-[10px] font-semibold text-slate-500 border-slate-200 px-2 py-0.5 rounded-md shrink-0 self-center">
-                      Realizada
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       )}
 

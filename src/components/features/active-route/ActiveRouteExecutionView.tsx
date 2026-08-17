@@ -332,7 +332,7 @@ export function ActiveRouteExecutionView({
       });
 
       setIsChamadaDialogOpen(false);
-      toast.success("Chamada processada com sucesso!");
+      toast.success("Chamada concluída com sucesso!");
     } catch (err) {
       // Erro notificado via onError da mutation
     }
@@ -364,10 +364,10 @@ export function ActiveRouteExecutionView({
         activeRespName = respObj.nome;
         activeRespPhone = respObj.telefone;
         activeRespParentesco = respObj.parentesco;
-        activeAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Mesmo endereço");
+        activeAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.");
       } else {
-        activeRespName = pass.responsavel_principal?.nome || "Responsável";
-        activeRespPhone = pass.responsavel_principal?.telefone || "";
+        activeRespName = pass.responsavel_principal?.nome;
+        activeRespPhone = pass.responsavel_principal?.telefone;
         activeRespParentesco = pass.responsavel_principal?.parentesco;
         activeAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass);
       }

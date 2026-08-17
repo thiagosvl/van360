@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { phoneMask } from "@/utils/masks";
 import { ArrowLeft, Eye, EyeOff, Lock, Phone } from "lucide-react";
+import { Banner } from "@/components/ui/Banner";
 import { ResponsavelRecuperarPinDialog } from "./ResponsavelRecuperarPinDialog";
 import { useResponsavelLoginForm } from "@/hooks/form/useResponsavelLoginForm";
 
@@ -44,6 +45,15 @@ export const ResponsavelLoginForm: React.FC = () => {
       {step === "phone" ? (
         <Form {...phoneForm}>
           <form onSubmit={phoneForm.handleSubmit(handlePhoneSubmit)}>
+            <Banner
+              variant="info"
+              className="mb-4 p-3 rounded-2xl"
+              description={
+                <span>
+                  Acesso para <strong>pais e responsáveis</strong>. Se você é motorista ou equipe, utilize a aba <strong>Motorista / Equipe</strong>.
+                </span>
+              }
+            />
             <div className="space-y-4">
               <FormField
                 control={phoneForm.control}
@@ -203,7 +213,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                 {isPending ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 ) : (
-                  <span>{isFirstAccess ? "Criar PIN e Entrar" : "Entrar no App"}</span>
+                  <span>{isFirstAccess ? "Criar PIN e Entrar" : "Entrar"}</span>
                 )}
               </Button>
             </div>

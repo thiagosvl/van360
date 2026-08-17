@@ -42,7 +42,7 @@ import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { isDevEnv } from "@/utils/detectPlatform";
 
 // Internal Components
-
+import { Banner } from "@/components/ui/Banner";
 import { ResponsavelLoginForm } from "@/components/features/auth/ResponsavelLoginForm";
 
 function LoginPlatformSuggestion() {
@@ -277,6 +277,15 @@ export default function Login() {
             ) : (
               <Form {...formMotorista}>
                 <form onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}>
+                  <Banner
+                    variant="neutral"
+                    className="mb-4 p-3 rounded-2xl"
+                    description={
+                      <span>
+                        Acesso para <strong>motoristas e monitores</strong>. Se você é pai ou responsável, utilize a aba <strong>Responsável</strong>.
+                      </span>
+                    }
+                  />
                   <div className="space-y-4">
                     {/* CPF Field */}
                     <FormField
