@@ -13,7 +13,7 @@ export interface ActionSheetItem {
   label: string;
   title?: string;
   description?: string;
-  icon?: ReactNode;
+  icon?: ReactNode | React.ElementType;
   onClick: () => void;
   isLink?: boolean;
   href?: string;

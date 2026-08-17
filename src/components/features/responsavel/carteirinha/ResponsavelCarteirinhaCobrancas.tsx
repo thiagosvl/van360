@@ -117,7 +117,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
             const actions = [
               {
-                icon: Eye,
+                icon: <Eye className="h-4 w-4" />,
                 label: "Visualizar Comprovante",
                 onClick: () => {
                   if (hasReceipt) {
@@ -127,7 +127,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                 disabled: !hasReceipt,
               },
               {
-                icon: Download,
+                icon: <Download className="h-4 w-4" />,
                 label: "Baixar Comprovante",
                 onClick: () => {
                   if (hasReceipt) {

@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MoreVertical } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ElementType, ReactNode, useState } from "react";
 import { ActionSheet } from "./ActionSheet";
 
 export interface MobileAction {
   label: string;
-  icon: ReactNode;
+  icon?: ReactNode | ElementType;
   onClick: () => void;
   isLink?: boolean;
   href?: string;
