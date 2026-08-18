@@ -31,6 +31,15 @@ export function PassageiroFormResponsavel({
 }: PassageiroFormResponsavelProps) {
   const form = useFormContext();
 
+  const fieldNames = {
+    nome: isExternal ? "nome_responsavel" : "responsavel_principal.nome",
+    cpf: isExternal ? "cpf_responsavel" : "responsavel_principal.cpf",
+    telefone: isExternal ? "telefone_responsavel" : "responsavel_principal.telefone",
+    parentesco: isExternal ? "parentesco_responsavel" : "responsavel_principal.parentesco",
+    email: isExternal ? "email_responsavel" : "responsavel_principal.email",
+    enderecoPrefix: isExternal ? "" : "responsavel_principal.",
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
@@ -45,7 +54,7 @@ export function PassageiroFormResponsavel({
         {!isExternal && (
           <FormField
             control={form.control}
-            name="responsavel_principal.cpf"
+            name={fieldNames.cpf}
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
@@ -75,7 +84,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="responsavel_principal.nome"
+          name={fieldNames.nome}
           render={({ field, fieldState }) => (
             <FormItem className={isExternal ? "md:col-span-2" : ""}>
               {isExternal ? (
@@ -118,7 +127,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="responsavel_principal.telefone"
+          name={fieldNames.telefone}
           render={({ field }) => (
             <PhoneInput
               field={field}
@@ -135,7 +144,7 @@ export function PassageiroFormResponsavel({
         {isExternal && (
           <FormField
             control={form.control}
-            name="responsavel_principal.cpf"
+            name={fieldNames.cpf}
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormControl>
@@ -161,7 +170,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="responsavel_principal.parentesco"
+          name={fieldNames.parentesco}
           render={({ field, fieldState }) => (
             <FormItem>
               <Select
@@ -208,7 +217,7 @@ export function PassageiroFormResponsavel({
 
         <FormField
           control={form.control}
-          name="responsavel_principal.email"
+          name={fieldNames.email}
           render={({ field, fieldState }) => (
             <FormItem className={isExternal ? "" : "md:col-span-2"}>
               {isExternal ? (
@@ -252,12 +261,14 @@ export function PassageiroFormResponsavel({
         />
       </div>
 
-      <div className="pt-3 border-t border-slate-100 space-y-4">
-        <div className="flex items-center gap-2 text-[#1a3a5c] font-bold text-sm">
-          <MapPin className="w-4 h-4 text-slate-500" />
-          Endereço do Responsável
+      <div className="pt-2 space-y-5">
+        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
+            <MapPin className="w-5 h-5" />
+          </div>
+          Endereço Principal
         </div>
-        <FormEnderecoFields namePrefix="responsavel_principal." required={false} isExternal={isExternal} />
+        <FormEnderecoFields namePrefix={fieldNames.enderecoPrefix} required={false} isExternal={isExternal} />
       </div>
     </div>
   );

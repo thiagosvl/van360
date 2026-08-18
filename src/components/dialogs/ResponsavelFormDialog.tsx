@@ -46,6 +46,7 @@ import {
 } from "@/hooks/api/useResponsavelAuthApi";
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { STORAGE_KEYS } from "@/constants";
+import { getErrorMessage } from "@/utils/errorHandler";
 
 const responsavelSchema = z.object({
   nome: z.string().min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
@@ -280,18 +281,20 @@ export default function ResponsavelFormDialog({
   const telefoneValue = form.watch("telefone");
 
   useEffect(() => {
+    if (editingResponsavel) return;
     const pureCpf = cpfValue ? String(cpfValue).replace(/\D/g, "") : "";
     if (pureCpf && pureCpf.length === 11) {
       handleSearchResponsavel(pureCpf);
     }
-  }, [cpfValue, handleSearchResponsavel]);
+  }, [cpfValue, handleSearchResponsavel, editingResponsavel]);
 
   useEffect(() => {
+    if (editingResponsavel) return;
     const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
     if (purePhone && purePhone.length === 11) {
       handleSearchResponsavel(purePhone);
     }
-  }, [telefoneValue, handleSearchResponsavel]);
+  }, [telefoneValue, handleSearchResponsavel, editingResponsavel]);
 
   const tornarPrincipalValue = form.watch("tornar_principal");
   useEffect(() => {
@@ -388,8 +391,20 @@ export default function ResponsavelFormDialog({
           successCallback();
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao processar responsável:", error);
+      const msg = getErrorMessage(error);
+      if (msg && msg.toLowerCase().includes("telefone")) {
+        form.setError("telefone", {
+          type: "manual",
+          message: msg,
+        });
+      } else if (msg && msg.toLowerCase().includes("cpf")) {
+        form.setError("cpf", {
+          type: "manual",
+          message: msg,
+        });
+      }
     }
   };
 

@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
+import { cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
 import { convertDateBrToISO, parseCurrencyToNumber } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
+import { isValidCEPFormat } from "@/utils/validators";
 
 export const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
@@ -13,17 +14,24 @@ export const prePassageiroSchema = z.object({
     .min(1, "E-mail é obrigatório")
     .email("E-mail inválido"),
 
-  logradouro: z.string().min(1, "Campo obrigatório"),
-  numero: z.string().min(1, "Campo obrigatório"),
-  bairro: z.string().min(1, "Campo obrigatório"),
-  cidade: z.string().min(1, "Campo obrigatório"),
-  estado: z.string().min(1, "Campo obrigatório"),
-  cep: cepSchema,
-  referencia: z.string().optional(),
-  complemento: z.string().optional(),
-  observacoes: z.string().optional(),
+  logradouro: z.string().optional().nullable().or(z.literal("")),
+  numero: z.string().optional().nullable().or(z.literal("")),
+  bairro: z.string().optional().nullable().or(z.literal("")),
+  cidade: z.string().optional().nullable().or(z.literal("")),
+  estado: z.string().optional().nullable().or(z.literal("")),
+  cep: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .refine((val) => !val || isValidCEPFormat(val), {
+      message: "Formato inválido (00000-000)",
+    }),
+  referencia: z.string().optional().nullable().or(z.literal("")),
+  complemento: z.string().optional().nullable().or(z.literal("")),
+  observacoes: z.string().optional().nullable().or(z.literal("")),
 
-  escola_id: z.string().optional(),
+  escola_id: z.string().optional().nullable().or(z.literal("")),
   turma: z.string().min(1, "Campo obrigatório"),
   nome_professor: z.string().optional().nullable().or(z.literal("")),
   periodo: z.string().min(1, "Campo obrigatório"),

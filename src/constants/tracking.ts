@@ -1,0 +1,12 @@
+export const FEATURE_FLAGS = {
+  ENABLE_LIVE_TRACKING: false
+} as const;
+
+export const TRACKING_REALTIME_CONFIG = {
+  CHANNEL_PREFIX: "trip-tracking:",
+  EVENT_GPS_PING: "gps_ping",
+  MIN_DISTANCE_FILTER_METERS: 25,
+  MAX_GPS_ACCURACY_METERS: 40,
+  INTERPOLATION_DURATION_MS: 3000,
+  DEFAULT_CENTER_FALLBACK: [-46.6333, -23.5505] as [number, number]
+} as const;

@@ -4,15 +4,14 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { useCobrancas, useDeleteCobranca, useFilters, usePassageiros } from "@/hooks";
-import { CobrancaOrigem, CobrancaStatus, CobrancaTab } from "@/types/enums";
+import { useCobrancas, useDeleteCobranca, useFilters } from "@/hooks";
+import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
-import { isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
 
 export function useCobrancasViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -129,73 +128,10 @@ export function useCobrancasViewModel() {
     },
   });
 
-  const passageiroFilters = useMemo(
-    () => ({
-      usuarioId: profile?.id,
-      status: "true",
-      veiculo: isSubConta && profile?.veiculo_id ? profile.veiculo_id : undefined,
-    }),
-    [profile?.id, profile?.veiculo_id, isSubConta]
-  );
-
-  const { data: passageirosData, isLoading: isPassageirosLoading } = usePassageiros(
-    passageiroFilters,
-    { enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
-  );
-
-  const activePassageiros = useMemo(() => {
-    if (!passageirosData) return [];
-    return Array.isArray(passageirosData) ? passageirosData : passageirosData.list;
-  }, [passageirosData]);
-
   const cobrancasAReceber = useMemo(() => {
-    if (!cobrancasData || !passageirosData) return [];
+    const list = cobrancasData?.areceber ?? [];
 
-    const realList = cobrancasData?.areceber ?? [];
-    const realRecebidos = cobrancasData?.recebidos ?? [];
-
-    if (isPastMonth) {
-      return [...realList].reverse();
-    }
-
-    const passageirosComCobranca = new Set([
-      ...realList.map((c) => c.passageiro_id),
-      ...realRecebidos.map((c) => c.passageiro_id),
-    ]);
-
-    const driverCreatedAt = profile?.created_at;
-
-    const projList: Cobranca[] = activePassageiros
-      .filter((p) => {
-        if (!p.id || passageirosComCobranca.has(p.id)) return false;
-        if (isPassageiroIncompleto(p)) return false;
-        return shouldGeneratePassengerProjection({
-          passageiro: p,
-          driverCreatedAt,
-          targetMonth: mesFilter,
-          targetYear: anoFilter,
-        });
-      })
-      .map((p) => {
-        const dataVenc = getSafeDueDateString(p.dia_vencimento, mesFilter, anoFilter);
-
-        return {
-          id: `proj_${p.id}_${mesFilter}_${anoFilter}`,
-          passageiro_id: p.id!,
-          mes: mesFilter,
-          ano: anoFilter,
-          valor: Number(p.valor_cobranca),
-          status: CobrancaStatus.PENDENTE,
-          data_vencimento: dataVenc,
-          origem: CobrancaOrigem.AUTOMATICA,
-          isProjection: true,
-          passageiro: p,
-        };
-      });
-
-    const combined = [...realList, ...projList];
-
-    combined.sort((a, b) => {
+    const sorted = [...list].sort((a, b) => {
       const isAtrasadoA = checkCobrancaEmAtraso(a.data_vencimento);
       const isAtrasadoB = checkCobrancaEmAtraso(b.data_vencimento);
 
@@ -213,15 +149,15 @@ export function useCobrancasViewModel() {
 
     if (debouncedSearchTerm.trim()) {
       const term = debouncedSearchTerm.toLowerCase();
-      return combined.filter(
+      return sorted.filter(
         (c) =>
           c.passageiro?.nome?.toLowerCase().includes(term) ||
           c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
       );
     }
 
-    return combined;
-  }, [cobrancasData, passageirosData, activePassageiros, isPastMonth, mesFilter, anoFilter, debouncedSearchTerm, profile?.created_at]);
+    return isPastMonth ? sorted.reverse() : sorted;
+  }, [cobrancasData, isPastMonth, debouncedSearchTerm]);
 
   const cobrancasRecebidas = useMemo(() => {
     const list = cobrancasData?.recebidos ?? [];
@@ -252,7 +188,8 @@ export function useCobrancasViewModel() {
 
     return sorted;
   }, [cobrancasData, debouncedSearchTerm]);
-  const isInitialLoading = isCobrancasLoading || isPassageirosLoading || isProfileLoading || !cobrancasData || !passageirosData;
+
+  const isInitialLoading = isCobrancasLoading || isProfileLoading || !cobrancasData;
 
   useEffect(() => {
     setPageTitle("Parcelas");
@@ -370,8 +307,6 @@ export function useCobrancasViewModel() {
     isFutureMonth,
     isPastMonth,
     isCurrentMonth,
-    totalPassageirosCount: activePassageiros.length,
-    // Actions
     pullToRefreshReload,
     navigateToPassageiro,
     handleEditCobrancaClick,

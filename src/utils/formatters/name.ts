@@ -26,9 +26,9 @@ export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
 };
 
 export const formatFirstName = (fullName?: string) => {
-  if (!fullName) return "N/Inf.";
+  if (!fullName) return "Não informado";
   const names = fullName.trim().split(/\s+/);
-  return names[0] || "N/Inf.";
+  return names[0] || "Não informado";
 };
 
 export const getInitials = (name?: string) => {
@@ -36,7 +36,7 @@ export const getInitials = (name?: string) => {
   return name.trim().charAt(0).toUpperCase();
 };
 
-export const formatNomeResponsavelExibicao = (nome?: string | null, shortName: boolean = false) => {
+export const formatNomeResponsavelExibicao = (nome?: string | null, shortName: boolean = true) => {
   if (!nome) return "Não informado";
   return shortName ? formatFirstName(nome) : nome;
 };

@@ -2,13 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { moneyToNumber } from "@/utils/masks";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { apiClient } from "@/services/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/utils/notifications/toast";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { phoneMask } from "@/utils/masks";
 import { isDevEnv } from "@/utils/detectPlatform";
+import { useBuscarResponsavel } from "@/hooks/api/useBuscarResponsavel";
 
 export const quickStartPassageiroBaseSchema = z.object({
   nome: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
@@ -105,6 +106,28 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
     },
     mode: "onChange",
   });
+
+  const { mutateAsync: lookupResponsavel } = useBuscarResponsavel();
+  const searchedTermsSet = useRef<Set<string>>(new Set());
+
+  const telefoneValue = form.watch("responsavel_principal.telefone");
+
+  useEffect(() => {
+    const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
+    if (purePhone.length === 11 && !searchedTermsSet.current.has(purePhone)) {
+      searchedTermsSet.current.add(purePhone);
+      lookupResponsavel({ term: purePhone })
+        .then((resp) => {
+          if (resp && resp.nome && !form.getValues("responsavel_principal.nome")) {
+            form.setValue("responsavel_principal.nome", resp.nome, { shouldValidate: true });
+            toast.info("Nome do responsável preenchido automaticamente!", {
+              id: "quick-lookup-responsavel"
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [telefoneValue, lookupResponsavel, form]);
 
   const handleSubmit = async (data: QuickStartPassageiroFormData, keepOpen?: boolean) => {
     try {

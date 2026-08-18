@@ -1,0 +1,92 @@
+import { useEffect, useRef } from "react";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
+import { TrackingGpsPing } from "@/types/tracking";
+import { TRACKING_REALTIME_CONFIG } from "@/constants/tracking";
+
+const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
+
+interface UseBackgroundTrackingProps {
+  execucaoId: string | null;
+  active: boolean;
+  onLocationUpdate?: (ping: TrackingGpsPing) => void;
+}
+
+export function useBackgroundTracking({
+  execucaoId,
+  active,
+  onLocationUpdate
+}: UseBackgroundTrackingProps) {
+  const watcherIdRef = useRef<string | null>(null);
+  const onLocationUpdateRef = useRef(onLocationUpdate);
+
+  useEffect(() => {
+    onLocationUpdateRef.current = onLocationUpdate;
+  }, [onLocationUpdate]);
+
+  useEffect(() => {
+    if (!active || !execucaoId || !Capacitor.isNativePlatform()) {
+      if (watcherIdRef.current) {
+        const idToRemove = watcherIdRef.current;
+        watcherIdRef.current = null;
+        BackgroundGeolocation.removeWatcher({ id: idToRemove }).catch(() => {});
+      }
+      return;
+    }
+
+    let isMounted = true;
+
+    async function startWatcher() {
+      try {
+        const watcherId = await BackgroundGeolocation.addWatcher(
+          {
+            backgroundTitle: "Van360: Rota em andamento 🚐",
+            backgroundMessage: "Transmitindo localização aos responsáveis em tempo real",
+            requestPermissions: true,
+            stale: false,
+            distanceFilter: TRACKING_REALTIME_CONFIG.MIN_DISTANCE_FILTER_METERS
+          },
+          (location, error) => {
+            if (error) {
+              return;
+            }
+
+            if (!location) return;
+
+            if (location.accuracy && location.accuracy > TRACKING_REALTIME_CONFIG.MAX_GPS_ACCURACY_METERS) {
+              return;
+            }
+
+            const ping: TrackingGpsPing = {
+              latitude: location.latitude,
+              longitude: location.longitude,
+              heading: typeof location.bearing === "number" && !isNaN(location.bearing) ? location.bearing : null,
+              speed: typeof location.speed === "number" && !isNaN(location.speed) ? location.speed : null,
+              accuracy: typeof location.accuracy === "number" && !isNaN(location.accuracy) ? location.accuracy : null,
+              timestamp: location.time || Date.now()
+            };
+
+            onLocationUpdateRef.current?.(ping);
+          }
+        );
+
+        if (isMounted) {
+          watcherIdRef.current = watcherId;
+        } else {
+          BackgroundGeolocation.removeWatcher({ id: watcherId }).catch(() => {});
+        }
+      } catch {}
+    }
+
+    startWatcher();
+
+    return () => {
+      isMounted = false;
+      if (watcherIdRef.current) {
+        const idToRemove = watcherIdRef.current;
+        watcherIdRef.current = null;
+        BackgroundGeolocation.removeWatcher({ id: idToRemove }).catch(() => {});
+      }
+    };
+  }, [active, execucaoId]);
+}

@@ -4,6 +4,7 @@ import { ResponsavelNotificarAusenciaDialog } from "@/components/dialogs/Respons
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { FileSignature, CalendarOff, ArrowRight, User, Receipt, Users, FileText, ChevronRight } from "lucide-react";
 import { openBrowserLink } from "@/utils/browser";
+import { TrackingCard } from "@/components/features/tracking/TrackingCard";
 
 interface ResponsavelCarteirinhaGeralProps {
   carteirinha: ResponsavelCarteirinhaData;
@@ -37,6 +38,11 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
 
   return (
     <div className="space-y-6 text-left">
+      <TrackingCard
+        passageiroId={carteirinha.id}
+        passageiroNome={carteirinha.nome}
+      />
+
       {/* 1. Bloco de Ações Rápidas (Destaques) */}
       {(contratoPendente || temRotas) && (
         <div className="space-y-3">
@@ -104,9 +110,8 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             type="button"
             onClick={() => temContrato && handleTabClick("contrato")}
             disabled={!temContrato}
-            className={`w-full p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors text-left ${
-              temContrato ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-not-allowed"
-            }`}
+            className={`w-full p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors text-left ${temContrato ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-not-allowed"
+              }`}
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -151,9 +156,8 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             type="button"
             onClick={() => temRotas && handleTabClick("ausencias")}
             disabled={!temRotas}
-            className={`w-full p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors text-left ${
-              temRotas ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-not-allowed"
-            }`}
+            className={`w-full p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors text-left ${temRotas ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-not-allowed"
+              }`}
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
@@ -161,7 +165,7 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
               </div>
               <div className="min-w-0">
                 <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Ausências {temRotas ? "" : "(Sem rota)"}
+                  Ausências
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium block truncate">
                   Faltas agendadas e histórico

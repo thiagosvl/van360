@@ -41,7 +41,13 @@ export const usePushNotifications = () => {
               case PushNotificationAction.OPEN_HOME: navigate(ROUTES.PRIVATE.MOTORISTA.HOME); break;
               case PushNotificationAction.OPEN_SUBSCRIPTION: navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION); break;
               case PushNotificationAction.OPEN_CONTRACTS: navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACTS); break;
-              case PushNotificationAction.OPEN_ROUTE: navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES); break;
+              case PushNotificationAction.OPEN_ROUTE:
+                if (isResponsavelAuth) {
+                  navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
+                } else {
+                  navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+                }
+                break;
               case PushNotificationAction.OPEN_TEAM: navigate(ROUTES.PRIVATE.MOTORISTA.TEAM); break;
               case PushNotificationAction.OPEN_BILLING: navigate(ROUTES.PRIVATE.MOTORISTA.BILLING); break;
               case PushNotificationAction.OPEN_PASSENGERS: navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS); break;
@@ -52,6 +58,13 @@ export const usePushNotifications = () => {
               case PushNotificationAction.OPEN_REPORTS: navigate(ROUTES.PRIVATE.MOTORISTA.REPORTS); break;
               case PushNotificationAction.OPEN_SETTINGS: navigate(ROUTES.PRIVATE.MOTORISTA.SETTINGS); break;
               case PushNotificationAction.OPEN_BIRTHDAYS: navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS); break;
+              case PushNotificationAction.OPEN_TRACKING:
+                if (isResponsavelAuth) {
+                  navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
+                } else {
+                  navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+                }
+                break;
               default: navigate(ROUTES.PRIVATE.MOTORISTA.HOME); break;
             }
           }

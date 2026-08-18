@@ -241,5 +241,17 @@ export const responsavelApi = {
       }
     );
     return data;
+  },
+
+  getRastreamento: async (passageiroId: string, token: string) => {
+    const { data } = await apiClient.get<import("@/types/tracking").TrackingResponse>(
+      `/public/portal-responsavel/passageiro/${passageiroId}/rastreamento`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return data;
   }
 };

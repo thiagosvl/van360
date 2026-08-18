@@ -19,6 +19,11 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/utils/notifications/toast";
 import { isRecentLocalMutation, debounceRealtimeSync } from "@/hooks/api/useRouteMutations";
+import { useBackgroundTracking } from "@/hooks/business/useBackgroundTracking";
+import { useTrackingBroadcast } from "@/hooks/business/useTrackingBroadcast";
+import { Capacitor } from "@capacitor/core";
+import { Smartphone } from "lucide-react";
+import { FEATURE_FLAGS } from "@/constants/tracking";
 
 export default function RouteExecutionPage() {
   const queryClient = useQueryClient();
@@ -51,6 +56,23 @@ export default function RouteExecutionPage() {
   } = useActiveRouteViewModel({ execucaoId: id || "" });
 
   const concludedStops = paradasConcluidas?.length || 0;
+  const isTrackingActive = Boolean(
+    FEATURE_FLAGS.ENABLE_LIVE_TRACKING &&
+    !isPreview &&
+    execucao?.id &&
+    (execucao as any)?.status === RouteExecutionStatus.INICIADA
+  );
+
+  const { sendGpsPing } = useTrackingBroadcast({
+    execucaoId: isTrackingActive ? execucao?.id || id || null : null,
+    enabled: isTrackingActive
+  });
+
+  useBackgroundTracking({
+    execucaoId: isTrackingActive ? execucao?.id || id || null : null,
+    active: isTrackingActive,
+    onLocationUpdate: sendGpsPing
+  });
 
   // Supabase Realtime Sync para Motorista Auxiliar + Monitor
   useEffect(() => {
@@ -287,6 +309,20 @@ export default function RouteExecutionPage() {
   return (
     <PullToRefreshWrapper onRefresh={refetch}>
       <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+        {isTrackingActive && !Capacitor.isNativePlatform() && (
+          <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-4 text-amber-900 shadow-xs flex items-start gap-3">
+            <Smartphone className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-xs text-left">
+              <span className="font-bold block text-amber-950">
+                Você está executando a rota pelo navegador
+              </span>
+              <span className="text-amber-800 font-medium block mt-0.5 leading-relaxed">
+                Para transmitir a sua localização GPS em tempo real aos pais em segundo plano (com a tela desligada ou usando o Waze), utilize o aplicativo Van360 instalado no celular.
+              </span>
+            </div>
+          </div>
+        )}
+
         {(isLoading && !showSuccessOverlay) || !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (

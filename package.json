@@ -15,6 +15,7 @@
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
+    "@capacitor-community/background-geolocation": "^1.2.26",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.1.0",
     "@capacitor/browser": "^7.0.3",
@@ -59,6 +60,7 @@
     "@tiptap/extension-link": "^3.27.4",
     "@tiptap/react": "^3.27.4",
     "@tiptap/starter-kit": "^3.27.4",
+    "@types/maplibre-gl": "^1.13.2",
     "axios": "^1.13.2",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
@@ -70,6 +72,7 @@
     "framer-motion": "^12.23.24",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
+    "maplibre-gl": "^6.4.1",
     "next-themes": "^0.3.0",
     "payment-token-efi": "latest",
     "qrcode": "^1.5.4",

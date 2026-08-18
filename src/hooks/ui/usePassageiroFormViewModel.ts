@@ -20,6 +20,7 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
+import { getErrorMessage } from "@/utils/errorHandler";
 
 interface UsePassageiroFormViewModelProps {
   isOpen: boolean;
@@ -165,18 +166,20 @@ export function usePassageiroFormViewModel({
   const telefoneResponsavelValue = form.watch("responsavel_principal.telefone");
 
   useEffect(() => {
+    if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const pureCpf = cpfResponsavelValue?.replace(/\D/g, "");
     if (pureCpf && pureCpf.length === 11) {
       handleSearchResponsavel(pureCpf);
     }
-  }, [cpfResponsavelValue, handleSearchResponsavel]);
+  }, [cpfResponsavelValue, handleSearchResponsavel, mode]);
 
   useEffect(() => {
+    if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const purePhone = telefoneResponsavelValue?.replace(/\D/g, "");
     if (purePhone && purePhone.length === 11) {
       handleSearchResponsavel(purePhone);
     }
-  }, [telefoneResponsavelValue, handleSearchResponsavel]);
+  }, [telefoneResponsavelValue, handleSearchResponsavel, mode]);
 
   const handleFillMock = useCallback(() => {
     const currentValues = form.getValues();
@@ -325,7 +328,22 @@ export function usePassageiroFormViewModel({
         });
         onClose();
       },
-      onError: () => {},
+      onError: (err: unknown) => {
+        const msg = getErrorMessage(err);
+        if (msg && msg.toLowerCase().includes("telefone")) {
+          form.setError("responsavel_principal.telefone", {
+            type: "manual",
+            message: msg,
+          });
+          setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
+        } else if (msg && msg.toLowerCase().includes("cpf")) {
+          form.setError("responsavel_principal.cpf", {
+            type: "manual",
+            message: msg,
+          });
+          setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
+        }
+      },
     };
 
     if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {

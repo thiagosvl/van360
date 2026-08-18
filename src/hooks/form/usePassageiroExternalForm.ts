@@ -116,6 +116,19 @@ export function usePassageiroExternalForm() {
   }, [motoristaId, navigate]);
 
   const onFormError = (errors: any) => {
+    console.group("❌ [PassageiroExternalForm] ERROS DE VALIDAÇÃO");
+    console.error("Erros brutos:", errors);
+    console.table(
+      Object.entries(errors).map(([field, err]: [string, any]) => ({
+        campo: field,
+        tipo: err?.type,
+        mensagem: err?.message,
+        erroFilho: err?.root?.message || JSON.stringify(err),
+      }))
+    );
+    console.log("Valores atuais de form.getValues():", form.getValues());
+    console.groupEnd();
+
     toast.error("validacao.formularioComErros");
     setOpenAccordionItems([
       "passageiro",
@@ -127,6 +140,10 @@ export function usePassageiroExternalForm() {
   };
 
   const handleSubmit = async (data: PrePassageiroFormData) => {
+    console.group("🚀 [PassageiroExternalForm] SUBMIT INICIADO");
+    console.log("Dados válidos recebidos pelo Zod/RHF:", data);
+    console.groupEnd();
+
     try {
       setSubmitting(true);
 
@@ -150,7 +167,6 @@ export function usePassageiroExternalForm() {
           : null,
       };
 
-      // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
       if (payload.data_nascimento) {
         payload.data_nascimento = convertDateBrToISO(payload.data_nascimento);
       }
@@ -161,14 +177,22 @@ export function usePassageiroExternalForm() {
         payload.data_fim_transporte = convertDateBrToISO(payload.data_fim_transporte);
       }
 
+      console.log("📤 [PassageiroExternalForm] Payload enviado para API:", payload);
+
       await prePassageiroApi.createPrePassageiro({
         ...payload,
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,
         usuario_id: motoristaId,
       });
 
+      console.log("✅ [PassageiroExternalForm] Cadastro realizado com sucesso!");
       setSuccess(true);
     } catch (error: any) {
+      console.group("❌ [PassageiroExternalForm] ERRO NA API");
+      console.error("Objeto do erro:", error);
+      console.error("Resposta da API:", error.response?.data);
+      console.groupEnd();
+
       if (error.response?.data?.details) {
         const issues = error.response.data.details;
         issues.forEach((issue: any) => {
@@ -253,9 +277,33 @@ export function usePassageiroExternalForm() {
     });
 
     form.reset({
-      ...mockData,
-      valor_cobranca: undefined,
-      dia_vencimento: undefined,
+      nome: mockData.nome,
+      data_nascimento: mockData.data_nascimento,
+      genero: mockData.genero,
+      escola_id: escolaId,
+      periodo: mockData.periodo,
+      modalidade: mockData.modalidade,
+      turma: mockData.turma,
+      nome_professor: mockData.nome_professor,
+      nome_responsavel: mockData.responsavel_principal.nome,
+      telefone_responsavel: mockData.responsavel_principal.telefone,
+      cpf_responsavel: mockData.responsavel_principal.cpf,
+      parentesco_responsavel: mockData.responsavel_principal.parentesco,
+      email_responsavel: mockData.responsavel_principal.email,
+      cep: mockData.responsavel_principal.cep,
+      logradouro: mockData.responsavel_principal.logradouro,
+      numero: mockData.responsavel_principal.numero,
+      bairro: mockData.responsavel_principal.bairro,
+      cidade: mockData.responsavel_principal.cidade,
+      estado: mockData.responsavel_principal.estado,
+      referencia: mockData.responsavel_principal.referencia,
+      complemento: mockData.responsavel_principal.complemento,
+      observacoes: mockData.observacoes,
+      valor_cobranca: "",
+      dia_vencimento: "",
+      data_inicio_transporte: mockData.data_inicio_transporte,
+      data_fim_transporte: mockData.data_fim_transporte,
+      ativo: true,
     });
 
     setOpenAccordionItems([

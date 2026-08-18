@@ -13,7 +13,7 @@ export const prePassageiroApi = {
   createPrePassageiro: (payload: any) => {
     const cleanedPayload = {
       ...payload,
-      valor_cobranca: moneyToNumber(payload.valor_cobranca),
+      valor_cobranca: payload.valor_cobranca ? moneyToNumber(payload.valor_cobranca) : null,
     };
     return apiClient
       .post(`${endpointBase}`, cleanedPayload)
