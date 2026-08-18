@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { usePassageiro } from "@/hooks/api/usePassageiro";
@@ -363,11 +362,6 @@ export function ImportarContratoDialog({
             </div>
           )}
         </div>
-
-        <Banner
-          variant="info"
-          description="O documento será arquivado como contrato assinado e ficará disponível para visualização e download tanto para você quanto na carteirinha do passageiro."
-        />
       </BaseDialog.Body>
 
       <BaseDialog.Footer>

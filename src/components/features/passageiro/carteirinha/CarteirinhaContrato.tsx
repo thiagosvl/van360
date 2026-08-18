@@ -31,7 +31,7 @@ export const CarteirinhaContrato = ({
   const { profile } = useProfile(user?.id);
   const { openContractSetupDialog, openImportarContratoDialog } = useLayout();
 
-  const canManage = can("contratos.gerenciar") || can("passageiros.gerenciar");
+  const canManage = can("contratos.gerenciar");
 
   if (!canManage) {
     return null;
