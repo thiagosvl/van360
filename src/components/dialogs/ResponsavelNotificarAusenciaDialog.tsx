@@ -181,6 +181,8 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
                 <Calendar
                   mode="single"
                   selected={selectedDate}
+                  disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+                  fromDate={new Date(new Date().setHours(0, 0, 0, 0))}
                   onSelect={(date) => {
                     if (date) {
                       setDataAusencia(format(date, "yyyy-MM-dd"));

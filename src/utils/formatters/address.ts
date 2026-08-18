@@ -1,4 +1,20 @@
 
+export interface AddressHolder {
+  logradouro?: string | null;
+  endereco?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  referencia?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  uf?: string | null;
+  cep?: string | null;
+  responsavel_principal?: AddressHolder | null;
+  responsaveis?: Array<{ responsavel?: AddressHolder | null } & AddressHolder> | null;
+  [key: string]: unknown;
+}
+
 export function formatarCEP(cep: string): string {
   if (!cep || cep === "") return "";
   const onlyNumbers = cep.replace(/\D/g, "");
@@ -6,28 +22,25 @@ export function formatarCEP(cep: string): string {
   return onlyNumbers.replace(/(\d{5})(\d{3})/, "$1-$2");
 }
 
-export function formatarEnderecoCompleto(obj: {
-  cep?: string | null;
-  logradouro?: string | null;
-  endereco?: string | null;
-  numero?: string | null;
-  bairro?: string | null;
-  cidade?: string | null;
-  estado?: string | null;
-  uf?: string | null;
-  complemento?: string | null;
-  referencia?: string | null;
-}): string {
+export function formatarEnderecoCompleto(obj: AddressHolder | null | undefined): string {
   if (!obj) return "";
+  const addrTarget = (obj.logradouro || obj.endereco)
+    ? obj
+    : (obj.responsavel_principal?.logradouro
+      ? obj.responsavel_principal
+      : (obj.responsaveis?.[0]?.responsavel?.logradouro
+        ? obj.responsaveis[0].responsavel
+        : (obj.responsaveis?.[0]?.logradouro ? obj.responsaveis[0] : null)));
 
-  const logradouro = obj.logradouro || obj.endereco || "";
-  const numero = obj.numero ? `, ${obj.numero}` : "";
-  const complemento = obj.complemento ? ` - ${obj.complemento}` : "";
-  const referencia = obj.referencia ? ` (${obj.referencia})` : "";
-  const bairro = obj.bairro ? ` - ${obj.bairro}` : "";
-  const cidade = obj.cidade ? `, ${obj.cidade}` : "";
-  const estadoUf = obj.estado || obj.uf ? ` - ${obj.estado || obj.uf}` : "";
-  const cepStr = obj.cep ? `, ${formatarCEP(obj.cep)}` : "";
+  if (!addrTarget) return "";
+
+  const logradouro = addrTarget.logradouro || addrTarget.endereco || "";
+  const numero = addrTarget.numero ? `, ${addrTarget.numero}` : "";
+  const complemento = addrTarget.complemento ? ` - ${addrTarget.complemento}` : "";
+  const bairro = addrTarget.bairro ? ` - ${addrTarget.bairro}` : "";
+  const cidade = addrTarget.cidade ? `, ${addrTarget.cidade}` : "";
+  const estadoUf = addrTarget.estado || addrTarget.uf ? ` - ${addrTarget.estado || addrTarget.uf}` : "";
+  const cepStr = addrTarget.cep ? `, ${formatarCEP(addrTarget.cep)}` : "";
 
   const mainAddress = `${logradouro}${numero}${complemento}`.trim();
   if (!mainAddress && !cidade && !bairro) return "";
@@ -39,29 +52,22 @@ export function formatarEnderecoCompleto(obj: {
   return `${mainAddress}${bairro}${cidade}${estadoUf}${cepStr}`;
 }
 
-/**
- * Formata o endereço de forma limpa e objetiva para exibição em telas de rotas (Preview, Execução, Configuração),
- * ocultando cidade, estado e CEP, já que todos os passageiros da rota pertencem à mesma localidade.
- * Exemplo de retorno: "Avenida Independência, 112 - Vila Madalena"
- */
-export function formatarEnderecoParcialRota(obj: {
-  cep?: string | null;
-  logradouro?: string | null;
-  endereco?: string | null;
-  numero?: string | null;
-  bairro?: string | null;
-  cidade?: string | null;
-  estado?: string | null;
-  uf?: string | null;
-  complemento?: string | null;
-  referencia?: string | null;
-} | null | undefined): string {
+export function formatarEnderecoParcialRota(obj: AddressHolder | null | undefined): string {
   if (!obj) return "";
+  const addrTarget = (obj.logradouro || obj.endereco)
+    ? obj
+    : (obj.responsavel_principal?.logradouro
+      ? obj.responsavel_principal
+      : (obj.responsaveis?.[0]?.responsavel?.logradouro
+        ? obj.responsaveis[0].responsavel
+        : (obj.responsaveis?.[0]?.logradouro ? obj.responsaveis[0] : null)));
 
-  const logradouro = obj.logradouro || obj.endereco || "";
-  const numero = obj.numero ? `, ${obj.numero}` : "";
-  const complemento = obj.complemento ? ` (${obj.complemento})` : "";
-  const bairro = obj.bairro ? ` - ${obj.bairro}` : "";
+  if (!addrTarget) return "";
+
+  const logradouro = addrTarget.logradouro || addrTarget.endereco || "";
+  const numero = addrTarget.numero ? `, ${addrTarget.numero}` : "";
+  const complemento = addrTarget.complemento ? ` (${addrTarget.complemento})` : "";
+  const bairro = addrTarget.bairro ? ` - ${addrTarget.bairro}` : "";
 
   const mainAddress = `${logradouro}${numero}${complemento}`.trim();
   if (!mainAddress && !bairro) return "";

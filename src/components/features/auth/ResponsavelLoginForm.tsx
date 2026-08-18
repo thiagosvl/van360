@@ -50,7 +50,7 @@ export const ResponsavelLoginForm: React.FC = () => {
               className="mb-4 p-3 rounded-2xl"
               description={
                 <span>
-                  Acesso para <strong>pais e responsáveis</strong>. Se você é motorista ou equipe, utilize a aba <strong>Motorista / Equipe</strong>.
+                  Acesso para <strong>pais e responsáveis</strong>. Se você é motorista ou monitor, utilize a aba <strong>Motorista / Equipe</strong>.
                 </span>
               }
             />
@@ -62,11 +62,10 @@ export const ResponsavelLoginForm: React.FC = () => {
                   <FormItem>
                     <FormControl>
                       <div
-                        className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${
-                          fieldState.error
+                        className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
                             ? "border-red-500 ring-2 ring-red-500/20"
                             : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
                           <Phone className="w-5 h-5" />
@@ -157,11 +156,10 @@ export const ResponsavelLoginForm: React.FC = () => {
                 <FormItem>
                   <FormControl>
                     <div
-                      className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${
-                        fieldState.error
+                      className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
                           ? "border-red-500 ring-2 ring-red-500/20"
                           : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
                         <Lock className="w-5 h-5" />

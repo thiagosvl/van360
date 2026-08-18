@@ -65,8 +65,8 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/90 text-slate-800 flex flex-col">
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
-        <div className="mx-auto flex max-w-2xl items-center justify-between">
+      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-2">
             <img
               src="/assets/logo-van360.webp"
@@ -101,9 +101,9 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
       </header>
 
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <main className="flex-1 p-4 max-w-md mx-auto w-full space-y-5 pb-[calc(2.5rem+var(--safe-area-bottom))]">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6 pb-[calc(2.5rem+var(--safe-area-bottom))]">
           {isLoading ? (
-            <div className="py-4">
+            <div className="py-2">
               <CarteirinhaSkeleton />
             </div>
           ) : error || !carteirinha ? (
@@ -115,25 +115,25 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
               {/* Header do Aluno */}
               <ResponsavelCarteirinhaHeader carteirinha={carteirinha} />
 
-              {/* Abas com Scroll Lateral: Geral, Dados Pessoais, Parcelas, Ausências, Responsáveis, Contrato */}
+              {/* Abas com Scroll Lateral no Mobile e Grid no Desktop */}
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
-                  <TabsList ref={tabListRef} className="flex min-w-full w-max min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
+                  <TabsList ref={tabListRef} className="flex min-w-full w-max md:w-full md:grid md:grid-cols-6 min-h-[44px] bg-transparent p-0 gap-1 text-[13px]">
                     <TabsTrigger
                       value="geral"
-                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
                       Geral
                     </TabsTrigger>
                     <TabsTrigger
                       value="dados-pessoais"
-                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
                       Dados Pessoais
                     </TabsTrigger>
                     <TabsTrigger
                       value="parcelas"
-                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
                       Parcelas
                     </TabsTrigger>
@@ -141,13 +141,13 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                       value="ausencias"
                       disabled={(carteirinha.rotas || []).length === 0}
                       title={(carteirinha.rotas || []).length === 0 ? "Passageiro não possui rota atribuída" : undefined}
-                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
                     >
                       Ausências
                     </TabsTrigger>
                     <TabsTrigger
                       value="responsaveis"
-                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
                       Responsáveis
                     </TabsTrigger>
@@ -155,7 +155,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                       value="contrato"
                       disabled={!carteirinha.contrato}
                       title={!carteirinha.contrato ? "Passageiro não possui contrato" : undefined}
-                      className="rounded-[1rem] h-full min-h-[32px] px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
                     >
                       Contrato
                     </TabsTrigger>

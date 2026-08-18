@@ -1,18 +1,18 @@
+import { useMemo } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, User, AlertTriangle, Route, School, Home } from "lucide-react";
+import { MapPin, User, Route, School, Home } from "lucide-react";
 import { GoogleMapsIcon } from "@/components/icons/GoogleMapsIcon";
 import { WazeIcon } from "@/components/icons/WazeIcon";
 import { RouteNodeType, RouteSentido } from "@/types/route";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
+import { TipoResponsavel } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { NavigationApp } from "@/constants";
 import { openExternalNavigation } from "@/utils/browser";
 import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatarEnderecoParcialRota, formatShortName } from "@/utils/formatters";
-
-const TAB_PRINCIPAL = "principal";
 
 export interface AddressDialogData {
   open: boolean;
@@ -47,29 +47,75 @@ export function AddressDetailsDialog({
   };
 
   const pass = addressDialogData.passageiro;
-  const isPrincipal = selectedDialogRespTab === TAB_PRINCIPAL;
-  const respObj = !isPrincipal ? pass?.responsaveis?.find((r: any) => r.id === selectedDialogRespTab) : null;
 
-  let activeRespName = isPrincipal ? pass?.responsavel_principal?.nome : respObj?.nome;
-  let rawParentesco = isPrincipal ? pass?.responsavel_principal?.parentesco : respObj?.parentesco;
-  let activeAddress = addressDialogData.address;
+  const allResponsaveis: PassageiroResponsavel[] = useMemo(() => {
+    if (!pass) return [];
+    const list: PassageiroResponsavel[] = [];
+    const seenKeys = new Set<string>();
 
-  if (pass) {
-    if (isPrincipal) {
-      const respP = pass.responsavel_principal;
-      activeAddress = respP?.logradouro ? (formatarEnderecoCompleto(respP) || formatarEnderecoParcialRota(respP)) : addressDialogData.address;
-    } else if (respObj) {
-      activeAddress = respObj.logradouro
-        ? (formatarEnderecoCompleto(respObj) || formatarEnderecoParcialRota(respObj))
-        : (pass.responsavel_principal?.logradouro ? formatarEnderecoCompleto(pass.responsavel_principal) : addressDialogData.address);
+    let principalObj: PassageiroResponsavel | null = null;
+
+    if (pass.responsavel_principal && (pass.responsavel_principal.nome || pass.responsavel_principal.id)) {
+      principalObj = {
+        ...pass.responsavel_principal,
+        id: pass.responsavel_principal.id || "resp-principal",
+        responsavel_id: pass.responsavel_principal.id || pass.responsavel_principal.responsavel_id,
+        tipo: TipoResponsavel.PRINCIPAL,
+      };
+      list.push(principalObj);
+      if (principalObj.id) seenKeys.add(principalObj.id);
+      if (principalObj.responsavel_id) seenKeys.add(principalObj.responsavel_id);
+      if (principalObj.cpf) seenKeys.add(`cpf-${principalObj.cpf.replace(/\D/g, "")}`);
+      if (principalObj.telefone) seenKeys.add(`tel-${principalObj.telefone.replace(/\D/g, "")}`);
     }
-  }
 
-  const activeRespFirstName = activeRespName ? formatFirstName(activeRespName) : "";
+    const rawList = (pass.responsaveis || []).filter((r): r is PassageiroResponsavel => Boolean(r && (r.nome || r.id)));
+
+    for (const r of rawList) {
+      const cleanCpf = r.cpf ? `cpf-${r.cpf.replace(/\D/g, "")}` : null;
+      const cleanTel = r.telefone ? `tel-${r.telefone.replace(/\D/g, "")}` : null;
+      const isPrincipal = r.tipo === TipoResponsavel.PRINCIPAL;
+
+      if (
+        (r.id && seenKeys.has(r.id)) ||
+        (r.responsavel_id && seenKeys.has(r.responsavel_id)) ||
+        (cleanCpf && seenKeys.has(cleanCpf)) ||
+        (cleanTel && seenKeys.has(cleanTel)) ||
+        (principalObj && isPrincipal)
+      ) {
+        continue;
+      }
+
+      const keyId = r.id || r.responsavel_id || `r-${r.cpf ? r.cpf.replace(/\D/g, "") : r.nome}`;
+      seenKeys.add(keyId);
+      if (cleanCpf) seenKeys.add(cleanCpf);
+      if (cleanTel) seenKeys.add(cleanTel);
+      if (r.id) seenKeys.add(r.id);
+      if (r.responsavel_id) seenKeys.add(r.responsavel_id);
+
+      list.push(r);
+    }
+
+    return list.sort((a, b) => (a.tipo === TipoResponsavel.PRINCIPAL ? -1 : b.tipo === TipoResponsavel.PRINCIPAL ? 1 : 0));
+  }, [pass]);
+
+  const activeResp = useMemo(() => {
+    if (!allResponsaveis || allResponsaveis.length === 0) return null;
+    return allResponsaveis.find(
+      (r) => r.id === selectedDialogRespTab || r.responsavel_id === selectedDialogRespTab
+    ) || allResponsaveis[0];
+  }, [allResponsaveis, selectedDialogRespTab]);
+
+  const isPrincipalTab = activeResp?.tipo === TipoResponsavel.PRINCIPAL || activeResp?.id === allResponsaveis[0]?.id;
+
+  const activeRespFirstName = activeResp?.nome ? formatFirstName(activeResp.nome) : "";
+  const rawParentesco = activeResp?.parentesco;
   const formattedParentesco = rawParentesco ? formatParentesco(rawParentesco) : "";
-  const parentescoLabel = (formattedParentesco && formattedParentesco.trim().length > 0)
-    ? formattedParentesco
-    : (isPrincipal ? "Financeiro" : "Responsável");
+  const parentescoLabel = formattedParentesco || (isPrincipalTab ? "Responsável Principal" : "Responsável");
+
+  const activeAddress = activeResp?.logradouro
+    ? (formatarEnderecoCompleto(activeResp) || formatarEnderecoParcialRota(activeResp))
+    : (addressDialogData.address || (allResponsaveis[0]?.logradouro ? formatarEnderecoCompleto(allResponsaveis[0]) : ""));
 
   const isVolta = addressDialogData.sentido === RouteSentido.VOLTANDO;
   const casaAddress = activeAddress;
@@ -78,13 +124,17 @@ export function AddressDetailsDialog({
   const saindoDe = isVolta ? escolaNome : casaAddress;
   const chegandoEm = isVolta ? casaAddress : escolaNome;
 
+  const activeTabValue = activeResp?.id || activeResp?.responsavel_id || allResponsaveis[0]?.id || "principal";
+
   return (
     <BaseDialog
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
           onClose();
-          setSelectedDialogRespTab(TAB_PRINCIPAL);
+          if (allResponsaveis[0]?.id) {
+            setSelectedDialogRespTab(allResponsaveis[0].id);
+          }
         }
       }}
       maxWidth="md"
@@ -94,7 +144,9 @@ export function AddressDetailsDialog({
         icon={<MapPin className="w-5 h-5 text-[#1a3a5c]" />}
         onClose={() => {
           onClose();
-          setSelectedDialogRespTab(TAB_PRINCIPAL);
+          if (allResponsaveis[0]?.id) {
+            setSelectedDialogRespTab(allResponsaveis[0].id);
+          }
         }}
       />
 
@@ -112,39 +164,43 @@ export function AddressDetailsDialog({
           </div>
         </div>
 
-        {/* Tabs de Responsáveis Adicionais */}
-        {pass?.responsaveis && pass.responsaveis.length > 0 && (
+        {/* Tabs de Responsáveis (Principal e Adicionais) */}
+        {allResponsaveis.length > 1 && (
           <div className="w-full min-w-0">
-            <Tabs value={selectedDialogRespTab} onValueChange={setSelectedDialogRespTab} className="w-full min-w-0">
+            <Tabs
+              value={activeTabValue}
+              onValueChange={setSelectedDialogRespTab}
+              className="w-full min-w-0"
+            >
               <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                <TabsTrigger
-                  value={TAB_PRINCIPAL}
-                  className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer"
-                >
-                  Responsável Financeiro
-                </TabsTrigger>
-                {pass.responsaveis.map((resp: any) => (
-                  <TabsTrigger
-                    key={resp.id}
-                    value={resp.id!}
-                    className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer"
-                  >
-                    {formatParentesco(resp.parentesco) || formatFirstName(resp.nome)}
-                  </TabsTrigger>
-                ))}
+                {allResponsaveis.map((resp) => {
+                  const tabId = resp.id || resp.responsavel_id || "principal";
+                  const isPrincipal = resp.tipo === TipoResponsavel.PRINCIPAL;
+                  const label = formatParentesco(resp.parentesco) || formatFirstName(resp.nome) || (isPrincipal ? "Responsável Principal" : "Outro Responsável");
+                  return (
+                    <TabsTrigger
+                      key={tabId}
+                      value={tabId}
+                      className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span>{label}</span>
+                      {isPrincipal && <span className="text-[10px] opacity-75 font-normal">(Principal)</span>}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
             </Tabs>
           </div>
         )}
 
         {/* Alerta de Atenção para Responsável Alternativo */}
-        {!isPrincipal && respObj && (
+        {!isPrincipalTab && activeResp && (
           <Banner
             variant="warning"
             title="Aviso de endereço alternativo:"
             description={
               <>
-                Você está visualizando o endereço de <strong className="font-bold">{formatFirstName(respObj.nome)}</strong> ({parentescoLabel}).
+                Você está visualizando o endereço de <strong className="font-bold">{formatFirstName(activeResp.nome)}</strong> ({parentescoLabel}).
               </>
             }
           />

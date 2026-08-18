@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { PushNotificationAction } from '@/types/enums';
 import { PushNotifications } from '@capacitor/push-notifications';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { Device } from '@capacitor/device';
 import { usePushToken } from '../api/usePushToken';
 import { useSession } from '../business/useSession';
@@ -26,9 +26,11 @@ export const usePushNotifications = () => {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
+    const handles: PluginListenerHandle[] = [];
+
     const addActionListener = async () => {
       try {
-        await PushNotifications.addListener(
+        const actionHandle = await PushNotifications.addListener(
           'pushNotificationActionPerformed',
           (notification) => {
             const data = notification.notification.data;
@@ -54,25 +56,32 @@ export const usePushNotifications = () => {
             }
           }
         );
+        handles.push(actionHandle);
 
-        await PushNotifications.addListener(
+        const receivedHandle = await PushNotifications.addListener(
           'pushNotificationReceived',
           (notification) => {
             console.log('[Push] Notificação recebida em primeiro plano:', notification);
           }
         );
+        handles.push(receivedHandle);
       } catch (e) {
         console.error('Erro ao adicionar listener de acao de push:', e);
       }
     };
 
     addActionListener();
+
+    return () => {
+      handles.forEach((h) => h.remove());
+    };
   }, [navigate]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
     let isMounted = true;
+    const handles: PluginListenerHandle[] = [];
 
     const dispatchTokenToBackend = async (fcmToken: string, platform: string) => {
       if (!isMounted) return;
@@ -110,18 +119,21 @@ export const usePushNotifications = () => {
           }).catch(err => console.error('[Push] Erro ao criar canal de notificação:', err));
         }
 
-        await PushNotifications.addListener('registration', async (token) => {
+        const regHandle = await PushNotifications.addListener('registration', async (token) => {
           console.log('[Push] Token do dispositivo capturado:', token.value);
           const info = await Device.getInfo();
+          const platform = info.platform || 'android';
           localStorage.setItem('van360_fcm_token', token.value);
-          localStorage.setItem('van360_fcm_platform', info.platform);
+          localStorage.setItem('van360_fcm_platform', platform);
 
-          await dispatchTokenToBackend(token.value, info.platform);
+          await dispatchTokenToBackend(token.value, platform);
         });
+        handles.push(regHandle);
 
-        await PushNotifications.addListener('registrationError', (error) => {
+        const errHandle = await PushNotifications.addListener('registrationError', (error) => {
           console.error('[Push] Erro no registro de push:', error);
         });
+        handles.push(errHandle);
 
         await PushNotifications.register();
 
@@ -139,6 +151,7 @@ export const usePushNotifications = () => {
 
     return () => {
       isMounted = false;
+      handles.forEach((h) => h.remove());
     };
   }, [session?.user?.id, isResponsavelAuth, responsavelToken]);
 };

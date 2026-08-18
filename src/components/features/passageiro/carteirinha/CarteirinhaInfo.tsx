@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { ContratoStatus } from "@/types/enums";
+import { ContratoStatus, TipoResponsavel } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
   formatGenero,
@@ -92,7 +92,11 @@ const CarteirinhaTopCard = ({
     (!!passageiro.contrato_id && !passageiro.status_contrato);
 
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
-  const phoneNumbersOnly = passageiro.responsavel_principal?.telefone?.replace(/\D/g, "");
+  const respPrincipal =
+    passageiro.responsavel_principal ||
+    passageiro.responsaveis?.find((r) => r.tipo === TipoResponsavel.PRINCIPAL) ||
+    passageiro.responsaveis?.[0];
+  const phoneNumbersOnly = respPrincipal?.telefone?.replace(/\D/g, "");
   const isWhatsAppDisabled =
     isIncomplete ||
     !phoneNumbersOnly ||
@@ -394,11 +398,14 @@ export const CarteirinhaDadosPessoais = ({
 >) => {
   const { can } = usePermissions();
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
-  const respPrincipal = passageiro.responsavel_principal;
+  const respPrincipal =
+    passageiro.responsavel_principal ||
+    passageiro.responsaveis?.find((r) => r.tipo === TipoResponsavel.PRINCIPAL) ||
+    passageiro.responsaveis?.[0];
   const enderecoFormatado = respPrincipal?.logradouro
     ? formatarEnderecoCompleto(respPrincipal)
-    : null;
-  const referenciaEmbarque = respPrincipal?.referencia || null;
+    : formatarEnderecoCompleto(passageiro);
+  const referenciaEmbarque = respPrincipal?.referencia || passageiro.referencia || null;
   const primeiroNomeResp = formatFirstName(respPrincipal?.nome);
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
@@ -432,12 +439,12 @@ export const CarteirinhaDadosPessoais = ({
       ? formatMonthYearToBR(passageiro.data_fim_cobranca)
       : null;
 
-  const cpfResponsavelTexto = !isIncomplete && passageiro.responsavel_principal?.cpf
-    ? cpfMask(passageiro.responsavel_principal.cpf)
+  const cpfResponsavelTexto = !isIncomplete && respPrincipal?.cpf
+    ? cpfMask(respPrincipal.cpf)
     : null;
 
-  const telefoneResponsavelTexto = !isIncomplete && passageiro.responsavel_principal?.telefone
-    ? phoneMask(passageiro.responsavel_principal.telefone)
+  const telefoneResponsavelTexto = !isIncomplete && respPrincipal?.telefone
+    ? phoneMask(respPrincipal.telefone)
     : null;
 
   return (

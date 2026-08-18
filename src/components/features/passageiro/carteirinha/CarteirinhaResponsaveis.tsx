@@ -111,7 +111,7 @@ export const CarteirinhaResponsaveis = ({
         (r.responsavel_id && seenKeys.has(r.responsavel_id)) ||
         (cleanCpf && seenKeys.has(cleanCpf)) ||
         (cleanTel && seenKeys.has(cleanTel)) ||
-        isPrincipal
+        (principalObj && isPrincipal)
       ) {
         if (principalObj && (isPrincipal || (cleanTel && cleanTel === `tel-${principalObj.telefone?.replace(/\D/g, "")}`))) {
           if (!principalObj.pin_acesso && r.pin_acesso) principalObj.pin_acesso = r.pin_acesso;
