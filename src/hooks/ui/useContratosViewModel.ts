@@ -26,7 +26,7 @@ import { toast } from "sonner";
 
 export function useContratosViewModel() {
   const { can } = usePermissions();
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openGerarContratoValidadorDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openGerarContratoValidadorDialog, openImportarContratoDialog } = useLayout();
   const { user } = useSession();
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -60,7 +60,8 @@ export function useContratosViewModel() {
     searchParam: "search",
   });
 
-  const activeTab = (searchParams.get("tab") as ContratoTab) || ContratoTab.SEM_CONTRATO;
+  const rawTab = searchParams.get("tab");
+  const activeTab = rawTab === ContratoTab.PENDENTES ? ContratoTab.PENDENTES : ContratoTab.SEM_CONTRATO;
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
@@ -267,6 +268,13 @@ export function useContratosViewModel() {
     });
   }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
+  const handleOpenImportarContrato = useCallback((passageiroId?: string, passageiro?: any) => {
+    openImportarContratoDialog({
+      passageiroId,
+      passageiro,
+    });
+  }, [openImportarContratoDialog]);
+
   const handleOpenPreview = useCallback(async () => {
     if (!isContratoConfigurado) {
       toast.error("Configure os contratos primeiro para visualizar o modelo");
@@ -314,6 +322,7 @@ export function useContratosViewModel() {
     handleToggleContracts,
     isToggling,
     handleOpenPreview,
+    handleOpenImportarContrato,
     isPreviewLoading: previewMutation.isPending,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
@@ -327,6 +336,7 @@ export function useContratosViewModel() {
       onExcluir: handleExcluir,
       onSubstituir: handleSubstituir,
       onGerarContrato: handleGerarContrato,
+      onImportarContrato: handleOpenImportarContrato,
       onVisualizarLink: handleVisualizarLink,
       onVisualizarFinal: handleVisualizarFinal,
     }

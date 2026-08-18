@@ -1,6 +1,7 @@
 import React from "react";
 import { FileCheck2, Clock, FileX2, ExternalLink, FileSignature } from "lucide-react";
 import { ResponsavelCarteirinhaData } from "@/types/responsavel";
+import { ContratoStatus } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { openBrowserLink } from "@/utils/browser";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +36,7 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
     );
   }
 
-  const isAssinado = status === "assinado";
+  const isAssinado = status === ContratoStatus.ASSINADO;
   const pdfUrl = contrato.contrato_final_url || contrato.minuta_url || contrato.pdf_url || contrato.documento_url;
 
   const handleAction = () => {
@@ -102,7 +103,7 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
           {isAssinado ? (
             <>
               <ExternalLink className="h-3.5 w-3.5" />
-              <span>Visualizar Contrato PDF</span>
+              <span>Visualizar Contrato</span>
             </>
           ) : (
             <>

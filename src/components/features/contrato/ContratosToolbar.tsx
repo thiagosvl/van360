@@ -18,7 +18,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ContratoTab } from "@/types/enums";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
-import { Eye, Search, Settings, Loader2, FileText, CheckCircle2, PauseCircle } from "lucide-react";
+import { Eye, Search, Settings, Loader2, FileText, CheckCircle2, PauseCircle, UploadCloud } from "lucide-react";
 import { memo, useState } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 
@@ -27,10 +27,10 @@ interface ContratosToolbarProps {
   setBusca: (val: string) => void;
   activeTab: ContratoTab;
   countPendentes?: number;
-  countAssinados?: number;
   countSemContrato?: number;
   onOpenConfig: () => void;
   onOpenPreview: () => void;
+  onImportarContrato?: () => void;
   isDesativado?: boolean;
   isContratoConfigurado?: boolean;
   onToggleContratos: (active: boolean) => void | Promise<void>;
@@ -43,10 +43,10 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   setBusca,
   activeTab,
   countPendentes,
-  countAssinados,
   countSemContrato,
   onOpenConfig,
   onOpenPreview,
+  onImportarContrato,
   isDesativado = false,
   isContratoConfigurado = false,
   onToggleContratos,
@@ -89,31 +89,13 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                 "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
               )}
             >
-              Pendentes
+              Assinaturas Pendentes
               {countPendentes !== undefined && (
                 <span className={cn(
                   "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
                   activeTab === ContratoTab.PENDENTES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                 )}>
                   {countPendentes}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value={ContratoTab.ASSINADOS}
-              className={cn(
-                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
-                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
-                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              )}
-            >
-              Assinados
-              {countAssinados !== undefined && (
-                <span className={cn(
-                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                  activeTab === ContratoTab.ASSINADOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                )}>
-                  {countAssinados}
                 </span>
               )}
             </TabsTrigger>
@@ -137,6 +119,16 @@ export const ContratosToolbar = memo(function ContratosToolbar({
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            {onImportarContrato && (
+              <Button
+                type="button"
+                onClick={onImportarContrato}
+                className="h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span className="hidden sm:inline">Importar Contrato</span>
+              </Button>
+            )}
 
             {!isMobile && (
               <DropdownMenu open={openPopover} onOpenChange={setOpenPopover}>

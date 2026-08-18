@@ -3,6 +3,12 @@ import { useSession } from "./useSession";
 import { useProfile } from "./useProfile";
 import { hasPermission, PermissionKey } from "@/config/permissions";
 import { UserType } from "@/types/enums";
+import {
+  isMotoristaTitular,
+  isMotoristaAuxiliar as checkIsMotoristaAuxiliar,
+  isMonitor as checkIsMonitor,
+  isSubConta as checkIsSubConta,
+} from "@/utils/userUtils";
 
 export function usePermissions() {
   const { user } = useSession();
@@ -19,9 +25,9 @@ export function usePermissions() {
   return {
     can,
     role: profile?.tipo as UserType | undefined,
-    isGestor: profile?.tipo === UserType.MOTORISTA,
-    isMotoristaAuxiliar: profile?.tipo === UserType.MOTORISTA_AUXILIAR,
-    isMonitor: profile?.tipo === UserType.MONITOR,
-    isSubConta: Boolean(profile?.conta_pai_id),
+    isGestor: isMotoristaTitular(profile),
+    isMotoristaAuxiliar: checkIsMotoristaAuxiliar(profile),
+    isMonitor: checkIsMonitor(profile),
+    isSubConta: checkIsSubConta(profile),
   };
 }

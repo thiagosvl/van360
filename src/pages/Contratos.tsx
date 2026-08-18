@@ -31,6 +31,7 @@ const Contratos = () => {
     handleToggleContracts,
     isToggling,
     handleOpenPreview,
+    handleOpenImportarContrato,
     isPreviewLoading,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
@@ -56,10 +57,10 @@ const Contratos = () => {
               setBusca={setBusca}
               activeTab={activeTab}
               countPendentes={kpis?.pendentes}
-              countAssinados={kpis?.assinados}
               countSemContrato={kpis?.semContrato}
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
+              onImportarContrato={() => handleOpenImportarContrato()}
               isDesativado={!isContratoAtivo}
               isContratoConfigurado={isContratoConfigurado}
               onToggleContratos={handleToggleContracts}
@@ -98,8 +99,7 @@ const Contratos = () => {
 
             <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                {activeTab === ContratoTab.PENDENTES ? "Pendentes" :
-                  activeTab === ContratoTab.ASSINADOS ? "Assinados" : "Sem Contrato"}
+                {activeTab === ContratoTab.PENDENTES ? "Assinaturas Pendentes" : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                 {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
@@ -122,17 +122,6 @@ const Contratos = () => {
                 data={contratos}
                 isLoading={isLoading}
                 activeTab={ContratoTab.SEM_CONTRATO}
-                busca={debouncedSearch}
-                isDesativado={!isContratoAtivo}
-                {...actions}
-              />
-            </TabsContent>
-
-            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none transform-gpu will-change-transform">
-              <ContratosList
-                data={contratos}
-                isLoading={isLoading}
-                activeTab={ContratoTab.ASSINADOS}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
                 {...actions}

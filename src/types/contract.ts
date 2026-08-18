@@ -1,4 +1,4 @@
-import { ContratoStatus } from "./enums";
+import { ContratoProvider, ContratoStatus } from "./enums";
 
 export interface Contrato {
   id: string;
@@ -6,21 +6,27 @@ export interface Contrato {
   passageiro_id: string;
   token_acesso: string;
   status: ContratoStatus;
-  provider: 'inhouse' | 'assinafy';
-  minuta_url: string;
-  contrato_final_url?: string;
-  contrato_url?: string;
+  provider: ContratoProvider | string;
+  minuta_url?: string | null;
+  contrato_final_url?: string | null;
+  contrato_url?: string | null;
   dados_contrato: any;
   created_at: string;
-  assinado_em?: string;
+  assinado_em?: string | null;
 }
 
 export interface CreateContratoDTO {
   passageiroId: string;
-  provider?: 'inhouse' | 'assinafy';
+  provider?: ContratoProvider;
   valorMensal?: number;
   diaVencimento?: number;
   dataInicio?: string;
   dataFim?: string;
   modalidade?: string;
+}
+
+export interface ImportContratoDTO {
+  passageiroId: string;
+  arquivoBase64: string;
+  nomeArquivo: string;
 }

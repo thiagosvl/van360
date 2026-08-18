@@ -1,5 +1,5 @@
 import { ActionItem } from "@/types/actions";
-import { ContratoStatus } from "@/types/enums";
+import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import {
   Copy,
   ExternalLink,
@@ -7,6 +7,7 @@ import {
   FileText,
   RefreshCcw,
   Trash2,
+  UploadCloud,
   User
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -26,6 +27,7 @@ interface UseContratoActionsProps {
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
   onVisualizarLink?: (token: string) => void;
   onVisualizarFinal?: (url: string) => void;
 }
@@ -42,6 +44,7 @@ export function useContratoActions({
   onExcluir,
   onSubstituir,
   onGerarContrato,
+  onImportarContrato,
   onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
   const isMobile = useIsMobile();
@@ -52,6 +55,7 @@ export function useContratoActions({
     const isPendente = status === ContratoStatus.PENDENTE || status === '1';
     const isAssinado = status === ContratoStatus.ASSINADO || status === '2';
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
+    const isImportado = item?.provider === ContratoProvider.IMPORTADO;
 
     const respObj = item?.responsavel_principal || item?.passageiro?.responsavel_principal;
     const respNome = respObj?.nome;
@@ -72,6 +76,21 @@ export function useContratoActions({
         },
         disabled: isFeatureDisabled,
         swipeColor: 'bg-blue-600',
+        hasSeparatorAfter: false
+      });
+    }
+
+    if (onImportarContrato && !hasContract) {
+      list.push({
+        label: 'Importar Contrato',
+        icon: <UploadCloud className="h-4 w-4" />,
+        onClick: () => {
+          onImportarContrato(
+            tipo === 'passageiro' ? item.id : item.passageiro_id,
+            tipo === 'passageiro' ? item : item.passageiro
+          );
+        },
+        swipeColor: 'bg-slate-700',
         hasSeparatorAfter: true
       });
     }
@@ -113,7 +132,7 @@ export function useContratoActions({
       }
     }
 
-    if (hasContract && !isFeatureDisabled) {
+    if (hasContract && !isImportado && !isFeatureDisabled) {
       list.push({
         label: 'Substituir Contrato',
         icon: <RefreshCcw className="h-4 w-4" />,
@@ -137,7 +156,7 @@ export function useContratoActions({
         label: 'Excluir Contrato',
         icon: <Trash2 className="h-4 w-4" />,
         onClick: () => onExcluir?.(item.id),
-        disabled: !onExcluir || isFeatureDisabled,
+        disabled: !onExcluir,
         className: 'text-red-600 font-medium',
         isDestructive: true,
         swipeColor: 'bg-red-600'
@@ -145,5 +164,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onEnviarWhatsApp, onExcluir, onSubstituir, onGerarContrato, onVisualizarFinal, isMobile]);
+  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onEnviarWhatsApp, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
 }

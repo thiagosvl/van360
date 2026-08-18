@@ -1,5 +1,5 @@
 import { FilterDefaults } from "@/types/enums";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getNowBR } from "@/utils/dateUtils";
 
@@ -13,11 +13,14 @@ export interface UseFiltersOptions {
   anoParam?: string;
   categoriaParam?: string;
   syncWithUrl?: boolean;
+  minSearchLength?: number;
+  debounceMs?: number;
 }
 
 export interface UseFiltersReturn {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
+  debouncedSearchTerm: string;
   selectedStatus: string;
   setSelectedStatus: (value: string) => void;
   selectedEscola?: string;
@@ -57,13 +60,21 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     anoParam,
     categoriaParam,
     syncWithUrl = true,
+    minSearchLength = 3,
+    debounceMs = 350,
   } = options;
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchTerm, setSearchTermState] = useState(() => {
-    return syncWithUrl ? searchParams.get(searchParam) ?? "" : "";
+  const initialUrlSearch = syncWithUrl ? searchParams.get(searchParam) ?? "" : "";
+
+  const [searchTerm, setSearchTermState] = useState(initialUrlSearch);
+  const [debouncedSearchTerm, setDebouncedSearchTermState] = useState(() => {
+    const trimmed = initialUrlSearch.trim();
+    return trimmed.length >= minSearchLength ? trimmed : "";
   });
+
+  const lastSyncedSearchRef = useRef(initialUrlSearch);
 
   const [selectedStatus, setSelectedStatusState] = useState(() => {
     return syncWithUrl ? searchParams.get(statusParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
@@ -113,23 +124,33 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     return syncWithUrl ? searchParams.get(categoriaParam) ?? FilterDefaults.TODAS : FilterDefaults.TODAS;
   });
 
-  const setSearchTerm = useCallback(
-    (value: string) => {
-      setSearchTermState(value);
-      if (syncWithUrl) {
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    const effectiveSearch = trimmed.length >= minSearchLength ? trimmed : "";
+
+    const timer = setTimeout(() => {
+      setDebouncedSearchTermState(effectiveSearch);
+
+      if (syncWithUrl && lastSyncedSearchRef.current !== effectiveSearch) {
+        lastSyncedSearchRef.current = effectiveSearch;
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value) {
-            newParams.set(searchParam, value);
+          if (effectiveSearch) {
+            newParams.set(searchParam, effectiveSearch);
           } else {
             newParams.delete(searchParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
-    },
-    [syncWithUrl, searchParam, setSearchParams]
-  );
+    }, trimmed.length === 0 ? 0 : debounceMs);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, minSearchLength, debounceMs, syncWithUrl, searchParam, setSearchParams]);
+
+  const setSearchTerm = useCallback((value: string) => {
+    setSearchTermState(value);
+  }, []);
 
   const setSelectedStatus = useCallback(
     (value: string) => {
@@ -143,7 +164,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(statusParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, statusParam, setSearchParams]
@@ -162,7 +183,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(escolaParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, escolaParam, setSearchParams]
@@ -181,7 +202,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(veiculoParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, veiculoParam, setSearchParams]
@@ -200,7 +221,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(periodoParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, periodoParam, setSearchParams]
@@ -215,7 +236,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           const newParams = new URLSearchParams(prev);
           newParams.set(mesParam, value.toString());
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, mesParam, setSearchParams]
@@ -230,7 +251,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           const newParams = new URLSearchParams(prev);
           newParams.set(anoParam, value.toString());
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, anoParam, setSearchParams]
@@ -249,7 +270,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(categoriaParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, categoriaParam, setSearchParams]
@@ -257,6 +278,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const clearFilters = useCallback(() => {
     setSearchTermState("");
+    setDebouncedSearchTermState("");
+    lastSyncedSearchRef.current = "";
     setSelectedStatusState(FilterDefaults.TODOS);
     if (selectedEscola !== undefined) setSelectedEscolaState(FilterDefaults.TODAS);
     if (selectedVeiculo !== undefined) setSelectedVeiculoState(FilterDefaults.TODOS);
@@ -277,7 +300,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         if (anoParam) newParams.delete(anoParam);
         if (categoriaParam) newParams.delete(categoriaParam);
         return newParams;
-      });
+      }, { replace: true });
     }
   }, [
     syncWithUrl,
@@ -298,7 +321,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     selectedCategoria,
   ]);
 
-  // Sync state with URL params when they change externally
   useEffect(() => {
     if (!syncWithUrl) return;
 
@@ -311,7 +333,12 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     const urlAno = anoParam ? searchParams.get(anoParam) : undefined;
     const urlCategoria = categoriaParam ? searchParams.get(categoriaParam) ?? FilterDefaults.TODAS : undefined;
 
-    if (urlSearch !== searchTerm) setSearchTermState(urlSearch);
+    if (urlSearch !== lastSyncedSearchRef.current) {
+      lastSyncedSearchRef.current = urlSearch;
+      setSearchTermState(urlSearch);
+      const trimmed = urlSearch.trim();
+      setDebouncedSearchTermState(trimmed.length >= minSearchLength ? trimmed : "");
+    }
     if (urlStatus !== selectedStatus) setSelectedStatusState(urlStatus);
     if (escolaParam && urlEscola !== selectedEscola) setSelectedEscolaState(urlEscola);
     if (veiculoParam && urlVeiculo !== selectedVeiculo) setSelectedVeiculoState(urlVeiculo);
@@ -330,7 +357,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     mesParam,
     anoParam,
     categoriaParam,
-    searchTerm,
+    minSearchLength,
     selectedStatus,
     selectedEscola,
     selectedVeiculo,
@@ -351,8 +378,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       ano?: number;
       categoria?: string;
     }) => {
-      // Update local state
-      if (newFilters.search !== undefined) setSearchTermState(newFilters.search);
+      if (newFilters.search !== undefined) {
+        setSearchTermState(newFilters.search);
+        const trimmed = newFilters.search.trim();
+        const effective = trimmed.length >= minSearchLength ? trimmed : "";
+        setDebouncedSearchTermState(effective);
+        lastSyncedSearchRef.current = effective;
+      }
       if (newFilters.status !== undefined) setSelectedStatusState(newFilters.status);
       if (newFilters.escola !== undefined && escolaParam) setSelectedEscolaState(newFilters.escola);
       if (newFilters.veiculo !== undefined && veiculoParam) setSelectedVeiculoState(newFilters.veiculo);
@@ -366,7 +398,9 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           const newParams = new URLSearchParams(prev);
 
           if (newFilters.search !== undefined) {
-            if (newFilters.search) newParams.set(searchParam, newFilters.search);
+            const trimmed = newFilters.search.trim();
+            const effective = trimmed.length >= minSearchLength ? trimmed : "";
+            if (effective) newParams.set(searchParam, effective);
             else newParams.delete(searchParam);
           }
 
@@ -404,7 +438,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
 
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [
@@ -417,12 +451,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       mesParam,
       anoParam,
       categoriaParam,
+      minSearchLength,
       setSearchParams,
     ]
   );
 
   const hasActiveFilters =
-    !!searchTerm ||
+    !!searchTerm.trim() ||
     selectedStatus !== FilterDefaults.TODOS ||
     (selectedEscola !== undefined && selectedEscola !== FilterDefaults.TODAS) ||
     (selectedVeiculo !== undefined && selectedVeiculo !== FilterDefaults.TODOS) ||
@@ -432,6 +467,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   return {
     searchTerm,
     setSearchTerm,
+    debouncedSearchTerm,
     selectedStatus,
     setSelectedStatus,
     ...(selectedEscola !== undefined && {

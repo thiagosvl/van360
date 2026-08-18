@@ -12,7 +12,7 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
-import { SubscriptionStatus, SubscriptionIdentifer } from "@/types/enums";
+import { SubscriptionStatus, SubscriptionIdentifer, UserType } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { getMesNome, formatFirstName } from "@/utils/formatters";
@@ -34,6 +34,7 @@ import { HomeSkeleton } from "@/components/skeletons/HomeSkeleton";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePrivacy } from "@/contexts/PrivacyContext";
+import { isMotoristaTitular } from "@/utils/userUtils";
 import { useEffect } from "react";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 
@@ -100,7 +101,7 @@ const Home = () => {
   useEffect(() => {
     if (isLoading || !profile) return;
 
-    const shouldAskChannel = !profile.canal_aquisicao && daysSinceCreation >= 3;
+    const shouldAskChannel = isMotoristaTitular(profile) && !profile.canal_aquisicao && daysSinceCreation >= 3;
 
     if (shouldAskChannel) {
       openAcquisitionChannelDialog();
@@ -108,6 +109,7 @@ const Home = () => {
   }, [
     isLoading,
     profile,
+    daysSinceCreation,
     openAcquisitionChannelDialog
   ]);
 

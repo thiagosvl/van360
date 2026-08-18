@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useSession } from "@/hooks/business/useSession";
 import { CanalAquisicao } from "@/types/enums";
 import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
+import { isMotoristaTitular } from "@/utils/userUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Megaphone } from "lucide-react";
@@ -30,13 +31,18 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
   const { user } = useSession();
   const { profile, refreshProfile } = useProfile(user?.id);
 
+  const isTitular = isMotoristaTitular(profile);
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
 
   const handleSubmit = async (data: FormData) => {
     try {
-      if (!profile?.id) return;
+      if (!profile?.id || !isTitular) {
+        onClose();
+        return;
+      }
       await usuarioApi.atualizarCanalAquisicao(profile.id, data.canal_aquisicao);
       toast.success("Obrigado por responder!", {
         description: "Sua resposta nos ajuda a melhorar.",
@@ -53,10 +59,13 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
     toast.error("validacao.formularioComErros");
   };
 
-  // Previne fechar no esc ou clique fora, conforme combinado (obrigatório).
   const handleOpenChange = (open: boolean) => {
-    if (!open) return; // Não permite fechar alterando o estado para false via background ou ESC
+    if (!open) return;
   };
+
+  if (profile && !isTitular) {
+    return null;
+  }
 
   return (
     <BaseDialog open={isOpen} onOpenChange={handleOpenChange} lockClose>

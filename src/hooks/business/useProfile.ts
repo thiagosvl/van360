@@ -2,8 +2,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { usuarioApi } from "../../services/api/usuario.api";
 import { Usuario } from "../../types/usuario";
-import { UserType } from "../../types/enums";
 import { useUsuarioResumo } from "../api/useUsuarioResumo";
+import {
+  isMotoristaTitular,
+  isMotoristaAuxiliar as checkIsMotoristaAuxiliar,
+  isMonitor as checkIsMonitor,
+  isSubConta as checkIsSubConta,
+  getDonoContaId,
+} from "@/utils/userUtils";
 
 export function useProfile(userId?: string) {
   const queryClient = useQueryClient();
@@ -30,11 +36,11 @@ export function useProfile(userId?: string) {
     ]);
   }, [queryClient]);
 
-  const isGestor = profile?.tipo === UserType.MOTORISTA;
-  const isMotoristaAuxiliar = profile?.tipo === UserType.MOTORISTA_AUXILIAR;
-  const isMonitor = profile?.tipo === UserType.MONITOR;
-  const isSubConta = Boolean(profile?.conta_pai_id);
-  const donoContaId = profile?.conta_pai_id || profile?.id;
+  const isGestor = isMotoristaTitular(profile);
+  const isMotoristaAuxiliar = checkIsMotoristaAuxiliar(profile);
+  const isMonitor = checkIsMonitor(profile);
+  const isSubConta = checkIsSubConta(profile);
+  const donoContaId = getDonoContaId(profile);
 
   const shouldFetchSummary = profile?.id && (isGestor || isSubConta);
   

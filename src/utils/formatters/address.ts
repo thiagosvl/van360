@@ -12,7 +12,6 @@ export interface AddressHolder {
   cep?: string | null;
   responsavel_principal?: AddressHolder | null;
   responsaveis?: Array<{ responsavel?: AddressHolder | null } & AddressHolder> | null;
-  [key: string]: unknown;
 }
 
 export function formatarCEP(cep: string): string {

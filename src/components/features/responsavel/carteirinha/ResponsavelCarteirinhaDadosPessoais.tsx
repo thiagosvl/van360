@@ -60,7 +60,7 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
 }) => {
   const respPrincipal = carteirinha.responsavel_principal;
   const enderecoFormatado = respPrincipal?.logradouro
-    ? formatarEnderecoCompleto(respPrincipal as any)
+    ? formatarEnderecoCompleto(respPrincipal)
     : null;
 
   const referenciaEmbarque = respPrincipal?.referencia || null;

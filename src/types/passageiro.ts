@@ -1,4 +1,5 @@
 import {
+    ContratoProvider,
     ContratoStatus,
     ParentescoResponsavel,
     PassageiroGenero,
@@ -55,6 +56,7 @@ export interface Passageiro {
   contrato_id?: string;
   contrato_url?: string;
   contrato_status?: string;
+  contrato_provider?: ContratoProvider;
   minuta_url?: string;
   contrato_final_url?: string;
   token_acesso?: string;

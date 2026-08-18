@@ -23,6 +23,7 @@ export function useGastosViewModel() {
   const {
     isLoading: isProfileLoading,
     profile,
+    donoContaId,
   } = useProfile();
 
   const deleteGasto = useDeleteGasto();
@@ -110,7 +111,6 @@ export function useGastosViewModel() {
     setPageTitle("Gastos");
   }, [setPageTitle]);
 
-  const donoContaId = profile?.conta_pai_id || profile?.id;
   const userVeiculoId = profile?.veiculo_id;
 
   // Supabase Realtime Sync para a Lista de Gastos

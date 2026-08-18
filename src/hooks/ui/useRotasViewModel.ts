@@ -9,7 +9,7 @@ import { useRoutes, useExecucoesRota } from "@/hooks/api/useRoutes";
 import { useDeleteRoute, useCancelarExecucao, isRecentLocalMutation, debounceRealtimeSync } from "@/hooks/api/useRouteMutations";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ROUTES } from "@/constants/routes";
-import { UserType } from "@/types/enums";
+import { isMotoristaTitular } from "@/utils/userUtils";
 import { toast } from "@/utils/notifications/toast";
 
 export const TAB_MINHAS_ROTAS = "minhas-rotas";
@@ -47,7 +47,7 @@ export function useRotasViewModel() {
   const cancelarExecucaoMutation = useCancelarExecucao();
 
   const userVeiculoId = profile?.veiculo_id;
-  const isGestor = profile?.tipo === UserType.MOTORISTA || !profile?.conta_pai_id;
+  const isGestor = isMotoristaTitular(profile);
 
   // Supabase Realtime Sync para a Lista de Rotas
   useEffect(() => {

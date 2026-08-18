@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
-import { ContratoStatus, ContratoTab } from "@/types/enums";
+import { ContratoProvider, ContratoStatus, ContratoTab } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
@@ -44,6 +44,7 @@ interface ContratosListProps {
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
   onVisualizarLink: (token: string) => void;
   onVisualizarFinal: (url: string) => void;
 }
@@ -59,6 +60,7 @@ interface ContratoMobileCardProps {
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
   onVisualizarLink: (token: string) => void;
   onVisualizarFinal: (url: string) => void;
 }
@@ -73,6 +75,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   onExcluir,
   onSubstituir,
   onGerarContrato,
+  onImportarContrato,
   onVisualizarLink,
   onVisualizarFinal,
 }: ContratoMobileCardProps) {
@@ -87,11 +90,13 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onExcluir,
     onSubstituir,
     onGerarContrato,
+    onImportarContrato,
     onVisualizarLink,
     onVisualizarFinal,
   });
 
   const isSemContrato = item.tipo === "passageiro";
+  const isImportado = item?.provider === ContratoProvider.IMPORTADO;
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
   const nomeExibicao = item.passageiro?.nome || item.nome || "";
@@ -114,12 +119,19 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
         </div>
 
         <div className="flex-grow min-w-0 pr-10">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-            {formatShortName(nomeExibicao, true)}
-          </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+              {formatShortName(nomeExibicao, true)}
+            </p>
+            {isImportado && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 shrink-0 border border-blue-100/60">
+                IMPORTADO
+              </span>
+            )}
+          </div>
           <div className="flex flex-col min-w-0 mt-0.5">
             <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
-              {formatNomeResponsavelExibicao(responsavelExibicao)}
+              {formatNomeResponsavelExibicao(responsavelExibicao, true)}
             </p>
           </div>
         </div>
@@ -158,11 +170,6 @@ export const ContratosList = memo(function ContratosList({
         icon: Send,
         title: "Nenhum contrato pendente",
         desc: "Todos os seus contratos foram assinados!",
-      },
-      [ContratoTab.ASSINADOS]: {
-        icon: Eye,
-        title: "Nenhum contrato assinado",
-        desc: "Aguardando assinaturas dos responsáveis.",
       },
       [ContratoTab.SEM_CONTRATO]: {
         icon: FileText,
@@ -221,6 +228,7 @@ export const ContratosList = memo(function ContratosList({
               const nomeResponsavel = item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome;
 
               const isSemContrato = item.tipo === "passageiro";
+              const isImportado = item?.provider === ContratoProvider.IMPORTADO;
               const status = item.status as ContratoStatus | null;
               const isAssinado = status === ContratoStatus.ASSINADO;
 
@@ -237,11 +245,18 @@ export const ContratosList = memo(function ContratosList({
                         <iconConfig.icon className="w-5 h-5" />
                       </div>
                       <div className="flex flex-col">
-                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                          {formatShortName(nomePassageiro, true)}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                            {formatShortName(nomePassageiro, true)}
+                          </p>
+                          {isImportado && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                              PDF Importado
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
-                          {formatNomeResponsavelExibicao(nomeResponsavel)}
+                          {formatNomeResponsavelExibicao(nomeResponsavel, true)}
                         </p>
                       </div>
                     </div>

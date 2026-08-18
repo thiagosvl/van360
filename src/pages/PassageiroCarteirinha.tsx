@@ -122,7 +122,7 @@ export default function PassageiroCarteirinha() {
   const [obsText, setObsText] = useState("");
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { profile, summary, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const {
     data: passageiroData,
@@ -136,7 +136,7 @@ export default function PassageiroCarteirinha() {
 
   const passageiro = passageiroData as Passageiro;
 
-  const totalPassageiros = profile?.summary?.contadores?.passageiros?.total ?? 0;
+  const totalPassageiros = summary?.contadores?.passageiros?.total ?? 0;
 
 
 
@@ -442,6 +442,24 @@ export default function PassageiroCarteirinha() {
     );
   }, [cobrancas]);
 
+  const handleDeleteContrato = useCallback(() => {
+    if (!passageiro?.contrato_id) return;
+    openConfirmationDialog({
+      title: "Excluir Contrato?",
+      description: "Tem certeza que deseja excluir o contrato deste passageiro? Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteContrato.mutateAsync(passageiro.contrato_id!);
+          safeCloseDialog(closeConfirmationDialog);
+        } catch {
+          safeCloseDialog(closeConfirmationDialog);
+        }
+      },
+    });
+  }, [passageiro?.contrato_id, openConfirmationDialog, closeConfirmationDialog, deleteContrato]);
+
   if (!can("passageiros.visualizar")) {
     return <AccessRestrictedState moduleName="Passageiros" />;
   }
@@ -712,6 +730,7 @@ export default function PassageiroCarteirinha() {
                         passageiro={passageiro}
                         contratosAtivos={infoProps.contratosAtivos}
                         onContractAction={infoProps.onContractAction}
+                        onDeleteContrato={handleDeleteContrato}
                         onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
                         onEditClick={handleEditClick}
                       />
@@ -756,6 +775,7 @@ export default function PassageiroCarteirinha() {
                       passageiro={passageiro}
                       contratosAtivos={infoProps.contratosAtivos}
                       onContractAction={infoProps.onContractAction}
+                      onDeleteContrato={handleDeleteContrato}
                       onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
                       onEditClick={handleEditClick}
                     />

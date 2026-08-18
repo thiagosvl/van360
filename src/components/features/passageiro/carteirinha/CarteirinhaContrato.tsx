@@ -1,7 +1,7 @@
-import { FileCheck2, Clock, FileX2, Plus, ExternalLink, Wand2, Pencil, CheckCircle2 } from "lucide-react";
+import { FileCheck2, Clock, FileX2, Plus, ExternalLink, Wand2, Pencil, CheckCircle2, UploadCloud, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { ContratoStatus } from "@/types/enums";
+import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { isResponsavelIncompleto, obterStatusConfiguracaoContrato, StatusConfiguracaoContrato } from "@/utils/domain";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -13,6 +13,7 @@ interface CarteirinhaContratoProps {
   passageiro: Passageiro;
   contratosAtivos?: boolean;
   onContractAction: () => void;
+  onDeleteContrato?: () => void;
   onEnviarWhatsApp?: (passageiro: Passageiro) => void;
   onEditClick?: () => void;
 }
@@ -21,13 +22,14 @@ export const CarteirinhaContrato = ({
   passageiro,
   contratosAtivos = true,
   onContractAction,
+  onDeleteContrato,
   onEnviarWhatsApp,
   onEditClick,
 }: CarteirinhaContratoProps) => {
   const { can } = usePermissions();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { openContractSetupDialog } = useLayout();
+  const { openContractSetupDialog, openImportarContratoDialog } = useLayout();
 
   const canManage = can("contratos.gerenciar") || can("passageiros.gerenciar");
 
@@ -68,11 +70,16 @@ export const CarteirinhaContrato = ({
 
   const getContratoConfig = (status?: ContratoStatus) => {
     if (status === ContratoStatus.ASSINADO) {
+      const isImportado = passageiro.contrato_provider === ContratoProvider.IMPORTADO;
       return {
-        title: "Contrato Assinado",
-        desc: "Documento oficial assinado eletronicamente",
-        color: "bg-slate-50 border-slate-200/80 hover:bg-slate-100/30 hover:border-slate-300",
-        iconColor: "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-xs",
+        title: isImportado ? "Contrato Importado" : "Contrato Assinado",
+        desc: isImportado
+          ? "Documento em PDF importado e arquivado"
+          : "Documento oficial assinado eletronicamente",
+        color: "bg-slate-50/80 border-slate-100/80 hover:bg-slate-100/50 hover:border-slate-200/80",
+        iconColor: isImportado
+          ? "text-blue-600 bg-blue-100/50 border border-blue-200/20 shadow-xs"
+          : "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-xs",
         icon: FileCheck2,
         actionLabel: "Ver Contrato",
         actionColor: "bg-white border border-[#1a3a5c] text-[#1a3a5c] hover:bg-slate-50 shadow-xs shadow-[#1a3a5c]/5",
@@ -99,7 +106,7 @@ export const CarteirinhaContrato = ({
       return {
         title: "Não possui contrato",
         desc: "Complete o cadastro do responsável para poder emitir contratos.",
-        color: "bg-amber-50/30 border-amber-200/60",
+        color: "bg-amber-50/40 border-amber-100/80",
         iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/30 shadow-xs",
         icon: Pencil,
         actionLabel: "Completar Cadastro",
@@ -113,7 +120,7 @@ export const CarteirinhaContrato = ({
       return {
         title: "Não possui contrato",
         desc: "Configure sua assinatura e modelo para começar a gerar contratos.",
-        color: "bg-blue-50/30 border-blue-200/60",
+        color: "bg-slate-50/80 border-slate-100/80",
         iconColor: "text-[#1a3a5c] bg-blue-100/50 border border-blue-200/30 shadow-xs",
         icon: FileX2,
         actionLabel: "Configurar & Gerar",
@@ -127,7 +134,7 @@ export const CarteirinhaContrato = ({
       return {
         title: "Não possui contrato",
         desc: "O uso de contratos está desativado na sua conta.",
-        color: "bg-slate-50 border-slate-200/80",
+        color: "bg-slate-50/80 border-slate-100/80",
         iconColor: "text-slate-500 bg-slate-100 border border-slate-200/50 shadow-xs",
         icon: FileX2,
         actionLabel: "Reativar & Gerar",
@@ -140,7 +147,7 @@ export const CarteirinhaContrato = ({
     return {
       title: "Não possui contrato",
       desc: "Gere o contrato para assinatura do responsável.",
-      color: "bg-white border-slate-200/80",
+      color: "bg-slate-50/80 border-slate-100/80",
       iconColor: "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-xs",
       icon: FileX2,
       actionLabel: "Gerar Contrato",
@@ -151,6 +158,9 @@ export const CarteirinhaContrato = ({
   };
 
   const contratoConfig = getContratoConfig(passageiro.status_contrato);
+  const hasContract =
+    passageiro.status_contrato === ContratoStatus.ASSINADO ||
+    passageiro.status_contrato === ContratoStatus.PENDENTE;
 
   return (
     <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-5 flex flex-col gap-4">
@@ -183,17 +193,41 @@ export const CarteirinhaContrato = ({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={contratoConfig.onClick}
-          className={cn(
-            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-lg text-[13px] font-bold transition-all duration-200 shadow-xs hover:shadow active:scale-[0.99] shrink-0 cursor-pointer",
-            contratoConfig.actionColor
+        <div className="flex flex-col gap-2 w-full">
+          <button
+            type="button"
+            onClick={contratoConfig.onClick}
+            className={cn(
+              "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-lg text-[13px] font-bold transition-all duration-200 shadow-xs hover:shadow active:scale-[0.99] shrink-0 cursor-pointer",
+              contratoConfig.actionColor
+            )}
+          >
+            <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
+            <span>{contratoConfig.actionLabel}</span>
+          </button>
+
+          {!hasContract && (
+            <button
+              type="button"
+              onClick={() => openImportarContratoDialog({ passageiroId: passageiro.id, passageiro })}
+              className="flex items-center justify-center gap-1.5 w-full py-2 px-4 rounded-lg text-[12px] font-bold text-slate-700 bg-white border border-slate-200/80 hover:bg-slate-50 transition-all duration-200 shadow-xs active:scale-[0.99] shrink-0 cursor-pointer"
+            >
+              <UploadCloud className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+              <span>Importar Contrato</span>
+            </button>
           )}
-        >
-          <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
-          <span>{contratoConfig.actionLabel}</span>
-        </button>
+
+          {hasContract && onDeleteContrato && (
+            <button
+              type="button"
+              onClick={onDeleteContrato}
+              className="flex items-center justify-center gap-1.5 w-full py-2 px-4 rounded-lg text-[12px] font-bold text-red-600 bg-red-50/40 hover:bg-red-50 border border-red-100 transition-all duration-200 shadow-xs active:scale-[0.99] shrink-0 cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-red-500 shrink-0" />
+              <span>Excluir Contrato</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

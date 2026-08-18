@@ -98,7 +98,6 @@ export enum CobrancaTab {
 
 export enum ContratoTab {
   PENDENTES = "pendentes",
-  ASSINADOS = "assinados",
   SEM_CONTRATO = "sem_contrato",
 }
 
@@ -197,6 +196,7 @@ export enum AtividadeAcao {
   CONTRATO_CONFIG_EDITADA = "CONTRATO_CONFIG_EDITADA",
   CONTRATO_GERADO = "CONTRATO_GERADO",
   CONTRATO_ASSINADO = "CONTRATO_ASSINADO",
+  CONTRATO_IMPORTADO = "CONTRATO_IMPORTADO",
   CONTRATO_EXCLUIDO = "CONTRATO_EXCLUIDO",
   USUARIO_SUSPENSO = "USUARIO_SUSPENSO",
   WHATSAPP_STATUS_ALTERADO = "WHATSAPP_STATUS_ALTERADO",
@@ -247,7 +247,8 @@ export enum GastoCategoria {
 export enum ContratoProvider {
   INHOUSE = "inhouse",
   ASSINAFY = "assinafy",
-  DOCUSIGN = "docusign"
+  DOCUSIGN = "docusign",
+  IMPORTADO = "importado"
 }
 
 export enum KPICardVariant {

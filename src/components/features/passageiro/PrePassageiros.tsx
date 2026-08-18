@@ -41,14 +41,16 @@ import {
   Trash2,
   Users2
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   profile: initialProfile,
-  searchTerm: externalSearchTerm = "",
+  searchTerm = "",
+}: {
+  onFinalizeNewPrePassageiro?: () => Promise<void>;
+  profile?: any;
+  searchTerm?: string;
 }) {
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(externalSearchTerm);
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -68,7 +70,7 @@ export default function PrePassageiros({
   } = usePrePassageiros(
     {
       usuarioId: profile?.id,
-      search: debouncedSearchTerm || undefined,
+      search: searchTerm || undefined,
     },
     {
       enabled: !!profile?.id,
@@ -80,13 +82,6 @@ export default function PrePassageiros({
     (prePassageirosData as PrePassageiro[] | undefined) ?? [];
 
   const loading = isPrePassageirosLoading;
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(externalSearchTerm);
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [externalSearchTerm]);
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     openPassageiroFormDialog({
@@ -173,7 +168,7 @@ export default function PrePassageiros({
           icon={Users2}
           title="Tudo limpo por aqui!"
           description={
-            externalSearchTerm.length > 0
+            searchTerm.length > 0
               ? "Nenhuma solicitação encontrada para sua busca."
               : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."
           }

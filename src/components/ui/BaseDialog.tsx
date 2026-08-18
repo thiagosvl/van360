@@ -60,6 +60,9 @@ const BaseDialogRoot = ({
         hideCloseButton // We'll handle our own close button in the header
       >
         <div className="sr-only">
+          <DialogPrimitive.Title>
+            Modal
+          </DialogPrimitive.Title>
           <DialogPrimitive.Description>
             {description || "Dialog content"}
           </DialogPrimitive.Description>

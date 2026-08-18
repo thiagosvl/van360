@@ -531,14 +531,6 @@ export const CarteirinhaResponsaveis = ({
                         {!currentResp.telefone ? "Telefone não cadastrado" : phoneMask(currentResp.telefone)}
                       </span>
                     </div>
-                    <div className="text-xs text-[#1a3a5c] leading-tight block break-words">
-                      <span className="font-bold">PIN de acesso: </span>
-                      <span className={currentResp.pin_acesso ? "font-normal text-slate-700" : "font-normal text-slate-500"}>
-                        {currentResp.pin_acesso
-                          ? "Definido pelo responsável"
-                          : "Não definido (será criado no 1º acesso)"}
-                      </span>
-                    </div>
                   </div>
                 </div>
               )}

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 
-import { UserType } from "@/types/enums";
+import { isMotoristaTitular } from "@/utils/userUtils";
 
 export function useDashboardViewModel() {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export function useDashboardViewModel() {
     summary: systemSummary,
   } = useProfile();
 
-  const isGestor = profile?.tipo === UserType.MOTORISTA && !profile?.conta_pai_id;
+  const isGestor = isMotoristaTitular(profile);
 
   const { subscription } = useSubscriptionStatus(isGestor ? profile?.id : undefined);
   const { plans } = useSubscriptionPlans({ enabled: isGestor });

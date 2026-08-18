@@ -24,6 +24,7 @@ export default function Passageiros() {
     countPrePassageiros,
     searchTerm,
     setSearchTerm,
+    debouncedSearchTerm,
     selectedStatus,
     setSelectedStatus,
     selectedEscola,
@@ -64,12 +65,12 @@ export default function Passageiros() {
   let countLabel = "";
 
   if (isMainTab) {
-    const hasSearch = !!searchTerm || selectedStatus !== "all" || selectedEscola !== "all" || selectedVeiculo !== "all" || selectedPeriodo !== "all";
+    const hasSearch = !!debouncedSearchTerm || selectedStatus !== "all" || selectedEscola !== "all" || selectedVeiculo !== "all" || selectedPeriodo !== "all";
     countLabel = hasSearch
       ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
       : (sectionCount === 1 ? "PASSAGEIRO" : "PASSAGEIROS");
   } else {
-    const hasSearch = !!searchTerm;
+    const hasSearch = !!debouncedSearchTerm;
     countLabel = hasSearch
       ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
       : (sectionCount === 1 ? "SOLICITAÇÃO" : "SOLICITAÇÕES");
@@ -165,8 +166,8 @@ export default function Passageiros() {
                       <UnifiedEmptyState
                         icon={Users2}
                         title="Nenhum passageiro encontrado"
-                        description={searchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Não encontramos nenhum passageiro cadastrado em sua frota."}
-                        action={(hasActiveFilters || searchTerm.length > 0) ? {
+                        description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Não encontramos nenhum passageiro cadastrado em sua frota."}
+                        action={(hasActiveFilters || debouncedSearchTerm.length > 0) ? {
                           label: "Limpar Filtros",
                           onClick: clearFilters
                         } : (can("passageiros.gerenciar") ? {
@@ -201,7 +202,7 @@ export default function Passageiros() {
                   <PrePassageiros
                     onFinalizeNewPrePassageiro={async () => { }}
                     profile={profile}
-                    searchTerm={searchTerm}
+                    searchTerm={debouncedSearchTerm}
                   />
                 )}
               </TabsContent>
@@ -247,8 +248,8 @@ export default function Passageiros() {
                 <UnifiedEmptyState
                   icon={Users2}
                   title="Nenhum passageiro encontrado"
-                  description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
-                  action={(hasActiveFilters || searchTerm.length > 0) ? {
+                  description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
+                  action={(hasActiveFilters || debouncedSearchTerm.length > 0) ? {
                     label: "Limpar Filtros",
                     onClick: clearFilters
                   } : (can("passageiros.gerenciar") ? {

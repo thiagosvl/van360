@@ -92,6 +92,7 @@ export function usePassageirosViewModel() {
   const {
     searchTerm,
     setSearchTerm,
+    debouncedSearchTerm,
     selectedStatus,
     setSelectedStatus,
     selectedEscola,
@@ -108,8 +109,6 @@ export function usePassageirosViewModel() {
     veiculoParam: "veiculo",
     periodoParam: "periodo",
   });
-
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const createPassageiro = useCreatePassageiro();
   const createContrato = useCreateContrato();
@@ -234,13 +233,6 @@ export function usePassageirosViewModel() {
     () => veiculosData?.list ?? ([] as Veiculo[]),
     [veiculosData],
   );
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
 
   useEffect(() => {
     setPageTitle("Passageiros");
@@ -505,6 +497,7 @@ export function usePassageirosViewModel() {
     countPrePassageiros,
     searchTerm,
     setSearchTerm,
+    debouncedSearchTerm,
     selectedStatus,
     setSelectedStatus,
     selectedEscola,

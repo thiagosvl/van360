@@ -119,6 +119,12 @@ export interface OpenGerarContratoValidadorDialogProps {
   onSuccess: (passageiroId: string, bypassed?: boolean) => void;
 }
 
+export interface OpenImportarContratoDialogProps {
+  passageiroId?: string;
+  passageiro?: Passageiro;
+  onSuccess?: () => void;
+}
+
 export interface OpenPixPaymentDialogProps {
   qrcode: string;
   imagem_qrcode: string;
@@ -187,6 +193,7 @@ export interface LayoutContextType {
 
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
   openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;
+  openImportarContratoDialog: (props?: OpenImportarContratoDialogProps) => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

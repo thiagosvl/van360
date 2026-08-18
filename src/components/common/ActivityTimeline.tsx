@@ -59,6 +59,16 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
         icon: <FileText className="w-3.5 h-3.5" />,
         color: "text-indigo-600 bg-indigo-50 border-indigo-100",
       };
+    case AtividadeAcao.CONTRATO_IMPORTADO:
+      return {
+        icon: <FileText className="w-3.5 h-3.5" />,
+        color: "text-blue-600 bg-blue-50 border-blue-100",
+      };
+    case AtividadeAcao.CONTRATO_EXCLUIDO:
+      return {
+        icon: <Trash2 className="w-3.5 h-3.5" />,
+        color: "text-rose-600 bg-rose-50 border-rose-100",
+      };
     case AtividadeAcao.ROTA_CONCLUIDA:
     case AtividadeAcao.CONTRATO_ASSINADO:
       return {

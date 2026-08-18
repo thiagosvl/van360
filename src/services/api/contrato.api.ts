@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import { Contrato, CreateContratoDTO } from "@/types/contract";
+import { Contrato, CreateContratoDTO, ImportContratoDTO } from "@/types/contract";
 import { PreviewConfig } from "@/hooks/api/useContratos";
 
 export const contratoApi = {
@@ -15,6 +15,11 @@ export const contratoApi = {
 
   createContrato: async (dto: CreateContratoDTO) => {
     const { data } = await apiClient.post<Contrato>('/contratos', dto);
+    return data;
+  },
+
+  importarContrato: async (dto: ImportContratoDTO) => {
+    const { data } = await apiClient.post<Contrato>('/contratos/importar', dto);
     return data;
   },
 

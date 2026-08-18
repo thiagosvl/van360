@@ -24,8 +24,9 @@ import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
+import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenResponsavelFormProps, OpenDefinirResponsavelPrincipalProps } from "./LayoutContext";
+import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenImportarContratoDialogProps, OpenResponsavelFormProps, OpenDefinirResponsavelPrincipalProps } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -217,6 +218,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [importarContratoDialogState, setImportarContratoDialogState] = useState<{
+    open: boolean;
+    props?: OpenImportarContratoDialogProps;
+  }>({
+    open: false,
+  });
+
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
@@ -394,6 +402,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setGerarContratoValidadorDialogState({ open: true, props });
   };
 
+  const openImportarContratoDialog = (props?: OpenImportarContratoDialogProps) => {
+    setImportarContratoDialogState({ open: true, props });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -424,6 +436,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openSaaSCheckoutDialog,
         openAdminCreateUserDialog,
         openGerarContratoValidadorDialog,
+        openImportarContratoDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -827,6 +840,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setGerarContratoValidadorDialogState({ open: false }))}
           passageiroId={gerarContratoValidadorDialogState.props.passageiroId}
           onSuccess={gerarContratoValidadorDialogState.props.onSuccess}
+        />
+      )}
+
+      {importarContratoDialogState.open && (
+        <ImportarContratoDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setImportarContratoDialogState({ open: false }))}
+          passageiroId={importarContratoDialogState.props?.passageiroId}
+          passageiro={importarContratoDialogState.props?.passageiro}
+          onSuccess={importarContratoDialogState.props?.onSuccess}
         />
       )}
 

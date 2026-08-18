@@ -273,7 +273,7 @@ export function ActiveRouteExecutionView({
     const isLastStop = proximasParadas.length === 0;
 
     openConfirmationDialog({
-      title: "Confirmar Ausência Hoje?",
+      title: "Confirmar Ausência?",
       description: `Tem certeza que deseja marcar ${formatFirstName(nome)} como ausente hoje nesta corrida?`,
       confirmText: "Confirmar",
       cancelText: "Cancelar",

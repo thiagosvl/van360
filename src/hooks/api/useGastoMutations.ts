@@ -62,7 +62,7 @@ export function broadcastGastoEvent(donoContaId?: string, veiculoId?: string, ga
 
 export function useCreateGasto() {
   const queryClient = useQueryClient();
-  const { profile } = useProfile();
+  const { profile, donoContaId } = useProfile();
 
   return useMutation({
     mutationFn: ({ usuarioId, data }: { usuarioId: string; data: Partial<Gasto> }) => {
@@ -73,8 +73,8 @@ export function useCreateGasto() {
       markLocalGastoMutation();
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
       toast.success("gasto.sucesso.criado");
-      const donoContaId = profile?.conta_pai_id || profile?.id || variables.usuarioId;
-      broadcastGastoEvent(donoContaId, variables.data?.veiculo_id, variables.data?.data);
+      const targetDonoId = donoContaId || variables.usuarioId;
+      broadcastGastoEvent(targetDonoId, variables.data?.veiculo_id, variables.data?.data);
     },
     onError: (error: any) => {
       toast.error("gasto.erro.criar", {
@@ -86,7 +86,7 @@ export function useCreateGasto() {
 
 export function useUpdateGasto() {
   const queryClient = useQueryClient();
-  const { profile } = useProfile();
+  const { profile, donoContaId } = useProfile();
 
   return useMutation({
     mutationFn: ({ id, data, escopo }: { id: string; data: Partial<Gasto>; escopo?: GastoEscopoAcao }) => {
@@ -102,7 +102,6 @@ export function useUpdateGasto() {
       markLocalGastoMutation();
       toast.success("gasto.sucesso.atualizado");
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
-      const donoContaId = profile?.conta_pai_id || profile?.id;
       broadcastGastoEvent(donoContaId, variables.data?.veiculo_id, variables.data?.data);
     },
   });
@@ -110,7 +109,7 @@ export function useUpdateGasto() {
 
 export function useDeleteGasto() {
   const queryClient = useQueryClient();
-  const { profile } = useProfile();
+  const { profile, donoContaId } = useProfile();
 
   return useMutation({
     mutationFn: ({ id, escopo }: { id: string; escopo?: GastoEscopoAcao }) => {
@@ -126,7 +125,6 @@ export function useDeleteGasto() {
       markLocalGastoMutation();
       toast.success("gasto.sucesso.excluido");
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
-      const donoContaId = profile?.conta_pai_id || profile?.id;
       broadcastGastoEvent(donoContaId);
     },
   });

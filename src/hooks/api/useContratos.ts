@@ -1,7 +1,7 @@
 import { ContractSection } from "@/constants/defaults";
 import { getMessage } from "@/constants/messages";
 import { contratoApi } from "@/services/api/contrato.api";
-import { Contrato, CreateContratoDTO } from "@/types/contract";
+import { Contrato, CreateContratoDTO, ImportContratoDTO } from "@/types/contract";
 import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -60,6 +60,28 @@ export function useCreateContrato() {
       const err = error as { response?: { data?: { error?: string } } };
       const message =
         err.response?.data?.error || getMessage("contrato.erro.gerar");
+      toast.error(message);
+    },
+  });
+}
+
+export function useImportarContrato() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (dto: ImportContratoDTO) => {
+      return await contratoApi.importarContrato(dto);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro"] });
+      toast.success("Contrato importado com sucesso!");
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
+      const message =
+        err.response?.data?.error || "Erro ao importar contrato.";
       toast.error(message);
     },
   });

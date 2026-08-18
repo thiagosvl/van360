@@ -18,7 +18,7 @@ import { AdminUserContractItem, AdminUserPassengerItem } from "@/services/api/ad
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatShortName } from "@/utils/formatters/name";
 import { phoneMask } from "@/utils/masks";
-import { ContratoStatus, DriverContractConfigStatus } from "@/types/enums";
+import { ContratoProvider, ContratoStatus, DriverContractConfigStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { obterUrlDocumentoContrato } from "@/utils/domain";
 
@@ -225,9 +225,15 @@ export function AdminUserContractsTab({
                           <td className="py-4 px-4 whitespace-nowrap">
                             {contrato ? (
                               contrato.status === ContratoStatus.ASSINADO ? (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                                  <CheckCircle2 className="h-3 w-3" /> ASSINADO
-                                </span>
+                                contrato.provider === ContratoProvider.IMPORTADO ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                                    <CheckCircle2 className="h-3 w-3" /> IMPORTADO
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                    <CheckCircle2 className="h-3 w-3" /> ASSINADO
+                                  </span>
+                                )
                               ) : contrato.status === ContratoStatus.PENDENTE ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
                                   <Clock className="h-3 w-3" /> PENDENTE
@@ -287,9 +293,15 @@ export function AdminUserContractsTab({
                         </div>
                         {contrato ? (
                           contrato.status === ContratoStatus.ASSINADO ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
-                              <CheckCircle2 className="h-3 w-3" /> ASSINADO
-                            </span>
+                            contrato.provider === ContratoProvider.IMPORTADO ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 shrink-0">
+                                <CheckCircle2 className="h-3 w-3" /> IMPORTADO
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
+                                <CheckCircle2 className="h-3 w-3" /> ASSINADO
+                              </span>
+                            )
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
                               <Clock className="h-3 w-3" /> PENDENTE
