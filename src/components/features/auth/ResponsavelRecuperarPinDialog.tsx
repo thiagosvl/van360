@@ -53,8 +53,8 @@ const otpStepSchema = z.object({
 const pinStepSchema = z.object({
   newPin: z
     .string()
-    .length(4, "O PIN deve ter exatamente 4 dígitos.")
-    .regex(/^\d+$/, "O PIN deve conter apenas números.")
+    .length(4, "A senha deve ter exatamente 4 dígitos.")
+    .regex(/^\d+$/, "A senha deve conter apenas números.")
 });
 
 type PhoneStepValues = z.infer<typeof phoneStepSchema>;
@@ -134,7 +134,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
     try {
       const res = await responsavelApi.checkResetEmails(cleanPhone);
       if (!res.emails || res.emails.length === 0) {
-        setErrorMessage("Nenhum e-mail cadastrado no momento. Solicite ao motorista da van para resetar seu PIN.");
+        setErrorMessage("Nenhum e-mail cadastrado no momento. Solicite ao motorista da van para resetar sua senha.");
         return;
       }
 
@@ -179,11 +179,11 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
     setLoading(true);
     try {
       await responsavelApi.executePinReset(resetToken, values.newPin);
-      toast.success("PIN redefinido com sucesso! Faça login com o seu novo PIN.");
+      toast.success("Senha redefinida com sucesso! Faça login com a sua nova senha.");
       handleClose();
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
-      pinForm.setError("newPin", { message: errorObj.response?.data?.message || "Erro ao redefinir PIN." });
+      pinForm.setError("newPin", { message: errorObj.response?.data?.message || "Erro ao redefinir a senha." });
     } finally {
       setLoading(false);
     }
@@ -390,7 +390,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                 <Banner
                   variant="info"
                   icon={<ShieldCheck className="w-5 h-5 text-[#1a3a5c]" />}
-                  description="Código validado com sucesso! Crie o seu novo PIN de 4 dígitos para acessar o aplicativo."
+                  description="Código validado com sucesso! Crie a sua nova senha de 4 dígitos para acessar o app."
                 />
 
                 <FormField
@@ -399,7 +399,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-medium ml-1">
-                        Novo PIN de 4 Dígitos
+                        Nova Senha (4 dígitos)
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -417,7 +417,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                             onClick={() => setShowPin(!showPin)}
                             className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0 cursor-pointer"
                             tabIndex={-1}
-                            title={showPin ? "Ocultar PIN" : "Exibir PIN"}
+                            title={showPin ? "Ocultar senha" : "Exibir senha"}
                           >
                             {showPin ? (
                               <EyeOff className="h-5 w-5 opacity-60" />
@@ -445,7 +445,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
     switch (step) {
       case 1:
         return {
-          title: "REDEFINIR PIN",
+          title: "REDEFINIR SENHA",
           subtitle: "Passo 1: Identificação",
           icon: <Mail className="w-6 h-6" />
         };
@@ -466,7 +466,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
         };
       case 3:
         return {
-          title: "NOVO PIN",
+          title: "NOVA SENHA",
           subtitle: "Passo 3: Conclusão",
           icon: <KeyRound className="w-6 h-6" />
         };
@@ -522,7 +522,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
             />
           ) : (
             <BaseDialog.Action
-              label="Salvar Novo PIN"
+              label="Salvar Nova Senha"
               variant="primary"
               form="form-recuperar-pin-step3"
               type="submit"

@@ -1,10 +1,12 @@
 import { memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { NotificacoesTab } from "@/components/features/configuracoes/NotificacoesTab";
+import { RastreamentoTab } from "@/components/features/configuracoes/RastreamentoTab";
 import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { ArrowLeft, Bell, ChevronRight, CreditCard, User } from "lucide-react";
+import { ArrowLeft, Bell, ChevronRight, CreditCard, Radio, User } from "lucide-react";
+import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 
 export const Configuracoes = memo(function Configuracoes() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,6 +24,9 @@ export const Configuracoes = memo(function Configuracoes() {
   const renderCurrentView = () => {
     if (tabParam === "notificacoes" && !isSubConta) {
       return <NotificacoesTab />;
+    }
+    if (tabParam === "rastreamento" && !isSubConta && ENABLE_LIVE_TRACKING) {
+      return <RastreamentoTab />;
     }
     if (tabParam === "perfil") {
       return <PerfilTab />;
@@ -80,7 +85,31 @@ export const Configuracoes = memo(function Configuracoes() {
             </button>
           )}
 
-          {/* Opção 3: Pagamentos & PIX (Apenas Gestor) */}
+          {/* Opção 3: Rastreamento & GPS (Apenas Gestor) */}
+          {!isSubConta && ENABLE_LIVE_TRACKING && (
+            <button
+              type="button"
+              onClick={() => handleSelectTab("rastreamento")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <Radio className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Rastreamento & GPS
+                  </h2>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Visibilidade da van no mapa ao vivo e modos de rastreamento para os pais
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+          )}
+
+          {/* Opção 4: Pagamentos & PIX (Apenas Gestor) */}
           {!isSubConta && (
             <button
               type="button"
@@ -96,7 +125,7 @@ export const Configuracoes = memo(function Configuracoes() {
                     Pagamentos & PIX
                   </h2>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Chave PIX e configurações de recebimento das parcelas
+                    Chave PIX de recebimento e regras de multa e juros das parcelas
                   </p>
                 </div>
               </div>
@@ -108,7 +137,7 @@ export const Configuracoes = memo(function Configuracoes() {
     );
   };
 
-  const isSubPage = Boolean(tabParam && ["notificacoes", "perfil", "pagamentos"].includes(tabParam));
+  const isSubPage = Boolean(tabParam && ["notificacoes", "rastreamento", "perfil", "pagamentos"].includes(tabParam));
 
   return (
     <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">

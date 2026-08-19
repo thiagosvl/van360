@@ -20,8 +20,8 @@ export const phoneFormSchema = z.object({
 export const pinFormSchema = z.object({
   pin: z
     .string()
-    .length(4, "O PIN deve ter exatamente 4 dígitos.")
-    .regex(/^\d+$/, "O PIN deve conter apenas números.")
+    .length(4, "A senha deve ter exatamente 4 dígitos.")
+    .regex(/^\d+$/, "A senha deve conter apenas números.")
 });
 
 export type PhoneFormValues = z.infer<typeof phoneFormSchema>;
@@ -106,7 +106,7 @@ export function useResponsavelLoginForm() {
       } catch (err: unknown) {
         const errorObj = err as { response?: { data?: { message?: string } } };
         pinForm.setError("root", {
-          message: errorObj.response?.data?.message || "Erro ao configurar o PIN. Tente novamente."
+          message: errorObj.response?.data?.message || "Erro ao configurar a senha. Tente novamente."
         });
       }
     } else {
@@ -121,7 +121,7 @@ export function useResponsavelLoginForm() {
       } catch (err: unknown) {
         const errorObj = err as { response?: { data?: { message?: string } } };
         pinForm.setError("root", {
-          message: errorObj.response?.data?.message || "PIN incorreto. Tente novamente."
+          message: errorObj.response?.data?.message || "Senha incorreta. Tente novamente."
         });
       }
     }

@@ -74,7 +74,7 @@ export default function Register() {
                     src="/assets/logo-van360.webp"
                     alt="Van360"
                     className="h-12 w-auto select-none drop-shadow-sm cursor-pointer"
-                    onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
+                    onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`)}
                   />
                 </div>
               </div>
@@ -451,8 +451,8 @@ export default function Register() {
                         Já tem uma conta?{" "}
                         <button
                           type="button"
-                          onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
-                          className="text-[#1a3a5c] font-bold hover:underline transition-all"
+                          onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`)}
+                          className="text-[#1a3a5c] font-bold hover:underline transition-all cursor-pointer"
                         >
                           Fazer login
                         </button>

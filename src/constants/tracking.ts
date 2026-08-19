@@ -1,6 +1,4 @@
-export const FEATURE_FLAGS = {
-  ENABLE_LIVE_TRACKING: false
-} as const;
+export const ENABLE_LIVE_TRACKING = false;
 
 export const TRACKING_REALTIME_CONFIG = {
   CHANNEL_PREFIX: "trip-tracking:",

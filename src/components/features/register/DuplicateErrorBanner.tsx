@@ -21,7 +21,7 @@ export function DuplicateErrorBanner({
       description="Parece que você já possui um cadastro. Faça login para acessar sua conta."
       action={{
         label: "Fazer Login",
-        onClick: () => navigate(ROUTES.PUBLIC.LOGIN),
+        onClick: () => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`),
       }}
       onDismiss={onDismiss}
       className="mb-6"

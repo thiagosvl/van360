@@ -26,9 +26,12 @@ export const placaSchema = z
 
 export const emailSchema = z.string().email("E-mail inválido");
 
-export const cepSchema = z.string().refine((val) => isValidCEPFormat(val), {
-  message: "Formato inválido (00000-000)",
-});
+export const cepSchema = z
+  .string({ required_error: "Campo obrigatório" })
+  .min(1, "Campo obrigatório")
+  .refine((val) => isValidCEPFormat(val), {
+    message: "Formato inválido (00000-000)",
+  });
 
 import { isValidDateBr } from "@/utils/validators";
 

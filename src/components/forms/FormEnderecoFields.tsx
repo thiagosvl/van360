@@ -74,33 +74,33 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-6">
-      {!isExternal && (
-        <div className="md:col-span-6">
-          <Banner
-            variant="info"
-            title="O CEP não é obrigatório!"
-            description={
-              <>
-                Se você não souber o CEP, pode digitar o nome da rua direto no campo <strong>Logradouro</strong> para buscar as sugestões de endereço.
-              </>
-            }
-          />
-        </div>
-      )}
+      <div className="md:col-span-6">
+        <Banner
+          variant="info"
+          title="Não sabe o seu CEP?"
+          description={
+            <>
+              Se você não souber o seu CEP, basta digitar o nome da rua no campo <strong>Logradouro</strong> para buscar as sugestões e preenchê-lo automaticamente.
+            </>
+          }
+        />
+      </div>
 
       <FormField
         control={form.control}
         name={`${namePrefix}cep`}
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <CepInput
             field={field}
-            required={false}
+            required={required}
             label="CEP"
             className="md:col-span-2"
             labelClassName="text-slate-700 font-semibold ml-1"
             inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
             onLoadingChange={setIsCepLoading}
             isExternal={isExternal}
+            namePrefix={namePrefix}
+            error={!!fieldState.error}
           />
         )}
       />

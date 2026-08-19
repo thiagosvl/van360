@@ -97,8 +97,6 @@ export function ActiveRouteExecutionView({
     open: boolean;
     title: string;
     address: string;
-    latitude?: number;
-    longitude?: number;
     sentido?: string | null;
     escolaNome?: string | null;
     tipoNo?: RouteNodeType | null;
@@ -324,11 +322,22 @@ export function ActiveRouteExecutionView({
 
   const handleConfirmChamadaEscola = async (chamada: ChamadaEscolaItem[]) => {
     if (!execucao?.id) return;
+
+    const apenasAusentes = chamada.filter((item) => item.status === RouteStopStatus.AUSENTE);
+
+    if (apenasAusentes.length === 0) {
+      setIsChamadaDialogOpen(false);
+      toast.success("Chamada concluída!", {
+        description: "Todos os alunos estão presentes.",
+      });
+      return;
+    }
+
     try {
       await chamadaEscolaMutation.mutateAsync({
         execucaoId: execucao.id,
         escolaParadaId: activeParadaToRender?.id || paradaAtual?.id,
-        chamada,
+        chamada: apenasAusentes,
       });
 
       setIsChamadaDialogOpen(false);
@@ -622,6 +631,7 @@ export function ActiveRouteExecutionView({
         paradaTarget={reordenarSheetTarget}
         totalPendentes={activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas]}
         paradasConcluidas={paradasConcluidas}
+        isConfigMode={false}
         execucaoTipo={execucao.tipo}
         validarMovimentoPermitido={validarMovimentoPermitido}
         onConfirmReordenação={handleConfirmReordenacaoSheet}

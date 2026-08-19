@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
 import { TrackingGpsPing } from "@/types/tracking";
-import { TRACKING_REALTIME_CONFIG } from "@/constants/tracking";
+import { TRACKING_REALTIME_CONFIG, ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 
 const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 
@@ -25,13 +25,55 @@ export function useBackgroundTracking({
   }, [onLocationUpdate]);
 
   useEffect(() => {
-    if (!active || !execucaoId || !Capacitor.isNativePlatform()) {
-      if (watcherIdRef.current) {
+    if (!ENABLE_LIVE_TRACKING || !active || !execucaoId) {
+      if (watcherIdRef.current && Capacitor.isNativePlatform()) {
         const idToRemove = watcherIdRef.current;
         watcherIdRef.current = null;
         BackgroundGeolocation.removeWatcher({ id: idToRemove }).catch(() => {});
       }
       return;
+    }
+
+    if (typeof window !== "undefined") {
+      (window as unknown as { __VAN360_DISPATCH_MOCK_GPS_PING__?: (ping: TrackingGpsPing) => void }).__VAN360_DISPATCH_MOCK_GPS_PING__ = (ping: TrackingGpsPing) => {
+        onLocationUpdateRef.current?.(ping);
+      };
+    }
+
+    if (!Capacitor.isNativePlatform()) {
+      if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+        return;
+      }
+
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          if (typeof window !== "undefined" && (window as unknown as { __VAN360_DEV_SIMULATING__?: boolean }).__VAN360_DEV_SIMULATING__) {
+            return;
+          }
+          const ping: TrackingGpsPing = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            heading: typeof pos.coords.heading === "number" && !isNaN(pos.coords.heading) ? pos.coords.heading : null,
+            speed: typeof pos.coords.speed === "number" && !isNaN(pos.coords.speed) ? pos.coords.speed : null,
+            accuracy: typeof pos.coords.accuracy === "number" && !isNaN(pos.coords.accuracy) ? pos.coords.accuracy : null,
+            timestamp: pos.timestamp || Date.now()
+          };
+          onLocationUpdateRef.current?.(ping);
+        },
+        () => {},
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+          timeout: 10000
+        }
+      );
+
+      return () => {
+        navigator.geolocation.clearWatch(watchId);
+        if (typeof window !== "undefined") {
+          delete (window as unknown as { __VAN360_DISPATCH_MOCK_GPS_PING__?: (ping: TrackingGpsPing) => void }).__VAN360_DISPATCH_MOCK_GPS_PING__;
+        }
+      };
     }
 
     let isMounted = true;

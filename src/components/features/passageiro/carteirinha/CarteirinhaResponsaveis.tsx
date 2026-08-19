@@ -297,18 +297,18 @@ export const CarteirinhaResponsaveis = ({
           const resetTargetRespId = currentResp.responsavel_id || currentResp.id;
 
           openConfirmationDialog({
-            title: "Resetar PIN do Responsável",
+            title: "Resetar Senha do Responsável",
             description: (
               <div className="space-y-3 pt-1 text-left">
                 <p className="text-slate-600 text-xs leading-relaxed">
-                  Tem certeza que deseja resetar o PIN de <strong>{formatFirstName(currentResp.nome)}</strong>?
+                  Tem certeza que deseja resetar a senha de <strong>{formatFirstName(currentResp.nome)}</strong>?
                 </p>
                 <p className="text-slate-500 text-[11px] leading-relaxed">
-                  O responsável precisará cadastrar um novo PIN no próximo acesso pelo aplicativo.
+                  O responsável precisará cadastrar uma nova senha no próximo acesso pelo app.
                 </p>
               </div>
             ),
-            confirmText: "Sim, resetar PIN",
+            confirmText: "Sim, resetar senha",
             cancelText: "Cancelar",
             variant: "destructive",
             onConfirm: async () => {
@@ -316,7 +316,7 @@ export const CarteirinhaResponsaveis = ({
                 passageiroId: passageiro.id!,
                 responsavelId: resetTargetRespId
               });
-              toast.success("PIN resetado! O responsável cadastrará um novo PIN no próximo acesso.");
+              toast.success("Senha resetada! O responsável cadastrará uma nova senha no próximo acesso.");
               closeConfirmationDialog();
             },
           });
@@ -516,7 +516,7 @@ export const CarteirinhaResponsaveis = ({
                               className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
                             >
                               <KeyRound className="h-4 w-4 text-red-500" />
-                              <span>Resetar PIN de Acesso</span>
+                              <span>Resetar Senha de Acesso</span>
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>

@@ -268,7 +268,7 @@ export function PassageiroFormResponsavel({
           </div>
           Endereço Principal
         </div>
-        <FormEnderecoFields namePrefix={fieldNames.enderecoPrefix} required={false} isExternal={isExternal} />
+        <FormEnderecoFields namePrefix={fieldNames.enderecoPrefix} required={isExternal} isExternal={isExternal} />
       </div>
     </div>
   );

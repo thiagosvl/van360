@@ -128,7 +128,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
               Pagamentos & PIX
             </h2>
             <p className="text-xs text-slate-500">
-              Configure a chave PIX utilizada no recebimento das parcelas e nos lembretes de cobrança.
+              Chave PIX de recebimento e regras de multa e juros das parcelas.
             </p>
           </div>
         </div>

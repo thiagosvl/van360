@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
+import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
 import { convertDateBrToISO, parseCurrencyToNumber } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
-import { isValidCEPFormat } from "@/utils/validators";
 
 export const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
@@ -14,19 +13,12 @@ export const prePassageiroSchema = z.object({
     .min(1, "E-mail é obrigatório")
     .email("E-mail inválido"),
 
-  logradouro: z.string().optional().nullable().or(z.literal("")),
-  numero: z.string().optional().nullable().or(z.literal("")),
-  bairro: z.string().optional().nullable().or(z.literal("")),
-  cidade: z.string().optional().nullable().or(z.literal("")),
-  estado: z.string().optional().nullable().or(z.literal("")),
-  cep: z
-    .string()
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .refine((val) => !val || isValidCEPFormat(val), {
-      message: "Formato inválido (00000-000)",
-    }),
+  logradouro: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  numero: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  bairro: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  cidade: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+  estado: z.string({ required_error: "Campo obrigatório" }).min(2, "Selecione o estado"),
+  cep: cepSchema,
   referencia: z.string().optional().nullable().or(z.literal("")),
   complemento: z.string().optional().nullable().or(z.literal("")),
   observacoes: z.string().optional().nullable().or(z.literal("")),

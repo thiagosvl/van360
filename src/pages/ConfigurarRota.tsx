@@ -229,6 +229,7 @@ export default function ConfigurarRota() {
         paradaTarget={vm.reordenarSheetTargetItem as any}
         totalPendentes={vm.itinerario as any}
         paradasConcluidas={[]}
+        isConfigMode={true}
         execucaoTipo=""
         validarMovimentoPermitido={vm.validarMovimentoPermitido}
         onConfirmReordenação={(novasParadas) => vm.setItinerario(novasParadas as any)}

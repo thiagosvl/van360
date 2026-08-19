@@ -19,7 +19,8 @@ interface ReordenarParadaSheetProps {
   paradaTarget: ExecucaoParada | null;
   totalPendentes: ExecucaoParada[];
   paradasConcluidas: ExecucaoParada[];
-  execucaoTipo: string;
+  execucaoTipo?: string;
+  isConfigMode?: boolean;
   validarMovimentoPermitido: (
     tipo: string,
     index: number,
@@ -64,7 +65,8 @@ export function ReordenarParadaSheet({
   paradaTarget,
   totalPendentes,
   paradasConcluidas,
-  execucaoTipo,
+  execucaoTipo = "",
+  isConfigMode,
   validarMovimentoPermitido,
   onConfirmReordenação,
   escolasList,
@@ -76,6 +78,8 @@ export function ReordenarParadaSheet({
   const hasScrolledOnOpenRef = useRef(false);
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(false);
+
+  const isConfig = isConfigMode !== undefined ? isConfigMode : (!execucaoTipo || execucaoTipo === "");
 
   const checkScrollState = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -104,16 +108,20 @@ export function ReordenarParadaSheet({
       const [removed] = tempPendentes.splice(currentIndex, 1);
       tempPendentes.splice(targetIdx, 0, removed);
 
-      const isConfigMode = !execucaoTipo || execucaoTipo === "";
-      const isValid = isConfigMode || validarItinerarioPronto(
+      const isValid = isConfig || validarItinerarioPronto(
         execucaoTipo,
         [...(paradasConcluidas || []), ...tempPendentes]
       ).isPronto;
 
       if (isValid) {
         if (targetIdx === 0) {
-          labelText = "Primeira parada da rota";
-          subtextStr = "";
+          if (isConfig) {
+            labelText = "Primeira parada da rota";
+            subtextStr = "Início do trajeto";
+          } else {
+            labelText = "Próxima parada";
+            subtextStr = "Será a parada atual a ser atendida";
+          }
         } else {
           const prevItem = tempPendentes[targetIdx - 1];
           const info = getNodeDisplayInfo(prevItem, escolasList);
@@ -125,7 +133,7 @@ export function ReordenarParadaSheet({
     }
 
     return result;
-  }, [paradaTarget, currentIndex, totalPendentes, execucaoTipo, paradasConcluidas, validarMovimentoPermitido, escolasList]);
+  }, [paradaTarget, currentIndex, totalPendentes, isConfig, execucaoTipo, paradasConcluidas, validarMovimentoPermitido, escolasList]);
 
   useEffect(() => {
     if (isOpen && currentIndex !== -1) {
@@ -148,12 +156,11 @@ export function ReordenarParadaSheet({
 
   if (!paradaTarget || currentIndex === -1) return null;
 
-  const isConfigMode = !execucaoTipo || execucaoTipo === "";
   const targetInfo = getNodeDisplayInfo(paradaTarget, escolasList);
   const targetNome = targetInfo.name;
 
   const alternativePointsCount = validInsertionPoints.length;
-  const hasNoAlternativePositions = !isConfigMode && alternativePointsCount === 0;
+  const hasNoAlternativePositions = !isConfig && alternativePointsCount === 0;
 
   const isSamePositionOrNull = selectedTargetIndex === null;
 
@@ -258,7 +265,9 @@ export function ReordenarParadaSheet({
 
                         {pt.subtext && (
                           <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mt-1">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 self-start mt-0.5" />
+                            {pt.targetIndex !== 0 && (
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 self-start mt-0.5" />
+                            )}
                             <span className="break-words leading-snug">{pt.subtext}</span>
                           </div>
                         )}

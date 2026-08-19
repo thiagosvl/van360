@@ -10,6 +10,7 @@ export enum RouteExecutionStatus {
 export enum RouteStopStatus {
   PENDENTE = "pendente",
   EMBARCADO = "embarcado",
+  DESEMBARCADO = "desembarcado",
   AUSENTE = "ausente"
 }
 

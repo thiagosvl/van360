@@ -91,7 +91,7 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
               variant="info"
               description={
                 <span>
-                  Para prosseguir para a carteirinha do(a) <strong>{passageiroNome}</strong>, confirme ou preencha o <strong>CPF</strong> e <strong>E-mail</strong> do responsável.
+                  Para prosseguir para a carteirinha do(a) <strong>{passageiroNome}</strong>, confirme ou preencha os <strong>seus dados pessoais (CPF e E-mail)</strong>.
                 </span>
               }
             />
@@ -102,7 +102,7 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    CPF do Responsável <span className="text-red-600">*</span>
+                    Seu CPF <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -128,7 +128,7 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    E-mail <span className="text-red-600">*</span>
+                    Seu E-mail <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">

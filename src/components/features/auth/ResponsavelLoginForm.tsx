@@ -50,7 +50,7 @@ export const ResponsavelLoginForm: React.FC = () => {
               className="mb-4 p-3 rounded-2xl"
               description={
                 <span>
-                  Acesso para <strong>pais e responsáveis</strong>. Se você é motorista ou monitor, utilize a aba <strong>Motorista / Equipe</strong>.
+                  Digite o número de <strong>WhatsApp</strong> utilizado no cadastro do passageiro.
                 </span>
               }
             />
@@ -63,8 +63,8 @@ export const ResponsavelLoginForm: React.FC = () => {
                     <FormControl>
                       <div
                         className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                            ? "border-red-500 ring-2 ring-red-500/20"
-                            : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
+                          ? "border-red-500 ring-2 ring-red-500/20"
+                          : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
                           }`}
                       >
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
@@ -137,7 +137,7 @@ export const ResponsavelLoginForm: React.FC = () => {
       ) : (
         <Form {...pinForm}>
           <form onSubmit={pinForm.handleSubmit(handlePinSubmit)} className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <button
                 type="button"
                 onClick={handleBackToPhone}
@@ -149,6 +149,18 @@ export const ResponsavelLoginForm: React.FC = () => {
               <span className="text-xs font-semibold text-slate-400">{telefoneFormatted}</span>
             </div>
 
+            {isFirstAccess && (
+              <Banner
+                variant="info"
+                className="mb-4 p-3 rounded-2xl"
+                description={
+                  <span>
+                    <strong>Primeiro acesso:</strong> crie uma <strong>senha de 4 dígitos</strong> para entrar no app nas próximas vezes.
+                  </span>
+                }
+              />
+            )}
+
             <FormField
               control={pinForm.control}
               name="pin"
@@ -157,8 +169,8 @@ export const ResponsavelLoginForm: React.FC = () => {
                   <FormControl>
                     <div
                       className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                          ? "border-red-500 ring-2 ring-red-500/20"
-                          : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
+                        ? "border-red-500 ring-2 ring-red-500/20"
+                        : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
                         }`}
                     >
                       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
@@ -166,7 +178,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
                         <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                          PIN de 4 Dígitos
+                          Senha de 4 Dígitos
                         </label>
                         <Input
                           {...field}
@@ -184,7 +196,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                         onClick={() => setShowPin(!showPin)}
                         className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
                         tabIndex={-1}
-                        title={showPin ? "Ocultar PIN" : "Exibir PIN"}
+                        title={showPin ? "Ocultar senha" : "Exibir senha"}
                       >
                         {showPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -211,7 +223,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                 {isPending ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 ) : (
-                  <span>{isFirstAccess ? "Criar PIN e Entrar" : "Entrar"}</span>
+                  <span>{isFirstAccess ? "Criar Senha e Entrar" : "Entrar"}</span>
                 )}
               </Button>
             </div>
@@ -223,7 +235,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                   onClick={() => setIsRecuperarOpen(true)}
                   className="text-[14px] text-[#2d5a88] hover:text-[#1a3a5c] hover:underline transition-colors font-medium cursor-pointer"
                 >
-                  Esqueci meu PIN
+                  Esqueci minha senha
                 </button>
               </div>
             )}

@@ -18,8 +18,6 @@ export interface AddressDialogData {
   open: boolean;
   title: string;
   address: string;
-  latitude?: number;
-  longitude?: number;
   sentido?: string | null;
   escolaNome?: string | null;
   tipoNo?: RouteNodeType | null;

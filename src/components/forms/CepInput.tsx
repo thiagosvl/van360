@@ -26,6 +26,8 @@ interface CepInputProps<T extends FieldValues> {
   nextField?: FieldPath<T>;
   onLoadingChange?: (loading: boolean) => void;
   isExternal?: boolean;
+  namePrefix?: string;
+  error?: boolean;
 }
 
 export function CepInput<T extends FieldValues>({
@@ -39,6 +41,8 @@ export function CepInput<T extends FieldValues>({
   nextField = "numero" as FieldPath<T>,
   onLoadingChange,
   isExternal = false,
+  namePrefix = "",
+  error: errorProp,
 }: CepInputProps<T>) {
   const [loadingCep, setLoadingCep] = useState(false);
 
@@ -47,7 +51,8 @@ export function CepInput<T extends FieldValues>({
     onLoadingChange?.(isLoading);
   };
   const form = useFormContext<T>();
-  const { error } = useFormField();
+  const formField = useFormField();
+  const hasError = errorProp !== undefined ? errorProp : !!formField?.error;
 
   const handleCepChange = async (value: string) => {
     const maskedValue = cepMask(value);
@@ -60,18 +65,18 @@ export function CepInput<T extends FieldValues>({
         const address = await cepService.buscarEndereco(cleanValue);
         if (address) {
           // @ts-ignore - Dynamic path update
-          form.setValue("logradouro", address.logradouro, { shouldValidate: true });
+          form.setValue(`${namePrefix}logradouro` as any, address.logradouro, { shouldValidate: true });
           // @ts-ignore
-          form.setValue("bairro", address.bairro, { shouldValidate: true });
+          form.setValue(`${namePrefix}bairro` as any, address.bairro, { shouldValidate: true });
           // @ts-ignore
-          form.setValue("cidade", address.cidade, { shouldValidate: true });
+          form.setValue(`${namePrefix}cidade` as any, address.cidade, { shouldValidate: true });
           // @ts-ignore
-          form.setValue("estado", address.estado, { shouldValidate: true });
+          form.setValue(`${namePrefix}estado` as any, address.estado, { shouldValidate: true });
 
           onAddressFetched?.(address);
 
           if (nextField) {
-            setTimeout(() => form.setFocus(nextField), 100);
+            setTimeout(() => form.setFocus(`${namePrefix}${nextField}` as any), 100);
           }
         }
       } catch (error) {
@@ -86,7 +91,7 @@ export function CepInput<T extends FieldValues>({
     return (
       <FormItem className={className}>
         <FormControl>
-          <StitchField icon={MapPin} label={label} required={required} error={!!error}>
+          <StitchField icon={MapPin} label={label} required={required} error={hasError}>
             <div className="relative flex items-center">
               <Input
                 {...field}
@@ -96,7 +101,7 @@ export function CepInput<T extends FieldValues>({
                 inputMode="numeric"
                 className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full pr-6"
                 onChange={(e) => handleCepChange(e.target.value)}
-                aria-invalid={!!error}
+                aria-invalid={hasError}
               />
               {loadingCep && (
                 <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none">
@@ -127,7 +132,7 @@ export function CepInput<T extends FieldValues>({
             inputMode="numeric"
             className={cn("pl-12 pr-8", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
-            aria-invalid={!!error}
+            aria-invalid={hasError}
           />
           {loadingCep && (
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">

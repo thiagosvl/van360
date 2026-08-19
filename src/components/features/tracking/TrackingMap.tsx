@@ -1,46 +1,45 @@
 import React, { useEffect, useRef } from "react";
-import { Map, Marker, NavigationControl, LngLatBounds } from "maplibre-gl";
+import { Map, Marker, NavigationControl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   DEFAULT_MAP_TILES,
   animateVanMovement,
   createVanMarkerElement,
-  createDestinationMarkerElement
+  updateVanMarkerHeading
 } from "@/utils/tracking.utils";
 import { TRACKING_REALTIME_CONFIG } from "@/constants/tracking";
 
 interface TrackingMapProps {
   vanCoord: [number, number] | null;
-  destCoord: [number, number] | null;
   heading: number | null;
   className?: string;
 }
 
 export const TrackingMap: React.FC<TrackingMapProps> = ({
   vanCoord,
-  destCoord,
   heading,
   className = "w-full h-64 rounded-2xl overflow-hidden shadow-inner border border-slate-200"
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const vanMarkerRef = useRef<Marker | null>(null);
-  const destMarkerRef = useRef<Marker | null>(null);
   const prevCoordRef = useRef<[number, number] | null>(null);
+  const initialCenterRef = useRef(false);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const initialCenter = vanCoord || destCoord || TRACKING_REALTIME_CONFIG.DEFAULT_CENTER_FALLBACK;
+    const initialCenter = vanCoord || TRACKING_REALTIME_CONFIG.DEFAULT_CENTER_FALLBACK;
 
     const map = new Map({
       container: mapContainerRef.current,
       style: DEFAULT_MAP_TILES,
       center: initialCenter,
-      zoom: 14,
+      zoom: 15,
       attributionControl: false
     });
 
+    map.scrollZoom.setWheelZoomRate(1 / 75);
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
     mapRef.current = map;
@@ -60,25 +59,8 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
       map.remove();
       mapRef.current = null;
       vanMarkerRef.current = null;
-      destMarkerRef.current = null;
     };
   }, []);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    if (destCoord) {
-      if (!destMarkerRef.current) {
-        const el = createDestinationMarkerElement();
-        destMarkerRef.current = new Marker({ element: el })
-          .setLngLat(destCoord)
-          .addTo(map);
-      } else {
-        destMarkerRef.current.setLngLat(destCoord);
-      }
-    }
-  }, [destCoord]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -91,46 +73,28 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
         .addTo(map);
       prevCoordRef.current = vanCoord;
     } else {
-      const el = vanMarkerRef.current.getElement();
-      const inner = el.querySelector("div");
-      if (inner && heading !== null && !isNaN(heading)) {
-        inner.style.transform = `rotate(${heading}deg)`;
-      }
-
       if (prevCoordRef.current) {
         animateVanMovement(
           vanMarkerRef.current,
           prevCoordRef.current,
           vanCoord,
-          TRACKING_REALTIME_CONFIG.INTERPOLATION_DURATION_MS
+          400
         );
       } else {
         vanMarkerRef.current.setLngLat(vanCoord);
       }
+      updateVanMarkerHeading(vanMarkerRef.current, heading);
       prevCoordRef.current = vanCoord;
+    }
+
+    if (!initialCenterRef.current) {
+      map.easeTo({ center: vanCoord, zoom: 15, duration: 800 });
+      initialCenterRef.current = true;
     }
   }, [vanCoord, heading]);
 
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    if (vanCoord && destCoord) {
-      const bounds = new LngLatBounds();
-      bounds.extend(vanCoord);
-      bounds.extend(destCoord);
-      map.fitBounds(bounds, {
-        padding: { top: 40, bottom: 40, left: 40, right: 40 },
-        maxZoom: 16,
-        duration: 1000
-      });
-    } else if (vanCoord) {
-      map.easeTo({ center: vanCoord, zoom: 15, duration: 800 });
-    }
-  }, [vanCoord === null, destCoord === null]);
-
   return (
-    <div className="relative w-full">
+    <div className="relative w-full overflow-hidden rounded-2xl">
       <div ref={mapContainerRef} className={className} />
     </div>
   );

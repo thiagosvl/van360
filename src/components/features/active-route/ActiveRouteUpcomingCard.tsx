@@ -61,26 +61,18 @@ export function ActiveRouteUpcomingCard({
   const activeTabForCard = selectedPreviewTabs[parada.id] || TAB_PRINCIPAL;
 
   let currentAddressStr = "";
-  let currentLat = isEscolaItem ? parada.escola?.latitude : parada.passageiro?.latitude;
-  let currentLng = isEscolaItem ? parada.escola?.longitude : parada.passageiro?.longitude;
 
   if (isEscolaItem) {
     currentAddressStr = formatarEnderecoParcialRota(parada.escola) || "Endereço da escola";
   } else if (pass) {
     if (activeTabForCard === TAB_PRINCIPAL) {
       currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.";
-      currentLat = pass.latitude;
-      currentLng = pass.longitude;
     } else {
       const respObj = responsaveisAdicionais.find((r: any) => r.id === activeTabForCard);
       if (respObj) {
         currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.");
-        currentLat = respObj.latitude || pass.latitude;
-        currentLng = respObj.longitude || pass.longitude;
       } else {
         currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.";
-        currentLat = pass.latitude;
-        currentLng = pass.longitude;
       }
     }
   }
@@ -133,8 +125,6 @@ export function ActiveRouteUpcomingCard({
                     passageiro: pass,
                     escola: null,
                     address: currentAddressStr,
-                    latitude: currentLat,
-                    longitude: currentLng,
                     tipoNo: RouteNodeType.PASSAGEIRO,
                     sentido: parada.sentido,
                     escolaNome: pass?.escola?.nome || pass?.escola_nome

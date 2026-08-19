@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TrackingGpsPing } from "@/types/tracking";
-import { TRACKING_REALTIME_CONFIG } from "@/constants/tracking";
+import { TRACKING_REALTIME_CONFIG, ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface UseTrackingBroadcastProps {
@@ -23,7 +23,7 @@ export function useTrackingBroadcast({
   }, [onGpsPing]);
 
   useEffect(() => {
-    if (!execucaoId || !enabled) {
+    if (!ENABLE_LIVE_TRACKING || !execucaoId || !enabled) {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
@@ -41,10 +41,13 @@ export function useTrackingBroadcast({
     channel
       .on("broadcast", { event: TRACKING_REALTIME_CONFIG.EVENT_GPS_PING }, (payload) => {
         if (payload?.payload) {
+          console.info(`[Realtime Broadcast] 📥 Ping GPS recebido:`, payload.payload);
           onGpsPingRef.current?.(payload.payload as TrackingGpsPing);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.info(`[Realtime Broadcast] 📡 Status do canal ${channelName}:`, status);
+      });
 
     channelRef.current = channel;
 
@@ -58,14 +61,19 @@ export function useTrackingBroadcast({
 
   const sendGpsPing = useCallback(
     async (ping: TrackingGpsPing) => {
-      if (!channelRef.current) return;
+      if (!ENABLE_LIVE_TRACKING || !channelRef.current) {
+        return;
+      }
       try {
+        console.info(`[Realtime Broadcast] 📤 Enviando ping GPS:`, ping);
         await channelRef.current.send({
           type: "broadcast",
           event: TRACKING_REALTIME_CONFIG.EVENT_GPS_PING,
           payload: ping
         });
-      } catch {}
+      } catch (err) {
+        console.error(`[Realtime Broadcast] ❌ Erro ao enviar ping:`, err);
+      }
     },
     []
   );

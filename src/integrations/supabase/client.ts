@@ -16,3 +16,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     detectSessionInUrl: true,
   }
 });
+
+if (import.meta.env.DEV && typeof window !== "undefined") {
+  (window as any).__VAN360_SUPABASE__ = supabase;
+}

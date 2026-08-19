@@ -1,4 +1,4 @@
-import { RouteExecutionStatus, RouteStopStatus, RouteSentido } from "./route";
+import { RouteExecutionStatus, RouteStopStatus, RouteSentido, RouteNodeType } from "./route";
 
 export interface TrackingGpsPing {
   latitude: number;
@@ -15,6 +15,9 @@ export interface TrackingExecucaoInfo {
   rota_nome: string;
   iniciada_em: string;
   status: RouteExecutionStatus;
+  rastreamento_ativo?: boolean;
+  rastreamento_modo?: "completo" | "apenas_proximo";
+  is_liberado_gps?: boolean;
   parada_aluno: {
     id: string;
     ordem: number;
@@ -24,14 +27,16 @@ export interface TrackingExecucaoInfo {
     visitado_em: string | null;
   };
   destino: {
-    latitude: number | null;
-    longitude: number | null;
     endereco: string;
-    tipo: "residencia" | "escola";
+    tipo: RouteNodeType;
   };
+  casa?: {
+    endereco: string;
+  } | null;
   escola: {
     id: string;
     nome: string;
+    endereco?: string;
   } | null;
   fila: {
     paradas_restantes: number;

@@ -5,6 +5,7 @@ import {
   ResponsavelLoginResponse,
   RegistrarAusenciaPayload
 } from "@/types/responsavel";
+import { TrackingResponse } from "@/types/tracking";
 
 export const responsavelApi = {
   checkPhone: async (telefone: string): Promise<CheckPhoneResponse> => {
@@ -243,8 +244,8 @@ export const responsavelApi = {
     return data;
   },
 
-  getRastreamento: async (passageiroId: string, token: string) => {
-    const { data } = await apiClient.get<import("@/types/tracking").TrackingResponse>(
+  getRastreamento: async (passageiroId: string, token: string): Promise<TrackingResponse> => {
+    const { data } = await apiClient.get<TrackingResponse>(
       `/public/portal-responsavel/passageiro/${passageiroId}/rastreamento`,
       {
         headers: {

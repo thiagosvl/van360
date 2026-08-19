@@ -1,11 +1,11 @@
 import {
-    ContratoProvider,
-    ContratoStatus,
-    ParentescoResponsavel,
-    PassageiroGenero,
-    PassageiroModalidade,
-    PassageiroPeriodo,
-    TipoResponsavel,
+  ContratoProvider,
+  ContratoStatus,
+  ParentescoResponsavel,
+  PassageiroGenero,
+  PassageiroModalidade,
+  PassageiroPeriodo,
+  TipoResponsavel,
 } from "./enums";
 
 export interface Responsavel {
@@ -46,8 +46,6 @@ export interface Passageiro {
   isento?: boolean;
   enviar_notificacoes?: boolean;
   observacoes?: string;
-  latitude?: number;
-  longitude?: number;
   escola?: { id?: string; nome?: string };
   escola_nome?: string;
   veiculo?: { id?: string; placa?: string; modelo?: string };
@@ -82,7 +80,7 @@ export interface PassageiroResponsavel {
   telefone: string;
   cpf?: string | null;
   email?: string | null;
-  parentesco: ParentescoResponsavel;
+  parentesco?: ParentescoResponsavel;
   tipo?: TipoResponsavel;
   pin_acesso?: string | null;
   logradouro?: string | null;
