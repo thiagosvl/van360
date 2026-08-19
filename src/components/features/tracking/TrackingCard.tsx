@@ -4,7 +4,6 @@ import { useTrackingViewModel } from "@/hooks/ui/useTrackingViewModel";
 import { TrackingMap } from "./TrackingMap";
 import { MapPin, Navigation, CheckCircle2, Radio } from "lucide-react";
 import { RouteStopStatus, RouteSentido } from "@/types/route";
-import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 
 interface TrackingCardProps {
   passageiroId: string;
@@ -15,10 +14,6 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
   passageiroId,
   passageiroNome
 }) => {
-  if (!ENABLE_LIVE_TRACKING) {
-    return null;
-  }
-
   const { token } = useResponsavelAuth();
 
   const {

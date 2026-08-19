@@ -6,7 +6,6 @@ import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { ArrowLeft, Bell, ChevronRight, CreditCard, Radio, User } from "lucide-react";
-import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 
 export const Configuracoes = memo(function Configuracoes() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,7 +24,7 @@ export const Configuracoes = memo(function Configuracoes() {
     if (tabParam === "notificacoes" && !isSubConta) {
       return <NotificacoesTab />;
     }
-    if (tabParam === "rastreamento" && !isSubConta && ENABLE_LIVE_TRACKING) {
+    if (tabParam === "rastreamento" && !isSubConta) {
       return <RastreamentoTab />;
     }
     if (tabParam === "perfil") {
@@ -86,7 +85,7 @@ export const Configuracoes = memo(function Configuracoes() {
           )}
 
           {/* Opção 3: Rastreamento & GPS (Apenas Gestor) */}
-          {!isSubConta && ENABLE_LIVE_TRACKING && (
+          {!isSubConta && (
             <button
               type="button"
               onClick={() => handleSelectTab("rastreamento")}

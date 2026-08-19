@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
 import { TrackingGpsPing } from "@/types/tracking";
-import { TRACKING_REALTIME_CONFIG, ENABLE_LIVE_TRACKING } from "@/constants/tracking";
+import { TRACKING_REALTIME_CONFIG } from "@/constants/tracking";
 
 const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 
@@ -25,7 +25,7 @@ export function useBackgroundTracking({
   }, [onLocationUpdate]);
 
   useEffect(() => {
-    if (!ENABLE_LIVE_TRACKING || !active || !execucaoId) {
+    if (!active || !execucaoId) {
       if (watcherIdRef.current && Capacitor.isNativePlatform()) {
         const idToRemove = watcherIdRef.current;
         watcherIdRef.current = null;

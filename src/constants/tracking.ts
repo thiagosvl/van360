@@ -1,5 +1,3 @@
-export const ENABLE_LIVE_TRACKING = false;
-
 export const TRACKING_REALTIME_CONFIG = {
   CHANNEL_PREFIX: "trip-tracking:",
   EVENT_GPS_PING: "gps_ping",

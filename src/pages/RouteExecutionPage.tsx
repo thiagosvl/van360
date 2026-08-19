@@ -23,7 +23,6 @@ import { useBackgroundTracking } from "@/hooks/business/useBackgroundTracking";
 import { useTrackingBroadcast } from "@/hooks/business/useTrackingBroadcast";
 import { Capacitor } from "@capacitor/core";
 import { Banner } from "@/components/ui/Banner";
-import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import "@/utils/tracking-simulator";
 
 export default function RouteExecutionPage() {
@@ -58,7 +57,6 @@ export default function RouteExecutionPage() {
 
   const concludedStops = paradasConcluidas?.length || 0;
   const isRouteActive = Boolean(
-    ENABLE_LIVE_TRACKING &&
     !isPreview &&
     execucao?.id &&
     (execucao as any)?.status === RouteExecutionStatus.INICIADA &&
