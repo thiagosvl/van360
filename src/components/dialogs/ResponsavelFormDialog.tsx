@@ -180,7 +180,7 @@ export default function ResponsavelFormDialog({
   const { mutateAsync: lookupResponsavel } = useBuscarResponsavel();
 
   const handleSearchResponsavel = useCallback(async (term: string) => {
-    if (editingResponsavel) return;
+    if (editingResponsavel || isResponsavelPortal) return;
     const pureTerm = String(term || "").replace(/\D/g, "");
     if (pureTerm.length !== 11) return;
     if (searchedTermsSet.current.has(pureTerm)) return;
@@ -227,7 +227,7 @@ export default function ResponsavelFormDialog({
       }
     } catch {
     }
-  }, [editingResponsavel, lookupResponsavel, form]);
+  }, [editingResponsavel, isResponsavelPortal, lookupResponsavel, form]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -279,20 +279,20 @@ export default function ResponsavelFormDialog({
   const telefoneValue = form.watch("telefone");
 
   useEffect(() => {
-    if (editingResponsavel) return;
+    if (editingResponsavel || isResponsavelPortal) return;
     const pureCpf = cpfValue ? String(cpfValue).replace(/\D/g, "") : "";
     if (pureCpf && pureCpf.length === 11) {
       handleSearchResponsavel(pureCpf);
     }
-  }, [cpfValue, handleSearchResponsavel, editingResponsavel]);
+  }, [cpfValue, handleSearchResponsavel, editingResponsavel, isResponsavelPortal]);
 
   useEffect(() => {
-    if (editingResponsavel) return;
+    if (editingResponsavel || isResponsavelPortal) return;
     const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
     if (purePhone && purePhone.length === 11) {
       handleSearchResponsavel(purePhone);
     }
-  }, [telefoneValue, handleSearchResponsavel, editingResponsavel]);
+  }, [telefoneValue, handleSearchResponsavel, editingResponsavel, isResponsavelPortal]);
 
   const tornarPrincipalValue = form.watch("tornar_principal");
   useEffect(() => {
