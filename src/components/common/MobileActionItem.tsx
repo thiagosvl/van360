@@ -54,7 +54,7 @@ export function MobileActionItem({
 
   const visibleActions = actions.filter((a) => !a.hidden);
 
-  if (visibleActions.length === 0 && !onClickItem) {
+  if (visibleActions.length === 0 && !onClickItem && !renderHeader) {
     return <div className={cn("relative", className)}>{children}</div>;
   }
 

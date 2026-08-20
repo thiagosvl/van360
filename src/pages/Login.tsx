@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
@@ -105,7 +105,10 @@ export default function Login() {
   useAnalyticsInjector({ gtm: true, clarity: true });
 
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const isFromSplash = Boolean((location.state as { fromSplash?: boolean })?.fromSplash) || isNativeApp();
 
   const getInitialProfile = (): AuthProfile => {
     const tipo = searchParams.get("tipo");
@@ -140,8 +143,16 @@ export default function Login() {
   };
 
   const handleBackToProfileSelection = () => {
-    setSelectedProfile(null);
-    setSearchParams({}, { replace: true });
+    if (isFromSplash) {
+      if (selectedProfile === "motorista") {
+        navigate(`${ROUTES.PUBLIC.SPLASH}?tipo=motorista`, { state: { step: "motorista" } });
+      } else {
+        navigate(ROUTES.PUBLIC.SPLASH);
+      }
+    } else {
+      setSelectedProfile(null);
+      setSearchParams({}, { replace: true });
+    }
   };
 
   const handleFillMagic = () => {
@@ -352,15 +363,6 @@ export default function Login() {
                     <ArrowLeft className="w-4 h-4" />
                     <span>Trocar perfil</span>
                   </button>
-
-                  <span
-                    className={`text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${selectedProfile === "motorista"
-                        ? "bg-[#1a3a5c]/10 text-[#1a3a5c]"
-                        : "bg-amber-100 text-amber-800"
-                      }`}
-                  >
-                    {selectedProfile === "motorista" ? "Motorista / Equipe" : "Responsável"}
-                  </span>
                 </div>
 
                 {/* Header do Formulário */}
@@ -372,13 +374,13 @@ export default function Login() {
                   />
                   <h1 className="text-xl sm:text-2xl font-extrabold text-[#1a3a5c] tracking-tight mb-1">
                     {selectedProfile === "motorista"
-                      ? "Acesso do Motorista"
+                      ? "Acesso de Motorista / Equipe"
                       : "Acesso do Responsável"}
                   </h1>
                   <p className="text-xs sm:text-[13px] font-medium text-slate-500">
                     {selectedProfile === "motorista"
-                      ? "Gerencie rotas, alunos e financeiro."
-                      : "Acompanhe a van e a carteirinha do aluno."}
+                      ? "Gerencie rotas, financeiro e contratos."
+                      : "Acesse a carteirinha e acompanhe a van."}
                   </p>
                 </div>
 
@@ -397,8 +399,8 @@ export default function Login() {
                               <FormControl>
                                 <div
                                   className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                                      ? "border-red-500 ring-2 ring-red-500/20"
-                                      : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
+                                    ? "border-red-500 ring-2 ring-red-500/20"
+                                    : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
                                     }`}
                                 >
                                   <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
@@ -406,7 +408,7 @@ export default function Login() {
                                   </div>
                                   <div className="flex flex-col flex-1 min-w-0">
                                     <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                      CPF ou CNPJ do motorista
+                                      CPF ou CNPJ
                                     </label>
                                     <Input
                                       autoFocus
@@ -415,7 +417,6 @@ export default function Login() {
                                       onChange={(e) =>
                                         field.onChange(cpfCnpjMask(e.target.value))
                                       }
-                                      placeholder="000.000.000-00"
                                       className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-300"
                                     />
                                   </div>
@@ -435,8 +436,8 @@ export default function Login() {
                               <FormControl>
                                 <div
                                   className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                                      ? "border-red-500 ring-2 ring-red-500/20"
-                                      : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
+                                    ? "border-red-500 ring-2 ring-red-500/20"
+                                    : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
                                     }`}
                                 >
                                   <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">

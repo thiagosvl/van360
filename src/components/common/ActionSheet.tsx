@@ -46,14 +46,15 @@ export function ActionSheet({
       <DrawerContent className="h-auto max-h-[85vh] rounded-t-[32px] bg-white border-none p-0 flex flex-col">
         {/* Header - Resumo ou Título */}
         {(title || description || children) && (
-          <DrawerHeader className="text-left px-6 pt-6 pb-2 shrink-0">
+          <DrawerHeader className={cn("text-left px-6 pt-6 shrink-0", actions.length === 0 ? "pb-8" : "pb-2")}>
             {title && <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">{title}</DrawerTitle>}
             {description && <DrawerDescription className="text-xs font-medium text-gray-400">{description}</DrawerDescription>}
             {children && <div className="mt-4">{children}</div>}
           </DrawerHeader>
         )}
 
-        <div className="flex-1 overflow-y-auto px-4 pb-10 mt-2">
+        {actions.length > 0 && (
+          <div className="flex-1 overflow-y-auto px-4 pb-10 mt-2">
             <div className="flex flex-col gap-1">
               {actions.map((action, idx) => (
                 <div key={`${action.label}-${idx}`}>
@@ -108,6 +109,7 @@ export function ActionSheet({
               ))}
             </div>
           </div>
+        )}
       </DrawerContent>
     </Drawer>
   );

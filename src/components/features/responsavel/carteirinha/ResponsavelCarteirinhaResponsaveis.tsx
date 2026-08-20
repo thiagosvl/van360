@@ -20,9 +20,9 @@ export const ResponsavelCarteirinhaResponsaveis: React.FC<ResponsavelCarteirinha
       onEditClick={() => {}}
       canManageOverride={true}
       hideAppAccess={true}
-      hideAddress={true}
+      hideAddress={false}
       hideWhatsappButton={true}
-      hideEditButton={true}
+      hideEditButton={false}
       isResponsavelPortal={true}
       onRefresh={onRefresh}
     />

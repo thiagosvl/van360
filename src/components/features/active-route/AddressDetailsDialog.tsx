@@ -3,10 +3,10 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, User, Route, School, Home } from "lucide-react";
+import { MapPin, User } from "lucide-react";
 import { GoogleMapsIcon } from "@/components/icons/GoogleMapsIcon";
 import { WazeIcon } from "@/components/icons/WazeIcon";
-import { RouteNodeType, RouteSentido } from "@/types/route";
+import { RouteNodeType, } from "@/types/route";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { TipoResponsavel } from "@/types/enums";
 import { Escola } from "@/types/escola";
@@ -49,7 +49,7 @@ export function AddressDetailsDialog({
   const allResponsaveis: PassageiroResponsavel[] = useMemo(() => {
     if (!pass) return [];
     const list: PassageiroResponsavel[] = [];
-    const seenKeys = new Set<string>();
+    const seenIds = new Set<string>();
 
     let principalObj: PassageiroResponsavel | null = null;
 
@@ -61,35 +61,21 @@ export function AddressDetailsDialog({
         tipo: TipoResponsavel.PRINCIPAL,
       };
       list.push(principalObj);
-      if (principalObj.id) seenKeys.add(principalObj.id);
-      if (principalObj.responsavel_id) seenKeys.add(principalObj.responsavel_id);
-      if (principalObj.cpf) seenKeys.add(`cpf-${principalObj.cpf.replace(/\D/g, "")}`);
-      if (principalObj.telefone) seenKeys.add(`tel-${principalObj.telefone.replace(/\D/g, "")}`);
+      if (principalObj.id) seenIds.add(principalObj.id);
+      if (principalObj.responsavel_id) seenIds.add(principalObj.responsavel_id);
     }
 
     const rawList = (pass.responsaveis || []).filter((r): r is PassageiroResponsavel => Boolean(r && (r.nome || r.id)));
 
     for (const r of rawList) {
-      const cleanCpf = r.cpf ? `cpf-${r.cpf.replace(/\D/g, "")}` : null;
-      const cleanTel = r.telefone ? `tel-${r.telefone.replace(/\D/g, "")}` : null;
-      const isPrincipal = r.tipo === TipoResponsavel.PRINCIPAL;
-
-      if (
-        (r.id && seenKeys.has(r.id)) ||
-        (r.responsavel_id && seenKeys.has(r.responsavel_id)) ||
-        (cleanCpf && seenKeys.has(cleanCpf)) ||
-        (cleanTel && seenKeys.has(cleanTel)) ||
-        (principalObj && isPrincipal)
-      ) {
+      const rId = r.id || r.responsavel_id;
+      if (rId && seenIds.has(rId)) {
         continue;
       }
 
-      const keyId = r.id || r.responsavel_id || `r-${r.cpf ? r.cpf.replace(/\D/g, "") : r.nome}`;
-      seenKeys.add(keyId);
-      if (cleanCpf) seenKeys.add(cleanCpf);
-      if (cleanTel) seenKeys.add(cleanTel);
-      if (r.id) seenKeys.add(r.id);
-      if (r.responsavel_id) seenKeys.add(r.responsavel_id);
+      if (rId) seenIds.add(rId);
+      if (r.id) seenIds.add(r.id);
+      if (r.responsavel_id) seenIds.add(r.responsavel_id);
 
       list.push(r);
     }
@@ -109,18 +95,11 @@ export function AddressDetailsDialog({
   const activeRespFirstName = activeResp?.nome ? formatFirstName(activeResp.nome) : "";
   const rawParentesco = activeResp?.parentesco;
   const formattedParentesco = rawParentesco ? formatParentesco(rawParentesco) : "";
-  const parentescoLabel = formattedParentesco || (isPrincipalTab ? "Responsável Principal" : "Responsável");
+  const parentescoLabel = formattedParentesco;
 
   const activeAddress = activeResp?.logradouro
     ? (formatarEnderecoCompleto(activeResp) || formatarEnderecoParcialRota(activeResp))
     : (addressDialogData.address || (allResponsaveis[0]?.logradouro ? formatarEnderecoCompleto(allResponsaveis[0]) : ""));
-
-  const isVolta = addressDialogData.sentido === RouteSentido.VOLTANDO;
-  const casaAddress = activeAddress;
-  const escolaNome = addressDialogData.escolaNome;
-
-  const saindoDe = isVolta ? escolaNome : casaAddress;
-  const chegandoEm = isVolta ? casaAddress : escolaNome;
 
   const activeTabValue = activeResp?.id || activeResp?.responsavel_id || allResponsaveis[0]?.id || "principal";
 
@@ -240,52 +219,6 @@ export function AddressDetailsDialog({
               <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />
               <span>Waze</span>
             </Button>
-          </div>
-        </div>
-
-        {/* Trajeto da Rota */}
-        <div className="bg-slate-50/80 border border-slate-100/80 p-4 rounded-2xl space-y-3.5 text-left">
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
-            <div className="flex items-center gap-1.5">
-              <Route className="w-4 h-4 text-[#1a3a5c]" />
-              <span className="text-xs font-bold uppercase text-slate-500">
-                Trajeto da rota
-              </span>
-            </div>
-            <span className="text-[10px] font-normal tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
-              {isVolta ? "Voltando" : "Indo"}
-            </span>
-          </div>
-
-          <div className="relative pl-1 space-y-4 pt-1 text-xs">
-            <div className="flex items-start gap-3 relative">
-              <div className="w-7 h-7 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-xs z-10">
-                {isVolta ? <School className="w-4 h-4" /> : <Home className="w-4 h-4" />}
-              </div>
-              <div className="absolute left-[13px] top-7 bottom-[-16px] w-[2px] bg-slate-300 border-l border-dashed border-slate-300" />
-              <div className="space-y-0.5 flex-1 min-w-0">
-                <span className="text-xs font-semibold text-slate-500 block">
-                  Ponto de partida
-                </span>
-                <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
-                  {saindoDe || <span className="text-slate-400 font-normal">—</span>}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 relative">
-              <div className="w-7 h-7 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center shrink-0 text-[#1a3a5c] shadow-xs z-10">
-                {isVolta ? <Home className="w-4 h-4" /> : <School className="w-4 h-4" />}
-              </div>
-              <div className="space-y-0.5 flex-1 min-w-0">
-                <span className="text-xs font-semibold text-slate-500 block">
-                  Destino final
-                </span>
-                <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
-                  {chegandoEm || <span className="text-slate-400 font-normal">—</span>}
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </BaseDialog.Body>

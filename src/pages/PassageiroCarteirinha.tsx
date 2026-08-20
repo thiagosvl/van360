@@ -3,12 +3,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
 import { BASE_DOMAIN } from "@/constants";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 
 import { CarteirinhaSkeleton } from "@/components/skeletons";
@@ -17,7 +18,6 @@ import {
   CarteirinhaCobrancas,
   CarteirinhaDadosPessoais,
   CarteirinhaHeader,
-  CarteirinhaInfo,
   CarteirinhaObservacoes,
   CarteirinhaContrato,
   CarteirinhaResponsaveis,
@@ -87,7 +87,52 @@ export default function PassageiroCarteirinha() {
 
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [mobileTab, setMobileTab] = useState(() => canViewFinancials ? "parcelas" : "dados");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const validTabs = useMemo(() => {
+    return canViewFinancials
+      ? ["parcelas", "dados-pessoais", "responsaveis", "contrato", "ausencias"]
+      : ["dados-pessoais", "responsaveis", "contrato", "ausencias"];
+  }, [canViewFinancials]);
+
+  const urlTab = searchParams.get("tab");
+  const defaultTab = canViewFinancials ? "parcelas" : "dados-pessoais";
+  const initialTab = urlTab && validTabs.includes(urlTab) ? urlTab : defaultTab;
+  const [activeTab, setActiveTabState] = useState(initialTab);
+
+  useEffect(() => {
+    if (urlTab && validTabs.includes(urlTab) && urlTab !== activeTab) {
+      setActiveTabState(urlTab);
+    }
+  }, [urlTab, validTabs]);
+
+  const tabListRef = useRef<HTMLDivElement>(null);
+
+  const handleTabChange = (val: string) => {
+    setActiveTabState(val);
+    setSearchParams((prev) => {
+      const updated = new URLSearchParams(prev);
+      updated.set("tab", val);
+      return updated;
+    });
+    setTimeout(() => {
+      const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }, 50);
+  };
+
+  useEffect(() => {
+    if (activeTab) {
+      setTimeout(() => {
+        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
+      }, 100);
+    }
+  }, [activeTab]);
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -657,143 +702,124 @@ export default function PassageiroCarteirinha() {
               <PixNudgeBanner hasPix={false} />
             ) : null}
 
-            {/* Mobile Layout: Header fixo + Abas na primeira dobra */}
-            {isMobile ? (
-              <div className="space-y-5">
-                {/* Header do passageiro (avatar, nome, badges, ações) — sempre visível */}
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                  <CarteirinhaHeader
-                    passageiro={passageiro}
-                    temCobrancasVencidas={temCobrancasVencidas}
-                    onToggleClick={handleToggleClick}
-                    onEditClick={handleEditClick}
-                    onDeleteClick={infoProps.onDeleteClick}
-                    onEnviarWhatsApp={handleEnviarWhatsApp}
-                    onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
-                  />
-                </Suspense>
+            {/* Header do passageiro (avatar, nome, badges, ações) — sempre visível no topo */}
+            <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+              <CarteirinhaHeader
+                passageiro={passageiro}
+                temCobrancasVencidas={temCobrancasVencidas}
+                onToggleClick={handleToggleClick}
+                onEditClick={handleEditClick}
+                onDeleteClick={infoProps.onDeleteClick}
+                onEnviarWhatsApp={handleEnviarWhatsApp}
+                onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
+              />
+            </Suspense>
 
-                {/* Abas: Dados Pessoais / Parcelas — logo na primeira dobra */}
-                <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full pt-4">
-                  {canViewFinancials && (
-                    <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                      <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 text-[13px]">
-                        <TabsTrigger
-                          value="parcelas"
-                          className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
-                        >
-                          Parcelas
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="dados"
-                          className="rounded-[1rem] h-full min-h-[32px] font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
-                        >
-                          Dados Pessoais
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
+            {/* Abas com Scroll Lateral no Mobile e Grid no Desktop */}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
+                <TabsList
+                  ref={tabListRef}
+                  className={cn(
+                    "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px]",
+                    canViewFinancials ? "md:grid md:grid-cols-5" : "md:grid md:grid-cols-4"
                   )}
-
-                  <TabsContent value="dados" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                    {/* Dados pessoais detalhados */}
-                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
-                        <CarteirinhaDadosPessoais
-                          passageiro={passageiro}
-                          isCopiedEndereco={isCopiedEndereco}
-                          isCopiedTelefone={isCopiedTelefone}
-                          onCopyToClipboard={handleCopyToClipboard}
-                          onContractAction={infoProps.onContractAction}
-                          contratosAtivos={infoProps.contratosAtivos}
-                          onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-                          onEditClick={handleEditClick}
-                        />
-                      </div>
-                    </Suspense>
-
-                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                      <CarteirinhaResponsaveis
-                        passageiro={passageiro}
-                        onEditClick={handleEditClick}
-                      />
-                    </Suspense>
-
-                    {/* Contrato, Ausências e Observações no final da aba dados */}
-                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                      <CarteirinhaContrato
-                        passageiro={passageiro}
-                        contratosAtivos={infoProps.contratosAtivos}
-                        onContractAction={infoProps.onContractAction}
-                        onDeleteContrato={handleDeleteContrato}
-                        onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-                        onEditClick={handleEditClick}
-                      />
-                    </Suspense>
-
-                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                      <CarteirinhaAusencias passageiro={passageiro} />
-                    </Suspense>
-
-                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                      <CarteirinhaObservacoes {...observacoesProps} />
-                    </Suspense>
-                  </TabsContent>
-
+                >
                   {canViewFinancials && (
-                    <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                      <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                        <CarteirinhaCobrancas {...cobrancasProps} />
-                      </Suspense>
-                    </TabsContent>
+                    <TabsTrigger
+                      value="parcelas"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                    >
+                      Parcelas
+                    </TabsTrigger>
                   )}
-                </Tabs>
+                  <TabsTrigger
+                    value="dados-pessoais"
+                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                  >
+                    Dados Pessoais
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="responsaveis"
+                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                  >
+                    Responsáveis
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="contrato"
+                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                  >
+                    Contrato
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="ausencias"
+                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                  >
+                    Ausências
+                  </TabsTrigger>
+                </TabsList>
               </div>
-            ) : (
-              /* Desktop Layout: Side by Side */
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Lado Esquerdo: Perfil + Observações */}
-                <div className={cn("space-y-6 lg:sticky lg:top-6 lg:h-fit", canViewFinancials ? "lg:col-span-4" : "lg:col-span-12")}>
+
+              {canViewFinancials && (
+                <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                    <CarteirinhaInfo {...infoProps} />
+                    <CarteirinhaCobrancas {...cobrancasProps} />
                   </Suspense>
+                </TabsContent>
+              )}
 
-                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                    <CarteirinhaResponsaveis
+              <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                  <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
+                    <CarteirinhaDadosPessoais
                       passageiro={passageiro}
-                      onEditClick={handleEditClick}
-                    />
-                  </Suspense>
-
-                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                    <CarteirinhaContrato
-                      passageiro={passageiro}
-                      contratosAtivos={infoProps.contratosAtivos}
+                      isCopiedEndereco={isCopiedEndereco}
+                      isCopiedTelefone={isCopiedTelefone}
+                      onCopyToClipboard={handleCopyToClipboard}
                       onContractAction={infoProps.onContractAction}
-                      onDeleteContrato={handleDeleteContrato}
+                      contratosAtivos={infoProps.contratosAtivos}
                       onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
                       onEditClick={handleEditClick}
                     />
-                  </Suspense>
-
-                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                    <CarteirinhaAusencias passageiro={passageiro} />
-                  </Suspense>
-
-                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                    <CarteirinhaObservacoes {...observacoesProps} />
-                  </Suspense>
-                </div>
-
-                {/* Lado Direito: Parcelas */}
-                {canViewFinancials && (
-                  <div className="lg:col-span-8 space-y-6">
-                    <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                      <CarteirinhaCobrancas {...cobrancasProps} />
-                    </Suspense>
                   </div>
-                )}
-              </div>
-            )}
+                </Suspense>
+
+                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                  <CarteirinhaObservacoes {...observacoesProps} />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="responsaveis" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                  <CarteirinhaResponsaveis
+                    passageiro={passageiro}
+                    onEditClick={handleEditClick}
+                    onRefresh={() => {
+                      refetchPassageiro();
+                    }}
+                  />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="contrato" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                  <CarteirinhaContrato
+                    passageiro={passageiro}
+                    contratosAtivos={infoProps.contratosAtivos}
+                    onContractAction={infoProps.onContractAction}
+                    onDeleteContrato={handleDeleteContrato}
+                    onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                    onEditClick={handleEditClick}
+                  />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="ausencias" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
+                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                  <CarteirinhaAusencias passageiro={passageiro} />
+                </Suspense>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </PullToRefreshWrapper>

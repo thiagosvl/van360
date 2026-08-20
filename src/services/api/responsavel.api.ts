@@ -58,12 +58,22 @@ export const responsavelApi = {
   updateDadosComplementares: async (
     passageiroId: string,
     token: string,
-    cpf: string,
-    email: string
+    payload: {
+      cpf: string;
+      email: string;
+      cep?: string | null;
+      logradouro?: string | null;
+      numero?: string | null;
+      complemento?: string | null;
+      bairro?: string | null;
+      cidade?: string | null;
+      estado?: string | null;
+      referencia?: string | null;
+    }
   ): Promise<{ success: boolean }> => {
     const { data } = await apiClient.put<{ success: boolean }>(
       `/public/portal-responsavel/passageiro/${passageiroId}/dados-complementares`,
-      { cpf, email },
+      payload,
       {
         headers: {
           Authorization: `Bearer ${token}`

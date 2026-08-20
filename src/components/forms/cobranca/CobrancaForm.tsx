@@ -424,7 +424,7 @@ export function CobrancaFormContent({
                     />
                     <Banner
                         variant="info"
-                        description="O responsável receberá uma notificação no aplicativo e poderá acessar o comprovante diretamente pela carteirinha."
+                        description="O responsável receberá uma notificação no aplicativo e poderá acessar o recibo diretamente pela carteirinha."
                     />
                 </div>
             )}

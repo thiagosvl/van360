@@ -25,6 +25,8 @@ export interface ResponsavelCobrancaItem {
   data_vencimento: string;
   recibo_url?: string | null;
   desativar_lembretes?: boolean;
+  isProjection?: boolean;
+  origem?: string;
 }
 
 export interface ResponsavelAusenciaItem {
@@ -92,6 +94,11 @@ export interface ResponsavelCarteirinhaData {
   data_nascimento?: string | null;
   data_inicio_transporte?: string | null;
   data_fim_transporte?: string | null;
+  valor_cobranca?: number | null;
+  dia_vencimento?: number | null;
+  data_inicio_cobranca?: string | null;
+  data_fim_cobranca?: string | null;
+  created_at?: string | null;
   periodo?: string | null;
   modalidade?: string | null;
   turma?: string | null;
@@ -119,4 +126,5 @@ export interface ResponsavelCarteirinhaData {
   contrato?: ResponsavelContratoItem | null;
   responsaveis?: ResponsavelAdicionalItem[];
   rotas?: ResponsavelRotaItem[];
+  responsavel_logado_id?: string | null;
 }

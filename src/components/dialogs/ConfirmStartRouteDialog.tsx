@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Play, Bell, MapPinOff, Settings } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
+import { useConfiguracoes } from "@/hooks";
 import { Capacitor } from "@capacitor/core";
 
 import { AppPermissionStatus } from "@/types/enums";
@@ -22,8 +23,21 @@ export function ConfirmStartRouteDialog({
   routeName,
   isLoading = false,
 }: ConfirmStartRouteDialogProps) {
-  const [notificarPais, setNotificarPais] = useState<boolean>(true);
+  const { configuracoes } = useConfiguracoes();
   const { locationStatus, openDeviceSettings } = useAppPermissions();
+
+  const temNotificacoesAtivas =
+    (configuracoes?.notificar_inicio_rota ?? true) ||
+    (configuracoes?.notificar_proxima_parada ?? true) ||
+    (configuracoes?.notificar_conclusao_parada ?? true);
+
+  const [notificarPais, setNotificarPais] = useState<boolean>(temNotificacoesAtivas);
+
+  useEffect(() => {
+    if (isOpen) {
+      setNotificarPais(temNotificacoesAtivas);
+    }
+  }, [isOpen, temNotificacoesAtivas]);
 
   const handleConfirm = () => {
     onConfirm(notificarPais);
@@ -42,7 +56,7 @@ export function ConfirmStartRouteDialog({
 
       <BaseDialog.Body className="space-y-4 pt-4">
         <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-          Deseja dar a partida nesta corrida? Você poderá acompanhar as paradas e registrar os alunos em tempo real.
+          Deseja iniciar a rota? Você poderá acompanhar as paradas e registrar os alunos em tempo real.
         </p>
 
         {isGpsDenied && (

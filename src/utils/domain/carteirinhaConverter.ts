@@ -23,7 +23,14 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
     referencia: carteirinha.referencia || undefined,
     observacoes: carteirinha.observacoes || undefined,
     ativo: carteirinha.ativo,
+    isento: carteirinha.isento,
+    valor_cobranca: carteirinha.valor_cobranca ?? undefined,
+    dia_vencimento: carteirinha.dia_vencimento ?? undefined,
+    data_inicio_cobranca: carteirinha.data_inicio_cobranca || undefined,
+    data_fim_cobranca: carteirinha.data_fim_cobranca || undefined,
+    created_at: carteirinha.created_at || undefined,
     responsavel_principal: carteirinha.responsavel_principal || undefined,
+    responsavel_logado_id: carteirinha.responsavel_logado_id || undefined,
     token_acesso: carteirinha.token_acesso || undefined,
     escola: carteirinha.escola_nome
       ? { id: "", nome: carteirinha.escola_nome, created_at: "", updated_at: "", usuario_id: "" }
@@ -45,7 +52,7 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
         telefone: carteirinha.responsavel_principal.telefone || "",
         cpf: carteirinha.responsavel_principal.cpf || "",
         email: carteirinha.responsavel_principal.email || undefined,
-        parentesco: carteirinha.responsavel_principal.parentesco as any,
+        parentesco: (carteirinha.responsavel_principal.parentesco as PassageiroResponsavel["parentesco"]) || undefined,
         tipo: TipoResponsavel.PRINCIPAL,
         logradouro: carteirinha.responsavel_principal.logradouro || undefined,
         numero: carteirinha.responsavel_principal.numero || undefined,

@@ -11,7 +11,7 @@ export function markLocalMutation() {
   lastLocalMutationTime = Date.now();
 }
 
-export function isRecentLocalMutation(thresholdMs = 2500): boolean {
+export function isRecentLocalMutation(thresholdMs = 5000): boolean {
   return Date.now() - lastLocalMutationTime < thresholdMs;
 }
 

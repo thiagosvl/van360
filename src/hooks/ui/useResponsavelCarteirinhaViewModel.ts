@@ -57,7 +57,7 @@ export function useResponsavelCarteirinhaViewModel() {
     if (openReceiptDialog && reciboUrl) {
       openReceiptDialog({
         receiptUrl: reciboUrl,
-        cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${carteirinha?.nome || "Aluno"}`
+        cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano}`
       });
     } else if (reciboUrl) {
       openBrowserLink(reciboUrl);
@@ -66,10 +66,14 @@ export function useResponsavelCarteirinhaViewModel() {
 
   const nomeExibicao = carteirinha?.nome || passageiroSelecionado?.nome || "Passageiro";
 
+  const respPrincipal = carteirinha?.responsavel_principal;
   const isMissingComplementares = Boolean(
     carteirinha &&
-    (!carteirinha.responsavel_principal?.cpf || carteirinha.responsavel_principal.cpf.trim() === "" ||
-     !carteirinha.responsavel_principal?.email || carteirinha.responsavel_principal.email.trim() === "")
+    respPrincipal &&
+    (!respPrincipal.cpf || respPrincipal.cpf.trim() === "" ||
+     !respPrincipal.email || respPrincipal.email.trim() === "" ||
+     !respPrincipal.cep || respPrincipal.cep.trim() === "" ||
+     !respPrincipal.logradouro || respPrincipal.logradouro.trim() === "")
   );
 
   return {

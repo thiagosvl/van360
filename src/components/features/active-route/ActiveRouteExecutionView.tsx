@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
 import { ROUTES } from "@/constants/routes";
@@ -78,7 +79,10 @@ export function ActiveRouteExecutionView({
       const timer = setTimeout(() => {
         if (activeCardRef.current) {
           const rect = activeCardRef.current.getBoundingClientRect();
-          const targetY = window.scrollY + rect.top - 70;
+          const header = document.querySelector("header");
+          const headerHeight = header?.offsetHeight || (Capacitor.isNativePlatform() ? 115 : 70);
+          const topMargin = 16;
+          const targetY = window.scrollY + rect.top - headerHeight - topMargin;
           window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
         }
       }, 150);

@@ -70,6 +70,7 @@ export interface Passageiro {
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
   responsaveis?: PassageiroResponsavel[];
+  responsavel_logado_id?: string | null;
 }
 
 export interface PassageiroResponsavel {

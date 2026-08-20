@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { ResponsavelCarteirinhaData } from "@/types/responsavel";
+import { ResponsavelCarteirinhaData, ResponsavelCobrancaItem } from "@/types/responsavel";
 import { getMesNome, formatDateToBR, formatDiasAtraso } from "@/utils/formatters";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
-import { CheckCircle2, Clock, AlertCircle, History, ShieldCheck, Eye, Download } from "lucide-react";
-import { openBrowserLink } from "@/utils/browser";
+import { CheckCircle2, Clock, AlertCircle, History, ShieldCheck, Eye, Share2 } from "lucide-react";
+import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
@@ -12,6 +12,8 @@ import { ResponsavelReceiptDialog } from "@/components/dialogs/ResponsavelReceip
 import { cn } from "@/lib/utils";
 import { mapearCarteirinhaParaPassageiro } from "@/utils/domain/carteirinhaConverter";
 import { getNowBR } from "@/utils/dateUtils";
+import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
+import { shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
 
 interface ResponsavelCarteirinhaCobrancasProps {
   carteirinha: ResponsavelCarteirinhaData;
@@ -20,8 +22,51 @@ interface ResponsavelCarteirinhaCobrancasProps {
 export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCobrancasProps> = ({
   carteirinha,
 }) => {
-  const cobrancas = carteirinha.cobrancas || [];
   const passageiroConvertido = useMemo(() => mapearCarteirinhaParaPassageiro(carteirinha), [carteirinha]);
+
+  const now = getNowBR();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  const displayCobrancas = useMemo(() => {
+    const rawList = carteirinha.cobrancas || [];
+    const list: ResponsavelCobrancaItem[] = [...rawList];
+
+    if (!passageiroConvertido || carteirinha.isento) return list;
+
+    const startMonth = currentMonth;
+    const endMonth = 12;
+    const dbMonths = new Set(list.filter((c) => c.ano === currentYear).map((c) => c.mes));
+
+    for (let m = startMonth; m <= endMonth; m++) {
+      if (!dbMonths.has(m)) {
+        const canGenerate = shouldGeneratePassengerProjection({
+          passageiro: passageiroConvertido,
+          targetMonth: m,
+          targetYear: currentYear,
+        });
+
+        if (canGenerate) {
+          const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, currentYear);
+          list.push({
+            id: `proj_resp_${carteirinha.id}_${m}_${currentYear}`,
+            mes: m,
+            ano: currentYear,
+            valor: Number(carteirinha.valor_cobranca || 0),
+            status: CobrancaStatus.PENDENTE,
+            data_vencimento: dataVenc,
+            origem: CobrancaOrigem.AUTOMATICA,
+            isProjection: true,
+          });
+        }
+      }
+    }
+
+    return list.sort((a, b) => {
+      if (a.ano !== b.ano) return a.ano - b.ano;
+      return a.mes - b.mes;
+    });
+  }, [carteirinha, passageiroConvertido, currentMonth, currentYear]);
 
   const [receiptDialogState, setReceiptDialogState] = useState<{
     open: boolean;
@@ -37,60 +82,42 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
     setReceiptDialogState((prev) => ({ ...prev, open: false }));
   };
 
-  const handleDownloadReceiptDirect = async (receiptUrl: string) => {
-    try {
-      if (receiptUrl.startsWith("http")) {
-        const response = await fetch(receiptUrl);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `comprovante-${getNowBR().getTime()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        openBrowserLink(receiptUrl);
-      }
-    } catch {
-      openBrowserLink(receiptUrl);
-    }
+  const handleShareReceiptDirect = async (receiptUrl: string, descricao: string) => {
+    await shareReceiptFile({
+      url: receiptUrl,
+      filename: "recibo.png",
+      title: "Recibo Van360",
+      text: descricao,
+    });
   };
-
-  if (carteirinha.isento) {
-    return (
-      <UnifiedEmptyState
-        icon={ShieldCheck}
-        title="Passageiro Isento de Parcelas"
-        description="Este passageiro possui isenção de parcelas cadastrada. Nenhuma cobrança ou parcela é gerada automaticamente."
-      />
-    );
-  }
 
   return (
     <div className="space-y-4 text-left">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
-            {cobrancas.length} {cobrancas.length === 1 ? "PARCELA" : "PARCELAS"}
+            {displayCobrancas.length} {displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}
           </span>
         </div>
       </div>
 
       <div className="space-y-3">
-        {cobrancas.length === 0 ? (
+        {displayCobrancas.length === 0 ? (
           <UnifiedEmptyState
-            icon={History}
-            title="Sem parcelas registradas"
-            description="Nenhuma parcela foi encontrada para este aluno até o momento."
+            icon={carteirinha.isento ? ShieldCheck : History}
+            title={carteirinha.isento ? "Passageiro Isento de Parcelas" : "Sem parcelas registradas"}
+            description={
+              carteirinha.isento
+                ? "Este passageiro possui isenção de parcelas cadastrada. Nenhuma cobrança ou parcela é gerada automaticamente."
+                : "Nenhuma parcela foi encontrada para este aluno até o momento."
+            }
           />
         ) : (
-          cobrancas.map((item) => {
-            const isPago = item.status === "pago";
+          displayCobrancas.map((item) => {
+            const isPago = item.status === CobrancaStatus.PAGO;
             const isAtrasado = !isPago && checkCobrancaEmAtraso(item.data_vencimento);
             const nomeMes = getMesNome(item.mes);
-            const cobrancaDesc = `Recibo de ${item.mes}/${item.ano} - ${carteirinha.nome}`;
+            const cobrancaDesc = `Recibo de ${item.mes}/${item.ano}`;
             const valorNum = Number(item.valor) || 0;
 
             const statusColor = isPago
@@ -105,33 +132,38 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
               mes: item.mes,
               ano: item.ano,
               valor: valorNum,
-              status: (isAtrasado ? "vencido" : item.status) as any,
+              status: isPago
+                ? CobrancaStatus.PAGO
+                : isAtrasado
+                ? CobrancaStatus.VENCIDO
+                : CobrancaStatus.PENDENTE,
               data_vencimento: item.data_vencimento,
               created_at: "",
               updated_at: "",
               usuario_id: "",
-              origem: "manual" as any,
+              origem: item.origem || CobrancaOrigem.AUTOMATICA,
+              isProjection: item.isProjection,
             };
 
-            const hasReceipt = isPago && !!item.recibo_url;
+            const hasReceipt = isPago && !!item.recibo_url && !item.isProjection;
 
             const actions = [
               {
                 icon: <Eye className="h-4 w-4" />,
-                label: "Visualizar Comprovante",
+                label: "Ver Recibo",
                 onClick: () => {
-                  if (hasReceipt) {
-                    handleOpenReceiptDialog(item.recibo_url!, cobrancaDesc);
+                  if (hasReceipt && item.recibo_url) {
+                    handleOpenReceiptDialog(item.recibo_url, cobrancaDesc);
                   }
                 },
                 disabled: !hasReceipt,
               },
               {
-                icon: <Download className="h-4 w-4" />,
-                label: "Baixar Comprovante",
+                icon: <Share2 className="h-4 w-4" />,
+                label: "Compartilhar Recibo",
                 onClick: () => {
-                  if (hasReceipt) {
-                    handleDownloadReceiptDirect(item.recibo_url!);
+                  if (hasReceipt && item.recibo_url) {
+                    handleShareReceiptDirect(item.recibo_url, cobrancaDesc);
                   }
                 },
                 disabled: !hasReceipt,
@@ -193,7 +225,13 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                         })}
                       </p>
                       <StatusBadge
-                        status={isAtrasado ? ("vencido" as any) : (item.status as any)}
+                        status={
+                          isPago
+                            ? CobrancaStatus.PAGO
+                            : isAtrasado
+                            ? CobrancaStatus.VENCIDO
+                            : CobrancaStatus.PENDENTE
+                        }
                         dataVencimento={item.data_vencimento}
                         className={cn(
                           "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",

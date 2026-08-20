@@ -140,12 +140,6 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                       Geral
                     </TabsTrigger>
                     <TabsTrigger
-                      value="dados-pessoais"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                    >
-                      Dados Pessoais
-                    </TabsTrigger>
-                    <TabsTrigger
                       value="parcelas"
                       className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
@@ -172,6 +166,12 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                       className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
                     >
                       Contrato
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="dados-pessoais"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                    >
+                      Dados Pessoais
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -212,6 +212,14 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
           passageiroNome={nomeExibicao}
           initialCpf={carteirinha?.responsavel_principal?.cpf || ""}
           initialEmail={carteirinha?.responsavel_principal?.email || ""}
+          initialCep={carteirinha?.responsavel_principal?.cep || ""}
+          initialLogradouro={carteirinha?.responsavel_principal?.logradouro || ""}
+          initialNumero={carteirinha?.responsavel_principal?.numero || ""}
+          initialComplemento={carteirinha?.responsavel_principal?.complemento || ""}
+          initialBairro={carteirinha?.responsavel_principal?.bairro || ""}
+          initialCidade={carteirinha?.responsavel_principal?.cidade || ""}
+          initialEstado={carteirinha?.responsavel_principal?.estado || ""}
+          initialReferencia={carteirinha?.responsavel_principal?.referencia || ""}
           token={token}
           onSuccess={async () => {
             await Promise.all([refetch(), refetchPassageiros()]);

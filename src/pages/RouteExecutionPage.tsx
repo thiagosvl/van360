@@ -90,6 +90,7 @@ export default function RouteExecutionPage() {
           "broadcast",
           { event: "route_execution_changed" },
           (payload: any) => {
+            if (iniciarMutation.isPending || isRecentLocalMutation()) return;
             const payloadData = payload?.payload || payload;
             if (payloadData?.rotaId === targetRotaId && payloadData?.status === RouteExecutionStatus.INICIADA && payloadData?.execucaoId) {
               toast.info("Esta rota foi iniciada.");
@@ -147,7 +148,7 @@ export default function RouteExecutionPage() {
             filter: `rota_id=eq.${targetRotaId}`
           },
           (payload: any) => {
-            if (isRecentLocalMutation()) return;
+            if (iniciarMutation.isPending || isRecentLocalMutation()) return;
             queryClient.invalidateQueries({ queryKey: ["routes-list"] });
             queryClient.invalidateQueries({ queryKey: ["routes", "execucoes"] });
             const newExecId = payload.new?.id;
@@ -262,7 +263,7 @@ export default function RouteExecutionPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id, execucao?.id, (execucao as any)?.rota_id, isPreview, refetch, queryClient]);
+  }, [id, execucao?.id, (execucao as any)?.rota_id, isPreview, refetch, queryClient, iniciarMutation.isPending]);
 
   useEffect(() => {
     setPageTitle(isPreview ? "Prévia da Rota" : "Rota em Andamento");

@@ -105,7 +105,31 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
           ACESSO RÁPIDO
         </span>
         <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-3 space-y-1.5">
-          {/* 1. Contrato */}
+
+
+          {/* 1. Dados Pessoais */}
+          <button
+            type="button"
+            onClick={() => handleTabClick("dados-pessoais")}
+            className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
+                <User className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-[#16314f] block truncate">
+                  Dados Pessoais
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium block truncate">
+                  Informações do passageiro, endereço e observações
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+          </button>
+
+          {/* 2. Contrato */}
           <button
             type="button"
             onClick={() => temContrato && handleTabClick("contrato")}
@@ -114,12 +138,12 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
               }`}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <div className="min-w-0">
                 <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Contrato do Aluno
+                  Contrato
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium block truncate">
                   Visualizar ou assinar contrato do transporte
@@ -129,29 +153,29 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
           </button>
 
-          {/* 2. Responsáveis */}
+          {/* 3. Responsáveis */}
           <button
             type="button"
             onClick={() => handleTabClick("responsaveis")}
             className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
                 <Users className="w-4 h-4" />
               </div>
               <div className="min-w-0">
                 <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Responsáveis Cadastrados
+                  Responsáveis
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Contatos e telefones vinculados
+                  Contatos, telefones e endereços cadastrados
                 </span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
           </button>
 
-          {/* 3. Ausências */}
+          {/* 4. Ausências */}
           <button
             type="button"
             onClick={() => temRotas && handleTabClick("ausencias")}
@@ -160,7 +184,7 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
               }`}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
                 <CalendarOff className="w-4 h-4" />
               </div>
               <div className="min-w-0">
@@ -168,21 +192,21 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
                   Ausências
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Faltas agendadas e histórico
+                  Informe faltas e gerencie ausências programadas
                 </span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
           </button>
 
-          {/* 4. Parcelas */}
+          {/* 5. Parcelas */}
           <button
             type="button"
             onClick={() => handleTabClick("parcelas")}
             className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
                 <Receipt className="w-4 h-4" />
               </div>
               <div className="min-w-0">
@@ -191,28 +215,6 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium block truncate">
                   Histórico financeiro e recibos
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </button>
-
-          {/* 5. Dados Pessoais */}
-          <button
-            type="button"
-            onClick={() => handleTabClick("dados-pessoais")}
-            className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#16314f] flex items-center justify-center shrink-0">
-                <User className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Dados Pessoais
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Informações do passageiro, endereço e observações
                 </span>
               </div>
             </div>

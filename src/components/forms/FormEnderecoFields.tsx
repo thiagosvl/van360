@@ -116,6 +116,7 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                   <div className="relative w-full">
                     <Input
                       {...field}
+                      autoComplete="off"
                       placeholder="Ex: Rua Comendador"
                       className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full pr-6"
                       aria-invalid={!!fieldState.error}

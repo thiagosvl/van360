@@ -105,7 +105,7 @@ export const CarteirinhaContrato = ({
     if (isMissingResponsible) {
       return {
         title: "Não possui contrato",
-        desc: "Complete o cadastro do responsável para poder emitir contratos.",
+        desc: "Complete o cadastro do responsável para poder gerar contratos.",
         color: "bg-amber-50/40 border-amber-100/80",
         iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/30 shadow-xs",
         icon: Pencil,

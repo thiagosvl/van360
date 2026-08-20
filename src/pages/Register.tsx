@@ -14,7 +14,7 @@ import { cpfCnpjMask, dateMask, phoneMask } from "@/utils/masks";
 import { DuplicateErrorBanner } from "@/components/features/register/DuplicateErrorBanner";
 import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoDialog";
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 
 export default function Register() {
@@ -38,6 +38,9 @@ export default function Register() {
   const [openTermos, setOpenTermos] = useState(false);
   const [openPolitica, setOpenPolitica] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isFromSplash = Boolean((location.state as { fromSplash?: boolean })?.fromSplash);
 
   const cpfcnpjValue = form.watch("cpfcnpj") || "";
   const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
@@ -74,7 +77,7 @@ export default function Register() {
                     src="/assets/logo-van360.webp"
                     alt="Van360"
                     className="h-12 w-auto select-none drop-shadow-sm cursor-pointer"
-                    onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`)}
+                    onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: isFromSplash } })}
                   />
                 </div>
               </div>
@@ -90,6 +93,23 @@ export default function Register() {
           </div>
 
           <div className="p-6 sm:p-10 lg:p-12 lg:pt-8 lg:pb-10">
+            {/* Banner de escape para pais/responsáveis */}
+            <div className="mb-6 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 flex items-center justify-between gap-3 text-xs text-amber-900">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-base">👨‍👩‍👧</span>
+                <span className="font-medium leading-snug">
+                  <strong>É pai ou responsável?</strong> Seu acesso é liberado pelo motorista da van.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=responsavel`, { state: { fromSplash: isFromSplash } })}
+                className="shrink-0 font-bold text-amber-800 hover:text-amber-950 underline underline-offset-2 cursor-pointer transition-colors"
+              >
+                Acessar aqui
+              </button>
+            </div>
+
             <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Form {...form}>
                 <form
@@ -451,7 +471,7 @@ export default function Register() {
                         Já tem uma conta?{" "}
                         <button
                           type="button"
-                          onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`)}
+                          onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: isFromSplash } })}
                           className="text-[#1a3a5c] font-bold hover:underline transition-all cursor-pointer"
                         >
                           Fazer login

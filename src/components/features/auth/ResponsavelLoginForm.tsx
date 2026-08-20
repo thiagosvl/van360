@@ -50,7 +50,7 @@ export const ResponsavelLoginForm: React.FC = () => {
               className="mb-4 p-3 rounded-2xl"
               description={
                 <span>
-                  Digite o número de <strong>WhatsApp</strong> utilizado no cadastro do passageiro.
+                  <strong>Pais e Responsáveis:</strong> digite o número de <strong>WhatsApp</strong> cadastrado pelo motorista para acessar a carteirinha. Não é necessário criar conta prévia.
                 </span>
               }
             />

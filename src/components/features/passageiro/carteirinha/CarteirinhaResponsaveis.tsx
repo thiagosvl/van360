@@ -61,10 +61,10 @@ export const CarteirinhaResponsaveis = ({
     openDefinirResponsavelPrincipalDialog,
   } = useLayout();
 
-  // Lista unificada e deduplicada de responsáveis
+  // Lista unificada e deduplicada de responsáveis por ID único
   const allResponsaveis: PassageiroResponsavel[] = useMemo(() => {
     const list: PassageiroResponsavel[] = [];
-    const seenKeys = new Set<string>();
+    const seenIds = new Set<string>();
 
     let principalObj: PassageiroResponsavel | null = null;
     if (passageiro.responsavel_principal?.nome || passageiro.responsavel_principal?.id) {
@@ -89,31 +89,17 @@ export const CarteirinhaResponsaveis = ({
         pin_acesso: passageiro.responsavel_principal.pin_acesso,
         tipo: TipoResponsavel.PRINCIPAL,
       };
-    }
-
-    if (principalObj) {
       list.push(principalObj);
-      if (principalObj.id) seenKeys.add(principalObj.id);
-      if (principalObj.responsavel_id) seenKeys.add(principalObj.responsavel_id);
-      if (principalObj.cpf) seenKeys.add(`cpf-${principalObj.cpf.replace(/\D/g, "")}`);
-      if (principalObj.telefone) seenKeys.add(`tel-${principalObj.telefone.replace(/\D/g, "")}`);
+      if (principalObj.id) seenIds.add(principalObj.id);
+      if (principalObj.responsavel_id) seenIds.add(principalObj.responsavel_id);
     }
 
     const rawList = (passageiro.responsaveis || []).filter((r): r is PassageiroResponsavel => Boolean(r && (r.nome || r.id)));
 
     for (const r of rawList) {
-      const cleanCpf = r.cpf ? `cpf-${r.cpf.replace(/\D/g, "")}` : null;
-      const cleanTel = r.telefone ? `tel-${r.telefone.replace(/\D/g, "")}` : null;
-      const isPrincipal = r.tipo === TipoResponsavel.PRINCIPAL;
-
-      if (
-        (r.id && seenKeys.has(r.id)) ||
-        (r.responsavel_id && seenKeys.has(r.responsavel_id)) ||
-        (cleanCpf && seenKeys.has(cleanCpf)) ||
-        (cleanTel && seenKeys.has(cleanTel)) ||
-        (principalObj && isPrincipal)
-      ) {
-        if (principalObj && (isPrincipal || (cleanTel && cleanTel === `tel-${principalObj.telefone?.replace(/\D/g, "")}`))) {
+      const rId = r.id || r.responsavel_id;
+      if (rId && seenIds.has(rId)) {
+        if (principalObj && (r.id === principalObj.id || r.responsavel_id === principalObj.responsavel_id)) {
           if (!principalObj.pin_acesso && r.pin_acesso) principalObj.pin_acesso = r.pin_acesso;
           if (!principalObj.logradouro && r.logradouro) principalObj.logradouro = r.logradouro;
           if (!principalObj.parentesco && r.parentesco) principalObj.parentesco = r.parentesco;
@@ -121,17 +107,14 @@ export const CarteirinhaResponsaveis = ({
         continue;
       }
 
-      const keyId = r.id || r.responsavel_id || `r-${r.cpf ? r.cpf.replace(/\D/g, "") : r.nome}`;
-      seenKeys.add(keyId);
-      if (cleanCpf) seenKeys.add(cleanCpf);
-      if (cleanTel) seenKeys.add(cleanTel);
-      if (r.id) seenKeys.add(r.id);
-      if (r.responsavel_id) seenKeys.add(r.responsavel_id);
+      if (rId) seenIds.add(rId);
+      if (r.id) seenIds.add(r.id);
+      if (r.responsavel_id) seenIds.add(r.responsavel_id);
 
       list.push({
         ...r,
-        id: keyId,
-        tipo: r.tipo || TipoResponsavel.ADICIONAL,
+        id: rId || r.id,
+        tipo: r.tipo || (list.length === 0 ? TipoResponsavel.PRINCIPAL : TipoResponsavel.ADICIONAL),
       });
     }
 
@@ -176,7 +159,7 @@ export const CarteirinhaResponsaveis = ({
     <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-5 flex flex-col gap-4 transform-gpu will-change-transform">
       <div className="flex items-center justify-between text-left min-h-[32px]">
         <h3 className="text-base font-bold text-[#16314f]">Responsáveis</h3>
-        {canManage && (
+        {!isResponsavelPortal && canManage && (
           <Button
             type="button"
             variant="outline"
@@ -196,7 +179,7 @@ export const CarteirinhaResponsaveis = ({
           <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1">
             {allResponsaveis.map((resp) => {
               const isPrincipal = resp.tipo === TipoResponsavel.PRINCIPAL;
-              const label = formatParentesco(resp.parentesco) || formatFirstName(resp.nome) || (isPrincipal ? "Responsável Financeiro" : "Outro Responsável");
+              const label = formatParentesco(resp.parentesco) || formatFirstName(resp.nome) || "Responsável";
               return (
                 <TabsTrigger
                   key={resp.id}
@@ -228,18 +211,29 @@ export const CarteirinhaResponsaveis = ({
 
         const isPrincipalTab = currentResp.tipo === TipoResponsavel.PRINCIPAL || currentResp.id === principalResp?.id;
 
+        const isOwnProfile = Boolean(
+          passageiro.responsavel_logado_id &&
+          (currentResp.id === passageiro.responsavel_logado_id || currentResp.responsavel_id === passageiro.responsavel_logado_id)
+        );
+
+        const canEditCurrent = isResponsavelPortal ? isOwnProfile : (canManage && !hideEditButton);
+        const canShowDropdown = !isResponsavelPortal && !isPrincipalTab && canManage;
+
         const respAddress = currentResp.logradouro
           ? formatarEnderecoCompleto(currentResp)
           : null;
         const respReferencia = currentResp.referencia || null;
 
-        const respParentesco = isPrincipalTab
-          ? (formatParentesco(currentResp.parentesco) || "Responsável Principal")
-          : (formatParentesco(currentResp.parentesco) || "Outro Responsável");
+        const respParentesco = formatParentesco(currentResp.parentesco) || formatFirstName(currentResp.nome) || (isPrincipalTab ? "Responsável Principal" : "Responsável");
 
         const handleSetPrincipal = () => {
           const targetResponsavelId = currentResp.responsavel_id || currentResp.id;
           if (!targetResponsavelId) return;
+
+          if (!currentResp.logradouro || currentResp.logradouro.trim() === "") {
+            toast.error("Para definir este responsável como principal, é necessário cadastrar um endereço para ele primeiro.");
+            return;
+          }
 
           openDefinirResponsavelPrincipalDialog({
             responsavelNome: currentResp.nome,
@@ -295,20 +289,12 @@ export const CarteirinhaResponsaveis = ({
 
         const handleResetPin = () => {
           const resetTargetRespId = currentResp.responsavel_id || currentResp.id;
+          if (!resetTargetRespId) return;
 
           openConfirmationDialog({
-            title: "Resetar Senha do Responsável",
-            description: (
-              <div className="space-y-3 pt-1 text-left">
-                <p className="text-slate-600 text-xs leading-relaxed">
-                  Tem certeza que deseja resetar a senha de <strong>{formatFirstName(currentResp.nome)}</strong>?
-                </p>
-                <p className="text-slate-500 text-[11px] leading-relaxed">
-                  O responsável precisará cadastrar uma nova senha no próximo acesso pelo app.
-                </p>
-              </div>
-            ),
-            confirmText: "Sim, resetar senha",
+            title: "Resetar Senha de Acesso",
+            description: `Deseja realmente resetar a senha de acesso do(a) ${formatFirstName(currentResp.nome)}? No próximo login com o número ${phoneMask(currentResp.telefone)}, será solicitado o cadastro de uma nova senha de 4 dígitos.`,
+            confirmText: "Sim, Resetar",
             cancelText: "Cancelar",
             variant: "destructive",
             onConfirm: async () => {
@@ -329,25 +315,27 @@ export const CarteirinhaResponsaveis = ({
               <span className="text-xs font-semibold text-slate-500">
                 {respParentesco || "Outro Responsável"}
               </span>
-              {canManage && !hideEditButton && (
+              {(canEditCurrent || canShowDropdown) && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      openResponsavelFormDialog({
-                        passageiroId: passageiro.id!,
-                        editingResponsavel: currentResp as PassageiroResponsavel,
-                        isResponsavelPortal,
-                        onSuccess: onRefresh,
-                      });
-                    }}
-                    className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
-                    title="Editar Responsável"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  {!isPrincipalTab && (
+                  {canEditCurrent && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        openResponsavelFormDialog({
+                          passageiroId: passageiro.id!,
+                          editingResponsavel: currentResp as PassageiroResponsavel,
+                          isResponsavelPortal,
+                          onSuccess: onRefresh,
+                        });
+                      }}
+                      className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
+                      title="Editar Responsável"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {canShowDropdown && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-slate-100/80 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80">
@@ -449,7 +437,7 @@ export const CarteirinhaResponsaveis = ({
                         </p>
                       )}
                     </div>
-                    {respAddress && (
+                    {!isResponsavelPortal && respAddress && (
                       <Button
                         type="button"
                         variant="ghost"

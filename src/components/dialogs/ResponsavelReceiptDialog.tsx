@@ -1,8 +1,7 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Download, ReceiptText, Loader2 } from "lucide-react";
+import { Share2, ReceiptText, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { getNowBR } from "@/utils/dateUtils";
-import { openBrowserLink } from "@/utils/browser";
+import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 
 interface ResponsavelReceiptDialogProps {
   isOpen: boolean;
@@ -19,28 +18,16 @@ export const ResponsavelReceiptDialog = ({
 }: ResponsavelReceiptDialogProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  const handleDownload = useCallback(async () => {
+  const handleShare = useCallback(async () => {
     if (!receiptUrl) return;
 
-    try {
-      if (receiptUrl.startsWith("http")) {
-        const response = await fetch(receiptUrl);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `comprovante-${getNowBR().getTime()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        openBrowserLink(receiptUrl);
-      }
-    } catch {
-      openBrowserLink(receiptUrl);
-    }
-  }, [receiptUrl]);
+    await shareReceiptFile({
+      url: receiptUrl,
+      filename: "recibo.png",
+      title: "Recibo Van360",
+      text: cobrancaDescricao,
+    });
+  }, [receiptUrl, cobrancaDescricao]);
 
   if (!receiptUrl) return null;
 
@@ -57,12 +44,12 @@ export const ResponsavelReceiptDialog = ({
           {isImageLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 animate-pulse">
               <Loader2 className="h-8 w-8 text-slate-300 animate-spin mb-2" />
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Carregando comprovante...</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Carregando recibo...</p>
             </div>
           )}
           <img
             src={receiptUrl}
-            alt="Comprovante"
+            alt="Recibo"
             onLoad={() => setIsImageLoading(false)}
             onError={() => setIsImageLoading(false)}
             className={`max-w-full max-h-full object-contain rounded-xl transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
@@ -72,10 +59,10 @@ export const ResponsavelReceiptDialog = ({
 
       <BaseDialog.Footer className="gap-2 sm:gap-3">
         <BaseDialog.Action
-          label="Baixar Comprovante"
-          onClick={handleDownload}
+          label="Compartilhar"
+          onClick={handleShare}
           disabled={isImageLoading}
-          icon={<Download className="h-4 w-4" />}
+          icon={<Share2 className="h-4 w-4" />}
           className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold"
         />
       </BaseDialog.Footer>

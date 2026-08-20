@@ -103,7 +103,7 @@ const CarteirinhaTopCard = ({
     phoneNumbersOnly.length < 10;
 
   return (
-    <div className="bg-[#1a3a5c] rounded-[2rem] relative flex flex-col items-center mb-8 shadow-md">
+    <div className="bg-[#1a3a5c] rounded-[2rem] relative flex flex-col items-center mb-11 shadow-md">
       <div className="absolute top-0 left-0 w-full h-[25%] bg-black/15 rounded-t-[2rem] z-0" />
 
       <div className="relative z-10 w-full flex flex-col items-center px-4 pt-8 pb-10">
@@ -421,14 +421,6 @@ export const CarteirinhaDadosPessoais = ({
       ? `Dia ${passageiro.dia_vencimento}`
       : null);
 
-  const inicioTransporteTexto = passageiro.data_inicio_transporte
-    ? formatDateToBR(passageiro.data_inicio_transporte)
-    : null;
-
-  const fimTransporteTexto = passageiro.data_fim_transporte
-    ? formatDateToBR(passageiro.data_fim_transporte)
-    : null;
-
   const inicioCobrancaTexto =
     !isIncomplete && passageiro.data_inicio_cobranca
       ? formatMonthYearToBR(passageiro.data_inicio_cobranca)
@@ -439,19 +431,19 @@ export const CarteirinhaDadosPessoais = ({
       ? formatMonthYearToBR(passageiro.data_fim_cobranca)
       : null;
 
-  const cpfResponsavelTexto = !isIncomplete && respPrincipal?.cpf
-    ? cpfMask(respPrincipal.cpf)
+  const inicioTransporteTexto = passageiro.data_inicio_transporte
+    ? formatDateToBR(passageiro.data_inicio_transporte)
     : null;
 
-  const telefoneResponsavelTexto = !isIncomplete && respPrincipal?.telefone
-    ? phoneMask(respPrincipal.telefone)
+  const fimTransporteTexto = passageiro.data_fim_transporte
+    ? formatDateToBR(passageiro.data_fim_transporte)
     : null;
 
   return (
     <div className="space-y-6 text-left">
-      {/* 1. Bloco: Escola e Transporte */}
+      {/* 1. Bloco: Escola */}
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Escola e Transporte</h3>
+        <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
           <InfoField
             icon={<GraduationCap className="h-3.5 w-3.5" />}
@@ -466,30 +458,37 @@ export const CarteirinhaDadosPessoais = ({
               value={formatPeriodo(passageiro.periodo)}
             />
             <InfoField
+              icon={<BookOpen className="h-3.5 w-3.5" />}
+              label="Turma"
+              value={passageiro.turma}
+            />
+          </div>
+          <InfoField
+            icon={<User className="h-3.5 w-3.5" />}
+            label="Professor(a)"
+            value={passageiro.nome_professor}
+            fullWidth
+            hasBorder
+          />
+        </div>
+      </div>
+
+      {/* 2. Bloco: Transporte */}
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
+        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <InfoField
+              icon={<Bus className="h-3.5 w-3.5" />}
+              label="Veículo / Placa"
+              value={passageiro.veiculo?.placa}
+            />
+            <InfoField
               icon={<Bus className="h-3.5 w-3.5" />}
               label="Modalidade"
               value={formatModalidade(passageiro.modalidade)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-            <InfoField
-              icon={<BookOpen className="h-3.5 w-3.5" />}
-              label="Turma"
-              value={passageiro.turma}
-            />
-            <InfoField
-              icon={<User className="h-3.5 w-3.5" />}
-              label="Professor(a)"
-              value={passageiro.nome_professor}
-            />
-          </div>
-          <InfoField
-            icon={<Bus className="h-3.5 w-3.5" />}
-            label="Veículo / Placa"
-            value={passageiro.veiculo?.placa}
-            fullWidth
-            hasBorder
-          />
           <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
             <InfoField
               icon={<Calendar className="h-3.5 w-3.5" />}
@@ -502,49 +501,7 @@ export const CarteirinhaDadosPessoais = ({
               value={fimTransporteTexto}
             />
           </div>
-        </div>
-      </div>
-
-      {/* 2. Bloco: Parcelas */}
-      {canViewFinancials && (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
-          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <InfoField
-                icon={<Wallet className="h-3.5 w-3.5" />}
-                label="Valor da parcela"
-                value={valorCobrancaTexto}
-              />
-              <InfoField
-                icon={<Clock className="h-3.5 w-3.5" />}
-                label="Dia de vencimento"
-                value={diaVencimentoTexto}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-              <InfoField
-                icon={<CalendarClock className="h-3.5 w-3.5" />}
-                label="Início das cobranças"
-                value={inicioCobrancaTexto}
-              />
-              <InfoField
-                icon={<CalendarClock className="h-3.5 w-3.5" />}
-                label="Término das cobranças"
-                value={fimCobrancaTexto}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-
-
-      {/* 4. Bloco: Endereço de Embarque */}
-      <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Endereço de Embarque</h3>
-        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
-          <div className="flex items-start justify-between gap-3">
+          <div className="pt-2.5 border-t border-slate-200/50 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
@@ -581,7 +538,40 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* 5. Bloco: Outros Dados */}
+      {/* 3. Bloco: Parcelas */}
+      {canViewFinancials && (
+        <div className="space-y-3">
+          <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
+          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <InfoField
+                icon={<Wallet className="h-3.5 w-3.5" />}
+                label="Valor da parcela"
+                value={valorCobrancaTexto}
+              />
+              <InfoField
+                icon={<Clock className="h-3.5 w-3.5" />}
+                label="Dia de vencimento"
+                value={diaVencimentoTexto}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Início das cobranças"
+                value={inicioCobrancaTexto}
+              />
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Término das cobranças"
+                value={fimCobrancaTexto}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Bloco: Outros Dados */}
       <div className="space-y-3">
         <h3 className="text-base font-bold text-[#16314f]">Outros Dados</h3>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
@@ -597,14 +587,6 @@ export const CarteirinhaDadosPessoais = ({
               value={passageiro.genero ? formatGenero(passageiro.genero) : null}
             />
           </div>
-          {passageiro.observacoes && (
-            <div className="pt-2.5 border-t border-slate-200/50 space-y-1">
-              <span className="text-xs font-medium text-slate-500 block">Observações</span>
-              <p className="text-xs sm:text-sm font-bold text-[#1a3a5c] leading-relaxed whitespace-pre-wrap">
-                {passageiro.observacoes}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

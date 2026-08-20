@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useConfiguracoes } from "@/hooks";
-import { Radio, Loader2 } from "lucide-react";
+import { Radio } from "lucide-react";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { Capacitor } from "@capacitor/core";
 import { toast } from "sonner";
@@ -25,11 +25,12 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
         currentPerm = await requestLocationPermission();
       }
 
-      if (currentPerm !== AppPermissionStatus.GRANTED) {
-        toast.error("Permissão de Localização necessária", {
-          description: "Para ativar o rastreamento, habilite a permissão de GPS nas configurações do aparelho.",
+      if (currentPerm === AppPermissionStatus.DENIED) {
+        toast.error("Permissão de localização necessária", {
+          description:
+            "Para permitir o rastreamento em tempo real, habilite a localização nas configurações do dispositivo.",
           action: {
-            label: "Configurar",
+            label: "Abrir Ajustes",
             onClick: () => openDeviceSettings(),
           },
         });
@@ -65,7 +66,8 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-44 w-full rounded-2xl" />
+        <Skeleton className="h-32 w-full rounded-2xl" />
       </div>
     );
   }
@@ -74,8 +76,8 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
   const rastreamentoModo = configuracoes?.rastreamento_modo ?? "completo";
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-xs space-y-5">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 md:p-6 shadow-xs space-y-5">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
           <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
             <Radio className="w-5 h-5" />
@@ -100,16 +102,13 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
             </p>
           </div>
 
-          <div className="shrink-0 w-11 h-6 flex items-center justify-center">
-            {updatingKey === "rastreamento_ativo" ? (
-              <Loader2 className="w-5 h-5 text-[#1a3a5c] animate-spin" />
-            ) : (
-              <Switch
-                id="switch-rastreamento-ativo"
-                checked={rastreamentoAtivo}
-                onCheckedChange={() => handleToggle(rastreamentoAtivo)}
-              />
-            )}
+          <div className="shrink-0">
+            <Switch
+              id="switch-rastreamento-ativo"
+              checked={rastreamentoAtivo}
+              loading={updatingKey === "rastreamento_ativo"}
+              onCheckedChange={() => handleToggle(rastreamentoAtivo)}
+            />
           </div>
         </div>
 

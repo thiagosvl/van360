@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { phoneSchema } from "@/schemas/common";
-import { ParentescoResponsavel } from "@/types/enums";
+import { ParentescoResponsavel, TipoResponsavel } from "@/types/enums";
 import { PassageiroResponsavel } from "@/types/passageiro";
 import { parentescos } from "@/utils/formatters";
 import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
@@ -36,13 +36,11 @@ import { toast } from "sonner";
 import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
-  useSetPrincipalResponsavel,
   useBuscarResponsavel,
 } from "@/hooks";
 import {
   useAddResponsavelResponsavelMutation,
   useUpdateResponsavelResponsavelMutation,
-  useSetPrincipalResponsavelResponsavelMutation,
 } from "@/hooks/api/useResponsavelAuthApi";
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { STORAGE_KEYS } from "@/constants";
@@ -111,21 +109,21 @@ export default function ResponsavelFormDialog({
   const { token } = useResponsavelAuth();
   const createResponsavel = useCreateResponsavelAdicional();
   const updateResponsavel = useUpdateResponsavelAdicional();
-  const setPrincipal = useSetPrincipalResponsavel();
 
   const addResponsavelResponsavel = useAddResponsavelResponsavelMutation();
   const updateResponsavelResponsavel = useUpdateResponsavelResponsavelMutation();
-  const setPrincipalResponsavel = useSetPrincipalResponsavelResponsavelMutation();
 
   const alertRef = useRef<HTMLDivElement>(null);
+
+  const isAlreadyPrincipal = Boolean(
+    editingResponsavel && editingResponsavel.tipo === TipoResponsavel.PRINCIPAL
+  );
 
   const isSubmitting =
     createResponsavel.isPending ||
     updateResponsavel.isPending ||
-    setPrincipal.isPending ||
     addResponsavelResponsavel.isPending ||
-    updateResponsavelResponsavel.isPending ||
-    setPrincipalResponsavel.isPending;
+    updateResponsavelResponsavel.isPending;
 
   const searchedTermsSet = useRef<Set<string>>(new Set());
 
@@ -320,6 +318,7 @@ export default function ResponsavelFormDialog({
       cep: data.cep ? String(data.cep).replace(/\D/g, "") : null,
       referencia: data.referencia || null,
       complemento: data.complemento || null,
+      tornar_principal: isAlreadyPrincipal ? undefined : data.tornar_principal,
     };
 
     const successCallback = () => {
@@ -337,28 +336,12 @@ export default function ResponsavelFormDialog({
             payload,
             token: authToken,
           });
-
-          if (data.tornar_principal) {
-            await setPrincipalResponsavel.mutateAsync({
-              passageiroId,
-              responsavelId: editingResponsavel.id,
-              token: authToken,
-            });
-          }
         } else {
-          const response = await addResponsavelResponsavel.mutateAsync({
+          await addResponsavelResponsavel.mutateAsync({
             passageiroId,
             payload,
             token: authToken,
           });
-
-          if (data.tornar_principal && response?.id) {
-            await setPrincipalResponsavel.mutateAsync({
-              passageiroId,
-              responsavelId: response.id,
-              token: authToken,
-            });
-          }
         }
         successCallback();
       } else {
@@ -368,30 +351,15 @@ export default function ResponsavelFormDialog({
             passageiroId,
             data: payload,
           });
-
-          if (data.tornar_principal) {
-            await setPrincipal.mutateAsync({
-              passageiroId,
-              responsavelId: editingResponsavel.id,
-            });
-          }
-          successCallback();
         } else {
-          const response = await createResponsavel.mutateAsync({
+          await createResponsavel.mutateAsync({
             passageiroId,
             data: payload,
           });
-
-          if (data.tornar_principal && response?.id) {
-            await setPrincipal.mutateAsync({
-              passageiroId,
-              responsavelId: response.id,
-            });
-          }
-          successCallback();
         }
+        successCallback();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao processar responsável:", error);
       const msg = getErrorMessage(error);
       if (msg && msg.toLowerCase().includes("telefone")) {
@@ -581,68 +549,70 @@ export default function ResponsavelFormDialog({
               <FormEnderecoFields required={false} />
             </section>
 
-            <FormField
-              control={form.control}
-              name="tornar_principal"
-              render={({ field }) => (
-                <div className="space-y-3" ref={alertRef}>
-                  <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
-                    <Checkbox
-                      id="tornar_principal"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      className="h-5 w-5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
-                    />
-                    <FormLabel
-                      htmlFor="tornar_principal"
-                      className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
-                    >
-                      Definir como responsável principal
-                    </FormLabel>
-                  </FormItem>
+            {!isAlreadyPrincipal && !isResponsavelPortal && (
+              <FormField
+                control={form.control}
+                name="tornar_principal"
+                render={({ field }) => (
+                  <div className="space-y-3" ref={alertRef}>
+                    <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
+                      <Checkbox
+                        id="tornar_principal"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="h-5 w-5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                      />
+                      <FormLabel
+                        htmlFor="tornar_principal"
+                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
+                      >
+                        Definir como responsável principal
+                      </FormLabel>
+                    </FormItem>
 
-                  {field.value && (
-                    <div className="bg-blue-50/50 border border-blue-100/50 rounded-xl p-4 animate-in slide-in-from-top-2 fade-in duration-200">
-                      <p className="text-xs font-bold text-slate-800 mb-3">
-                        Ao salvar, as seguintes informações serão atualizadas:
-                      </p>
+                    {field.value && (
+                      <div className="bg-blue-50/50 border border-blue-100/50 rounded-xl p-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                        <p className="text-xs font-bold text-slate-800 mb-3">
+                          Ao salvar, as seguintes informações serão atualizadas:
+                        </p>
 
-                      <div className="space-y-2.5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100/20">
-                            <MessageSquare className="w-3.5 h-3.5" />
+                        <div className="space-y-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100/20">
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Notificações WhatsApp</p>
+                              <p className="text-[10px] text-slate-500 leading-tight">Lembretes e avisos irão apenas para este contato.</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Notificações WhatsApp</p>
-                            <p className="text-[10px] text-slate-500 leading-tight">Lembretes e avisos irão apenas para este contato.</p>
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-6 h-6 rounded-lg bg-blue-100/50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200/20">
-                            <FileText className="w-3.5 h-3.5" />
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-6 h-6 rounded-lg bg-blue-100/50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200/20">
+                              <FileText className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Contratos e Documentos</p>
+                              <p className="text-[10px] text-slate-500 leading-tight">Serão gerados com os dados deste novo responsável.</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Contratos e Documentos</p>
-                            <p className="text-[10px] text-slate-500 leading-tight">Serão gerados com os dados deste novo responsável.</p>
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] shrink-0 border border-[#1a3a5c]/10">
-                            <MapPin className="w-3.5 h-3.5" />
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Endereço Principal</p>
-                            <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do passageiro.</p>
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] shrink-0 border border-[#1a3a5c]/10">
+                              <MapPin className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Endereço Principal</p>
+                              <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do passageiro.</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            />
+                    )}
+                  </div>
+                )}
+              />
+            )}
           </form>
         </Form>
       </BaseDialog.Body>

@@ -15,8 +15,7 @@ interface CobrancaSummaryProps {
 export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const isProjection = cobranca.isProjection === true;
   const isPago = !isProjection && cobranca.status === CobrancaStatus.PAGO;
-  const isPendente = (isProjection || cobranca.status === CobrancaStatus.PENDENTE) && !isPago;
-  const isAtrasado = isPendente && checkCobrancaEmAtraso(cobranca.data_vencimento);
+  const isAtrasado = !isPago && (cobranca.status === CobrancaStatus.VENCIDO || checkCobrancaEmAtraso(cobranca.data_vencimento));
 
   const statusLabel = isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
 

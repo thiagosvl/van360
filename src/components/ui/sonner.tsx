@@ -37,6 +37,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
       richColors
       closeButton
       swipeDirections={['left', 'right', 'bottom', 'top']}
+      offset={{
+        top: "calc(var(--safe-area-top, 0px) + 24px)",
+        right: "24px",
+        bottom: "calc(var(--safe-area-bottom, 0px) + 24px)",
+        left: "24px",
+      }}
+      mobileOffset={{
+        top: "calc(var(--safe-area-top, 0px) + 24px)",
+        right: "16px",
+        bottom: "calc(var(--safe-area-bottom, 0px) + 16px)",
+        left: "16px",
+      }}
       toastOptions={{
         classNames: {
           toast: "font-sans rounded-2xl shadow-lg border p-4 text-sm font-medium",
