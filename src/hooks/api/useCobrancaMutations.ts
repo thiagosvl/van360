@@ -18,9 +18,7 @@ export function useCreateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       toast.success(
         variables.status === CobrancaStatus.PAGO
-          ? (variables.enviar_recibo_whatsapp !== false
-            ? "cobranca.sucesso.pagamentoEReciboEnviado"
-            : "cobranca.sucesso.pagamentoRegistrado")
+          ? "cobranca.sucesso.pagamentoRegistrado"
           : "cobranca.sucesso.criada"
       );
     },
@@ -119,17 +117,13 @@ export function useRegistrarPagamentoManual() {
   return useMutation({
     mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: RegistrarPagamentoManualDTO }) =>
       cobrancaApi.registrarPagamentoManual(cobrancaId, data),
-    onSuccess: (updatedCobranca, { cobrancaId, data }) => {
+    onSuccess: (_, { cobrancaId }) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      toast.success(
-        data?.enviar_recibo_whatsapp !== false
-          ? "cobranca.sucesso.pagamentoEReciboEnviado"
-          : "cobranca.sucesso.pagamentoRegistrado"
-      );
+      toast.success("cobranca.sucesso.pagamentoRegistrado");
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.registrarPagamento", {

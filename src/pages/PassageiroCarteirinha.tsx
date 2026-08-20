@@ -422,14 +422,8 @@ export default function PassageiroCarteirinha() {
       valorOriginal: Number(cobranca.valor),
       status: cobranca.status,
       dataVencimento: cobranca.data_vencimento,
-      onPaymentRecorded: (updatedCobranca, dataSent) => {
+      onPaymentRecorded: () => {
         refetchCobrancas();
-        if (dataSent?.enviar_recibo_whatsapp === false && updatedCobranca?.recibo_url) {
-          openReceiptDialog({
-            receiptUrl: updatedCobranca.recibo_url,
-            cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
-          });
-        }
       },
     });
   };

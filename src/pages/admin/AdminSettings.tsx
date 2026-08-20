@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAdminConfigs, useUpdateConfig, useAdminPlans, useUpdatePlan } from "@/hooks/api/adminHooks";
 import { useLayout } from "@/contexts/LayoutContext";
-import { Save, Loader2, Settings, Bell, DollarSign, Gift, CreditCard, Landmark } from "lucide-react";
+import { Save, Loader2, Settings, Bell, DollarSign, Gift, CreditCard, Landmark, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +16,7 @@ interface ConfigFieldDef {
   chave: ConfigKey;
   label: string;
   descricao: string;
-  tipo: "number" | "boolean" | "text";
+  tipo: "number" | "boolean" | "text" | "textarea";
   sufixo?: string;
   grupo: string;
 }
@@ -91,6 +92,34 @@ const CONFIG_DEFS: ConfigFieldDef[] = [
     tipo: "number",
     sufixo: "%",
     grupo: "Indicações",
+  },
+  {
+    chave: ConfigKey.APP_ANDROID_MIN_VERSION,
+    label: "Versão Mínima do App (Android)",
+    descricao: "Versão mínima obrigatória na Play Store. Usuários abaixo desta versão serão bloqueados até atualizarem.",
+    tipo: "text",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_ANDROID_LATEST_VERSION,
+    label: "Versão Mais Recente (Android)",
+    descricao: "Versão mais nova aprovada na Play Store (exibe aviso opcional de atualização se o app estiver entre a mínima e a mais recente).",
+    tipo: "text",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_ANDROID_UPDATE_TITLE,
+    label: "Título do Diálogo de Atualização",
+    descricao: "Título exibido no modal de nova versão no aplicativo.",
+    tipo: "text",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_ANDROID_UPDATE_MESSAGE,
+    label: "Novidades / Mensagem da Atualização",
+    descricao: "Texto com as novidades ou explicação do update exibido no modal.",
+    tipo: "textarea",
+    grupo: "Aplicativo Mobile",
   },
 ];
 
@@ -224,6 +253,7 @@ export default function AdminSettings() {
   const financeiroFields = CONFIG_DEFS.filter((d) => d.grupo === "Financeiro" && d.tipo !== "boolean");
   const notificacaoFields = CONFIG_DEFS.filter((d) => d.grupo === "Notificações");
   const indicacaoFields = CONFIG_DEFS.filter((d) => d.grupo === "Indicações");
+  const mobileFields = CONFIG_DEFS.filter((d) => d.grupo === "Aplicativo Mobile");
 
   const renderConfigField = (def: ConfigFieldDef) => {
     const currentVal = values[def.chave] ?? "";
@@ -250,6 +280,36 @@ export default function AdminSettings() {
                 className="rounded-lg text-blue-400 hover:bg-blue-500/10 px-2"
               >
                 {savingConfigs.has(def.chave) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              </Button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (def.tipo === "textarea") {
+      return (
+        <div key={def.chave} className="space-y-1.5 text-left">
+          <div>
+            <Label className="text-xs font-bold text-slate-200">{def.label}</Label>
+            <p className="text-[10px] text-slate-400 mt-0.5">{def.descricao}</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Textarea
+              rows={4}
+              value={currentVal}
+              onChange={(e) => handleChange(def.chave, e.target.value)}
+              className="rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 resize-y"
+            />
+            {isDirty && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleSave(def.chave)}
+                disabled={savingConfigs.has(def.chave)}
+                className="rounded-lg text-blue-400 hover:bg-blue-500/10 h-11 px-3 mt-1"
+              >
+                {savingConfigs.has(def.chave) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               </Button>
             )}
           </div>
@@ -449,6 +509,18 @@ export default function AdminSettings() {
             </CardHeader>
             <CardContent className="space-y-5 pt-4">
               {indicacaoFields.map(renderConfigField)}
+            </CardContent>
+          </Card>
+
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                <Smartphone className="h-4 w-4 text-emerald-400" />
+                Aplicativo Mobile (Play Store)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5 pt-4">
+              {mobileFields.map(renderConfigField)}
             </CardContent>
           </Card>
         </div>

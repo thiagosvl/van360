@@ -39,7 +39,6 @@ export const cobrancaSchema = z
     foi_pago: z.boolean().default(false),
     data_pagamento: z.date().optional(),
     tipo_pagamento: z.string().optional(),
-    enviar_recibo_whatsapp: z.boolean().optional(),
 
     // Campos auxiliares para UI de Criação (Mês/Ano)
     mes: z.union([z.string(), z.number()]).optional(),
@@ -166,7 +165,6 @@ export function useCobrancaForm({
       foi_pago: lockFoiPago ? true : false,
       data_pagamento: lockFoiPago ? today : undefined,
       tipo_pagamento: "",
-      enviar_recibo_whatsapp: lockFoiPago ? true : undefined,
       mes: hasExplicitMes ? targetMonthNum.toString() : "",
       ano: targetYearNum.toString(),
     };
@@ -207,7 +205,6 @@ export function useCobrancaForm({
         data_pagamento: data.foi_pago ? dataPagamentoStr : null,
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,
-        enviar_recibo_whatsapp: data.foi_pago ? data.enviar_recibo_whatsapp : undefined,
         usuario_id: profile.id,
         origem: "manual",
       };

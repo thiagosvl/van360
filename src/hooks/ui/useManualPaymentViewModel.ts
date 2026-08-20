@@ -32,7 +32,6 @@ export function useManualPaymentViewModel({
     defaultValues: {
       valor_pago: "",
       data_pagamento: getNowBR(),
-      enviar_recibo_whatsapp: true,
     },
   });
 
@@ -43,7 +42,6 @@ export function useManualPaymentViewModel({
         valor_pago: moneyMask(String(valorEmCentavos)),
         data_pagamento: getNowBR(),
         tipo_pagamento: undefined,
-        enviar_recibo_whatsapp: true,
       });
     }
   }, [isOpen, valorOriginal, form]);
@@ -53,7 +51,6 @@ export function useManualPaymentViewModel({
       valor_pago: typeof data.valor_pago === 'string' ? parseCurrencyToNumber(data.valor_pago) : data.valor_pago,
       data_pagamento: toISODateTimeBR(data.data_pagamento),
       tipo_pagamento: data.tipo_pagamento,
-      enviar_recibo_whatsapp: data.enviar_recibo_whatsapp,
     };
 
     registrarPagamento.mutate(

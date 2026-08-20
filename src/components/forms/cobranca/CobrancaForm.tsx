@@ -422,28 +422,10 @@ export function CobrancaFormContent({
                             </FormItem>
                         )}
                     />
-                    {lockFoiPago && (
-                        <FormField
-                            control={form.control}
-                            name="enviar_recibo_whatsapp"
-                            render={({ field }) => (
-                                <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0 transition-all hover:bg-slate-100/50">
-                                    <Checkbox
-                                        id="enviar_recibo_whatsapp"
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                        className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <FormLabel
-                                        htmlFor="enviar_recibo_whatsapp"
-                                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
-                                    >
-                                        Enviar recibo por WhatsApp para o responsável
-                                    </FormLabel>
-                                </FormItem>
-                            )}
-                        />
-                    )}
+                    <Banner
+                        variant="info"
+                        description="O responsável receberá uma notificação no aplicativo e poderá acessar o comprovante diretamente pela carteirinha."
+                    />
                 </div>
             )}
 

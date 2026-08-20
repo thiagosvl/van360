@@ -297,6 +297,10 @@ export enum ConfigKey {
   SAAS_REFERRAL_BONUS_DAYS = "SAAS_REFERRAL_BONUS_DAYS",
   SAAS_REFERRAL_DISCOUNT_PCT = "SAAS_REFERRAL_DISCOUNT_PCT",
   SAAS_DIAS_ANTECEDENCIA_RENOVACAO = "SAAS_DIAS_ANTECEDENCIA_RENOVACAO",
+  APP_ANDROID_MIN_VERSION = "app_android_min_version",
+  APP_ANDROID_LATEST_VERSION = "app_android_latest_version",
+  APP_ANDROID_UPDATE_TITLE = "app_android_update_title",
+  APP_ANDROID_UPDATE_MESSAGE = "app_android_update_message",
 }
 
 export enum CanalAquisicao {
@@ -389,5 +393,18 @@ export enum RoutePermission {
   EXCLUIR = "rotas.excluir",
   INICIAR_ENCERRAR = "rotas.iniciar_encerrar",
   EXECUTAR_PARADAS = "rotas.executar_paradas"
+}
+
+export enum AppPermissionStatus {
+  GRANTED = "granted",
+  DENIED = "denied",
+  PROMPT = "prompt",
+  UNAVAILABLE = "unavailable",
+}
+
+export enum PermissionRescueType {
+  PUSH = "push",
+  LOCATION = "location",
+  BOTH = "both",
 }
 

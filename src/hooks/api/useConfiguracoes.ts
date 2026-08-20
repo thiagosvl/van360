@@ -4,6 +4,13 @@ import { toast } from "sonner";
 
 export interface ConfiguracoesUsuario {
   notificar_pais_cobrancas: boolean;
+  cobranca_aviso_previo_ativo: boolean;
+  cobranca_dias_aviso_previo: number | null;
+  cobranca_vencimento_hoje_ativo: boolean;
+  cobranca_atraso_3_dias_ativo: boolean;
+  cobranca_atraso_5_dias_ativo: boolean;
+  cobranca_atraso_7_dias_ativo: boolean;
+  dias_aviso_vencimento_padrao_sistema?: number;
   notificar_motorista_parcelas: boolean;
   notificar_motorista_aniversarios: boolean;
   notificar_inicio_rota: boolean;
@@ -19,6 +26,12 @@ export type UpdateConfiguracoesInput = Partial<
   Pick<
     ConfiguracoesUsuario,
     | "notificar_pais_cobrancas"
+    | "cobranca_aviso_previo_ativo"
+    | "cobranca_dias_aviso_previo"
+    | "cobranca_vencimento_hoje_ativo"
+    | "cobranca_atraso_3_dias_ativo"
+    | "cobranca_atraso_5_dias_ativo"
+    | "cobranca_atraso_7_dias_ativo"
     | "notificar_motorista_parcelas"
     | "notificar_motorista_aniversarios"
     | "notificar_inicio_rota"
@@ -65,10 +78,7 @@ export function useConfiguracoes() {
       if (context?.previousConfig) {
         queryClient.setQueryData(CONFIGURACOES_QUERY_KEY, context.previousConfig);
       }
-      toast.error("Erro ao salvar alteração. Tente novamente.");
-    },
-    onSuccess: () => {
-      toast.success("Configuração atualizada com sucesso!");
+      toast.error("Não foi possível salvar a alteração. Tente novamente.");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: CONFIGURACOES_QUERY_KEY });

@@ -66,8 +66,13 @@ export function isMobilePlatform(): boolean {
   return detectPlatform() !== "desktop";
 }
 
+export const ANDROID_PACKAGE_NAME = "com.tibis.van360";
+
 export const PLAY_STORE_URL =
-  "https://play.google.com/store/apps/details?id=com.tibis.van360";
+  `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE_NAME}`;
+
+export const PLAY_STORE_MARKET_URL =
+  `market://details?id=${ANDROID_PACKAGE_NAME}`;
 
 export const PLAY_STORE_BADGE_URL =
   "https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png";

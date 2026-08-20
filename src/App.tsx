@@ -6,6 +6,7 @@ import { SubscriptionGuard } from "@/components/auth/SubscriptionGuard";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ROUTES } from "@/constants/routes";
+import { STORAGE_KEYS } from "@/constants";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import AppLayout from "@/layouts/AppLayout";
 import { usePushNotifications } from "@/hooks/ui/usePushNotifications";
@@ -15,7 +16,9 @@ import { UserType } from "@/types/enums";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { lazyLoad } from "@/utils/lazyLoad";
 import { Capacitor } from "@capacitor/core";
+import { App as CapacitorApp } from "@capacitor/app";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { NativeUpdateDialog } from "@/components/dialogs/NativeUpdateDialog";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
@@ -77,6 +80,13 @@ const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [nativeUpdate, setNativeUpdate] = useState<{
+    isOpen: boolean;
+    title?: string;
+    message?: string;
+    isMandatory?: boolean;
+    storeUrl?: string;
+  }>({ isOpen: false });
 
   useEffect(() => {
     const runUpdater = async () => {
@@ -84,6 +94,7 @@ const App = () => {
       if (isDevEnv()) return;
 
       try {
+        const appInfo = await CapacitorApp.getInfo();
         const current = await CapacitorUpdater.current();
         const currentVersion =
           current?.bundle?.version || current?.native || "builtin";
@@ -92,16 +103,45 @@ const App = () => {
           params: {
             platform: Capacitor.getPlatform(),
             current_version: currentVersion,
+            native_version: appInfo?.version || "1.0.0",
           },
         });
 
         if (!data) return;
 
+        if (data.native) {
+          const { is_mandatory, has_update, title, message, store_url } = data.native;
+
+          if (is_mandatory) {
+            setNativeUpdate({
+              isOpen: true,
+              title,
+              message,
+              isMandatory: true,
+              storeUrl: store_url,
+            });
+            return;
+          }
+
+          if (has_update) {
+            const isDismissed = sessionStorage.getItem(STORAGE_KEYS.DISMISS_NATIVE_UPDATE_PROMPT);
+            if (!isDismissed) {
+              setNativeUpdate({
+                isOpen: true,
+                title,
+                message,
+                isMandatory: false,
+                storeUrl: store_url,
+              });
+            }
+          }
+        }
+
         const { latest_version, url_zip, force_update } = data;
 
-        if (currentVersion === latest_version) return;
+        if (!latest_version || currentVersion === latest_version) return;
 
-        const pendingUpdateId = localStorage.getItem("pendingUpdate");
+        const pendingUpdateId = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
         if (pendingUpdateId && pendingUpdateId === latest_version && !force_update) {
           return;
         }
@@ -163,7 +203,7 @@ const App = () => {
           });
 
           await CapacitorUpdater.next({ id: version.id });
-          localStorage.setItem("pendingUpdate", version.id);
+          localStorage.setItem(STORAGE_KEYS.PENDING_UPDATE, version.id);
         } catch (err) {
         }
       } catch (err) {
@@ -211,10 +251,10 @@ const App = () => {
     const notifyReady = async () => {
       try {
         const current = await CapacitorUpdater.current();
-        const pending = localStorage.getItem("pendingUpdate");
+        const pending = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
 
         if (pending && pending === current?.bundle?.id) {
-          localStorage.removeItem("pendingUpdate");
+          localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
         }
 
         await CapacitorUpdater.notifyAppReady();
@@ -397,6 +437,18 @@ const App = () => {
             />
           </div>
         )}
+
+        <NativeUpdateDialog
+          isOpen={nativeUpdate.isOpen}
+          onClose={() => {
+            sessionStorage.setItem(STORAGE_KEYS.DISMISS_NATIVE_UPDATE_PROMPT, "true");
+            setNativeUpdate((prev) => ({ ...prev, isOpen: false }));
+          }}
+          title={nativeUpdate.title}
+          message={nativeUpdate.message}
+          isMandatory={nativeUpdate.isMandatory}
+          storeUrl={nativeUpdate.storeUrl}
+        />
       </TooltipProvider>
     </QueryClientProvider>
   );

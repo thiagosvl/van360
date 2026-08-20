@@ -4,15 +4,39 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useConfiguracoes } from "@/hooks";
 import { Radio, Loader2 } from "lucide-react";
+import { useAppPermissions } from "@/hooks/business/useAppPermissions";
+import { Capacitor } from "@capacitor/core";
+import { toast } from "sonner";
+import { AppPermissionStatus } from "@/types/enums";
 
 export const RastreamentoTab = memo(function RastreamentoTab() {
   const { configuracoes, isLoading, updateConfiguracoes } = useConfiguracoes();
+  const { locationStatus, requestLocationPermission, openDeviceSettings } = useAppPermissions();
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
   const modosRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = async (currentValue: boolean) => {
     if (updatingKey) return;
     const nextValue = !currentValue;
+
+    if (nextValue && Capacitor.isNativePlatform()) {
+      let currentPerm = locationStatus;
+      if (currentPerm === AppPermissionStatus.PROMPT) {
+        currentPerm = await requestLocationPermission();
+      }
+
+      if (currentPerm !== AppPermissionStatus.GRANTED) {
+        toast.error("Permissão de Localização necessária", {
+          description: "Para ativar o rastreamento, habilite a permissão de GPS nas configurações do aparelho.",
+          action: {
+            label: "Configurar",
+            onClick: () => openDeviceSettings(),
+          },
+        });
+        return;
+      }
+    }
+
     setUpdatingKey("rastreamento_ativo");
     try {
       await updateConfiguracoes({ rastreamento_ativo: nextValue });

@@ -18,9 +18,13 @@ import {
   ResponsavelCarteirinhaDadosPessoais,
   ResponsavelCarteirinhaContrato
 } from "@/components/features/responsavel/carteirinha";
+import { useAppPermissions } from "@/hooks/business/useAppPermissions";
+import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
+import { AppPermissionStatus, PermissionRescueType, UserType } from "@/types/enums";
 
 export const ResponsavelCarteirinhaBase: React.FC = () => {
   const navigate = useNavigate();
+  const { pushStatus, requestPushPermission } = useAppPermissions();
   const {
     token,
     passageiroId,
@@ -39,6 +43,12 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
     refetch,
     refetchPassageiros
   } = useResponsavelCarteirinhaViewModel();
+
+  React.useEffect(() => {
+    if (pushStatus === AppPermissionStatus.PROMPT) {
+      requestPushPermission();
+    }
+  }, [pushStatus, requestPushPermission]);
 
   const tabListRef = React.useRef<HTMLDivElement>(null);
 
@@ -102,6 +112,10 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
 
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6 pb-[calc(2.5rem+var(--safe-area-bottom))]">
+          {pushStatus === AppPermissionStatus.DENIED && (
+            <PermissionRescueBanner type={PermissionRescueType.PUSH} role={UserType.RESPONSAVEL} />
+          )}
+
           {isLoading ? (
             <div className="py-2">
               <CarteirinhaSkeleton />

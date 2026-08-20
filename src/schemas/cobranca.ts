@@ -15,7 +15,6 @@ export const paymentSchema = z.object({
   tipo_pagamento: z.nativeEnum(CobrancaTipoPagamento, {
     errorMap: () => ({ message: "A forma de pagamento é obrigatória." }),
   }),
-  enviar_recibo_whatsapp: z.boolean().default(true),
 });
 
 export type PaymentFormData = z.infer<typeof paymentSchema>;

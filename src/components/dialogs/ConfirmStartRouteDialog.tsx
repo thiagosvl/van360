@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Play, Bell } from "lucide-react";
+import { Play, Bell, MapPinOff, Settings } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useAppPermissions } from "@/hooks/business/useAppPermissions";
+import { Capacitor } from "@capacitor/core";
+
+import { AppPermissionStatus } from "@/types/enums";
 
 export interface ConfirmStartRouteDialogProps {
   isOpen: boolean;
@@ -19,10 +23,13 @@ export function ConfirmStartRouteDialog({
   isLoading = false,
 }: ConfirmStartRouteDialogProps) {
   const [notificarPais, setNotificarPais] = useState<boolean>(true);
+  const { locationStatus, openDeviceSettings } = useAppPermissions();
 
   const handleConfirm = () => {
     onConfirm(notificarPais);
   };
+
+  const isGpsDenied = Capacitor.isNativePlatform() && locationStatus === AppPermissionStatus.DENIED;
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="md">
@@ -37,6 +44,33 @@ export function ConfirmStartRouteDialog({
         <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
           Deseja dar a partida nesta corrida? Você poderá acompanhar as paradas e registrar os alunos em tempo real.
         </p>
+
+        {isGpsDenied && (
+          <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 space-y-2.5">
+            <div className="flex items-start gap-2.5">
+              <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700 shrink-0 mt-0.5">
+                <MapPinOff className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <p className="text-xs font-bold text-amber-950">
+                  GPS desativado no aparelho
+                </p>
+                <p className="text-[11px] text-amber-900/80 leading-relaxed">
+                  A rota iniciará sem envio de trajeto ao vivo aos pais. Você pode configurar agora ou ativar o GPS durante a corrida.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={openDeviceSettings}
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>Configurar GPS no Aparelho</span>
+            </button>
+          </div>
+        )}
 
         {/* Card de Notificações com Título e Descrição sem Truncamento */}
         <div

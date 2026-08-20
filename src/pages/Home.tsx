@@ -12,7 +12,7 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
-import { SubscriptionStatus, SubscriptionIdentifer, UserType } from "@/types/enums";
+import { SubscriptionStatus, SubscriptionIdentifer, UserType, AppPermissionStatus, PermissionRescueType } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { getMesNome, formatFirstName } from "@/utils/formatters";
@@ -39,9 +39,12 @@ import { useEffect } from "react";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useAppPermissions } from "@/hooks/business/useAppPermissions";
+import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
 
 const Home = () => {
   const { isSubConta, can } = usePermissions();
+  const { pushStatus, locationStatus, requestPushPermission, requestLocationPermission } = useAppPermissions();
   const { hideValues, toggleHideValues, formatPrivateCurrency, formatPrivateNumber } = usePrivacy();
   const {
     profile,
@@ -113,14 +116,44 @@ const Home = () => {
     openAcquisitionChannelDialog
   ]);
 
+  useEffect(() => {
+    if (isLoading || !profile) return;
+
+    const checkAndRequest = async () => {
+      if (pushStatus === AppPermissionStatus.PROMPT) {
+        await requestPushPermission();
+      }
+      if ((profile as any)?.rastreamento_ativo !== false && locationStatus === AppPermissionStatus.PROMPT) {
+        await requestLocationPermission();
+      }
+    };
+
+    checkAndRequest();
+  }, [isLoading, profile, pushStatus, locationStatus, requestPushPermission, requestLocationPermission]);
+
   if (isLoading) {
     return <HomeSkeleton />;
   }
+
+  const isTrackingAllowed = (profile as any)?.rastreamento_ativo !== false;
+  const showBothDenied =
+    pushStatus === AppPermissionStatus.DENIED &&
+    locationStatus === AppPermissionStatus.DENIED &&
+    isTrackingAllowed;
+  const showPushDenied = pushStatus === AppPermissionStatus.DENIED && !showBothDenied;
+  const showLocationDenied =
+    locationStatus === AppPermissionStatus.DENIED &&
+    isTrackingAllowed &&
+    !showBothDenied;
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
         <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+          {showBothDenied && <PermissionRescueBanner type={PermissionRescueType.BOTH} />}
+          {showPushDenied && <PermissionRescueBanner type={PermissionRescueType.PUSH} />}
+          {showLocationDenied && <PermissionRescueBanner type={PermissionRescueType.LOCATION} />}
+
           {/* Header Contextual */}
           {!isSubConta && !onboarding.showOnboarding && (
             <div className="px-1 flex items-center justify-between gap-4">

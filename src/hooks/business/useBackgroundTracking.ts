@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, PluginListenerHandle } from "@capacitor/core";
 import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
 import { TrackingGpsPing } from "@/types/tracking";
 import { TRACKING_REALTIME_CONFIG, ENABLE_LIVE_TRACKING } from "@/constants/tracking";
@@ -122,8 +122,22 @@ export function useBackgroundTracking({
 
     startWatcher();
 
+    let appStateHandle: PluginListenerHandle | null = null;
+    if (Capacitor.isNativePlatform()) {
+      import("@capacitor/app").then(({ App }) => {
+        App.addListener("appStateChange", (state) => {
+          if (state.isActive && !watcherIdRef.current && isMounted) {
+            startWatcher();
+          }
+        }).then((handle) => {
+          appStateHandle = handle;
+        });
+      });
+    }
+
     return () => {
       isMounted = false;
+      appStateHandle?.remove();
       if (watcherIdRef.current) {
         const idToRemove = watcherIdRef.current;
         watcherIdRef.current = null;
