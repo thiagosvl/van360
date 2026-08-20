@@ -110,7 +110,7 @@ export default function Gastos() {
             const sectionCount = gastos.length;
             const countLabel = hasActiveFilters
               ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
-              : (sectionCount === 1 ? "REGISTRO" : "REGISTROS");
+              : (sectionCount === 1 ? "REGISTRADO" : "REGISTRADOS");
             return sectionCount != null ? (
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                 {sectionCount} {countLabel}

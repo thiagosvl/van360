@@ -37,9 +37,10 @@ export default function Veiculos() {
   };
 
   const sectionCount = veiculos.length;
-  const countLabel = searchTerm || hasActiveFilters
+  const hasSearch = hasActiveFilters || !!searchTerm.trim();
+  const countLabel = hasSearch
     ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
-    : (sectionCount === 1 ? "VEÍCULO" : "VEÍCULOS");
+    : (sectionCount === 1 ? "CADASTRADO" : "CADASTRADOS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>

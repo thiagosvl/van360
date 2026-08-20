@@ -38,9 +38,10 @@ export default function Escolas() {
   };
 
   const sectionCount = escolas.length;
-  const countLabel = searchTerm || hasActiveFilters
+  const hasSearch = hasActiveFilters || !!searchTerm.trim();
+  const countLabel = hasSearch
     ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
-    : (sectionCount === 1 ? "ESCOLA" : "ESCOLAS");
+    : (sectionCount === 1 ? "CADASTRADA" : "CADASTRADAS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>

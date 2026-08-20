@@ -65,12 +65,12 @@ export default function Passageiros() {
   let countLabel = "";
 
   if (isMainTab) {
-    const hasSearch = !!debouncedSearchTerm || selectedStatus !== "all" || selectedEscola !== "all" || selectedVeiculo !== "all" || selectedPeriodo !== "all";
+    const hasSearch = hasActiveFilters || !!debouncedSearchTerm || !!searchTerm.trim();
     countLabel = hasSearch
       ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
-      : (sectionCount === 1 ? "PASSAGEIRO" : "PASSAGEIROS");
+      : (sectionCount === 1 ? "CADASTRADO" : "CADASTRADOS");
   } else {
-    const hasSearch = !!debouncedSearchTerm;
+    const hasSearch = !!debouncedSearchTerm || !!searchTerm.trim();
     countLabel = hasSearch
       ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
       : (sectionCount === 1 ? "SOLICITAÇÃO" : "SOLICITAÇÕES");
@@ -93,12 +93,6 @@ export default function Passageiros() {
                     className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                   >
                     Passageiros
-                    <span className={cn(
-                      "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                      activeTab === PassageiroTab.PASSAGEIROS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                    )}>
-                      {countPassageiros || 0}
-                    </span>
                   </TabsTrigger>
                   <TabsTrigger
                     value={PassageiroTab.SOLICITACOES}
@@ -237,7 +231,7 @@ export default function Passageiros() {
                 </h2>
                 {passageiros.length > 0 && (
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                    {totalItems || passageiros.length} PASSAGEIROS
+                    {sectionCount} {countLabel}
                   </span>
                 )}
               </div>
