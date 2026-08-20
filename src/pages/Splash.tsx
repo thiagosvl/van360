@@ -47,8 +47,10 @@ export default function Splash() {
 
   const [step, setStep] = useState<"profile" | "motorista">(getInitialStep);
 
-  const handleSelectMotorista = (e?: React.MouseEvent) => {
-    e?.currentTarget?.blur();
+  const handleSelectMotorista = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e?.currentTarget instanceof HTMLElement) {
+      e.currentTarget.blur();
+    }
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -92,14 +94,14 @@ export default function Splash() {
           type="button"
           onClick={handleBackToProfile}
           aria-label="Voltar para seleção de perfil"
-          className="absolute left-4 top-[max(env(safe-area-inset-top),1.5rem)] [@media(min-height:751px)]:top-[max(env(safe-area-inset-top),2rem)] [@media(max-height:680px)]:top-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-sm flex items-center justify-center text-[#081A34] hover:bg-white active:scale-90 outline-none focus:outline-none focus-visible:outline-none transition-all cursor-pointer z-30 animate-in fade-in zoom-in-95 duration-200"
+          className="absolute left-4 top-[max(env(safe-area-inset-top),2.5rem)] [@media(min-height:751px)]:top-[max(env(safe-area-inset-top),3rem)] [@media(max-height:680px)]:top-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-sm flex items-center justify-center text-[#081A34] hover:bg-white active:scale-90 outline-none focus:outline-none focus-visible:outline-none transition-all cursor-pointer z-30 animate-in fade-in zoom-in-95 duration-200"
         >
           <ArrowLeft className="w-5 h-5 text-slate-700" />
         </button>
       )}
 
       {/* ================= CONTEÚDO (TOPO) ================= */}
-      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),3.5rem)] [@media(min-height:751px)_and_(max-height:850px)]:!pt-[max(env(safe-area-inset-top),3rem)] [@media(min-height:681px)_and_(max-height:750px)]:!pt-[max(env(safe-area-inset-top),2.5rem)] [@media(min-height:581px)_and_(max-height:680px)]:!pt-5 [@media(max-height:580px)]:!pt-3 px-6 z-10">
+      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),5.5rem)] [@media(min-height:751px)_and_(max-height:850px)]:!pt-[max(env(safe-area-inset-top),4.5rem)] [@media(min-height:681px)_and_(max-height:750px)]:!pt-[max(env(safe-area-inset-top),3.75rem)] [@media(min-height:581px)_and_(max-height:680px)]:!pt-6 [@media(max-height:580px)]:!pt-3 px-6 z-10">
 
         {step === "profile" ? (
           <div className="flex flex-col items-center w-full max-w-[340px] animate-in fade-in zoom-in-95 duration-300">
@@ -109,18 +111,18 @@ export default function Splash() {
               className="h-10 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-9 [@media(max-height:580px)]:!h-7"
             />
 
-            <div className="mt-2 text-center">
+            <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
               <h1 className="font-bold text-[#081A34] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
                 Quem está acessando?
               </h1>
 
-              <p className="mt-1 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
+              <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
                 Selecione o seu perfil no Van360
               </p>
             </div>
 
             {/* Cards de Seleção */}
-            <div className="w-full space-y-2.5 mt-5 [@media(min-height:751px)]:mt-7 [@media(max-height:680px)]:mt-3.5">
+            <div className="w-full space-y-3 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
               {/* Opção 1: Motorista / Equipe */}
               <button
                 type="button"
@@ -178,18 +180,18 @@ export default function Splash() {
               className="h-10 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-9 [@media(max-height:580px)]:!h-7"
             />
 
-            <div className="mt-2 text-center">
+            <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
               <h1 className="font-bold text-[#081A34] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
                 Área do Motorista
               </h1>
 
-              <p className="mt-1 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
+              <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
                 Você dirige. A gente organiza.
               </p>
             </div>
 
             {/* Cards de Ação do Motorista */}
-            <div className="w-full space-y-2.5 mt-5 [@media(min-height:751px)]:mt-7 [@media(max-height:680px)]:mt-3.5">
+            <div className="w-full space-y-3 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
               {/* Opção 1: Já tenho uma conta (Login) */}
               <button
                 type="button"
