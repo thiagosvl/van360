@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   SaaSPlan,
   SubscriptionInvoice,
@@ -52,6 +53,7 @@ export function useSaaSCheckoutViewModel({
   onSuccess,
   forcedPeriod
 }: UseSaaSCheckoutViewModelProps) {
+  const queryClient = useQueryClient();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { subscription, refetch: refetchStatus } = useSubscriptionStatus(user?.id);
@@ -125,6 +127,10 @@ export function useSaaSCheckoutViewModel({
 
     toast.dismiss("verify-pix");
     setIsSuccessState(true);
+
+    if (user?.id) {
+      queryClient.invalidateQueries({ queryKey: ["payment-methods", user.id] });
+    }
   };
 
   const handleFinishSuccess = () => {

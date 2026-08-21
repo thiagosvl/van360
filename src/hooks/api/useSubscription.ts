@@ -37,7 +37,7 @@ const scheduleQueryInvalidation = (queryClient: ReturnType<typeof useQueryClient
       });
     });
     delete pendingInvalidations[userId];
-  }, 400);
+  }, 900);
 };
 
 export const useSubscriptionStatus = (userId?: string) => {

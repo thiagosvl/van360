@@ -1,10 +1,11 @@
 import { Input } from "@/components/ui/input";
-import { MapPin, Sparkles, Building2, User, FileText, Loader2 } from 'lucide-react';
+import { MapPin, Sparkles, Building2, User, FileText, Loader2, Search } from 'lucide-react';
 import { isDevEnv } from '@/utils/detectPlatform';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { cepService } from "@/services/cepService";
+import { cepService, EnderecoSugestao } from "@/services/cepService";
 import { formatarCEP } from "@/utils/formatters/address";
+import { Banner } from "@/components/ui/Banner";
 import { CreditCardData } from "./CreditCardForm";
 
 interface BillingAddressFormProps {
@@ -42,6 +43,53 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
   const [maskedBirth, setMaskedBirth] = useState(initialData?.birth || formattedInitialBirth || "");
   const [maskedZip, setMaskedZip] = useState(initialZip);
   const [loadingCep, setLoadingCep] = useState(false);
+
+  const [sugestoes, setSugestoes] = useState<EnderecoSugestao[]>([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const userTypedRef = useRef(false);
+  const isFocusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!userTypedRef.current || !formData.street || formData.street.trim().length < 3) {
+      setSugestoes([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingAddress(true);
+      const uf = formData.state || "SP";
+      const cidade = formData.city || "São Paulo";
+      const results = await cepService.buscarEnderecoPorTexto(formData.street!, uf, cidade);
+      setSugestoes(results);
+      setShowDropdown(results.length > 0 && isFocusedRef.current);
+      setIsSearchingAddress(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData.street, formData.state, formData.city]);
+
+  const handleSelectSugestao = (sugestao: EnderecoSugestao) => {
+    userTypedRef.current = false;
+    const formattedCep = sugestao.cep ? formatZip(sugestao.cep) : formData.zipcode;
+    if (formattedCep) setMaskedZip(formattedCep);
+
+    setFormData(prev => ({
+      ...prev,
+      street: sugestao.logradouro,
+      neighborhood: sugestao.bairro || prev.neighborhood,
+      city: sugestao.cidade || prev.city,
+      state: sugestao.estado || prev.state,
+      zipcode: formattedCep || prev.zipcode
+    }));
+
+    setShowDropdown(false);
+    setTimeout(() => {
+      document.getElementById("number_address")?.focus();
+    }, 100);
+  };
 
   const handleCepFetch = async (cleanCep: string) => {
     setLoadingCep(true);
@@ -158,6 +206,16 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
         </div>
       )}
 
+      <Banner
+        variant="info"
+        title="Não sabe o seu CEP?"
+        description={
+          <>
+            Se você não souber o seu CEP, basta digitar o nome da rua no campo <strong>Logradouro</strong> para buscar as sugestões e preenchê-lo automaticamente.
+          </>
+        }
+      />
+
       <div className="flex items-center gap-2 mb-2">
         <MapPin className="w-4 h-4 text-[#002444]" />
         <h4 className="font-manrope font-bold text-[#002444] text-sm">Endereço de Cobrança</h4>
@@ -184,18 +242,72 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
           </div>
         </div>
 
-        {/* Linha 2: Logradouro e Nº */}
-        <div className="grid grid-cols-4 sm:grid-cols-12 gap-4">
-          <div className="col-span-3 sm:col-span-9 space-y-1">
-            <label className={labelStyles}>Logradouro</label>
+        {/* Linha 2: Logradouro (100% da largura) */}
+        <div className="space-y-1 relative">
+          <label className={labelStyles}>Logradouro</label>
+          <div className="relative">
             <input
-              className={inputStyles}
+              className={cn(inputStyles, isSearchingAddress && "pr-10")}
               placeholder="Rua, Avenida..."
+              autoComplete="off"
               value={formData.street}
-              onChange={(e) => handleChange("street", e.target.value)}
+              onChange={(e) => {
+                userTypedRef.current = true;
+                handleChange("street", e.target.value);
+              }}
+              onFocus={() => {
+                isFocusedRef.current = true;
+                if (userTypedRef.current && sugestoes.length > 0) {
+                  setShowDropdown(true);
+                }
+              }}
+              onBlur={() => {
+                isFocusedRef.current = false;
+                setTimeout(() => setShowDropdown(false), 200);
+              }}
             />
+            {isSearchingAddress && (
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                <Loader2 className="h-4 w-4 animate-spin text-[#002444]" />
+              </div>
+            )}
           </div>
-          <div className="col-span-1 sm:col-span-3 space-y-1">
+
+          {showDropdown && sugestoes.length > 0 && (
+            <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+              {sugestoes.map((sugestao, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 text-xs text-slate-700 font-medium group"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelectSugestao(sugestao);
+                  }}
+                >
+                  <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#002444] group-hover:bg-[#002444] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60">
+                    <Search className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="truncate flex-1">
+                    <span className="font-bold text-[#002444] block text-xs truncate">
+                      {sugestao.logradouro}
+                    </span>
+                    <span className="text-slate-500 font-normal block text-[11px] truncate mt-0.5">
+                      {[sugestao.bairro, sugestao.cidade, sugestao.estado]
+                        .filter(Boolean)
+                        .join(", ")}
+                      {sugestao.cep ? ` • CEP: ${sugestao.cep}` : ""}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Linha 3: Nº e Bairro */}
+        <div className="grid grid-cols-4 sm:grid-cols-12 gap-4">
+          <div className="col-span-1 sm:col-span-4 space-y-1">
             <label className={labelStyles}>Nº</label>
             <input
               id="number_address"
@@ -205,11 +317,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               onChange={(e) => handleChange("number_address", e.target.value)}
             />
           </div>
-        </div>
-
-        {/* Linha 3: Bairro, Cidade e UF */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-          <div className="sm:col-span-5 space-y-1">
+          <div className="col-span-3 sm:col-span-8 space-y-1">
             <label className={labelStyles}>Bairro</label>
             <input
               className={inputStyles}
@@ -218,28 +326,11 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               onChange={(e) => handleChange("neighborhood", e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-3 sm:hidden gap-4">
-            <div className="col-span-2 space-y-1">
-              <label className={labelStyles}>Cidade</label>
-              <input
-                className={inputStyles}
-                placeholder="Sua cidade"
-                value={formData.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-              />
-            </div>
-            <div className="col-span-1 space-y-1">
-              <label className={labelStyles}>UF</label>
-              <input
-                className={cn(inputStyles, "uppercase")}
-                placeholder="SP"
-                maxLength={2}
-                value={formData.state}
-                onChange={(e) => handleChange("state", e.target.value.toUpperCase())}
-              />
-            </div>
-          </div>
-          <div className="hidden sm:block sm:col-span-5 space-y-1">
+        </div>
+
+        {/* Linha 4: Cidade e UF */}
+        <div className="grid grid-cols-3 sm:grid-cols-12 gap-4">
+          <div className="col-span-2 sm:col-span-9 space-y-1">
             <label className={labelStyles}>Cidade</label>
             <input
               className={inputStyles}
@@ -248,7 +339,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               onChange={(e) => handleChange("city", e.target.value)}
             />
           </div>
-          <div className="hidden sm:block sm:col-span-2 space-y-1">
+          <div className="col-span-1 sm:col-span-3 space-y-1">
             <label className={labelStyles}>UF</label>
             <input
               className={cn(inputStyles, "uppercase")}
