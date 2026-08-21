@@ -132,26 +132,6 @@ export function useSaaSCheckoutViewModel({
     onClose();
   };
 
-  const verifyActiveInvoicePayment = async (): Promise<boolean> => {
-    try {
-      const [invoicesResult] = await Promise.all([
-        refetchInvoices(),
-        refetchStatus()
-      ]);
-
-      const currentInvoice = invoicesResult.data?.find(inv => inv.id === activeInvoice?.id);
-      const isPaid = currentInvoice?.status === SubscriptionInvoiceStatus.PAID;
-
-      if (isPaid) {
-        handlePaymentConfirmed();
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  };
-
   useEffect(() => {
     if (!activeInvoice?.id || isHandlingConfirmation.current) return;
 
@@ -360,7 +340,6 @@ export function useSaaSCheckoutViewModel({
     isLoadingData: isLoadingReferral || !plans,
     isSuccessState,
     handleFinishSuccess,
-    verifyActiveInvoicePayment,
     
     // UI Computed Properties
     annualPlan,

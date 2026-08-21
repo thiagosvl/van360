@@ -6,7 +6,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { cn } from "@/lib/utils";
 import CreditCardForm, { CreditCardData } from "@/components/dialogs/CreditCardForm";
 import BillingAddressForm from "@/components/dialogs/BillingAddressForm";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
 import { Button } from "@/components/ui/button";
@@ -66,13 +66,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     totalDiscount,
     isSuccessState,
     handleFinishSuccess,
-    verifyActiveInvoicePayment,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
   const [addressData, setAddressData] = useState<Partial<CreditCardData> | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const pixCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { getInstallments } = usePaymentProvider();
   const [savedCardInstallments, setSavedCardInstallments] = useState<InstallmentOption[]>([]);
@@ -160,28 +159,11 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   const handleCopyPix = () => {
     if (activeInvoice?.pix_copy_paste) {
       navigator.clipboard.writeText(activeInvoice.pix_copy_paste);
-      toast.success("Código Pix copiado!");
       setPixCopied(true);
-    }
-  };
-
-  const handleVerifyPixPayment = async () => {
-    setIsVerifying(true);
-    try {
-      toast.loading("Verificando seu pagamento...", { id: "verify-pix" });
-      const isPaid = await verifyActiveInvoicePayment();
-
-      if (!isPaid) {
-        toast.info("Ainda aguardando a confirmação do banco.", {
-          description: "Assim que o Pix for processado, a assinatura será ativada automaticamente.",
-          id: "verify-pix",
-          duration: 4000,
-        });
-      }
-    } catch (error) {
-      toast.error("Erro ao verificar pagamento. Tente novamente.", { id: "verify-pix" });
-    } finally {
-      setIsVerifying(false);
+      if (pixCopiedTimeoutRef.current) clearTimeout(pixCopiedTimeoutRef.current);
+      pixCopiedTimeoutRef.current = setTimeout(() => {
+        setPixCopied(false);
+      }, 2500);
     }
   };
 
@@ -747,41 +729,27 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               )}
 
               {step === 4 && !isCardStep4 && activeInvoice?.pix_copy_paste && (
-                <div className="flex flex-col gap-2 w-full">
+                <Button
+                  onClick={handleCopyPix}
+                  className={cn(
+                    "text-white h-11 sm:h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-300 active:scale-[0.99]",
+                    pixCopied
+                      ? "bg-emerald-600 hover:bg-emerald-600 shadow-emerald-600/20"
+                      : "bg-[#002444] hover:bg-[#002444]/95"
+                  )}
+                >
                   {pixCopied ? (
                     <>
-                      <Button
-                        onClick={handleVerifyPixPayment}
-                        disabled={isVerifying}
-                        className="bg-[#10b981] hover:bg-[#059669] text-white h-11 sm:h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.99]"
-                      >
-                        {isVerifying ? (
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Check className="w-4 h-4" />
-                        )}
-                        Já fiz o pagamento
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        onClick={handleCopyPix}
-                        className="h-9 sm:h-10 text-xs font-medium text-[#002444] hover:text-[#002444] hover:bg-slate-200/60 flex items-center justify-center gap-1.5 w-full transition-colors"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                        Copiar chave Pix novamente
-                      </Button>
+                      <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
+                      Código Pix Copiado!
                     </>
                   ) : (
-                    <Button
-                      onClick={handleCopyPix}
-                      className="bg-[#002444] hover:bg-[#002444]/95 text-white h-11 sm:h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.99]"
-                    >
+                    <>
                       <Copy className="w-4 h-4" />
                       Copiar Código Pix
-                    </Button>
+                    </>
                   )}
-                </div>
+                </Button>
               )}
             </>
           )}
