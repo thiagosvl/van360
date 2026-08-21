@@ -6,6 +6,7 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { parseLocalDate, formatLocalDate } from "@/utils/dateUtils";
 import { Copy, CopyCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Capacitor } from "@capacitor/core";
 
 interface SubscriptionInvoiceCardProps {
   invoice: SubscriptionInvoice;
@@ -35,32 +36,34 @@ export function SubscriptionInvoiceCard({
     return "Venceu em:";
   };
 
+  const isNative = Capacitor.isNativePlatform();
+
   return (
     <div
       className={cn(
-        "bg-white rounded-[22px] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all",
+        "bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:border-slate-300",
         className
       )}
     >
-      <div className="flex items-center justify-between p-4 sm:px-6 sm:py-5">
-        <div className="space-y-1.5 min-w-0 pr-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm sm:text-base font-semibold text-primary truncate max-w-[180px] sm:max-w-none">
+      <div className="p-4 sm:p-6 flex items-center justify-between gap-4">
+        <div className="space-y-1.5 min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="font-bold text-slate-800 text-sm sm:text-base truncate">
               Plano {planName}
             </span>
             <InvoiceStatusBadge status={invoice.status} />
           </div>
-          <div className="text-[11px] sm:text-xs font-medium text-slate-500 flex items-center flex-wrap gap-1">
-            <span>{getDueDateLabel()}</span>
-            <span>{formatLocalDate(parseLocalDate(invoice.data_vencimento))}</span>
-            {invoice.metodo_pagamento && (
-              <>
-                <span className="text-slate-300">•</span>
-                <span className="capitalize">
-                  {PAYMENT_METHOD_LABELS[invoice.metodo_pagamento as CheckoutPaymentMethod] || "Boleto"}
-                </span>
-              </>
-            )}
+
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <span>
+              {invoice.metodo_pagamento
+                ? PAYMENT_METHOD_LABELS[invoice.metodo_pagamento as CheckoutPaymentMethod] || invoice.metodo_pagamento
+                : "Não informado"}
+            </span>
+            <span>•</span>
+            <span>
+              Vencimento: {invoice.data_vencimento ? formatLocalDate(parseLocalDate(invoice.data_vencimento)) : "N/D"}
+            </span>
           </div>
         </div>
 
@@ -78,7 +81,7 @@ export function SubscriptionInvoiceCard({
 
       {showActions && (
         <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
-          {invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
+          {!isNative && invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
@@ -111,7 +114,7 @@ export function SubscriptionInvoiceCard({
               className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
               onClick={() => onRetryPayment?.(invoice)}
             >
-              Tentar Novamente
+              {invoice.status === SubscriptionInvoiceStatus.PENDING ? "Pagar Fatura" : "Tentar Novamente"}
             </button>
           )}
         </div>
