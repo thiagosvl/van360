@@ -60,7 +60,7 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
           className="group flex items-center justify-between bg-[#f1f3f5] rounded-[22px] p-3.5 pl-6 cursor-pointer hover:bg-[#e9ecef] transition-all duration-200 border border-transparent active:scale-[0.98]"
         >
           <div className="flex-1 min-w-0 pr-4">
-            <p className="text-[13px] font-mono font-bold text-[#002444] truncate tracking-tight">
+            <p className="text-[13px] font-mono text-[#002444] truncate tracking-tight">
               {qrcode}
             </p>
           </div>

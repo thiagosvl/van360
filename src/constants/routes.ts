@@ -36,7 +36,6 @@ export const ROUTES = {
       VEHICLES: "/veiculos",
       EXPENSES: "/gastos",
       REPORTS: "/relatorios",
-      SETTINGS: "/configuracoes",
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
       ROUTES: "/rotas",
@@ -46,6 +45,7 @@ export const ROUTES = {
       ROUTE_EXECUTE: "/rotas/executar/:id",
       ROUTE_DETAILS: "/rotas/detalhes/:id",
       BIRTHDAYS: "/aniversariantes",
+      ACCOUNT: "/conta",
     }
   }
 } as const;

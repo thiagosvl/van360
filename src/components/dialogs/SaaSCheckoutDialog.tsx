@@ -137,7 +137,8 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      toast.info("Ainda não identificamos o pagamento. Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.", {
+      toast.info("Ainda não identificamos o pagamento.", {
+        description: "Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.",
         id: "verify-pix",
         duration: 5000,
       });

@@ -5,7 +5,6 @@ import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BottomNavbar } from "@/components/navigation/BottomNavbar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { HelpSheet } from "@/components/features/HelpSheet";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 
 import { LayoutProvider } from "@/contexts/LayoutProvider";
@@ -162,9 +161,6 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* Central de Ajuda (Gatilhado pelo botão no Header) */}
-      <HelpSheet />
     </div>
   );
 }

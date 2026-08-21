@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export default function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   useEffect(() => {
     // Scroll no window (para páginas sem PullToRefreshWrapper)
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
     // Scroll no main content
     const mainContent = document.querySelector('main') || 
@@ -25,7 +27,7 @@ export default function ScrollToTop() {
       }
     });
     
-  }, [pathname]);
+  }, [pathname, search]);
 
   return null;
 }

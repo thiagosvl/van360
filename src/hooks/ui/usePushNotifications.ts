@@ -56,7 +56,7 @@ export const usePushNotifications = () => {
               case PushNotificationAction.OPEN_VEHICLES: navigate(ROUTES.PRIVATE.MOTORISTA.VEHICLES); break;
               case PushNotificationAction.OPEN_EXPENSES: navigate(ROUTES.PRIVATE.MOTORISTA.EXPENSES); break;
               case PushNotificationAction.OPEN_REPORTS: navigate(ROUTES.PRIVATE.MOTORISTA.REPORTS); break;
-              case PushNotificationAction.OPEN_SETTINGS: navigate(ROUTES.PRIVATE.MOTORISTA.SETTINGS); break;
+              case PushNotificationAction.OPEN_SETTINGS: navigate(ROUTES.PRIVATE.MOTORISTA.ACCOUNT); break;
               case PushNotificationAction.OPEN_BIRTHDAYS: navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS); break;
               case PushNotificationAction.OPEN_TRACKING:
                 if (isResponsavelAuth) {

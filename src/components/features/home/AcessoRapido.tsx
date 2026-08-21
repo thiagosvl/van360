@@ -8,9 +8,9 @@ import {
   FileText,
   GraduationCap,
   Car,
-  Settings,
   Rocket,
   ChartArea,
+  User,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -28,7 +28,7 @@ enum AcessoRapidoItemKey {
   RELATORIOS = "relatorios",
   ESCOLAS = "escolas",
   VEICULOS = "veiculos",
-  CONFIGURACOES = "configuracoes",
+  CONTA = "conta",
   ASSINATURA = "assinatura",
 }
 
@@ -55,10 +55,10 @@ export const AcessoRapido = ({
           show: can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES),
         },
         {
-          id: AcessoRapidoItemKey.CONFIGURACOES,
-          label: "Configurações",
-          icon: Settings,
-          to: ROUTES.PRIVATE.MOTORISTA.SETTINGS,
+          id: AcessoRapidoItemKey.CONTA,
+          label: "Conta",
+          icon: User,
+          to: ROUTES.PRIVATE.MOTORISTA.ACCOUNT,
           show: true,
         },
       ].filter((item) => item.show);
@@ -109,10 +109,10 @@ export const AcessoRapido = ({
         show: can(PERMISSIONS.VEICULOS_GERENCIAR),
       },
       {
-        id: AcessoRapidoItemKey.CONFIGURACOES,
-        label: "Configurações",
-        icon: Settings,
-        to: ROUTES.PRIVATE.MOTORISTA.SETTINGS,
+        id: AcessoRapidoItemKey.CONTA,
+        label: "Conta",
+        icon: User,
+        to: ROUTES.PRIVATE.MOTORISTA.ACCOUNT,
         show: true,
       },
       {

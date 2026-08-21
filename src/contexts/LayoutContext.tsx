@@ -204,8 +204,6 @@ export interface LayoutContextType {
   // Mobile Menu
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
-  isHelpOpen: boolean;
-  setIsHelpOpen: (open: boolean) => void;
 
   // Loading Global
   isGlobalLoading: boolean;

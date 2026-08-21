@@ -234,7 +234,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     onSuccess?: (userId: string) => void;
   }>({ open: false });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
   const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
 
@@ -446,8 +445,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openReferAndEarnDialog: () => setReferAndEarnDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
-        isHelpOpen,
-        setIsHelpOpen,
         isGlobalLoading,
         setIsGlobalLoading: (active: boolean, text?: string) => {
           setIsGlobalLoadingState(active);
