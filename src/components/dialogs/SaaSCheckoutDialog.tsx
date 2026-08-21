@@ -11,12 +11,14 @@ import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
 import { InstallmentOption } from "@/types/payment";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Smartphone, CreditCard as CreditCardIcon, ShieldCheck, Tag, Loader2,
-  ChevronLeft, ArrowRight, Check, Calendar, RefreshCw, Copy, Star, AlertCircle, Plus
+  ChevronLeft, ArrowRight, Check, Calendar, RefreshCw, Copy, Star, AlertCircle, Plus,
+  CircleCheckBig
 } from "lucide-react";
 
 interface SaaSCheckoutDialogProps {
@@ -62,6 +64,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     formattedPrice,
     discountPercent,
     totalDiscount,
+    isSuccessState,
+    handleFinishSuccess,
+    verifyActiveInvoicePayment,
   } = useSaaSCheckoutViewModel({ plans, initialPlanId, isOpen, onClose, onSuccess, forcedPeriod });
 
   const [cardData, setCardData] = useState<CreditCardData | null>(null);
@@ -121,6 +126,37 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     }
   }, [isOpen, step]);
 
+  useEffect(() => {
+    if (isSuccessState) {
+      const duration = 0.5 * 1000;
+      const animationEnd = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 4,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ["#1a3a5c", "#f59e0b", "#10b981", "#3b82f6"],
+          zIndex: 99999
+        });
+        confetti({
+          particleCount: 4,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ["#1a3a5c", "#f59e0b", "#10b981", "#3b82f6"],
+          zIndex: 99999
+        });
+
+        if (Date.now() < animationEnd) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+    }
+  }, [isSuccessState]);
+
   const handleCopyPix = () => {
     if (activeInvoice?.pix_copy_paste) {
       navigator.clipboard.writeText(activeInvoice.pix_copy_paste);
@@ -133,15 +169,15 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     setIsVerifying(true);
     try {
       toast.loading("Verificando seu pagamento...", { id: "verify-pix" });
-      await Promise.all([refetchInvoices(), refetchStatus()]);
+      const isPaid = await verifyActiveInvoicePayment();
 
-      await new Promise((resolve) => setTimeout(resolve, 2500));
-
-      toast.info("Ainda não identificamos o pagamento.", {
-        description: "Pode levar até 1 minuto para processar. Continue aguardando ou tente validar novamente em instantes.",
-        id: "verify-pix",
-        duration: 5000,
-      });
+      if (!isPaid) {
+        toast.info("Ainda aguardando a confirmação do banco.", {
+          description: "Assim que o Pix for processado, a assinatura será ativada automaticamente.",
+          id: "verify-pix",
+          duration: 4000,
+        });
+      }
     } catch (error) {
       toast.error("Erro ao verificar pagamento. Tente novamente.", { id: "verify-pix" });
     } finally {
@@ -149,16 +185,19 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     }
   };
 
-  const isCardStep4 = step === 4 && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD;
-  const isLocked = isGenerating || isCardStep4;
+  const isCardStep4 = paymentMethod === CheckoutPaymentMethod.CREDIT_CARD;
+  const isCardProcessing = step === 4 && isCardStep4 && !isSuccessState;
+  const isLocked = isGenerating || isCardProcessing;
+  const shouldHideCloseButton = isLocked || isSuccessState;
 
-  const hasNewCardFlow = paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (!savedCards.length || selectedSavedCardId === "new");
+  const hasNewCardFlow = isCardStep4 && (!savedCards.length || selectedSavedCardId === "new");
   const totalSteps = hasNewCardFlow ? 4 : 3;
 
   // Mapeamento dinâmico de passos dependendo se tem endereço ou não
   const currentStepDisplay = step === 4 ? totalSteps : step;
 
   const getStepTitle = (s: number) => {
+    if (isSuccessState) return "Assinatura Ativada";
     if (s === 1) return "Assinatura Van360";
     if (s === 2) return "Forma de Pagamento";
     if (s === 3 && hasNewCardFlow) return "Dados do Cartão";
@@ -166,6 +205,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   };
 
   const getStepSubtitle = (s: number) => {
+    if (isSuccessState) return undefined;
     if (s === 1) return "Escolha o melhor plano para você";
     if (s === 2) {
       if (paymentMethod === CheckoutPaymentMethod.PIX) return "Pague com PIX e ative instantaneamente";
@@ -186,12 +226,12 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       <BaseDialog.Header
         title={getStepTitle(step)}
         subtitle={getStepSubtitle(step)}
-        showSteps
+        showSteps={!isSuccessState}
         currentStep={currentStepDisplay}
         totalSteps={totalSteps}
         onClose={onClose}
-        hideCloseButton={isLocked}
-        leftAction={step > 1 ? (
+        hideCloseButton={shouldHideCloseButton}
+        leftAction={step > 1 && !isSuccessState ? (
           <Button
             variant="ghost"
             size="icon"
@@ -564,7 +604,23 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
         {step === 4 && (
           <div className="p-6 space-y-4">
-            {isGenerating ? (
+            {isSuccessState ? (
+              <div className="flex flex-col items-center justify-center py-10 sm:py-14 space-y-5 text-center animate-in zoom-in-95 duration-300">
+                <div className="relative mb-2">
+                  <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center animate-ping absolute inset-0" />
+                  <div className="w-24 h-24 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-600/30 relative z-10">
+                    <CircleCheckBig className="w-12 h-12" />
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-w-sm px-2">
+                  <h4 className="text-2xl font-black text-[#002444] tracking-tight">Pagamento Confirmado!</h4>
+                  <p className="text-sm text-[#43474e] leading-relaxed">
+                    Sua assinatura foi ativada com sucesso.<br className="hidden sm:inline" /> Todos os recursos do app estão liberados.
+                  </p>
+                </div>
+              </div>
+            ) : isGenerating ? (
               <div className="flex flex-col items-center justify-center py-16 space-y-3">
                 <RefreshCw className="w-10 h-10 text-[#002444] animate-spin" />
                 <p className="text-sm font-bold text-[#002444]">
@@ -602,8 +658,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       </BaseDialog.Body>
 
       <BaseDialog.Footer className="flex-col gap-3 bg-[#f2f4f6]/50">
-        {/* Resumo de preço nos steps 1, 2 e 3 */}
-        {selectedPlan && (
+        {selectedPlan && !isSuccessState && (
           <div className="flex items-center justify-between w-full px-1">
             <div className="flex items-center gap-1.5 shrink-0 text-[#43474e]">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -627,86 +682,108 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
         )}
 
         <div className="flex gap-3 w-full">
-          {step === 1 && (
-            <BaseDialog.Action
-              label="Continuar"
-              onClick={nextStep}
-              isLoading={isLoadingData}
-              disabled={isLoadingData || !selectedPlan}
-              icon={!isLoadingData ? <ArrowRight className="w-4 h-4" /> : undefined}
-            />
-          )}
-
-          {step === 2 && (
+          {isSuccessState ? (
+            <Button
+              onClick={handleFinishSuccess}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 flex items-center justify-center w-full text-base font-bold rounded-xl shadow-sm transition-all duration-200 active:scale-[0.99]"
+            >
+              Concluir
+            </Button>
+          ) : (
             <>
-              <BaseDialog.Action
-                label="Voltar"
-                variant="outline"
-                onClick={prevStep}
-              />
-              <BaseDialog.Action
-                label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : (hasNewCardFlow ? "Continuar" : "Confirmar")}
-                onClick={() => {
-                  if (hasNewCardFlow) {
-                    jumpToStep(3);
-                  } else {
-                    handleGenerateCheckout(cardData);
-                  }
-                }}
-                isLoading={isGenerating}
-                disabled={
-                  paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
-                    !selectedSavedCardId ||
-                    (selectedSavedCardId === "new" && !addressData)
-                  )
-                }
-                icon={(!hasNewCardFlow && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD) ? <ShieldCheck className="w-4 h-4" /> : undefined}
-              />
-            </>
-          )}
-
-          {step === 3 && hasNewCardFlow && (
-            <>
-              <BaseDialog.Action
-                label="Voltar"
-                variant="outline"
-                onClick={() => jumpToStep(2)}
-              />
-              <BaseDialog.Action
-                label="Confirmar"
-                onClick={() => handleGenerateCheckout({ ...cardData, ...addressData } as CreditCardData)}
-                isLoading={isGenerating}
-                disabled={!cardData}
-                icon={<ShieldCheck className="w-4 h-4" />}
-              />
-            </>
-          )}
-
-          {step === 4 && !isCardStep4 && activeInvoice?.pix_copy_paste && (
-            <div className="flex flex-col sm:flex-row gap-2.5 w-full">
-              {pixCopied ? (
-                <Button
-                  onClick={handleVerifyPixPayment}
-                  disabled={isVerifying}
-                  className="bg-[#10b981] hover:bg-[#059669] text-white h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200"
-                >
-                  {isVerifying ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Check className="w-4 h-4" />
-                  )}
-                  Já fiz o pagamento
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleCopyPix}
-                  className="bg-[#002444] hover:bg-[#002444]/95 text-white h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200"
-                >
-                  <Copy className="w-4 h-4" />
-                  Copiar Código Pix
-                </Button>
+              {step === 1 && (
+                <BaseDialog.Action
+                  label="Continuar"
+                  onClick={nextStep}
+                  isLoading={isLoadingData}
+                  disabled={isLoadingData || !selectedPlan}
+                  icon={!isLoadingData ? <ArrowRight className="w-4 h-4" /> : undefined}
+                />
               )}
-            </div>
+
+              {step === 2 && (
+                <>
+                  <BaseDialog.Action
+                    label="Voltar"
+                    variant="outline"
+                    onClick={prevStep}
+                  />
+                  <BaseDialog.Action
+                    label={paymentMethod === CheckoutPaymentMethod.PIX ? "Gerar Pix" : (hasNewCardFlow ? "Continuar" : "Confirmar")}
+                    onClick={() => {
+                      if (hasNewCardFlow) {
+                        jumpToStep(3);
+                      } else {
+                        handleGenerateCheckout(cardData);
+                      }
+                    }}
+                    isLoading={isGenerating}
+                    disabled={
+                      paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
+                        !selectedSavedCardId ||
+                        (selectedSavedCardId === "new" && !addressData)
+                      )
+                    }
+                    icon={(!hasNewCardFlow && paymentMethod === CheckoutPaymentMethod.CREDIT_CARD) ? <ShieldCheck className="w-4 h-4" /> : undefined}
+                  />
+                </>
+              )}
+
+              {step === 3 && hasNewCardFlow && (
+                <>
+                  <BaseDialog.Action
+                    label="Voltar"
+                    variant="outline"
+                    onClick={() => jumpToStep(2)}
+                  />
+                  <BaseDialog.Action
+                    label="Confirmar"
+                    onClick={() => handleGenerateCheckout({ ...cardData, ...addressData } as CreditCardData)}
+                    isLoading={isGenerating}
+                    disabled={!cardData}
+                    icon={<ShieldCheck className="w-4 h-4" />}
+                  />
+                </>
+              )}
+
+              {step === 4 && !isCardStep4 && activeInvoice?.pix_copy_paste && (
+                <div className="flex flex-col gap-2 w-full">
+                  {pixCopied ? (
+                    <>
+                      <Button
+                        onClick={handleVerifyPixPayment}
+                        disabled={isVerifying}
+                        className="bg-[#10b981] hover:bg-[#059669] text-white h-11 sm:h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.99]"
+                      >
+                        {isVerifying ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}
+                        Já fiz o pagamento
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        onClick={handleCopyPix}
+                        className="h-9 sm:h-10 text-xs font-medium text-[#002444] hover:text-[#002444] hover:bg-slate-200/60 flex items-center justify-center gap-1.5 w-full transition-colors"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        Copiar chave Pix novamente
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={handleCopyPix}
+                      className="bg-[#002444] hover:bg-[#002444]/95 text-white h-11 sm:h-12 flex items-center justify-center gap-2 w-full text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.99]"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copiar Código Pix
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </BaseDialog.Footer>

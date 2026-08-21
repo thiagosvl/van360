@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import { SaaSPlan, Subscription, ReferralData, SubscriptionInvoice, PaymentMethod, PlansResponse } from "@/types/subscription";
+import { SaaSPlan, Subscription, ReferralData, SubscriptionInvoice, PaymentMethod, PlansResponse, ListSubscriptionInvoicesResponse } from "@/types/subscription";
 
 const endpointBase = "/subscriptions";
 
@@ -49,6 +49,17 @@ export const subscriptionApi = {
   setDefaultPaymentMethod: (id: string) =>
     apiClient.put(`${endpointBase}/payment-methods/${id}/default`).then((res) => res.data),
 
-  getInvoices: (): Promise<SubscriptionInvoice[]> =>
-    apiClient.get(`${endpointBase}/invoices`).then((res) => res.data),
+  getInvoices: (params?: { page?: number; limit?: number }): Promise<ListSubscriptionInvoicesResponse> =>
+    apiClient.get(`${endpointBase}/invoices`, { params }).then((res) => {
+      if (Array.isArray(res.data)) {
+        return {
+          list: res.data,
+          total: res.data.length,
+          page: 1,
+          limit: res.data.length,
+          totalPages: 1,
+        };
+      }
+      return res.data;
+    }),
 };

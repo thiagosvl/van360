@@ -7,6 +7,7 @@ import {
   SubscriptionInvoice,
   PaymentMethod,
   PlansResponse,
+  ListSubscriptionInvoicesResponse,
 } from "@/types/subscription";
 import {
   SubscriptionStatus,
@@ -16,35 +17,27 @@ import {
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Bundle de queries relacionadas à assinatura que devem ser invalidadas juntas para manter consistência
-const SUBSCRIPTION_QUERY_BUNDLE = (userId: string) => [
-  ["subscription", userId],
-  ["subscription-invoices", userId],
-  ["payment-methods", userId],
-  ["usuario-resumo"]
-];
+const activeChannels: Record<string, { channel: ReturnType<typeof supabase.channel>; subscribers: number }> = {};
+const pendingInvalidations: Record<string, { timeout: NodeJS.Timeout | null; keys: Set<string> }> = {};
 
-// Gerenciamento centralizado de canais de Realtime para evitar conexões duplicadas
-const activeChannels: Record<string, { channel: any; subscribers: number }> = {};
+const scheduleQueryInvalidation = (queryClient: ReturnType<typeof useQueryClient>, userId: string, queryKeys: string[][]) => {
+  if (!pendingInvalidations[userId]) {
+    pendingInvalidations[userId] = { timeout: null, keys: new Set() };
+  }
 
-// Helper para invalidar queries com debounce para evitar loop de requisições em atualizações múltiplas
-let invalidationTimeout: NodeJS.Timeout | null = null;
-const debouncedInvalidate = (queryClient: any, userId: string) => {
-  if (invalidationTimeout) clearTimeout(invalidationTimeout);
-  invalidationTimeout = setTimeout(() => {
-    const keys = SUBSCRIPTION_QUERY_BUNDLE(userId);
+  const tracker = pendingInvalidations[userId];
+  queryKeys.forEach(k => tracker.keys.add(JSON.stringify(k)));
 
-    // Invalidamos as queries de forma conservadora.
-    // Usamos refetchType: 'active' para que a UI atualize conforme o Realtime,
-    // mas o debounce de 3s garante que mudanças rápidas no DB (assinatura + fatura)
-    // disparem apenas uma rodada de requisições.
-    keys.forEach(key => {
+  if (tracker.timeout) clearTimeout(tracker.timeout);
+
+  tracker.timeout = setTimeout(() => {
+    tracker.keys.forEach(kStr => {
       queryClient.invalidateQueries({
-        queryKey: key,
-        refetchType: 'active'
+        queryKey: JSON.parse(kStr)
       });
     });
-  }, 3000); // 3s para garantir consolidação de eventos de múltiplas tabelas
+    delete pendingInvalidations[userId];
+  }, 400);
 };
 
 export const useSubscriptionStatus = (userId?: string) => {
@@ -54,7 +47,7 @@ export const useSubscriptionStatus = (userId?: string) => {
     queryKey: ["subscription", userId],
     queryFn: () => subscriptionApi.getSubscription(),
     enabled: !!userId,
-    staleTime: 120000, // 2 minutos de staleTime para evitar refetches ansiosos no re-render
+    staleTime: 120000,
     refetchInterval: (query) => {
       const data = query.state.data as Subscription | undefined;
       return data?.status === SubscriptionStatus.PAST_DUE ? 60000 : 300000;
@@ -62,7 +55,6 @@ export const useSubscriptionStatus = (userId?: string) => {
     refetchOnWindowFocus: 'always',
   });
 
-  // Realtime subscription updates com controle de Single Source
   useEffect(() => {
     if (!userId) return;
 
@@ -78,7 +70,10 @@ export const useSubscriptionStatus = (userId?: string) => {
             filter: `usuario_id=eq.${userId}`,
           },
           () => {
-            debouncedInvalidate(queryClient, userId);
+            scheduleQueryInvalidation(queryClient, userId, [
+              ["subscription", userId],
+              ["usuario-resumo"]
+            ]);
           }
         )
         .on(
@@ -90,7 +85,10 @@ export const useSubscriptionStatus = (userId?: string) => {
             filter: `usuario_id=eq.${userId}`,
           },
           () => {
-            debouncedInvalidate(queryClient, userId);
+            scheduleQueryInvalidation(queryClient, userId, [
+              ["subscription-invoices", userId],
+              ["subscription-invoices-paginated", userId]
+            ]);
           }
         )
         .subscribe();
@@ -144,12 +142,21 @@ export const useSubscriptionBilling = (userId?: string) => {
     enabled: !!userId,
   });
 
-  const invoicesQuery = useQuery<SubscriptionInvoice[]>({
+  const invoicesQuery = useQuery({
     queryKey: ["subscription-invoices", userId],
     queryFn: () => subscriptionApi.getInvoices(),
     enabled: !!userId,
     staleTime: 120000,
     refetchOnWindowFocus: 'always',
+    select: (data) => {
+      if (Array.isArray(data)) {
+        return { list: data as SubscriptionInvoice[], total: (data as SubscriptionInvoice[]).length };
+      }
+      return {
+        list: data?.list || [],
+        total: data?.total || 0,
+      };
+    },
   });
 
   const setDefaultPaymentMethod = useMutation({
@@ -164,18 +171,36 @@ export const useSubscriptionBilling = (userId?: string) => {
     mutationFn: (id: string) => subscriptionApi.deletePaymentMethod(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payment-methods"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
     },
   });
 
   return {
     paymentMethods: paymentMethodsQuery.data,
     isLoadingPaymentMethods: paymentMethodsQuery.isLoading,
-    invoices: invoicesQuery.data,
+    invoices: invoicesQuery.data?.list,
+    totalInvoices: invoicesQuery.data?.total ?? 0,
     isLoadingInvoices: invoicesQuery.isLoading,
     refetchInvoices: invoicesQuery.refetch,
     setDefaultPaymentMethod,
     deletePaymentMethod,
   };
+};
+
+export const useSubscriptionInvoicesPaginated = (params: {
+  userId?: string;
+  page: number;
+  limit: number;
+  enabled?: boolean;
+}) => {
+  return useQuery<ListSubscriptionInvoicesResponse>({
+    queryKey: ["subscription-invoices-paginated", params.userId, params.page, params.limit],
+    queryFn: () => subscriptionApi.getInvoices({ page: params.page, limit: params.limit }),
+    enabled: !!params.userId && (params.enabled ?? true),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+  });
 };
 
 export const useSubscriptionReferral = (userId?: string) => {
@@ -193,15 +218,9 @@ export const useSubscriptionReferral = (userId?: string) => {
 };
 
 export const useSubscriptionCheckout = () => {
-  const queryClient = useQueryClient();
-
   const createCheckout = useMutation({
     mutationFn: (data: Parameters<typeof subscriptionApi.createCheckout>[0]) =>
       subscriptionApi.createCheckout(data),
-    onSuccess: () => {
-      // Nota: Não invalidamos aqui para evitar burst imediato ao gerar checkout.
-      // O Realtime ou o próprio retorno da mutation cuidarão da atualização visual.
-    },
   });
 
   return {
@@ -218,6 +237,7 @@ export const useCancelSubscription = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription"] });
       queryClient.invalidateQueries({ queryKey: ["subscription-invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-invoices-paginated"] });
     },
   });
 };

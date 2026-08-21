@@ -4,17 +4,63 @@ import { cn } from "@/lib/utils";
 import { formatLocalDate, parseLocalDate } from "@/utils/dateUtils";
 import { SubscriptionIdentifer } from "@/types/enums";
 import { TRIAL_DURATION_DAYS } from "@/constants";
+import { Subscription, ReferralData } from "@/types/subscription";
 
 interface SubscriptionHeroCardProps {
-  subscription: any;
+  subscription: Subscription | null;
   trialDaysLeft: number | null;
   isTrial: boolean;
   isExpired: boolean;
   isTrialExpired: boolean;
   isCanceled: boolean;
   isPastDue: boolean;
-  referral: any;
+  referral: ReferralData | null;
   onSubscribe: (planId?: string, identifier?: SubscriptionIdentifer) => void;
+}
+
+interface ActionLabelParams {
+  isCanceled: boolean;
+  isExpired: boolean;
+  isTrialExpired: boolean;
+  isPastDue: boolean;
+  isTrial: boolean;
+  trialDaysLeft: number | null;
+  subscription: Subscription | null;
+}
+
+export function getSubscriptionHeroActionLabel({
+  isCanceled,
+  isExpired,
+  isTrialExpired,
+  isPastDue,
+  isTrial,
+  trialDaysLeft,
+  subscription,
+}: ActionLabelParams): string | null {
+  if (isCanceled) {
+    return "Reativar Assinatura";
+  }
+
+  if (isExpired) {
+    return isTrialExpired ? "Desbloquear Acesso" : "Reativar Agora";
+  }
+
+  if (isPastDue) {
+    return "Regularizar Agora";
+  }
+
+  if (isTrial) {
+    return trialDaysLeft !== null ? "Ver Planos" : null;
+  }
+
+  if (
+    subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY &&
+    subscription?.data_vencimento
+  ) {
+    return "Assinar Plano Anual";
+  }
+
+  return null;
 }
 
 export function SubscriptionHeroCard({
@@ -28,6 +74,15 @@ export function SubscriptionHeroCard({
   referral,
   onSubscribe,
 }: SubscriptionHeroCardProps) {
+  const actionLabel = getSubscriptionHeroActionLabel({
+    isCanceled,
+    isExpired,
+    isTrialExpired,
+    isPastDue,
+    isTrial,
+    trialDaysLeft,
+    subscription,
+  });
 
   if (isCanceled) {
     return (
@@ -51,7 +106,7 @@ export function SubscriptionHeroCard({
             className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
             onClick={() => onSubscribe()}
           >
-            Reativar Agora
+            {actionLabel}
           </Button>
         </div>
       </div>
@@ -85,7 +140,7 @@ export function SubscriptionHeroCard({
             className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
             onClick={() => onSubscribe()}
           >
-            {isTrialExpired ? "Assinar Agora" : "Reativar Agora"}
+            {actionLabel}
           </Button>
         </div>
       </div>
@@ -120,7 +175,7 @@ export function SubscriptionHeroCard({
             className="bg-rose-600 text-white hover:bg-rose-700 px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md shadow-rose-600/20 active:scale-95 transition-all w-full md:w-auto"
             onClick={() => onSubscribe()}
           >
-            Regularizar Agora
+            {actionLabel}
           </Button>
         </div>
       </div>
@@ -177,7 +232,7 @@ export function SubscriptionHeroCard({
             )}
           </div>
 
-          {trialDaysLeft !== null && (
+          {actionLabel && (
             <div className="shrink-0">
               <Button
                 className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
@@ -186,7 +241,7 @@ export function SubscriptionHeroCard({
                   onSubscribe();
                 }}
               >
-                Ver Planos
+                {actionLabel}
               </Button>
             </div>
           )}
@@ -241,13 +296,13 @@ export function SubscriptionHeroCard({
           </p>
         )}
       </div>
-      {subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY && subscription?.data_vencimento && (
+      {actionLabel && (
         <div className="relative z-10 shrink-0">
           <Button
             className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
             onClick={() => onSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
           >
-            Assinar Plano Anual
+            {actionLabel}
           </Button>
         </div>
       )}

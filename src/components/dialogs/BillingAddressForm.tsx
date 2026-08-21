@@ -4,6 +4,7 @@ import { isDevEnv } from '@/utils/detectPlatform';
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
+import { formatarCEP } from "@/utils/formatters/address";
 import { CreditCardData } from "./CreditCardForm";
 
 interface BillingAddressFormProps {
@@ -26,9 +27,11 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
     return clean;
   })();
 
+  const initialZip = initialData?.zipcode ? formatarCEP(initialData.zipcode) : "";
+
   const [formData, setFormData] = useState<Partial<CreditCardData>>({
     birth: initialData?.birth || formattedInitialBirth || "",
-    zipcode: initialData?.zipcode || "",
+    zipcode: initialZip,
     street: initialData?.street || "",
     number_address: initialData?.number_address || "",
     neighborhood: initialData?.neighborhood || "",
@@ -37,7 +40,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
   });
 
   const [maskedBirth, setMaskedBirth] = useState(initialData?.birth || formattedInitialBirth || "");
-  const [maskedZip, setMaskedZip] = useState(initialData?.zipcode || "");
+  const [maskedZip, setMaskedZip] = useState(initialZip);
   const [loadingCep, setLoadingCep] = useState(false);
 
   const handleCepFetch = async (cleanCep: string) => {

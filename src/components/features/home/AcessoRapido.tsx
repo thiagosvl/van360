@@ -117,7 +117,7 @@ export const AcessoRapido = ({
       },
       {
         id: AcessoRapidoItemKey.ASSINATURA,
-        label: "Minha Assinatura",
+        label: "Assinatura do App",
         icon: Rocket,
         to: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
         show: can(PERMISSIONS.ASSINATURA_GERENCIAR),

@@ -70,35 +70,10 @@ export function useSaaSCheckoutViewModel({
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeInvoice, setActiveInvoice] = useState<SubscriptionInvoice | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
-  const [isRefetchingReferral, setIsRefetchingReferral] = useState(false);
   const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const initialSubscriptionStatusRef = useRef<SubscriptionStatus | null>(null);
   const isGeneratingRef = useRef(false);
-
-  useEffect(() => {
-    if (isOpen && user?.id) {
-      setIsRefetchingReferral(true);
-      Promise.all([
-        refetchReferral().catch((err) => console.error("Erro ao atualizar dados de indicação:", err)),
-        refetchPlans().catch((err) => console.error("Erro ao atualizar planos:", err))
-      ]).finally(() => {
-        setIsRefetchingReferral(false);
-      });
-    }
-  }, [isOpen, user?.id, refetchReferral, refetchPlans]);
-
   const savedCards: PaymentMethod[] = paymentMethods ?? [];
   const defaultCard = savedCards.find(c => c.is_default) ?? savedCards[0] ?? null;
-
-  useEffect(() => {
-    if (isOpen) {
-      if (subscription?.status && initialSubscriptionStatusRef.current === null) {
-        initialSubscriptionStatusRef.current = subscription.status;
-      }
-    } else {
-      initialSubscriptionStatusRef.current = null;
-    }
-  }, [isOpen, subscription?.status]);
 
   useEffect(() => {
     if (isOpen && plans && plans.length > 0) {
@@ -124,6 +99,8 @@ export function useSaaSCheckoutViewModel({
       setIsGenerating(false);
       setActiveInvoice(null);
       setCardError(null);
+      setIsSuccessState(false);
+      isHandlingConfirmation.current = false;
     }
   }, [isOpen, initialPlanId]);
 
@@ -137,47 +114,60 @@ export function useSaaSCheckoutViewModel({
     }
   }, [paymentMethod, defaultCard?.id]);
 
+  const [isSuccessState, setIsSuccessState] = useState(false);
   const isHandlingConfirmation = useRef(false);
 
-  const handlePaymentConfirmed = (source: 'REALTIME/CACHE' | 'POLLING') => {
+  const handlePaymentConfirmed = () => {
     if (isHandlingConfirmation.current) return;
     isHandlingConfirmation.current = true;
 
     if (fallbackIntervalRef.current) clearInterval(fallbackIntervalRef.current);
 
-    toast.success("Assinatura confirmada com sucesso!", {
-      id: "verify-pix",
-      description: "Você já pode voltar para o aplicativo."
-    });
+    toast.dismiss("verify-pix");
+    setIsSuccessState(true);
+  };
+
+  const handleFinishSuccess = () => {
     onSuccess?.();
     onClose();
   };
 
-  // LOGICA CENTRALIZADA DE DETECÇÃO DE SUCESSO
-  // Vigia tanto a mudança na fatura ativa quanto o status global da assinatura
-  useEffect(() => {
-    if (!activeInvoice || isHandlingConfirmation.current) return;
+  const verifyActiveInvoicePayment = async (): Promise<boolean> => {
+    try {
+      const [invoicesResult] = await Promise.all([
+        refetchInvoices(),
+        refetchStatus()
+      ]);
 
-    const currentInvoice = invoices?.find(inv => inv.id === activeInvoice?.id);
-    const isPaid = currentInvoice?.status === SubscriptionInvoiceStatus.PAID;
-    const wasNotActiveBefore = initialSubscriptionStatusRef.current !== SubscriptionStatus.ACTIVE;
-    const isSubscriptionActive = wasNotActiveBefore && subscription?.status === SubscriptionStatus.ACTIVE;
+      const currentInvoice = invoicesResult.data?.find(inv => inv.id === activeInvoice?.id);
+      const isPaid = currentInvoice?.status === SubscriptionInvoiceStatus.PAID;
 
-    if (isPaid || isSubscriptionActive) {
-      handlePaymentConfirmed("REALTIME/CACHE");
+      if (isPaid) {
+        handlePaymentConfirmed();
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
-  }, [invoices, subscription?.status, activeInvoice]);
+  };
 
-  // Polling de 3s no Step 4 (PIX e Cartão) — Garante atualização rápida mesmo se Realtime Supabase estiver inativo no banco
   useEffect(() => {
-    if (!isOpen || step !== 4 || isHandlingConfirmation.current) return;
+    if (!activeInvoice?.id || isHandlingConfirmation.current) return;
 
-    // Dispara refetch imediato ao entrar no Step 4
-    refetchInvoices();
-    refetchStatus();
+    const currentInvoice = invoices?.find(inv => inv.id === activeInvoice.id);
+    const isPaid = currentInvoice?.status === SubscriptionInvoiceStatus.PAID;
+
+    if (isPaid) {
+      handlePaymentConfirmed();
+    }
+  }, [invoices, activeInvoice?.id]);
+
+  useEffect(() => {
+    if (!isOpen || step !== 4 || isHandlingConfirmation.current || isSuccessState) return;
 
     fallbackIntervalRef.current = setInterval(() => {
-      if (isHandlingConfirmation.current) return;
+      if (isHandlingConfirmation.current || isSuccessState) return;
       refetchInvoices();
       refetchStatus();
     }, 15000);
@@ -185,7 +175,7 @@ export function useSaaSCheckoutViewModel({
     return () => {
       if (fallbackIntervalRef.current) clearInterval(fallbackIntervalRef.current);
     };
-  }, [isOpen, step, activeInvoice?.id, refetchInvoices, refetchStatus]);
+  }, [isOpen, step, isSuccessState, activeInvoice?.id, refetchInvoices, refetchStatus]);
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => {
@@ -277,10 +267,12 @@ export function useSaaSCheckoutViewModel({
         ...cardInfo
       });
 
-      // SINCRIA COM DADOS REAIS: Usamos o retorno da API para mostrar o QR Code imediatamente.
-      // A atualização do cache de faturas (listagem) ocorrerá via Realtime (useSubscription.ts).
       if (result) {
-        setActiveInvoice(result as unknown as SubscriptionInvoice);
+        const invoice = result as unknown as SubscriptionInvoice;
+        setActiveInvoice(invoice);
+        if (invoice.status === SubscriptionInvoiceStatus.PAID) {
+          handlePaymentConfirmed();
+        }
         setStep(4);
       }
     } catch (error: unknown) {
@@ -295,7 +287,6 @@ export function useSaaSCheckoutViewModel({
     }
   };
 
-  // LÓGICA DE PRECIFICAÇÃO CENTRALIZADA
   const annualPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
   const monthlyPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
   const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
@@ -366,7 +357,10 @@ export function useSaaSCheckoutViewModel({
     profile,
     hasActiveDiscount: referral?.hasActiveDiscount,
     discountPct: referral?.discountPct,
-    isLoadingData: isLoadingReferral || isRefetchingReferral || !plans,
+    isLoadingData: isLoadingReferral || !plans,
+    isSuccessState,
+    handleFinishSuccess,
+    verifyActiveInvoicePayment,
     
     // UI Computed Properties
     annualPlan,

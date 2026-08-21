@@ -77,7 +77,7 @@ const pagesItems: PageItem[] = [
     permission: "aniversarios.visualizar",
   },
   {
-    title: "Minha Assinatura",
+    title: "Assinatura do App",
     href: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
     icon: Rocket,
     permission: "assinatura.gerenciar",

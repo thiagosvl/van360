@@ -7,43 +7,40 @@ import {
 } from "@/hooks/api/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { formatCurrency } from "@/utils/formatters/currency";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
 import { SubscriptionHeroCard } from "@/components/features/subscription/SubscriptionHeroCard";
 import {
-  Copy,
-  CopyCheck,
   Clock,
   CheckCircle2,
   ChevronDown,
   CircleDot,
   Trash2,
   CreditCard,
+  History,
 } from "lucide-react";
+import { SubscriptionInvoiceCard } from "@/components/features/subscription/SubscriptionInvoiceCard";
+import { SubscriptionInvoicesDialog } from "@/components/features/subscription/SubscriptionInvoicesDialog";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   SaaSPlan,
+  SubscriptionInvoice,
 } from "@/types/subscription";
 import {
   SubscriptionStatus,
   SubscriptionInvoiceStatus,
   SubscriptionIdentifer,
-  CheckoutPaymentMethod
 } from "@/types/enums";
 import {
   getNowBR,
   parseLocalDate,
-  formatLocalDate,
   differenceInCalendarDaysBR
 } from "@/utils/dateUtils";
 import { useLayout } from "@/hooks";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/business/useSession";
-import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
-import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
@@ -65,6 +62,7 @@ export default function SubscriptionPage() {
 
   const {
     invoices,
+    totalInvoices,
     paymentMethods,
     setDefaultPaymentMethod,
     deletePaymentMethod
@@ -79,6 +77,7 @@ export default function SubscriptionPage() {
   const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
   const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
   const cancelSubscription = useCancelSubscription();
 
@@ -91,6 +90,7 @@ export default function SubscriptionPage() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
       queryClient.invalidateQueries({ queryKey: ["payment-methods", user.id] }),
       queryClient.invalidateQueries({ queryKey: ["subscription-invoices", user.id] }),
+      queryClient.invalidateQueries({ queryKey: ["subscription-invoices-paginated", user.id] }),
       queryClient.invalidateQueries({ queryKey: ["referral-link", user.id] }),
     ]);
   };
@@ -121,13 +121,17 @@ export default function SubscriptionPage() {
       plans,
       initialPlanId,
       forcedPeriod,
-      onSuccess: () => handleRefresh(),
     });
+  };
+
+  const handleRetryPayment = (invoice?: SubscriptionInvoice) => {
+    const planId = invoice?.plano_id || invoice?.planos?.id || invoice?.assinaturas?.planos?.id;
+    handleSubscribe(planId);
   };
 
   // Sync Page Title
   useEffect(() => {
-    setPageTitle("Minha Assinatura");
+    setPageTitle("Assinatura do App");
   }, [setPageTitle]);
 
   useEffect(() => {
@@ -234,107 +238,57 @@ export default function SubscriptionPage() {
 
             {/* 1. Histórico de Faturas: PRIORIDADE */}
             <section>
-              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
-                Histórico de Cobrança
-              </h2>
+              <div className="flex items-center justify-between mb-4 px-1">
+                <h2 className="text-[17px] font-bold text-slate-800">
+                  Últimas Faturas
+                </h2>
+              </div>
 
               <div className="space-y-3">
-                {invoices && invoices.length > 0 ? (
-                  invoices
-                    .filter(inv => inv.status !== SubscriptionInvoiceStatus.CANCELED)
-                    .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime())
-                    .map((inv) => (
-                      <div
-                        key={inv.id}
-                        className="bg-white rounded-[22px] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all"
-                      >
-                        <div className="flex items-center justify-between p-4 sm:px-6 sm:py-5">
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm sm:text-base font-semibold text-primary">
-                                Plano {((inv as any).planos?.nome) || inv.assinaturas?.planos?.nome}
-                              </span>
-                              <InvoiceStatusBadge status={inv.status} />
-                            </div>
-                            <div className="text-[11px] sm:text-xs font-medium text-slate-500">
-                              <span>
-                                {inv.status === SubscriptionInvoiceStatus.PAID
-                                  ? "Válido até:"
-                                  : inv.status === SubscriptionInvoiceStatus.PENDING
-                                    ? "Vence em:"
-                                    : "Venceu em:"}
-                              </span>{" "}
-                              {formatLocalDate(parseLocalDate(inv.data_vencimento))}
-                              {inv.metodo_pagamento && (
-                                <>
-                                  <span className="mx-1.5 text-slate-300">•</span>
-                                  <span className="capitalize">
-                                    {PAYMENT_METHOD_LABELS[inv.metodo_pagamento as CheckoutPaymentMethod] || "Boleto"}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
+                {(() => {
+                  const sortedInvoices = (invoices || [])
+                    .filter((inv) => inv.status !== SubscriptionInvoiceStatus.CANCELED)
+                    .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime());
+                  const displayedInvoices = sortedInvoices.slice(0, 3);
+                  const totalCount = totalInvoices || sortedInvoices.length;
+                  const hasMore = totalCount > 3;
 
-                          <div className="flex flex-col items-end shrink-0 text-right">
-                            <div className="text-sm sm:text-base font-bold text-primary whitespace-nowrap">
-                              {formatCurrency(inv.valor_total || inv.valor)}
-                            </div>
-                            {inv.parcelas && inv.parcelas > 1 && (
-                              <span className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
-                                {inv.parcelas}x de {formatCurrency(inv.valor_parcela || Math.round(((inv.valor_total || inv.valor) / inv.parcelas) * 100) / 100)}
-                              </span>
-                            )}
-                          </div>
+                  if (displayedInvoices.length === 0) {
+                    return (
+                      <div className="py-4 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
+                        <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
+                          <Clock className="w-6 h-6 text-slate-300" />
                         </div>
-
-                        {(inv.status === SubscriptionInvoiceStatus.FAILED || inv.status === SubscriptionInvoiceStatus.PENDING) && (
-                          <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
-                            {inv.pix_copy_paste && inv.status === SubscriptionInvoiceStatus.PENDING ? (
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                <button
-                                  className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 transition-colors bg-primary px-4 py-3 rounded-xl border border-primary-400/40 transition-all duration-300"
-                                  onClick={() => handleCopyPix(inv.pix_copy_paste!, inv.id)}
-                                >
-                                  {copiedPixId === inv.id ? (
-                                    <>
-                                      <CopyCheck className="w-4 h-4 animate-in zoom-in duration-200" />
-                                      Copiado!
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="w-4 h-4" />
-                                      Copiar código PIX
-                                    </>
-                                  )}
-                                </button>
-                                <button
-                                  className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 transition-colors bg-primary/5 px-4 py-3 rounded-xl border border-primary/10"
-                                  onClick={() => handleSubscribe()}
-                                >
-                                  Tentar Novamente
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
-                                onClick={() => handleSubscribe()}
-                              >
-                                Tentar Novamente
-                              </button>
-                            )}
-                          </div>
-                        )}
+                        <p className="text-xs font-base text-slate-400">Não há histórico de pagamentos.</p>
                       </div>
-                    ))
-                ) : (
-                  <div className="py-4 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
-                    <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
-                      <Clock className="w-6 h-6 text-slate-300" />
-                    </div>
-                    <p className="text-xs font-base text-slate-400">Não há histórico de pagamentos.</p>
-                  </div>
-                )}
+                    );
+                  }
+
+                  return (
+                    <>
+                      {displayedInvoices.map((inv) => (
+                        <SubscriptionInvoiceCard
+                          key={inv.id}
+                          invoice={inv}
+                          copiedPixId={copiedPixId}
+                          onCopyPix={handleCopyPix}
+                          onRetryPayment={handleRetryPayment}
+                        />
+                      ))}
+
+                      {hasMore && (
+                        <button
+                          type="button"
+                          onClick={() => setIsHistoryDialogOpen(true)}
+                          className="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-bold text-[#1a3a5c] flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] group mt-2"
+                        >
+                          <History className="w-4 h-4 text-slate-400 group-hover:text-[#1a3a5c] transition-colors" />
+                          <span>Ver histórico completo ({totalCount})</span>
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </section>
 
@@ -458,10 +412,19 @@ export default function SubscriptionPage() {
               onClick={handleCancelSubscription}
               className="text-[11px] font-medium text-slate-400 hover:text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-400 transition-colors"
             >
-              Cancelar minha assinatura
+              Cancelar assinatura
             </button>
           </div>
         )}
+
+        <SubscriptionInvoicesDialog
+          open={isHistoryDialogOpen}
+          onOpenChange={setIsHistoryDialogOpen}
+          userId={user?.id}
+          copiedPixId={copiedPixId}
+          onCopyPix={handleCopyPix}
+          onRetryPayment={handleRetryPayment}
+        />
       </div>
     </PullToRefreshWrapper>
   );

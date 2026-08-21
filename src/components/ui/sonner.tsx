@@ -51,10 +51,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          toast: "font-sans rounded-2xl shadow-lg border p-4 text-sm font-medium",
-          description: "text-xs opacity-90 font-normal mt-0.5",
-          actionButton: "font-semibold text-xs rounded-lg px-3 py-1.5",
-          cancelButton: "text-xs rounded-lg px-3 py-1.5",
+          toast: "font-sans rounded-2xl shadow-lg border p-4 text-sm font-medium select-none cursor-grab active:cursor-grabbing pointer-events-auto",
+          description: "text-xs opacity-90 font-normal mt-0.5 select-none",
+          actionButton: "font-semibold text-xs rounded-lg px-3 py-1.5 cursor-pointer",
+          cancelButton: "text-xs rounded-lg px-3 py-1.5 cursor-pointer",
         },
       }}
       {...props}

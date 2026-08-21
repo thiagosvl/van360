@@ -236,7 +236,7 @@ export const Conta = memo(function Conta() {
               <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 4: Minha Assinatura (Gestor) */}
+            {/* Opção 4: Assinatura do App (Gestor) */}
             {can("assinatura.gerenciar") && (
               <button
                 type="button"
@@ -249,7 +249,7 @@ export const Conta = memo(function Conta() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                      Minha Assinatura
+                      Assinatura do App
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
                       Gerencie seu plano, pagamentos e benefícios Van360
@@ -402,15 +402,15 @@ export const Conta = memo(function Conta() {
 
   const isSubPage = Boolean(
     tabParam &&
-      [
-        "notificacoes_pais",
-        "notificacoes",
-        "minhas_notificacoes",
-        "rastreamento",
-        "perfil",
-        "pagamentos",
-        "ajuda",
-      ].includes(tabParam)
+    [
+      "notificacoes_pais",
+      "notificacoes",
+      "minhas_notificacoes",
+      "rastreamento",
+      "perfil",
+      "pagamentos",
+      "ajuda",
+    ].includes(tabParam)
   );
 
   return (

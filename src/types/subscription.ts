@@ -74,6 +74,15 @@ export interface SubscriptionInvoice {
   assinaturas?: {
     planos: SaaSPlan;
   };
+  planos?: SaaSPlan;
+}
+
+export interface ListSubscriptionInvoicesResponse {
+  list: SubscriptionInvoice[];
+  total: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }
 
 export interface PaymentMethod {
