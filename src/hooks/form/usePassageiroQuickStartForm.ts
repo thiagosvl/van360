@@ -20,6 +20,7 @@ export const quickStartPassageiroBaseSchema = z.object({
     telefone: z.string().optional(),
   }).optional(),
   isento: z.boolean().optional().default(false),
+  ano_letivo: z.string().optional(),
   valor_cobranca: z.string().optional(),
   dia_vencimento: z.string().optional(),
   mes_inicio_cobranca: z.string().optional(),
@@ -52,6 +53,7 @@ export const getQuickStartPassageiroSchema = (isOnboarding?: boolean) => {
     }),
           
     isento: z.boolean().optional().default(false),
+    ano_letivo: z.string().optional().default(String(new Date().getFullYear())),
     valor_cobranca: z.string().optional(),
     dia_vencimento: z.string().optional(),
     mes_inicio_cobranca: z.string().optional(),
@@ -97,6 +99,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         telefone: "",
       },
       isento: false,
+      ano_letivo: String(new Date().getFullYear()),
       valor_cobranca: "",
       dia_vencimento: "",
       escola_id: "",
@@ -130,10 +133,9 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
   }, [telefoneValue, lookupResponsavel, form]);
 
   const handleSubmit = async (data: QuickStartPassageiroFormData, keepOpen?: boolean) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      const currentYear = new Date().getFullYear();
-
+      const anoLetivo = Number(data.ano_letivo) || new Date().getFullYear();
       const isIsento = !!data.isento;
 
       const respPrincipalPayload = (data.responsavel_principal?.nome && data.responsavel_principal?.telefone)
@@ -147,12 +149,13 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         nome: data.nome,
         responsavel_principal: respPrincipalPayload,
         isento: isIsento,
+        ano_letivo: anoLetivo,
         valor_cobranca: isIsento ? 0 : (data.valor_cobranca ? moneyToNumber(String(data.valor_cobranca)) : 0),
         dia_vencimento: isIsento ? null : (data.dia_vencimento ? parseInt(String(data.dia_vencimento)) : null),
         escola_id: data.escola_id,
         veiculo_id: data.veiculo_id,
-        data_inicio_cobranca: (!isIsento && data.mes_inicio_cobranca) ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
-        data_fim_cobranca: (!isIsento && data.mes_fim_cobranca) ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
+        data_inicio_cobranca: (!isIsento && data.mes_inicio_cobranca) ? `${anoLetivo}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
+        data_fim_cobranca: (!isIsento && data.mes_fim_cobranca) ? `${anoLetivo}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
         ativo: true,
         usuario_id: usuarioId,
       };
@@ -191,7 +194,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         veiculoId = veiculos[0].id;
       }
 
-      const mockPassenger = mockGenerator.passenger({
+      const mockPassenger: any = mockGenerator.passenger({
         escola_id: escolaId,
         veiculo_id: veiculoId,
       });

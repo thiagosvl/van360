@@ -69,6 +69,7 @@ export const passageiroSchema = z
     nome_professor: z.string().optional().nullable().or(z.literal("")),
 
     isento: z.boolean().optional().default(false),
+    ano_letivo: z.string().optional().default(String(new Date().getFullYear())),
     valor_cobranca: z.string().optional().or(z.literal("")),
     dia_vencimento: z.string().optional().or(z.literal("")),
     data_inicio_transporte: dateSchema(false, true),
@@ -262,7 +263,7 @@ export function usePassageiroForm({
           observacoes: editingPassageiro.observacoes || "",
           escola_id: editingPassageiro.escola_id || "",
           veiculo_id: editingPassageiro.veiculo_id || "",
-
+          ano_letivo: editingPassageiro.ano_letivo ? String(editingPassageiro.ano_letivo) : String(new Date().getFullYear()),
           ativo: editingPassageiro.ativo,
         });
 
@@ -277,6 +278,7 @@ export function usePassageiroForm({
         form.reset({
           ...(mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData),
           isento: false,
+          ano_letivo: (prePassageiro as any)?.ano_letivo ? String((prePassageiro as any).ano_letivo) : String(new Date().getFullYear()),
         });
 
         form.trigger([
@@ -326,6 +328,7 @@ export function usePassageiroForm({
             complemento: "",
           },
           isento: false,
+          ano_letivo: String(new Date().getFullYear()),
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",

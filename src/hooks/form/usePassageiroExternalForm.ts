@@ -85,6 +85,7 @@ export function usePassageiroExternalForm() {
       genero: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
+      ano_letivo: String(new Date().getFullYear()),
     },
     mode: "onBlur",
   });

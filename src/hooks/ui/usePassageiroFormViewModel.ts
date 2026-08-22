@@ -260,12 +260,18 @@ export function usePassageiroFormViewModel({
       ? convertDateBrToISO(purePayload.data_fim_transporte)
       : null;
 
-    const currentYear = new Date().getFullYear();
+    const anoLetivo = Number(data.ano_letivo) || new Date().getFullYear();
 
-    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
-    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${anoLetivo}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${anoLetivo}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
     delete purePayload.mes_inicio_cobranca;
     delete purePayload.mes_fim_cobranca;
+
+    if (mode === PassageiroFormModes.EDIT) {
+      delete purePayload.ano_letivo;
+    } else {
+      purePayload.ano_letivo = anoLetivo;
+    }
 
     purePayload.genero = purePayload.genero || null;
     purePayload.periodo = purePayload.periodo || null;

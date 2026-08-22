@@ -47,6 +47,12 @@ export { useUsuarioResumo } from "./api/useUsuarioResumo";
 export { useVeiculos } from "./api/useVeiculos";
 export { useVeiculosWithFilters } from "./api/useVeiculosWithFilters";
 export { useConfiguracoes } from "./api/useConfiguracoes";
+export {
+  useRenovacoesList,
+  useReajusteLote,
+  useUpdateRenovacao,
+  useVirarAnoLetivo,
+} from "./api/useRenovacoes";
 
 // API hooks (mutations)
 export {

@@ -41,6 +41,7 @@ export const prePassageiroSchema = z.object({
       message: "O valor deve ser no mínimo R$ 1,00",
     }),
   dia_vencimento: z.string().optional(),
+  ano_letivo: z.string().optional().default(String(new Date().getFullYear())),
   ativo: z.boolean().optional(),
 }).refine(
   (data) => {

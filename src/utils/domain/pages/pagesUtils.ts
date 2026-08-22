@@ -1,5 +1,5 @@
 import { ComponentType } from "react";
-import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User } from "lucide-react";
+import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Sparkles } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
 
@@ -15,6 +15,12 @@ const pagesItems: PageItem[] = [
     title: "Início",
     href: ROUTES.PRIVATE.MOTORISTA.HOME,
     icon: LayoutDashboard,
+  },
+  {
+    title: "Renovação Passageiros",
+    href: ROUTES.PRIVATE.MOTORISTA.RENOVATION,
+    icon: Sparkles,
+    permission: "renovacoes.gerenciar",
   },
   {
     title: "Contratos",

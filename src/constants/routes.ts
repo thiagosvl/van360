@@ -45,6 +45,7 @@ export const ROUTES = {
       ROUTE_EXECUTE: "/rotas/executar/:id",
       ROUTE_DETAILS: "/rotas/detalhes/:id",
       BIRTHDAYS: "/aniversariantes",
+      RENOVATION: "/renovacoes",
       ACCOUNT: "/conta",
     }
   }

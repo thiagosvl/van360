@@ -45,6 +45,7 @@ export interface Passageiro {
   ativo?: boolean;
   isento?: boolean;
   enviar_notificacoes?: boolean;
+  ano_letivo?: number;
   observacoes?: string;
   escola?: { id?: string; nome?: string };
   escola_nome?: string;

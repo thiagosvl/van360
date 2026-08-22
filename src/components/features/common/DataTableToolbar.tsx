@@ -92,7 +92,7 @@ export const DataTableToolbar = ({
        variant="outline"
        className={cn(
          "bg-white border-slate-100 text-[#1a3a5c] font-bold text-sm gap-2 h-12 md:h-14 rounded-2xl px-3.5 md:px-5 shadow-sm hover:bg-gray-50 shrink-0",
-         isMobile ? "flex-none" : ""
+         actions ? "flex-1 md:flex-initial" : (isMobile ? "flex-none" : "")
        )}
        disabled={disabled}
     >

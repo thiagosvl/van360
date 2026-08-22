@@ -11,6 +11,7 @@ import {
   Rocket,
   ChartArea,
   User,
+  Sparkles,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -22,6 +23,7 @@ interface AcessoRapidoProps {
 }
 
 enum AcessoRapidoItemKey {
+  RENOVACAO = "renovacao",
   EQUIPE = "equipe",
   GASTOS = "gastos",
   CONTRATOS = "contratos",
@@ -66,6 +68,13 @@ export const AcessoRapido = ({
 
     // Perfil MOTORISTA (Gestor Principal / Padrão)
     return [
+      {
+        id: AcessoRapidoItemKey.RENOVACAO,
+        label: "Renovação Passageiros",
+        icon: Sparkles,
+        to: ROUTES.PRIVATE.MOTORISTA.RENOVATION,
+        show: can(PERMISSIONS.RENOVACOES_GERENCIAR),
+      },
       {
         id: AcessoRapidoItemKey.EQUIPE,
         label: "Minha Equipe",

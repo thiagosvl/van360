@@ -26,6 +26,7 @@ interface PassageiroFormFinanceiroProps {
 }
 
 export function PassageiroFormFinanceiro({
+  editingPassageiro = null,
   isExternal = false,
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
@@ -67,6 +68,51 @@ export function PassageiroFormFinanceiro({
 
         {!isIsento && (
           <>
+            {!editingPassageiro && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="ano_letivo"
+                  render={({ field, fieldState }) => {
+                    const currentYear = new Date().getFullYear();
+                    const nextYear = currentYear + 1;
+                    return (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Ano Letivo {!isExternal && <span className="text-red-600">*</span>}
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || String(currentYear)}>
+                          <FormControl>
+                            <div className="relative">
+                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <SelectTrigger
+                                className={cn(
+                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                                  fieldState.error && "border-red-500",
+                                )}
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue placeholder="Selecione o ano" />
+                              </SelectTrigger>
+                            </div>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={String(currentYear)}>
+                              {currentYear} (Ano Atual)
+                            </SelectItem>
+                            <SelectItem value={String(nextYear)}>
+                              {nextYear} (Próximo Ano)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}

@@ -58,6 +58,7 @@ const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const Rotas = lazyLoad(() => import("./pages/Rotas"));
 const MinhaEquipe = lazyLoad(() => import("./pages/MinhaEquipe"));
 const ConfigurarRota = lazyLoad(() => import("./pages/ConfigurarRota"));
+const Renovacoes = lazyLoad(() => import("./pages/Renovacoes"));
 const RouteExecutionPage = lazyLoad(() => import("./pages/RouteExecutionPage"));
 const RouteDetailsPage = lazyLoad(() => import("./pages/RouteDetailsPage"));
 const Aniversariantes = lazyLoad(() => import("./pages/Aniversariantes"));
@@ -396,6 +397,7 @@ const App = () => {
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE} element={<RouteExecutionPage />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_DETAILS} element={<RouteDetailsPage />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS} element={<Aniversariantes />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.RENOVATION} element={<Renovacoes />} />
                       </Route>
                     </Route>
 
