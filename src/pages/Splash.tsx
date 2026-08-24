@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { ROUTES } from "@/constants/routes";
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Bus, ChevronRight, LogIn, Sparkles, Users } from "lucide-react";
 
@@ -29,8 +28,6 @@ function SplashIllustration({
 }
 
 export default function Splash() {
-  useAnalyticsInjector({ clarity: true, force: true });
-
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();

@@ -1,13 +1,11 @@
 import { useRef } from "react";
 import { X } from "lucide-react";
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BottomNavbar } from "@/components/navigation/BottomNavbar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 
-import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -20,7 +18,6 @@ import { Outlet } from "react-router-dom";
 const SWIPE_CLOSE_THRESHOLD = 100;
 
 function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) {
-  useAnalyticsInjector({ clarity: true, force: true });
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);

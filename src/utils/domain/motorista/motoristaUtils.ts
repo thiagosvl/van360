@@ -3,7 +3,6 @@ import { BASE_DOMAIN } from "@/constants";
 
 export const clearAppSession = () => {
     const savedCpf = localStorage.getItem("van360_saved_cpf");
-    const cookieConsent = localStorage.getItem("van360_cookie_consent");
 
     // Limpar apenas chaves da sessao do motorista / Supabase
     const keys = Object.keys(localStorage);
@@ -20,10 +19,6 @@ export const clearAppSession = () => {
 
     if (savedCpf) {
         localStorage.setItem("van360_saved_cpf", savedCpf);
-    }
-
-    if (cookieConsent) {
-        localStorage.setItem("van360_cookie_consent", cookieConsent);
     }
 };
 

@@ -36,7 +36,6 @@ import { Label } from "@/components/ui/label";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { useSEO } from "@/hooks/useSEO";
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 
 import { UserType } from "@/types/enums";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
@@ -102,7 +101,6 @@ export default function Login() {
   useSEO({
     title: "Entrar | Van360",
   });
-  useAnalyticsInjector({ gtm: true, clarity: true });
 
   const navigate = useNavigate();
   const location = useLocation();

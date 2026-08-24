@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { useSEO } from "@/hooks/useSEO";
@@ -21,7 +20,6 @@ export default function Register() {
   useSEO({
     title: "Criar conta grátis | Van360",
   });
-  useAnalyticsInjector({ gtm: true, clarity: true });
 
   const {
     form,

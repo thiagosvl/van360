@@ -1,4 +1,3 @@
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalForm";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -11,7 +10,6 @@ import { getNowBR } from "@/utils/dateUtils";
 import { isDevEnv } from "@/utils/detectPlatform";
 
 export default function PassageiroExternalForm() {
-  useAnalyticsInjector({ clarity: true, force: true });
   const {
     form,
     loading,
