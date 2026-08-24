@@ -1,30 +1,19 @@
 import { useState } from "react";
 import {
   Check,
-  UserX,
+  X,
   User,
-  SlidersHorizontal,
-  ChevronDown,
-  ChevronUp,
-  DollarSign,
+  Pencil,
   Loader2,
+  ArrowRight,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { formatCurrency, formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
-import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { useUpdateRenovacao } from "@/hooks/api/useRenovacoes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -33,38 +22,27 @@ interface RenovacaoPassengerCardProps {
   anoDestino: number;
   onConfirmarManual: (passageiroId: string) => Promise<void> | void;
   onRegistrarSaida: (passageiroId: string, nome: string) => Promise<void> | void;
+  onReativar?: (passageiroId: string) => Promise<void> | void;
   onOpenEditarReserva?: (passageiro: RenovacaoPassageiroItem) => void;
   isUpdating?: boolean;
 }
-
-type TipoAjusteRapido = "fixo" | "percentual" | "valor_direto";
 
 export function RenovacaoPassengerCard({
   item,
   anoDestino,
   onConfirmarManual,
   onRegistrarSaida,
+  onReativar,
   onOpenEditarReserva,
-  isUpdating = false,
 }: RenovacaoPassengerCardProps) {
-  const isConfirmed =
-    item.status === RenovacaoStatus.CONFIRMADO_ONLINE ||
-    item.status === RenovacaoStatus.CONFIRMADO_MANUAL;
-
-  const isRecusado =
-    item.status === RenovacaoStatus.RECUSADO_MOTORISTA ||
-    item.status === RenovacaoStatus.RECUSADO_PAIS;
+  const isConfirmed = item.status === RenovacaoStatus.CONFIRMADO;
+  const isRecusado = item.status === RenovacaoStatus.RECUSADO;
+  const isPendente = item.status === RenovacaoStatus.PENDENTE || (!isConfirmed && !isRecusado);
 
   const shortName = formatShortName(item.nome, true);
   const respName = formatNomeResponsavelExibicao(item.responsavel_principal?.nome);
 
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [tipoAjuste, setTipoAjuste] = useState<TipoAjusteRapido>("fixo");
-  const [valorAjuste, setValorAjuste] = useState("30,00");
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isRecusing, setIsRecusing] = useState(false);
-
-  const updateMutation = useUpdateRenovacao();
+  const [loadingAction, setLoadingAction] = useState<"confirmar" | "saida" | "pendente" | null>(null);
 
   const handleOpenWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -83,320 +61,212 @@ export function RenovacaoPassengerCard({
     window.open(`https://wa.me/${formattedPhone}?text=${text}`, "_blank");
   };
 
-  const handleConfirmar = async () => {
-    if (isConfirming || isRecusing || isUpdating) return;
-    setIsConfirming(true);
+  const handleSetConfirmado = async () => {
+    if (isConfirmed || loadingAction) return;
+    setLoadingAction("confirmar");
     try {
       await onConfirmarManual(item.passageiro_id);
       toast.success(`Vaga de ${shortName} confirmada!`);
     } catch {
       toast.error("Erro ao confirmar vaga.");
     } finally {
-      setIsConfirming(false);
+      setLoadingAction(null);
     }
   };
 
-  const handleRegistrarSaidaDireto = async () => {
-    if (isConfirming || isRecusing || isUpdating) return;
-    setIsRecusing(true);
+  const handleSetSaida = async () => {
+    if (isRecusado || loadingAction) return;
+    setLoadingAction("saida");
     try {
       await onRegistrarSaida(item.passageiro_id, shortName);
       toast.success(`Saída de ${shortName} registrada!`);
     } catch {
       toast.error("Erro ao registrar saída.");
     } finally {
-      setIsRecusing(false);
+      setLoadingAction(null);
     }
   };
 
-  const handleAplicarAjusteRapido = async () => {
-    const base = Number(item.valor_cobranca_atual || 0);
-    let novoValorCalculado = base;
-
-    if (tipoAjuste === "fixo") {
-      novoValorCalculado = base + moneyToNumber(valorAjuste);
-    } else if (tipoAjuste === "percentual") {
-      const perc = Number(valorAjuste.replace(",", "."));
-      novoValorCalculado = base * (1 + perc / 100);
-    } else {
-      novoValorCalculado = moneyToNumber(valorAjuste);
-    }
-
-    novoValorCalculado = Math.max(0, Number(novoValorCalculado.toFixed(2)));
-
+  const handleSetPendente = async () => {
+    if (isPendente || loadingAction || !onReativar) return;
+    setLoadingAction("pendente");
     try {
-      await updateMutation.mutateAsync({
-        passageiroId: item.passageiro_id,
-        data: {
-          ano_destino: anoDestino,
-          novo_valor_cobranca: novoValorCalculado,
-          novo_dia_vencimento: item.novo_dia_vencimento ?? item.dia_vencimento_atual ?? 10,
-          nova_escola_id: item.nova_escola_id ?? item.escola_id_atual,
-          novo_periodo: item.novo_periodo ?? item.periodo_atual,
-          novo_veiculo_id: item.novo_veiculo_id ?? item.veiculo_id_atual,
-          novo_isento: false,
-        },
-      });
-
-      toast.success(`Mensalidade de ${shortName} ajustada para ${formatCurrency(novoValorCalculado)}`);
+      await onReativar(item.passageiro_id);
+      toast.success(`Reserva de ${shortName} redefinida para Pendente.`);
     } catch {
-      toast.error("Erro ao aplicar ajuste de valor.");
+      toast.error("Erro ao redefinir status para pendente.");
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border bg-white p-3.5 sm:p-4 shadow-2xs transition-all space-y-2.5",
-        isConfirmed && "border-emerald-200 bg-emerald-50/20",
-        isRecusado && "border-rose-200 bg-rose-50/20",
-        !isConfirmed && !isRecusado && "border-slate-200/90"
-      )}
-    >
-      {/* LINHA 1: Avatar + Nome + Responsável (Esquerda) e Badge de Status (Direita) */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="rounded-full bg-white p-[2px] shadow-sm shrink-0 flex items-center justify-center transition-all">
-            <div className={cn(
-              "rounded-full border flex items-center justify-center transition-colors",
-              isConfirmed ? "border-emerald-500" : isRecusado ? "border-rose-400" : "border-[#1a3a5c]"
-            )}>
-              <div className="h-9 w-9 rounded-full border-[2px] border-white flex items-center justify-center bg-slate-200">
-                <User className={cn(
-                  "w-4 h-4 fill-current transition-colors",
-                  isConfirmed ? "text-emerald-700" : isRecusado ? "text-rose-600" : "text-[#1a3a5c]/80"
-                )} />
-              </div>
-            </div>
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-sm transition-all space-y-3">
+      {/* HEADER DO CARD: Avatar + Nome + Responsável */}
+      <div className="flex items-center gap-3 min-w-0">
+        {item.foto_url ? (
+          <img
+            src={item.foto_url}
+            alt={shortName}
+            className="h-10 w-10 rounded-full object-cover shrink-0 border border-slate-200"
+          />
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+            <User className="w-5 h-5 text-slate-400" />
           </div>
+        )}
 
-          <div className="min-w-0 flex-1">
-            <p className="font-headline font-bold text-[#1a3a5c] text-sm sm:text-base leading-tight truncate">
-              {shortName}
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-tight truncate">
+            {shortName}
+          </h3>
+          {respName && (
+            <p className="text-xs text-slate-500 font-normal truncate mt-0.5">
+              {respName}
             </p>
-
-            {respName && (
-              <p className="text-xs text-slate-400 font-normal truncate mt-0.5">
-                {respName}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Badge de Status com Contraste Alto no Tema Light */}
-        <div className="shrink-0">
-          {isConfirmed && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold border border-emerald-200/80">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-              Confirmado
-            </span>
-          )}
-
-          {!isConfirmed && !isRecusado && (
-            <span className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 px-2.5 py-1 text-[11px] font-bold border border-amber-200/80">
-              Pendente
-            </span>
-          )}
-
-          {isRecusado && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 px-2.5 py-1 text-[11px] font-bold border border-rose-200/80">
-              <UserX className="w-3.5 h-3.5 text-rose-600" />
-              Saída
-            </span>
           )}
         </div>
       </div>
 
-      {/* LINHA 2: Bloco de Mensalidade Compacto com Gatilho de Opções/Ajustes */}
-      <div className="rounded-xl bg-slate-50/80 border border-slate-200/70 p-2.5">
-        <div className="flex items-center justify-between">
-          <div className="grid grid-cols-2 divide-x divide-slate-200/80 flex-1 pr-2">
-            <div className="pr-3">
-              <span className="text-[11px] text-slate-400 font-medium leading-none block">
-                Atual
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-slate-700 mt-1 block">
-                {item.isento_atual ? "Isento" : formatCurrency(item.valor_cobranca_atual)}
-              </span>
-            </div>
+      {/* BLOCO DE PARCELAS: CLIQUE DIRETO PARA EDITAR PROPOSTA */}
+      <div
+        onClick={() => onOpenEditarReserva?.(item)}
+        className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/60 transition-colors cursor-pointer"
+        title="Clique para editar valores e proposta da reserva"
+      >
+        <div>
+          <span className="text-xs text-slate-500 font-medium block">
+            Parcela Atual
+          </span>
+          <span className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block">
+            {item.isento_atual ? "Isento" : formatCurrency(item.valor_cobranca_atual)}
+          </span>
+        </div>
 
-            <div className="pl-3">
-              <span className="text-[11px] text-slate-400 font-medium leading-none block">
-                Novo
-              </span>
-              <span className="text-xs sm:text-sm font-bold text-[#1a3a5c] mt-1 block">
-                {item.novo_isento ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
-              </span>
-            </div>
-          </div>
+        <ArrowRight className="w-4 h-4 text-slate-400 shrink-0 mx-2" />
 
-          {/* Botão de Expandir Opções e Ajuste */}
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[#1a3a5c] text-xs font-bold transition-all shrink-0 active:scale-95 shadow-2xs cursor-pointer"
-            title={isExpanded ? "Recolher opções" : "Mais opções e ajustes"}
+        <div className="text-right">
+          <span className="text-xs text-slate-500 font-medium block">
+            Nova Parcela ({anoDestino})
+          </span>
+          <span
+            className={cn(
+              "text-sm sm:text-base font-bold mt-0.5 block",
+              item.isento_atual ? "text-slate-700" : "text-emerald-700"
+            )}
           >
-            <span>{isExpanded ? "Menos" : "Ajustar"}</span>
-            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+            {item.isento_atual ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
+          </span>
         </div>
       </div>
 
-      {/* BLOCO COLAPSÁVEL: Ações Secundárias e Painel de Reajuste Individual */}
-      {isExpanded && (
-        <div className="space-y-3 pt-1 border-t border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
-          {/* Ações 50% / 50% (WhatsApp e Editar Proposta) */}
-          <div className="grid grid-cols-2 gap-2">
-            {item.responsavel_principal?.telefone ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleOpenWhatsApp}
-                className="w-full rounded-xl border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold h-10 gap-1.5 shadow-2xs"
-              >
-                <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
-                <span>WhatsApp</span>
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled
-                className="w-full rounded-xl border-slate-200 bg-slate-50 text-slate-400 text-xs font-bold h-10 gap-1.5 opacity-60"
-              >
-                <WhatsAppIcon className="w-4 h-4 fill-current text-slate-400" />
-                <span>Sem Telefone</span>
-              </Button>
-            )}
+      {/* AÇÕES SECUNDÁRIAS (WHATSAPP 50% | EDITAR 50%) */}
+      <div className="grid grid-cols-2 gap-2">
+        {item.responsavel_principal?.telefone ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleOpenWhatsApp}
+            className="w-full rounded-xl border-slate-300 bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 text-xs font-bold h-10 gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
+            <span>WhatsApp</span>
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled
+            className="w-full rounded-xl border-slate-200 bg-slate-50 text-slate-400 text-xs font-bold h-10 gap-1.5 opacity-60"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current text-slate-400" />
+            <span>Sem Telefone</span>
+          </Button>
+        )}
 
-            {onOpenEditarReserva && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onOpenEditarReserva(item)}
-                className="w-full rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold h-10 gap-1.5 shadow-2xs"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-                <span>Editar Proposta</span>
-              </Button>
-            )}
-          </div>
+        {onOpenEditarReserva && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenEditarReserva(item)}
+            className="w-full rounded-xl border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold h-10 gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <Pencil className="w-3.5 h-3.5 text-slate-600" />
+            <span>Editar</span>
+          </Button>
+        )}
+      </div>
 
-          {/* Painel Inline de Ajuste Rápido */}
-          <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 p-3 space-y-2.5">
-            <span className="text-slate-700 font-semibold ml-1 text-xs block">
-              Reajustar Mensalidade Individual
-            </span>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="flex-1 min-w-[120px]">
-                <Select
-                  value={tipoAjuste}
-                  onValueChange={(val) => {
-                    const tipo = val as TipoAjusteRapido;
-                    setTipoAjuste(tipo);
-                    if (tipo === "percentual") setValorAjuste("8,0");
-                    else if (tipo === "fixo") setValorAjuste("30,00");
-                    else if (tipo === "valor_direto") setValorAjuste("380,00");
-                  }}
-                >
-                  <SelectTrigger className="h-10 rounded-xl bg-white border-slate-200 text-xs font-semibold text-slate-700 w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixo">+ Reais (+ R$)</SelectItem>
-                    <SelectItem value="percentual">+ Percentual (+ %)</SelectItem>
-                    <SelectItem value="valor_direto">Valor Fixo (R$)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="relative flex-1 min-w-[100px]">
-                <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 z-10" />
-                <Input
-                  value={valorAjuste}
-                  onChange={(e) => {
-                    if (tipoAjuste === "percentual") {
-                      setValorAjuste(e.target.value.replace(/[^0-9,.]/g, ""));
-                    } else {
-                      setValorAjuste(moneyMask(e.target.value));
-                    }
-                  }}
-                  placeholder={tipoAjuste === "percentual" ? "Ex: 8,0" : "R$ 0,00"}
-                  className="pl-9 h-10 rounded-xl bg-white border-slate-200 text-xs font-semibold text-slate-700 w-full"
-                />
-              </div>
-
-              <Button
-                type="button"
-                onClick={handleAplicarAjusteRapido}
-                disabled={updateMutation.isPending}
-                className="h-10 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#142e4a] text-white text-xs font-bold shadow-2xs active:scale-95 transition-all shrink-0"
-              >
-                {updateMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Aplicar"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LINHA 3: Controle de Decisão Unificado (Não Renovar 50% | Confirmar 50%) com Contraste Ajustado */}
-      <div className="grid grid-cols-2 gap-2 pt-1">
-        {/* Botão Não Renovar */}
-        <Button
+      {/* SELETOR SEGMENTADO DE 3 ESTADOS (OPÇÃO 1 - RESPONSIVO MOBILE-FIRST 320PX A DESKTOP) */}
+      <div className="grid grid-cols-3 p-1 rounded-xl bg-slate-100/80 border border-slate-200/80 gap-1">
+        {/* ABA SAÍDA */}
+        <button
           type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleRegistrarSaidaDireto}
-          disabled={isUpdating || isConfirming || isRecusing}
+          onClick={handleSetSaida}
+          disabled={loadingAction !== null}
           className={cn(
-            "rounded-xl font-bold text-xs h-10 gap-1.5 transition-all",
+            "h-9 sm:h-10 rounded-lg font-bold text-[10.5px] min-[360px]:text-xs sm:text-[13px] flex items-center justify-center gap-0.5 min-[360px]:gap-1.5 sm:gap-2 transition-all active:scale-95 cursor-pointer px-0.5 min-[360px]:px-2 sm:px-3",
             isRecusado
-              ? "bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100 shadow-2xs"
-              : "border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 hover:border-rose-200"
+              ? "bg-rose-600 text-white shadow-2xs"
+              : "text-slate-600 hover:text-rose-700 hover:bg-white/60"
           )}
         >
-          {isRecusing ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          {loadingAction === "saida" ? (
+            <Loader2 className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-4 sm:h-4 animate-spin" />
           ) : (
             <>
-              <UserX className="w-3.5 h-3.5 text-rose-600" />
-              <span>{isRecusado ? "Não Renova" : "Não Renovar"}</span>
+              <X className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.5]" />
+              <span>Saída</span>
             </>
           )}
-        </Button>
+        </button>
 
-        {/* Botão Confirmar */}
-        <Button
+        {/* ABA PENDENTE */}
+        <button
           type="button"
-          size="sm"
-          onClick={handleConfirmar}
-          disabled={isUpdating || isConfirming || isRecusing}
+          onClick={handleSetPendente}
+          disabled={loadingAction !== null}
           className={cn(
-            "rounded-xl font-bold text-xs h-10 gap-1.5 transition-all shadow-2xs",
-            isConfirmed
-              ? "bg-emerald-50 border border-emerald-300 text-emerald-700 hover:bg-emerald-100 cursor-default"
-              : "border border-slate-200 bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 hover:border-emerald-200 active:scale-95"
+            "h-9 sm:h-10 rounded-lg font-bold text-[10.5px] min-[360px]:text-xs sm:text-[13px] flex items-center justify-center gap-0.5 min-[360px]:gap-1.5 sm:gap-2 transition-all active:scale-95 cursor-pointer px-0.5 min-[360px]:px-2 sm:px-3",
+            isPendente
+              ? "bg-amber-500 text-white shadow-2xs"
+              : "text-slate-600 hover:text-amber-700 hover:bg-white/60"
           )}
         >
-          {isConfirming ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : isConfirmed ? (
+          {loadingAction === "pendente" ? (
+            <Loader2 className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-4 sm:h-4 animate-spin" />
+          ) : (
             <>
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+              <Clock className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.5]" />
+              <span>Pendente</span>
+            </>
+          )}
+        </button>
+
+        {/* ABA CONFIRMADO */}
+        <button
+          type="button"
+          onClick={handleSetConfirmado}
+          disabled={loadingAction !== null}
+          className={cn(
+            "h-9 sm:h-10 rounded-lg font-bold text-[10.5px] min-[360px]:text-xs sm:text-[13px] flex items-center justify-center gap-0.5 min-[360px]:gap-1.5 sm:gap-2 transition-all active:scale-95 cursor-pointer px-0.5 min-[360px]:px-2 sm:px-3",
+            isConfirmed
+              ? "bg-emerald-600 text-white shadow-2xs"
+              : "text-slate-600 hover:text-emerald-700 hover:bg-white/60"
+          )}
+        >
+          {loadingAction === "confirmar" ? (
+            <Loader2 className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-4 sm:h-4 animate-spin" />
+          ) : (
+            <>
+              <Check className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.5]" />
               <span>Confirmado</span>
             </>
-          ) : (
-            <>
-              <Check className="w-3.5 h-3.5" />
-              <span>Confirmar</span>
-            </>
           )}
-        </Button>
+        </button>
       </div>
     </div>
   );

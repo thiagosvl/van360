@@ -17,6 +17,10 @@ interface RenovacaoToolbarProps {
   onPeriodoChange: (value: string) => void;
   escolas: Escola[];
   onOpenAjustesLote?: () => void;
+  onOpenReajusteLote?: () => void;
+  statusFilter?: string;
+  onStatusChange?: (value: string) => void;
+  totalFiltrados?: number;
 }
 
 export const RenovacaoToolbar = memo(function RenovacaoToolbar({
@@ -28,7 +32,9 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
   onPeriodoChange,
   escolas,
   onOpenAjustesLote,
+  onOpenReajusteLote,
 }: RenovacaoToolbarProps) {
+  const handleOpenLote = onOpenAjustesLote || onOpenReajusteLote;
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -131,12 +137,12 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
       }}
       filterChildren={filterChildren}
       actions={
-        onOpenAjustesLote ? (
+        handleOpenLote ? (
           <Button
             type="button"
             variant="outline"
-            onClick={onOpenAjustesLote}
-            className="flex-1 md:flex-initial bg-white border-slate-100 text-[#1a3a5c] font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 h-12 md:h-14 rounded-2xl px-3.5 sm:px-5 shadow-sm hover:bg-gray-50 shrink-0 active:scale-95"
+            onClick={handleOpenLote}
+            className="flex-1 md:flex-initial bg-white border-slate-100 text-[#1a3a5c] font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 h-12 md:h-14 rounded-2xl px-3.5 sm:px-5 shadow-sm hover:bg-gray-50 shrink-0 active:scale-95 cursor-pointer"
           >
             <SlidersHorizontal className="h-4 w-4 text-slate-500" />
             <span>Ajustes em Lote</span>

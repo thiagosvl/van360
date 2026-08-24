@@ -16,15 +16,21 @@ export interface RenovacaoKPIs {
 export interface RenovacaoPassageiroItem {
   passageiro_id: string;
   nome: string;
+  foto_url?: string | null;
   valor_cobranca_atual: number;
   dia_vencimento_atual?: number | null;
-  escola_atual_id?: string | null;
-  escola_atual_nome?: string | null;
+  escola_id_atual?: string | null;
+  escola_nome_atual?: string | null;
   periodo_atual?: string | null;
   modalidade_atual?: string | null;
   turma_atual?: string | null;
   nome_professor_atual?: string | null;
+  veiculo_id_atual?: string | null;
   isento_atual?: boolean;
+  data_inicio_transporte_atual?: string | null;
+  data_fim_transporte_atual?: string | null;
+  data_inicio_cobranca_atual?: string | null;
+  data_fim_cobranca_atual?: string | null;
   responsavel_principal?: {
     id?: string;
     nome?: string | null;
@@ -45,13 +51,13 @@ export interface RenovacaoPassageiroItem {
   nova_modalidade?: string | null;
   nova_turma?: string | null;
   novo_nome_professor?: string | null;
-  novo_isento: boolean;
-  motivo_recusa?: RenovacaoMotivoRecusa | null;
-  justificativa_recusa?: string | null;
-  quem_recusou?: string | null;
+  novo_veiculo_id?: string | null;
+  nova_data_inicio_transporte?: string | null;
+  nova_data_fim_transporte?: string | null;
+  nova_data_inicio_cobranca?: string | null;
+  nova_data_fim_cobranca?: string | null;
   notificacao_enviada_em?: string | null;
   token_publico?: string | null;
-  observacoes_pais?: string | null;
 }
 
 export interface RenovacaoDashboardResponse {

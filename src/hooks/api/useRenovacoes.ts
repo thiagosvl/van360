@@ -1,29 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/api/client";
 import {
+  ListRenovacoesParams,
+  RenovacoesListResponse,
   ReajusteLotePayload,
-  RenovacaoDashboardResponse,
   UpdateRenovacaoPayload,
   VirarAnoLetivoPayload,
 } from "@/types/renovacao";
-import { toast } from "@/utils/notifications/toast";
+import { toast } from "sonner";
 
-export function useRenovacoesList(params?: {
-  ano_destino?: number;
-  status?: string;
-  escola_id?: string;
-  periodo?: string;
-  search?: string;
-}) {
-  return useQuery<RenovacaoDashboardResponse>({
-    queryKey: ["renovacoes", params],
+export const renovacaoKeys = {
+  all: ["renovacoes"] as const,
+  lists: () => [...renovacaoKeys.all, "list"] as const,
+  list: (params: ListRenovacoesParams) => [...renovacaoKeys.lists(), params] as const,
+};
+
+export function useRenovacoesList(params: ListRenovacoesParams) {
+  return useQuery({
+    queryKey: renovacaoKeys.list(params),
     queryFn: async () => {
-      const response = await apiClient.get<RenovacaoDashboardResponse>("/renovacoes", {
+      const response = await apiClient.get<RenovacoesListResponse>("/renovacoes", {
         params,
       });
       return response.data;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60 * 2, // 2 minutos
   });
 }
 
@@ -32,14 +33,11 @@ export function useReajusteLote() {
 
   return useMutation({
     mutationFn: async (payload: ReajusteLotePayload) => {
-      const response = await apiClient.patch<{ success: boolean; updated_count: number }>(
-        "/renovacoes/reajuste-lote",
-        payload
-      );
+      const response = await apiClient.post("/renovacoes/reajuste-lote", payload);
       return response.data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["renovacoes"] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
       toast.success("Reajuste em lote aplicado com sucesso!", {
         description: `${data.updated_count} passageiros foram atualizados.`,
       });
@@ -72,8 +70,8 @@ export function useUpdateRenovacao() {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["renovacoes"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar reserva", {
@@ -88,24 +86,18 @@ export function useVirarAnoLetivo() {
 
   return useMutation({
     mutationFn: async (payload: VirarAnoLetivoPayload) => {
-      const response = await apiClient.post<{
-        promovidos: number;
-        inativados: number;
-        ano_destino: number;
-      }>("/renovacoes/virar-ano", payload);
+      const response = await apiClient.post("/renovacoes/virar-ano", payload);
       return response.data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["renovacoes"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
       toast.success(`Ano Letivo ${data.ano_destino} iniciado com sucesso!`, {
-        description: `${data.promovidos} passageiros confirmados foram atualizados e ${data.inativados} saídas foram finalizadas.`,
+        description: `${data.confirmados_virados} passageiros promovidos e ${data.recusados_desativados} saídas registradas.`,
       });
     },
     onError: (error: any) => {
       toast.error("Erro ao virar ano letivo", {
-        description: error.response?.data?.error || "Verifique os dados e tente novamente.",
+        description: error.response?.data?.error || "Verifique as pendências e tente novamente.",
       });
     },
   });

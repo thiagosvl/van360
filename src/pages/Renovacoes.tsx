@@ -18,6 +18,8 @@ import { useSEO } from "@/hooks/useSEO";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { RenovacaoSkeleton } from "@/components/skeletons/RenovacaoSkeleton";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 
 export default function Renovacoes() {
   useSEO({
@@ -47,6 +49,7 @@ export default function Renovacoes() {
     refetch,
     handleConfirmarManual,
     handleRegistrarSaida,
+    handleReativar,
     isUpdating,
   } = useRenovacoesViewModel();
 
@@ -56,7 +59,7 @@ export default function Renovacoes() {
 
   // Paginação padrão da plataforma
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(30);
+  const [limit, setLimit] = useState(20);
 
   // Resetar página quando filtros mudarem
   useEffect(() => {
@@ -72,6 +75,10 @@ export default function Renovacoes() {
 
   if (!canManage) {
     return <AccessRestrictedState moduleName="Renovação de Ano Letivo" />;
+  }
+
+  if (isLoading) {
+    return <RenovacaoSkeleton />;
   }
 
   return (
@@ -98,6 +105,11 @@ export default function Renovacoes() {
               setSearchTerm(term);
               setPage(1);
             }}
+            statusFilter={statusFilter}
+            onStatusChange={(s) => {
+              setStatusFilter(s);
+              setPage(1);
+            }}
             escolaFilter={escolaFilter}
             onEscolaChange={(e) => {
               setEscolaFilter(e);
@@ -109,36 +121,29 @@ export default function Renovacoes() {
               setPage(1);
             }}
             escolas={escolasList}
-            onOpenAjustesLote={() => setIsReajusteOpen(true)}
+            onOpenReajusteLote={() => setIsReajusteOpen(true)}
+            totalFiltrados={passageiros.length}
           />
         </div>
 
-        {/* Lista de Cards de Passageiros */}
+        {/* Lista de Passageiros da Frota */}
         <div className="space-y-3">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-              <RefreshCw className="w-8 h-8 animate-spin text-[#1a3a5c]" />
-              <p className="text-sm font-medium">Carregando passageiros...</p>
-            </div>
-          ) : passageiros.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center rounded-3xl border border-dashed border-slate-200 bg-white p-8 shadow-2xs">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-3">
-                <Users className="w-6 h-6 text-slate-400" />
-              </div>
-              <h3 className="text-base font-bold text-slate-800">Nenhum passageiro encontrado</h3>
-              <p className="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">
-                Não encontramos nenhum passageiro correspondente aos filtros selecionados.
-              </p>
-            </div>
+          {passageiros.length === 0 ? (
+            <UnifiedEmptyState
+              icon={Users}
+              title="Nenhum passageiro encontrado"
+              description="Nenhum passageiro corresponde aos filtros aplicados para este ano letivo."
+            />
           ) : (
             <>
-              {paginatedPassageiros.map((item) => (
+              {paginatedPassageiros.map((p) => (
                 <RenovacaoPassengerCard
-                  key={item.passageiro_id}
-                  item={item}
+                  key={p.passageiro_id}
+                  item={p}
                   anoDestino={anoDestino}
                   onConfirmarManual={handleConfirmarManual}
                   onRegistrarSaida={handleRegistrarSaida}
+                  onReativar={handleReativar}
                   onOpenEditarReserva={setEditingPassageiro}
                   isUpdating={isUpdating}
                 />
@@ -152,7 +157,7 @@ export default function Renovacoes() {
                 limit={limit}
                 onPageChange={setPage}
                 onLimitChange={setLimit}
-                options={[30, 50, 100, 250]}
+                options={[20, 50, 100, 250, 500, 1000, 5000]}
                 className="mt-4"
               />
             </>

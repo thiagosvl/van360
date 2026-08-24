@@ -28,7 +28,7 @@ export const PassageirosPagination = memo(function PassageirosPagination({
   limit,
   onPageChange,
   onLimitChange,
-  options = [50, 100, 250, 500],
+  options = [20, 50, 100, 250, 500, 1000, 5000],
   className,
 }: PassageirosPaginationProps) {
   const safeTotalPages = Math.max(1, totalPages || Math.ceil(totalItems / (limit || 50)));

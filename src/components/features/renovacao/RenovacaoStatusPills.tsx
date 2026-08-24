@@ -26,7 +26,7 @@ export function RenovacaoStatusPills({
       badgeColor: "bg-slate-100 text-slate-700",
     },
     {
-      id: RenovacaoStatus.CONFIRMADO_MANUAL,
+      id: RenovacaoStatus.CONFIRMADO,
       label: "Confirmados",
       count: contadores.confirmados,
       activeColor: "bg-emerald-600 text-white border-emerald-600",
@@ -40,7 +40,7 @@ export function RenovacaoStatusPills({
       badgeColor: "bg-amber-100 text-amber-800",
     },
     {
-      id: RenovacaoStatus.RECUSADO_MOTORISTA,
+      id: RenovacaoStatus.RECUSADO,
       label: "Saídas",
       count: contadores.saidas,
       activeColor: "bg-rose-600 text-white border-rose-600",

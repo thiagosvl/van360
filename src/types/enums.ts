@@ -410,20 +410,9 @@ export enum PermissionRescueType {
 
 export enum RenovacaoStatus {
   PENDENTE = "pendente",
-  CONFIRMADO_MANUAL = "confirmado_manual",
-  CONFIRMADO_ONLINE = "confirmado_online",
-  RECUSADO_MOTORISTA = "recusado_motorista",
-  RECUSADO_PAIS = "recusado_pais",
+  CONFIRMADO = "confirmado",
+  RECUSADO = "recusado",
   CONCLUIDO = "concluido",
-}
-
-export enum RenovacaoMotivoRecusa {
-  MUDANCA_ESCOLA = "mudanca_escola",
-  MUDANCA_ENDERECO = "mudanca_endereco",
-  HORARIOS_INCOMPATIVEIS = "horarios_incompativeis",
-  CONCLUSAO_ESTUDOS = "conclusao_estudos",
-  FINANCEIRO = "financeiro",
-  OUTRO = "outro",
 }
 
 export enum RenovacaoReajusteTipo {

@@ -49,10 +49,7 @@ export function useRenovacoesViewModel() {
         passageiroId,
         data: {
           ano_destino: anoDestino,
-          status: RenovacaoStatus.CONFIRMADO_MANUAL,
-          quem_recusou: null,
-          motivo_recusa: null,
-          justificativa_recusa: null,
+          status: RenovacaoStatus.CONFIRMADO,
         },
       });
     },
@@ -65,10 +62,7 @@ export function useRenovacoesViewModel() {
         passageiroId,
         data: {
           ano_destino: anoDestino,
-          status: RenovacaoStatus.RECUSADO_MOTORISTA,
-          quem_recusou: "motorista",
-          motivo_recusa: null,
-          justificativa_recusa: null,
+          status: RenovacaoStatus.RECUSADO,
         },
       });
     },
@@ -82,9 +76,6 @@ export function useRenovacoesViewModel() {
         data: {
           ano_destino: anoDestino,
           status: RenovacaoStatus.PENDENTE,
-          quem_recusou: null,
-          motivo_recusa: null,
-          justificativa_recusa: null,
         },
       });
     },
@@ -100,8 +91,9 @@ export function useRenovacoesViewModel() {
           novo_valor_cobranca: novoValor,
         },
       });
+      await refetch();
     },
-    [anoDestino, updateRenovacaoMutation]
+    [anoDestino, updateRenovacaoMutation, refetch]
   );
 
   return {
