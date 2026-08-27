@@ -11,7 +11,7 @@ import { useRouteRules } from "@/hooks/business/useRouteRules";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useRemoverAusenciaMutation } from "@/hooks/api/useRoutes";
 import { ActiveRouteHeader } from "./ActiveRouteHeader";
-import { AddressDetailsDialog, AddressDialogData } from "./AddressDetailsDialog";
+import { AddressDetailsDialog } from "./AddressDetailsDialog";
 import { ActiveRouteCurrentCard } from "./ActiveRouteCurrentCard";
 import { ActiveRouteUpcomingCard } from "./ActiveRouteUpcomingCard";
 import { ReordenarParadaSheet } from "./ReordenarParadaSheet";
@@ -487,7 +487,16 @@ export function ActiveRouteExecutionView({
   const displayParadasConcluidas = useMemo(() => {
     const activeStopId = activeParadaToRender?.id || paradaAtual?.id;
     const rawConcluidas = paradasConcluidas.filter(p => p.id !== activeStopId);
-    return [...rawConcluidas].sort((a, b) => a.ordem - b.ordem);
+    return [...rawConcluidas].sort((a, b) => {
+      if (a.visitado_em && b.visitado_em) {
+        const timeA = new Date(a.visitado_em).getTime();
+        const timeB = new Date(b.visitado_em).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+      }
+      if (a.visitado_em && !b.visitado_em) return -1;
+      if (!a.visitado_em && b.visitado_em) return 1;
+      return a.ordem - b.ordem;
+    });
   }, [activeParadaToRender?.id, paradaAtual?.id, paradasConcluidas]);
 
   const totalTimelineItems = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + displayProximasParadas.length;
