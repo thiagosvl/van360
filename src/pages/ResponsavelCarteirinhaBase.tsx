@@ -22,14 +22,20 @@ import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
 import { AppPermissionStatus, PermissionRescueType, UserType } from "@/types/enums";
 
+import { useLayoutSafe } from "@/contexts/LayoutContext";
+
 export const ResponsavelCarteirinhaBase: React.FC = () => {
   const navigate = useNavigate();
   const { pushStatus, requestPushPermission } = useAppPermissions();
+  const layoutContext = useLayoutSafe();
+  const setPageTitle = layoutContext?.setPageTitle;
+
   const {
     token,
     passageiroId,
     passageiros,
     carteirinha,
+    responsavelLogado,
     isLoading,
     error,
     activeTab,
@@ -43,6 +49,13 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
     refetch,
     refetchPassageiros
   } = useResponsavelCarteirinhaViewModel();
+
+  React.useEffect(() => {
+    if (setPageTitle) {
+      setPageTitle("Carteirinha Digital");
+    }
+    document.title = "Carteirinha Digital | Van360";
+  }, [setPageTitle, nomeExibicao]);
 
   React.useEffect(() => {
     if (pushStatus === AppPermissionStatus.PROMPT) {
@@ -210,16 +223,16 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
           open={isMissingComplementares}
           passageiroId={passageiroId}
           passageiroNome={nomeExibicao}
-          initialCpf={carteirinha?.responsavel_principal?.cpf || ""}
-          initialEmail={carteirinha?.responsavel_principal?.email || ""}
-          initialCep={carteirinha?.responsavel_principal?.cep || ""}
-          initialLogradouro={carteirinha?.responsavel_principal?.logradouro || ""}
-          initialNumero={carteirinha?.responsavel_principal?.numero || ""}
-          initialComplemento={carteirinha?.responsavel_principal?.complemento || ""}
-          initialBairro={carteirinha?.responsavel_principal?.bairro || ""}
-          initialCidade={carteirinha?.responsavel_principal?.cidade || ""}
-          initialEstado={carteirinha?.responsavel_principal?.estado || ""}
-          initialReferencia={carteirinha?.responsavel_principal?.referencia || ""}
+          initialCpf={responsavelLogado?.cpf || ""}
+          initialEmail={responsavelLogado?.email || ""}
+          initialCep={responsavelLogado?.cep || ""}
+          initialLogradouro={responsavelLogado?.logradouro || ""}
+          initialNumero={responsavelLogado?.numero || ""}
+          initialComplemento={responsavelLogado?.complemento || ""}
+          initialBairro={responsavelLogado?.bairro || ""}
+          initialCidade={responsavelLogado?.cidade || ""}
+          initialEstado={responsavelLogado?.estado || ""}
+          initialReferencia={responsavelLogado?.referencia || ""}
           token={token}
           onSuccess={async () => {
             await Promise.all([refetch(), refetchPassageiros()]);

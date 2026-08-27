@@ -1,16 +1,26 @@
 import { ROUTES } from "@/constants/routes";
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
+import { useLayoutSafe } from "@/contexts/LayoutContext";
 import { ResponsavelPassageiro } from "@/types/responsavel";
 import { formatShortName } from "@/utils/formatters/name";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bus, ChevronRight, LogOut, User } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const ResponsavelSelecionarPassageiro: React.FC = () => {
   const navigate = useNavigate();
   const { passageiros, selectPassageiro, logout, refetchPassageiros, isLoading } = useResponsavelAuth();
+  const layoutContext = useLayoutSafe();
+  const setPageTitle = layoutContext?.setPageTitle;
+
+  useEffect(() => {
+    if (setPageTitle) {
+      setPageTitle("Selecionar Passageiro");
+    }
+    document.title = "Selecionar Passageiro | Van360";
+  }, [setPageTitle]);
 
   const handleSelect = (p: ResponsavelPassageiro) => {
     selectPassageiro(p);

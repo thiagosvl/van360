@@ -13,6 +13,13 @@ export function useResponsavelCarteirinhaViewModel() {
   const { token, passageiros, passageiroSelecionado, logout, refetchPassageiros } = useResponsavelAuth();
   const layoutContext = useLayoutSafe();
   const openReceiptDialog = layoutContext?.openReceiptDialog;
+  const setPageTitle = layoutContext?.setPageTitle;
+
+  useEffect(() => {
+    if (setPageTitle) {
+      setPageTitle("Carteirinha Digital");
+    }
+  }, [setPageTitle]);
 
   const validTabs = ["geral", "dados-pessoais", "parcelas", "ausencias", "responsaveis", "contrato"];
   const urlTab = searchParams.get("tab");
@@ -66,14 +73,26 @@ export function useResponsavelCarteirinhaViewModel() {
 
   const nomeExibicao = carteirinha?.nome || passageiroSelecionado?.nome || "Passageiro";
 
-  const respPrincipal = carteirinha?.responsavel_principal;
+  const responsavelLogado = (() => {
+    if (!carteirinha) return null;
+    const logadoId = carteirinha.responsavel_logado_id;
+    if (logadoId && carteirinha.responsavel_principal?.id === logadoId) {
+      return carteirinha.responsavel_principal;
+    }
+    if (logadoId && carteirinha.responsaveis) {
+      const adicional = carteirinha.responsaveis.find((r) => r.id === logadoId);
+      if (adicional) return adicional;
+    }
+    return carteirinha.responsavel_principal || null;
+  })();
+
   const isMissingComplementares = Boolean(
     carteirinha &&
-    respPrincipal &&
-    (!respPrincipal.cpf || respPrincipal.cpf.trim() === "" ||
-     !respPrincipal.email || respPrincipal.email.trim() === "" ||
-     !respPrincipal.cep || respPrincipal.cep.trim() === "" ||
-     !respPrincipal.logradouro || respPrincipal.logradouro.trim() === "")
+    responsavelLogado &&
+    (!responsavelLogado.cpf || responsavelLogado.cpf.trim() === "" ||
+     !responsavelLogado.email || responsavelLogado.email.trim() === "" ||
+     !responsavelLogado.cep || responsavelLogado.cep.trim() === "" ||
+     !responsavelLogado.logradouro || responsavelLogado.logradouro.trim() === "")
   );
 
   return {
@@ -82,6 +101,7 @@ export function useResponsavelCarteirinhaViewModel() {
     passageiros,
     passageiroSelecionado,
     carteirinha,
+    responsavelLogado,
     isLoading,
     error,
     activeTab,

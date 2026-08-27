@@ -59,8 +59,8 @@ export const responsavelApi = {
     passageiroId: string,
     token: string,
     payload: {
-      cpf: string;
-      email: string;
+      cpf?: string;
+      email?: string;
       cep?: string | null;
       logradouro?: string | null;
       numero?: string | null;
