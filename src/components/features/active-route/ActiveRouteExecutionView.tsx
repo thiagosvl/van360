@@ -115,17 +115,26 @@ export function ActiveRouteExecutionView({
   const { can } = usePermissions();
 
   const removerAusenciaMutation = useRemoverAusenciaMutation();
-  const [desfazendoStopId, setDesfazendoStopId] = useState<string | null>(null);
-
-  const handleDesfazerAusencia = (parada: any) => {
+  const handleDesfazerParada = (parada: any) => {
     const isAusente = parada.status === RouteStopStatus.AUSENTE || parada.is_ausente;
-    if (!isAusente) return;
+    const isEscola = parada.tipo_no === RouteNodeType.ESCOLA;
+    const nomeItem = isEscola ? (parada.escola?.nome || "Escola") : formatShortName(parada.passageiro?.nome || parada.nome);
 
-    const nomeAluno = formatShortName(parada.passageiro?.nome);
+    const dialogTitle = isAusente
+      ? "Desfazer Ausência?"
+      : isEscola
+        ? "Desfazer Parada na Escola?"
+        : "Desfazer Confirmação?";
+
+    const dialogDescription = isAusente
+      ? `Tem certeza que deseja desfazer a ausência de ${nomeItem} e retorná-lo para a rota?`
+      : isEscola
+        ? `Tem certeza que deseja desfazer a confirmação da parada em ${nomeItem} e retorná-la para a rota?`
+        : `Tem certeza que deseja desfazer a confirmação de ${nomeItem} e retorná-lo para a rota?`;
 
     openConfirmationDialog({
-      title: "Desfazer Ausência?",
-      description: `Tem certeza que deseja desfazer a ausência de ${nomeAluno} e retorná-lo para a rota?`,
+      title: dialogTitle,
+      description: dialogDescription,
       confirmText: "Desfazer",
       cancelText: "Cancelar",
       variant: "default",
@@ -136,7 +145,7 @@ export function ActiveRouteExecutionView({
           const pid = parada.passageiro_id || parada.passageiro?.id;
           const rid = execucao?.rota_id || parada.rota_id;
 
-          if (isPreview) {
+          if (isAusente && isPreview) {
             await removerAusenciaMutation.mutateAsync({
               id: parada.ausencia_id || DELETE_AUSENCIA_BY_QUERY_PARAM,
               passageiro_id: pid,
@@ -145,12 +154,14 @@ export function ActiveRouteExecutionView({
             toast.success("Registro de Ausência desfeito!", { description: "Passageiro retornado ao itinerário." });
           } else if (execucao?.id) {
             await handleStep(parada.id, RouteStopStatus.PENDENTE);
-            toast.success("Registro de Ausência desfeito!", { description: "Passageiro retornado ao trajeto." });
+            toast.success(isAusente ? "Registro de Ausência desfeito!" : "Confirmação desfeita!", {
+              description: "Parada retornada ao trajeto.",
+            });
           }
 
           safeCloseDialog(closeConfirmationDialog);
         } catch (err: unknown) {
-          const errorMsg = err instanceof Error ? err.message : "Erro ao desfazer ausência.";
+          const errorMsg = err instanceof Error ? err.message : "Erro ao desfazer ação.";
           toast.error(errorMsg);
         } finally {
           setDesfazendoStopId(null);
@@ -518,7 +529,7 @@ export function ActiveRouteExecutionView({
                 parada={parada}
                 showTopLine={showTopLine}
                 showBottomLine={showBottomLine}
-                onDesfazer={() => handleDesfazerAusencia(parada)}
+                onDesfazer={() => handleDesfazerParada(parada)}
                 isDesfazendo={desfazendoStopId === parada.id}
                 disabled={isAnyActionBusy}
               />
