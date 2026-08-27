@@ -43,187 +43,113 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
         passageiroNome={carteirinha.nome}
       />
 
-      {/* 1. Bloco de Ações Rápidas (Destaques) */}
-      {(contratoPendente || temRotas) && (
-        <div className="space-y-3">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-1 block">
-            AÇÕES RÁPIDAS
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {contratoPendente && (
-              <button
-                type="button"
-                onClick={handleAssinarContrato}
-                className="w-full bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl p-4 shadow-xs transition-all active:scale-[0.98] flex items-center justify-between gap-3 text-left border border-amber-400/30 cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
-                    <FileSignature className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block font-bold text-sm leading-tight text-white truncate">
-                      Assinar Contrato
-                    </span>
-                    <span className="text-[11px] text-amber-100 font-medium block truncate mt-0.5">
-                      Pendente de assinatura online
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-white/80 shrink-0" />
-              </button>
-            )}
-
-            {temRotas && (
-              <button
-                type="button"
-                onClick={() => setAusenciaDialogOpen(true)}
-                className="w-full bg-white hover:bg-slate-50 text-[#1a3a5c] rounded-2xl p-4 shadow-xs border border-slate-200/80 transition-all active:scale-[0.98] flex items-center justify-between gap-3 text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100">
-                    <CalendarOff className="w-5 h-5 text-rose-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block font-bold text-sm leading-tight text-[#1a3a5c] truncate">
-                      Notificar Ausência
-                    </span>
-                    <span className="text-[11px] text-slate-500 font-medium block truncate mt-0.5">
-                      Avisar falta no transporte
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-              </button>
-            )}
+      {contratoPendente && (
+        <button
+          type="button"
+          onClick={handleAssinarContrato}
+          className="w-full bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl p-4 shadow-sm transition-all active:scale-[0.98] flex items-center justify-between gap-3 text-left border border-amber-400/30 cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+              <FileSignature className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <span className="block font-bold text-sm sm:text-[15px] leading-tight text-white truncate">
+                Assinar Contrato
+              </span>
+              <span className="text-[11px] sm:text-xs text-amber-100 font-medium block truncate mt-0.5">
+                Pendente de assinatura online
+              </span>
+            </div>
           </div>
-        </div>
+          <ArrowRight className="w-5 h-5 text-white/90 shrink-0" />
+        </button>
       )}
 
-      {/* 2. Bloco de Botões de Acesso Rápido às Abas */}
-      <div className="space-y-3">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-1 block">
-          ACESSO RÁPIDO
-        </span>
-        <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-3 space-y-1.5">
-
-
-          {/* 1. Dados Pessoais */}
-          <button
-            type="button"
-            onClick={() => handleTabClick("dados-pessoais")}
-            className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
-                <User className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Dados Pessoais
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Informações do passageiro, endereço e observações
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </button>
-
-          {/* 2. Contrato */}
-          <button
-            type="button"
-            onClick={() => temContrato && handleTabClick("contrato")}
-            disabled={!temContrato}
-            className={`w-full p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors text-left ${temContrato ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-not-allowed"
-              }`}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Contrato
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Visualizar ou assinar contrato do transporte
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </button>
-
-          {/* 3. Responsáveis */}
-          <button
-            type="button"
-            onClick={() => handleTabClick("responsaveis")}
-            className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
-                <Users className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Responsáveis
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Contatos, telefones e endereços cadastrados
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </button>
-
-          {/* 4. Ausências */}
-          <button
-            type="button"
-            onClick={() => temRotas && handleTabClick("ausencias")}
-            disabled={!temRotas}
-            className={`w-full p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors text-left ${temRotas ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-not-allowed"
-              }`}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
-                <CalendarOff className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Ausências
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Informe faltas e gerencie ausências programadas
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </button>
-
-          {/* 5. Parcelas */}
-          <button
-            type="button"
-            onClick={() => handleTabClick("parcelas")}
-            className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-slate-50 text-[#1a3a5c] border border-slate-200/60 flex items-center justify-center shrink-0">
-                <Receipt className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-[#16314f] block truncate">
-                  Parcelas & Pagamentos
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
-                  Histórico financeiro e recibos
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </button>
+      <section className="space-y-3">
+        <div className="px-0.5">
+          <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c]">
+            Acesso Rápido
+          </h2>
+          <p className="text-[12px] text-slate-400 mt-0.5">
+            Navegue pelos serviços e informações do passageiro.
+          </p>
         </div>
-      </div>
 
-      {/* Modal de Notificar Ausência */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 border-slate-100">
+            <button
+              type="button"
+              onClick={() => handleTabClick("parcelas")}
+              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+            >
+              <Receipt className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
+              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+                Parcelas
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (temRotas) {
+                  setAusenciaDialogOpen(true);
+                }
+              }}
+              disabled={!temRotas}
+              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-slate-100 ${
+                temRotas
+                  ? "hover:bg-slate-50/80 active:bg-slate-100 cursor-pointer"
+                  : "opacity-40 cursor-not-allowed"
+              }`}
+            >
+              <CalendarOff className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
+              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+                Ausências
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabClick("responsaveis")}
+              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+            >
+              <Users className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
+              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+                Responsáveis
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => temContrato && handleTabClick("contrato")}
+              disabled={!temContrato}
+              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-slate-100 ${
+                temContrato
+                  ? "hover:bg-slate-50/80 active:bg-slate-100 cursor-pointer"
+                  : "opacity-40 cursor-not-allowed"
+              }`}
+            >
+              <FileText className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
+              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+                Contrato
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabClick("dados-pessoais")}
+              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+            >
+              <User className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
+              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+                Dados Pessoais
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       {temRotas && (
         <ResponsavelNotificarAusenciaDialog
           open={ausenciaDialogOpen}
