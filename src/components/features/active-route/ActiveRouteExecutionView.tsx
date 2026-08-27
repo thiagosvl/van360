@@ -115,6 +115,8 @@ export function ActiveRouteExecutionView({
   const { can } = usePermissions();
 
   const removerAusenciaMutation = useRemoverAusenciaMutation();
+  const [desfazendoStopId, setDesfazendoStopId] = useState<string | null>(null);
+
   const handleDesfazerParada = (parada: any) => {
     const isAusente = parada.status === RouteStopStatus.AUSENTE || parada.is_ausente;
     const isEscola = parada.tipo_no === RouteNodeType.ESCOLA;
