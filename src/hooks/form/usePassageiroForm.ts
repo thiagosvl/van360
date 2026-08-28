@@ -39,12 +39,8 @@ export const passageiroSchema = z
 
     responsavel_principal: z.object({
       nome: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(2, "Deve ter pelo menos 2 caracteres"),
-      parentesco: z
-        .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
-        .min(1, "Campo obrigatório"),
-      cpf: z
-        .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
-        .min(1, "Campo obrigatório"),
+      parentesco: z.string().optional().nullable().or(z.literal("")),
+      cpf: z.string().optional().nullable().or(z.literal("")),
       telefone: z
         .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
         .min(1, "Campo obrigatório"),

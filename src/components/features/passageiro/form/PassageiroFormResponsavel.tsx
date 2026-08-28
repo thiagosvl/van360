@@ -58,7 +58,7 @@ export function PassageiroFormResponsavel({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-slate-700 font-semibold ml-1">
-                  CPF <span className="text-red-600">*</span>
+                  CPF
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -189,7 +189,7 @@ export function PassageiroFormResponsavel({
                   ) : (
                     <>
                       <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Parentesco <span className="text-red-600">*</span>
+                        Parentesco
                       </FormLabel>
                       <SelectTrigger
                         className={cn(
