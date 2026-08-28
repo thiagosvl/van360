@@ -30,3 +30,12 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function normalizeSearchText(value?: string | null): string {
+  if (!value) return "";
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+

@@ -12,6 +12,7 @@ import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
+import { normalizeSearchText } from "@/utils/string";
 
 export function useCobrancasViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -148,11 +149,11 @@ export function useCobrancasViewModel() {
     });
 
     if (debouncedSearchTerm.trim()) {
-      const term = debouncedSearchTerm.toLowerCase();
+      const term = normalizeSearchText(debouncedSearchTerm);
       return sorted.filter(
         (c) =>
-          c.passageiro?.nome?.toLowerCase().includes(term) ||
-          c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
+          normalizeSearchText(c.passageiro?.nome).includes(term) ||
+          normalizeSearchText(c.passageiro?.responsavel_principal?.nome).includes(term)
       );
     }
 
@@ -178,11 +179,11 @@ export function useCobrancasViewModel() {
     });
 
     if (debouncedSearchTerm.trim()) {
-      const term = debouncedSearchTerm.toLowerCase();
+      const term = normalizeSearchText(debouncedSearchTerm);
       return sorted.filter(
         (c) =>
-          c.passageiro?.nome?.toLowerCase().includes(term) ||
-          c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
+          normalizeSearchText(c.passageiro?.nome).includes(term) ||
+          normalizeSearchText(c.passageiro?.responsavel_principal?.nome).includes(term)
       );
     }
 
