@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { PushNotificationAction } from '@/types/enums';
@@ -22,6 +22,7 @@ export const usePushNotifications = () => {
   const { session } = useSession();
   const { token: responsavelToken, isAuthenticated: isResponsavelAuth } = useResponsavelAuth();
   const { mutateAsync: registerPushToken } = usePushToken();
+  const lastDispatchedTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -97,14 +98,22 @@ export const usePushNotifications = () => {
     const handles: PluginListenerHandle[] = [];
 
     const dispatchTokenToBackend = async (fcmToken: string, platform: string) => {
-      if (!isMounted) return;
+      if (!isMounted || !fcmToken) return;
+      if (lastDispatchedTokenRef.current === fcmToken) return;
+      lastDispatchedTokenRef.current = fcmToken;
 
       if (session?.user?.id) {
         await registerPushToken({ token: fcmToken, platform })
-          .catch(err => console.error('[Push] Erro ao enviar token do usuário ao backend:', err));
+          .catch(err => {
+            lastDispatchedTokenRef.current = null;
+            console.error('[Push] Erro ao enviar token do usuário ao backend:', err);
+          });
       } else if (isResponsavelAuth && responsavelToken) {
         await responsavelApi.registerPushToken({ token: fcmToken, platform }, responsavelToken)
-          .catch(err => console.error('[Push] Erro ao enviar token do responsável ao backend:', err));
+          .catch(err => {
+            lastDispatchedTokenRef.current = null;
+            console.error('[Push] Erro ao enviar token do responsável ao backend:', err);
+          });
       }
     };
 
