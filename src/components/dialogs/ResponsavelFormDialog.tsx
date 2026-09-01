@@ -563,7 +563,7 @@ export default function ResponsavelFormDialog({
                   <FormItem className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
                     <Checkbox
                       id="notificacoes_rota_habilitadas"
-                      checked={field.value}
+                      checked={field.value !== false}
                       onCheckedChange={field.onChange}
                       className="h-5 w-5 mt-0.5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
                     />
@@ -598,7 +598,7 @@ export default function ResponsavelFormDialog({
                       />
                       <FormLabel
                         htmlFor="tornar_principal"
-                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
+                        className="flex-1 cursor-pointer font-semibold text-slate-700 m-0 text-sm"
                       >
                         Definir como responsável principal
                       </FormLabel>
