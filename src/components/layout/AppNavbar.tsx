@@ -95,12 +95,6 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             >
               {isLoadingProfile ? (
                 <Skeleton className="h-full w-full rounded-full" />
-              ) : profile?.foto_url ? (
-                <img
-                  src={profile.foto_url}
-                  alt={profile?.nome || "Conta"}
-                  className="h-full w-full object-cover rounded-full"
-                />
               ) : (
                 <User
                   className={cn(

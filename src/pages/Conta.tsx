@@ -8,7 +8,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
-import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
+import { formatFirstName, formatShortName, formatUserRoleLabel } from "@/utils/formatters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotificacoesPaisTab } from "@/components/features/configuracoes/NotificacoesPaisTab";
 import { MinhasNotificacoesTab } from "@/components/features/configuracoes/MinhasNotificacoesTab";
@@ -48,7 +48,7 @@ export const Conta = memo(function Conta() {
 
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const displayName = profile?.apelido || formatFirstName(profile?.nome) || "Usuário";
+  const displayName = profile?.apelido || formatShortName(profile?.nome, true);
   const roleLabel = formatUserRoleLabel(profile?.tipo);
 
   const userInitials = useMemo(() => {
@@ -134,12 +134,6 @@ export const Conta = memo(function Conta() {
           <div className="h-16 w-16 sm:h-18 sm:w-18 rounded-full bg-slate-100 border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0 shadow-xs select-none">
             {isLoadingProfile ? (
               <Skeleton className="h-full w-full rounded-full" />
-            ) : profile?.foto_url ? (
-              <img
-                src={profile.foto_url}
-                alt={displayName}
-                className="h-full w-full object-cover rounded-full"
-              />
             ) : (
               <span>{userInitials}</span>
             )}
@@ -147,7 +141,7 @@ export const Conta = memo(function Conta() {
 
           <div className="min-w-0 space-y-1">
             <p className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Bem-vindo (a),
+              Bem-vindo,
             </p>
             {isLoadingProfile ? (
               <Skeleton className="h-6 w-40" />
