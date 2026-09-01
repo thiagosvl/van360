@@ -12,6 +12,7 @@ import {
 import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
   ArrowLeft,
+  Bell,
   Save,
   Loader2,
   User,
@@ -146,7 +147,7 @@ export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
@@ -419,6 +420,16 @@ export default function AdminUserDetails() {
     }));
   };
 
+  const handleDispatchNotification = () => {
+    if (!data?.user) return;
+    openAdminDispatchNotificationDialog({
+      userId: data.user.id,
+      userName: data.user.nome,
+      userPhone: data.user.telefone,
+      userEmail: data.user.email,
+    });
+  };
+
   const handleDeleteUser = () => {
     if (!id || !data?.user) return;
     openConfirmationDialog({
@@ -594,13 +605,22 @@ export default function AdminUserDetails() {
             </div>
           </div>
 
-          {/* BOTÕES DE AÇÃO (RESETAR SENHA & EXCLUIR) */}
-          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 grid grid-cols-2 md:flex items-center gap-2.5 w-full md:w-auto">
+          {/* BOTÕES DE AÇÃO (TESTAR NOTIFICAÇÃO & RESETAR SENHA & EXCLUIR) */}
+          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleDispatchNotification}
+              className="flex-1 md:flex-none rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/25 hover:border-indigo-500/70 hover:text-indigo-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            >
+              <Bell className="h-4 w-4 text-indigo-400" />
+              <span>Testar Notificação</span>
+            </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleResetPassword}
-              className="w-full md:w-auto rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="flex-1 md:flex-none rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
               <Key className="h-4 w-4 text-amber-400" />
               <span>Resetar Senha</span>
@@ -609,7 +629,7 @@ export default function AdminUserDetails() {
               type="button"
               size="sm"
               onClick={handleDeleteUser}
-              className="w-full md:w-auto rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="flex-1 md:flex-none rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
               <Trash2 className="h-4 w-4 text-rose-400" />
               <span>Excluir</span>

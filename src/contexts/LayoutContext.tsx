@@ -141,6 +141,13 @@ export interface OpenSaaSCheckoutDialogProps {
   forcedPeriod?: SubscriptionIdentifer;
 }
 
+export interface OpenAdminDispatchNotificationDialogProps {
+  userId: string;
+  userName: string;
+  userPhone?: string;
+  userEmail?: string;
+}
+
 export interface OpenResponsavelFormProps {
   passageiroId: string;
   editingResponsavel?: PassageiroResponsavel | null;
@@ -189,6 +196,7 @@ export interface LayoutContextType {
   openPixPaymentDialog: (props: OpenPixPaymentDialogProps) => void;
   openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
   openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;
+  openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
 
   isFirstChargeDialogOpen: boolean;
 

@@ -4,6 +4,7 @@ import {
   type ListUsersParams,
   type UpdateUserPayload,
   type UpdateSubscriptionPayload,
+  type DispatchDriverNotificationPayload,
 } from "@/services/api/admin/admin-user.api";
 import { toast } from "@/utils/notifications/toast";
 
@@ -124,3 +125,25 @@ export function useDeleteUserAdmin() {
     },
   });
 }
+
+export function useDispatchDriverNotificationAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: DispatchDriverNotificationPayload }) =>
+      adminUserApi.dispatchNotification(id, data),
+    onSuccess: (res) => {
+      if (res.sent) {
+        toast.success(res.message);
+      } else {
+        toast.warning(res.message);
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string } } };
+      const msg = apiError?.response?.data?.error || "Erro ao disparar notificação.";
+      toast.error(msg);
+    },
+  });
+}
+

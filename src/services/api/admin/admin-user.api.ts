@@ -344,6 +344,15 @@ export interface CreateUserResponse {
   email: string;
 }
 
+export interface DispatchDriverNotificationPayload {
+  evento: string;
+}
+
+export interface DispatchDriverNotificationResponse {
+  sent: boolean;
+  message: string;
+}
+
 const BASE = "/admin";
 
 export const adminUserApi = {
@@ -370,4 +379,8 @@ export const adminUserApi = {
 
   deleteUser: (id: string) =>
     apiClient.delete(`${BASE}/users/${id}`).then(r => r.data),
+
+  dispatchNotification: (id: string, data: DispatchDriverNotificationPayload) =>
+    apiClient.post<DispatchDriverNotificationResponse>(`${BASE}/users/${id}/dispatch-notification`, data).then(r => r.data),
 };
+
