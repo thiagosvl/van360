@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
-import { PushNotificationAction } from '@/types/enums';
+import { CobrancaTab, PushNotificationAction } from '@/types/enums';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { Device } from '@capacitor/device';
@@ -50,7 +50,7 @@ export const usePushNotifications = () => {
                 }
                 break;
               case PushNotificationAction.OPEN_TEAM: navigate(ROUTES.PRIVATE.MOTORISTA.TEAM); break;
-              case PushNotificationAction.OPEN_BILLING: navigate(ROUTES.PRIVATE.MOTORISTA.BILLING); break;
+              case PushNotificationAction.OPEN_BILLING: navigate(`${ROUTES.PRIVATE.MOTORISTA.BILLING}?tab=${CobrancaTab.ARECEBER}`); break;
               case PushNotificationAction.OPEN_PASSENGERS: navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS); break;
               case PushNotificationAction.OPEN_PASSENGER_REQUESTS: navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`); break;
               case PushNotificationAction.OPEN_SCHOOLS: navigate(ROUTES.PRIVATE.MOTORISTA.SCHOOLS); break;
