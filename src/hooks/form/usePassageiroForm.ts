@@ -60,6 +60,7 @@ export const passageiroSchema = z
       cep: z.string().optional().nullable().or(z.literal("")),
       referencia: z.string().optional().nullable().or(z.literal("")),
       complemento: z.string().optional().nullable().or(z.literal("")),
+      notificacoes_rota_habilitadas: z.boolean().optional().default(true),
     }),
     turma: z.string().optional().nullable().or(z.literal("")),
     nome_professor: z.string().optional().nullable().or(z.literal("")),
@@ -241,6 +242,7 @@ export function usePassageiroForm({
             cep: editingPassageiro.responsavel_principal?.cep ? cepMask(editingPassageiro.responsavel_principal.cep) : "",
             referencia: editingPassageiro.responsavel_principal?.referencia || "",
             complemento: editingPassageiro.responsavel_principal?.complemento || "",
+            notificacoes_rota_habilitadas: editingPassageiro.responsavel_principal?.notificacoes_rota_habilitadas !== false,
           },
           isento: editingPassageiro.isento ?? false,
           valor_cobranca: editingPassageiro.valor_cobranca
@@ -320,6 +322,7 @@ export function usePassageiroForm({
             cep: "",
             referencia: "",
             complemento: "",
+            notificacoes_rota_habilitadas: true,
           },
           isento: false,
           valor_cobranca: "",

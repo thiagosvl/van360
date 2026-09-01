@@ -25,6 +25,7 @@ export interface Responsavel {
   cep?: string | null;
   referencia?: string | null;
   complemento?: string | null;
+  notificacoes_rota_habilitadas?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -92,6 +93,7 @@ export interface PassageiroResponsavel {
   cep?: string | null;
   referencia?: string | null;
   complemento?: string | null;
+  notificacoes_rota_habilitadas?: boolean;
   created_at?: string;
   updated_at?: string;
 }

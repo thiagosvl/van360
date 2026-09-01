@@ -242,3 +242,30 @@ export function useSetPrincipalResponsavel() {
   });
 }
 
+export function useToggleNotificacoesRotaResponsavel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      passageiroId,
+      responsavelId,
+      status,
+    }: {
+      passageiroId: string;
+      responsavelId: string;
+      status?: boolean;
+    }) => passageiroApi.toggleNotificacoesRota(passageiroId, responsavelId, status),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      toast.success("Notificações de rota atualizadas com sucesso!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao alterar notificações de rota", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
+

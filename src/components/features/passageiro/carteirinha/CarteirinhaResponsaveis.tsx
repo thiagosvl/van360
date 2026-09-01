@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail } from "lucide-react";
+import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +10,7 @@ import { phoneMask, cpfMask } from "@/utils/masks";
 import { openBrowserLink } from "@/utils/browser";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useSetPrincipalResponsavel, useDeleteResponsavelAdicional } from "@/hooks";
+import { useSetPrincipalResponsavel, useDeleteResponsavelAdicional, useToggleNotificacoesRotaResponsavel } from "@/hooks";
 import {
   useResetPinResponsavelMutation,
   useSetPrincipalResponsavelResponsavelMutation,
@@ -51,6 +51,7 @@ export const CarteirinhaResponsaveis = ({
   const canManage = canManageOverride !== undefined ? canManageOverride : can("passageiros.gerenciar");
   const setPrincipal = useSetPrincipalResponsavel();
   const deleteResponsavel = useDeleteResponsavelAdicional();
+  const toggleNotificacoesRota = useToggleNotificacoesRotaResponsavel();
   const setPrincipalPortal = useSetPrincipalResponsavelResponsavelMutation();
   const deleteResponsavelPortal = useDeleteResponsavelResponsavelMutation();
   const resetPin = useResetPinResponsavelMutation();
@@ -88,6 +89,7 @@ export const CarteirinhaResponsaveis = ({
         complemento: passageiro.responsavel_principal.complemento || null,
         pin_acesso: passageiro.responsavel_principal.pin_acesso,
         tipo: TipoResponsavel.PRINCIPAL,
+        notificacoes_rota_habilitadas: passageiro.responsavel_principal.notificacoes_rota_habilitadas !== false,
       };
       list.push(principalObj);
       if (principalObj.id) seenIds.add(principalObj.id);
@@ -103,6 +105,9 @@ export const CarteirinhaResponsaveis = ({
           if (!principalObj.pin_acesso && r.pin_acesso) principalObj.pin_acesso = r.pin_acesso;
           if (!principalObj.logradouro && r.logradouro) principalObj.logradouro = r.logradouro;
           if (!principalObj.parentesco && r.parentesco) principalObj.parentesco = r.parentesco;
+          if (r.notificacoes_rota_habilitadas !== undefined) {
+            principalObj.notificacoes_rota_habilitadas = r.notificacoes_rota_habilitadas !== false;
+          }
         }
         continue;
       }
@@ -115,6 +120,7 @@ export const CarteirinhaResponsaveis = ({
         ...r,
         id: rId || r.id,
         tipo: r.tipo || (list.length === 0 ? TipoResponsavel.PRINCIPAL : TipoResponsavel.ADICIONAL),
+        notificacoes_rota_habilitadas: r.notificacoes_rota_habilitadas !== false,
       });
     }
 
@@ -217,7 +223,7 @@ export const CarteirinhaResponsaveis = ({
         );
 
         const canEditCurrent = isResponsavelPortal ? isOwnProfile : (canManage && !hideEditButton);
-        const canShowDropdown = !isResponsavelPortal && !isPrincipalTab && canManage;
+        const canShowDropdown = !isResponsavelPortal && canManage;
 
         const respAddress = currentResp.logradouro
           ? formatarEnderecoCompleto(currentResp)
@@ -252,7 +258,30 @@ export const CarteirinhaResponsaveis = ({
                   responsavelId: targetResponsavelId,
                 });
               }
-              if (onRefresh) onRefresh();
+            },
+          });
+        };
+
+        const handleToggleNotificacoesRota = () => {
+          const targetRespId = currentResp.responsavel_id || currentResp.id;
+          if (!targetRespId || !passageiro.id) return;
+          const isAtivo = currentResp.notificacoes_rota_habilitadas !== false;
+
+          openConfirmationDialog({
+            title: isAtivo ? "Desativar notificações de rota?" : "Ativar notificações de rota?",
+            description: isAtivo
+              ? `Deseja desativar o envio de notificações de rota para ${formatFirstName(currentResp.nome)}? Ele(a) deixará de receber avisos de embarque, desembarque e van a caminho.`
+              : `Deseja ativar o envio de notificações de rota para ${formatFirstName(currentResp.nome)}? Ele(a) passará a receber avisos de embarque, desembarque e van a caminho.`,
+            confirmText: isAtivo ? "Desativar" : "Ativar",
+            cancelText: "Cancelar",
+            variant: isAtivo ? "destructive" : "default",
+            onConfirm: async () => {
+              await toggleNotificacoesRota.mutateAsync({
+                passageiroId: passageiro.id!,
+                responsavelId: targetRespId,
+                status: !isAtivo,
+              });
+              closeConfirmationDialog();
             },
           });
         };
@@ -281,7 +310,6 @@ export const CarteirinhaResponsaveis = ({
                   passageiroId: passageiro.id!,
                 });
               }
-              if (onRefresh) onRefresh();
               closeConfirmationDialog();
             },
           });
@@ -342,13 +370,28 @@ export const CarteirinhaResponsaveis = ({
                           <MoreVertical className="h-3.5 w-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
-                        <DropdownMenuItem onClick={handleSetPrincipal} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
-                          <Check className="h-4 w-4 text-emerald-500" /> Definir como Principal
+                      <DropdownMenuContent align="end" className="w-60 rounded-xl border-gray-100 shadow-xl p-1">
+                        {!isPrincipalTab && (
+                          <DropdownMenuItem onClick={handleSetPrincipal} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
+                            <Check className="h-4 w-4 text-slate-500" /> Definir como Principal
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={handleToggleNotificacoesRota} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
+                          {currentResp.notificacoes_rota_habilitadas !== false ? (
+                            <>
+                              <BellOff className="h-4 w-4 text-slate-500" /> Desativar Notificações de Rota
+                            </>
+                          ) : (
+                            <>
+                              <Bell className="h-4 w-4 text-slate-500" /> Ativar Notificações de Rota
+                            </>
+                          )}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
-                          <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
-                        </DropdownMenuItem>
+                        {!isPrincipalTab && (
+                          <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
+                            <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
@@ -456,6 +499,25 @@ export const CarteirinhaResponsaveis = ({
                   </div>
                 </div>
               )}
+
+              {/* Linha de Notificações de Rota */}
+              <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Bell className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                  <span className="text-xs font-normal text-slate-500">Notificações de Rota</span>
+                </div>
+                {currentResp.notificacoes_rota_habilitadas !== false ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Ativas
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                    Inativas
+                  </span>
+                )}
+              </div>
 
               {/* Linha 6: Acesso ao App */}
               {!hideAppAccess && (

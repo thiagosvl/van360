@@ -27,7 +27,7 @@ import { parentescos } from "@/utils/formatters";
 import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText, Mail } from "lucide-react";
+import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText, Mail, Bell } from "lucide-react";
 import { useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -85,6 +85,7 @@ const responsavelSchema = z.object({
   referencia: z.string().optional().nullable().or(z.literal("")),
   complemento: z.string().optional().nullable().or(z.literal("")),
   tornar_principal: z.boolean().optional().default(false),
+  notificacoes_rota_habilitadas: z.boolean().optional().default(true),
 });
 
 type ResponsavelFormData = z.infer<typeof responsavelSchema>;
@@ -154,6 +155,7 @@ export default function ResponsavelFormDialog({
       referencia: mockAddress.referencia || "",
       complemento: mockAddress.complemento || "",
       tornar_principal: false,
+      notificacoes_rota_habilitadas: true,
     });
   };
 
@@ -174,6 +176,7 @@ export default function ResponsavelFormDialog({
       referencia: "",
       complemento: "",
       tornar_principal: false,
+      notificacoes_rota_habilitadas: true,
     },
   });
 
@@ -253,6 +256,7 @@ export default function ResponsavelFormDialog({
           referencia: editingResponsavel.referencia || "",
           complemento: editingResponsavel.complemento || "",
           tornar_principal: false,
+          notificacoes_rota_habilitadas: editingResponsavel.notificacoes_rota_habilitadas !== false,
         });
       } else {
         form.reset({
@@ -270,6 +274,7 @@ export default function ResponsavelFormDialog({
           referencia: "",
           complemento: "",
           tornar_principal: false,
+          notificacoes_rota_habilitadas: true,
         });
       }
     }
@@ -319,6 +324,7 @@ export default function ResponsavelFormDialog({
       referencia: data.referencia || null,
       complemento: data.complemento || null,
       tornar_principal: isAlreadyPrincipal ? undefined : data.tornar_principal,
+      notificacoes_rota_habilitadas: data.notificacoes_rota_habilitadas ?? true,
     };
 
     const successCallback = () => {
@@ -548,6 +554,34 @@ export default function ResponsavelFormDialog({
               </div>
               <FormEnderecoFields required={false} />
             </section>
+
+            {!isResponsavelPortal && (
+              <FormField
+                control={form.control}
+                name="notificacoes_rota_habilitadas"
+                render={({ field }) => (
+                  <FormItem className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
+                    <Checkbox
+                      id="notificacoes_rota_habilitadas"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="h-5 w-5 mt-0.5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                    />
+                    <div className="flex-1">
+                      <FormLabel
+                        htmlFor="notificacoes_rota_habilitadas"
+                        className="cursor-pointer font-semibold text-slate-700 m-0 text-sm block"
+                      >
+                        Receber notificações de rota
+                      </FormLabel>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Avisos de embarque, desembarque e van a caminho.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             {!isAlreadyPrincipal && !isResponsavelPortal && (
               <FormField

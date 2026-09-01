@@ -120,4 +120,15 @@ export const passageiroApi = {
     apiClient
       .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/set-principal`)
       .then(res => res.data),
+
+  toggleNotificacoesRota: (
+    passageiroId: string,
+    responsavelId: string,
+    status?: boolean
+  ): Promise<{ notificacoes_rota_habilitadas: boolean }> =>
+    apiClient
+      .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/toggle-notificacoes-rota`, {
+        status,
+      })
+      .then(res => res.data),
 };

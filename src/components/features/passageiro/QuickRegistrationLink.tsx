@@ -57,13 +57,13 @@ export function QuickRegistrationLink({
           <Smartphone className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className="text-xs font-bold text-emerald-900">Deixe os pais preencherem a ficha!</p>
+          <p className="text-xs font-bold text-emerald-900">Deixe os pais preencherem o cadastro!</p>
           <p className="text-[11px] text-emerald-700">
-            Envie este link para os responsáveis. Eles preenchem a ficha e os dados caem prontos no seu aplicativo.
+            Envie este link para os responsáveis. Eles preenchem o cadastro e os dados caem prontos no seu aplicativo.
           </p>
         </div>
       </div>
-      
+
       <div className="flex gap-2 w-full lg:w-auto shrink-0">
         <button
           onClick={handleShareWhatsApp}
@@ -76,7 +76,7 @@ export function QuickRegistrationLink({
           onClick={handleCopyLink}
           className={cn(
             "h-11 px-4 text-[13px] font-bold rounded-xl transition-all shadow-sm flex-1 lg:flex-none flex justify-center items-center gap-2 active:scale-95",
-            isCopied 
+            isCopied
               ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
               : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
           )}

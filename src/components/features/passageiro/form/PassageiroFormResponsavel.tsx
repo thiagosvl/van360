@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { parentescos } from "@/utils/formatters";
 import { cpfMask } from "@/utils/masks";
 import { Contact, Hash, Loader2, Mail, MapPin, User } from "lucide-react";
@@ -270,6 +271,36 @@ export function PassageiroFormResponsavel({
         </div>
         <FormEnderecoFields namePrefix={fieldNames.enderecoPrefix} required={isExternal} isExternal={isExternal} />
       </div>
+
+      {!isExternal && (
+        <FormField
+          control={form.control}
+          name="responsavel_principal.notificacoes_rota_habilitadas"
+          render={({ field }) => (
+            <FormItem className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
+              <FormControl>
+                <Checkbox
+                  id="responsavel_principal_notificacoes_rota"
+                  checked={field.value !== false}
+                  onCheckedChange={field.onChange}
+                  className="h-5 w-5 mt-0.5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                />
+              </FormControl>
+              <div className="flex-1">
+                <FormLabel
+                  htmlFor="responsavel_principal_notificacoes_rota"
+                  className="cursor-pointer font-semibold text-slate-700 m-0 text-sm block"
+                >
+                  Receber notificações de rota
+                </FormLabel>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Avisos de embarque, desembarque e van a caminho.
+                </p>
+              </div>
+            </FormItem>
+          )}
+        />
+      )}
     </div>
   );
 }

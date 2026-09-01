@@ -1,31 +1,24 @@
 import { ResponsavelCarteirinhaData } from "@/types/responsavel";
-import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
-import { TipoResponsavel } from "@/types/enums";
+import { Passageiro } from "@/types/passageiro";
+import { ContratoStatus, ParentescoResponsavel, PassageiroGenero, PassageiroModalidade, PassageiroPeriodo, TipoResponsavel } from "@/types/enums";
 
 export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteirinhaData): Passageiro {
   return {
     id: carteirinha.id,
     usuario_id: carteirinha.usuario_id || "",
     nome: carteirinha.nome,
-    genero: (carteirinha.genero as Passageiro["genero"]) || undefined,
+    genero: (carteirinha.genero as PassageiroGenero) || undefined,
     data_nascimento: carteirinha.data_nascimento || undefined,
-    periodo: carteirinha.periodo || undefined,
-    modalidade: (carteirinha.modalidade as Passageiro["modalidade"]) || undefined,
+    periodo: (carteirinha.periodo as PassageiroPeriodo) || ("integral" as PassageiroPeriodo),
+    modalidade: (carteirinha.modalidade as PassageiroModalidade) || undefined,
     turma: carteirinha.turma || undefined,
     nome_professor: carteirinha.nome_professor || undefined,
-    logradouro: carteirinha.logradouro || undefined,
-    numero: carteirinha.numero || undefined,
-    bairro: carteirinha.bairro || undefined,
-    cidade: carteirinha.cidade || undefined,
-    estado: carteirinha.estado || undefined,
-    cep: carteirinha.cep || undefined,
-    complemento: carteirinha.complemento || undefined,
-    referencia: carteirinha.referencia || undefined,
+    veiculo_id: "",
     observacoes: carteirinha.observacoes || undefined,
     ativo: carteirinha.ativo,
     isento: carteirinha.isento,
-    valor_cobranca: carteirinha.valor_cobranca ?? undefined,
-    dia_vencimento: carteirinha.dia_vencimento ?? undefined,
+    valor_cobranca: carteirinha.valor_cobranca ?? 0,
+    dia_vencimento: carteirinha.dia_vencimento ?? 1,
     data_inicio_cobranca: carteirinha.data_inicio_cobranca || undefined,
     data_fim_cobranca: carteirinha.data_fim_cobranca || undefined,
     created_at: carteirinha.created_at || undefined,
@@ -33,15 +26,12 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
     responsavel_logado_id: carteirinha.responsavel_logado_id || undefined,
     token_acesso: carteirinha.token_acesso || undefined,
     escola: carteirinha.escola_nome
-      ? { id: "", nome: carteirinha.escola_nome, created_at: "", updated_at: "", usuario_id: "" }
+      ? { id: "", nome: carteirinha.escola_nome }
       : undefined,
     veiculo: carteirinha.veiculo_placa
-      ? { id: "", placa: carteirinha.veiculo_placa, modelo: carteirinha.veiculo_modelo || "", created_at: "", updated_at: "", usuario_id: "" }
+      ? { id: "", placa: carteirinha.veiculo_placa, modelo: carteirinha.veiculo_modelo || "" }
       : undefined,
-    usuario: carteirinha.motorista_nome
-      ? { id: "", nome: carteirinha.motorista_nome, apelido: carteirinha.motorista_nome, telefone: carteirinha.motorista_telefone || "", created_at: "", updated_at: "" }
-      : undefined,
-    status_contrato: (carteirinha.contrato?.status as Passageiro["status_contrato"]) || undefined,
+    status_contrato: (carteirinha.contrato?.status as ContratoStatus) || undefined,
     contrato_id: carteirinha.contrato?.id || undefined,
     responsaveis: [
       ...(carteirinha.responsavel_principal?.id || carteirinha.responsavel_principal?.nome ? [{
@@ -52,7 +42,7 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
         telefone: carteirinha.responsavel_principal.telefone || "",
         cpf: carteirinha.responsavel_principal.cpf || "",
         email: carteirinha.responsavel_principal.email || undefined,
-        parentesco: (carteirinha.responsavel_principal.parentesco as PassageiroResponsavel["parentesco"]) || undefined,
+        parentesco: (carteirinha.responsavel_principal.parentesco as ParentescoResponsavel) || undefined,
         tipo: TipoResponsavel.PRINCIPAL,
         logradouro: carteirinha.responsavel_principal.logradouro || undefined,
         numero: carteirinha.responsavel_principal.numero || undefined,
@@ -62,6 +52,7 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
         cep: carteirinha.responsavel_principal.cep || undefined,
         referencia: carteirinha.responsavel_principal.referencia || undefined,
         complemento: carteirinha.responsavel_principal.complemento || undefined,
+        notificacoes_rota_habilitadas: carteirinha.responsavel_principal.notificacoes_rota_habilitadas !== false,
       }] : []),
       ...(carteirinha.responsaveis || [])
         .filter((r) => !carteirinha.responsavel_principal?.id || r.id !== carteirinha.responsavel_principal.id)
@@ -72,8 +63,9 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
           telefone: r.telefone || "",
           cpf: r.cpf || "",
           email: r.email || undefined,
-          parentesco: (r.parentesco as PassageiroResponsavel["parentesco"]) || undefined,
-          tipo: (r as { tipo?: TipoResponsavel }).tipo || TipoResponsavel.ADICIONAL,
+          parentesco: (r.parentesco as ParentescoResponsavel) || undefined,
+          tipo: (r.tipo as TipoResponsavel) || TipoResponsavel.ADICIONAL,
+          notificacoes_rota_habilitadas: r.notificacoes_rota_habilitadas !== false,
           logradouro: r.logradouro || undefined,
           numero: r.numero || undefined,
           bairro: r.bairro || undefined,
@@ -85,5 +77,5 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
           pin_acesso: r.pin_acesso || undefined,
         })),
     ],
-  } as Passageiro;
+  };
 }

@@ -75,6 +75,8 @@ export interface ResponsavelAdicionalItem {
   referencia?: string | null;
   complemento?: string | null;
   pin_acesso?: string | null;
+  tipo?: string | null;
+  notificacoes_rota_habilitadas?: boolean;
 }
 
 export interface ResponsavelRotaItem {
