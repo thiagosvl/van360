@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { UserCheck, CheckCircle2 } from "lucide-react";
 import { formatFirstName } from "@/utils/formatters";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 export interface DefinirResponsavelPrincipalDialogProps {
   open: boolean;
@@ -20,22 +21,26 @@ export function DefinirResponsavelPrincipalDialog({
 }: DefinirResponsavelPrincipalDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleClose = useCallback(() => {
+    safeCloseDialog(onClose);
+  }, [onClose]);
+
   const handleConfirm = async () => {
     try {
       setIsLoading(true);
       await onConfirm();
-      onClose();
+      handleClose();
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <BaseDialog open={open} onOpenChange={(val) => !val && onClose()} maxWidth="md">
+    <BaseDialog open={open} onOpenChange={(val) => !val && handleClose()} maxWidth="md">
       <BaseDialog.Header
         title="Tornar Responsável Principal"
         icon={<UserCheck className="w-5 h-5 text-[#1a3a5c]" />}
-        onClose={onClose}
+        onClose={handleClose}
       />
       <BaseDialog.Body>
         <div className="space-y-4 pt-1">

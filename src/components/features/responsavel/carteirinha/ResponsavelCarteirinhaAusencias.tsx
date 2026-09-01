@@ -161,7 +161,13 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
       {isAddDialogOpen && (
         <ResponsavelNotificarAusenciaDialog
           open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
+          onOpenChange={(val) => {
+            if (!val) {
+              safeCloseDialog(() => setIsAddDialogOpen(false));
+            } else {
+              setIsAddDialogOpen(true);
+            }
+          }}
           passageiroId={carteirinha.id}
           passageiroNome={carteirinha.nome}
           rotas={rotas}

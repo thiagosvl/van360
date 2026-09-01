@@ -11,9 +11,6 @@ export interface ShareReceiptData {
   text: string;
 }
 
-/**
- * Helper para converter Blob em Base64 (necessário para o Filesystem.writeFile)
- */
 const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -27,10 +24,28 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
   });
 };
 
-/**
- * Utilitário padronizado para compartilhamento de recibos.
- * Resolve a inconsistência entre Browser e App Nativo/Capacitor.
- */
+const isShareCancelError = (error: unknown): boolean => {
+  if (!error) return false;
+  if (typeof error === "string") {
+    const lower = error.toLowerCase();
+    return lower.includes("canceled") || lower.includes("cancelled") || lower.includes("abort");
+  }
+  const err = error as { name?: string; message?: string; code?: number };
+  const message = String(err.message || "").toLowerCase();
+  const name = String(err.name || "").toLowerCase();
+  return (
+    name === "aborterror" ||
+    err.code === 20 ||
+    message.includes("canceled") ||
+    message.includes("cancelled") ||
+    message.includes("share canceled") ||
+    message.includes("user canceled") ||
+    message.includes("user cancelled") ||
+    message.includes("dismissed") ||
+    message.includes("abort")
+  );
+};
+
 export async function shareReceiptFile(data: ShareReceiptData) {
   const { url, filename, title, text } = data;
 
@@ -40,18 +55,14 @@ export async function shareReceiptFile(data: ShareReceiptData) {
   }
 
   try {
-    // 1. Download do arquivo (Comum para todos os fluxos)
     const response = await fetch(url);
     if (!response.ok) throw new Error("Falha ao carregar arquivo do recibo");
     const blob = await response.blob();
 
-    // 2. Fluxo Nativo (Capacitor + Android/iOS)
-    // Para anexar de verdade no WhatsApp, precisamos salvar o arquivo fisicamente no cache do App
     if (Capacitor.isNativePlatform()) {
       try {
         const base64Data = await blobToBase64(blob);
-        
-        // Salva na pasta de cache temporário do app
+
         const savedFile = await Filesystem.writeFile({
           path: filename,
           data: base64Data,
@@ -61,36 +72,50 @@ export async function shareReceiptFile(data: ShareReceiptData) {
         await Share.share({
           title,
           text,
-          files: [savedFile.uri], // USANDO O URI DO ARQUIVO LOCAL!
+          files: [savedFile.uri],
           dialogTitle: "Compartilhar Recibo",
         });
         return;
       } catch (nativeError) {
-        console.error("[ShareReceipt] Erro no fluxo nativo (Filesystem), tentando fallback:", nativeError);
-        // Se falhar (ex: plugin não instalado ainda), cai para o fluxo básico abaixo
+        if (isShareCancelError(nativeError)) {
+          return;
+        }
+
+        try {
+          await Share.share({
+            title,
+            text: `${text}\n${url}`,
+            url,
+            dialogTitle: "Compartilhar Recibo",
+          });
+          return;
+        } catch (urlShareError) {
+          if (isShareCancelError(urlShareError)) {
+            return;
+          }
+        }
       }
     }
 
-    // 3. Fluxo Mobile Browser (File API)
-    // Esse método anexa o arquivo se o navegador suportar (ex: Chrome no Android)
     const file = new File([blob], filename, { type: "image/png" });
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title,
-        text,
-      });
-      return;
+      try {
+        await navigator.share({
+          files: [file],
+          title,
+          text,
+        });
+        return;
+      } catch (webShareError) {
+        if (isShareCancelError(webShareError)) {
+          return;
+        }
+      }
     }
 
-    // 4. Fallback final para Desktop ou navegadores sem Share API
     openBrowserLink(url);
-
   } catch (error) {
-    console.error("[ShareReceipt] Erro técnico detalhado:", error);
-    
-    // Se for um cancelamento do usuário, ignoramos
-    if ((error as any).name === "AbortError" || (error as any).message?.includes("Share canceled")) {
+    if (isShareCancelError(error)) {
       return;
     }
 

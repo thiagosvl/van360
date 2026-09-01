@@ -15,6 +15,8 @@ import { getNowBR } from "@/utils/dateUtils";
 import { CobrancaStatus } from "@/types/enums";
 import { shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
 
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+
 interface ResponsavelCarteirinhaCobrancasProps {
   carteirinha: ResponsavelCarteirinhaData;
 }
@@ -78,7 +80,9 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
   };
 
   const handleCloseReceiptDialog = () => {
-    setReceiptDialogState((prev) => ({ ...prev, open: false }));
+    safeCloseDialog(() => {
+      setReceiptDialogState((prev) => ({ ...prev, open: false }));
+    });
   };
 
   const handleShareReceiptDirect = async (receiptUrl: string, descricao: string) => {
