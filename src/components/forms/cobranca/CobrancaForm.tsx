@@ -68,6 +68,7 @@ export interface CobrancaFormContentProps {
     isSubmitting?: boolean;
     lockFoiPago?: boolean;
     lockMesAno?: boolean;
+    availableMonths?: number[];
 }
 
 export function CobrancaFormContent({
@@ -80,6 +81,7 @@ export function CobrancaFormContent({
     isSubmitting = false,
     lockFoiPago = false,
     lockMesAno = false,
+    availableMonths,
 }: CobrancaFormContentProps) {
     const isPaga = form.watch("foi_pago");
     const mesSelecionado = form.watch("mes");
@@ -173,11 +175,10 @@ export function CobrancaFormContent({
                                     </FormControl>
                                     <SelectContent className="max-h-60">
                                         {(() => {
-                                            const filtered = mode === "create" && !lockFoiPago
-                                                ? meses.filter((m) => Number(m.value) < getNowBR().getMonth() + 1)
+                                            const options = availableMonths && availableMonths.length > 0
+                                                ? meses.filter((m) => availableMonths.includes(Number(m.value)))
                                                 : meses;
-                                            const finalOptions = filtered.length > 0 ? filtered : meses;
-                                            return finalOptions.map((m) => (
+                                            return options.map((m) => (
                                                 <SelectItem key={m.value} value={m.value}>
                                                     {m.label}
                                                 </SelectItem>
@@ -449,7 +450,7 @@ export function CobrancaFormContent({
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                             </>
-                        ) : mode === "create" ? "Regoistrar Parcela" : "Salvar Alterações"}
+                        ) : mode === "create" ? "Registrar Parcela" : "Salvar Alterações"}
                     </Button>
                 </div>
             )}

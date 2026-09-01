@@ -114,7 +114,7 @@ export default function Splash() {
               </h1>
 
               <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
-                Selecione o seu perfil no Van360
+                Selecione uma opção para continuar
               </p>
             </div>
 
@@ -151,15 +151,15 @@ export default function Splash() {
                 className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-slate-300 active:border-amber-500 active:scale-[0.98] shadow-sm hover:shadow-md outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#15469C]/10 text-[#15469C] flex items-center justify-center shrink-0">
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
-                      Pai ou Responsável
+                      Responsável
                     </span>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
-                      Acompanhar a van e carteirinha do aluno
+                      Acessar a carteirinha do aluno
                     </p>
                   </div>
                 </div>
@@ -275,4 +275,4 @@ export default function Splash() {
 
     </main>
   );
-}
+}

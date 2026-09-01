@@ -3,6 +3,10 @@ import { checkCobrancaEmAtraso } from "./cobranca";
 import { getStartOfDayBR, getNowBR, differenceInCalendarDaysBR } from "../dateUtils";
 
 export const getStatusText = (status: string, dataVencimento?: string) => {
+  if (status === CobrancaStatus.CANCELADA) {
+    return "Cancelada";
+  }
+
   if (status === CobrancaStatus.PAGO) {
     return "Pago";
   }
@@ -26,6 +30,10 @@ export const getStatusText = (status: string, dataVencimento?: string) => {
 };
 
 export const getStatusColor = (status: string, dataVencimento?: string) => {
+  if (status === CobrancaStatus.CANCELADA) {
+    return "bg-slate-100 text-slate-600 border-slate-200 shadow-sm";
+  }
+
   if (status === CobrancaStatus.PAGO) {
     return "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-transparent shadow-sm";
   }

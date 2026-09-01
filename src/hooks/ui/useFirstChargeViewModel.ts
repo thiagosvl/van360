@@ -1,7 +1,7 @@
 import { CreateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { getMessage } from "@/constants/messages";
-import { CobrancaOrigem, CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
+import { CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { calculateSafeDueDate, toLocalDateString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
@@ -78,7 +78,6 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
         status,
         mes: today.getMonth() + 1,
         ano: today.getFullYear(),
-        origem: CobrancaOrigem.MANUAL,
       };
 
       if (status === CobrancaStatus.PAGO) {

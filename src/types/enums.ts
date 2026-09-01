@@ -36,12 +36,8 @@ export enum ContractMultaTipo {
 
 export enum CobrancaStatus {
   PAGO = "pago",
-  PENDENTE = "pendente"
-}
-
-export enum CobrancaOrigem {
-  MANUAL = "manual",
-  AUTOMATICA = "automatica",
+  PENDENTE = "pendente",
+  CANCELADA = "cancelada",
 }
 
 export enum WhatsappStatus {

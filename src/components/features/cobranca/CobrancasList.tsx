@@ -113,7 +113,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     onRegistrarPagamento: cobranca?.isProjection
       ? () => onOpenCreateForProjection?.(cobranca)
       : () => onRegistrarPagamento(cobranca),
-    onExcluirCobranca: cobranca?.isProjection ? undefined : () => onExcluirCobranca(cobranca),
+    onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: cobranca?.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined),
     onVerRecibo: cobranca?.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
     onEnviarCobranca: cobranca?.isProjection ? undefined : onEnviarCobranca,

@@ -60,8 +60,8 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
 
     const timer = setTimeout(async () => {
       setIsSearchingAddress(true);
-      const uf = formData.state || "SP";
-      const cidade = formData.city || "São Paulo";
+      const uf = formData.state;
+      const cidade = formData.city;
       const results = await cepService.buscarEnderecoPorTexto(formData.street!, uf, cidade);
       setSugestoes(results);
       setShowDropdown(results.length > 0 && isFocusedRef.current);

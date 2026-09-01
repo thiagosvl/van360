@@ -73,6 +73,7 @@ export interface OpenCobrancaFormProps {
   ano?: number;
   lockFoiPago?: boolean;
   lockMesAno?: boolean;
+  availableMonths?: number[];
   onSuccess?: () => void;
 }
 
@@ -83,7 +84,7 @@ export interface OpenCobrancaEditDialogProps {
 
 export interface OpenCobrancaDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
-  onEdit: () => void;
+  onEdit?: () => void;
   isLoading?: boolean;
 }
 

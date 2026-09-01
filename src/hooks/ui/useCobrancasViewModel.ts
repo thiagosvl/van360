@@ -4,8 +4,8 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { useCobrancas, useDeleteCobranca, useFilters } from "@/hooks";
-import { CobrancaTab } from "@/types/enums";
+import { useCobrancas, useCreateCobranca, useDeleteCobranca, useFilters } from "@/hooks";
+import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
@@ -30,8 +30,9 @@ export function useCobrancasViewModel() {
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
+  const createCobranca = useCreateCobranca();
   const deleteCobranca = useDeleteCobranca();
-  const isActionLoading = deleteCobranca.isPending;
+  const isActionLoading = deleteCobranca.isPending || createCobranca.isPending;
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -230,10 +231,22 @@ export function useCobrancasViewModel() {
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
         onConfirm: async () => {
-          await deleteCobranca.mutateAsync(cobranca.id);
+          if (cobranca.isProjection) {
+            await createCobranca.mutateAsync({
+              passageiro_id: cobranca.passageiro_id,
+              usuario_id: cobranca.usuario_id || cobranca.passageiro?.usuario_id || profile?.id,
+              mes: Number(cobranca.mes),
+              ano: Number(cobranca.ano),
+              valor: Number(cobranca.valor),
+              data_vencimento: cobranca.data_vencimento,
+              status: CobrancaStatus.CANCELADA,
+            });
+          } else {
+            await deleteCobranca.mutateAsync(cobranca.id);
+          }
           refetchCobrancas();
         },
-        onEdit: () => {
+        onEdit: cobranca.isProjection ? undefined : () => {
           openCobrancaEditDialog({
             cobranca,
             onSuccess: () => refetchCobrancas(),
@@ -241,7 +254,7 @@ export function useCobrancasViewModel() {
         }
       });
     },
-    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas]
+    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas, profile?.id]
   );
 
   const openPaymentDialog = useCallback(

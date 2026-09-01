@@ -14,10 +14,11 @@ interface CobrancaSummaryProps {
 
 export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const isProjection = cobranca.isProjection === true;
-  const isPago = !isProjection && cobranca.status === CobrancaStatus.PAGO;
-  const isAtrasado = !isPago && (cobranca.status === CobrancaStatus.VENCIDO || checkCobrancaEmAtraso(cobranca.data_vencimento));
+  const isCancelada = !isProjection && cobranca.status === CobrancaStatus.CANCELADA;
+  const isPago = !isProjection && !isCancelada && cobranca.status === CobrancaStatus.PAGO;
+  const isAtrasado = !isPago && !isCancelada && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
-  const statusLabel = isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
+  const statusLabel = isCancelada ? "Cancelada" : isPago ? "Pago" : isAtrasado ? "Em Atraso" : "Pendente";
 
   return (
     <div className="flex flex-col p-4 sm:p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left w-full min-w-0 overflow-hidden">
@@ -30,6 +31,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
 
         <div className={cn(
           "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
+          isCancelada ? "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400" :
           isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
             isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
               "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
@@ -65,7 +67,9 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
                   : "text-slate-400 dark:text-zinc-400"
               )}
             >
-              {isAtrasado
+              {isCancelada
+                ? `Vencimento ${formatDateToBR(cobranca.data_vencimento)}`
+                : isAtrasado
                 ? formatDiasAtraso(cobranca.data_vencimento)
                 : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
             </span>

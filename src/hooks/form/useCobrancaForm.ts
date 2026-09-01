@@ -206,7 +206,6 @@ export function useCobrancaForm({
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,
         usuario_id: profile.id,
-        origem: "manual",
       };
 
       createCobranca.mutate(payload as any, {

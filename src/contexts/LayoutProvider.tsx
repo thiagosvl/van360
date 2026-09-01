@@ -690,10 +690,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               closeCobrancaDeleteDialog();
             }
           }}
-          onEdit={() => {
-            cobrancaDeleteDialogState.props?.onEdit();
-            closeCobrancaDeleteDialog();
-          }}
+          onEdit={
+            cobrancaDeleteDialogState.props?.onEdit
+              ? () => {
+                  cobrancaDeleteDialogState.props?.onEdit?.();
+                  closeCobrancaDeleteDialog();
+                }
+              : undefined
+          }
           isLoading={cobrancaDeleteDialogState.props?.isLoading}
         />
       )}
@@ -743,6 +747,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           ano={cobrancaFormDialogState.props.ano}
           lockFoiPago={cobrancaFormDialogState.props.lockFoiPago}
           lockMesAno={cobrancaFormDialogState.props.lockMesAno}
+          availableMonths={cobrancaFormDialogState.props.availableMonths}
         />
       )}
 

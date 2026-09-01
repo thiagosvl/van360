@@ -28,7 +28,6 @@ export type Database = {
           tipo_pagamento: string | null
           updated_at: string
           valor: number
-          origem: string
         }
         Insert: {
           ano: number
@@ -45,7 +44,6 @@ export type Database = {
           tipo_pagamento?: string | null
           updated_at?: string
           valor: number
-          origem: string
         }
         Update: {
           ano?: number
@@ -62,7 +60,6 @@ export type Database = {
           tipo_pagamento?: string | null
           updated_at?: string
           valor?: number
-          origem?: string
         }
         Relationships: [
           {

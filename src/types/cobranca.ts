@@ -1,4 +1,4 @@
-import { CobrancaStatus, CobrancaOrigem, CobrancaTipoPagamento } from "./enums";
+import { CobrancaStatus, CobrancaTipoPagamento } from "./enums";
 import { Passageiro } from "./passageiro";
 
 export interface Cobranca {
@@ -15,7 +15,6 @@ export interface Cobranca {
   passageiro?: Partial<Passageiro>;
   desativar_lembretes?: boolean;
   pagamento_manual?: boolean;
-  origem: CobrancaOrigem;
   valor_pago?: number;
   data_envio_ultima_notificacao?: string;
   recibo_url?: string;

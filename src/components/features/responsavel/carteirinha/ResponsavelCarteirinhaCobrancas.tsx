@@ -12,7 +12,7 @@ import { ResponsavelReceiptDialog } from "@/components/dialogs/ResponsavelReceip
 import { cn } from "@/lib/utils";
 import { mapearCarteirinhaParaPassageiro } from "@/utils/domain/carteirinhaConverter";
 import { getNowBR } from "@/utils/dateUtils";
-import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus } from "@/types/enums";
 import { shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
 
 interface ResponsavelCarteirinhaCobrancasProps {
@@ -55,7 +55,6 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
             valor: Number(carteirinha.valor_cobranca || 0),
             status: CobrancaStatus.PENDENTE,
             data_vencimento: dataVenc,
-            origem: CobrancaOrigem.AUTOMATICA,
             isProjection: true,
           });
         }
@@ -114,17 +113,20 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
           />
         ) : (
           displayCobrancas.map((item) => {
-            const isPago = item.status === CobrancaStatus.PAGO;
-            const isAtrasado = !isPago && checkCobrancaEmAtraso(item.data_vencimento);
+            const isCancelada = item.status === CobrancaStatus.CANCELADA;
+            const isPago = !isCancelada && item.status === CobrancaStatus.PAGO;
+            const isAtrasado = !isCancelada && !isPago && checkCobrancaEmAtraso(item.data_vencimento);
             const nomeMes = getMesNome(item.mes);
             const cobrancaDesc = `Recibo de ${item.mes}/${item.ano}`;
             const valorNum = Number(item.valor) || 0;
 
-            const statusColor = isPago
-              ? "bg-emerald-50 text-emerald-600"
-              : isAtrasado
-              ? "bg-red-50 text-red-600"
-              : "bg-amber-50 text-amber-600";
+            const statusColor = isCancelada
+              ? "bg-slate-100 text-slate-600"
+              : isPago
+                ? "bg-emerald-50 text-emerald-600"
+                : isAtrasado
+                  ? "bg-red-50 text-red-600"
+                  : "bg-amber-50 text-amber-600";
 
             const cobrancaObjParaSummary = {
               id: item.id,
@@ -132,43 +134,44 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
               mes: item.mes,
               ano: item.ano,
               valor: valorNum,
-              status: isPago
-                ? CobrancaStatus.PAGO
-                : isAtrasado
-                ? CobrancaStatus.VENCIDO
-                : CobrancaStatus.PENDENTE,
+              status: isCancelada
+                ? CobrancaStatus.CANCELADA
+                : isPago
+                  ? CobrancaStatus.PAGO
+                  : CobrancaStatus.PENDENTE,
               data_vencimento: item.data_vencimento,
               created_at: "",
               updated_at: "",
               usuario_id: "",
-              origem: item.origem || CobrancaOrigem.AUTOMATICA,
               isProjection: item.isProjection,
             };
 
             const hasReceipt = isPago && !!item.recibo_url && !item.isProjection;
 
-            const actions = [
-              {
-                icon: <Eye className="h-4 w-4" />,
-                label: "Ver Recibo",
-                onClick: () => {
-                  if (hasReceipt && item.recibo_url) {
-                    handleOpenReceiptDialog(item.recibo_url, cobrancaDesc);
-                  }
+            const actions = isCancelada
+              ? []
+              : [
+                {
+                  icon: <Eye className="h-4 w-4" />,
+                  label: "Ver Recibo",
+                  onClick: () => {
+                    if (hasReceipt && item.recibo_url) {
+                      handleOpenReceiptDialog(item.recibo_url, cobrancaDesc);
+                    }
+                  },
+                  disabled: !hasReceipt,
                 },
-                disabled: !hasReceipt,
-              },
-              {
-                icon: <Share2 className="h-4 w-4" />,
-                label: "Compartilhar Recibo",
-                onClick: () => {
-                  if (hasReceipt && item.recibo_url) {
-                    handleShareReceiptDirect(item.recibo_url, cobrancaDesc);
-                  }
+                {
+                  icon: <Share2 className="h-4 w-4" />,
+                  label: "Compartilhar Recibo",
+                  onClick: () => {
+                    if (hasReceipt && item.recibo_url) {
+                      handleShareReceiptDirect(item.recibo_url, cobrancaDesc);
+                    }
+                  },
+                  disabled: !hasReceipt,
                 },
-                disabled: !hasReceipt,
-              },
-            ];
+              ];
 
             return (
               <MobileActionItem
@@ -185,14 +188,18 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                   <div
                     className={cn(
                       "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
-                      isPago
-                        ? "bg-emerald-500"
-                        : isAtrasado
-                        ? "bg-red-500"
-                        : "bg-amber-500"
+                      isCancelada
+                        ? "bg-slate-400"
+                        : isPago
+                          ? "bg-emerald-500"
+                          : isAtrasado
+                            ? "bg-red-500"
+                            : "bg-amber-500"
                     )}
                   >
-                    {isPago ? (
+                    {isCancelada ? (
+                      <Clock className="h-4 w-4 text-white" />
+                    ) : isPago ? (
                       <CheckCircle2 className="h-4 w-4 text-white" />
                     ) : isAtrasado ? (
                       <AlertCircle className="h-4 w-4 text-white" />
@@ -207,11 +214,13 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">
-                        {isPago
+                        {isCancelada
                           ? `Venc. ${formatDateToBR(item.data_vencimento)}`
-                          : isAtrasado
-                          ? formatDiasAtraso(item.data_vencimento)
-                          : `Venc. ${formatDateToBR(item.data_vencimento)}`}
+                          : isPago
+                            ? `Venc. ${formatDateToBR(item.data_vencimento)}`
+                            : isAtrasado
+                              ? formatDiasAtraso(item.data_vencimento)
+                              : `Venc. ${formatDateToBR(item.data_vencimento)}`}
                       </p>
                     </div>
                   </div>
@@ -226,13 +235,13 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                       </p>
                       <StatusBadge
                         status={
-                          isPago
-                            ? CobrancaStatus.PAGO
-                            : isAtrasado
-                            ? CobrancaStatus.VENCIDO
-                            : CobrancaStatus.PENDENTE
+                          isCancelada
+                            ? CobrancaStatus.CANCELADA
+                            : isPago
+                              ? CobrancaStatus.PAGO
+                              : CobrancaStatus.PENDENTE
                         }
-                        dataVencimento={item.data_vencimento}
+                        dataVencimento={isCancelada ? undefined : item.data_vencimento}
                         className={cn(
                           "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
                           statusColor

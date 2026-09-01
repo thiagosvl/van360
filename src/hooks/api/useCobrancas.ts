@@ -66,10 +66,10 @@ export function useCobrancas(
         };
       }
 
-      const all = cobrancas;
+      const all = cobrancas.filter((cobranca) => cobranca.status !== CobrancaStatus.CANCELADA);
       
       const recebidos = all.filter((cobranca) => cobranca.status === CobrancaStatus.PAGO);
-      const areceber = all.filter((cobranca) => cobranca.status !== CobrancaStatus.PAGO);
+      const areceber = all.filter((cobranca) => cobranca.status === CobrancaStatus.PENDENTE);
 
       return {
         all,

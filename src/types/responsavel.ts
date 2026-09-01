@@ -26,7 +26,6 @@ export interface ResponsavelCobrancaItem {
   recibo_url?: string | null;
   desativar_lembretes?: boolean;
   isProjection?: boolean;
-  origem?: string;
 }
 
 export interface ResponsavelAusenciaItem {

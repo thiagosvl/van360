@@ -1,6 +1,8 @@
+import { CobrancaStatus } from "@/types/enums";
+
 export interface CobrancaCalcItem {
   valor?: number | string | null;
-  status?: string | null;
+  status?: CobrancaStatus | string | null;
 }
 
 export interface GastoCalcItem {
@@ -18,9 +20,6 @@ export interface FinancialReportSummary {
   porcentagemInadimplencia: number;
 }
 
-/**
- * Calcula o acumulado de receitas (previstas, realizadas e pendentes)
- */
 export function calculateTotalReceitas(cobrancas: CobrancaCalcItem[] = []): {
   prevista: number;
   realizada: number;
@@ -31,9 +30,12 @@ export function calculateTotalReceitas(cobrancas: CobrancaCalcItem[] = []): {
   let pendente = 0;
 
   for (const c of cobrancas) {
+    if (c?.status === CobrancaStatus.CANCELADA) {
+      continue;
+    }
     const val = Number(c?.valor || 0);
     prevista += val;
-    if (c?.status === "PAGO") {
+    if (c?.status === CobrancaStatus.PAGO) {
       realizada += val;
     } else {
       pendente += val;

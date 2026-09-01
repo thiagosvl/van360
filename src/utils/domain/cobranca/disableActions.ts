@@ -6,15 +6,15 @@ export const seForPago = (cobranca: Cobranca): boolean => {
 };
 
 export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca);
+  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA;
 };
 
-export const disableExcluirCobranca = (_cobranca: Cobranca): boolean => {
-  return false;
+export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
+  return cobranca.status === CobrancaStatus.CANCELADA;
 };
 
 export const disableEditarCobranca = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca);
+  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA;
 };
 
 export const canSendNotification = (cobranca: Cobranca): boolean => {

@@ -33,8 +33,8 @@ export const cepService = {
     const cleanLogradouro = logradouro.trim();
     if (cleanLogradouro.length < 3) return [];
 
-    const state = (uf || "SP").trim().toUpperCase();
-    const city = (cidade || "São Paulo").trim();
+    const state = (uf).trim().toUpperCase();
+    const city = (cidade).trim();
 
     try {
       const response = await fetch(

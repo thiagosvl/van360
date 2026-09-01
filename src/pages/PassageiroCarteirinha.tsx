@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog, useCobrancasByPassageiro,
+  useCreateCobranca,
   useDeleteCobranca,
   useDeletePassageiro,
   useDesfazerPagamento,
@@ -138,6 +139,7 @@ export default function PassageiroCarteirinha() {
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
   const updateCobranca = useUpdateCobranca();
+  const createCobranca = useCreateCobranca();
   const deleteCobranca = useDeleteCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
@@ -152,6 +154,7 @@ export default function PassageiroCarteirinha() {
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending ||
+    createCobranca.isPending ||
     updateCobranca.isPending ||
     deleteCobranca.isPending ||
     desfazerPagamento.isPending ||
@@ -446,9 +449,22 @@ export default function PassageiroCarteirinha() {
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
         onConfirm: async () => {
-          await deleteCobranca.mutateAsync(cobranca.id);
+          if (cobranca.isProjection) {
+            await createCobranca.mutateAsync({
+              passageiro_id: cobranca.passageiro_id,
+              usuario_id: passageiro?.usuario_id || user?.id,
+              mes: Number(cobranca.mes),
+              ano: Number(cobranca.ano),
+              valor: Number(cobranca.valor),
+              data_vencimento: cobranca.data_vencimento,
+              status: CobrancaStatus.CANCELADA,
+            });
+          } else {
+            await deleteCobranca.mutateAsync(cobranca.id);
+          }
+          refetchCobrancas();
         },
-        onEdit: () => {
+        onEdit: cobranca.isProjection ? undefined : () => {
           openCobrancaEditDialog({
             cobranca,
             onSuccess: refetchCobrancas,
@@ -456,7 +472,7 @@ export default function PassageiroCarteirinha() {
         }
       });
     },
-    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas]
+    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas, passageiro?.usuario_id, user?.id]
   );
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -477,7 +493,7 @@ export default function PassageiroCarteirinha() {
     const hoje = getStartOfDayBR();
     return cobrancas.some(
       (c) =>
-        c.status !== CobrancaStatus.PAGO && parseLocalDate(c.data_vencimento) < hoje,
+        c.status === CobrancaStatus.PENDENTE && parseLocalDate(c.data_vencimento) < hoje,
     );
   }, [cobrancas]);
 
@@ -538,7 +554,7 @@ export default function PassageiroCarteirinha() {
     yearFilter,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
-    onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean) => {
+    onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean, availableMonths?: number[]) => {
       if (!passageiro_id) return;
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
@@ -550,6 +566,7 @@ export default function PassageiroCarteirinha() {
         ano,
         lockFoiPago,
         lockMesAno,
+        availableMonths,
         onSuccess: refetchCobrancas,
       });
     },

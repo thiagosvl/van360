@@ -1,4 +1,4 @@
-import { CobrancaOrigem, CobrancaStatus, CobrancaTipoPagamento } from "../enums";
+import { CobrancaStatus, CobrancaTipoPagamento } from "../enums";
 
 export interface CreateCobrancaDTO {
   passageiro_id: string;
@@ -8,7 +8,6 @@ export interface CreateCobrancaDTO {
   status: CobrancaStatus;
   mes: number;
   ano: number;
-  origem: CobrancaOrigem;
   tipo_pagamento?: CobrancaTipoPagamento;
   data_pagamento?: string;
   valor_pago?: number;

@@ -7,7 +7,7 @@ export interface CobrancaDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void | Promise<void>;
-  onEdit: () => void;
+  onEdit?: () => void;
   isLoading?: boolean;
 }
 
@@ -36,8 +36,10 @@ export default function CobrancaDeleteDialog({
   };
 
   const handleEdit = () => {
-    onOpenChange(false);
-    onEdit();
+    if (onEdit) {
+      onOpenChange(false);
+      onEdit();
+    }
   };
 
   return (
@@ -53,25 +55,36 @@ export default function CobrancaDeleteDialog({
             Esta ação é irreversível. Tem certeza que deseja excluir esta parcela?
           </p>
 
-          <Banner
-            variant="info"
-            title="Nao precisa excluir!"
-            description={
-              <>
-                Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
-              </>
-            }
-          />
+          {onEdit && (
+            <Banner
+              variant="info"
+              title="Nao precisa excluir!"
+              description={
+                <>
+                  Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
+                </>
+              }
+            />
+          )}
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action
-          label="Editar"
-          variant="outline"
-          icon={<Pencil className="w-4 h-4" />}
-          disabled={showLoading}
-          onClick={handleEdit}
-        />
+        {onEdit ? (
+          <BaseDialog.Action
+            label="Editar"
+            variant="outline"
+            icon={<Pencil className="w-4 h-4" />}
+            disabled={showLoading}
+            onClick={handleEdit}
+          />
+        ) : (
+          <BaseDialog.Action
+            label="Cancelar"
+            variant="secondary"
+            disabled={showLoading}
+            onClick={() => onOpenChange(false)}
+          />
+        )}
         <BaseDialog.Action
           label={showLoading ? "Excluindo" : "Excluir"}
           variant="primary"

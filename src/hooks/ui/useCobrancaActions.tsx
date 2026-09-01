@@ -7,7 +7,7 @@ import {
   useSession,
   safeCloseDialog,
 } from "@/hooks";
-import { CobrancaStatus, CobrancaOrigem } from "@/types/enums";
+import { CobrancaStatus } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
@@ -80,7 +80,6 @@ export function useCobrancaOperations({
               mes: cobranca.mes,
               ano: cobranca.ano,
               status: CobrancaStatus.PENDENTE,
-              origem: CobrancaOrigem.AUTOMATICA,
               desativar_lembretes: desativar,
             });
           } else {
@@ -122,21 +121,33 @@ export function useCobrancaOperations({
     openCobrancaDeleteDialog({
       onConfirm: async () => {
         try {
-          await deleteCobranca.mutateAsync(cobranca.id);
+          if (cobranca.isProjection) {
+            await createCobranca.mutateAsync({
+              passageiro_id: cobranca.passageiro_id,
+              usuario_id: cobranca.usuario_id || cobranca.passageiro?.usuario_id || user?.id,
+              mes: Number(cobranca.mes),
+              ano: Number(cobranca.ano),
+              valor: Number(cobranca.valor),
+              data_vencimento: cobranca.data_vencimento,
+              status: CobrancaStatus.CANCELADA,
+            });
+          } else {
+            await deleteCobranca.mutateAsync(cobranca.id);
+          }
           if (onActionSuccess) onActionSuccess();
         } catch (error) {
           console.error(error);
           throw error;
         }
       },
-      onEdit: () => {
+      onEdit: cobranca.isProjection ? undefined : () => {
         openCobrancaEditDialog({
           cobranca,
           onSuccess: onActionSuccess,
         });
       }
     });
-  }, [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, onActionSuccess, cobranca]);
+  }, [cobranca, createCobranca, deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, onActionSuccess, user?.id]);
 
   const isActionLoading =
     toggleNotificacoes.isPending ||
@@ -151,7 +162,7 @@ export function useCobrancaOperations({
     isActionLoading,
     isTogglingNotificacoes: toggleNotificacoes.isPending || createCobranca.isPending,
     isDesfazendoPagamento: desfazerPagamento.isPending,
-    isDeleting: deleteCobranca.isPending
+    isDeleting: deleteCobranca.isPending || createCobranca.isPending
   };
 }
 
@@ -175,6 +186,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     onRegistrarPagamento,
     onPagarPix,
     onEnviarCobranca,
+    onExcluirCobranca,
   } = props;
 
   const {
@@ -220,9 +232,35 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           icon: <User className="h-4 w-4" />,
           onClick: onVerCarteirinha,
           swipeColor: "bg-indigo-600",
+          hasSeparatorAfter: true,
         });
       }
+
+      projActions.push({
+        label: "Excluir Parcela",
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: onExcluirCobranca || handleDeleteCobranca,
+        disabled: isActionLoading,
+        isLoading: isDeleting,
+        variant: "destructive",
+        swipeColor: "bg-red-500",
+      });
+
       return projActions;
+    }
+
+    if (cobranca.status === CobrancaStatus.CANCELADA) {
+      const canceladaActions: ActionItem[] = [];
+      if (onVerCarteirinha) {
+        canceladaActions.push({
+          label: "Ver Carteirinha",
+          icon: <User className="h-4 w-4" />,
+          onClick: onVerCarteirinha,
+          swipeColor: "bg-indigo-600",
+          hasSeparatorAfter: true,
+        });
+      }
+      return canceladaActions;
     }
 
     const isPago = seForPago(cobranca);

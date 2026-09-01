@@ -292,7 +292,7 @@ export default function Login() {
                     Quem está acessando?
                   </h1>
                   <p className="text-xs sm:text-[13px] font-medium text-slate-500">
-                    Selecione o seu perfil para entrar no app
+                    Selecione uma opção para continuar
                   </p>
                 </div>
 
@@ -311,9 +311,6 @@ export default function Login() {
                         <span className="font-bold text-[14px] sm:text-base text-slate-800 group-hover:text-[#1a3a5c] transition-colors block leading-tight">
                           Motorista ou Equipe
                         </span>
-                        <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-1">
-                          Gerenciar rotas, alunos e financeiro
-                        </p>
                       </div>
                     </div>
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 group-hover:bg-[#1a3a5c]/10 flex items-center justify-center shrink-0 transition-colors ml-1">
@@ -328,16 +325,13 @@ export default function Login() {
                     className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-amber-500 active:scale-[0.98] shadow-sm hover:shadow-md transition-all group flex items-center justify-between cursor-pointer"
                   >
                     <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#1a3a5c]/10 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
                         <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className="font-bold text-[14px] sm:text-base text-slate-800 group-hover:text-amber-800 transition-colors block leading-tight">
-                          Pai ou Responsável
+                          Responsável
                         </span>
-                        <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-1">
-                          Acompanhar a van e carteirinha do aluno
-                        </p>
                       </div>
                     </div>
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 group-hover:bg-amber-100 flex items-center justify-center shrink-0 transition-colors ml-1">
@@ -372,14 +366,9 @@ export default function Login() {
                   />
                   <h1 className="text-xl sm:text-2xl font-extrabold text-[#1a3a5c] tracking-tight mb-1">
                     {selectedProfile === "motorista"
-                      ? "Acesso de Motorista / Equipe"
-                      : "Acesso do Responsável"}
+                      ? "Motorista ou Equipe"
+                      : "Responsável"}
                   </h1>
-                  <p className="text-xs sm:text-[13px] font-medium text-slate-500">
-                    {selectedProfile === "motorista"
-                      ? "Gerencie rotas, financeiro e contratos."
-                      : "Acesse a carteirinha e acompanhe a van."}
-                  </p>
                 </div>
 
                 {selectedProfile === "responsavel" ? (
