@@ -231,10 +231,10 @@ export default function SubscriptionPage() {
         </section>
 
         {/* Bento Grid Layout Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
           {/* Main Column (2/3 desktop) */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="xl:col-span-2 space-y-8">
 
             {/* 1. Histórico de Faturas: PRIORIDADE */}
             <section>
@@ -395,12 +395,12 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Lateral Column: Recompensas (1/3 desktop) */}
-          <aside className="lg:col-span-1">
+          <aside className="xl:col-span-1">
             <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
               Indique e Ganhe
             </h2>
-            <div className="sticky top-24">
-              <ReferAndEarnCard />
+            <div className="xl:sticky xl:top-24">
+              <ReferAndEarnCard layout="vertical" />
             </div>
           </aside>
         </div>

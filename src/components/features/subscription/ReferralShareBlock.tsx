@@ -83,7 +83,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
           Seu link de indicação
         </label>
         <div className="flex items-center w-full border border-slate-200 rounded-xl bg-white shadow-sm p-1.5 pl-3">
-          <span className="text-slate-600 truncate flex-1 font-medium text-[12px] sm:text-[13px] mr-2">
+          <span className="text-slate-600 truncate flex-1 min-w-0 font-medium text-[12px] sm:text-[13px] mr-2">
             {referralLink || "Gerando link..."}
           </span>
           <button
@@ -95,7 +95,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
                 : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 shadow-xs"
             )}
           >
-            {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            {isCopied ? <Check className="h-4 w-4 shrink-0" /> : <Copy className="h-4 w-4 shrink-0" />}
             <span>{isCopied ? "Copiado!" : "Copiar"}</span>
           </button>
         </div>
@@ -112,8 +112,8 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
         }}
         className="w-full bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-11 text-[13px] gap-2 cursor-pointer active:scale-95"
       >
-        <WhatsAppIcon className="w-4 h-4" />
-        Indicar pelo WhatsApp
+        <WhatsAppIcon className="w-4 h-4 shrink-0" />
+        <span>Indicar pelo WhatsApp</span>
       </Button>
     </>
   );
