@@ -42,6 +42,9 @@ export const cobrancaApi = {
     desfazerPagamento: (cobrancaId: string) =>
         apiClient.post(`${endpointBase}/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
 
+    restaurarCobranca: (cobrancaId: string) =>
+        apiClient.post(`${endpointBase}/${cobrancaId}/restaurar`).then(res => res.data),
+
     registrarPagamentoManual: (cobrancaId: string, data: RegistrarPagamentoManualDTO) => {
         const payload = {
             ...data,

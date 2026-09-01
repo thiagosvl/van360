@@ -47,6 +47,7 @@ interface CarteirinhaCobrancasProps {
   onDesfazerPagamento: (cobrancaId: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
   onVerRecibo: (url: string, cobranca: Cobranca) => void;
+  onActionSuccess?: () => void;
   limiteCobrancasMobile?: number;
 }
 
@@ -63,6 +64,7 @@ export const CarteirinhaCobrancas = ({
   onExcluirCobranca,
   onDesfazerPagamento,
   onVerRecibo,
+  onActionSuccess,
 }: CarteirinhaCobrancasProps) => {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
@@ -212,6 +214,7 @@ export const CarteirinhaCobrancas = ({
                 onExcluirCobranca={onExcluirCobranca}
                 onDesfazerPagamento={onDesfazerPagamento}
                 onVerRecibo={onVerRecibo}
+                onActionSuccess={onActionSuccess}
               />
             ))}
           </AnimatePresence>
@@ -267,6 +270,7 @@ const CobrancaItemPassageiro = forwardRef<
     onExcluirCobranca: (c: Cobranca) => void;
     onDesfazerPagamento: (id: string) => void;
     onVerRecibo: (url: string, cobranca: Cobranca) => void;
+    onActionSuccess?: () => void;
   }
 >(({
   cobranca,
@@ -280,6 +284,7 @@ const CobrancaItemPassageiro = forwardRef<
   onExcluirCobranca,
   onDesfazerPagamento,
   onVerRecibo,
+  onActionSuccess,
 }, ref) => {
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const isCancelada = cobranca.status === CobrancaStatus.CANCELADA;
@@ -325,6 +330,7 @@ const CobrancaItemPassageiro = forwardRef<
     onVerRecibo: cobranca.isProjection || isCancelada ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
     onEnviarCobranca: cobranca.isProjection || isCancelada ? undefined : onEnviarCobranca,
     showHistory: cobranca.isProjection ? false : true,
+    onActionSuccess,
   });
 
   const renderHeader = () => (

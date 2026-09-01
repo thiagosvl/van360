@@ -1,6 +1,6 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
-import { AlertCircle, Pencil, Trash2 } from "lucide-react";
+import { Ban, Pencil } from "lucide-react";
 import { useState } from "react";
 
 export interface CobrancaDeleteDialogProps {
@@ -45,23 +45,23 @@ export default function CobrancaDeleteDialog({
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Header
-        title="Excluir parcela"
-        icon={<Trash2 className="w-5 h-5 opacity-80" />}
+        title="Cancelar parcela"
+        icon={<Ban className="w-5 h-5 opacity-80" />}
         onClose={() => onOpenChange(false)}
       />
       <BaseDialog.Body>
         <div className="space-y-6">
           <p className="text-slate-500 text-sm font-medium leading-relaxed">
-            Esta ação é irreversível. Tem certeza que deseja excluir esta parcela?
+            Tem certeza que deseja cancelar esta parcela? Ela ficará marcada como cancelada na carteirinha e não será cobrada.
           </p>
 
           {onEdit && (
             <Banner
               variant="info"
-              title="Nao precisa excluir!"
+              title="Não precisa cancelar!"
               description={
                 <>
-                  Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
+                  Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário cancelar. Basta usar o botão <strong>Editar</strong> abaixo.
                 </>
               }
             />
@@ -79,14 +79,14 @@ export default function CobrancaDeleteDialog({
           />
         ) : (
           <BaseDialog.Action
-            label="Cancelar"
+            label="Voltar"
             variant="secondary"
             disabled={showLoading}
             onClick={() => onOpenChange(false)}
           />
         )}
         <BaseDialog.Action
-          label={showLoading ? "Excluindo" : "Excluir"}
+          label={showLoading ? "Cancelando..." : "Cancelar Parcela"}
           variant="primary"
           isLoading={showLoading}
           onClick={handleConfirm}

@@ -69,12 +69,12 @@ export function useDeleteCobranca() {
   return useMutation({
     mutationFn: (id: string) => cobrancaApi.deleteCobranca(id),
     onError: (error: any) => {
-      toast.error("cobranca.erro.excluir", {
-        description: getErrorMessage(error, "cobranca.erro.excluirDetalhe"),
+      toast.error("cobranca.erro.cancelar", {
+        description: getErrorMessage(error, "cobranca.erro.cancelarDetalhe"),
       });
     },
     onSuccess: (_, id) => {
-      toast.success("cobranca.sucesso.excluida");
+      toast.success("cobranca.sucesso.cancelada");
       
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
@@ -153,6 +153,27 @@ export function useToggleNotificacoesCobranca() {
       toast.error("cobranca.erro.alterarNotificacoes", {
         description: getErrorMessage(error, "cobranca.erro.alterarNotificacoesDetalhe"),
       });
+    },
+  });
+}
+
+export function useRestaurarCobranca() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cobrancaId: string) => cobrancaApi.restaurarCobranca(cobrancaId),
+    onError: (error: any) => {
+      toast.error("cobranca.erro.reativar", {
+        description: getErrorMessage(error, "cobranca.erro.reativarDetalhe"),
+      });
+    },
+    onSuccess: (_, cobrancaId) => {
+      toast.success("cobranca.sucesso.reativada");
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["historico"] });
     },
   });
 }

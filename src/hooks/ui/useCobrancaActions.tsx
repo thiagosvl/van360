@@ -4,6 +4,7 @@ import {
   useDesfazerPagamento,
   useToggleNotificacoesCobranca,
   useCreateCobranca,
+  useRestaurarCobranca,
   useSession,
   safeCloseDialog,
 } from "@/hooks";
@@ -11,24 +12,21 @@ import { CobrancaStatus } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-  canViewReceipt,
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
   seForPago
 } from "@/utils/domain/cobranca/disableActions";
-import { formatShortName } from "@/utils/formatters";
+import { getMesNome } from "@/utils/formatters";
 import {
+  Ban,
   Bell,
   BellOff,
   CheckCircle2,
-  DollarSign,
   FilePen,
-  History,
   QrCode,
   Receipt,
   RotateCcw,
-  Trash2,
   User
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -40,12 +38,13 @@ export interface UseCobrancaOperationsProps {
   cobranca: Cobranca;
   onActionSuccess?: () => void;
   onExcluirCobranca?: () => void;
+  onRestaurarCobranca?: () => void;
 }
 
 export function useCobrancaOperations({
   cobranca,
   onActionSuccess,
-  onExcluirCobranca,
+  onRestaurarCobranca,
 }: UseCobrancaOperationsProps) {
   const {
     openConfirmationDialog,
@@ -58,6 +57,7 @@ export function useCobrancaOperations({
   const desfazerPagamento = useDesfazerPagamento();
   const deleteCobranca = useDeleteCobranca();
   const createCobranca = useCreateCobranca();
+  const restaurarCobranca = useRestaurarCobranca();
   const { user } = useSession();
 
   const handleToggleLembretes = useCallback(async () => {
@@ -65,10 +65,10 @@ export function useCobrancaOperations({
     openConfirmationDialog({
       title: desativar ? "Desativar lembretes?" : "Ativar lembretes?",
       description: desativar
-        ? "O responsável não receberá lembretes automáticos para esta parcela específica."
-        : "O responsável voltará a receber lembretes automáticos para esta parcela específica.",
-      confirmText: desativar ? "Desativar" : "Ativar",
+        ? "Os lembretes automáticos desta parcela serão pausados."
+        : "Os lembretes automáticos desta parcela serão reativados.",
       variant: desativar ? "warning" : "default",
+      confirmText: desativar ? "Desativar" : "Ativar",
       onConfirm: async () => {
         try {
           if (cobranca.isProjection) {
@@ -149,20 +149,42 @@ export function useCobrancaOperations({
     });
   }, [cobranca, createCobranca, deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, onActionSuccess, user?.id]);
 
+  const handleRestaurarCobranca = useCallback(async () => {
+    openConfirmationDialog({
+      title: "Reativar parcela?",
+      description: `A parcela de ${getMesNome(cobranca.mes)}/${cobranca.ano} voltará a ficar pendente. Confirmar?`,
+      variant: "default",
+      confirmText: "Reativar",
+      onConfirm: async () => {
+        try {
+          await restaurarCobranca.mutateAsync(cobranca.id);
+          safeCloseDialog(closeConfirmationDialog);
+          if (onActionSuccess) onActionSuccess();
+        } catch (error) {
+          safeCloseDialog(closeConfirmationDialog);
+          console.error(error);
+        }
+      },
+    });
+  }, [cobranca, restaurarCobranca, openConfirmationDialog, closeConfirmationDialog, onActionSuccess]);
+
   const isActionLoading =
     toggleNotificacoes.isPending ||
     desfazerPagamento.isPending ||
     deleteCobranca.isPending ||
+    restaurarCobranca.isPending ||
     createCobranca.isPending;
 
   return {
     handleToggleLembretes,
     handleDesfazerPagamento,
     handleDeleteCobranca,
+    handleRestaurarCobranca,
     isActionLoading,
     isTogglingNotificacoes: toggleNotificacoes.isPending || createCobranca.isPending,
     isDesfazendoPagamento: desfazerPagamento.isPending,
-    isDeleting: deleteCobranca.isPending || createCobranca.isPending
+    isDeleting: deleteCobranca.isPending || createCobranca.isPending,
+    isRestoring: restaurarCobranca.isPending,
   };
 }
 
@@ -187,16 +209,19 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     onPagarPix,
     onEnviarCobranca,
     onExcluirCobranca,
+    onRestaurarCobranca,
   } = props;
 
   const {
     handleToggleLembretes,
     handleDesfazerPagamento,
     handleDeleteCobranca,
+    handleRestaurarCobranca,
     isActionLoading,
     isTogglingNotificacoes,
     isDesfazendoPagamento,
-    isDeleting
+    isDeleting,
+    isRestoring,
   } = useCobrancaOperations(props);
 
   return useMemo(() => {
@@ -237,8 +262,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       }
 
       projActions.push({
-        label: "Excluir Parcela",
-        icon: <Trash2 className="h-4 w-4" />,
+        label: "Cancelar Parcela",
+        icon: <Ban className="h-4 w-4" />,
         onClick: onExcluirCobranca || handleDeleteCobranca,
         disabled: isActionLoading,
         isLoading: isDeleting,
@@ -251,6 +276,17 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
 
     if (cobranca.status === CobrancaStatus.CANCELADA) {
       const canceladaActions: ActionItem[] = [];
+
+      canceladaActions.push({
+        label: "Reativar Parcela",
+        icon: <RotateCcw className="h-4 w-4" />,
+        onClick: onRestaurarCobranca || handleRestaurarCobranca,
+        disabled: isActionLoading,
+        isLoading: isRestoring,
+        swipeColor: "bg-indigo-600",
+        hasSeparatorAfter: true,
+      });
+
       if (onVerCarteirinha) {
         canceladaActions.push({
           label: "Ver Carteirinha",
@@ -391,8 +427,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
 
     if (props.onExcluirCobranca) {
       actions.push({
-        label: "Excluir",
-        icon: <Trash2 className="h-4 w-4" />,
+        label: "Cancelar Parcela",
+        icon: <Ban className="h-4 w-4" />,
         onClick: props.onExcluirCobranca,
         disabled: disableExcluirCobranca(cobranca) || isActionLoading,
         isDestructive: true,
