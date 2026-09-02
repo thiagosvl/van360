@@ -386,8 +386,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
-                  Salvar
+                  Salvar Alterações
                 </>
               )}
             </button>

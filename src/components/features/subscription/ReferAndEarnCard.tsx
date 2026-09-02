@@ -53,7 +53,7 @@ export function ReferAndEarnCard({ layout = "auto", className }: ReferAndEarnCar
           </div>
         </div>
 
-        <div className="bg-slate-50/60 p-3.5 sm:p-4 rounded-2xl border border-slate-100/80">
+        <div className="w-full sm:bg-slate-50/60 sm:p-4 sm:rounded-2xl sm:border sm:border-slate-100/80">
           <ReferralShareBlock referralLink={referral?.referralLink} variant="default" />
         </div>
       </div>
@@ -97,7 +97,7 @@ export function ReferAndEarnCard({ layout = "auto", className }: ReferAndEarnCar
           </div>
         </div>
 
-        <div className="lg:col-span-5 flex flex-col justify-center bg-slate-50/60 p-4 rounded-2xl border border-slate-100/80">
+        <div className="lg:col-span-5 flex flex-col justify-center w-full sm:bg-slate-50/60 sm:p-4 sm:rounded-2xl sm:border sm:border-slate-100/80">
           <ReferralShareBlock referralLink={referral?.referralLink} variant="default" />
         </div>
       </div>

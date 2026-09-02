@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import {
   UserPlus,
   Receipt,
-  ChevronRight,
   Users2,
   TrendingDown,
   FileText,
@@ -11,6 +10,7 @@ import {
   Rocket,
   ChartArea,
   User,
+  LucideIcon,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -22,6 +22,8 @@ interface AcessoRapidoProps {
 }
 
 enum AcessoRapidoItemKey {
+  CADASTRAR_ALUNO = "cadastrar_aluno",
+  REGISTRAR_GASTO = "registrar_gasto",
   EQUIPE = "equipe",
   GASTOS = "gastos",
   CONTRATOS = "contratos",
@@ -32,19 +34,27 @@ enum AcessoRapidoItemKey {
   ASSINATURA = "assinatura",
 }
 
+interface AcessoRapidoItem {
+  id: AcessoRapidoItemKey;
+  label: string;
+  icon: LucideIcon;
+  to?: string;
+  onClick?: () => void;
+  show: boolean;
+  isAction?: boolean;
+}
+
 export const AcessoRapido = ({
   onCadastrarPassageiro,
   onRegistrarGasto,
 }: AcessoRapidoProps) => {
   const { can, isMotoristaAuxiliar, isMonitor } = usePermissions();
 
-  // Para monitor, NÃO exibimos o Acesso Rápido
   if (isMonitor || isMotoristaAuxiliar) {
     return null;
   }
 
-  const getSecondaryItems = () => {
-    // Perfil MOTORISTA AUXILIAR
+  const getItems = (): AcessoRapidoItem[] => {
     if (isMotoristaAuxiliar) {
       return [
         {
@@ -64,8 +74,23 @@ export const AcessoRapido = ({
       ].filter((item) => item.show);
     }
 
-    // Perfil MOTORISTA (Gestor Principal / Padrão)
     return [
+      {
+        id: AcessoRapidoItemKey.CADASTRAR_ALUNO,
+        label: "Cadastrar Aluno",
+        icon: UserPlus,
+        onClick: onCadastrarPassageiro,
+        show: can(PERMISSIONS.PASSAGEIROS_GERENCIAR),
+        isAction: true,
+      },
+      {
+        id: AcessoRapidoItemKey.REGISTRAR_GASTO,
+        label: "Registrar Gasto",
+        icon: Receipt,
+        onClick: onRegistrarGasto,
+        show: can(PERMISSIONS.GASTOS_CRIAR),
+        isAction: true,
+      },
       {
         id: AcessoRapidoItemKey.EQUIPE,
         label: "Minha Equipe",
@@ -125,12 +150,11 @@ export const AcessoRapido = ({
     ].filter((item) => item.show);
   };
 
-  const secondaryItems = getSecondaryItems();
+  const items = getItems();
 
-  // Apenas Motorista Principal visualiza os cards de ação rápida superior
-  const showPrimaryCards = !isMotoristaAuxiliar;
-  const showCadastrarPassageiro = showPrimaryCards && can(PERMISSIONS.PASSAGEIROS_GERENCIAR);
-  const showRegistrarGasto = showPrimaryCards && can(PERMISSIONS.GASTOS_CRIAR);
+  if (items.length === 0) {
+    return null;
+  }
 
   return (
     <section className="px-1">
@@ -143,76 +167,64 @@ export const AcessoRapido = ({
         </p>
       </div>
 
-      {/* Ações Principais (Cards em Destaque) */}
-      {(showCadastrarPassageiro || showRegistrarGasto) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          {showCadastrarPassageiro && (
-            <button
-              type="button"
-              onClick={onCadastrarPassageiro}
-              className="group relative flex items-center justify-between p-3.5 sm:p-4 bg-white rounded-2xl border border-slate-100 border-l-[4px] border-l-[#1a3a5c] shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer select-none text-left w-full active:scale-[0.99]"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e8f2ff] text-[#1a3a5c] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <UserPlus className="w-5 h-5" strokeWidth={2} />
-                </div>
-                <div>
-                  <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1a3a5c] leading-snug">
-                    Cadastrar Aluno
-                  </h3>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </button>
-          )}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 border-slate-100">
+          {items.map((item) => {
+            const Icon = item.icon;
+            const itemContent = (
+              <>
+                {item.isAction ? (
+                  <div className="w-9 h-9 rounded-xl bg-blue-100/70 text-[#1a3a5c] flex items-center justify-center mb-1.5 group-hover:scale-110 group-hover:bg-blue-100 transition-all">
+                    <Icon className="w-5 h-5 stroke-[2]" />
+                  </div>
+                ) : (
+                  <div className="w-9 h-9 flex items-center justify-center mb-1.5">
+                    <Icon className="w-6 h-6 text-slate-600 group-hover:text-[#1a3a5c] group-hover:scale-110 transition-all stroke-[1.75]" />
+                  </div>
+                )}
+                <span
+                  className={
+                    item.isAction
+                      ? "text-[12px] sm:text-[13px] font-bold text-[#1a3a5c] leading-tight"
+                      : "text-[12px] sm:text-[13px] font-medium text-slate-700 group-hover:text-[#1a3a5c] transition-colors leading-tight"
+                  }
+                >
+                  {item.label}
+                </span>
+              </>
+            );
 
-          {showRegistrarGasto && (
-            <button
-              type="button"
-              onClick={onRegistrarGasto}
-              className="group relative flex items-center justify-between p-3.5 sm:p-4 bg-white rounded-2xl border border-slate-100 border-l-[4px] border-l-[#1a3a5c] shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer select-none text-left w-full active:scale-[0.99]"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e8f2ff] text-[#1a3a5c] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Receipt className="w-5 h-5" strokeWidth={2} />
-                </div>
-                <div>
-                  <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1a3a5c] leading-snug">
-                    Registrar Gasto
-                  </h3>
-                  <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
-                    Combustível, manutenção, etc.
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </button>
-          )}
-        </div>
-      )}
+            const itemClassName = `flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group cursor-pointer border-r border-b border-slate-100 ${
+              item.isAction
+                ? "bg-[#f4f8fd] hover:bg-[#eaf2fc] active:bg-[#dfeaf8]"
+                : "bg-white hover:bg-slate-50/80 active:bg-slate-100"
+            }`;
 
-      {/* Grade de Navegação Secundária */}
-      {secondaryItems.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 border-slate-100">
-            {secondaryItems.map((item) => {
-              const Icon = item.icon;
+            if (item.to) {
               return (
                 <Link
                   key={item.id}
                   to={item.to}
-                  className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+                  className={itemClassName}
                 >
-                  <Icon className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
-                  <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
-                    {item.label}
-                  </span>
+                  {itemContent}
                 </Link>
               );
-            })}
-          </div>
+            }
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={item.onClick}
+                className={itemClassName}
+              >
+                {itemContent}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </section>
   );
 };
