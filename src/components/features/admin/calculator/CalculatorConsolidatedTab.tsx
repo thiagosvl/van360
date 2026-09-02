@@ -2,11 +2,11 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
   TrendingUp,
   DollarSign,
-  Activity,
   Layers,
   Percent,
   ShieldCheck,
@@ -15,20 +15,28 @@ import {
   Info,
   Lightbulb,
 } from "lucide-react";
+import { AdminCalculatorUIHook } from "@/hooks/ui/admin/useAdminCalculatorUI";
+import { CalculatorInsight } from "@/hooks/business/admin/useAdminCalculator";
 
-export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
+interface CalculatorConsolidatedTabProps {
+  calcHook: AdminCalculatorUIHook;
+}
+
+export function CalculatorConsolidatedTab({ calcHook }: CalculatorConsolidatedTabProps) {
   const {
     simState,
     updateSim,
     calculations,
     projectionChartData,
+    chartMode,
+    setChartMode,
+    formatCurrency,
+    formatNumber,
+    formatPercent,
   } = calcHook;
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-  };
-
   const {
+    totalCondutores,
     receitaBrutaMensal,
     receitaNovosMensal,
     receitaNovosAnual,
@@ -43,7 +51,6 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
     custosOperacionaisTotais,
     lucroLiquidoMensal,
     margemLiquidaPct,
-    breakEvenCondutores,
     totalMsgsWaba,
     ltv,
     ltvToCac,
@@ -56,7 +63,6 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
 
   return (
     <div className="space-y-8">
-      {/* 1. Hero KPIs Consolidados */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className={`${cardStyle} border-l-4 border-l-blue-500`}>
@@ -90,7 +96,7 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
                 {formatCurrency(margemContribuicao)}
               </span>
               <span className="text-xs text-slate-400 mt-2 font-medium">
-                {margemContribuicaoPct.toFixed(1)}% após WABA + Gateway + Imposto
+                {formatPercent(margemContribuicaoPct)} após WABA + Gateway + Imposto
               </span>
             </CardContent>
           </Card>
@@ -115,7 +121,7 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
                 {formatCurrency(lucroLiquidoMensal)}
               </span>
               <span className="text-xs text-slate-400 mt-2 font-medium">
-                {formatCurrency(lucroLiquidoMensal * 12)} anual líquido ({margemLiquidaPct.toFixed(1)}%)
+                {formatCurrency(lucroLiquidoMensal * 12)} anual líquido ({formatPercent(margemLiquidaPct)})
               </span>
             </CardContent>
           </Card>
@@ -141,9 +147,8 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
         </motion.div>
       </div>
 
-      {/* 2. Insights & Diagnóstico Estratégico */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {insights?.map((ins: any) => (
+        {insights?.map((ins: CalculatorInsight) => (
           <div
             key={ins.id}
             className={`p-4 rounded-2xl border text-left flex flex-col justify-between ${
@@ -170,7 +175,6 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
         ))}
       </div>
 
-      {/* 3. DRE Projetado em Cascata */}
       <Card className={cardStyle}>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-2">
@@ -178,12 +182,11 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
             <CardTitle className="text-base font-bold text-white">Demonstrativo de Resultados (DRE Mensal Projetado)</CardTitle>
           </div>
           <CardDescription className="text-xs text-slate-400">
-            Abertura analítica de receitas brutas, custos variáveis unitários e custos fixos.
+            Abertura analítica de receitas brutas, custos variáveis unitários e custos fixos para {totalCondutores} motoristas.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Receita Bruta */}
             <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-2">
@@ -205,7 +208,6 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
               </div>
             </div>
 
-            {/* Custos Variáveis */}
             <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-headline font-bold text-sm text-orange-400">(-) Custos Variáveis Diretos</span>
@@ -223,7 +225,7 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
                 </div>
                 <div className="bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">
                   <span className="text-[11px] text-slate-400 block mb-1">
-                    WABA ({totalMsgsWaba.toLocaleString("pt-BR")} disparos Meta)
+                    WABA ({formatNumber(totalMsgsWaba)} disparos Meta)
                   </span>
                   <span className="text-sm font-bold text-orange-400">-{formatCurrency(custoWabaMensal)}</span>
                   <span className="text-[10px] text-slate-400 block mt-0.5">
@@ -233,16 +235,14 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
               </div>
             </div>
 
-            {/* Margem de Contribuição */}
             <div className="bg-purple-950/20 border border-purple-800/40 p-3.5 rounded-xl flex justify-between items-center">
               <span className="font-headline font-black text-sm text-purple-300">(=) Margem de Contribuição</span>
               <div className="text-right">
                 <span className="text-base font-black text-purple-300">{formatCurrency(margemContribuicao)}</span>
-                <span className="text-[11px] text-purple-400 block">{margemContribuicaoPct.toFixed(1)}% da receita</span>
+                <span className="text-[11px] text-purple-400 block">{formatPercent(margemContribuicaoPct)} da receita</span>
               </div>
             </div>
 
-            {/* Custos Fixos */}
             <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl flex justify-between items-center">
               <div>
                 <span className="font-headline font-bold text-sm text-slate-300">(-) Custos Fixos Operacionais</span>
@@ -251,7 +251,6 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
               <span className="text-sm font-black text-slate-300">-{formatCurrency(totalFixos)}</span>
             </div>
 
-            {/* Lucro Líquido Final */}
             <div
               className={`p-4 rounded-xl border flex justify-between items-center ${
                 isProfit ? "bg-emerald-950/30 border-emerald-500/40" : "bg-red-950/30 border-red-500/40"
@@ -260,7 +259,7 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
               <div>
                 <span className="font-headline font-black text-base text-white">(=) Lucro Líquido Mensal</span>
                 <span className="text-xs text-slate-400 block mt-0.5">
-                  Margem Líquida: <strong className={isProfit ? "text-emerald-400" : "text-red-400"}>{margemLiquidaPct.toFixed(1)}%</strong>
+                  Margem Líquida: <strong className={isProfit ? "text-emerald-400" : "text-red-400"}>{formatPercent(margemLiquidaPct)}</strong>
                 </span>
               </div>
               <span className={`text-xl font-black ${isProfit ? "text-emerald-400" : "text-red-400"}`}>
@@ -271,7 +270,6 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
         </CardContent>
       </Card>
 
-      {/* 4. Gráfico de Projeção em 12 Meses */}
       <Card className={cardStyle}>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
           <div>
@@ -283,16 +281,43 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
               Simulação de expansão com crescimento mensal de {simState.growPct}% e churn de {simState.churnPct}%.
             </CardDescription>
           </div>
-          <div className="flex items-center gap-4 w-full sm:w-64">
-            <span className="text-xs font-medium text-slate-400 whitespace-nowrap">Taxa Crescimento:</span>
-            <Slider
-              value={[simState.growPct]}
-              min={1}
-              max={20}
-              step={1}
-              onValueChange={([val]) => updateSim("growPct", val)}
-            />
-            <span className="text-xs font-bold text-white min-w-[2.5rem]">{simState.growPct}%</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className={`h-7 px-2.5 text-xs font-bold rounded-md ${
+                  chartMode === "mensal" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                }`}
+                onClick={() => setChartMode("mensal")}
+              >
+                Mensal (MRR)
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className={`h-7 px-2.5 text-xs font-bold rounded-md ${
+                  chartMode === "acumulado" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                }`}
+                onClick={() => setChartMode("acumulado")}
+              >
+                Acumulado (Ano)
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 w-44">
+              <span className="text-[11px] font-medium text-slate-400">Crescimento:</span>
+              <Slider
+                value={[simState.growPct]}
+                min={1}
+                max={20}
+                step={1}
+                onValueChange={([val]) => updateSim("growPct", val)}
+              />
+              <span className="text-xs font-bold text-white min-w-[2rem]">{simState.growPct}%</span>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -308,37 +333,55 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="colorAcumulado" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="mes" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} tickFormatter={(v) => `R$${v}`} />
+                <YAxis stroke="#64748b" fontSize={11} tickFormatter={(v: number) => `R$${v}`} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "0.75rem" }}
-                  formatter={(value: any, name: any) => [
-                    formatCurrency(Number(value)),
-                    name === "Receita Bruta" ? "Receita Bruta" : "Lucro Líquido"
+                  formatter={(value: unknown, name: unknown) => [
+                    formatCurrency(typeof value === "number" ? value : Number(value) || 0),
+                    String(name)
                   ]}
                   labelStyle={{ color: "#94a3b8", fontWeight: "bold" }}
                 />
                 <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }} />
-                <Area
-                  type="monotone"
-                  dataKey="receitaBruta"
-                  name="Receita Bruta"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorReceita)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="lucroLiquido"
-                  name="Lucro Líquido"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorLucro)"
-                />
+                {chartMode === "mensal" ? (
+                  <>
+                    <Area
+                      type="monotone"
+                      dataKey="receitaBruta"
+                      name="Receita Bruta"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorReceita)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="lucroLiquido"
+                      name="Lucro Líquido"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorLucro)"
+                    />
+                  </>
+                ) : (
+                  <Area
+                    type="monotone"
+                    dataKey="receitaAcumulada"
+                    name="Receita Acumulada no Ano"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorAcumulado)"
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>

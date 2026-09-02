@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+﻿import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +21,14 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { CATEGORY_LABELS, CostCategory, CostPeriod } from "@/hooks/business/admin/useAdminCalculator";
+import { CATEGORY_LABELS, CostCategory, CostPeriod, FixedCost } from "@/hooks/business/admin/useAdminCalculator";
+import { AdminCalculatorUIHook } from "@/hooks/ui/admin/useAdminCalculatorUI";
 
-export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
+interface CalculatorBaseTabProps {
+  calcHook: AdminCalculatorUIHook;
+}
+
+export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
   const {
     baseline,
     isBaselineLoading,
@@ -37,11 +42,10 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
     removeCost,
     fixosData,
     calculations,
+    formatCurrency,
+    formatNumber,
+    formatPercent,
   } = calcHook;
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-  };
 
   const {
     totalCondutores,
@@ -75,7 +79,6 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
 
   return (
     <div className="space-y-8">
-      {/* 1. Baseline Vivo (Dados Reais do Banco) */}
       <div className="bg-slate-900/90 border border-blue-500/30 rounded-[1.5rem] p-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -144,7 +147,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               Passageiros
             </span>
             <span className="text-xl font-black text-white">
-              {isBaselineLoading ? "..." : baseline?.passageiros.notificaveis ?? 259}
+              {isBaselineLoading ? "..." : baseline?.passageiros.notificaveis ?? 261}
             </span>
             <span className="text-[10px] text-slate-400 block mt-1">
               {baseline?.passageiros.total ?? 268} totais ({baseline?.passageiros.ativos ?? 266} ativos)
@@ -156,7 +159,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               Média Alunos/Van
             </span>
             <span className="text-xl font-black text-white">
-              {isBaselineLoading ? "..." : `${baseline?.passageiros.mediaPorMotorista ?? 67} alunos`}
+              {isBaselineLoading ? "..." : `${baseline?.passageiros.mediaPorMotorista ?? 66} alunos`}
             </span>
             <span className="text-[10px] text-slate-400 block mt-1">Vans em rota ativa</span>
           </div>
@@ -193,7 +196,6 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
         </div>
       </div>
 
-      {/* 2. Hero KPIs da Simulação */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className={`${cardStyle} border-l-4 border-l-blue-500`}>
@@ -256,7 +258,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
                   variant={isProfit ? "default" : "destructive"}
                   className={isProfit ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : ""}
                 >
-                  {margemLiquidaPct.toFixed(1)}% margem líquida
+                  {formatPercent(margemLiquidaPct)} margem líquida
                 </Badge>
               </div>
             </CardContent>
@@ -281,9 +283,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
         </motion.div>
       </div>
 
-      {/* 3. Controles da Simulação */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bloco A: Condutores & Precificação */}
         <Card className={cardStyle}>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
@@ -423,7 +423,6 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
           </CardContent>
         </Card>
 
-        {/* Bloco B: Passageiros, Mensageria & WABA */}
         <Card className={cardStyle}>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
@@ -458,7 +457,11 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
                 onValueChange={([val]) => updateSim("mediaPassageiros", val)}
               />
               <span className="text-[11px] text-slate-400 mt-1.5 block">
-                Total projetado: <strong className="text-white">{simState.nCondutores} vans × {simState.mediaPassageiros} alunos = {totalAlunos.toLocaleString("pt-BR")} passageiros</strong> na base ativa.
+                {condutoresNovos === 0 ? (
+                  <>Base real ativa: <strong className="text-white">{formatNumber(totalAlunos)} passageiros</strong> (média de {simState.mediaPassageiros} alunos por van em rota ativa).</>
+                ) : (
+                  <>Total projetado: <strong className="text-white">{formatNumber(totalAlunos)} passageiros</strong> ({baseline?.passageiros?.notificaveis || 261} base real + {condutoresNovos} novas vans × {simState.mediaPassageiros} alunos).</>
+                )}
               </span>
             </div>
 
@@ -481,7 +484,6 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               </span>
             </div>
 
-            {/* Toggle Comprovante WABA com Alto Contraste */}
             <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl flex items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
@@ -507,12 +509,11 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               </div>
             </div>
 
-            {/* Resumo do WABA */}
             <div className="space-y-2 bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/80">
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block">Volume WABA/mês</span>
-                  <span className="text-base font-black text-white">{totalMsgsWaba.toLocaleString("pt-BR")} msgs</span>
+                  <span className="text-base font-black text-white">{formatNumber(totalMsgsWaba)} msgs</span>
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block">Custo WABA Total</span>
@@ -535,7 +536,6 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
         </Card>
       </div>
 
-      {/* 4. Tabela de Custos Fixos & Degraus de Escala com Alto Contraste */}
       <Card className={cardStyle}>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
           <div>
@@ -572,7 +572,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {costs.map((cost: any) => (
+                {costs.map((cost: FixedCost) => (
                   <tr key={cost.id} className={`transition-colors ${cost.active ? "bg-slate-900/40" : "bg-slate-950/40 opacity-50"}`}>
                     <td className="py-3 pl-2">
                       <div className="flex items-center gap-2">
