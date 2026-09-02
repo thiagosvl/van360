@@ -345,6 +345,7 @@ export enum AdminUserTab {
   COBRANCAS = "cobrancas",
   LOGS = "logs",
   CADASTROS = "cadastros",
+  NOTIFICACOES = "notificacoes",
 }
 
 export enum AdminUserSubTab {
@@ -402,5 +403,10 @@ export enum PermissionRescueType {
   PUSH = "push",
   LOCATION = "location",
   BOTH = "both",
+}
+
+export enum NotificationEventEnum {
+  MOTORISTA_RESUMO_SEMANAL_PARCELAS = "MOTORISTA_RESUMO_SEMANAL_PARCELAS",
+  MOTORISTA_ANIVERSARIANTES_SEMANA = "MOTORISTA_ANIVERSARIANTES_SEMANA",
 }
 

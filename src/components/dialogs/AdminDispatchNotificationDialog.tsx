@@ -13,6 +13,7 @@ import {
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { useDispatchDriverNotificationAdmin } from "@/hooks/api/adminHooks";
 import { phoneMask } from "@/utils/masks";
+import { NotificationEventEnum } from "@/types/enums";
 
 export interface AdminDispatchNotificationDialogProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export interface AdminDispatchNotificationDialogProps {
 export type NotificationChannelType = "push" | "whatsapp" | "email";
 
 interface NotificationEventConfig {
-  id: string;
+  id: NotificationEventEnum;
   title: string;
   description: string;
   channels: Array<{
@@ -38,7 +39,7 @@ interface NotificationEventConfig {
 
 const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
   {
-    id: "MOTORISTA_RESUMO_SEMANAL_PARCELAS",
+    id: NotificationEventEnum.MOTORISTA_RESUMO_SEMANAL_PARCELAS,
     title: "Resumo Semanal das Parcelas",
     description: "Calcula e consolida cobranças atrasadas e a vencer nos próximos 7 dias para envio direto ao app.",
     channels: [
@@ -47,7 +48,7 @@ const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
     category: "Operacional",
   },
   {
-    id: "MOTORISTA_ANIVERSARIANTES_SEMANA",
+    id: NotificationEventEnum.MOTORISTA_ANIVERSARIANTES_SEMANA,
     title: "Aniversariantes da Semana",
     description: "Cruza os passageiros ativos do motorista e envia a lista de aniversariantes da semana atual.",
     channels: [

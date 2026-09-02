@@ -168,6 +168,11 @@ export interface OpenRouteFormProps {
   }) => void;
 }
 
+export interface OpenAdminPassengerNotificationsDialogProps {
+  passageiroId: string;
+  passageiroNome: string;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -197,6 +202,7 @@ export interface LayoutContextType {
   openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
   openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;
   openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
+  openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
 
   isFirstChargeDialogOpen: boolean;
 

@@ -7,6 +7,7 @@ import {
   useUpdateSubscriptionAdmin,
   useResetPasswordAdmin,
   useAdminUserLogs,
+  useAdminUserNotifications,
   useDeleteUserAdmin,
 } from "@/hooks/api/adminHooks";
 import { AdminUserLogItem } from "@/services/api/admin.api";
@@ -50,6 +51,7 @@ import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/Ad
 import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { AdminUserReferralTab } from "@/components/features/admin/user-details/AdminUserReferralTab";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
+import { NotificationLogsList } from "@/components/features/admin/NotificationLogsList";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { formatarChavePix } from "@/utils/formatters/pix";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
@@ -280,6 +282,14 @@ export default function AdminUserDetails() {
     dataFim: logsFilter.dataFim || undefined,
     acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
     entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
+  });
+
+  const [notifPage, setNotifPage] = useState(1);
+  const [notifLimitStr, setNotifLimitStr] = useState("25");
+
+  const { data: notifData, isFetching: isFetchingNotif, refetch: refetchNotif } = useAdminUserNotifications(id!, {
+    page: notifPage,
+    limit: parseInt(notifLimitStr),
   });
 
   const userForm = useForm<UserFormData>({
@@ -683,11 +693,17 @@ export default function AdminUserDetails() {
                   <span>Cadastros do Motorista</span>
                 </span>
               </SelectItem>
+              <SelectItem value="notificacoes" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                <span className="flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-indigo-400" />
+                  <span>Notificações</span>
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* SELETOR DESKTOP (BARRA DE 5 ABAS PRINCIPAIS ≥ 768px) */}
+        {/* SELETOR DESKTOP (BARRA DE 6 ABAS PRINCIPAIS ≥ 768px) */}
         <div className="hidden md:block bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-[1.25rem] shadow-xl mb-6">
           <TabsList className="flex w-full min-h-[48px] bg-transparent p-0 gap-1.5 mt-0">
             <TabsTrigger
@@ -728,6 +744,14 @@ export default function AdminUserDetails() {
             >
               <FolderKanban className="h-4 w-4 text-purple-300 shrink-0" />
               <span>Cadastros do Motorista</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="notificacoes"
+              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+            >
+              <Bell className="h-4 w-4 text-indigo-300 shrink-0" />
+              <span>Notificações</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -2056,6 +2080,80 @@ export default function AdminUserDetails() {
               )}
             </div>
           </div>
+        </TabsContent>
+
+        {/* ABA 6: NOTIFICAÇÕES DO MOTORISTA */}
+        <TabsContent value="notificacoes" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                  <Bell className="h-4 w-4 text-indigo-400" />
+                  Histórico de Notificações
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => { setNotifPage(1); refetchNotif(); }}
+                    disabled={isFetchingNotif}
+                    className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingNotif ? "animate-spin" : ""}`} />
+                    <span className="hidden sm:inline">Atualizar</span>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <NotificationLogsList notifications={notifData?.data || []} isLoading={isFetchingNotif} />
+
+              {notifData && notifData.total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
+                  <p className="text-xs font-semibold text-slate-400">
+                    Página {notifData.page} de {Math.max(1, Math.ceil(notifData.total / notifData.limit))} ({notifData.total} notificações)
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                      <Select value={notifLimitStr} onValueChange={(val) => { setNotifLimitStr(val); setNotifPage(1); }}>
+                        <SelectTrigger className="h-8 rounded-xl bg-slate-800/60 border-slate-700/80 text-xs text-slate-100 focus-visible:ring-0 w-[70px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="250">250</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={notifPage <= 1}
+                        onClick={() => setNotifPage((p) => p - 1)}
+                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={notifPage >= Math.ceil(notifData.total / notifData.limit)}
+                        onClick={() => setNotifPage((p) => p + 1)}
+                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -711,6 +711,7 @@ export type Database = {
           tentativas: number
           updated_at: string | null
           usuario_id: string | null
+          passageiro_id: string | null
         }
         Insert: {
           canal: string
@@ -727,6 +728,7 @@ export type Database = {
           tentativas?: number
           updated_at?: string | null
           usuario_id?: string | null
+          passageiro_id?: string | null
         }
         Update: {
           canal?: string
@@ -743,6 +745,7 @@ export type Database = {
           tentativas?: number
           updated_at?: string | null
           usuario_id?: string | null
+          passageiro_id?: string | null
         }
         Relationships: [
           {
@@ -750,6 +753,13 @@ export type Database = {
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fila_notificacoes_passageiro_id_fkey"
+            columns: ["passageiro_id"]
+            isOneToOne: false
+            referencedRelation: "passageiros"
             referencedColumns: ["id"]
           },
         ]
