@@ -123,10 +123,10 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               <Button
                 type="button"
                 onClick={onImportarContrato}
-                className="h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
+                className="hidden sm:inline-flex h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
               >
                 <UploadCloud className="w-4 h-4" />
-                <span className="hidden sm:inline">Importar Contrato</span>
+                <span>Importar Contrato</span>
               </Button>
             )}
 
@@ -237,6 +237,31 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                           <span className="font-bold text-sm tracking-tight truncate">Configurar Contrato</span>
                         </div>
                       </button>
+
+                      {onImportarContrato && (
+                        <button
+                          onClick={() => {
+                            setOpenDrawer(false);
+                            onImportarContrato();
+                          }}
+                          disabled={isDesativado || isToggling}
+                          className={cn(
+                            "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
+                            isDesativado
+                              ? "opacity-40 grayscale pointer-events-none text-slate-400"
+                              : "text-[#1a3a5c] active:bg-slate-50"
+                          )}
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
+                            <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
+                              <UploadCloud />
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-start gap-0.5 overflow-hidden">
+                            <span className="font-bold text-sm tracking-tight truncate">Importar Contrato</span>
+                          </div>
+                        </button>
+                      )}
 
                       <button
                         onClick={() => {
