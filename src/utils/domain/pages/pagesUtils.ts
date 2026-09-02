@@ -17,6 +17,18 @@ const pagesItems: PageItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: "Alunos",
+    href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
+    icon: Users,
+    permission: "passageiros.visualizar",
+  },
+  {
+    title: "Parcelas",
+    href: ROUTES.PRIVATE.MOTORISTA.BILLING,
+    icon: BadgeDollarSign,
+    permission: "cobrancas.gerenciar",
+  },
+  {
     title: "Contratos",
     href: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
     icon: FileText,
@@ -35,16 +47,10 @@ const pagesItems: PageItem[] = [
     permission: "equipe.gerenciar_monitores",
   },
   {
-    title: "Parcelas",
-    href: ROUTES.PRIVATE.MOTORISTA.BILLING,
-    icon: BadgeDollarSign,
-    permission: "cobrancas.gerenciar",
-  },
-  {
-    title: "Alunos",
-    href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-    icon: Users,
-    permission: "passageiros.visualizar",
+    title: "Gastos",
+    href: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
+    icon: TrendingDown,
+    permission: "gastos.visualizar",
   },
   {
     title: "Escolas",
@@ -57,12 +63,6 @@ const pagesItems: PageItem[] = [
     href: ROUTES.PRIVATE.MOTORISTA.VEHICLES,
     icon: Car,
     permission: "veiculos.gerenciar",
-  },
-  {
-    title: "Gastos",
-    href: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
-    icon: TrendingDown,
-    permission: "gastos.visualizar",
   },
   {
     title: "Relatórios",

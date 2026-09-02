@@ -64,20 +64,20 @@ export function usePassageirosViewModel() {
     if (tabParam && validTabs.includes(tabParam)) {
       return tabParam;
     }
-    return PassageiroTab.PASSAGEIROS;
+    return PassageiroTab.ALUNOS;
   }, [searchParams]);
 
   useEffect(() => {
-    const currentTab = searchParams.get("tab");
+    const currentTab = searchParams.get("tab") as PassageiroTab;
     if (isSubConta && currentTab === PassageiroTab.SOLICITACOES) {
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("tab", PassageiroTab.PASSAGEIROS);
+      newParams.set("tab", PassageiroTab.ALUNOS);
       setSearchParams(newParams, { replace: true });
       return;
     }
-    if (!currentTab || !Object.values(PassageiroTab).includes(currentTab as PassageiroTab)) {
+    if (!currentTab || !Object.values(PassageiroTab).includes(currentTab)) {
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("tab", PassageiroTab.PASSAGEIROS);
+      newParams.set("tab", PassageiroTab.ALUNOS);
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, setSearchParams, isSubConta]);

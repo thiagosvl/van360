@@ -29,8 +29,8 @@ export const ROUTES = {
     },
     MOTORISTA: {
       HOME: "/inicio",
-      PASSENGERS: "/passageiros",
-      PASSENGER_DETAILS: "/passageiros/:passageiro_id",
+      PASSENGERS: "/alunos",
+      PASSENGER_DETAILS: "/alunos/:passageiro_id",
       BILLING: "/parcelas",
       SCHOOLS: "/escolas",
       VEHICLES: "/veiculos",

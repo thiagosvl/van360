@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { X } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BottomNavbar } from "@/components/navigation/BottomNavbar";
@@ -14,11 +14,15 @@ import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
 import { Outlet } from "react-router-dom";
+import { apiClient } from "@/services/api/client";
+import { sessionManager } from "@/services/sessionManager";
+import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
+import { ROUTES } from "@/constants/routes";
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
 function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) {
-  const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
+  const { isMobileMenuOpen, setIsMobileMenuOpen, openConfirmationDialog, setIsGlobalLoading } = useLayout();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
@@ -75,12 +79,38 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
     currentTranslate.current = 0;
   };
 
+  const handleSignOut = async () => {
+    setIsGlobalLoading(true, "Encerrando sessão...");
+    try {
+      try {
+        await apiClient.post("/auth/logout");
+      } catch {
+      }
+      await sessionManager.signOut();
+      window.location.href = ROUTES.PUBLIC.LOGIN;
+    } catch {
+      clearAppSession();
+      window.location.href = ROUTES.PUBLIC.LOGIN;
+    }
+  };
+
+  const handleConfirmSignOut = () => {
+    openConfirmationDialog({
+      title: "Deseja sair da conta?",
+      description: "Você será desconectado deste dispositivo e precisará entrar novamente.",
+      confirmText: "Sim, sair",
+      cancelText: "Cancelar",
+      variant: "destructive",
+      onConfirm: async () => {
+        await handleSignOut();
+      },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header fixo para mobile e desktop */}
       <AppNavbar role={role} />
 
-      {/* Sidebar fixa apenas para Desktop */}
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4">
           <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center shadow-sm shrink-0 p-2">
@@ -101,6 +131,16 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
         </div>
         <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5">
           <AppSidebar role={role} />
+        </div>
+        <div className="p-4 border-t border-white/5">
+          <button
+            type="button"
+            onClick={handleConfirmSignOut}
+            className="w-full flex items-center gap-3.5 rounded-2xl px-4 py-2.5 text-[14px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer group"
+          >
+            <LogOut className="h-5 w-5 shrink-0 text-slate-400 group-hover:text-rose-400 transition-colors" />
+            <span className="truncate">Sair da conta</span>
+          </button>
         </div>
       </aside>
 

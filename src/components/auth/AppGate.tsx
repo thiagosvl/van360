@@ -28,9 +28,15 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     publicPaths.includes(location.pathname) ||
     location.pathname.startsWith("/cadastro-passageiro");
 
+  const hasAuthTokensInUrl = 
+    window.location.hash.includes("access_token") || 
+    window.location.search.includes("code=") ||
+    window.location.search.includes("token_hash=") ||
+    window.location.search.includes("token=");
+
   const userWithTipo = session?.user as (typeof session.user & { tipo?: UserType }) | null;
   const isDriverInSession = userWithTipo?.tipo === UserType.MOTORISTA;
-  const isLoading = sessionLoading || responsavelLoading || (!!session && profileLoading && !isDriverInSession);
+  const isLoading = sessionLoading || responsavelLoading || (!!session && profileLoading && !isDriverInSession) || (!session && hasAuthTokensInUrl);
 
   if (isLoading) {
     return <InitialLoading darkMode={location.pathname.startsWith("/admin")} />;

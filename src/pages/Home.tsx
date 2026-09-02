@@ -265,6 +265,11 @@ const Home = () => {
                         label="Alunos"
                         value={contadores.passageirosAtivos}
                         icon={Users}
+                        onClick={() =>
+                          navigateTo(
+                            `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.ALUNOS}`
+                          )
+                        }
                         loading={isLoading}
                       />
                     )}
@@ -273,6 +278,7 @@ const Home = () => {
                         label="Escolas"
                         value={contadores.escolasAtivas}
                         icon={GraduationCap}
+                        onClick={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SCHOOLS)}
                         loading={isLoading}
                       />
                     )}

@@ -84,7 +84,7 @@ export enum CobrancaTipoPagamento {
 }
 
 export enum PassageiroTab {
-  PASSAGEIROS = "passageiros",
+  ALUNOS = "alunos",
   SOLICITACOES = "solicitacoes",
 }
 
