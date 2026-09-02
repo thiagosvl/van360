@@ -1,9 +1,10 @@
-﻿import { apiClient } from "../client";
+import { apiClient } from "../client";
 
 export interface CalculatorBaselineDTO {
   motoristas: {
     total: number;
     ativos: number;
+    pagantes: number;
     mensal: number;
     anual: number;
     vitalicio: number;

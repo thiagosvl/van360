@@ -1,4 +1,4 @@
-﻿import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -132,10 +132,10 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               Motoristas Ativos
             </span>
             <span className="text-xl font-black text-white">
-              {isBaselineLoading ? "..." : baseline?.motoristas.ativos ?? 4}
+              {isBaselineLoading ? "..." : baseline?.motoristas.ativos ?? 5}
             </span>
             <span className="text-[10px] text-slate-400 block mt-1">
-              {baseline?.motoristas.anual ?? 2} Anuais · {baseline?.motoristas.mensal ?? 2} Mensais
+              {baseline?.motoristas.pagantes ?? 4} Pagantes ({baseline?.motoristas.anual ?? 2}A/{baseline?.motoristas.mensal ?? 2}M) · {baseline?.motoristas.vitalicio ?? 1} Vit.
             </span>
           </div>
 
@@ -146,7 +146,9 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
             <span className="text-xl font-black text-white">
               {isBaselineLoading ? "..." : baseline?.passageiros.notificaveis ?? 259}
             </span>
-            <span className="text-[10px] text-slate-400 block mt-1">Ativos com cobrança</span>
+            <span className="text-[10px] text-slate-400 block mt-1">
+              {baseline?.passageiros.total ?? 268} totais ({baseline?.passageiros.ativos ?? 266} ativos)
+            </span>
           </div>
 
           <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
@@ -154,9 +156,9 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               Média Alunos/Van
             </span>
             <span className="text-xl font-black text-white">
-              {isBaselineLoading ? "..." : `${baseline?.passageiros.mediaPorMotorista ?? 65} alunos`}
+              {isBaselineLoading ? "..." : `${baseline?.passageiros.mediaPorMotorista ?? 67} alunos`}
             </span>
-            <span className="text-[10px] text-slate-400 block mt-1">Por motorista com base</span>
+            <span className="text-[10px] text-slate-400 block mt-1">Vans em rota ativa</span>
           </div>
 
           <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
@@ -167,7 +169,7 @@ export function CalculatorBaseTab({ calcHook }: { calcHook: any }) {
               {isBaselineLoading ? "..." : baseline?.waba.totalMensagensMes ?? 74}
             </span>
             <span className="text-[10px] text-slate-400 block mt-1">
-              ≈ {formatCurrency(baseline?.waba.custoEstimadoBrl ?? 12.34)}
+              ≈ {formatCurrency(baseline?.waba.custoEstimadoBrl ?? 2.81)}
             </span>
           </div>
 
