@@ -99,10 +99,15 @@ export default function AdminDispatchNotificationDialog({
   const handleDispatch = async () => {
     if (!userId || !selectedEventId) return;
 
-    await dispatchMutation.mutateAsync({
-      id: userId,
-      data: { evento: selectedEventId },
-    });
+    try {
+      await dispatchMutation.mutateAsync({
+        id: userId,
+        data: { evento: selectedEventId },
+      });
+      onClose();
+    } catch {
+      // erro tratado no onError do hook
+    }
   };
 
   const formattedPhone = userPhone ? phoneMask(userPhone) : null;

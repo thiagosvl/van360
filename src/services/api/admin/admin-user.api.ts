@@ -349,8 +349,11 @@ export interface DispatchDriverNotificationPayload {
 }
 
 export interface DispatchDriverNotificationResponse {
-  sent: boolean;
-  message: string;
+  success?: boolean;
+  sent?: boolean;
+  processed?: boolean;
+  message?: string;
+  result?: unknown;
 }
 
 const BASE = "/admin";

@@ -131,17 +131,20 @@ export function useDispatchDriverNotificationAdmin() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: DispatchDriverNotificationPayload }) =>
       adminUserApi.dispatchNotification(id, data),
-    onSuccess: (res) => {
-      if (res.sent) {
-        toast.success(res.message);
+    onSuccess: (res, variables) => {
+      const isSuccess = res.success !== false;
+      const message = (res as { message?: string }).message || "Notificação disparada com sucesso!";
+      if (isSuccess) {
+        toast.success(message);
       } else {
-        toast.warning(res.message);
+        toast.warning(message);
       }
+      qc.invalidateQueries({ queryKey: ["admin", "users", variables.id, "notifications"] });
       qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: (err: unknown) => {
-      const apiError = err as { response?: { data?: { error?: string } } };
-      const msg = apiError?.response?.data?.error || "Erro ao disparar notificação.";
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao disparar notificação.";
       toast.error(msg);
     },
   });
