@@ -29,7 +29,7 @@ export default function AdminPassengerNotificationsDialog({
   });
 
   return (
-    <AdminBaseDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()} maxWidth="2xl">
+    <AdminBaseDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()} maxWidth="4xl">
       <AdminBaseDialog.Header
         title={`Notificações — ${passageiroNome}`}
         subtitle="Histórico de mensagens disparadas para os responsáveis deste aluno"
