@@ -31,7 +31,7 @@ import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary"
 import { UnifiedEmptyState } from "@/components/empty";
 import { forwardRef } from "react";
 import { getNowBR } from "@/utils/dateUtils";
-import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
+import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString, parseMonthYearFromDateString } from "@/utils/domain";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 
 interface CarteirinhaCobrancasProps {
@@ -133,6 +133,79 @@ export const CarteirinhaCobrancas = ({
   const isIncomplete = isPassageiroIncompleto(passageiro);
 
 
+  const emptyStateInfo = useMemo(() => {
+    if (passageiro.isento) {
+      return {
+        icon: ShieldCheck,
+        title: "Aluno Isento",
+        description: "Este aluno foi marcado como isento e não possui cobranças de mensalidade.",
+      };
+    }
+
+    if (selectedYear < currentYear) {
+      return {
+        icon: History,
+        title: `Nenhuma parcela em ${selectedYear}`,
+        description: `Não foram encontradas cobranças registradas para este aluno no ano de ${selectedYear}.`,
+      };
+    }
+
+    const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
+    const inicio = parseMonthYearFromDateString(
+      passageiro.data_inicio_cobranca || passageiro.created_at || profile?.created_at
+    );
+
+    const isEncerrado = fim && (fim.year < selectedYear || (fim.year === selectedYear && fim.month < currentMonth));
+
+    if (isEncerrado) {
+      const mesFimNome = getMesNome(fim.month);
+      const mesInicioNome = inicio ? getMesNome(inicio.month) : null;
+
+      if (hasRetroactiveMonths) {
+        return {
+          icon: History,
+          title: `Cobrança finalizada em ${mesFimNome}`,
+          description: mesInicioNome
+            ? `A cobrança deste aluno foi configurada de ${mesInicioNome} até ${mesFimNome}. Para lançar os meses anteriores, use o botão "+ Registrar Parcela" acima.`
+            : `A cobrança deste aluno terminou em ${mesFimNome}. Para lançar os meses anteriores, use o botão "+ Registrar Parcela" acima.`,
+        };
+      }
+
+      return {
+        icon: History,
+        title: `Cobrança finalizada em ${mesFimNome}`,
+        description: `A cobrança deste aluno terminou em ${mesFimNome}. Se ele continuar na van, basta editar os dados do aluno e alterar o mês final.`,
+      };
+    }
+
+    const isFuturo = inicio && (inicio.year > selectedYear || (inicio.year === selectedYear && inicio.month > currentMonth));
+
+    if (isFuturo) {
+      const mesInicioNome = getMesNome(inicio.month);
+      return {
+        icon: History,
+        title: `Cobrança inicia em ${mesInicioNome}`,
+        description: `As parcelas deste aluno começarão a ser geradas automaticamente a partir de ${mesInicioNome}.`,
+      };
+    }
+
+    return {
+      icon: History,
+      title: "Nenhuma parcela ativa",
+      description: "Não há parcelas pendentes para o período selecionado.",
+    };
+  }, [
+    passageiro.isento,
+    passageiro.data_fim_cobranca,
+    passageiro.data_inicio_cobranca,
+    passageiro.created_at,
+    profile?.created_at,
+    selectedYear,
+    currentYear,
+    currentMonth,
+    hasRetroactiveMonths,
+  ]);
+
   const resumo = useMemo(() => {
     return displayCobrancas.reduce(
       (acc, c) => {
@@ -190,13 +263,9 @@ export const CarteirinhaCobrancas = ({
       <div className="space-y-3">
         {displayCobrancas.length === 0 ? (
           <UnifiedEmptyState
-            icon={passageiro.isento ? ShieldCheck : History}
-            title={passageiro.isento ? "Passageiro Isento de Parcelas" : "Sem parcelas configuradas"}
-            description={
-              passageiro.isento
-                ? "Este passageiro foi cadastrado com isenção de parcelas. Nenhuma cobrança ou parcela é gerada automaticamente."
-                : "Defina o valor da parcela nas informações do passageiro para ativar a geração automática."
-            }
+            icon={emptyStateInfo.icon}
+            title={emptyStateInfo.title}
+            description={emptyStateInfo.description}
           />
         ) : (
           <AnimatePresence mode="popLayout">

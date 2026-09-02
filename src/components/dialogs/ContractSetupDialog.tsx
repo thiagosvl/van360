@@ -1018,7 +1018,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             onClick={() => setEditTitleDialog(null)}
           />
           <BaseDialog.Action
-            label="Salvar Título"
+            label="Continuar"
             disabled={!tempTitleInput.trim()}
             onClick={() => {
               if (editTitleDialog && tempTitleInput.trim() !== "") {
@@ -1155,41 +1155,83 @@ function SectionItemCard({
           </div>
         </div>
 
-        {/* Subheader da Seção: Contador de Cláusulas e Botão Prático de Expansão */}
         <div className="flex items-center justify-between gap-2 pt-0.5">
           <span
             className={cn(
               "px-2 py-0.5 rounded-full text-[9px] font-bold transition-colors",
-              isSecaoEmpty ? "bg-amber-100 text-amber-700" : " text-slate-600"
+              isSecaoEmpty ? "bg-amber-100 text-amber-700" : "text-slate-600"
             )}
           >
             {secao.clausulas.length} {secao.clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
           </span>
 
-          <button
-            type="button"
-            onClick={onToggleExpandSection}
-            className="px-2.5 py-1 bg-white hover:bg-slate-200/60 active:bg-slate-300/60 text-[#1a3a5c] border border-slate-200/80 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors shadow-2xs"
-          >
-            {isSectionExpanded ? (
-              <>
-                <ChevronUp className="w-3 h-3 text-slate-500" />
-                <span>Recolher</span>
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-3 h-3 text-slate-500" />
-                <span>Ver Cláusulas</span>
-              </>
-            )}
-          </button>
+          {secao.clausulas.length > 1 && (
+            <button
+              type="button"
+              onClick={onToggleExpandSection}
+              className="px-2.5 py-1 bg-white hover:bg-slate-200/60 active:bg-slate-300/60 text-[#1a3a5c] border border-slate-200/80 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors shadow-2xs"
+            >
+              {isSectionExpanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3 text-slate-500" />
+                  <span>Recolher</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3 text-slate-500" />
+                  <span>Ver todas</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Conteúdo da Seção (apenas quando expandida) */}
-      {isSectionExpanded && (
+      {isSecaoEmpty && (
+        <div className="p-3 bg-amber-50/60 rounded-xl border border-dashed border-amber-200 text-center space-y-2">
+          <p className="text-xs text-amber-700 font-medium">Nenhuma cláusula cadastrada nesta seção.</p>
+          <button
+            type="button"
+            onClick={onAddClause}
+            className="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-bold text-xs rounded-lg inline-flex items-center gap-1.5 shadow-2xs transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 text-amber-600" />
+            Adicionar Cláusula
+          </button>
+        </div>
+      )}
+
+      {!isSecaoEmpty && !isSectionExpanded && (
+        <div className="pt-0.5">
+          <ClauseItemCard
+            key={secao.clausulas[0].id}
+            clause={secao.clausulas[0]}
+            cIdx={0}
+            sIdx={sIdx}
+            totalSections={totalSections}
+            totalClausesInSection={secao.clausulas.length}
+            showErrors={showErrors}
+            isExpanded={expandedClauseKey === secao.clausulas[0].id}
+            isPreviewOnly={secao.clausulas.length > 1}
+            onToggleExpand={() => {
+              if (secao.clausulas.length > 1) {
+                onToggleExpandSection();
+              } else {
+                setExpandedClauseKey(expandedClauseKey === secao.clausulas[0].id ? null : secao.clausulas[0].id);
+              }
+            }}
+            clauseRefs={clauseRefs}
+            onMoveClauseUp={onMoveClauseUp}
+            onMoveClauseDown={onMoveClauseDown}
+            onClauseChange={(text) => onClauseChange(secao.clausulas[0].id, text)}
+            onClearClause={() => onClearClause(secao.clausulas[0].id)}
+            onDeleteClause={() => onDeleteClause(secao.clausulas[0].id)}
+          />
+        </div>
+      )}
+
+      {!isSecaoEmpty && isSectionExpanded && (
         <>
-          {/* Lista de Cláusulas dentro da Seção */}
           <div className="space-y-2.5 pt-1">
             {secao.clausulas.map((clause, cIdx) => (
               <ClauseItemCard
@@ -1212,8 +1254,7 @@ function SectionItemCard({
             ))}
           </div>
 
-          {/* Botão de Adicionar Cláusula na Seção */}
-          <div className="pt-0.5">
+          <div className="pt-0.5 space-y-1.5">
             <button
               type="button"
               onClick={onAddClause}
@@ -1222,6 +1263,17 @@ function SectionItemCard({
               <Plus className="w-3.5 h-3.5 text-blue-600" />
               Adicionar Cláusula
             </button>
+
+            {secao.clausulas.length > 1 && (
+              <button
+                type="button"
+                onClick={onToggleExpandSection}
+                className="w-full py-1 text-slate-500 hover:text-[#1a3a5c] text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+              >
+                <ChevronUp className="w-3 h-3 text-slate-400" />
+                <span>Recolher cláusulas</span>
+              </button>
+            )}
           </div>
         </>
       )}
@@ -1237,6 +1289,7 @@ interface ClauseItemCardProps {
   totalClausesInSection: number;
   showErrors: boolean;
   isExpanded: boolean;
+  isPreviewOnly?: boolean;
   onToggleExpand: () => void;
   clauseRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
   onMoveClauseUp: (sIdx: number, cIdx: number) => void;
@@ -1254,6 +1307,7 @@ function ClauseItemCard({
   totalClausesInSection,
   showErrors,
   isExpanded,
+  isPreviewOnly = false,
   onToggleExpand,
   clauseRefs,
   onMoveClauseUp,
@@ -1285,74 +1339,74 @@ function ClauseItemCard({
         className="p-2.5 cursor-pointer select-none space-y-1.5"
       >
         <div className="flex items-center justify-between gap-1.5">
-          {/* Esquerda: Identificador da Cláusula (Direto sem caixa/borda) */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <span className="font-black text-xs uppercase tracking-wide text-[#1a3a5c] shrink-0">
               CLÁUSULA {cIdx + 1}
             </span>
           </div>
 
-          {/* Direita: Botões de Reordenação + Edição + Exclusão */}
-          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-            {!isExpanded && (
-              <div className="flex items-center bg-slate-100/80 rounded-md p-0.5 shrink-0 border border-slate-200/60">
-                <button
-                  type="button"
-                  onClick={() => onMoveClauseUp(sIdx, cIdx)}
-                  disabled={isFirstClauseOverall}
-                  className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
-                  title={cIdx === 0 ? "Mover para a seção anterior" : "Subir Cláusula"}
-                >
-                  <ArrowUp className="w-3 h-3" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onMoveClauseDown(sIdx, cIdx)}
-                  disabled={isLastClauseOverall}
-                  className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
-                  title={cIdx === totalClausesInSection - 1 ? "Mover para a próxima seção" : "Descer Cláusula"}
-                >
-                  <ArrowDown className="w-3 h-3" />
-                </button>
-              </div>
-            )}
+          {!isPreviewOnly && (
+            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+              {!isExpanded && (
+                <div className="flex items-center bg-slate-100/80 rounded-md p-0.5 shrink-0 border border-slate-200/60">
+                  <button
+                    type="button"
+                    onClick={() => onMoveClauseUp(sIdx, cIdx)}
+                    disabled={isFirstClauseOverall}
+                    className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
+                    title={cIdx === 0 ? "Mover para a seção anterior" : "Subir Cláusula"}
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onMoveClauseDown(sIdx, cIdx)}
+                    disabled={isLastClauseOverall}
+                    className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
+                    title={cIdx === totalClausesInSection - 1 ? "Mover para a próxima seção" : "Descer Cláusula"}
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
 
-            <button
-              type="button"
-              onClick={onToggleExpand}
-              className={cn(
-                "px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all border",
-                isExpanded
-                  ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-2xs"
-                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-[#1a3a5c]"
-              )}
-            >
+              <button
+                type="button"
+                onClick={onToggleExpand}
+                className={cn(
+                  "px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all border",
+                  isExpanded
+                    ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-2xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-[#1a3a5c]"
+                )}
+              >
+                {isExpanded ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <Pencil className="w-3 h-3 text-slate-400" />
+                )}
+              </button>
               {isExpanded ? (
-                <Check className="w-3.5 h-3.5" />
+                <button
+                  type="button"
+                  onClick={onClearClause}
+                  className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                  title="Limpar conteúdo"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                </button>
               ) : (
-                <Pencil className="w-3 h-3 text-slate-400" />
+                <button
+                  type="button"
+                  onClick={() => onDeleteClause()}
+                  className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                  title="Excluir Cláusula"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               )}
-            </button>
-            {isExpanded ? (
-              <button
-                type="button"
-                onClick={onClearClause}
-                className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
-                title="Limpar conteúdo"
-              >
-                <Eraser className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onDeleteClause()}
-                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                title="Excluir Cláusula"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {!isExpanded && (

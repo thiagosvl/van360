@@ -26,43 +26,47 @@ export interface FirstChargeDialogProps {
 
 const STEP_INDEX: Record<Step, number> = {
   CONTRACT_CHECK: 0,
-  REGISTER_CHECK: 1,
-  PAYMENT_STATUS: 2,
-  PAYMENT_METHOD: 3,
+  PAYMENT_STATUS: 1,
+  PAYMENT_METHOD: 2,
 };
 
 export default function FirstChargeDialog({ isOpen, onClose, passageiro }: FirstChargeDialogProps) {
   const {
     step,
     showContractStep,
+    showPaymentStep,
     paymentStatus,
     setPaymentStatus,
     paymentMethod,
     setPaymentMethod,
     wantsContract,
     setWantsContract,
-    wantsMonthlyCharge,
-    setWantsMonthlyCharge,
     handleBack,
     handleNext,
     isLoading,
-  } = useFirstChargeViewModel({ passageiro, onClose });
+  } = useFirstChargeViewModel({ passageiro, onClose, isOpen });
+
+  if (!isOpen || (!showContractStep && !showPaymentStep)) {
+    return null;
+  }
 
   const currentMonthName = getNowBR().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
   const firstNamePassageiro = formatShortName(passageiro.nome);
 
-  const totalSteps = passageiro.isento ? 1 : (showContractStep ? 4 : 3);
-  const stepIndex = passageiro.isento ? 0 : (showContractStep ? STEP_INDEX[step] : STEP_INDEX[step] - 1);
+  const showSteps = showContractStep && showPaymentStep;
+  const totalSteps = step === "PAYMENT_METHOD" ? 3 : 2;
+  const stepIndex = STEP_INDEX[step];
 
   const primaryButtonText = () => {
     if (step === "CONTRACT_CHECK") {
-      if (passageiro.isento) return wantsContract ? "Gerar e Enviar" : "Concluir";
+      if (!showPaymentStep) return wantsContract ? "Gerar e Enviar" : "Concluir";
       return wantsContract ? "Gerar e Enviar" : "Próximo";
     }
-    if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Confirmar";
+    if (step === "PAYMENT_STATUS") {
+      return paymentStatus === CobrancaStatus.PAGO ? "Próximo" : "Confirmar";
+    }
     if (step === "PAYMENT_METHOD") return "Confirmar";
-    if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Confirmar";
     return "Próximo";
   };
 
@@ -71,15 +75,14 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
     (step === "PAYMENT_STATUS" && !paymentStatus) ||
     (step === "PAYMENT_METHOD" && !paymentMethod);
 
-  const isFirstStep = passageiro.isento ||
-    (showContractStep && step === "CONTRACT_CHECK") ||
-    (!showContractStep && step === "REGISTER_CHECK");
+  const isFirstStep = (showContractStep && step === "CONTRACT_CHECK") ||
+    (!showContractStep && step === "PAYMENT_STATUS");
 
-  const dialogTitle = passageiro.isento
-    ? "Emissão de Contrato"
-    : (showContractStep ? "Contrato e Parcela" : "Parcela do Mês");
+  const dialogTitle = showContractStep && showPaymentStep
+    ? "Contrato e Parcela"
+    : (showContractStep ? "Emissão de Contrato" : "Parcela do Mês");
 
-  const dialogIcon = passageiro.isento
+  const dialogIcon = showContractStep && !showPaymentStep
     ? <FileText className="w-5 h-5 opacity-80" />
     : <Wallet className="w-5 h-5 opacity-80" />;
 
@@ -88,7 +91,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
       <BaseDialog.Header
         title={dialogTitle}
         icon={dialogIcon}
-        showSteps={!passageiro.isento}
+        showSteps={showSteps}
         currentStep={stepIndex + 1}
         totalSteps={totalSteps}
         hideCloseButton
@@ -158,63 +161,6 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
           </div>
         )}
 
-        {step === "REGISTER_CHECK" && (
-          <div className="space-y-5">
-            <div className="py-2">
-              <div className="space-y-1">
-                <h2 className="text-sm font-semibold text-slate-700">
-                  Deseja registrar a parcela de <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
-                </h2>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setWantsMonthlyCharge(true)}
-                className={cn(
-                  "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
-                  wantsMonthlyCharge
-                    ? "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200"
-                    : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
-                )}
-              >
-                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", wantsMonthlyCharge ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-bold", wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]")}>Sim, gerar parcela</p>
-                  <p className="text-xs font-medium text-slate-500 mt-0.5">A parcela será registrada e já aparecerá na carteirinha</p>
-                </div>
-                <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300")}>
-                  {wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setWantsMonthlyCharge(false)}
-                className={cn(
-                  "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
-                  !wantsMonthlyCharge
-                    ? "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200"
-                    : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
-                )}
-              >
-                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", !wantsMonthlyCharge ? "bg-slate-400 text-white shadow-lg shadow-slate-200" : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>
-                  <AlertCircle className="w-6 h-6" />
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className={cn("text-[13px] font-bold", !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]")}>Não, deixar para depois</p>
-                  <p className="text-xs font-medium text-slate-500 mt-0.5">Você poderá registrar as parcelas manualmente quando quiser</p>
-                </div>
-                <div className={cn("border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full", !wantsMonthlyCharge ? "border-slate-400 bg-slate-400" : "border-slate-300")}>
-                  {!wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
         {step === "PAYMENT_STATUS" && (
           <div className="space-y-5">
             <div className="py-2">
@@ -237,7 +183,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
                 {
                   value: CobrancaStatus.PENDENTE,
                   label: "Não, ainda vou receber",
-                  sublabel: "Registrar como pendente",
+                  sublabel: "Manter como pendente",
                   icon: <AlertCircle className="w-6 h-6" />,
                   activeColor: "border-amber-500 bg-amber-50/50 shadow-lg shadow-amber-500/5 ring-1 ring-amber-200",
                   iconActive: "bg-amber-500 text-white shadow-lg shadow-amber-200",

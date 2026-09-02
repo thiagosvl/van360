@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 import { isMotoristaTitular } from "@/utils/userUtils";
 
@@ -109,7 +110,13 @@ export function useDashboardViewModel() {
         queryClient.invalidateQueries({ queryKey: ["passageiros"] });
         if (passageiro && !isFirstPassageiro) {
           const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
-          if (!passageiro.isento || hasContractConfig) {
+          const now = getNowBR();
+          const hasPayment = !passageiro.isento && shouldGeneratePassengerProjection({
+            passageiro,
+            targetMonth: now.getMonth() + 1,
+            targetYear: now.getFullYear(),
+          });
+          if (hasPayment || hasContractConfig) {
             openFirstChargeDialog({ passageiro });
           } else {
             navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));

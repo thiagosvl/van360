@@ -32,6 +32,8 @@ import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "../business/usePermissions";
+import { getNowBR } from "@/utils/dateUtils";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 export function usePassageirosViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -311,7 +313,13 @@ export function usePassageirosViewModel() {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         } else if (passageiro && !isFirstPassageiro) {
           const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
-          if (!passageiro.isento || hasContractConfig) {
+          const now = getNowBR();
+          const hasPayment = !passageiro.isento && shouldGeneratePassengerProjection({
+            passageiro,
+            targetMonth: now.getMonth() + 1,
+            targetYear: now.getFullYear(),
+          });
+          if (hasPayment || hasContractConfig) {
             openFirstChargeDialog({ passageiro });
           } else {
             navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));

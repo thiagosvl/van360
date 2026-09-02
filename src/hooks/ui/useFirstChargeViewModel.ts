@@ -5,30 +5,38 @@ import { CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { calculateSafeDueDate, toLocalDateString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 interface FirstChargeViewModelProps {
   passageiro: Passageiro;
   onClose: () => void;
+  isOpen: boolean;
 }
 
-export type FirstChargeStep = "CONTRACT_CHECK" | "REGISTER_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
+export type FirstChargeStep = "CONTRACT_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
 
-export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeViewModelProps) {
+export function useFirstChargeViewModel({ passageiro, onClose, isOpen }: FirstChargeViewModelProps) {
   const { profile } = useProfile();
   const showContractStep = !!profile?.config_contrato?.usar_contratos;
 
-  const [step, setStep] = useState<FirstChargeStep>(showContractStep ? "CONTRACT_CHECK" : "REGISTER_CHECK");
+  const now = getNowBR();
+  const showPaymentStep = !passageiro.isento && shouldGeneratePassengerProjection({
+    passageiro,
+    targetMonth: now.getMonth() + 1,
+    targetYear: now.getFullYear(),
+  });
+
+  const [step, setStep] = useState<FirstChargeStep>(showContractStep ? "CONTRACT_CHECK" : "PAYMENT_STATUS");
   const [paymentStatus, setPaymentStatus] = useState<CobrancaStatus | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [wantsContract, setWantsContract] = useState<boolean>(showContractStep);
-  const [wantsMonthlyCharge, setWantsMonthlyCharge] = useState<boolean>(true);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
 
   const [customValue] = useState<string>(
@@ -38,22 +46,29 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
   const createCobranca = useCreateCobranca();
   const createContrato = useCreateContrato();
   const { openGerarContratoValidadorDialog } = useLayout();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen && !showContractStep && !showPaymentStep) {
+      onClose();
+      if (passageiro?.id) {
+        navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+      }
+    }
+  }, [isOpen, showContractStep, showPaymentStep, onClose, passageiro?.id, navigate]);
 
   const handleBack = useCallback(() => {
-    if (step === "REGISTER_CHECK") {
+    if (step === "PAYMENT_STATUS") {
       if (showContractStep) {
         setStep("CONTRACT_CHECK");
-        setWantsMonthlyCharge(true);
+        setPaymentStatus(null);
+        setPaymentMethod("");
       }
-    } else if (step === "PAYMENT_STATUS") {
-      setStep("REGISTER_CHECK");
-      setPaymentStatus(null);
-      setPaymentMethod("");
     } else if (step === "PAYMENT_METHOD") {
       setStep("PAYMENT_STATUS");
       setPaymentMethod("");
     }
-  }, [step, showContractStep, setWantsMonthlyCharge, setPaymentStatus, setPaymentMethod]);
+  }, [step, showContractStep]);
 
   const submitCobranca = useCallback(async (status: CobrancaStatus) => {
     const today = getNowBR();
@@ -92,14 +107,12 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       console.error(err);
       throw err;
     }
-  }, [passageiro, customValue, paymentMethod, createCobranca, onClose]);
-
-  const navigate = useNavigate();
+  }, [passageiro, customValue, paymentMethod, createCobranca]);
 
   const finalizeFlow = useCallback(async (status?: CobrancaStatus) => {
     setIsGeneratingContract(true);
     try {
-      if (status) {
+      if (status === CobrancaStatus.PAGO) {
         await submitCobranca(status);
       }
 
@@ -124,20 +137,11 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
 
   const handleNext = useCallback(async () => {
     if (step === "CONTRACT_CHECK") {
-      if (passageiro.isento) {
-        await finalizeFlow();
+      if (showPaymentStep) {
+        setStep("PAYMENT_STATUS");
         return;
       }
-      setStep("REGISTER_CHECK");
-      return;
-    }
-
-    if (step === "REGISTER_CHECK") {
-      if (wantsMonthlyCharge) {
-        setStep("PAYMENT_STATUS");
-      } else {
-        await finalizeFlow();
-      }
+      await finalizeFlow();
       return;
     }
 
@@ -146,7 +150,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       if (paymentStatus === CobrancaStatus.PAGO) {
         setStep("PAYMENT_METHOD");
       } else {
-        await finalizeFlow(CobrancaStatus.PENDENTE);
+        await finalizeFlow();
       }
       return;
     }
@@ -158,19 +162,18 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       }
       await finalizeFlow(CobrancaStatus.PAGO);
     }
-  }, [step, wantsMonthlyCharge, paymentStatus, paymentMethod, finalizeFlow]);
+  }, [step, showPaymentStep, paymentStatus, paymentMethod, finalizeFlow]);
 
   return {
     step,
     showContractStep,
+    showPaymentStep,
     paymentStatus,
     setPaymentStatus,
     paymentMethod,
     setPaymentMethod,
     wantsContract,
     setWantsContract,
-    wantsMonthlyCharge,
-    setWantsMonthlyCharge,
     handleBack,
     handleNext,
     isLoading: createCobranca.isPending || isGeneratingContract,

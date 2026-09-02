@@ -175,7 +175,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                     className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
                   >
                     {isPreviewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4 opacity-70" />}
-                    Visualizar Modelo PDF
+                    Visualizar Contrato Modelo
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -291,7 +291,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                           </div>
                         </div>
                         <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Visualizar Modelo PDF</span>
+                          <span className="font-bold text-sm tracking-tight truncate">Visualizar Contrato Modelo</span>
                         </div>
                       </button>
 
