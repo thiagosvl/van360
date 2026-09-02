@@ -56,6 +56,16 @@ const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
     ],
     category: "Operacional",
   },
+  {
+    id: NotificationEventEnum.MOTORISTA_ASSINATURA_VENCENDO,
+    title: "Assinatura SaaS a Vencer",
+    description: "Envia o lembrete de renovação da assinatura com código Pix Copia e Cola e link de pagamento.",
+    channels: [
+      { type: "whatsapp", label: "WhatsApp" },
+      { type: "email", label: "E-mail" },
+    ],
+    category: "SaaS / Financeiro",
+  },
 ];
 
 function ChannelBadge({ type, label }: { type: NotificationChannelType; label: string }) {
