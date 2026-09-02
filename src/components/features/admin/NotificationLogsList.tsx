@@ -30,6 +30,10 @@ import {
   getAudienceInfo,
   formatRecipientContact,
 } from "@/utils/formatters/notificationEvents";
+import {
+  NotificationChannelEnum,
+  NotificationStatusEnum,
+} from "@/types/enums";
 
 interface NotificationLogsListProps {
   notifications: AdminNotificationLogItem[];
@@ -46,7 +50,7 @@ const CATEGORY_TABS: { key: NotificationCategoryEnum; label: string }[] = [
 
 function renderChannelBadge(canal: string) {
   const norm = (canal || "").toUpperCase();
-  if (norm === "FIREBASE") {
+  if (norm === NotificationChannelEnum.FIREBASE) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20 shadow-sm">
         <Smartphone className="h-3.5 w-3.5 text-amber-400" />
@@ -54,7 +58,7 @@ function renderChannelBadge(canal: string) {
       </span>
     );
   }
-  if (norm === "WABA" || norm === "EVOLUTION") {
+  if (norm === NotificationChannelEnum.WABA || norm === NotificationChannelEnum.EVOLUTION) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shadow-sm">
         <MessageSquare className="h-3.5 w-3.5 text-emerald-400" />
@@ -62,7 +66,7 @@ function renderChannelBadge(canal: string) {
       </span>
     );
   }
-  if (norm === "RESEND") {
+  if (norm === NotificationChannelEnum.RESEND) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20 shadow-sm">
         <Mail className="h-3.5 w-3.5 text-purple-400" />
@@ -70,7 +74,7 @@ function renderChannelBadge(canal: string) {
       </span>
     );
   }
-  if (norm === "SMS") {
+  if (norm === NotificationChannelEnum.SMS) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-sky-500/10 text-sky-300 border border-sky-500/20 shadow-sm">
         <MessageCircle className="h-3.5 w-3.5 text-sky-400" />
@@ -78,7 +82,7 @@ function renderChannelBadge(canal: string) {
       </span>
     );
   }
-  if (norm === "TELEGRAM") {
+  if (norm === NotificationChannelEnum.TELEGRAM) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-sm">
         <Send className="h-3.5 w-3.5 text-sky-400" />
@@ -95,7 +99,7 @@ function renderChannelBadge(canal: string) {
 
 function renderStatusBadge(status: string) {
   const norm = (status || "").toUpperCase();
-  if (norm === "SENT") {
+  if (norm === NotificationStatusEnum.SENT) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -103,7 +107,7 @@ function renderStatusBadge(status: string) {
       </span>
     );
   }
-  if (norm === "FAILED") {
+  if (norm === NotificationStatusEnum.FAILED) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
         <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
@@ -111,7 +115,7 @@ function renderStatusBadge(status: string) {
       </span>
     );
   }
-  if (norm === "PROCESSING") {
+  if (norm === NotificationStatusEnum.PROCESSING) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
         <Loader2 className="h-3 w-3 animate-spin text-indigo-400" />
@@ -119,7 +123,7 @@ function renderStatusBadge(status: string) {
       </span>
     );
   }
-  if (norm === "RETRY_PENDING") {
+  if (norm === NotificationStatusEnum.RETRY_PENDING) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
         <RotateCcw className="h-3 w-3 text-amber-400" />
@@ -257,7 +261,7 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
                 const meta = getEventMeta(item.evento);
                 const Icon = meta.icon;
                 const audience = getAudienceInfo(item);
-                const formattedContact = formatRecipientContact(item.destinatario);
+                const formattedContact = formatRecipientContact(item.destinatario, item.canal);
                 const nomeAluno = item.payload?.nomePassageiro as string | undefined;
                 const valorCobranca = item.payload?.valor as number | undefined;
 
@@ -357,7 +361,7 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
             const meta = getEventMeta(item.evento);
             const Icon = meta.icon;
             const audience = getAudienceInfo(item);
-            const formattedContact = formatRecipientContact(item.destinatario);
+            const formattedContact = formatRecipientContact(item.destinatario, item.canal);
             const nomeAluno = item.payload?.nomePassageiro as string | undefined;
             const valorCobranca = item.payload?.valor as number | undefined;
 
@@ -501,7 +505,7 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
                 <div>
                   <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Destinatário Real</span>
                   <span className="text-xs font-mono font-bold text-slate-200">
-                    {formatRecipientContact(selectedNotification.destinatario)}
+                    {formatRecipientContact(selectedNotification.destinatario, selectedNotification.canal)}
                   </span>
                 </div>
                 {selectedNotification.provider_message_id && (
