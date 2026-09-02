@@ -44,7 +44,7 @@ export function useVeiculoActions({
   }
 
   actions.push({
-    label: "Ver Passageiros",
+    label: "Ver Alunos",
     icon: <Users className="h-4 w-4" />,
     onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?veiculo=${veiculo.id}`),
     disabled: !veiculo.passageiros_ativos_count,

@@ -27,7 +27,7 @@ export const routeSetupSchema = z.object({
     bairro: z.string().optional(),
     escola_nome: z.string().optional(),
     ordem: z.number()
-  })).min(1, "Selecione pelo menos um passageiro para a rota")
+  })).min(1, "Selecione pelo menos um aluno para a rota")
 });
 
 export type RouteSetupFormData = z.infer<typeof routeSetupSchema>;

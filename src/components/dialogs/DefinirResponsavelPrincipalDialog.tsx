@@ -61,7 +61,7 @@ export function DefinirResponsavelPrincipalDialog({
             <div className="flex gap-2.5 items-start">
               <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800">Endereço Principal do Passageiro</p>
+                <p className="text-xs font-bold text-slate-800">Endereço Principal do Aluno</p>
                 <p className="text-[11px] text-slate-500 leading-normal">
                   Por padrão, será utilizado o endereço deste responsável para rotas.
                 </p>

@@ -637,7 +637,7 @@ export default function ResponsavelFormDialog({
                             </div>
                             <div>
                               <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Endereço Principal</p>
-                              <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do passageiro.</p>
+                              <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do aluno.</p>
                             </div>
                           </div>
                         </div>

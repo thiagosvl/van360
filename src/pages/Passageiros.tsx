@@ -56,11 +56,11 @@ export default function Passageiros() {
   } = usePassageirosViewModel();
 
   if (!can("passageiros.visualizar")) {
-    return <AccessRestrictedState moduleName="Passageiros" />;
+    return <AccessRestrictedState moduleName="Alunos" />;
   }
 
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
-  const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
+  const sectionTitle = isMainTab ? "Alunos" : "Solicitações";
   const sectionCount = isMainTab ? (totalItems || passageiros.length) : countPrePassageiros;
   let countLabel = "";
 
@@ -92,7 +92,7 @@ export default function Passageiros() {
                     value={PassageiroTab.PASSAGEIROS}
                     className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                   >
-                    Passageiros
+                    Alunos
                   </TabsTrigger>
                   <TabsTrigger
                     value={PassageiroTab.SOLICITACOES}
@@ -159,13 +159,13 @@ export default function Passageiros() {
                     ) : passageiros.length === 0 ? (
                       <UnifiedEmptyState
                         icon={Users2}
-                        title="Nenhum passageiro encontrado"
-                        description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Não encontramos nenhum passageiro cadastrado em sua frota."}
+                        title="Nenhum aluno encontrado"
+                        description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos alunos com os filtros selecionados." : "Não encontramos nenhum aluno cadastrado em sua frota."}
                         action={(hasActiveFilters || debouncedSearchTerm.length > 0) ? {
                           label: "Limpar Filtros",
                           onClick: clearFilters
                         } : (can("passageiros.gerenciar") ? {
-                          label: "Cadastrar Passageiro",
+                          label: "Cadastrar Aluno",
                           onClick: handleOpenNewDialog
                         } : undefined)}
                       />
@@ -227,7 +227,7 @@ export default function Passageiros() {
 
               <div className="flex items-center justify-between px-1">
                 <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                  Passageiros
+                  Alunos
                 </h2>
                 {passageiros.length > 0 && (
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
@@ -241,13 +241,13 @@ export default function Passageiros() {
               ) : passageiros.length === 0 ? (
                 <UnifiedEmptyState
                   icon={Users2}
-                  title="Nenhum passageiro encontrado"
-                  description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
+                  title="Nenhum aluno encontrado"
+                  description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos alunos com os filtros selecionados." : "Nenhum aluno cadastrado nesta frota."}
                   action={(hasActiveFilters || debouncedSearchTerm.length > 0) ? {
                     label: "Limpar Filtros",
                     onClick: clearFilters
                   } : (can("passageiros.gerenciar") ? {
-                    label: "Cadastrar Passageiro",
+                    label: "Cadastrar Aluno",
                     onClick: handleOpenNewDialog
                   } : undefined)}
                 />

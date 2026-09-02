@@ -60,7 +60,7 @@ export function gerarAvisoMonitores(
       ? `no período de ${dataInicio} até ${dataFim}`
       : `no dia ${dataInicio}`;
 
-  return `Aviso aos Monitores: O passageiro ${alunoNome} estará ausente ${dataFormatada}.`;
+  return `Aviso aos Monitores: O aluno ${alunoNome} estará ausente ${dataFormatada}.`;
 }
 
 /**
@@ -111,7 +111,7 @@ export function validarFormularioAusencia(data: {
   const errors: AusenciaValidationErrors = {};
 
   if (!data.rotaId) errors.rotaId = "Selecione uma rota";
-  if (!data.passageiroId) errors.passageiroId = "Selecione um passageiro";
+  if (!data.passageiroId) errors.passageiroId = "Selecione um aluno";
 
   const dateCheck = validarDatasAusencia(data.dataAusencia, data.dataFimAusencia);
   if (!dateCheck.isValid && dateCheck.error) {

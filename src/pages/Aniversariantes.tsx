@@ -181,7 +181,7 @@ const Aniversariantes = () => {
               <UnifiedEmptyState
                 icon={Cake}
                 title="Sem aniversariantes"
-                description={`Nenhum passageiro faz aniversário em ${currentMonthName}.`}
+                description={`Nenhum aluno faz aniversário em ${currentMonthName}.`}
               />
             </div>
           )}
@@ -194,7 +194,7 @@ const Aniversariantes = () => {
                     <div className="flex items-center gap-2 text-left w-full">
                       <AlertCircle className="h-[18px] w-[18px] shrink-0 text-orange-500" />
                       <span className="text-[13px] leading-tight font-medium text-orange-600/90">
-                        <strong className="text-orange-700 font-bold">{data.passageirosSemData} passageiro{data.passageirosSemData === 1 ? '' : 's'}</strong> sem data de nascimento.
+                        <strong className="text-orange-700 font-bold">{data.passageirosSemData} aluno{data.passageirosSemData === 1 ? '' : 's'}</strong> sem data de nascimento.
                       </span>
                     </div>
                   </AccordionTrigger>

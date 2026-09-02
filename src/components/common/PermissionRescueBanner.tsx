@@ -33,7 +33,7 @@ export function PermissionRescueBanner({
     description =
       role === UserType.RESPONSAVEL
         ? "Ative as notificações para ser avisado quando a van estiver a caminho e quando seu filho embarcar ou desembarcar."
-        : "Ative as notificações para receber alertas de novas solicitações de passageiros, avisos de pagamentos e mensagens operacionais.";
+        : "Ative as notificações para receber alertas de novas solicitações de alunos, avisos de pagamentos e mensagens operacionais.";
     icon = <BellOff className="w-5 h-5 text-amber-600" />;
   } else if (type === PermissionRescueType.LOCATION) {
     title = "Localização (GPS) desativada";

@@ -167,7 +167,7 @@ const CarteirinhaTopCard = ({
                 ? "bg-[#f04f64] text-white hover:bg-rose-600"
                 : "bg-emerald-500 text-white hover:bg-emerald-600"
             )}
-            title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
+            title={passageiro.ativo ? "Desativar Aluno" : "Ativar Aluno"}
           >
             {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
           </Button>
@@ -267,7 +267,7 @@ const CarteirinhaTopCard = ({
                 className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5 opacity-60" />
-                Excluir passageiro
+                Excluir aluno
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

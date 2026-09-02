@@ -30,7 +30,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
           <Card className={`${cardStyle} border-l-4 border-l-blue-500`}>
             <CardContent className="p-5 flex flex-col justify-center text-left">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Passageiros (Recorrentes)</span>
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alunos (Recorrentes)</span>
                 <div className="p-1.5 bg-blue-500/10 text-blue-400 rounded-md border border-blue-500/20"><Users className="w-4 h-4" /></div>
               </div>
               <span className="text-2xl lg:text-3xl font-black text-white tracking-tight">{totalPass.toLocaleString('pt-BR')}</span>
@@ -93,7 +93,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
                 <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg border border-blue-500/20"><Puzzle className="w-5 h-5" /></div>
                 <div>
                   <CardTitle className="text-lg font-bold text-white">Motor do Add-on</CardTitle>
-                  <CardDescription className="text-slate-400">Taxa por passageiro rastreado.</CardDescription>
+                  <CardDescription className="text-slate-400">Taxa por aluno rastreado.</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -108,7 +108,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium text-slate-300">Média de passageiros (por condutor)</span>
+                    <span className="font-medium text-slate-300">Média de alunos (por condutor)</span>
                     <span className="font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20">{addonState.pass}</span>
                   </div>
                   <Slider value={[addonState.pass]} min={0} max={150} step={1} onValueChange={(v) => updateAddon('pass', v[0])} className="py-1" />
@@ -118,7 +118,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
               <div className="h-px bg-slate-800 w-full" />
 
               <div className="flex justify-between items-center gap-4">
-                <span className="text-sm font-medium text-slate-300">Preço do Add-on (R$/pass.)</span>
+                <span className="text-sm font-medium text-slate-300">Preço do Add-on (R$/aluno)</span>
                 <AdminMoneyInput className="w-[130px] font-semibold bg-slate-900 border-slate-800 text-white" value={addonState.preco} onChange={(v) => updateAddon('preco', v)} />
               </div>
             </CardContent>
@@ -235,7 +235,7 @@ export function CalculatorAddonTab({ calcHook }: { calcHook: any }) {
               </div>
               
               <div className="flex justify-between py-1 text-slate-300 font-medium">
-                <span>Margem por passageiro:</span>
+                <span>Margem por aluno:</span>
                 <span className="font-bold text-blue-400">{formatCurrency(mpp)}</span>
               </div>
             </CardContent>

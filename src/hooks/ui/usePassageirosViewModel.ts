@@ -237,7 +237,7 @@ export function usePassageirosViewModel() {
   );
 
   useEffect(() => {
-    setPageTitle("Passageiros");
+    setPageTitle("Alunos");
   }, [setPageTitle]);
 
   useEffect(() => {
@@ -252,9 +252,9 @@ export function usePassageirosViewModel() {
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
       openConfirmationDialog({
-        title: "Excluir passageiro?",
+        title: "Excluir aluno?",
         description:
-          "Tem certeza que deseja excluir este passageiro? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -275,10 +275,10 @@ export function usePassageirosViewModel() {
       const action = passageiro.ativo ? "desativar" : "ativar";
 
       openConfirmationDialog({
-        title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+        title: action === "ativar" ? "Reativar aluno?" : "Desativar aluno?",
         description: action === "ativar"
-          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
-          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
+          ? "O aluno voltará a aparecer nas listas de alunos ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O aluno será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
@@ -421,7 +421,7 @@ export function usePassageirosViewModel() {
 
       openConfirmationDialog({
         title: "Excluir contrato?",
-        description: "Tem certeza que deseja excluir o contrato deste passageiro? O passageiro voltará para o status pendente.",
+        description: "Tem certeza que deseja excluir o contrato deste aluno? O aluno voltará para o status pendente.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -441,7 +441,7 @@ export function usePassageirosViewModel() {
     (passageiro: Passageiro) => {
       openConfirmationDialog({
         title: "Substituir contrato?",
-        description: "Ao confirmar, o contrato atual será cancelado e um novo com os dados atualizados será gerado para o passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
+        description: "Ao confirmar, o contrato atual será cancelado e um novo com os dados atualizados será gerado para o aluno. O responsável receberá o link para assinatura. Deseja continuar?",
         confirmText: "Substituir",
         cancelText: "Manter atual",
         variant: "warning",

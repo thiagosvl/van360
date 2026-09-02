@@ -56,7 +56,7 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
   veiculos,
   showAdvancedFilters = true,
   showRegister = true,
-  searchPlaceholder = "Buscar por nome do passageiro...",
+  searchPlaceholder = "Buscar por nome do aluno...",
 }: PassageirosToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -180,8 +180,8 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
       onSearchChange={onSearchChange}
       searchPlaceholder={searchPlaceholder}
       filterConfig={showAdvancedFilters ? {
-        title: "Filtrar Passageiros",
-        description: "Refine sua busca para encontrar passageiros específicos.",
+        title: "Filtrar Alunos",
+        description: "Refine sua busca para encontrar alunos específicos.",
         hasActiveFilters,
         onClear: onClearFilters,
         onApply: handleApplyFilters,

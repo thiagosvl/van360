@@ -50,7 +50,7 @@ const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
   {
     id: NotificationEventEnum.MOTORISTA_ANIVERSARIANTES_SEMANA,
     title: "Aniversariantes da Semana",
-    description: "Cruza os passageiros ativos do motorista e envia a lista de aniversariantes da semana atual.",
+    description: "Cruza os alunos ativos do motorista e envia a lista de aniversariantes da semana atual.",
     channels: [
       { type: "push", label: "Push no Celular" },
     ],

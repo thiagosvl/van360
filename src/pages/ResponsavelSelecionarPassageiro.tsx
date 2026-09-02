@@ -17,9 +17,9 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
 
   useEffect(() => {
     if (setPageTitle) {
-      setPageTitle("Selecionar Passageiro");
+      setPageTitle("Selecionar Aluno");
     }
-    document.title = "Selecionar Passageiro | Van360";
+    document.title = "Selecionar Aluno | Van360";
   }, [setPageTitle]);
 
   const handleSelect = (p: ResponsavelPassageiro) => {
@@ -60,9 +60,9 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-4xl lg:max-w-5xl min-w-0 pb-[calc(2.5rem+var(--safe-area-bottom))]">
           <div className="space-y-6 min-w-0">
             <div>
-              <h1 className="text-xl font-bold text-[#1a3a5c]">Selecione o Passageiro</h1>
+              <h1 className="text-xl font-bold text-[#1a3a5c]">Selecione o Aluno</h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Encontramos os passageiros vinculados à sua conta. Escolha qual carteirinha deseja acessar:
+                Encontramos os alunos vinculados à sua conta. Escolha qual carteirinha deseja acessar:
               </p>
             </div>
 

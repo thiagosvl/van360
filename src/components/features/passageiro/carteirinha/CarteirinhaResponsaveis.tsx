@@ -209,7 +209,7 @@ export const CarteirinhaResponsaveis = ({
             <UnifiedEmptyState
               icon={Users}
               title="Nenhum responsável cadastrado"
-              description="Complete o cadastro do passageiro ou clique em Adicionar para cadastrar o responsável principal."
+              description="Complete o cadastro do aluno ou clique em Adicionar para cadastrar o responsável principal."
               className="my-1 border-slate-200/80 bg-slate-50/50"
             />
           );

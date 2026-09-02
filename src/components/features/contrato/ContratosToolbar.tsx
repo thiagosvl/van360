@@ -111,7 +111,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             )} />
             <Input
               type="search"
-              placeholder="Buscar por passageiro ou responsável..."
+              placeholder="Buscar por aluno ou responsável..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"

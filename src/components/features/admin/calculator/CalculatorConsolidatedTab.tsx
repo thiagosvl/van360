@@ -334,8 +334,8 @@ export function CalculatorConsolidatedTab({ calcHook }: { calcHook: any }) {
                 </h4>
                 <p className="text-sm text-slate-400 leading-relaxed">
                   {bBarPct < 100 
-                    ? `O Add-on é uma máquina oculta. Mesmo com apenas ${(100 - bBarPct).toFixed(1)}% da receita bruta vindo dele, o Add-on tem um potencial gigante porque as taxas são transacionais. Se você incentivar a adesão dos motoristas e passageiros, esse número ultrapassa facilmente a receita da assinatura mensal.` 
-                    : `Você não está extraindo dinheiro do Add-on. Com isso, todo o seu faturamento depende unicamente de convencer os motoristas a pagarem a assinatura, deixando dinheiro na mesa nas transações diárias dos passageiros.`}
+                    ? `O Add-on é uma máquina oculta. Mesmo com apenas ${(100 - bBarPct).toFixed(1)}% da receita bruta vindo dele, o Add-on tem um potencial gigante porque as taxas são transacionais. Se você incentivar a adesão dos motoristas e alunos, esse número ultrapassa facilmente a receita da assinatura mensal.` 
+                    : `Você não está extraindo dinheiro do Add-on. Com isso, todo o seu faturamento depende unicamente de convencer os motoristas a pagarem a assinatura, deixando dinheiro na mesa nas transações diárias dos alunos.`}
                 </p>
               </div>
 

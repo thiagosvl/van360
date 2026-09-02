@@ -182,7 +182,7 @@ export default function PrePassageiros({
               <TableHeader className="bg-gray-50/50">
                 <TableRow className="hover:bg-transparent border-b border-gray-100">
                   <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[300px]">
-                    Passageiro
+                    Aluno
                   </TableHead>
                   <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                     WhatsApp

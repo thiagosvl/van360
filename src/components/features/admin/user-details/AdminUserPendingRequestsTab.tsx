@@ -162,7 +162,7 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800/80 bg-slate-900/70 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                      <th className="py-3.5 px-6">Passageiro</th>
+                      <th className="py-3.5 px-6">Aluno</th>
                       <th className="py-3.5 px-4">Responsável</th>
                       <th className="py-3.5 px-4">Escola</th>
                       <th className="py-3.5 px-4">Data da Solicitação</th>

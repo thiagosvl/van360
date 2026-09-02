@@ -28,7 +28,7 @@ interface FaqItemData {
 
 const CATEGORIES = [
   { id: "todos", label: "Todas", icon: Sparkles },
-  { id: "passageiros", label: "Passageiros", icon: Users },
+  { id: "passageiros", label: "Alunos", icon: Users },
   { id: "cobrancas", label: "Cobranças", icon: BadgeDollarSign },
   { id: "rotas", label: "Rotas", icon: RouteIcon },
   { id: "contratos", label: "Contratos", icon: FileText },
@@ -37,27 +37,27 @@ const CATEGORIES = [
 ] as const;
 
 const FAQS_DATA: FaqItemData[] = [
-  // Passageiros
+  // Alunos
   {
     id: "cadastrar-aluno",
     category: "passageiros",
-    question: "Como cadastrar um novo passageiro?",
+    question: "Como cadastrar um novo aluno?",
     answer:
-      "Você tem duas formas práticas: 1) Acesse a aba Passageiros, clique no botão '+ Novo' e preencha os dados você mesmo(a); ou 2) Clique em 'Link de Cadastro' e envie pelo WhatsApp para os pais preencherem pelo próprio celular. Quando eles enviarem, a solicitação aparece na aba 'Solicitações' para você aprovar com um toque!",
+      "Você tem duas formas práticas: 1) Acesse a aba Alunos, clique no botão '+ Novo' e preencha os dados você mesmo(a); ou 2) Clique em 'Link de Cadastro' e envie pelo WhatsApp para os pais preencherem pelo próprio celular. Quando eles enviarem, a solicitação aparece na aba 'Solicitações' para você aprovar com um toque!",
   },
   {
     id: "carteirinha-dados",
     category: "passageiros",
-    question: "Onde vejo a carteirinha e os dados do passageiro?",
+    question: "Onde vejo a carteirinha e os dados do aluno?",
     answer:
-      "Na aba Passageiros, basta tocar no nome do aluno. A carteirinha digital se abre com o telefone dos pais, endereço completo, escola, histórico de parcelas, contrato e botão rápido de WhatsApp.",
+      "Na aba Alunos, basta tocar no nome do aluno. A carteirinha digital se abre com o telefone dos pais, endereço completo, escola, histórico de parcelas, contrato e botão rápido de WhatsApp.",
   },
   {
     id: "registrar-ausencia",
     category: "passageiros",
-    question: "Como registrar que o passageiro vai faltar (ausência)?",
+    question: "Como registrar que o aluno vai faltar (ausência)?",
     answer:
-      "Você pode registrar uma ausência abrindo a carteirinha do passageiro ou diretamente na lista de paradas da Rota. Selecione o dia da falta e o sistema ajustará a rota daquele dia automaticamente, sem enviar notificações desnecessárias aos pais.",
+      "Você pode registrar uma ausência abrindo a carteirinha do aluno ou diretamente na lista de paradas da Rota. Selecione o dia da falta e o sistema ajustará a rota daquele dia automaticamente, sem enviar notificações desnecessárias aos pais.",
   },
 
   // Cobranças & Parcelas
@@ -66,7 +66,7 @@ const FAQS_DATA: FaqItemData[] = [
     category: "cobrancas",
     question: "Como dar baixa no pagamento de uma parcela?",
     answer:
-      "Acesse a aba Parcelas, localize o passageiro desejado e clique em 'Dar Baixa'. Escolha a forma de pagamento (PIX, Dinheiro, Transferência ou Cartão) e confirme. Se desejar, o comprovante de pagamento fica pronto na hora para compartilhar no WhatsApp dos pais.",
+      "Acesse a aba Parcelas, localize o aluno desejado e clique em 'Dar Baixa'. Escolha a forma de pagamento (PIX, Dinheiro, Transferência ou Cartão) e confirme. Se desejar, o comprovante de pagamento fica pronto na hora para compartilhar no WhatsApp dos pais.",
   },
   {
     id: "lembretes-automaticos",
@@ -89,7 +89,7 @@ const FAQS_DATA: FaqItemData[] = [
     category: "rotas",
     question: "Como criar e organizar a ordem das paradas da rota?",
     answer:
-      "Na aba Rotas, clique em 'Configurar Rota'. O sistema permite definir o sentido (Ida para a escola ou Volta para casa), selecionar as escolas e os passageiros. Você pode arrastar as paradas para ajustar a ordem exata do seu itinerário.",
+      "Na aba Rotas, clique em 'Configurar Rota'. O sistema permite definir o sentido (Ida para a escola ou Volta para casa), selecionar as escolas e os alunos. Você pode arrastar as paradas para ajustar a ordem exata do seu itinerário.",
   },
   {
     id: "iniciar-viagem",
@@ -112,14 +112,14 @@ const FAQS_DATA: FaqItemData[] = [
     category: "contratos",
     question: "Como funciona o contrato digital com assinatura pelo celular?",
     answer:
-      "Na aba Contratos, você pode configurar o modelo padrão da sua van. Na carteirinha do passageiro, basta clicar em 'Gerar Contrato' para criar o documento com os valores e datas acordadas. O responsável recebe um link seguro para assinar com o dedo na tela do celular, com total validade jurídica.",
+      "Na aba Contratos, você pode configurar o modelo padrão da sua van. Na carteirinha do aluno, basta clicar em 'Gerar Contrato' para criar o documento com os valores e datas acordadas. O responsável recebe um link seguro para assinar com o dedo na tela do celular, com total validade jurídica.",
   },
   {
     id: "importar-contrato-existente",
     category: "contratos",
     question: "Posso importar contratos que já tenho em papel ou PDF?",
     answer:
-      "Sim! Na aba Contratos, clique no botão 'Importar Contrato'. Você pode anexar o documento já assinado ou preencher os dados para vincular o contrato diretamente ao cadastro do passageiro, mantendo todo o seu histórico centralizado no app.",
+      "Sim! Na aba Contratos, clique no botão 'Importar Contrato'. Você pode anexar o documento já assinado ou preencher os dados para vincular o contrato diretamente ao cadastro do aluno, mantendo todo o seu histórico centralizado no app.",
   },
 
   // GPS & Mapa

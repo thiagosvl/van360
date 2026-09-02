@@ -158,7 +158,7 @@ export const AcessoRapido = ({
                 </div>
                 <div>
                   <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1a3a5c] leading-snug">
-                    Cadastrar Passageiro
+                    Cadastrar Aluno
                   </h3>
                 </div>
               </div>

@@ -80,7 +80,7 @@ export default function Escolas() {
             description={
               searchTerm || hasActiveFilters
                 ? `Não encontramos escolas com os filtros selecionados.`
-                : "Cadastre as escolas que você atende para organizar seus passageiros."
+                : "Cadastre as escolas que você atende para organizar seus alunos."
             }
             action={
               (searchTerm || hasActiveFilters)

@@ -41,7 +41,7 @@ const pagesItems: PageItem[] = [
     permission: "cobrancas.gerenciar",
   },
   {
-    title: "Passageiros",
+    title: "Alunos",
     href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
     icon: Users,
     permission: "passageiros.visualizar",

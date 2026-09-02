@@ -155,7 +155,7 @@ export function ImportarContratoDialog({
   const handleSubmit = async () => {
     const targetId = isFixedPassageiro ? passageiroId : selectedPassageiroId;
     if (!targetId) {
-      toast.error("Selecione o passageiro para vincular o contrato.");
+      toast.error("Selecione o aluno para vincular o contrato.");
       return;
     }
 
@@ -199,7 +199,7 @@ export function ImportarContratoDialog({
       <BaseDialog.Body className="space-y-5 py-2">
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-            Passageiro <span className="text-red-500">*</span>
+            Aluno <span className="text-red-500">*</span>
           </label>
 
           {isFixedPassageiro || currentSelectedPassageiro ? (
@@ -215,7 +215,7 @@ export function ImportarContratoDialog({
                   <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
                     {currentSelectedPassageiro?.responsavel_principal?.nome
                       ? formatFirstName(currentSelectedPassageiro.responsavel_principal.nome)
-                      : "Passageiro selecionado"}
+                      : "Aluno selecionado"}
                   </p>
                 </div>
               </div>
@@ -255,11 +255,11 @@ export function ImportarContratoDialog({
               {isLoadingPassageiros ? (
                 <div className="flex items-center justify-center py-6 text-slate-400 gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-xs font-medium">Carregando passageiros...</span>
+                  <span className="text-xs font-medium">Carregando alunos...</span>
                 </div>
               ) : filteredPassageiros.length === 0 ? (
                 <div className="py-6 text-center text-xs text-slate-400 font-medium bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                  Nenhum passageiro encontrado
+                  Nenhum aluno encontrado
                 </div>
               ) : (
                 <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin border border-slate-100 rounded-xl p-1 bg-slate-50/30">

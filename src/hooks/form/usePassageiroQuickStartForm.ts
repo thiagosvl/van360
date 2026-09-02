@@ -162,13 +162,13 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 
-      toast.success("Passageiro cadastrado com sucesso!");
+      toast.success("Aluno cadastrado com sucesso!");
 
       if (onSuccess) {
         onSuccess(response.data, keepOpen);
       }
     } catch (error: any) {
-      toast.error("Erro ao salvar passageiro", {
+      toast.error("Erro ao salvar aluno", {
         description: error.response?.data?.error || "Verifique os dados e tente novamente",
       });
     } finally {

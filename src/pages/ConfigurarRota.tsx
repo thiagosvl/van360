@@ -182,7 +182,7 @@ export default function ConfigurarRota() {
 
             if (isAutoAdd && targetId) {
               const pass = vm.passageirosList.find((p) => p.id === targetId);
-              const passName = pass?.nome || "Passageiro";
+              const passName = pass?.nome || "Aluno";
 
               const updatedPass = pass ? {
                 ...pass,

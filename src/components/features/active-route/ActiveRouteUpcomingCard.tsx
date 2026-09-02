@@ -121,7 +121,7 @@ export function ActiveRouteUpcomingCard({
                 onClick={() => {
                   onOpenAddressDialog({
                     open: true,
-                    title: pass?.nome || "Passageiro",
+                    title: pass?.nome || "Aluno",
                     passageiro: pass,
                     escola: null,
                     address: currentAddressStr,

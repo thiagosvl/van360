@@ -352,7 +352,7 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
           <Banner
             variant="warning"
             title="Atenção:"
-            description="O envio automático está desativado. Nenhum lembrete de parcela será enviado para os pais, mesmo que o passageiro esteja com lembretes ativados na carteirinha."
+            description="O envio automático está desativado. Nenhum lembrete de parcela será enviado para os pais, mesmo que o aluno esteja com lembretes ativados na carteirinha."
           />
         )}
       </div>
@@ -433,7 +433,7 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
                 Confirmação de embarque e entrega
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
-                Avisa no momento exato em que o passageiro embarca na van ou é entregue.
+                Avisa no momento exato em que o aluno embarca na van ou é entregue.
               </p>
             </div>
 

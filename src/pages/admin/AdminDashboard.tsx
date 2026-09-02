@@ -311,7 +311,7 @@ export default function AdminDashboard() {
             />
 
             <AdminKpiCard
-              title="PASSAGEIROS ATIVOS"
+              title="ALUNOS ATIVOS"
               value={stats.totalPassageiros}
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"

@@ -92,7 +92,7 @@ export default function PassageiroEnderecoFormDialog({
       onSuccess(data);
       onClose();
     } catch (err) {
-      toast.error("Erro ao salvar endereço do passageiro.");
+      toast.error("Erro ao salvar endereço do aluno.");
     }
   };
 

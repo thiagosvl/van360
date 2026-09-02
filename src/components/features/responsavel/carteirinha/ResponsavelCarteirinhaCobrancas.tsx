@@ -108,11 +108,11 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
         {displayCobrancas.length === 0 ? (
           <UnifiedEmptyState
             icon={carteirinha.isento ? ShieldCheck : History}
-            title={carteirinha.isento ? "Passageiro Isento de Parcelas" : "Sem parcelas registradas"}
+            title={carteirinha.isento ? "Aluno Isento de Parcelas" : "Sem parcelas registradas"}
             description={
               carteirinha.isento
-                ? "Este passageiro possui isenção de parcelas cadastrada. Nenhuma cobrança ou parcela é gerada automaticamente."
-                : "Nenhuma parcela foi encontrada para este aluno até o momento."
+                ? "Este aluno possui isenção de parcelas cadastrada. Nenhuma cobrança ou parcela é gerada automaticamente."
+                : "Nenhuma parcela foi encontrada para este ano de exercício."
             }
           />
         ) : (

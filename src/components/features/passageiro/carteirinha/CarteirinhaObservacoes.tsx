@@ -75,7 +75,7 @@ export const CarteirinhaObservacoes = ({
               ref={textareaRef}
               value={obsText}
               onChange={(e) => onChangeText(e.target.value)}
-              placeholder="Escreva suas observações sobre o passageiro..."
+              placeholder="Escreva suas observações sobre o aluno..."
               className="w-full resize-none rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1a3a5c]/30 focus:ring-1 focus:ring-[#1a3a5c]/20 px-4 py-3 text-xs font-medium text-slate-700 placeholder:text-slate-400 outline-none transition-all"
               style={{ minHeight: 80 }}
             />

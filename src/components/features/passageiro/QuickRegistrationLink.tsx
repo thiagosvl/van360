@@ -45,7 +45,7 @@ export function QuickRegistrationLink({
   const handleShareWhatsApp = () => {
     if (!profile?.id) return;
     const link = buildPrepassageiroLink(profile.id);
-    const message = `Olá! Clique no link abaixo para cadastrar seu filho(a) no transporte escolar: ${link}`;
+    const message = `Olá! Clique no link abaixo para cadastrar o aluno(a) no transporte escolar: ${link}`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     openBrowserLink(url);
   };

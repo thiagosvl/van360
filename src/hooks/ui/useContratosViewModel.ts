@@ -136,7 +136,7 @@ export function useContratosViewModel() {
     openConfirmationDialog({
       title: active ? "Reativar Uso de Contratos?" : "Desativar Uso de Contratos?",
       description: active
-        ? "Tem certeza que deseja reativar o uso de contratos? Você poderá gerar e gerenciar contratos em PDF para os passageiros com as configurações salvas anteriormente."
+        ? "Tem certeza que deseja reativar o uso de contratos? Você poderá gerar e gerenciar contratos em PDF para os alunos com as configurações salvas anteriormente."
         : "Tem certeza que deseja desativar a funcionalidade de contratos? Os contratos existentes continuarão valendo, mas novos contratos não poderão ser emitidos.",
       confirmText: active ? "Reativar" : "Desativar",
       variant: active ? "default" : "destructive",
@@ -237,7 +237,7 @@ export function useContratosViewModel() {
   const handleSubstituir = useCallback((id: string) => {
     openConfirmationDialog({
       title: "Substituir contrato?",
-      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
+      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do aluno. O responsável receberá o link para assinatura. Deseja continuar?",
       confirmText: "Substituir",
       cancelText: "Manter atual",
       onConfirm: async () => {

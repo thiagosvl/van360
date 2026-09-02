@@ -146,7 +146,7 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
                     Rastreamento Completo
                   </span>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Os responsáveis acompanham a van ao vivo desde o início da rota até o desembarque do passageiro.
+                    Os responsáveis acompanham a van ao vivo desde o início da rota até o desembarque do aluno.
                   </p>
                 </div>
               </button>
@@ -179,7 +179,7 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
                     Apenas Próximo da Fila
                   </span>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    O mapa ao vivo é liberado apenas quando a van estiver a caminho do passageiro (1 parada antes) até o desembarque.
+                    O mapa ao vivo é liberado apenas quando a van estiver a caminho do aluno (1 parada antes) até o desembarque.
                   </p>
                 </div>
               </button>

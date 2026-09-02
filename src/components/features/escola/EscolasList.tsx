@@ -102,7 +102,7 @@ export function EscolasList({
                   Nome
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Qtd. Passageiros
+                  Qtd. Alunos
                 </th>
                 <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Status
@@ -143,7 +143,7 @@ export function EscolasList({
                           {escola.passageiros_ativos_count ?? 0}
                         </span>
                         <span className="text-xs font-medium text-slate-500">
-                          passageiros
+                          alunos
                         </span>
                       </div>
                     </div>

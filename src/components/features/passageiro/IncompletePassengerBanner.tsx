@@ -9,7 +9,7 @@ export const IncompletePassengerBanner = ({ onEdit }: IncompletePassengerBannerP
     <Banner
       variant="warning"
       title="Cadastro Incompleto"
-      description="Para que as cobranças automáticas funcionem, finalize o preenchimento do cadastro do passageiro."
+      description="Para que as cobranças automáticas funcionem, finalize o preenchimento do cadastro do aluno."
       action={{
         label: "Completar Cadastro",
         onClick: onEdit,

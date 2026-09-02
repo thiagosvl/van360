@@ -82,7 +82,7 @@ export const MinhasNotificacoesTab = memo(function MinhasNotificacoesTab() {
                 Lembrete de aniversariantes da semana
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
-                Notificação semanal para você se lembrar de parabenizar os passageiros que fazem aniversário.
+                Notificação semanal para você se lembrar de parabenizar os alunos que fazem aniversário.
               </p>
             </div>
 

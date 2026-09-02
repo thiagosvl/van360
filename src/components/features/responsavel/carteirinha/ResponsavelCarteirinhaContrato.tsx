@@ -28,7 +28,7 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
           <div>
             <span className="block text-sm font-bold text-[#1a3a5c]">Nenhum contrato ativo</span>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Não há contratos vinculados a este passageiro no momento.
+              Não há contratos vinculados a este aluno no momento.
             </p>
           </div>
         </div>

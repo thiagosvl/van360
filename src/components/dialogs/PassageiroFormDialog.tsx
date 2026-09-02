@@ -55,10 +55,10 @@ export default function PassengerFormDialog({
   });
 
   const title = mode === PassageiroFormModes.EDIT
-    ? "Editar Passageiro"
+    ? "Editar Aluno"
     : mode === PassageiroFormModes.FINALIZE
       ? "Confirmar Cadastro"
-      : "Novo Passageiro";
+      : "Novo Aluno";
 
   return (
     <BaseDialog

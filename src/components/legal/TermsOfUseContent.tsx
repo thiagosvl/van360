@@ -18,7 +18,7 @@ export function TermsOfUseContent() {
         O Van360 é uma plataforma destinada à gestão de transporte escolar. Nossas ferramentas incluem:
       </p>
       <ul className="space-y-2 mb-4 text-[0.95rem]">
-        <ListItem>Organização inteligente de passageiros e rotas.</ListItem>
+        <ListItem>Organização inteligente de alunos e rotas.</ListItem>
         <ListItem>Gestão financeira com automação de cobranças.</ListItem>
         <ListItem>Comunicação automatizada via WhatsApp.</ListItem>
       </ul>
@@ -38,7 +38,7 @@ export function TermsOfUseContent() {
         O <strong className="text-[#1a3a5c]">Van360</strong> oferece um período gratuito de {TRIAL_DURATION_DAYS} dias para novos cadastros. Após este período, o acesso contínuo as funcionalidades de gestão e automação está condicionado à assinatura de um dos planos vigentes no site. O usuário será notificado sobre o fim do período de testes.
       </p>
       <p className="text-slate-500 leading-relaxed text-[0.95rem] mt-3">
-        <strong className="font-bold text-[#1a3a5c]">E se eu atrasar a assinatura do Van360?</strong> Fique tranquilo, sabemos que a rotina na rua é corrida e imprevistos acontecem. Para não prejudicar seu trabalho, nós oferecemos um período de carência após o vencimento, permitindo que você continue usando o app normalmente por alguns dias. Caso o pagamento não seja regularizado após essa carência, o acesso às funcionalidades do aplicativo será temporariamente suspenso. Mas não se preocupe: mesmo com o acesso bloqueado, seus dados, passageiros e rotas não serão apagados. Tudo ficará guardado com segurança esperando a regularização do plano para você voltar a usar de onde parou!
+        <strong className="font-bold text-[#1a3a5c]">E se eu atrasar a assinatura do Van360?</strong> Fique tranquilo, sabemos que a rotina na rua é corrida e imprevistos acontecem. Para não prejudicar seu trabalho, nós oferecemos um período de carência após o vencimento, permitindo que você continue usando o app normalmente por alguns dias. Caso o pagamento não seja regularizado após essa carência, o acesso às funcionalidades do aplicativo será temporariamente suspenso. Mas não se preocupe: mesmo com o acesso bloqueado, seus dados, alunos e rotas não serão apagados. Tudo ficará guardado com segurança esperando a regularização do plano para você voltar a usar de onde parou!
       </p>
 
       <SectionTitle icon={MessageSquare} colorClass="bg-blue-50 text-blue-600">4. Comunicação e WhatsApp</SectionTitle>

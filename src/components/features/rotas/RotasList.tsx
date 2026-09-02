@@ -40,7 +40,7 @@ export function RotasList({
       <UnifiedEmptyState
         icon={RouteIcon}
         title="Nenhuma rota configurada"
-        description="Configure suas rotas de ida e volta para gerenciar os itinerários diários e organizar as paradas dos passageiros e escolas."
+        description="Configure suas rotas de ida e volta para gerenciar os itinerários diários e organizar as paradas dos alunos e escolas."
         action={
           canGerenciar
             ? {

@@ -153,7 +153,7 @@ export function ActiveRouteExecutionView({
               passageiro_id: pid,
               rota_id: rid,
             });
-            toast.success("Registro de Ausência desfeito!", { description: "Passageiro retornado ao itinerário." });
+            toast.success("Registro de Ausência desfeito!", { description: "Aluno retornado ao itinerário." });
           } else if (execucao?.id) {
             await handleStep(parada.id, RouteStopStatus.PENDENTE);
             toast.success(isAusente ? "Registro de Ausência desfeito!" : "Confirmação desfeita!", {

@@ -55,11 +55,11 @@ export const QuickStartCard = ({
       {
         id: 3,
         done: passageirosCount > 0,
-        label: "Cadastrar Primeiro Passageiro",
+        label: "Cadastrar Primeiro Aluno",
         description: "Adicione seu primeiro aluno para ver o app funcionando.",
         onAction: onOpenPassageiroDialog,
         icon: User,
-        buttonText: "Adicionar passageiro",
+        buttonText: "Adicionar aluno",
       },
     ];
   }, [

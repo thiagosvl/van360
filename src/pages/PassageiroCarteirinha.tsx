@@ -275,7 +275,7 @@ export default function PassageiroCarteirinha() {
         openConfirmationDialog({
           title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
           description: hasActiveContract
-            ? `Você alterou dados importantes do passageiro. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
+            ? `Você alterou dados importantes do aluno. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
             : `Deseja gerar um contrato para ${firstName}? O responsável receberá um link para assiná-lo.`,
           confirmText: hasActiveContract ? "Substituir" : "Gerar",
           cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
@@ -360,11 +360,11 @@ export default function PassageiroCarteirinha() {
     const action = statusAtual ? "desativar" : "ativar";
     openConfirmationDialog({
       title:
-        action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+        action === "ativar" ? "Reativar aluno?" : "Desativar aluno?",
       description:
         action === "ativar"
-          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
-          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
+          ? "O aluno voltará a aparecer nas listas de alunos ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O aluno será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
       confirmText: action === "ativar" ? "Reativar" : "Desativar",
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
@@ -501,7 +501,7 @@ export default function PassageiroCarteirinha() {
     if (!passageiro?.contrato_id) return;
     openConfirmationDialog({
       title: "Excluir Contrato?",
-      description: "Tem certeza que deseja excluir o contrato deste passageiro? Esta ação não pode ser desfeita.",
+      description: "Tem certeza que deseja excluir o contrato deste aluno? Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
@@ -516,7 +516,7 @@ export default function PassageiroCarteirinha() {
   }, [passageiro?.contrato_id, openConfirmationDialog, closeConfirmationDialog, deleteContrato]);
 
   if (!can("passageiros.visualizar")) {
-    return <AccessRestrictedState moduleName="Passageiros" />;
+    return <AccessRestrictedState moduleName="Alunos" />;
   }
 
   const isNotFoundError =
@@ -602,9 +602,9 @@ export default function PassageiroCarteirinha() {
     contratosAtivos: !!profile?.config_contrato?.usar_contratos,
     onDeleteClick: () =>
       openConfirmationDialog({
-        title: "Excluir passageiro?",
+        title: "Excluir aluno?",
         description:
-          "Tem certeza que deseja excluir este passageiro? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -627,8 +627,8 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: action === "ativar" ? "Ativar notificações?" : "Desativar notificações?",
         description: action === "ativar"
-          ? "O passageiro voltará a receber lembretes e notificações de cobrança."
-          : "O passageiro não receberá mais lembretes e notificações de cobrança.",
+          ? "O responsável do aluno voltará a receber lembretes e notificações de cobrança."
+          : "O responsável do aluno não receberá mais lembretes e notificações de cobrança.",
         confirmText: action === "ativar" ? "Ativar" : "Desativar",
         variant: action === "desativar" ? "warning" : "default",
         onConfirm: async () => {

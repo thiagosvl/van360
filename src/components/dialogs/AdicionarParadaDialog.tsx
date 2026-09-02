@@ -80,7 +80,7 @@ export function AdicionarParadaDialog({
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "passageiros" | "escolas")} className="w-full mt-3">
           <TabsList className="grid grid-cols-2 w-full bg-slate-100 p-1 rounded-xl h-10">
             <TabsTrigger value="passageiros" className="rounded-lg text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#1a3a5c] data-[state=active]:shadow-2xs">
-              Passageiros ({filteredPassageiros.length})
+              Alunos ({filteredPassageiros.length})
             </TabsTrigger>
             <TabsTrigger value="escolas" className="rounded-lg text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#1a3a5c] data-[state=active]:shadow-2xs">
               Escolas ({filteredEscolas.length})
@@ -90,7 +90,7 @@ export function AdicionarParadaDialog({
           <TabsContent value="passageiros" className="space-y-2.5 mt-3 focus-visible:outline-none focus-visible:ring-0">
             <div className="relative">
               <Input
-                placeholder="Buscar passageiro..."
+                placeholder="Buscar aluno..."
                 value={searchAlunos}
                 onChange={(e) => setSearchAlunos(e.target.value)}
                 className="h-9 text-xs rounded-lg bg-slate-50/50 pr-8"
@@ -108,7 +108,7 @@ export function AdicionarParadaDialog({
 
             {filteredPassageiros.length === 0 ? (
               <p className="text-xs text-slate-400 font-medium text-center py-6">
-                Nenhum passageiro encontrado
+                Nenhum aluno encontrado
               </p>
             ) : (
               <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
@@ -152,7 +152,7 @@ export function AdicionarParadaDialog({
                           size="sm"
                           onClick={() => onAddPassageiro(p.id)}
                           disabled={estaAdicionado}
-                          title={estaAdicionado ? "Passageiro já adicionado" : "Adicionar passageiro"}
+                          title={estaAdicionado ? "Aluno já adicionado" : "Adicionar aluno"}
                           className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm disabled:opacity-30 cursor-pointer flex items-center justify-center"
                         >
                           {estaAdicionado ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}

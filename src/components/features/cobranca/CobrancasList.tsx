@@ -239,7 +239,7 @@ export function CobrancasList({
         <UnifiedEmptyState
           icon={CalendarClock}
           title="Geração Automática de Parcelas"
-          description={`As parcelas de ${nomeMes}/${anoFilter || 2026} serão geradas automaticamente na virada do mês. Todos os passageiros ativos serão cobrados normalmente.`}
+          description={`As parcelas de ${nomeMes}/${anoFilter || 2026} serão geradas automaticamente na virada do mês. Todos os alunos ativos serão cobrados normalmente.`}
         />
       );
     }
@@ -249,7 +249,7 @@ export function CobrancasList({
         <UnifiedEmptyState
           icon={History}
           title="Sem parcelas neste período"
-          description="Seu cadastro ou contratos de passageiros iniciaram a partir de Julho/2026. Não há histórico de cobranças anteriores a este período."
+          description="Seu cadastro ou contratos de alunos iniciaram a partir de Julho/2026. Não há histórico de cobranças anteriores a este período."
         />
       );
     }
@@ -375,7 +375,7 @@ export function CobrancasList({
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-b border-gray-100/80">
                 <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Passageiro
+                  Aluno
                 </TableHead>
                 <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Valor

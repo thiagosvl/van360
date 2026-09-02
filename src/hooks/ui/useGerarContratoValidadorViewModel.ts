@@ -87,7 +87,7 @@ export function useGerarContratoValidadorViewModel({
       if (!passageiro.responsavel_principal?.nome) {
         onCloseRef.current();
         toast.error("Complete o cadastro", {
-          description: "Edite este passageiro e informe o nome real do responsável antes de gerar o contrato."
+          description: "Edite este aluno e informe o nome real do responsável antes de gerar o contrato."
         });
         return;
       }
@@ -129,7 +129,7 @@ export function useGerarContratoValidadorViewModel({
       onClose();
       onSuccess(passageiroId, false);
     } catch (error) {
-      toast.error("Erro ao atualizar passageiro", {
+      toast.error("Erro ao atualizar aluno", {
         description: "Verifique os dados informados e tente novamente."
       });
     } finally {

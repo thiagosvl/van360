@@ -164,7 +164,7 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
 
       const pass = item.passageiro;
       const escolaId = item.escola_id || pass?.escola_id || pass?.escola?.id;
-      const alunoNome = pass?.nome || item.nome || "Passageiro";
+      const alunoNome = pass?.nome || item.nome || "Aluno";
       const primeiroNome = formatShortName(alunoNome);
 
       if (!escolaId) continue;
@@ -204,9 +204,6 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
   return map;
 }
 
-/**
- * Valida se a rota está completa e pronta para ser salva/executada
- */
 export function validarItinerarioPronto(
   tipo: any,
   itinerario: ItineraryNode[]
@@ -217,7 +214,7 @@ export function validarItinerarioPronto(
 
   const temPassageiro = itinerario.some((item) => item.tipo_no === RouteNodeType.PASSAGEIRO);
   if (!temPassageiro) {
-    return { isPronto: false, errorMsg: "Adicione pelo menos um passageiro à rota." };
+    return { isPronto: false, errorMsg: "Adicione pelo menos um aluno à rota." };
   }
 
   const temEscola = itinerario.some((item) => item.tipo_no === RouteNodeType.ESCOLA);

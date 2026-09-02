@@ -48,7 +48,7 @@ export function PassageiroFormFinanceiro({
             <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-4 shadow-sm">
               <div className="space-y-0.5 pr-4">
                 <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
-                  Passageiro Isento
+                  Aluno Isento
                 </FormLabel>
                 <div className="text-xs text-slate-500 font-normal leading-relaxed">
                   Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.

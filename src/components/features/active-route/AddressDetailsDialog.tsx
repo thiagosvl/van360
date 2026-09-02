@@ -117,7 +117,7 @@ export function AddressDetailsDialog({
       maxWidth="md"
     >
       <BaseDialog.Header
-        title="Endereços do Passageiro"
+        title="Endereços do Aluno"
         icon={<MapPin className="w-5 h-5 text-[#1a3a5c]" />}
         onClose={() => {
           onClose();
@@ -134,7 +134,7 @@ export function AddressDetailsDialog({
             <User className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 block leading-none mb-0.5">Passageiro</span>
+            <span className="text-[11px] font-semibold text-slate-400 block leading-none mb-0.5">Aluno</span>
             <h3 className="text-sm font-bold text-[#1a3a5c] tracking-tight">
               {formatShortName(pass?.nome || addressDialogData.title, true)}
             </h3>

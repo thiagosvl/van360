@@ -151,7 +151,7 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-[11px] text-slate-500 font-medium block">
-                {isEmbarcadoNaIda ? "Status do Passageiro" : "Fila de paradas"}
+                {isEmbarcadoNaIda ? "Status do Aluno" : "Fila de paradas"}
               </span>
               <span className="font-bold text-xs text-slate-900 block leading-tight">
                 {textoFila}

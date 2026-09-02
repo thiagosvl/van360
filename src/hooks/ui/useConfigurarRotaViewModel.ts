@@ -117,7 +117,7 @@ export function useConfigurarRotaViewModel() {
       list.push("Adicione ao menos 1 escola para concluir o itinerário.");
     }
     if (itinerario.length > 0 && !temPassageiro) {
-      list.push("Adicione ao menos 1 passageiro para concluir o itinerário.");
+      list.push("Adicione ao menos 1 aluno para concluir o itinerário.");
     }
     return list;
   }, [itinerario, temEscola, temPassageiro]);
@@ -163,7 +163,7 @@ export function useConfigurarRotaViewModel() {
             tipo_no: no.tipo_no as RouteNodeType,
             passageiro_id: no.passageiro_id,
             escola_id: no.escola_id,
-            nome: isEscola ? no.escola?.nome || "Escola" : no.passageiro?.nome || "Passageiro",
+            nome: isEscola ? no.escola?.nome || "Escola" : no.passageiro?.nome || "Aluno",
             detalhe: isEscola ? "Parada em Escola" : no.passageiro?.escola?.nome ? `Escola: ${no.passageiro.escola.nome}` : undefined,
             temEndereco: true,
             responsaveisAdicionais: no.passageiro?.responsaveis || [],
@@ -212,7 +212,7 @@ export function useConfigurarRotaViewModel() {
     if (!pass) return;
 
     if (itinerario.some((item) => item.passageiro_id === passId)) {
-      toast.warning("Este passageiro já está incluso nesta rota.");
+      toast.warning("Este aluno já está incluso nesta rota.");
       return;
     }
 

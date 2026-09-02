@@ -107,7 +107,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                     <div className="mt-1.5 w-full space-y-1.5 text-left">
                       {totalAlunos === 0 ? (
                         <p className="text-[11px] text-slate-400 font-medium italic">
-                          Nenhum passageiro vinculado nesta parada
+                          Nenhum aluno vinculado nesta parada
                         </p>
                       ) : (
                         <>

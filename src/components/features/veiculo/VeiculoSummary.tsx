@@ -46,7 +46,7 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
         <div className="flex items-center gap-1.5 min-w-0">
           <Users2 className="h-4 w-4 text-slate-400 shrink-0" />
           <span className="text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
-            {veiculo.passageiros_ativos_count || 0} PASSAGEIROS ATIVOS
+            {veiculo.passageiros_ativos_count || 0} ALUNOS ATIVOS
           </span>
         </div>
       </div>

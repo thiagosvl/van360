@@ -760,7 +760,7 @@ export default function AdminUserDetails() {
         <TabsContent value="geral" className="space-y-6 m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <AdminKpiCard
-              title="PASSAGEIROS"
+              title="ALUNOS"
               value={data.kpis?.passageirosCount ?? 0}
               subtext={`${data.kpis?.solicitacoesPendentesCount ?? 0} ${(data.kpis?.solicitacoesPendentesCount ?? 0) === 1 ? "solicitação pendente" : "solicitações pendentes"}`}
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
@@ -792,7 +792,7 @@ export default function AdminUserDetails() {
             <AdminKpiCard
               title="CONTRATOS"
               value={data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
-              subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "passageiro sem contrato" : "passageiros sem contrato"}`}
+              subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "aluno sem contrato" : "alunos sem contrato"}`}
               cardBorder="border-sky-500/40 shadow-sky-500/10"
               iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
               icon={<FileText className="h-5 w-5" />}
@@ -1948,7 +1948,7 @@ export default function AdminUserDetails() {
                     }`}
                 >
                   <Users className={`h-4 w-4 shrink-0 ${activeSubTab === "passageiros" ? "text-white" : "text-emerald-400"}`} />
-                  <span className="flex-1">Passageiros</span>
+                  <span className="flex-1">Alunos</span>
                   {data.kpis?.passageirosCount !== undefined && (
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "passageiros" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
                       }`}>

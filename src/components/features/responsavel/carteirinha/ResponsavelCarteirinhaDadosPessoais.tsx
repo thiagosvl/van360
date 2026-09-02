@@ -81,7 +81,7 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
         <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
           <User className="w-4.5 h-4.5 text-[#1a3a5c]" />
           <h3 className="text-sm font-bold text-[#16314f]">
-            Informações do Passageiro
+            Informações do Aluno
           </h3>
         </div>
         <InfoField

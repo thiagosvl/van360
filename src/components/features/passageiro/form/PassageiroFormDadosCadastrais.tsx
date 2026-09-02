@@ -83,7 +83,7 @@ export function PassageiroFormDadosCadastrais({
               <FormItem className="col-span-1 md:col-span-2">
                 {isExternal ? (
                   <FormControl>
-                    <StitchField icon={User} label="Nome do Passageiro" required error={!!fieldState.error}>
+                    <StitchField icon={User} label="Nome do Aluno" required error={!!fieldState.error}>
                       <Input
                         placeholder="Digite o nome completo"
                         {...field}
@@ -95,7 +95,7 @@ export function PassageiroFormDadosCadastrais({
                 ) : (
                   <>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome do Passageiro <span className="text-red-600">*</span>
+                      Nome do Aluno <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -220,7 +220,7 @@ export function PassageiroFormDadosCadastrais({
                 <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-4 shadow-sm">
                   <div className="space-y-0.5 pr-4">
                     <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer flex items-center gap-2">
-                      Passageiro Ativo
+                      Aluno Ativo
                     </FormLabel>
                   </div>
                   <FormControl>

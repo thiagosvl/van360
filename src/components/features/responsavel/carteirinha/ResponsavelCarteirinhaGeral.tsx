@@ -72,7 +72,7 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             Acesso Rápido
           </h2>
           <p className="text-[12px] text-slate-400 mt-0.5">
-            Navegue pelos serviços e informações do passageiro.
+            Navegue pelos serviços e informações do aluno.
           </p>
         </div>
 

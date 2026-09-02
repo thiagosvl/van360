@@ -38,14 +38,14 @@ export const RelatoriosOperacional = ({
     <div className="space-y-4 px-1">
       <div className="grid grid-cols-2 gap-4">
         <KPICard
-          label="Passageiros Ativos"
+          label="Alunos Ativos"
           icon={Users}
           variant={KPICardVariant.PRIMARY}
           value={dados.passageirosAtivosCount}
         />
 
         <KPICard
-          label="Passageiros Inativos"
+          label="Alunos Inativos"
           icon={Users}
           variant={KPICardVariant.OUTLINE}
           value={dados.passageirosCount - dados.passageirosAtivosCount}
@@ -79,7 +79,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {escola.passageiros}{" "}
                       <span className="text-[10px] font-medium text-slate-400">
-                        passageiros
+                        alunos
                       </span>
                     </span>
                   </div>
@@ -130,7 +130,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {periodo.passageiros}{" "}
                       <span className="text-[10px] font-medium text-slate-400">
-                        passageiros
+                        alunos
                       </span>
                     </span>
                   </div>
@@ -184,7 +184,7 @@ export const RelatoriosOperacional = ({
                       <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                         {veiculo.passageiros}{" "}
                         <span className="text-[10px] font-medium text-slate-400">
-                          passageiros
+                          alunos
                         </span>
                       </span>
                     </div>

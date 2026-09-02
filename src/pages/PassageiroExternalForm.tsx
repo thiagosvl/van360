@@ -39,7 +39,7 @@ export default function PassageiroExternalForm() {
             Cadastro Enviado!
           </h2>
           <p className="text-slate-500 mb-8 leading-relaxed text-base font-medium">
-            Tudo certo! Os dados do passageiro foram enviados com sucesso ao motorista.
+            Tudo certo! Os dados do aluno foram enviados com sucesso ao motorista.
           </p>
           <div className="pt-2 space-y-4">
             <Button
@@ -90,7 +90,7 @@ export default function PassageiroExternalForm() {
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
-                  Cadastro de Passageiro
+                  Cadastro de Aluno
                 </h1>
                 <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4 max-w-md">
                   Preencha as informações abaixo para enviar o cadastro diretamente ao motorista.

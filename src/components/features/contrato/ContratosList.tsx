@@ -157,7 +157,7 @@ export const ContratosList = memo(function ContratosList({
         <UnifiedEmptyState
           icon={FileText}
           title="Nenhum resultado"
-          description="Nenhum contrato ou passageiro encontrado com este filtro."
+          description="Nenhum contrato ou aluno encontrado com este filtro."
         />
       );
     }
@@ -167,14 +167,14 @@ export const ContratosList = memo(function ContratosList({
       { icon: any; title: string; desc: string }
     > = {
       [ContratoTab.PENDENTES]: {
-        icon: Send,
-        title: "Nenhum contrato pendente",
-        desc: "Todos os seus contratos foram assinados!",
+        icon: FileSignature,
+        title: "Sem contratos pendentes",
+        desc: "Todos os contratos gerados já foram assinados pelos responsáveis.",
       },
       [ContratoTab.SEM_CONTRATO]: {
-        icon: FileText,
-        title: "Todos os passageiros com contrato",
-        desc: "Bom trabalho! Tudo organizado.",
+        icon: Users,
+        title: "Todos os alunos com contrato",
+        desc: "Todos os seus alunos ativos já possuem contrato digital emitido ou assinado.",
       },
     };
 

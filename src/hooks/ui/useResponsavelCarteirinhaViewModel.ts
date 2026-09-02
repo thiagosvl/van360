@@ -71,7 +71,7 @@ export function useResponsavelCarteirinhaViewModel() {
     }
   };
 
-  const nomeExibicao = carteirinha?.nome || passageiroSelecionado?.nome || "Passageiro";
+  const nomeExibicao = carteirinha?.nome || passageiroSelecionado?.nome || "Aluno";
 
   const responsavelLogado = (() => {
     if (!carteirinha) return null;

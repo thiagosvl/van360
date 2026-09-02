@@ -69,7 +69,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
     <div className="space-y-6 text-left">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
-          title="PASSAGEIROS ATIVOS"
+          title="ALUNOS ATIVOS"
           value={ativosCount}
           subtext={`${inativosCount} ${inativosCount === 1 ? "inativo" : "inativos"}`}
           cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.ACTIVE
@@ -110,7 +110,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
             <div className="space-y-1 text-left">
               <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <Users className="h-4 w-4 text-blue-400" />
-                Listagem de Passageiros
+                Listagem de Alunos
                 {search.trim() || statusFilter !== StatusFilter.ALL ? (
                   <span>({filtered.length} de {totalPassageiros})</span>
                 ) : (
@@ -191,11 +191,11 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
             <div className="p-8">
               <AdminEmptyState
                 icon={Users}
-                title="Nenhum passageiro encontrado"
+                title="Nenhum aluno encontrado"
                 description={
                   search || statusFilter !== StatusFilter.ALL
                     ? "Nenhum aluno corresponde à busca ou filtro selecionado."
-                    : "O motorista ainda não possui alunos/passageiros cadastrados."
+                    : "O motorista ainda não possui alunos cadastrados."
                 }
               />
             </div>
@@ -205,7 +205,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800/80 bg-slate-900/70 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                      <th className="py-3.5 px-6">Passageiro / Responsável</th>
+                      <th className="py-3.5 px-6">Aluno / Responsável</th>
                       <th className="py-3.5 px-4">Escola / Turno</th>
                       <th className="py-3.5 px-4">Mensalidade</th>
                       <th className="py-3.5 px-6 text-right">Ações</th>
@@ -222,7 +222,7 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
                               <div
-                                title={p.ativo ? "Passageiro Ativo" : "Passageiro Inativo"}
+                                title={p.ativo ? "Aluno Ativo" : "Aluno Inativo"}
                                 className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-colors ${
                                   p.ativo
                                     ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"

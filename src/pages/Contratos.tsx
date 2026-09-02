@@ -73,7 +73,7 @@ const Contratos = () => {
               <Banner
                 variant="info"
                 title="Ative seus contratos digitais"
-                description="Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus passageiros."
+                description="Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus alunos."
                 action={{
                   label: "Ativar Uso de Contratos",
                   onClick: handleOpenContractSetup,
@@ -87,7 +87,7 @@ const Contratos = () => {
               <Banner
                 variant="neutral"
                 title="Uso de Contratos Desativado"
-                description="Reative para voltar a gerar contratos para os passageiros."
+                description="Reative para voltar a gerar contratos para os alunos."
                 action={{
                   label: "Reativar Contratos",
                   onClick: () => handleToggleContracts(true),
@@ -102,7 +102,7 @@ const Contratos = () => {
                 {activeTab === ContratoTab.PENDENTES ? "Assinaturas Pendentes" : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
+                {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "ALUNOS" : "CONTRATOS"}
               </span>
             </div>
 

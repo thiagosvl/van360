@@ -88,7 +88,7 @@ export function GerarContratoValidadorDialog({
         {isLoadingPassageiro ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin mb-4" />
-            <p className="text-sm">Carregando dados do passageiro...</p>
+            <p className="text-sm">Carregando dados do aluno...</p>
           </div>
         ) : (
           <Form {...form}>

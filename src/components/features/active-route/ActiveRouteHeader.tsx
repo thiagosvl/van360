@@ -95,7 +95,7 @@ export function ActiveRouteHeader({
                   variant="outline"
                   onClick={onOpenAusenciaDialog}
                   className="flex-1 min-w-0 h-9.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 px-2.5"
-                  title="Registrar ausência antecipada de um passageiro"
+                  title="Registrar ausência antecipada de um aluno"
                 >
                   <UserMinus className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                   <span className="truncate">Registrar Ausência</span>
@@ -107,7 +107,7 @@ export function ActiveRouteHeader({
                     variant="outline"
                     onClick={onEditRoute}
                     className="h-9.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 px-3"
-                    title="Configurar itinerário e passageiros"
+                    title="Configurar itinerário e alunos"
                   >
                     <Edit className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />
                     <span>Editar</span>

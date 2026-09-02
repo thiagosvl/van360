@@ -146,7 +146,7 @@ export default function RegistrarAusenciaDialog({
     const newErrors: Record<string, string> = {};
 
     if (!rotaId) newErrors.rotaId = "Selecione uma rota";
-    if (!passageiroId) newErrors.passageiroId = "Selecione um passageiro";
+    if (!passageiroId) newErrors.passageiroId = "Selecione um aluno";
     if (!dataAusencia) newErrors.dataAusencia = "Informe a data da ausência";
 
     if (Object.keys(newErrors).length > 0) {
@@ -180,7 +180,7 @@ export default function RegistrarAusenciaDialog({
           {hasNoRoutesForStudent && (
             <Banner
               variant="warning"
-              description="Este passageiro não está vinculado a nenhuma rota."
+              description="Este aluno não está vinculado a nenhuma rota."
             />
           )}
 
@@ -236,7 +236,7 @@ export default function RegistrarAusenciaDialog({
           {!lockedPassageiro && (
             <div className="space-y-1">
               <Label className="text-slate-700 font-semibold ml-1">
-                Passageiro <span className="text-red-500">*</span>
+                Aluno <span className="text-red-500">*</span>
               </Label>
 
               <Popover open={isPassageiroDropdownOpen && !!rotaId} onOpenChange={(open) => rotaId && setIsPassageiroDropdownOpen(open)}>
@@ -287,7 +287,7 @@ export default function RegistrarAusenciaDialog({
                 >
                   {filteredPassageiros.length === 0 ? (
                     <div className="p-3 text-xs text-slate-400 text-center font-medium">
-                      Nenhum passageiro encontrado nesta rota.
+                      Nenhum aluno encontrado nesta rota.
                     </div>
                   ) : (
                     filteredPassageiros.map((p) => {

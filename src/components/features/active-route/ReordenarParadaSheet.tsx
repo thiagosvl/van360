@@ -206,7 +206,7 @@ export function ReordenarParadaSheet({
                   </strong>
                   <p className="text-[11px] text-amber-800 leading-snug">
                     {paradaTarget?.tipo_no === RouteNodeType.ESCOLA
-                      ? "Esta escola não pode ser movida para baixo pois todos os passageiros no sentido Voltando (Desembarque) devem ser entregues obrigatoriamente após a escola."
+                      ? "Esta escola não pode ser movida para baixo pois todos os alunos no sentido Voltando (Desembarque) devem ser entregues obrigatoriamente após a escola."
                       : "Esta parada não pode ser movida para outras posições devido às regras de sentido (Indo / Voltando)."}
                   </p>
                 </div>

@@ -18,8 +18,8 @@ export function PrivacyPolicyContent() {
           <p className="text-sm text-slate-500">Dados cadastrais para gestão de cobranças, emissão de faturas e identificação do perfil profissional.</p>
         </div>
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <h4 className="font-bold text-[#1a3a5c] mb-2">Passageiros/Responsáveis</h4>
-          <p className="text-sm text-slate-500">Nome, endereço e telefone estritamente para gestão de passageiros, planejamento de rotas e avisos de embarque.</p>
+          <h4 className="font-bold text-[#1a3a5c] mb-2">Alunos/Responsáveis</h4>
+          <p className="text-sm text-slate-500">Nome, endereço e telefone estritamente para gestão de alunos, planejamento de rotas e avisos de embarque.</p>
         </div>
       </div>
 
@@ -61,7 +61,7 @@ export function PrivacyPolicyContent() {
         </ListItem>
       </ul>
       <p className="text-slate-500 leading-relaxed mt-3 text-[0.95rem]">
-        Após a solicitação, todos os seus dados pessoais, registros de passageiros e histórico financeiro serão removidos permanentemente de nossos servidores em até 7 dias úteis.
+        Após a solicitação, todos os seus dados pessoais, registros de alunos e histórico financeiro serão removidos permanentemente de nossos servidores em até 7 dias úteis.
       </p>
     </div>
   );

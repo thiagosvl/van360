@@ -236,7 +236,7 @@ const Home = () => {
               <DashboardStatusCard
                 type="info"
                 title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
-                description={`Revise ${contadores.passageirosSolicitacoes === 1 ? "o cadastro enviado por um responsável" : "os cadastros enviados pelos responsáveis"} antes de ${contadores.passageirosSolicitacoes === 1 ? "adicioná-lo" : "adicioná-los"} à sua lista de passageiros.`}
+                description={`Revise ${contadores.passageirosSolicitacoes === 1 ? "o cadastro enviado por um responsável" : "os cadastros enviados pelos responsáveis"} antes de ${contadores.passageirosSolicitacoes === 1 ? "adicioná-lo" : "adicioná-los"} à sua lista de alunos.`}
                 actionLabel={contadores.passageirosSolicitacoes === 1 ? "Revisar Cadastro" : "Revisar Cadastros"}
                 onAction={() =>
                   navigateTo(
@@ -295,7 +295,7 @@ const Home = () => {
                 <div className="lg:col-span-5 xl:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 h-full">
                   {(contadores.passageirosAtivos > 0 || onboarding.showOnboarding) && (
                     <SecondaryKPICard
-                      label="Passageiros Ativos"
+                      label="Alunos Ativos"
                       value={contadores.passageirosAtivos}
                       loading={isLoading}
                     />
