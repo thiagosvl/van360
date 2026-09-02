@@ -109,7 +109,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     cobranca,
     onVerCobranca: () => { },
     onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
-    onEditarCobranca: cobranca?.isProjection ? undefined : () => onEditarCobranca(cobranca),
+    onEditarCobranca: () => onEditarCobranca(cobranca),
     onRegistrarPagamento: cobranca?.isProjection
       ? () => onOpenCreateForProjection?.(cobranca)
       : () => onRegistrarPagamento(cobranca),
@@ -450,7 +450,7 @@ function ActionSheetWrapper({
     cobranca,
     onVerCobranca: () => { },
     onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id),
-    onEditarCobranca: cobranca.isProjection ? undefined : () => props.onEditarCobranca(cobranca),
+    onEditarCobranca: () => props.onEditarCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
       ? () => onOpenCreateForProjection(cobranca)
       : () => props.onRegistrarPagamento(cobranca),

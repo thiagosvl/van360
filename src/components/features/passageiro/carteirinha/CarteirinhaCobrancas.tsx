@@ -388,7 +388,7 @@ const CobrancaItemPassageiro = forwardRef<
     cobranca,
     onVerCobranca: () => { },
     onVerCarteirinha: undefined,
-    onEditarCobranca: cobranca.isProjection || isCancelada ? undefined : () => onEditCobranca(cobranca),
+    onEditarCobranca: isCancelada ? undefined : () => onEditCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
       ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
       : isCancelada
@@ -484,7 +484,7 @@ const CobrancaItemPassageiro = forwardRef<
               <CobrancaActionsMenu
                 cobranca={cobranca}
                 onVerCarteirinha={undefined}
-                onEditarCobranca={cobranca.isProjection || isCancelada ? undefined : () => onEditCobranca(cobranca)}
+                onEditarCobranca={isCancelada ? undefined : () => onEditCobranca(cobranca)}
                 onRegistrarPagamento={cobranca.isProjection
                   ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
                   : isCancelada

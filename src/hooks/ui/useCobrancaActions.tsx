@@ -227,6 +227,21 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
   return useMemo(() => {
     if (cobranca.isProjection) {
       const projActions: ActionItem[] = [];
+
+      if (onEditarCobranca) {
+        projActions.push({
+          label: "Editar",
+          icon: <FilePen className="h-4 w-4" />,
+          onClick: () => {
+            document.body.click();
+            setTimeout(() => onEditarCobranca(), 10);
+          },
+          disabled: isActionLoading,
+          swipeColor: "bg-blue-600",
+          hasSeparatorAfter: true,
+        });
+      }
+
       if (onRegistrarPagamento) {
         projActions.push({
           label: "Registrar Pagamento",

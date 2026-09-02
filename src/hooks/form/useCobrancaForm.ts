@@ -2,7 +2,8 @@ import { useCreateCobranca, useUpdateCobranca } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
+import { CreateCobrancaDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import {
   calculateSafeDueDate,
   getNowBR,
@@ -195,20 +196,20 @@ export function useCobrancaForm({
     if (mode === "create") {
       if (!passageiroId) return;
 
-      const payload = {
+      const payload: CreateCobrancaDTO = {
         passageiro_id: passageiroId,
-        mes: data.mes ? String(data.mes) : (data.data_vencimento.getMonth() + 1).toString(),
-        ano: data.ano ? String(data.ano) : data.data_vencimento.getFullYear().toString(),
+        mes: Number(data.mes || data.data_vencimento.getMonth() + 1),
+        ano: Number(data.ano || data.data_vencimento.getFullYear()),
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
-        data_pagamento: data.foi_pago ? dataPagamentoStr : null,
-        tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
+        data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
+        tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
         pagamento_manual: data.foi_pago,
         usuario_id: profile.id,
       };
 
-      createCobranca.mutate(payload as any, {
+      createCobranca.mutate(payload, {
         onSuccess: () => {
           onSuccess?.();
           form.reset();
@@ -216,19 +217,37 @@ export function useCobrancaForm({
       });
 
     } else if (mode === "edit" && cobranca) {
-      const updatePayload: any = {
+      if (cobranca.isProjection) {
+        const createPayload: CreateCobrancaDTO = {
+          passageiro_id: cobranca.passageiro_id,
+          usuario_id: cobranca.usuario_id || cobranca.passageiro?.usuario_id || profile.id,
+          mes: Number(cobranca.mes),
+          ano: Number(cobranca.ano),
+          valor: valorNumerico,
+          data_vencimento: dataVencimentoStr,
+          status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
+          data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
+          tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
+          pagamento_manual: data.foi_pago,
+          desativar_lembretes: cobranca.desativar_lembretes ?? false,
+        };
+
+        createCobranca.mutate(createPayload, {
+          onSuccess: () => {
+            onSuccess?.();
+            form.reset();
+          },
+        });
+        return;
+      }
+
+      const updatePayload: UpdateCobrancaDTO = {
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
-        tipo_pagamento: data.foi_pago ? data.tipo_pagamento : undefined,
+        tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
-        pagamento_manual: data.foi_pago,
+        data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
       };
-
-      if (data.foi_pago) {
-        updatePayload.data_pagamento = dataPagamentoStr;
-      } else {
-        updatePayload.data_pagamento = null;
-      }
 
       updateCobranca.mutate({
         id: cobranca.id,
