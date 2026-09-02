@@ -168,6 +168,7 @@ export type Database = {
           plano_id: string
           status: string
           trial_ends_at: string | null
+          trial_estendido: boolean
           updated_at: string | null
           usuario_id: string
           valor_base_anual: number | null
@@ -187,6 +188,7 @@ export type Database = {
           plano_id: string
           status?: string
           trial_ends_at?: string | null
+          trial_estendido?: boolean
           updated_at?: string | null
           usuario_id: string
           valor_base_anual?: number | null
@@ -206,6 +208,7 @@ export type Database = {
           plano_id?: string
           status?: string
           trial_ends_at?: string | null
+          trial_estendido?: boolean
           updated_at?: string | null
           usuario_id?: string
           valor_base_anual?: number | null
