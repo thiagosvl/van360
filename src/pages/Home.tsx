@@ -28,6 +28,7 @@ import {
   Settings,
   Eye,
   EyeOff,
+  UserPlus,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { PassageiroTab } from "@/types/enums";
@@ -37,7 +38,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { usePrivacy } from "@/contexts/PrivacyContext";
 import { isMotoristaTitular } from "@/utils/userUtils";
 import { useEffect } from "react";
-import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
+import { Banner } from "@/components/ui/Banner";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
@@ -200,16 +201,18 @@ const Home = () => {
             {/* Notificação de Solicitações Pendentes */}
             {!isSubConta && contadores.passageirosSolicitacoes > 0 && (
               <section className="px-1">
-                <DashboardStatusCard
-                  type="info"
+                <Banner
+                  variant="info"
+                  icon={<UserPlus className="w-5 h-5" />}
                   title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
                   description={`Revise ${contadores.passageirosSolicitacoes === 1 ? "o cadastro enviado por um responsável" : "os cadastros enviados pelos responsáveis"} antes de ${contadores.passageirosSolicitacoes === 1 ? "adicioná-lo" : "adicioná-los"} à sua lista de alunos.`}
-                  actionLabel={contadores.passageirosSolicitacoes === 1 ? "Revisar Cadastro" : "Revisar Cadastros"}
-                  onAction={() =>
-                    navigateTo(
-                      `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
-                    )
-                  }
+                  action={{
+                    label: contadores.passageirosSolicitacoes === 1 ? "Revisar Cadastro" : "Revisar Cadastros",
+                    onClick: () =>
+                      navigateTo(
+                        `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
+                      ),
+                  }}
                 />
               </section>
             )}
@@ -228,11 +231,11 @@ const Home = () => {
             {/* Notificação de Parcelas pendentes */}
             {!isSubConta && !onboarding.showOnboarding && (financeiro?.countAtrasos || 0) > 0 && (
               <section className="px-1">
-                <DashboardStatusCard
-                  type="pending"
+                <Banner
+                  variant="danger"
                   title={`${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "parcela em atraso" : "parcelas em atraso"}`}
                   description={`Referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}`}
-                  onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
+                  onClick={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
               </section>
             )}
