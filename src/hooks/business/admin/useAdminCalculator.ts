@@ -37,7 +37,6 @@ export interface SimulationState {
   pAnual: number;
   mediaPassageiros: number;
   inadimplenciaPct: number;
-  toggleReciboWaba: boolean;
   wabaUnitarioBrl: number;
   pixPct: number;
   taxaPix: number;
@@ -68,12 +67,10 @@ export interface CalculatedMetrics {
   totalMsgsWaba: number;
   msgsD0: number;
   msgsD3: number;
-  msgsRecibo: number;
   msgsContrato: number;
   custoWabaMensal: number;
   custoWabaD0: number;
   custoWabaD3: number;
-  custoWabaRecibo: number;
   custoWabaContrato: number;
   custoWabaPorCondutor: number;
   custoWabaPorAluno: number;
@@ -119,11 +116,10 @@ const INITIAL_SIMULATION_STATE: SimulationState = {
   vitalicioCount: 1,
   fundadorCount: 4,
   pFundador: 25.0,
-  pMensal: 45.0,
-  pAnual: 450.0,
+  pMensal: 39.9,
+  pAnual: 399.0,
   mediaPassageiros: 66,
   inadimplenciaPct: 25,
-  toggleReciboWaba: false,
   wabaUnitarioBrl: 0.038,
   pixPct: 50,
   taxaPix: 1.19,
@@ -206,7 +202,6 @@ export function useAdminCalculator() {
       taxaPix: baseline?.gateway.taxaPix || 1.19,
       taxaCard: baseline?.gateway.taxaCartao || 3.49,
       taxaImposto: baseline?.gateway.impostoSimples || 6.0,
-      toggleReciboWaba: false,
     }));
   };
 
@@ -223,11 +218,10 @@ export function useAdminCalculator() {
         nCondutores: 35,
         fundadorCount: baseline?.motoristas.pagantes ?? 4,
         vitalicioCount: baseline?.motoristas.vitalicio ?? 1,
-        pMensal: 45.0,
-        pAnual: 450.0,
-        anualPct: 40,
+        pMensal: 39.90,
+        pAnual: 399.0,
+        anualPct: 45,
         mediaPassageiros: baseline?.passageiros.mediaPorMotorista || 66,
-        toggleReciboWaba: true,
       }));
       setCosts(prev => prev.map(c => ({
         ...c,
@@ -239,11 +233,10 @@ export function useAdminCalculator() {
         nCondutores: 100,
         fundadorCount: baseline?.motoristas.pagantes ?? 4,
         vitalicioCount: baseline?.motoristas.vitalicio ?? 1,
-        pMensal: 49.90,
-        pAnual: 499.0,
+        pMensal: 39.90,
+        pAnual: 399.0,
         anualPct: 50,
         mediaPassageiros: 70,
-        toggleReciboWaba: true,
       }));
       setCosts(prev => prev.map(c => ({
         ...c,
@@ -311,7 +304,6 @@ export function useAdminCalculator() {
       pAnual,
       mediaPassageiros,
       inadimplenciaPct,
-      toggleReciboWaba,
       wabaUnitarioBrl,
       pixPct,
       taxaPix,
@@ -356,14 +348,12 @@ export function useAdminCalculator() {
 
     const msgsD0 = totalAlunos;
     const msgsD3 = Math.round(totalAlunos * (inadimplenciaPct / 100));
-    const msgsRecibo = toggleReciboWaba ? totalAlunos : 0;
     const msgsContrato = Math.round(totalAlunos / 12);
 
-    const totalMsgsWaba = msgsD0 + msgsD3 + msgsRecibo + msgsContrato;
+    const totalMsgsWaba = msgsD0 + msgsD3 + msgsContrato;
     const custoWabaMensal = totalMsgsWaba * wabaUnitarioBrl;
     const custoWabaD0 = msgsD0 * wabaUnitarioBrl;
     const custoWabaD3 = msgsD3 * wabaUnitarioBrl;
-    const custoWabaRecibo = msgsRecibo * wabaUnitarioBrl;
     const custoWabaContrato = msgsContrato * wabaUnitarioBrl;
 
     const custoWabaPorCondutor = totalCondutores > 0 ? custoWabaMensal / totalCondutores : 0;
@@ -424,21 +414,12 @@ export function useAdminCalculator() {
       descricao: `O custo do WhatsApp é de apenas R$ ${custoWabaPorCondutor.toFixed(2)} por motorista/mês (ou R$ ${custoWabaPorAluno.toFixed(3)} por aluno). É uma despesa extremamente sustentável.`,
     });
 
-    if (toggleReciboWaba) {
-      insights.push({
-        id: 'recibo-ativo',
-        tipo: 'estrategia',
-        titulo: 'Comprovante WhatsApp Ativado',
-        descricao: `O envio do recibo adiciona R$ ${(custoWabaRecibo).toFixed(2)}/mês no total (+R$ ${(custoWabaRecibo / totalCondutores).toFixed(2)} por motorista). Reduz o suporte e aumenta a percepção de valor pelos pais.`,
-      });
-    } else {
-      insights.push({
-        id: 'recibo-inativo',
-        tipo: 'info',
-        titulo: 'Comprovante via Push no App & E-mail',
-        descricao: `O recibo é entregue gratuitamente por Push e E-mail. Reativar no WhatsApp custaria apenas R$ ${(totalAlunos * wabaUnitarioBrl).toFixed(2)}/mês a mais para toda a base.`,
-      });
-    }
+    insights.push({
+      id: 'recibo-gratis',
+      tipo: 'estrategia',
+      titulo: 'Comprovante 100% Grátis (Push & App)',
+      descricao: `Os recibos são entregues sem custo por Push, E-mail e no App dos Pais. O motorista também pode enviar via WhatsApp com 1 clique pelo celular sem custos para o SaaS.`,
+    });
 
     return {
       totalCondutores,
@@ -460,12 +441,10 @@ export function useAdminCalculator() {
       totalMsgsWaba,
       msgsD0,
       msgsD3,
-      msgsRecibo,
       msgsContrato,
       custoWabaMensal,
       custoWabaD0,
       custoWabaD3,
-      custoWabaRecibo,
       custoWabaContrato,
       custoWabaPorCondutor,
       custoWabaPorAluno,
@@ -486,7 +465,7 @@ export function useAdminCalculator() {
 
   const projectionChartData = useMemo<ProjectionMonthData[]>(() => {
     const data: ProjectionMonthData[] = [];
-    const { growPct, churnPct, pMensal, pAnual, pFundador, pixPct, taxaPix, taxaCard, taxaImposto, mediaPassageiros, inadimplenciaPct, toggleReciboWaba, wabaUnitarioBrl } = simState;
+    const { growPct, churnPct, pMensal, pAnual, pFundador, pixPct, taxaPix, taxaCard, taxaImposto, mediaPassageiros, inadimplenciaPct, wabaUnitarioBrl } = simState;
     const { totalFixos } = fixosData;
 
     const pAmes = pAnual / 12;
@@ -516,7 +495,7 @@ export function useAdminCalculator() {
 
       const totalCond = curNovos + curFundadores + simState.vitalicioCount;
       const alunos = (baseline?.passageiros?.notificaveis || 261) + (curNovos * mediaPassageiros);
-      const msgs = alunos + Math.round(alunos * (inadimplenciaPct / 100)) + (toggleReciboWaba ? alunos : 0) + Math.round(alunos / 12);
+      const msgs = alunos + Math.round(alunos * (inadimplenciaPct / 100)) + Math.round(alunos / 12);
       const cWaba = msgs * wabaUnitarioBrl;
 
       const cTotais = totalFixos + cGateway + cImposto + cWaba;

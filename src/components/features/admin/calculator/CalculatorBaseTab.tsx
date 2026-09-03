@@ -63,12 +63,10 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
     totalMsgsWaba,
     msgsD0,
     msgsD3,
-    msgsRecibo,
     msgsContrato,
     custoWabaMensal,
     custoWabaD0,
     custoWabaD3,
-    custoWabaRecibo,
     custoWabaContrato,
     custoWabaPorCondutor,
     pAnualMensalizado,
@@ -291,7 +289,7 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
               <CardTitle className="text-base font-bold text-white">Escala de Condutores & Preço</CardTitle>
             </div>
             <CardDescription className="text-xs text-slate-400">
-              Projeção de base de assinantes e regra de 2 meses grátis no plano anual.
+              Projeção de base de assinantes e regra de 2 meses grátis no plano anual (10x).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -351,6 +349,15 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
                     type="button"
                     variant="outline"
                     size="sm"
+                    className={`h-7 px-2 text-xs border-slate-800 ${simState.pMensal === 34.9 ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900 text-slate-300'}`}
+                    onClick={() => updateSim("pMensal", 34.9)}
+                  >
+                    R$ 34,90
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     className={`h-7 px-2 text-xs border-slate-800 ${simState.pMensal === 39.9 ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900 text-slate-300'}`}
                     onClick={() => updateSim("pMensal", 39.9)}
                   >
@@ -364,15 +371,6 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
                     onClick={() => updateSim("pMensal", 45.0)}
                   >
                     R$ 45,00
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className={`h-7 px-2 text-xs border-slate-800 ${simState.pMensal === 49.9 ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900 text-slate-300'}`}
-                    onClick={() => updateSim("pMensal", 49.9)}
-                  >
-                    R$ 49,90
                   </Button>
                 </div>
               </div>
@@ -430,7 +428,7 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
               <CardTitle className="text-base font-bold text-white">Passageiros & Custos WABA</CardTitle>
             </div>
             <CardDescription className="text-xs text-slate-400">
-              Disparos de cobrança D-0, D+3 e comprovante de pagamento no WhatsApp.
+              Disparos de cobrança D-0, D+3 e link de contrato digital no WhatsApp.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -484,31 +482,6 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
               </span>
             </div>
 
-            <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl flex items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-white">Enviar Comprovante de Pagamento via WABA</span>
-                  {simState.toggleReciboWaba ? (
-                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px]">Ativado no WhatsApp</Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-slate-800 text-slate-300 border-slate-600 text-[10px]">
-                      Apenas Push & E-mail (Grátis)
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Dispara +1 mensagem WABA (R$ 0,038) quando o motorista dá baixa na parcela.
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={simState.toggleReciboWaba}
-                  onCheckedChange={(checked) => updateSim("toggleReciboWaba", checked)}
-                  className="data-[state=unchecked]:bg-slate-700 data-[state=unchecked]:border-slate-500 data-[state=checked]:bg-blue-600 border border-slate-600 [&>span]:bg-white shadow-md"
-                />
-              </div>
-            </div>
-
             <div className="space-y-2 bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/80">
               <div className="grid grid-cols-3 gap-3">
                 <div>
@@ -525,11 +498,10 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-400 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <span>D-0: <strong className="text-slate-200">{msgsD0} ({formatCurrency(custoWabaD0)})</strong></span>
-                <span>D+3: <strong className="text-slate-200">{msgsD3} ({formatCurrency(custoWabaD3)})</strong></span>
-                <span>Recibos: <strong className="text-slate-200">{msgsRecibo} ({formatCurrency(custoWabaRecibo)})</strong></span>
-                <span>Contratos: <strong className="text-slate-200">{msgsContrato} ({formatCurrency(custoWabaContrato)})</strong></span>
+              <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-400 grid grid-cols-3 gap-2">
+                <span>D-0 (Vencimento): <strong className="text-slate-200">{msgsD0} ({formatCurrency(custoWabaD0)})</strong></span>
+                <span>D+3 (Inadimplência): <strong className="text-slate-200">{msgsD3} ({formatCurrency(custoWabaD3)})</strong></span>
+                <span>Contratos Digitais: <strong className="text-slate-200">{msgsContrato} ({formatCurrency(custoWabaContrato)})</strong></span>
               </div>
             </div>
           </CardContent>
