@@ -225,9 +225,9 @@ export function usePassageiroExternalForm() {
     form.reset({
       nome_responsavel: currentValues.nome_responsavel,
       parentesco_responsavel: currentValues.parentesco_responsavel,
-
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,
+      email_responsavel: currentValues.email_responsavel,
 
       cep: currentValues.cep,
       logradouro: currentValues.logradouro,
@@ -239,10 +239,15 @@ export function usePassageiroExternalForm() {
       complemento: currentValues.complemento,
 
       nome: "",
+      data_nascimento: "",
+      genero: "",
       escola_id: "",
       turma: "",
       nome_professor: "",
       periodo: "",
+      modalidade: "",
+      data_inicio_transporte: "",
+      data_fim_transporte: "",
       observacoes: "",
 
       valor_cobranca: "",

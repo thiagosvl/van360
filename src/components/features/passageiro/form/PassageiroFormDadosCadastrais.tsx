@@ -494,7 +494,7 @@ export function PassageiroFormDadosCadastrais({
               <FormItem className="col-span-1">
                 {isExternal ? (
                   <FormControl>
-                    <StitchField icon={School} label="Turma" required={isExternal} error={!!fieldState.error}>
+                    <StitchField icon={School} label="Turma" error={!!fieldState.error}>
                       <Input
                         placeholder="Ex: 5º Ano A"
                         {...field}
@@ -507,7 +507,7 @@ export function PassageiroFormDadosCadastrais({
                 ) : (
                   <>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Turma {isExternal && <span className="text-red-600">*</span>}
+                      Turma
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
