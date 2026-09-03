@@ -15,10 +15,6 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
   passageiroId,
   passageiroNome
 }) => {
-  if (!ENABLE_LIVE_TRACKING) {
-    return null;
-  }
-
   const { token } = useResponsavelAuth();
 
   const {
@@ -38,6 +34,10 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
     sentido,
     destinoEndereco
   } = useTrackingViewModel({ passageiroId, token });
+
+  if (!ENABLE_LIVE_TRACKING) {
+    return null;
+  }
 
   if (isParadaAusente) {
     return null;

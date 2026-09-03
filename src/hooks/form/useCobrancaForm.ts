@@ -18,15 +18,14 @@ import {
   moneyMask
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
+import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// --- Schema Unificado ---
 export const cobrancaSchema = z
   .object({
-    // Campos comuns
     valor: z
       .string()
       .min(1, "Campo obrigatório")
@@ -40,12 +39,11 @@ export const cobrancaSchema = z
     foi_pago: z.boolean().default(false),
     data_pagamento: z.date().optional(),
     tipo_pagamento: z.string().optional(),
+    enviar_recibo_whatsapp_manual: z.boolean().default(false).optional(),
 
-    // Campos auxiliares para UI de Criação (Mês/Ano)
     mes: z.union([z.string(), z.number()]).optional(),
     ano: z.union([z.string(), z.number()]).optional(),
 
-    // Controle de aviso
     is_future: z.boolean().optional(),
   })
   .refine(
@@ -64,9 +62,7 @@ export const cobrancaSchema = z
   )
   .refine(
     (data) => {
-      // Validação de data de pagamento futura
       if (data.foi_pago && data.data_pagamento) {
-        // Zera as horas para comparar apenas os dias, evitando problemas de timezone/horários
         const pagDate = new Date(data.data_pagamento.getFullYear(), data.data_pagamento.getMonth(), data.data_pagamento.getDate());
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -81,7 +77,6 @@ export const cobrancaSchema = z
   )
   .refine(
     (data) => {
-      // Validação: Mês Futuro exige pagamento (checkbox marcado)
       if (data.is_future) {
         return data.foi_pago === true;
       }
@@ -97,10 +92,11 @@ export type CobrancaFormData = z.infer<typeof cobrancaSchema>;
 
 interface UseCobrancaFormProps {
   mode: "create" | "edit";
-  cobranca?: Cobranca; // Apenas para edit
-  passageiroId?: string; // Apenas para create
-  diaVencimento?: number; // Apenas para create
-  valor?: number; // Apenas para create (default value)
+  cobranca?: Cobranca;
+  passageiroId?: string;
+  passageiroNome?: string;
+  diaVencimento?: number;
+  valor?: number;
   mes?: number;
   ano?: number;
   lockFoiPago?: boolean;
@@ -111,6 +107,7 @@ export function useCobrancaForm({
   mode,
   cobranca,
   passageiroId,
+  passageiroNome,
   diaVencimento = 10,
   valor,
   mes,
@@ -126,7 +123,6 @@ export function useCobrancaForm({
 
   const isSubmitting = createCobranca.isPending || updateCobranca.isPending;
 
-  // Defaults baseados no modo
   const defaultValues = useMemo<Partial<CobrancaFormData>>(() => {
     if (mode === "edit" && cobranca) {
       const isPago = cobranca.status === CobrancaStatus.PAGO;
@@ -140,12 +136,12 @@ export function useCobrancaForm({
           ? parseLocalDate(cobranca.data_pagamento)
           : undefined,
         tipo_pagamento: cobranca.tipo_pagamento || "",
+        enviar_recibo_whatsapp_manual: false,
         mes: cobranca.mes != null ? String(cobranca.mes) : undefined,
         ano: cobranca.ano != null ? String(cobranca.ano) : undefined,
       };
     }
 
-    // CREATE Mode
     const today = getNowBR();
     const parsedMes = (typeof mes === "number" || typeof mes === "string") ? Number(mes) : NaN;
     const parsedAno = (typeof ano === "number" || typeof ano === "string") ? Number(ano) : NaN;
@@ -166,6 +162,7 @@ export function useCobrancaForm({
       foi_pago: lockFoiPago ? true : false,
       data_pagamento: lockFoiPago ? today : undefined,
       tipo_pagamento: "",
+      enviar_recibo_whatsapp_manual: false,
       mes: hasExplicitMes ? targetMonthNum.toString() : "",
       ano: targetYearNum.toString(),
     };
@@ -189,7 +186,6 @@ export function useCobrancaForm({
 
     const valorNumerico = typeof data.valor === 'string' ? parseCurrencyToNumber(data.valor) : data.valor;
 
-    // Persistência segura em Brasília
     const dataVencimentoStr = toPersistenceString(data.data_vencimento);
     const dataPagamentoStr = toISODateTimeBR(data.data_pagamento);
 
@@ -210,9 +206,24 @@ export function useCobrancaForm({
       };
 
       createCobranca.mutate(payload, {
-        onSuccess: () => {
+        onSuccess: async (createdCobranca?: Cobranca) => {
+          const nomeAluno = passageiroNome || cobranca?.passageiro?.nome || createdCobranca?.passageiro?.nome || "";
+          const shouldShare = data.foi_pago && data.enviar_recibo_whatsapp_manual && createdCobranca?.recibo_url;
+          const reciboUrl = createdCobranca?.recibo_url;
+          const cobrancaMes = createdCobranca?.mes;
+          const cobrancaAno = createdCobranca?.ano;
+
           onSuccess?.();
           form.reset();
+
+          if (shouldShare && reciboUrl) {
+            await shareReceiptFile({
+              url: reciboUrl,
+              filename: `recibo-${cobrancaMes || ""}-${cobrancaAno || ""}.png`.toLowerCase(),
+              title: "Recibo Van360",
+              text: `Recibo de ${cobrancaMes}/${cobrancaAno} - ${nomeAluno}`.trim(),
+            });
+          }
         },
       });
 
@@ -233,9 +244,24 @@ export function useCobrancaForm({
         };
 
         createCobranca.mutate(createPayload, {
-          onSuccess: () => {
+          onSuccess: async (createdCobranca?: Cobranca) => {
+            const nomeAluno = passageiroNome || cobranca?.passageiro?.nome || createdCobranca?.passageiro?.nome || "";
+            const shouldShare = data.foi_pago && data.enviar_recibo_whatsapp_manual && createdCobranca?.recibo_url;
+            const reciboUrl = createdCobranca?.recibo_url;
+            const cobrancaMes = createdCobranca?.mes;
+            const cobrancaAno = createdCobranca?.ano;
+
             onSuccess?.();
             form.reset();
+
+            if (shouldShare && reciboUrl) {
+              await shareReceiptFile({
+                url: reciboUrl,
+                filename: `recibo-${cobrancaMes || ""}-${cobrancaAno || ""}.png`.toLowerCase(),
+                title: "Recibo Van360",
+                text: `Recibo de ${cobrancaMes}/${cobrancaAno} - ${nomeAluno}`.trim(),
+              });
+            }
           },
         });
         return;

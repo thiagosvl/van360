@@ -567,13 +567,11 @@ export default function PassageiroCarteirinha() {
         lockFoiPago,
         lockMesAno,
         availableMonths,
-        onSuccess: refetchCobrancas,
       });
     },
     onEditCobranca: (cobranca: Cobranca) => {
       openCobrancaEditDialog({
         cobranca,
-        onSuccess: refetchCobrancas,
       });
     },
     onRegistrarPagamento: (cobranca: Cobranca) => {

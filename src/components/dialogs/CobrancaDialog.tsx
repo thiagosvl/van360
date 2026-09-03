@@ -24,6 +24,8 @@ export default function CobrancaDialog({
   isOpen,
   onClose,
   passageiroId,
+  passageiroNome,
+  passageiroResponsavelNome,
   valorCobranca,
   diaVencimento,
   mes,
@@ -36,6 +38,7 @@ export default function CobrancaDialog({
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
     mode: "create",
     passageiroId,
+    passageiroNome,
     diaVencimento,
     valor: valorCobranca,
     mes,

@@ -423,9 +423,28 @@ export function CobrancaFormContent({
                             </FormItem>
                         )}
                     />
-                    <Banner
-                        variant="info"
-                        description="O responsável receberá uma notificação no aplicativo e poderá acessar o recibo diretamente pela carteirinha."
+                    <FormField
+                        control={form.control}
+                        name="enviar_recibo_whatsapp_manual"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                                <div className="flex items-center gap-3">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                    </FormControl>
+                                    <div className="flex-1 space-y-1 leading-none">
+                                        <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
+                                            Enviar Comprovante no WhatsApp
+                                        </FormLabel>
+                                    </div>
+                                </div>
+                                <FormMessage className="pt-2" />
+                            </FormItem>
+                        )}
                     />
                 </div>
             )}
