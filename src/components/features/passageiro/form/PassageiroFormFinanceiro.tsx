@@ -32,7 +32,7 @@ export function PassageiroFormFinanceiro({
   const isIsento = form.watch("isento");
 
   return (
-    <div className="space-y-6">
+    <div id="section-parcelas" className="space-y-6">
       <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
           <DollarSign className="w-5 h-5" />

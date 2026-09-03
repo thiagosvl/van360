@@ -172,26 +172,6 @@ const CarteirinhaTopCard = ({
             {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
           </Button>
         )}
-        <Button
-          size="icon"
-          disabled={isWhatsAppDisabled}
-          onClick={() => {
-            if (isWhatsAppDisabled) return;
-            const formattedPhone = phoneNumbersOnly.startsWith("55") ? phoneNumbersOnly : `55${phoneNumbersOnly}`;
-            openBrowserLink(
-              `https://wa.me/${formattedPhone}`
-            );
-          }}
-          title={isWhatsAppDisabled ? undefined : "Enviar mensagem no WhatsApp"}
-          className={cn(
-            "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
-            isWhatsAppDisabled
-              ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-40 shadow-none hover:bg-slate-300 pointer-events-none"
-              : "bg-[#25D366] text-white hover:bg-[#20b858]"
-          )}
-        >
-          <WhatsAppIcon size={26} className="h-[26px] w-[26px]" />
-        </Button>
         {canManage && (
           <Button
             size="icon"
