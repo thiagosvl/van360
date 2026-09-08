@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
-import { XCircle, UserMinus, Route, Loader2, Play, AlertTriangle, Edit } from "lucide-react";
+import { XCircle, UserMinus, Route, Loader2, Play, CheckCircle2, Edit } from "lucide-react";
 import { RouteExecution, RouteExecutionStatus } from "@/types/route";
 
 interface ActiveRouteHeaderProps {
@@ -18,6 +18,7 @@ interface ActiveRouteHeaderProps {
   isAnyActionBusy?: boolean;
   onOpenAusenciaDialog: () => void;
   onCancel: () => void;
+  onFinalizar?: () => void;
   onEditRoute: () => void;
   onIniciarRota: () => void;
 }
@@ -37,10 +38,12 @@ export function ActiveRouteHeader({
   isAnyActionBusy = false,
   onOpenAusenciaDialog,
   onCancel,
+  onFinalizar,
   onEditRoute,
   onIniciarRota
 }: ActiveRouteHeaderProps) {
   const paradasCountDisplay = todasParadasCount || totalStops;
+  const isModoSimples = execucao?.modo_execucao === "simples";
 
   return (
     <>
@@ -125,47 +128,65 @@ export function ActiveRouteHeader({
                 <h2 className="text-lg font-headline font-extrabold text-[#1a3a5c] tracking-tight leading-snug break-words">
                   {execucao?.rota?.nome}
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 rounded-md border border-emerald-200/60">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                  <span>EM EXECUÇÃO</span>
+                  <span>{isModoSimples ? "ROTA ATIVA" : "EM EXECUÇÃO"}</span>
                 </span>
               </div>
             </div>
 
-            {can("rotas.iniciar_encerrar") && execucao?.status === RouteExecutionStatus.INICIADA && (
-              <Button
-                variant="outline"
-                className="rounded-lg border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-[11px] shrink-0 h-8 px-2.5 gap-1 shadow-2xs cursor-pointer transition-all active:scale-95"
-                onClick={onCancel}
-                disabled={isLoading || isAnyActionBusy}
-              >
-                <XCircle className="w-3.5 h-3.5 text-rose-500" />
-                <span>ENCERRAR</span>
-              </Button>
-            )}
-          </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {can("rotas.iniciar_encerrar") && execucao?.status === RouteExecutionStatus.INICIADA && (
+                <>
+                  {isModoSimples && onFinalizar && (
+                    <Button
+                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shrink-0 h-8 px-3 gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95 border-none"
+                      onClick={onFinalizar}
+                      disabled={isLoading || isAnyActionBusy}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      <span>FINALIZAR</span>
+                    </Button>
+                  )}
 
-          <div className="h-px bg-slate-100" />
-
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs font-bold text-[#1a3a5c] flex-wrap gap-1">
-              <span className="flex items-center gap-1 uppercase text-[10px] tracking-wider text-slate-500 font-bold">
-                <Route className="w-3.5 h-3.5 text-slate-400" /> Progresso
-              </span>
-              <span className="text-[11px] font-bold text-slate-600">
-                {concludedStops} de {totalStops} paradas ({progressPercentage}%)
-              </span>
-            </div>
-
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
-                style={{ width: `${progressPercentage}%` }}
-              />
+                  <Button
+                    variant="outline"
+                    className="rounded-lg border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-[11px] shrink-0 h-8 px-2.5 gap-1 shadow-2xs cursor-pointer transition-all active:scale-95"
+                    onClick={onCancel}
+                    disabled={isLoading || isAnyActionBusy}
+                  >
+                    <XCircle className="w-3.5 h-3.5 text-rose-500" />
+                    <span>ENCERRAR</span>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
+
+          {!isModoSimples && (
+            <>
+              <div className="h-px bg-slate-100" />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-[#1a3a5c] flex-wrap gap-1">
+                  <span className="flex items-center gap-1 uppercase text-[10px] tracking-wider text-slate-500 font-bold">
+                    <Route className="w-3.5 h-3.5 text-slate-400" /> Progresso
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-600">
+                    {concludedStops} de {totalStops} paradas ({progressPercentage}%)
+                  </span>
+                </div>
+
+                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>
   );
-}
+}

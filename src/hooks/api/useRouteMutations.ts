@@ -105,11 +105,14 @@ export function useIniciarRota() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; notificar_pais?: boolean } | string) => {
+    mutationFn: (data: { id: string; notificar_pais?: boolean; modo_execucao?: "simples" | "passo_a_passo"; rastreamento_ativo?: boolean } | string) => {
       markLocalMutation();
       const id = typeof data === "string" ? data : data.id;
       const notificar_pais = typeof data === "string" ? true : (data.notificar_pais !== undefined ? data.notificar_pais : true);
-      return routeApi.iniciarRota(id, { notificar_pais });
+      const modo_execucao = typeof data === "string" ? "passo_a_passo" : (data.modo_execucao || "passo_a_passo");
+      const rastreamento_ativo = typeof data === "string" ? true : (data.rastreamento_ativo !== undefined ? data.rastreamento_ativo : true);
+      
+      return routeApi.iniciarRota(id, { notificar_pais, modo_execucao, rastreamento_ativo });
     },
     onSuccess: (data) => {
       markLocalMutation();

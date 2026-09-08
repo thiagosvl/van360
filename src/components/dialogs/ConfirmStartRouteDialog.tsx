@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Play, Bell, MapPinOff, Settings } from "lucide-react";
+import { Play, Bell, MapPinOff, Settings, ListOrdered, Navigation, Radio } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
-import { useConfiguracoes } from "@/hooks";
 import { Capacitor } from "@capacitor/core";
-
 import { AppPermissionStatus } from "@/types/enums";
+import { RouteExecutionMode } from "@/types/route";
+import { routeStorage } from "@/utils/storage/routeStorage";
 
 export interface ConfirmStartRouteDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (notificarPais: boolean) => void;
+  onConfirm: (options: { notificarPais: boolean; modoExecucao: RouteExecutionMode; rastreamentoAtivo: boolean }) => void;
   routeName?: string;
   isLoading?: boolean;
 }
@@ -23,24 +23,32 @@ export function ConfirmStartRouteDialog({
   routeName,
   isLoading = false,
 }: ConfirmStartRouteDialogProps) {
-  const { configuracoes } = useConfiguracoes();
   const { locationStatus, openDeviceSettings } = useAppPermissions();
 
-  const temNotificacoesAtivas =
-    (configuracoes?.notificar_inicio_rota ?? true) ||
-    (configuracoes?.notificar_proxima_parada ?? true) ||
-    (configuracoes?.notificar_conclusao_parada ?? true);
-
-  const [notificarPais, setNotificarPais] = useState<boolean>(temNotificacoesAtivas);
+  const [modoExecucao, setModoExecucao] = useState<RouteExecutionMode>(() => routeStorage.getPreferredStartRouteMode());
+  const [rastreamentoAtivo, setRastreamentoAtivo] = useState<boolean>(() => routeStorage.getPreferredGpsTracking());
+  const [notificarPassoAPasso, setNotificarPassoAPasso] = useState<boolean>(() => routeStorage.getPreferredStepNotify());
 
   useEffect(() => {
     if (isOpen) {
-      setNotificarPais(temNotificacoesAtivas);
+      setModoExecucao(routeStorage.getPreferredStartRouteMode());
+      setRastreamentoAtivo(routeStorage.getPreferredGpsTracking());
+      setNotificarPassoAPasso(routeStorage.getPreferredStepNotify());
     }
-  }, [isOpen, temNotificacoesAtivas]);
+  }, [isOpen]);
 
   const handleConfirm = () => {
-    onConfirm(notificarPais);
+    routeStorage.setPreferredStartRouteMode(modoExecucao);
+    routeStorage.setPreferredGpsTracking(rastreamentoAtivo);
+    routeStorage.setPreferredStepNotify(notificarPassoAPasso);
+
+    const notificarPais = modoExecucao === "simples" ? rastreamentoAtivo : notificarPassoAPasso;
+
+    onConfirm({
+      notificarPais,
+      modoExecucao,
+      rastreamentoAtivo
+    });
   };
 
   const isGpsDenied = Capacitor.isNativePlatform() && locationStatus === AppPermissionStatus.DENIED;
@@ -55,9 +63,72 @@ export function ConfirmStartRouteDialog({
       />
 
       <BaseDialog.Body className="space-y-4 pt-4">
-        <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-          Deseja iniciar a rota? Você poderá acompanhar as paradas e registrar os alunos em tempo real.
-        </p>
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Modo de Navegação
+          </label>
+          <div className="flex flex-col gap-2.5">
+            <div
+              onClick={() => setModoExecucao("simples")}
+              className={`p-3.5 rounded-2xl border cursor-pointer select-none transition-all flex items-center gap-3.5 ${
+                modoExecucao === "simples"
+                  ? "bg-emerald-50/50 border-emerald-600 shadow-xs ring-1 ring-emerald-600/30"
+                  : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/40"
+              }`}
+            >
+              <div className="shrink-0 flex items-center justify-center">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    modoExecucao === "simples"
+                      ? "border-emerald-600 bg-emerald-50 ring-4 ring-emerald-100 shadow-2xs"
+                      : "border-slate-300 bg-white"
+                  }`}
+                >
+                  {modoExecucao === "simples" && <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />}
+                </div>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <span className="font-headline font-bold text-[#1a3a5c] text-sm block">
+                  Modo Simples
+                </span>
+                <p className="text-xs text-slate-500 leading-snug mt-0.5">
+                  Lista de alunos para dirigir livremente sem confirmar paradas.
+                </p>
+              </div>
+            </div>
+
+            <div
+              onClick={() => setModoExecucao("passo_a_passo")}
+              className={`p-3.5 rounded-2xl border cursor-pointer select-none transition-all flex items-center gap-3.5 ${
+                modoExecucao === "passo_a_passo"
+                  ? "bg-emerald-50/50 border-emerald-600 shadow-xs ring-1 ring-emerald-600/30"
+                  : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/40"
+              }`}
+            >
+              <div className="shrink-0 flex items-center justify-center">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    modoExecucao === "passo_a_passo"
+                      ? "border-emerald-600 bg-emerald-50 ring-4 ring-emerald-100 shadow-2xs"
+                      : "border-slate-300 bg-white"
+                  }`}
+                >
+                  {modoExecucao === "passo_a_passo" && <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />}
+                </div>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <span className="font-headline font-bold text-[#1a3a5c] text-sm block">
+                  Passo a Passo
+                </span>
+                <p className="text-xs text-slate-500 leading-snug mt-0.5">
+                  Confirmação de embarque e desembarque a cada parada.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {isGpsDenied && (
           <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 space-y-2.5">
@@ -70,7 +141,7 @@ export function ConfirmStartRouteDialog({
                   GPS desativado no aparelho
                 </p>
                 <p className="text-[11px] text-amber-900/80 leading-relaxed">
-                  A rota iniciará sem envio de trajeto ao vivo aos pais. Você pode configurar agora ou ativar o GPS durante a corrida.
+                  A rota iniciará sem envio de trajeto ao vivo aos pais.
                 </p>
               </div>
             </div>
@@ -86,30 +157,46 @@ export function ConfirmStartRouteDialog({
           </div>
         )}
 
-        {/* Card de Notificações com Título e Descrição sem Truncamento */}
-        <div
-          onClick={() => setNotificarPais(!notificarPais)}
-          className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 cursor-pointer select-none transition-all hover:bg-emerald-50 active:scale-[0.99] flex items-start gap-3.5"
-        >
-          <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
-            <Bell className="w-5 h-5" />
+        <div className="space-y-2 pt-1">
+          <div
+            onClick={() => setRastreamentoAtivo(!rastreamentoAtivo)}
+            className="p-3 rounded-xl bg-slate-50/80 border border-slate-200 cursor-pointer select-none transition-all hover:bg-slate-100/70 active:scale-[0.99] flex items-center justify-between gap-3"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-1.5 rounded-lg bg-slate-200/80 text-[#1a3a5c] shrink-0">
+                <Radio className="w-4 h-4" />
+              </div>
+              <span className="font-headline font-bold text-[#1a3a5c] text-xs sm:text-sm leading-snug">
+                Compartilhar localização ao vivo
+              </span>
+            </div>
+            <Switch
+              checked={rastreamentoAtivo}
+              onCheckedChange={(checked) => setRastreamentoAtivo(checked)}
+              className="data-[state=checked]:bg-emerald-600 shrink-0"
+            />
           </div>
 
-          <div className="flex-grow min-w-0 pr-1">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="font-headline font-bold text-[#1a3a5c] text-xs sm:text-sm leading-snug">
-                Notificar pais e responsáveis
-              </span>
+          {modoExecucao === "passo_a_passo" && (
+            <div
+              onClick={() => setNotificarPassoAPasso(!notificarPassoAPasso)}
+              className="p-3 rounded-xl bg-slate-50/80 border border-slate-200 cursor-pointer select-none transition-all hover:bg-slate-100/70 active:scale-[0.99] flex items-center justify-between gap-3"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-1.5 rounded-lg bg-slate-200/80 text-[#1a3a5c] shrink-0">
+                  <Bell className="w-4 h-4" />
+                </div>
+                <span className="font-headline font-bold text-[#1a3a5c] text-xs sm:text-sm leading-snug">
+                  Notificar os pais
+                </span>
+              </div>
               <Switch
-                checked={notificarPais}
-                onCheckedChange={(checked) => setNotificarPais(checked)}
+                checked={notificarPassoAPasso}
+                onCheckedChange={(checked) => setNotificarPassoAPasso(checked)}
                 className="data-[state=checked]:bg-emerald-600 shrink-0"
               />
             </div>
-            <p className="text-[11px] sm:text-xs text-slate-500 font-normal leading-relaxed break-words">
-              Os pais receberão alertas automáticos no celular quando a van estiver a caminho e quando seu filho embarcar ou desembarcar.
-            </p>
-          </div>
+          )}
         </div>
       </BaseDialog.Body>
 
@@ -134,3 +221,4 @@ export function ConfirmStartRouteDialog({
 }
 
 export default ConfirmStartRouteDialog;
+

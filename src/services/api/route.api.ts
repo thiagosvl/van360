@@ -1,4 +1,4 @@
-import { Route, RouteExecution, RouteStopStatus } from "@/types/route";
+import { Route, RouteExecution, RouteStopStatus, StartRoutePayload } from "@/types/route";
 import { apiClient } from "./client";
 
 const endpointBase = "/routes";
@@ -44,9 +44,9 @@ export const routeApi = {
       .get(`${endpointBase}/execucoes/${id}`)
       .then(res => res.data),
 
-  iniciarRota: (id: string, payload?: { notificar_pais?: boolean }): Promise<RouteExecution> =>
+  iniciarRota: (id: string, payload?: StartRoutePayload): Promise<RouteExecution> =>
     apiClient
-      .post(`${endpointBase}/${id}/iniciar`, payload || { notificar_pais: true })
+      .post(`${endpointBase}/${id}/iniciar`, payload || { notificar_pais: true, modo_execucao: "passo_a_passo" })
       .then(res => res.data),
 
   atualizarParadaStatus: (

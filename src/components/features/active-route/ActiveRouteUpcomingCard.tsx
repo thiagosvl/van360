@@ -30,6 +30,7 @@ interface ActiveRouteUpcomingCardProps {
   onConfirmFalta: (id: string, nome: string) => void;
   getAlunosEscolaPorPosicao: (paradas: any[], index: number) => { desces: any[]; subes: any[] };
   onOpenReordenarSheet?: (parada: any) => void;
+  onOpenChamadaEscola?: (escolaParada: any, alunos: any[]) => void;
 }
 
 export function ActiveRouteUpcomingCard({
@@ -54,6 +55,7 @@ export function ActiveRouteUpcomingCard({
   onConfirmFalta,
   getAlunosEscolaPorPosicao,
   onOpenReordenarSheet,
+  onOpenChamadaEscola,
 }: ActiveRouteUpcomingCardProps) {
   const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
   const pass = parada.passageiro;
@@ -146,7 +148,7 @@ export function ActiveRouteUpcomingCard({
             const subesAtivos = subes.filter(s => s.status !== RouteStopStatus.AUSENTE);
 
             return (
-              <div className="mt-1 space-y-1 w-full text-left">
+              <div className="mt-1 space-y-1.5 w-full text-left">
                 <div className="space-y-1 text-left">
                   <div className="text-[11px] leading-snug">
                     <span className="font-semibold text-slate-700">⬇️ Desembarque ({descesAtivos.length}):{" "}</span>
@@ -165,6 +167,21 @@ export function ActiveRouteUpcomingCard({
                     )}
                   </div>
                 </div>
+
+                {!isPreview && subesAtivos.length > 0 && onOpenChamadaEscola && (
+                  <div className="pt-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isAnyActionBusy}
+                      onClick={() => onOpenChamadaEscola(parada, subesAtivos)}
+                      className="h-8 border-[#1a3a5c]/30 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 font-bold text-xs rounded-xl shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 px-3 transition-all active:scale-[0.98]"
+                    >
+                      <Users className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                      <span>Fazer Chamada da Escola ({subesAtivos.length})</span>
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -190,10 +207,13 @@ export function ActiveRouteUpcomingCard({
           <div className="flex items-center justify-between border-t border-slate-100 mt-2.5 pt-2">
             <div className="flex items-center gap-2">
               {(() => {
-                const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
+                const totalPendentesReal = activeParadaToRender
+                  ? [activeParadaToRender, ...proximasParadas]
+                  : (todasParadas && todasParadas.length > 0 ? todasParadas : proximasParadas);
+
                 if (totalPendentesReal.length <= 1) return null;
 
-                const realIndex = index + 1;
+                const realIndex = activeParadaToRender ? index + 1 : index;
                 const isUpReordering = reorderingTarget?.index === realIndex && reorderingTarget?.direction === "up";
                 const isDownReordering = reorderingTarget?.index === realIndex && reorderingTarget?.direction === "down";
 

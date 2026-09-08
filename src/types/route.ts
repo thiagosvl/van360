@@ -99,12 +99,23 @@ export interface RouteExecutionPassenger {
   };
 }
 
+export type RouteExecutionMode = "simples" | "passo_a_passo";
+
+export interface StartRoutePayload {
+  notificar_pais?: boolean;
+  modo_execucao?: RouteExecutionMode;
+  rastreamento_ativo?: boolean;
+}
+
 export interface RouteExecution {
   id: string;
   rota_id: string;
   usuario_id: string;
   status: RouteExecutionStatus;
   tipo?: string;
+  modo_execucao?: RouteExecutionMode;
+  notificar_pais?: boolean;
+  rastreamento_ativo?: boolean;
   iniciada_em: string;
   finalizada_em?: string;
   created_at: string;
@@ -124,3 +135,4 @@ export interface ChamadaEscolaItem {
   parada_id: string;
   status: RouteStopStatus;
 }
+

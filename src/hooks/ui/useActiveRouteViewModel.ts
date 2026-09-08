@@ -6,6 +6,7 @@ import { useIniciarRota, useAtualizarParadaStatus, useCancelarExecucao, useReord
 import { useExecucaoAtivaVeiculo } from "../api/useRoutes";
 import { useSession } from "../business/useSession";
 import { RouteStopStatus, RouteExecutionStatus, RouteExecutionPassenger, RoutePassenger, RouteExecution } from "@/types/route";
+import { routeStorage } from "@/utils/storage/routeStorage";
 
 export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) {
   const location = useLocation();
@@ -119,6 +120,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
     await finalizarMutation.mutateAsync(execucao.id, {
       onSuccess: () => {
+        routeStorage.clearExecutionCustomOrder(execucao.id);
         if (onSuccessCallback) onSuccessCallback();
       }
     });
@@ -129,6 +131,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
     await cancelMutation.mutateAsync(execucao.id, {
       onSuccess: () => {
+        routeStorage.clearExecutionCustomOrder(execucao.id);
         if (onSuccessCallback) onSuccessCallback();
       }
     });
@@ -153,6 +156,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     paradaAtual,
     proximasParadas,
     paradasConcluidas,
+    paradas,
     totalStops,
     progressPercentage,
     isLoading: isDataLoading || isStartingRoute || cancelMutation.isPending,

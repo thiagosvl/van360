@@ -39,6 +39,7 @@ export default function RouteExecutionPage() {
     paradaAtual,
     proximasParadas,
     paradasConcluidas,
+    paradas,
     isLoading,
     isStepping,
     isFinalizing,
@@ -329,6 +330,7 @@ export default function RouteExecutionPage() {
             paradaAtual={paradaAtual}
             proximasParadas={proximasParadas}
             paradasConcluidas={paradasConcluidas}
+            paradas={paradas}
             isLoading={isLoading}
             isStepping={isStepping}
             isFinalizing={isFinalizing}
@@ -344,6 +346,7 @@ export default function RouteExecutionPage() {
             occupiedRouteName={occupiedRouteName}
             iniciarMutation={iniciarMutation}
             onShowSuccess={() => setShowSuccessOverlay(true)}
+            onRefresh={refetch}
           />
         )}
       </div>

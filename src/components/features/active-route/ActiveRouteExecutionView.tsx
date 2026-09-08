@@ -14,6 +14,7 @@ import { ActiveRouteHeader } from "./ActiveRouteHeader";
 import { AddressDetailsDialog } from "./AddressDetailsDialog";
 import { ActiveRouteCurrentCard } from "./ActiveRouteCurrentCard";
 import { ActiveRouteUpcomingCard } from "./ActiveRouteUpcomingCard";
+import { ActiveRouteSimpleListView } from "./ActiveRouteSimpleListView";
 import { ReordenarParadaSheet } from "./ReordenarParadaSheet";
 import { ChamadaEscolaDialog } from "@/components/dialogs/ChamadaEscolaDialog";
 import ConfirmStartRouteDialog from "@/components/dialogs/ConfirmStartRouteDialog";
@@ -30,6 +31,7 @@ interface ActiveRouteExecutionViewProps {
   paradaAtual?: ExecucaoParada | null;
   proximasParadas: ExecucaoParada[];
   paradasConcluidas: ExecucaoParada[];
+  paradas?: ExecucaoParada[];
   isLoading: boolean;
   isStepping?: boolean;
   isFinalizing?: boolean;
@@ -45,6 +47,7 @@ interface ActiveRouteExecutionViewProps {
   occupiedRouteName?: string;
   iniciarMutation?: any;
   onShowSuccess?: () => void;
+  onRefresh?: () => void;
 }
 
 export function ActiveRouteExecutionView({
@@ -52,6 +55,7 @@ export function ActiveRouteExecutionView({
   paradaAtual,
   proximasParadas,
   paradasConcluidas,
+  paradas = [],
   isLoading,
   isStepping = false,
   isFinalizing = false,
@@ -66,7 +70,8 @@ export function ActiveRouteExecutionView({
   isVehicleOccupied = false,
   occupiedRouteName = "",
   iniciarMutation,
-  onShowSuccess
+  onShowSuccess,
+  onRefresh
 }: ActiveRouteExecutionViewProps) {
   const navigate = useNavigate();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
@@ -499,6 +504,24 @@ export function ActiveRouteExecutionView({
     });
   }, [activeParadaToRender?.id, paradaAtual?.id, paradasConcluidas]);
 
+  const onFinalizar = () => {
+    openConfirmationDialog({
+      title: "Finalizar Rota?",
+      description: "Deseja realmente finalizar esta rota com sucesso? O histórico da viagem será concluído.",
+      confirmText: "Finalizar Rota",
+      variant: "default",
+      onConfirm: async () => {
+        if (handleFinalizarRota) {
+          await handleFinalizarRota(() => {
+            safeCloseDialog(closeConfirmationDialog);
+            onShowSuccess?.();
+          });
+        }
+      }
+    });
+  };
+
+  const isModoSimples = !isPreview && execucao?.modo_execucao === "simples";
   const totalTimelineItems = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + displayProximasParadas.length;
 
   return (
@@ -518,6 +541,7 @@ export function ActiveRouteExecutionView({
         isAnyActionBusy={isAnyActionBusy}
         onOpenAusenciaDialog={() => setIsAusenciaDialogOpen(true)}
         onCancel={onCancel}
+        onFinalizar={onFinalizar}
         onEditRoute={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
         onIniciarRota={() => {
           if (!isVehicleOccupied && iniciarMutation && execucao?.rota_id) {
@@ -526,107 +550,117 @@ export function ActiveRouteExecutionView({
         }}
       />
 
-      {/* TIMELINE DE PARADAS */}
-      {totalTimelineItems > 0 && (
-        <div className="relative flex flex-col gap-6 pl-10 pb-1 text-left w-full max-w-full">
-          {displayParadasConcluidas.map((parada, index) => {
-            const absIndex = index;
-            const showTopLine = absIndex > 0;
-            const showBottomLine = absIndex < totalTimelineItems - 1;
+      {isModoSimples ? (
+        <ActiveRouteSimpleListView
+          execucao={execucao}
+          paradas={paradas.length > 0 ? paradas : todasParadas}
+          isLoading={isLoading}
+          onRefresh={onRefresh}
+        />
+      ) : (
+        <>
+          {totalTimelineItems > 0 && (
+            <div className="relative flex flex-col gap-6 pl-10 pb-1 text-left w-full max-w-full">
+              {displayParadasConcluidas.map((parada, index) => {
+                const absIndex = index;
+                const showTopLine = absIndex > 0;
+                const showBottomLine = absIndex < totalTimelineItems - 1;
 
-            return (
-              <RouteCompletedStopItem
-                key={parada.id}
-                parada={parada}
-                showTopLine={showTopLine}
-                showBottomLine={showBottomLine}
-                onDesfazer={() => handleDesfazerParada(parada)}
-                isDesfazendo={desfazendoStopId === parada.id}
-                disabled={isAnyActionBusy}
-              />
-            );
-          })}
+                return (
+                  <RouteCompletedStopItem
+                    key={parada.id}
+                    parada={parada}
+                    showTopLine={showTopLine}
+                    showBottomLine={showBottomLine}
+                    onDesfazer={() => handleDesfazerParada(parada)}
+                    isDesfazendo={desfazendoStopId === parada.id}
+                    disabled={isAnyActionBusy}
+                  />
+                );
+              })}
 
-          {activeParadaToRender && (() => {
-            const absIndex = displayParadasConcluidas.length;
-            const showTopLine = absIndex > 0;
-            const showBottomLine = absIndex < totalTimelineItems - 1;
-            const isLastStop = proximasParadas.length === 0;
-            const totalPendentesReal = [activeParadaToRender, ...proximasParadas];
+              {activeParadaToRender && (() => {
+                const absIndex = displayParadasConcluidas.length;
+                const showTopLine = absIndex > 0;
+                const showBottomLine = absIndex < totalTimelineItems - 1;
+                const isLastStop = proximasParadas.length === 0;
+                const totalPendentesReal = [activeParadaToRender, ...proximasParadas];
 
-            return (
-              <ActiveRouteCurrentCard
-                key={activeParadaToRender.id}
-                parada={activeParadaToRender}
-                activeCardRef={activeCardRef}
-                showTopLine={showTopLine}
-                showBottomLine={showBottomLine}
-                isLastStop={isLastStop}
-                selectedRespTab={selectedRespTab}
-                setSelectedRespTab={setSelectedRespTab}
-                execucaoTipo={execucao.tipo}
-                totalPendentesReal={totalPendentesReal}
-                isAnyActionBusy={isAnyActionBusy}
-                reorderingTarget={reorderingTarget}
-                reorderingSheetStopId={isReorderingViaSheetStopId}
-                validarMovimentoPermitido={validarMovimentoPermitido}
-                paradasConcluidas={paradasConcluidas}
-                proximasParadas={proximasParadas}
-                alunosParaEmbarcar={alunosParaEmbarcar}
-                alunosParaDesembarcar={alunosParaDesembarcar}
-                isLoading={isLoading}
-                isStepping={isStepping}
-                isFinalizing={isFinalizing}
-                onOpenAddressDialog={(data) => {
-                  setSelectedDialogRespTab(TAB_PRINCIPAL);
-                  setAddressDialogData(data);
-                }}
-                onMoveParada={handleMoveParada}
-                onConfirmFalta={handleConfirmFalta}
-                onConfirmEmbarqueDialog={() => handleConfirmAction(activeParadaToRender.id)}
-                onDirectStep={() => handleConfirmAction(activeParadaToRender.id)}
-                onOpenChamadaDialog={() => setIsChamadaDialogOpen(true)}
-                onOpenReordenarSheet={(p) => setReordenarSheetTarget(p)}
-              />
-            );
-          })()}
+                return (
+                  <ActiveRouteCurrentCard
+                    key={activeParadaToRender.id}
+                    parada={activeParadaToRender}
+                    activeCardRef={activeCardRef}
+                    showTopLine={showTopLine}
+                    showBottomLine={showBottomLine}
+                    isLastStop={isLastStop}
+                    selectedRespTab={selectedRespTab}
+                    setSelectedRespTab={setSelectedRespTab}
+                    execucaoTipo={execucao.tipo}
+                    totalPendentesReal={totalPendentesReal}
+                    isAnyActionBusy={isAnyActionBusy}
+                    reorderingTarget={reorderingTarget}
+                    reorderingSheetStopId={isReorderingViaSheetStopId}
+                    validarMovimentoPermitido={validarMovimentoPermitido}
+                    paradasConcluidas={paradasConcluidas}
+                    proximasParadas={proximasParadas}
+                    alunosParaEmbarcar={alunosParaEmbarcar}
+                    alunosParaDesembarcar={alunosParaDesembarcar}
+                    isLoading={isLoading}
+                    isStepping={isStepping}
+                    isFinalizing={isFinalizing}
+                    onOpenAddressDialog={(data) => {
+                      setSelectedDialogRespTab(TAB_PRINCIPAL);
+                      setAddressDialogData(data);
+                    }}
+                    onMoveParada={handleMoveParada}
+                    onConfirmFalta={handleConfirmFalta}
+                    onConfirmEmbarqueDialog={() => handleConfirmAction(activeParadaToRender.id)}
+                    onDirectStep={() => handleConfirmAction(activeParadaToRender.id)}
+                    onOpenChamadaDialog={() => setIsChamadaDialogOpen(true)}
+                    onOpenReordenarSheet={(p) => setReordenarSheetTarget(p)}
+                  />
+                );
+              })()}
 
-          {displayProximasParadas.map((parada, index) => {
-            const absIndex = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + index;
-            const showTopLine = absIndex > 0;
-            const showBottomLine = absIndex < totalTimelineItems - 1;
+              {displayProximasParadas.map((parada, index) => {
+                const absIndex = displayParadasConcluidas.length + (activeParadaToRender ? 1 : 0) + index;
+                const showTopLine = absIndex > 0;
+                const showBottomLine = absIndex < totalTimelineItems - 1;
 
-            return (
-              <ActiveRouteUpcomingCard
-                key={parada.id}
-                parada={parada}
-                index={index}
-                showTopLine={showTopLine}
-                showBottomLine={showBottomLine}
-                isPreview={isPreview}
-                selectedPreviewTabs={selectedPreviewTabs}
-                todasParadas={todasParadas}
-                activeParadaToRender={activeParadaToRender}
-                proximasParadas={proximasParadas}
-                execucaoTipo={execucao.tipo}
-                isAnyActionBusy={isAnyActionBusy}
-                reorderingTarget={reorderingTarget}
-                reorderingSheetStopId={isReorderingViaSheetStopId}
-                validarMovimentoPermitido={validarMovimentoPermitido}
-                paradasConcluidas={paradasConcluidas}
-                isLoading={isLoading}
-                onOpenAddressDialog={(data) => {
-                  setSelectedDialogRespTab(TAB_PRINCIPAL);
-                  setAddressDialogData(data);
-                }}
-                onMoveParada={handleMoveParada}
-                onConfirmFalta={handleConfirmFalta}
-                getAlunosEscolaPorPosicao={getAlunosEscolaPorPosicao}
-                onOpenReordenarSheet={(p) => setReordenarSheetTarget(p)}
-              />
-            );
-          })}
-        </div>
+                return (
+                  <ActiveRouteUpcomingCard
+                    key={parada.id}
+                    parada={parada}
+                    index={index}
+                    showTopLine={showTopLine}
+                    showBottomLine={showBottomLine}
+                    isPreview={isPreview}
+                    selectedPreviewTabs={selectedPreviewTabs}
+                    todasParadas={todasParadas}
+                    activeParadaToRender={activeParadaToRender}
+                    proximasParadas={proximasParadas}
+                    execucaoTipo={execucao.tipo}
+                    isAnyActionBusy={isAnyActionBusy}
+                    reorderingTarget={reorderingTarget}
+                    reorderingSheetStopId={isReorderingViaSheetStopId}
+                    validarMovimentoPermitido={validarMovimentoPermitido}
+                    paradasConcluidas={paradasConcluidas}
+                    isLoading={isLoading}
+                    onOpenAddressDialog={(data) => {
+                      setSelectedDialogRespTab(TAB_PRINCIPAL);
+                      setAddressDialogData(data);
+                    }}
+                    onMoveParada={handleMoveParada}
+                    onConfirmFalta={handleConfirmFalta}
+                    getAlunosEscolaPorPosicao={getAlunosEscolaPorPosicao}
+                    onOpenReordenarSheet={(p) => setReordenarSheetTarget(p)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
 
       <ChamadaEscolaDialog
@@ -668,10 +702,15 @@ export function ActiveRouteExecutionView({
         onClose={() => setIsConfirmStartDialogOpen(false)}
         routeName={execucao?.rota?.nome || "Rota"}
         isLoading={iniciarMutation?.isPending}
-        onConfirm={(notificarPais) => {
+        onConfirm={(options) => {
           if (execucao?.rota_id && iniciarMutation) {
             iniciarMutation.mutate(
-              { id: execucao.rota_id, notificar_pais: notificarPais },
+              {
+                id: execucao.rota_id,
+                notificar_pais: options.notificarPais,
+                modo_execucao: options.modoExecucao,
+                rastreamento_ativo: options.rastreamentoAtivo
+              },
               {
                 onSuccess: (data: any) => {
                   setIsConfirmStartDialogOpen(false);
