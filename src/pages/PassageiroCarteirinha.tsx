@@ -280,21 +280,26 @@ export default function PassageiroCarteirinha() {
           confirmText: hasActiveContract ? "Substituir" : "Gerar",
           cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
           onConfirm: async () => {
-            try {
-              if (updatedPassageiro.contrato_id) {
-                await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
-              } else {
-                await createContrato.mutateAsync({ passageiroId: updatedPassageiro.id! });
+            safeCloseDialog(closeConfirmationDialog);
+            openGerarContratoValidadorDialog({
+              passageiroId: updatedPassageiro.id!,
+              onSuccess: async (id) => {
+                if (updatedPassageiro.contrato_id) {
+                  await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
+                } else {
+                  await createContrato.mutateAsync({
+                    passageiroId: id,
+                    valorMensal: updatedPassageiro.valor_cobranca,
+                    diaVencimento: updatedPassageiro.dia_vencimento
+                  });
+                }
               }
-              safeCloseDialog(closeConfirmationDialog);
-            } catch {
-              safeCloseDialog(closeConfirmationDialog);
-            }
+            });
           },
         });
       }, 300);
     }
-  }, [passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
+  }, [passageiro, openConfirmationDialog, closeConfirmationDialog, openGerarContratoValidadorDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({

@@ -2,8 +2,10 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { memo } from "react";
 
+import { ContratoListItem } from "@/types/contract";
+
 interface ContratoActionsMenuProps {
-  item: any; // Pode ser Contrato ou Passageiro
+  item: ContratoListItem;
   tipo: 'contrato' | 'passageiro';
   status?: string;
   isDesativado?: boolean;
@@ -14,6 +16,7 @@ interface ContratoActionsMenuProps {
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
+  onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
   onVisualizarLink?: (token: string) => void;
   onVisualizarFinal?: (url: string) => void;
 }

@@ -5,8 +5,10 @@ import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { Calendar } from "lucide-react";
 
+import { ContratoListItem } from "@/types/contract";
+
 interface ContratoSummaryProps {
-  item: any;
+  item: ContratoListItem;
 }
 
 export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
@@ -17,15 +19,15 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
   const isPendente = status === ContratoStatus.PENDENTE;
 
   const valor =
-    Number(item.dados_contrato?.valorMensal || item.valor_parcela || item.valor_mensal) || null;
+    Number(item.dados_contrato?.valorMensal || item.valor_parcela || item.valor_cobranca) || null;
 
   const isImportado = item.provider === ContratoProvider.IMPORTADO;
   const statusLabel = isImportado ? "PDF Importado" : formatContratoStatus(status);
 
   const dataExibicao = isImportado
-    ? (item.dados_contrato?.dataImportacao || item.assinado_em || item.created_at)
+    ? (item.assinado_em || item.created_at)
     : isAssinado
-      ? (item.assinado_em || item.data_assinatura || item.updated_at || item.created_at)
+      ? (item.assinado_em || item.created_at)
       : item.created_at;
 
   const dataLabel = isImportado

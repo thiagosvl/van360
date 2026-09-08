@@ -18,6 +18,8 @@ import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { Clock, FileCheck2, FileSignature, FileText, FileX2, Send, Users } from "lucide-react";
 import { memo } from "react";
+import { ContratoListItem } from "@/types/contract";
+import { Passageiro } from "@/types/passageiro";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 import { ContratoSummary } from "./ContratoSummary";
 
@@ -32,35 +34,36 @@ const getIconConfig = (isAssinado: boolean, isSemContrato: boolean) => {
 };
 
 interface ContratosListProps {
-  data: any[];
+  data: ContratoListItem[];
   isLoading: boolean;
   activeTab: ContratoTab;
   busca: string;
   isDesativado?: boolean;
-  // Ações
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onEnviarWhatsApp: (item: any) => void;
+  onEnviarWhatsApp: (item: ContratoListItem) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
-  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
+  onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink: (token: string) => void;
   onVisualizarFinal: (url: string) => void;
 }
 
 interface ContratoMobileCardProps {
-  item: any;
+  item: ContratoListItem;
   index: number;
   activeTab: ContratoTab;
   isDesativado?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onEnviarWhatsApp: (item: any) => void;
+  onEnviarWhatsApp: (item: ContratoListItem) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
-  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
+  onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink: (token: string) => void;
   onVisualizarFinal: (url: string) => void;
 }
@@ -75,6 +78,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   onExcluir,
   onSubstituir,
   onGerarContrato,
+  onCompletarCadastro,
   onImportarContrato,
   onVisualizarLink,
   onVisualizarFinal,
@@ -90,6 +94,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onExcluir,
     onSubstituir,
     onGerarContrato,
+    onCompletarCadastro,
     onImportarContrato,
     onVisualizarLink,
     onVisualizarFinal,
@@ -268,7 +273,7 @@ export const ContratosList = memo(function ContratosList({
                         Number(
                           item.dados_contrato?.valorMensal ||
                           item.valor_parcela ||
-                          item.valor_mensal,
+                          item.valor_cobranca,
                         ) || 0
                       ).toLocaleString("pt-BR", {
                         style: "currency",

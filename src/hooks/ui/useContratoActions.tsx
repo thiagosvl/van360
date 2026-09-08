@@ -13,10 +13,12 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMemo } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { ContratoListItem } from "@/types/contract";
+import { Passageiro } from "@/types/passageiro";
 import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 
 interface UseContratoActionsProps {
-  item: any;
+  item: ContratoListItem;
   tipo: 'contrato' | 'passageiro';
   status?: string;
   isDesativado?: boolean;
@@ -27,7 +29,8 @@ interface UseContratoActionsProps {
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
-  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
+  onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink?: (token: string) => void;
   onVisualizarFinal?: (url: string) => void;
 }
@@ -44,16 +47,17 @@ export function useContratoActions({
   onExcluir,
   onSubstituir,
   onGerarContrato,
+  onCompletarCadastro,
   onImportarContrato,
   onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
   const isMobile = useIsMobile();
 
   return useMemo(() => {
-    const status = (rawStatus || item?.status_contrato || item?.contrato_status || item?.status)?.toString().toLowerCase();
+    const status = (rawStatus || item?.status || item?.status_contrato)?.toString().toLowerCase();
 
-    const isPendente = status === ContratoStatus.PENDENTE || status === '1';
-    const isAssinado = status === ContratoStatus.ASSINADO || status === '2';
+    const isPendente = status === ContratoStatus.PENDENTE;
+    const isAssinado = status === ContratoStatus.ASSINADO;
     const hasContract = isPendente || isAssinado || !!(item?.contrato_id);
     const isImportado = item?.provider === ContratoProvider.IMPORTADO;
 
@@ -62,22 +66,36 @@ export function useContratoActions({
     const respTelefone = respObj?.telefone;
     const isMissingResponsible = isResponsavelIncompleto(respNome, respTelefone);
 
-    const isFeatureDisabled = !!(isDesativado || (usarContratos === false) || isMissingResponsible);
+    const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
 
     const list: ActionItem[] = [];
 
-    if (onGerarContrato && !hasContract) {
-      list.push({
-        label: 'Gerar Contrato',
-        icon: <FileText className="h-4 w-4" />,
-        onClick: () => {
-          if (isFeatureDisabled) return;
-          onGerarContrato(tipo === 'passageiro' ? item.id : item.passageiro_id);
-        },
-        disabled: isFeatureDisabled,
-        swipeColor: 'bg-blue-600',
-        hasSeparatorAfter: false
-      });
+    if (!hasContract) {
+      if (isMissingResponsible) {
+        list.push({
+          label: 'Completar Cadastro',
+          icon: <User className="h-4 w-4" />,
+          onClick: () => {
+            const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
+            onCompletarCadastro?.(passId, item);
+          },
+          swipeColor: 'bg-amber-600',
+          hasSeparatorAfter: false
+        });
+      } else if (onGerarContrato) {
+        list.push({
+          label: 'Gerar Contrato',
+          icon: <FileText className="h-4 w-4" />,
+          onClick: () => {
+            if (isFeatureDisabled) return;
+            const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
+            onGerarContrato(passId);
+          },
+          disabled: isFeatureDisabled,
+          swipeColor: 'bg-blue-600',
+          hasSeparatorAfter: false
+        });
+      }
     }
 
     if (onImportarContrato && !hasContract) {
@@ -85,10 +103,9 @@ export function useContratoActions({
         label: 'Importar Contrato',
         icon: <UploadCloud className="h-4 w-4" />,
         onClick: () => {
-          onImportarContrato(
-            tipo === 'passageiro' ? item.id : item.passageiro_id,
-            tipo === 'passageiro' ? item : item.passageiro
-          );
+          const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
+          const passData = (tipo === 'passageiro' ? item : item.passageiro) ?? undefined;
+          onImportarContrato(passId, passData);
         },
         swipeColor: 'bg-slate-700',
         hasSeparatorAfter: true

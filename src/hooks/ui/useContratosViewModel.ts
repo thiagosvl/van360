@@ -17,7 +17,10 @@ import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { buildContratoWhatsAppUrl } from "@/utils/evolution";
-import { ContratoTab } from "@/types/enums";
+import { ContratoTab, PassageiroFormModes } from "@/types/enums";
+import { Passageiro } from "@/types/passageiro";
+import { ContratoListItem } from "@/types/contract";
+import { apiClient } from "@/services/api/client";
 import { openBrowserLink } from "@/utils/browser";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
@@ -26,7 +29,15 @@ import { toast } from "sonner";
 
 export function useContratosViewModel() {
   const { can } = usePermissions();
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openGerarContratoValidadorDialog, openImportarContratoDialog } = useLayout();
+  const {
+    setPageTitle,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openContractSetupDialog,
+    openGerarContratoValidadorDialog,
+    openImportarContratoDialog,
+    openPassageiroFormDialog,
+  } = useLayout();
   const { user } = useSession();
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -268,10 +279,33 @@ export function useContratosViewModel() {
     });
   }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
-  const handleOpenImportarContrato = useCallback((passageiroId?: string, passageiro?: any) => {
+  const handleCompletarCadastro = useCallback(async (passageiroId: string, item?: ContratoListItem) => {
+    let passageiroData: Passageiro | null = (item?.passageiro || item) as unknown as Passageiro;
+    if (!passageiroData?.id || !passageiroData?.nome || !passageiroData?.valor_cobranca) {
+      try {
+        const { data } = await apiClient.get<Passageiro>(`/passageiros/${passageiroId}`);
+        passageiroData = data;
+      } catch {
+        toast.error("Erro ao carregar dados do aluno");
+        return;
+      }
+    }
+
+    openPassageiroFormDialog({
+      mode: PassageiroFormModes.EDIT,
+      editingPassageiro: passageiroData,
+      onSuccess: () => {
+        refetchContratos();
+        refetchKPIs();
+        handleGerarContrato(passageiroId);
+      }
+    });
+  }, [openPassageiroFormDialog, refetchContratos, refetchKPIs, handleGerarContrato]);
+
+  const handleOpenImportarContrato = useCallback((passageiroId?: string, passageiro?: Passageiro | ContratoListItem) => {
     openImportarContratoDialog({
       passageiroId,
-      passageiro,
+      passageiro: passageiro as unknown as Passageiro,
     });
   }, [openImportarContratoDialog]);
 
@@ -336,6 +370,7 @@ export function useContratosViewModel() {
       onExcluir: handleExcluir,
       onSubstituir: handleSubstituir,
       onGerarContrato: handleGerarContrato,
+      onCompletarCadastro: handleCompletarCadastro,
       onImportarContrato: handleOpenImportarContrato,
       onVisualizarLink: handleVisualizarLink,
       onVisualizarFinal: handleVisualizarFinal,
