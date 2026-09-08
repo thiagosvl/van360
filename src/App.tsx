@@ -21,7 +21,7 @@ import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { NativeUpdateDialog } from "@/components/dialogs/NativeUpdateDialog";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, Outlet, useParams } from "react-router-dom";
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
@@ -48,6 +48,10 @@ const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
 const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
 const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
+const AssinarRedirect = () => {
+  const { token } = useParams<{ token: string }>();
+  return <Navigate to={ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", token || "")} replace />;
+};
 const Cobrancas = lazyLoad(() => import("./pages/Cobrancas"));
 const Escolas = lazyLoad(() => import("./pages/Escolas"));
 const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
@@ -317,8 +321,13 @@ const App = () => {
                     />
 
                     <Route
-                      path="/assinar/:token"
+                      path={ROUTES.PUBLIC.SIGN_CONTRACT}
                       element={<AssinarContrato />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.SIGN_CONTRACT_DUPLICATE}
+                      element={<AssinarRedirect />}
                     />
 
                     <Route

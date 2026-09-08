@@ -8,6 +8,8 @@ export const ROUTES = {
     PRIVACY_POLICY: "/politica-de-privacidade",
     TERMS_OF_USE: "/termos-de-uso",
     EXTERNAL_CHECKOUT_BRIDGE: "/checkout-externo",
+    SIGN_CONTRACT: "/assinar/:token",
+    SIGN_CONTRACT_DUPLICATE: "/assinar/assinar/:token",
   },
   PRIVATE: {
     RESPONSAVEL: {

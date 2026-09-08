@@ -3,7 +3,7 @@ const PREPOSICOES_NOME = new Set(["de", "da", "do", "dos", "das", "e"]);
 export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
   if (!fullName) return "";
   const names = fullName.trim().split(/\s+/);
-  
+
   if (includeSecond && names.length >= 2) {
     const result: string[] = [];
     let mainNameCount = 0;
@@ -26,9 +26,9 @@ export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
 };
 
 export const formatFirstName = (fullName?: string) => {
-  if (!fullName) return "Não informado";
+  if (!fullName) return "Nome não informado";
   const names = fullName.trim().split(/\s+/);
-  return names[0] || "Não informado";
+  return names[0] || "Nome não informado";
 };
 
 export const getInitials = (name?: string) => {
@@ -37,11 +37,11 @@ export const getInitials = (name?: string) => {
 };
 
 export const formatNomeResponsavelExibicao = (nome?: string | null, shortName: boolean = true) => {
-  if (!nome) return "Não informado";
+  if (!nome) return "Responsável não informado";
   return shortName ? formatFirstName(nome) : nome;
 };
 
 export const formatNomeResponsavelCompletoExibicao = (nome?: string | null) => {
-  if (!nome) return "Não informado";
+  if (!nome) return "Responsável não informado";
   return nome;
 };
