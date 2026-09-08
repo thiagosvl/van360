@@ -48,7 +48,10 @@ export function useUpdatePassageiro() {
         toast.success("sucesso.atualizar");
       }
 
-      // Invalidações globais
+      if (data) {
+        queryClient.setQueryData(["passageiro", variables.id], data);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
@@ -59,7 +62,6 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
       queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
 
-      // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
       if (variables.data?.escola_id !== undefined) {
         queryClient.invalidateQueries({ queryKey: ["escolas"] });
       }

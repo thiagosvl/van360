@@ -229,7 +229,7 @@ export const ContratosList = memo(function ContratosList({
           </TableHeader>
           <TableBody>
             {data.map((item) => {
-              const nomePassageiro = item.passageiro?.nome || item.nome;
+              const nomePassageiro = item.passageiro?.nome || item.nome || "";
               const nomeResponsavel = item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome;
 
               const isSemContrato = item.tipo === "passageiro";

@@ -20,14 +20,15 @@ import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { ContratoTab, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { ContratoListItem } from "@/types/contract";
-import { apiClient } from "@/services/api/client";
 import { openBrowserLink } from "@/utils/browser";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function useContratosViewModel() {
+  const queryClient = useQueryClient();
   const { can } = usePermissions();
   const {
     setPageTitle,
@@ -279,28 +280,22 @@ export function useContratosViewModel() {
     });
   }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);
 
-  const handleCompletarCadastro = useCallback(async (passageiroId: string, item?: ContratoListItem) => {
-    let passageiroData: Passageiro | null = (item?.passageiro || item) as unknown as Passageiro;
-    if (!passageiroData?.id || !passageiroData?.nome || !passageiroData?.valor_cobranca) {
-      try {
-        const { data } = await apiClient.get<Passageiro>(`/passageiros/${passageiroId}`);
-        passageiroData = data;
-      } catch {
-        toast.error("Erro ao carregar dados do aluno");
-        return;
-      }
-    }
+  const handleCompletarCadastro = useCallback((passageiroId: string, item?: ContratoListItem) => {
+    const passageiroData = ((item?.passageiro || item) as unknown as Passageiro) || ({ id: passageiroId } as Passageiro);
 
     openPassageiroFormDialog({
       mode: PassageiroFormModes.EDIT,
       editingPassageiro: passageiroData,
-      onSuccess: () => {
+      onSuccess: (updated) => {
+        if (updated) {
+          queryClient.setQueryData(["passageiro", passageiroId], updated);
+        }
         refetchContratos();
         refetchKPIs();
         handleGerarContrato(passageiroId);
       }
     });
-  }, [openPassageiroFormDialog, refetchContratos, refetchKPIs, handleGerarContrato]);
+  }, [openPassageiroFormDialog, queryClient, refetchContratos, refetchKPIs, handleGerarContrato]);
 
   const handleOpenImportarContrato = useCallback((passageiroId?: string, passageiro?: Passageiro | ContratoListItem) => {
     openImportarContratoDialog({

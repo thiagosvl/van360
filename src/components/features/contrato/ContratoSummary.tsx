@@ -3,9 +3,10 @@ import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import { formatCurrency, formatMonthYearToBR, formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
-import { Calendar } from "lucide-react";
+import { AlertCircle, Calendar } from "lucide-react";
 
 import { ContratoListItem } from "@/types/contract";
+import { isResponsavelIncompleto } from "@/utils/domain";
 
 interface ContratoSummaryProps {
   item: ContratoListItem;
@@ -13,16 +14,25 @@ interface ContratoSummaryProps {
 
 export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
   const nomePassageiro = item.passageiro?.nome || item.nome;
-  const nomeResponsavel = formatNomeResponsavelExibicao(item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome, true);
+  const respObj = item.passageiro?.responsavel_principal || item.responsavel_principal;
+  const isMissingResponsible = isResponsavelIncompleto(respObj?.nome, respObj?.telefone);
+  const nomeResponsavel = formatNomeResponsavelExibicao(respObj?.nome, true);
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
   const isPendente = status === ContratoStatus.PENDENTE;
+  const isSemContrato = item.tipo === "passageiro" || (!isAssinado && !isPendente && !item.provider);
 
   const valor =
     Number(item.dados_contrato?.valorMensal || item.valor_parcela || item.valor_cobranca) || null;
 
   const isImportado = item.provider === ContratoProvider.IMPORTADO;
-  const statusLabel = isImportado ? "PDF Importado" : formatContratoStatus(status);
+  const statusLabel = isImportado
+    ? "PDF Importado"
+    : isSemContrato && isMissingResponsible
+      ? "Cadastro Incompleto"
+      : isSemContrato
+        ? "Sem Contrato"
+        : formatContratoStatus(status);
 
   const dataExibicao = isImportado
     ? (item.assinado_em || item.created_at)
@@ -38,8 +48,6 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
   return (
     <div className="flex flex-col p-4 sm:p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left w-full min-w-0 overflow-hidden">
-
-      {/* LINHA 1: Overline Categoria + Status Badge */}
       <div className="flex justify-between items-center mb-2 w-full min-w-0 gap-2">
         <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider leading-none shrink-0">
           CONTRATO
@@ -50,24 +58,36 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
           isImportado ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30" :
             isAssinado ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
               isPendente ? "bg-amber-50 text-amber-600 dark:bg-amber-950/30" :
-                "bg-slate-50 text-slate-500 dark:bg-zinc-800"
+                isSemContrato && isMissingResponsible ? "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30" :
+                  "bg-slate-50 text-slate-500 dark:bg-zinc-800"
         )}>
           {statusLabel}
         </div>
       </div>
 
-      {/* LINHA 2: Nome em Destaque */}
       <div className="flex items-start gap-2 mt-0.5 w-full min-w-0">
         <h1 className="text-base sm:text-lg font-bold text-[#1a3a5c] dark:text-zinc-100 leading-snug line-clamp-3 break-words w-full min-w-0">
           {formatShortName(nomePassageiro, true)}
         </h1>
       </div>
 
-      {/* Subtítulo: Responsável */}
-      {nomeResponsavel && (
+      {nomeResponsavel ? (
         <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
           {nomeResponsavel}
         </p>
+      ) : isMissingResponsible ? (
+        <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
+          Responsável não cadastrado
+        </p>
+      ) : null}
+
+      {isSemContrato && isMissingResponsible && (
+        <div className="mt-3 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
+            Para emitir o contrato, cadastre o responsável. Ao salvar, a emissão do contrato será iniciada automaticamente.
+          </p>
+        </div>
       )}
 
       {/* LINHA 3: Footer com Valor e Data */}

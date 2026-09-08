@@ -73,8 +73,8 @@ export function useContratoActions({
     if (!hasContract) {
       if (isMissingResponsible) {
         list.push({
-          label: 'Completar Cadastro',
-          icon: <User className="h-4 w-4" />,
+          label: 'Completar e Gerar Contrato',
+          icon: <User className="h-4 w-4 text-amber-500" />,
           onClick: () => {
             const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
             onCompletarCadastro?.(passId, item);

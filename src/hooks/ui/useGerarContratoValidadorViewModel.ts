@@ -49,7 +49,7 @@ export function useGerarContratoValidadorViewModel({
   passageiroId,
   onSuccess,
 }: UseGerarContratoValidadorViewModelProps) {
-  const { data: passageiro, isLoading: isLoadingPassageiro } = usePassageiro(passageiroId || "", { enabled: isOpen && !!passageiroId });
+  const { data: passageiro, isLoading: isLoadingPassageiro, isFetching: isFetchingPassageiro } = usePassageiro(passageiroId || "", { enabled: isOpen && !!passageiroId });
 
   const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
@@ -81,36 +81,37 @@ export function useGerarContratoValidadorViewModel({
     }
   }, [isOpen]);
 
-  // Check and pre-fill data when passenger is loaded
   useEffect(() => {
-    if (isOpen && isChecking && passageiro && passageiroId) {
-      if (!passageiro.responsavel_principal?.nome) {
-        onCloseRef.current();
-        toast.error("Complete o cadastro", {
-          description: "Edite este aluno e informe o nome real do responsável antes de gerar o contrato."
-        });
-        return;
-      }
-
-      const hasInicio = !!passageiro.data_inicio_transporte;
-      const hasFim = !!passageiro.data_fim_transporte;
-      const hasCpf = !!passageiro.responsavel_principal?.cpf;
-
-      if (hasInicio && hasFim && hasCpf) {
-        onCloseRef.current();
-        onSuccessRef.current(passageiroId, true);
-      } else {
-        form.reset({
-          data_inicio_transporte: passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "",
-          data_fim_transporte: passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "",
-          responsavel_principal: {
-            cpf: passageiro.responsavel_principal?.cpf ? cpfMask(passageiro.responsavel_principal.cpf) : "",
-          },
-        });
-        setIsChecking(false);
-      }
+    if (!isOpen || !isChecking || !passageiroId || isLoadingPassageiro || isFetchingPassageiro || !passageiro) {
+      return;
     }
-  }, [isOpen, isChecking, passageiro, passageiroId, form]);
+
+    if (!passageiro.responsavel_principal?.nome) {
+      onCloseRef.current();
+      toast.error("Complete o cadastro", {
+        description: "Edite este aluno e informe o nome real do responsável antes de gerar o contrato."
+      });
+      return;
+    }
+
+    const hasInicio = !!passageiro.data_inicio_transporte;
+    const hasFim = !!passageiro.data_fim_transporte;
+    const hasCpf = !!passageiro.responsavel_principal?.cpf;
+
+    if (hasInicio && hasFim && hasCpf) {
+      onCloseRef.current();
+      onSuccessRef.current(passageiroId, true);
+    } else {
+      form.reset({
+        data_inicio_transporte: passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "",
+        data_fim_transporte: passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "",
+        responsavel_principal: {
+          cpf: passageiro.responsavel_principal?.cpf ? cpfMask(passageiro.responsavel_principal.cpf) : "",
+        },
+      });
+      setIsChecking(false);
+    }
+  }, [isOpen, isChecking, passageiro, passageiroId, isLoadingPassageiro, isFetchingPassageiro, form]);
 
   const handleSubmit = async (data: ValidadorFormValues) => {
     if (!passageiroId) return;
