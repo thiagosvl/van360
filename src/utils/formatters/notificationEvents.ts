@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { AdminNotificationLogItem } from "@/services/api/admin/admin-notification.api";
 import { phoneMask } from "@/utils/masks";
+import { formatShortName } from "@/utils/formatters/name";
 import {
   NotificationEventEnum,
   NotificationChannelEnum,
@@ -205,8 +206,10 @@ export function getAudienceInfo(item: AdminNotificationLogItem): AudienceInfo {
   const hasPassengerId = !!(item as { passageiro_id?: string | null }).passageiro_id;
 
   if (isPassengerEvent || hasPassengerId) {
-    const nomeResp = (item.payload?.nomeResponsavel as string) || null;
-    const nomeAluno = (item.payload?.nomePassageiro as string) || null;
+    const rawResp = (item.payload?.nomeResponsavel as string) || null;
+    const rawAluno = (item.payload?.nomePassageiro as string) || null;
+    const nomeResp = rawResp ? formatShortName(rawResp, true) : null;
+    const nomeAluno = rawAluno ? formatShortName(rawAluno, true) : null;
     return {
       type: NotificationAudienceEnum.RESPONSAVEL,
       label: "Responsável",

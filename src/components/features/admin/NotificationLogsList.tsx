@@ -28,6 +28,7 @@ import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { formatRelativeTime, formatDateTimeToBR } from "@/utils/formatters/date";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { phoneMask } from "@/utils/masks";
+import { formatShortName } from "@/utils/formatters/name";
 import { ROUTES } from "@/constants/routes";
 import {
   Select,
@@ -413,7 +414,9 @@ export function NotificationLogsList({
                 const Icon = meta.icon;
                 const audience = getAudienceInfo(item);
                 const formattedContact = formatRecipientContact(item.destinatario, item.canal);
-                const nomeAluno = item.payload?.nomePassageiro as string | undefined;
+                const nomeAluno = item.payload?.nomePassageiro
+                  ? formatShortName(item.payload.nomePassageiro as string, true)
+                  : undefined;
                 const valorCobranca = item.payload?.valor as number | undefined;
 
                 return (
@@ -542,7 +545,9 @@ export function NotificationLogsList({
             const Icon = meta.icon;
             const audience = getAudienceInfo(item);
             const formattedContact = formatRecipientContact(item.destinatario, item.canal);
-            const nomeAluno = item.payload?.nomePassageiro as string | undefined;
+            const nomeAluno = item.payload?.nomePassageiro
+              ? formatShortName(item.payload.nomePassageiro as string, true)
+              : undefined;
             const valorCobranca = item.payload?.valor as number | undefined;
 
             return (

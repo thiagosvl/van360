@@ -35,6 +35,7 @@ import {
 } from "@/components/features/admin/NotificationLogsList";
 import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
 import { useAdminGlobalNotifications } from "@/hooks/api/admin/useAdminNotificationHooks";
+import { useDebounce } from "@/hooks/ui/useDebounce";
 
 interface ExtendedNotificationFiltersState extends NotificationFiltersState {
   searchMotorista: string;
@@ -69,6 +70,17 @@ export default function AdminNotificationsHistory() {
     dataFim: today,
   });
 
+  const [motoristaInput, setMotoristaInput] = useState("");
+  const debouncedMotorista = useDebounce(motoristaInput, 400);
+
+  useEffect(() => {
+    setFilters((prev) => {
+      if (prev.searchMotorista === debouncedMotorista) return prev;
+      return { ...prev, searchMotorista: debouncedMotorista };
+    });
+    setPage(1);
+  }, [debouncedMotorista]);
+
   const { data, isFetching } = useAdminGlobalNotifications({
     page,
     limit: parseInt(limit),
@@ -89,7 +101,6 @@ export default function AdminNotificationsHistory() {
   const kpis = data?.kpis;
 
   const handleBaseFiltersChange = (baseFilters: NotificationFiltersState) => {
-
     setFilters((prev) => ({
       ...prev,
       ...baseFilters,
@@ -98,6 +109,7 @@ export default function AdminNotificationsHistory() {
   };
 
   const handleResetUpperFilters = () => {
+    setMotoristaInput("");
     setFilters((prev) => ({
       ...prev,
       searchMotorista: "",
@@ -108,7 +120,7 @@ export default function AdminNotificationsHistory() {
   };
 
   const hasUpperFiltersActive =
-    filters.searchMotorista.trim() !== "" ||
+    motoristaInput.trim() !== "" ||
     filters.dataInicio !== sevenDaysAgo ||
     filters.dataFim !== today;
 
@@ -169,11 +181,8 @@ export default function AdminNotificationsHistory() {
               <Input
                 type="text"
                 placeholder="Nome, apelido, telefone, CPF ou ID..."
-                value={filters.searchMotorista}
-                onChange={(e) => {
-                  setPage(1);
-                  setFilters((p) => ({ ...p, searchMotorista: e.target.value }));
-                }}
+                value={motoristaInput}
+                onChange={(e) => setMotoristaInput(e.target.value)}
                 className="h-9 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
               />
             </div>

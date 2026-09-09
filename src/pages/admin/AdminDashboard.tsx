@@ -105,7 +105,7 @@ export default function AdminDashboard() {
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
-  const [radarSort, setRadarSort] = useState<"inactive_first" | "recent_first">("inactive_first");
+  const [radarSort, setRadarSort] = useState<"inactive_first" | "recent_first">("recent_first");
   const [radarSearch, setRadarSearch] = useState("");
   const [radarPage, setRadarPage] = useState(1);
 

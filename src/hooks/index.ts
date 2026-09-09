@@ -27,6 +27,7 @@ export { useConfigurarRotaViewModel } from "./ui/useConfigurarRotaViewModel";
 export { useRotasViewModel } from "./ui/useRotasViewModel";
 export { useConfirmDialog } from "./ui/useConfirmDialog";
 export { useToast } from "./ui/useToast";
+export { useDebounce } from "./ui/useDebounce";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";
