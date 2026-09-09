@@ -15,6 +15,44 @@ export interface AdminNotificationLogItem {
   provider_message_id: string | null;
   created_at: string;
   updated_at: string | null;
+  usuarios?: {
+    id: string;
+    nome: string;
+    email: string;
+    telefone: string;
+    cpfcnpj: string;
+  } | null;
+}
+
+export interface AdminNotificationQueryParams {
+  page?: number;
+  limit?: number;
+  canal?: string;
+  status?: string;
+  categoria?: string;
+  evento?: string;
+  search?: string;
+  searchMotorista?: string;
+  dataInicio?: string;
+  dataFim?: string;
+}
+
+export interface NotificationKpisDTO {
+  total: number;
+  sent: number;
+  failed: number;
+  wabaSent: number;
+  wabaFailed: number;
+  custoEstimadoWaba: number;
+  taxaSucesso: number;
+  canais: {
+    waba: number;
+    firebase: number;
+    resend: number;
+    telegram: number;
+    evolution: number;
+    sms: number;
+  };
 }
 
 export interface AdminUserNotificationsResponse {
@@ -24,12 +62,20 @@ export interface AdminUserNotificationsResponse {
   limit: number;
 }
 
+export interface AdminGlobalNotificationsResponse extends AdminUserNotificationsResponse {
+  kpis?: NotificationKpisDTO;
+}
+
 const BASE = "/admin";
 
 export const adminNotificationApi = {
-  getUserNotifications: (id: string, params?: { page?: number; limit?: number }) =>
+  getUserNotifications: (id: string, params?: AdminNotificationQueryParams) =>
     apiClient.get<AdminUserNotificationsResponse>(`${BASE}/users/${id}/notifications`, { params }).then(r => r.data),
 
-  getPassengerNotifications: (id: string, params?: { page?: number; limit?: number }) =>
+  getPassengerNotifications: (id: string, params?: AdminNotificationQueryParams) =>
     apiClient.get<AdminUserNotificationsResponse>(`${BASE}/passengers/${id}/notifications`, { params }).then(r => r.data),
+
+  getGlobalNotifications: (params?: AdminNotificationQueryParams) =>
+    apiClient.get<AdminGlobalNotificationsResponse>(`${BASE}/notifications`, { params }).then(r => r.data),
 };
+

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   Bell,
   Eye,
@@ -15,6 +16,8 @@ import {
   X,
   Send,
   AlertTriangle,
+  XCircle,
+  FilterX,
 } from "lucide-react";
 import { AdminNotificationLogItem } from "@/services/api/admin/admin-notification.api";
 import { Button } from "@/components/ui/button";
@@ -24,8 +27,18 @@ import { toast } from "@/utils/notifications/toast";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { formatRelativeTime, formatDateTimeToBR } from "@/utils/formatters/date";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { phoneMask } from "@/utils/masks";
+import { ROUTES } from "@/constants/routes";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   NotificationCategoryEnum,
+  NOTIFICATION_CATEGORY_TABS,
   getEventMeta,
   getAudienceInfo,
   formatRecipientContact,
@@ -35,18 +48,22 @@ import {
   NotificationStatusEnum,
 } from "@/types/enums";
 
+export const NOTIFICATION_FILTER_ALL = "all";
+
+export interface NotificationFiltersState {
+  categoria: NotificationCategoryEnum;
+  canal: string;
+  status: string;
+  search: string;
+}
+
 interface NotificationLogsListProps {
   notifications: AdminNotificationLogItem[];
   isLoading?: boolean;
+  filters?: NotificationFiltersState;
+  onFiltersChange?: (newFilters: NotificationFiltersState) => void;
+  hideDriverColumn?: boolean;
 }
-
-const CATEGORY_TABS: { key: NotificationCategoryEnum; label: string }[] = [
-  { key: NotificationCategoryEnum.TODOS, label: "Todas" },
-  { key: NotificationCategoryEnum.ROTA, label: "Rotas" },
-  { key: NotificationCategoryEnum.COBRANCA, label: "Cobranças" },
-  { key: NotificationCategoryEnum.CONTRATO, label: "Contratos" },
-  { key: NotificationCategoryEnum.MOTORISTA, label: "Motorista" },
-];
 
 function renderChannelBadge(canal: string) {
   const norm = (canal || "").toUpperCase();
@@ -131,6 +148,14 @@ function renderStatusBadge(status: string) {
       </span>
     );
   }
+  if (norm === NotificationStatusEnum.CANCELLED) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-700/30 text-slate-400 border border-slate-700/60">
+        <XCircle className="h-3 w-3 text-slate-400" />
+        <span>Cancelado</span>
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
       <Clock className="h-3 w-3 text-sky-400" />
@@ -139,21 +164,84 @@ function renderStatusBadge(status: string) {
   );
 }
 
-export function NotificationLogsList({ notifications, isLoading }: NotificationLogsListProps) {
+export function NotificationLogsList({
+  notifications,
+  isLoading,
+  filters,
+  onFiltersChange,
+  hideDriverColumn = true,
+}: NotificationLogsListProps) {
   const [selectedNotification, setSelectedNotification] = useState<AdminNotificationLogItem | null>(null);
   const [copied, setCopied] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<NotificationCategoryEnum>(NotificationCategoryEnum.TODOS);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const isControlled = !!(filters && onFiltersChange);
+
+  const [localFilters, setLocalFilters] = useState<NotificationFiltersState>({
+    categoria: NotificationCategoryEnum.TODOS,
+    canal: NOTIFICATION_FILTER_ALL,
+    status: NOTIFICATION_FILTER_ALL,
+    search: "",
+  });
+
+  const activeFilters = isControlled ? filters : localFilters;
+
+  const updateFilters = (partial: Partial<NotificationFiltersState>) => {
+    const next = { ...activeFilters, ...partial };
+    if (isControlled && onFiltersChange) {
+      onFiltersChange(next);
+    } else {
+      setLocalFilters(next);
+    }
+  };
+
+  const handleResetFilters = () => {
+    const clean: NotificationFiltersState = {
+      categoria: NotificationCategoryEnum.TODOS,
+      canal: NOTIFICATION_FILTER_ALL,
+      status: NOTIFICATION_FILTER_ALL,
+      search: "",
+    };
+    if (isControlled && onFiltersChange) {
+      onFiltersChange(clean);
+    } else {
+      setLocalFilters(clean);
+    }
+  };
+
+  const hasActiveFilters =
+    activeFilters.categoria !== NotificationCategoryEnum.TODOS ||
+    activeFilters.canal !== NOTIFICATION_FILTER_ALL ||
+    activeFilters.status !== NOTIFICATION_FILTER_ALL ||
+    activeFilters.search.trim() !== "";
 
   const filteredNotifications = useMemo(() => {
+    if (isControlled) {
+      return notifications;
+    }
+
     return notifications.filter((item) => {
       const meta = getEventMeta(item.evento);
-      if (categoryFilter !== NotificationCategoryEnum.TODOS && meta.category !== categoryFilter) {
+      if (
+        activeFilters.categoria !== NotificationCategoryEnum.TODOS &&
+        meta.category !== activeFilters.categoria
+      ) {
         return false;
       }
 
-      if (searchTerm.trim()) {
-        const term = searchTerm.toLowerCase();
+      if (activeFilters.canal !== NOTIFICATION_FILTER_ALL) {
+        if ((item.canal || "").toUpperCase() !== activeFilters.canal.toUpperCase()) {
+          return false;
+        }
+      }
+
+      if (activeFilters.status !== NOTIFICATION_FILTER_ALL) {
+        if ((item.status || "").toUpperCase() !== activeFilters.status.toUpperCase()) {
+          return false;
+        }
+      }
+
+      if (activeFilters.search.trim()) {
+        const term = activeFilters.search.toLowerCase();
         const nomeAluno = ((item.payload?.nomePassageiro as string) || "").toLowerCase();
         const nomeResp = ((item.payload?.nomeResponsavel as string) || "").toLowerCase();
         const destinatario = (item.destinatario || "").toLowerCase();
@@ -171,7 +259,7 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
 
       return true;
     });
-  }, [notifications, categoryFilter, searchTerm]);
+  }, [isControlled, notifications, activeFilters]);
 
   const handleCopyPayload = () => {
     if (!selectedNotification) return;
@@ -181,74 +269,136 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-        <span className="text-xs font-semibold text-slate-400">Carregando histórico de notificações...</span>
-      </div>
-    );
-  }
-
-  if (!notifications || notifications.length === 0) {
-    return (
-      <AdminEmptyState
-        icon={Bell}
-        title="Nenhuma notificação encontrada"
-        description="Ainda não constam notificações disparadas para este registro."
-      />
-    );
-  }
-
   return (
     <>
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-          <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
-            {CATEGORY_TABS.map((tab) => {
-              const isActive = categoryFilter === tab.key;
-              return (
+        {/* BARRA DE FILTROS */}
+        <div className="space-y-3 bg-slate-900/50 p-3 sm:p-4 rounded-2xl border border-slate-800/80">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            {/* TABS DE CATEGORIAS */}
+            <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
+              {NOTIFICATION_CATEGORY_TABS.map((tab) => {
+                const isActive = activeFilters.categoria === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => updateFilters({ categoria: tab.key })}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
+                      isActive
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                        : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* BUSCA TEXTUAL */}
+            <div className="relative w-full lg:w-72">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+              <Input
+                placeholder="Buscar aluno, evento, contato..."
+                value={activeFilters.search}
+                onChange={(e) => updateFilters({ search: e.target.value })}
+                className="pl-9 pr-9 h-9 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
+              />
+              {activeFilters.search && (
                 <button
-                  key={tab.key}
                   type="button"
-                  onClick={() => setCategoryFilter(tab.key)}
-                  className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                      : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800"
-                  }`}
+                  onClick={() => updateFilters({ search: "" })}
+                  className="absolute right-2.5 top-2.5 text-slate-500 hover:text-white"
                 >
-                  {tab.label}
+                  <X className="h-4 w-4" />
                 </button>
-              );
-            })}
+              )}
+            </div>
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-            <Input
-              placeholder="Buscar aluno, evento, contato..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-9 h-9 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-2.5 top-2.5 text-slate-500 hover:text-white"
+          {/* FILTROS SECUNDÁRIOS: CANAL, STATUS E LIMPAR */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-800/60">
+            <div className="w-40 sm:w-44">
+              <Select
+                value={activeFilters.canal}
+                onValueChange={(val) => updateFilters({ canal: val })}
               >
-                <X className="h-4 w-4" />
-              </button>
+                <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
+                  <SelectValue placeholder="Canal" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
+                  <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Canais</SelectItem>
+                  <SelectItem value={NotificationChannelEnum.WABA}>WhatsApp (WABA)</SelectItem>
+                  <SelectItem value={NotificationChannelEnum.EVOLUTION}>WhatsApp (Evolution)</SelectItem>
+                  <SelectItem value={NotificationChannelEnum.FIREBASE}>Push App</SelectItem>
+                  <SelectItem value={NotificationChannelEnum.RESEND}>E-mail</SelectItem>
+                  <SelectItem value={NotificationChannelEnum.SMS}>SMS</SelectItem>
+                  <SelectItem value={NotificationChannelEnum.TELEGRAM}>Telegram</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-40 sm:w-44">
+              <Select
+                value={activeFilters.status}
+                onValueChange={(val) => updateFilters({ status: val })}
+              >
+                <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
+                  <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Status</SelectItem>
+                  <SelectItem value={NotificationStatusEnum.SENT}>Entregue</SelectItem>
+                  <SelectItem value={NotificationStatusEnum.FAILED}>Falhou</SelectItem>
+                  <SelectItem value={NotificationStatusEnum.PENDING}>Na Fila</SelectItem>
+                  <SelectItem value={NotificationStatusEnum.PROCESSING}>Enviando</SelectItem>
+                  <SelectItem value={NotificationStatusEnum.RETRY_PENDING}>Nova Tentativa</SelectItem>
+                  <SelectItem value={NotificationStatusEnum.CANCELLED}>Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {hasActiveFilters && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+                className="h-8 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 px-2.5 flex items-center gap-1.5 ml-auto sm:ml-0"
+              >
+                <FilterX className="h-3.5 w-3.5 text-rose-400" />
+                <span>Limpar Filtros</span>
+              </Button>
             )}
           </div>
         </div>
 
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+            <span className="text-xs font-semibold text-slate-400">Carregando histórico de notificações...</span>
+          </div>
+        ) : filteredNotifications.length === 0 ? (
+          <div className="py-12">
+            <AdminEmptyState
+              icon={Bell}
+              title={hasActiveFilters ? "Nenhuma notificação filtrada" : "Nenhuma notificação encontrada"}
+              description={
+                hasActiveFilters
+                  ? "Nenhum registro corresponde aos filtros de busca selecionados."
+                  : "Ainda não constam notificações disparadas para este registro."
+              }
+            />
+          </div>
+        ) : (
+          <>
         <div className="hidden lg:block overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/30">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-800/80 bg-slate-900/60 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                 <th className="py-3.5 px-5">Evento & Detalhes</th>
+                {!hideDriverColumn && <th className="py-3.5 px-4">Motorista</th>}
                 <th className="py-3.5 px-4">Destinatário</th>
                 <th className="py-3.5 px-4">Canal</th>
                 <th className="py-3.5 px-4">Status</th>
@@ -257,6 +407,7 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50 text-xs">
+
               {filteredNotifications.map((item) => {
                 const meta = getEventMeta(item.evento);
                 const Icon = meta.icon;
@@ -294,6 +445,35 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
                         </div>
                       </div>
                     </td>
+
+                    {!hideDriverColumn && (
+                      <td className="py-3.5 px-4">
+                        {item.usuarios || item.usuario_id ? (
+                          <div>
+                            {item.usuario_id ? (
+                              <Link
+                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
+                                className="font-bold text-blue-400 hover:text-blue-300 hover:underline block truncate max-w-[150px]"
+                              >
+                                {item.usuarios?.nome || "Motorista"}
+                              </Link>
+                            ) : (
+
+                              <span className="font-bold text-slate-200 block truncate max-w-[150px]">
+                                {item.usuarios?.nome || "Motorista"}
+                              </span>
+                            )}
+                            {item.usuarios?.telefone && (
+                              <p className="text-[10px] font-mono text-slate-400">
+                                {phoneMask(item.usuarios.telefone)}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 italic text-xs">—</span>
+                        )}
+                      </td>
+                    )}
 
                     <td className="py-3.5 px-4">
                       <div>
@@ -403,6 +583,25 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
                   </div>
                 )}
 
+                {!hideDriverColumn && (item.usuarios || item.usuario_id) && (
+                  <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60 flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Motorista:</span>
+                    {item.usuario_id ? (
+                      <Link
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
+                        className="font-bold text-blue-400 hover:underline truncate max-w-[200px]"
+                      >
+                        {item.usuarios?.nome || "Ver Motorista"}
+                      </Link>
+                    ) : (
+
+                      <span className="font-semibold text-slate-200 truncate max-w-[200px]">
+                        {item.usuarios?.nome || "—"}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                   <div className="space-y-1">
                     <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">
@@ -445,15 +644,7 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
             );
           })}
         </div>
-
-        {filteredNotifications.length === 0 && (
-          <div className="py-12">
-            <AdminEmptyState
-              icon={Bell}
-              title="Nenhuma notificação filtrada"
-              description="Nenhum registro corresponde aos filtros ou busca selecionados."
-            />
-          </div>
+          </>
         )}
       </div>
 
@@ -500,6 +691,31 @@ export function NotificationLogsList({ notifications, isLoading }: NotificationL
                   </span>
                 </div>
               </div>
+
+              {!hideDriverColumn && (selectedNotification.usuarios || selectedNotification.usuario_id) && (
+                <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Motorista Associado</span>
+                    <span className="text-xs font-bold text-slate-200">
+                      {selectedNotification.usuarios?.nome || "Motorista"}
+                    </span>
+                    {selectedNotification.usuarios?.telefone && (
+                      <p className="text-[11px] font-mono text-slate-400 mt-0.5">
+                        {phoneMask(selectedNotification.usuarios.telefone)}
+                      </p>
+                    )}
+                  </div>
+                  {selectedNotification.usuario_id && (
+                    <Link
+                      to={`${ROUTES.PRIVATE.ADMIN.USERS}/${selectedNotification.usuario_id}`}
+                      className="text-xs font-bold text-blue-400 hover:text-blue-300 hover:underline"
+                    >
+                      Ver perfil
+                    </Link>
+                  )}
+
+                </div>
+              )}
 
               <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
                 <div>

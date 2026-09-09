@@ -1,10 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAdminStats, useAdminLogs } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity } from "@/hooks/api/adminHooks";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
 import { phoneMask, cpfCnpjMask } from "@/utils/masks";
@@ -102,6 +104,18 @@ export default function AdminDashboard() {
   const { data: stats, isLoading } = useAdminStats();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
+
+  const [radarSort, setRadarSort] = useState<"inactive_first" | "recent_first">("inactive_first");
+  const [radarSearch, setRadarSearch] = useState("");
+  const [radarPage, setRadarPage] = useState(1);
+
+  const { data: radarData, isLoading: isLoadingRadar } = useAdminUsersLatestActivity({
+    sort: radarSort,
+    search: radarSearch.trim() || undefined,
+    page: radarPage,
+    limit: 6,
+  });
+
 
   const { data: loginAttemptsResponse, isLoading: isLoadingLoginAttempts } = useQuery({
     queryKey: ["admin", "login-attempts", "recent-dashboard"],
@@ -337,142 +351,318 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {/* 2. ÚLTIMAS ATIVIDADES (EXIBINDO OS ÚLTIMOS 10 REGISTROS) */}
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] flex flex-col justify-between">
-            <div>
-              <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                  ÚLTIMAS ATIVIDADES
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY)}
-                  className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
-                >
-                  Ver Todas
-                </Button>
-              </CardHeader>
-              <CardContent className="p-6 pt-2 space-y-3">
-                {isLoadingLogs ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-                  </div>
-                ) : !latestLog ? (
-                  <AdminEmptyState
-                    icon={Terminal}
-                    title="Nenhuma atividade recente"
-                    description="Não há registros de atividades recentes no sistema."
-                  />
-                ) : (
-                  <div className="space-y-3">
-                    {/* ATIVIDADE DESTAQUE */}
-                    <div className="p-4 rounded-2xl bg-blue-950/30 border-2 border-blue-500/60 shadow-lg shadow-blue-500/10 relative space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <h4 className="text-sm font-bold text-white flex items-center gap-2 break-words">
-                            <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
-                            {(latestLog.usuario_id || latestLog.usuarios?.id) ? (
-                              <Link
-                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
-                                className="hover:text-blue-400 hover:underline transition-colors"
-                              >
-                                {latestLog.usuarios?.nome || latestLog.entidade_tipo}
-                              </Link>
-                            ) : (
-                              <span>{latestLog.usuarios?.nome || latestLog.entidade_tipo}</span>
-                            )}
-                          </h4>
-                          <p className="text-xs font-medium text-slate-200 leading-relaxed break-words">
-                            {latestLog.descricao}
-                          </p>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] flex flex-col justify-between">
+              <div>
+                <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+                  <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
+                    ÚLTIMAS ATIVIDADES
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY)}
+                    className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
+                  >
+                    Ver Todas
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-6 pt-2 space-y-3">
+                  {isLoadingLogs ? (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                    </div>
+                  ) : !latestLog ? (
+                    <AdminEmptyState
+                      icon={Terminal}
+                      title="Nenhuma atividade recente"
+                      description="Não há registros de atividades recentes no sistema."
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-2xl bg-blue-950/30 border-2 border-blue-500/60 shadow-lg shadow-blue-500/10 relative space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <h4 className="text-sm font-bold text-white flex items-center gap-2 break-words">
+                              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                              {(latestLog.usuario_id || latestLog.usuarios?.id) ? (
+                                <Link
+                                  to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
+                                  className="hover:text-blue-400 hover:underline transition-colors"
+                                >
+                                  {latestLog.usuarios?.nome || latestLog.entidade_tipo}
+                                </Link>
+                              ) : (
+                                <span>{latestLog.usuarios?.nome || latestLog.entidade_tipo}</span>
+                              )}
+                            </h4>
+                            <p className="text-xs font-medium text-slate-200 leading-relaxed break-words">
+                              {latestLog.descricao}
+                            </p>
+                          </div>
+                          <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
+                            <FileText className="h-4 w-4" />
+                          </div>
                         </div>
-                        <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
-                          <FileText className="h-4 w-4" />
+
+                        <div className="flex items-center justify-between pt-2.5 border-t border-blue-500/20 gap-2">
+                          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 text-xs font-extrabold font-mono shadow-sm shadow-blue-500/10">
+                            <Clock className="h-4 w-4 text-blue-400" />
+                            {formatRelativeTime(latestLog.created_at)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedLogModal(latestLog)}
+                            className="h-8 px-3 bg-blue-600 text-white hover:bg-blue-500 rounded-xl shadow-md flex items-center gap-1.5 shrink-0"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">INSPECIONAR</span>
+                          </Button>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2.5 border-t border-blue-500/20 gap-2">
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 text-xs font-extrabold font-mono shadow-sm shadow-blue-500/10">
-                          <Clock className="h-4 w-4 text-blue-400" />
-                          {formatRelativeTime(latestLog.created_at)}
-                        </span>
+                      {remainingLogs.map((log) => (
+                        <div
+                          key={log.id}
+                          className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4 transition-colors hover:bg-slate-900/90"
+                        >
+                          <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800/80 shrink-0">
+                            <Clock className="h-3.5 w-3.5 text-slate-400" />
+                            {formatRelativeTime(log.created_at)}
+                          </span>
+
+                          <div className="space-y-1.5 md:space-y-0.5 min-w-0 flex-1 text-left">
+                            <div className="flex items-center justify-between gap-2 md:block">
+                              <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
+                                {(log.usuario_id || log.usuarios?.id) ? (
+                                  <Link
+                                    to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
+                                    className="hover:text-blue-400 hover:underline transition-colors"
+                                  >
+                                    {log.usuarios?.nome || log.entidade_tipo}
+                                  </Link>
+                                ) : (
+                                  <span>{log.usuarios?.nome || log.entidade_tipo}</span>
+                                )}
+                              </h5>
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedLogModal(log)}
+                                className="md:hidden h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                                title="Ver detalhes da atividade"
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+
+                            <p className="text-xs text-slate-300 md:text-slate-400 leading-relaxed md:leading-normal break-words md:truncate">
+                              {log.descricao}
+                            </p>
+
+                            <div className="pt-1 md:hidden">
+                              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800/80">
+                                <Clock className="h-3 w-3 text-slate-400" />
+                                {formatRelativeTime(log.created_at)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedLogModal(log)}
+                            className="hidden md:flex h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                            title="Ver detalhes da atividade"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </div>
+            </Card>
+
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] flex flex-col justify-between">
+              <div>
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between p-6 pb-3 gap-3 border-b border-slate-800/60">
+                  <div className="flex items-center gap-2">
+                    <Radio className="h-4 w-4 text-emerald-400 animate-pulse" />
+                    <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
+                      RADAR DE USUÁRIOS
+                    </CardTitle>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={radarSort}
+                      onValueChange={(val: "inactive_first" | "recent_first") => {
+                        setRadarSort(val);
+                        setRadarPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="h-7 text-[10px] font-bold uppercase tracking-wider rounded-xl bg-slate-900 border-slate-800 text-slate-300 w-[135px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                        <SelectItem value="inactive_first">Mais Inativos</SelectItem>
+                        <SelectItem value="recent_first">Mais Recentes</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
+                      className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
+                    >
+                      Ver Todos
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-6 pt-4 space-y-3">
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Buscar por nome ou telefone..."
+                      value={radarSearch}
+                      onChange={(e) => {
+                        setRadarSearch(e.target.value);
+                        setRadarPage(1);
+                      }}
+                      className="h-8 text-xs rounded-xl bg-slate-900/90 border-slate-800 text-slate-200 placeholder:text-slate-500 focus-visible:ring-blue-500"
+                    />
+                  </div>
+
+                  {isLoadingRadar ? (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                    </div>
+                  ) : !radarData || radarData.data.length === 0 ? (
+                    <AdminEmptyState
+                      icon={Users}
+                      title="Nenhum motorista encontrado"
+                      description="Nenhum registro corresponde aos critérios de busca."
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {radarData.data.map((item) => {
+                        const hasActivity = !!item.ultima_atividade_at;
+                        let badgeBg = "bg-slate-800 text-slate-400 border-slate-700";
+                        let badgeText = `Sem atividade (${item.dias_inativo}d)`;
+
+                        if (hasActivity) {
+                          if (item.dias_inativo <= 2) {
+                            badgeBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+                            badgeText = `Ativo • ${formatRelativeTime(item.ultima_atividade_at!)}`;
+                          } else if (item.dias_inativo <= 7) {
+                            badgeBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+                            badgeText = `Alerta • ${item.dias_inativo}d sem uso`;
+                          } else {
+                            badgeBg = "bg-rose-500/15 text-rose-400 border-rose-500/30";
+                            badgeText = `Em Risco • ${item.dias_inativo}d sem uso`;
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col gap-2 transition-colors hover:bg-slate-900/90"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="space-y-0.5 min-w-0 flex-1 text-left">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Link
+                                    to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.id}`}
+                                    className="text-xs font-bold text-white hover:text-blue-400 hover:underline transition-colors break-words"
+                                  >
+                                    {item.nome}
+                                  </Link>
+                                  {item.apelido && (
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                      ({item.apelido})
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                                  <span>{phoneMask(item.telefone)}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                <SubscriptionStatusBadge
+                                  status={item.assinatura_status}
+                                  dataVencimento={item.assinatura_vencimento}
+                                  className="text-[9px] px-2 py-0.5"
+                                />
+                                <span
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${badgeBg}`}
+                                >
+                                  {badgeText}
+                                </span>
+                              </div>
+                            </div>
+
+                            {hasActivity ? (
+                              <div className="pt-2 border-t border-slate-800/60 text-left space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-950 text-blue-400 border border-slate-800">
+                                    {item.ultima_acao?.replace(/_/g, " ")}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-300 leading-snug break-words">
+                                  {item.ultima_descricao}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="pt-2 border-t border-slate-800/60 text-left">
+                                <p className="text-xs text-slate-500 italic">
+                                  Nenhuma ação registrada desde o cadastro em {formatDateBR(item.cadastrado_em)}.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {radarData && radarData.total > 6 && (
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
+                      <span className="text-[11px] font-semibold text-slate-400">
+                        Página {radarData.page} de {Math.ceil(radarData.total / radarData.limit)} ({radarData.total} motoristas)
+                      </span>
+                      <div className="flex gap-1.5">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedLogModal(latestLog)}
-                          className="h-8 px-3 bg-blue-600 text-white hover:bg-blue-500 rounded-xl shadow-md flex items-center gap-1.5 shrink-0"
+                          disabled={radarPage <= 1}
+                          onClick={() => setRadarPage((p) => p - 1)}
+                          className="h-7 px-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 text-[10px] font-bold"
                         >
-                          <Eye className="h-3.5 w-3.5" />
-                          <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">INSPECIONAR</span>
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={radarPage >= Math.ceil(radarData.total / radarData.limit)}
+                          onClick={() => setRadarPage((p) => p + 1)}
+                          className="h-7 px-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 text-[10px] font-bold"
+                        >
+                          Próxima
                         </Button>
                       </div>
                     </div>
-
-                    {remainingLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4 transition-colors hover:bg-slate-900/90"
-                      >
-                        <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800/80 shrink-0">
-                          <Clock className="h-3.5 w-3.5 text-slate-400" />
-                          {formatRelativeTime(log.created_at)}
-                        </span>
-
-                        <div className="space-y-1.5 md:space-y-0.5 min-w-0 flex-1 text-left">
-                          <div className="flex items-center justify-between gap-2 md:block">
-                            <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
-                              {(log.usuario_id || log.usuarios?.id) ? (
-                                <Link
-                                  to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
-                                  className="hover:text-blue-400 hover:underline transition-colors"
-                                >
-                                  {log.usuarios?.nome || log.entidade_tipo}
-                                </Link>
-                              ) : (
-                                <span>{log.usuarios?.nome || log.entidade_tipo}</span>
-                              )}
-                            </h5>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedLogModal(log)}
-                              className="md:hidden h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
-                              title="Ver detalhes da atividade"
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-
-                          <p className="text-xs text-slate-300 md:text-slate-400 leading-relaxed md:leading-normal break-words md:truncate">
-                            {log.descricao}
-                          </p>
-
-                          <div className="pt-1 md:hidden">
-                            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800/80">
-                              <Clock className="h-3 w-3 text-slate-400" />
-                              {formatRelativeTime(log.created_at)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedLogModal(log)}
-                          className="hidden md:flex h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
-                          title="Ver detalhes da atividade"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </div>
-          </Card>
+                  )}
+                </CardContent>
+              </div>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* ABA 2: USUÁRIOS */}

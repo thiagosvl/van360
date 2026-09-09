@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adminUserApi,
   type ListUsersParams,
+  type ListUsersLatestActivityParams,
   type UpdateUserPayload,
   type UpdateSubscriptionPayload,
   type DispatchDriverNotificationPayload,
@@ -25,7 +26,18 @@ export function useAdminStats() {
   });
 }
 
+export function useAdminUsersLatestActivity(params?: ListUsersLatestActivityParams) {
+  return useQuery({
+    queryKey: ["admin", "users", "latest-activity", params],
+    queryFn: () => adminUserApi.getUsersLatestActivity(params),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useAdminUsers(params?: ListUsersParams) {
+
   return useQuery({
     queryKey: KEYS.users(params),
     queryFn: () => adminUserApi.getUsers(params),

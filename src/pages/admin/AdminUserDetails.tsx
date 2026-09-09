@@ -51,7 +51,8 @@ import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/Ad
 import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { AdminUserReferralTab } from "@/components/features/admin/user-details/AdminUserReferralTab";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
-import { NotificationLogsList } from "@/components/features/admin/NotificationLogsList";
+import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
+import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { formatarChavePix } from "@/utils/formatters/pix";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
@@ -286,11 +287,26 @@ export default function AdminUserDetails() {
 
   const [notifPage, setNotifPage] = useState(1);
   const [notifLimitStr, setNotifLimitStr] = useState("25");
+  const [notifFilters, setNotifFilters] = useState<NotificationFiltersState>({
+    categoria: NotificationCategoryEnum.TODOS,
+    canal: NOTIFICATION_FILTER_ALL,
+    status: NOTIFICATION_FILTER_ALL,
+    search: "",
+  });
 
   const { data: notifData, isFetching: isFetchingNotif, refetch: refetchNotif } = useAdminUserNotifications(id!, {
     page: notifPage,
     limit: parseInt(notifLimitStr),
+    categoria: notifFilters.categoria === NotificationCategoryEnum.TODOS ? undefined : notifFilters.categoria,
+    canal: notifFilters.canal === NOTIFICATION_FILTER_ALL ? undefined : notifFilters.canal,
+    status: notifFilters.status === NOTIFICATION_FILTER_ALL ? undefined : notifFilters.status,
+    search: notifFilters.search.trim() || undefined,
   });
+
+  const handleNotifFiltersChange = (newFilters: NotificationFiltersState) => {
+    setNotifFilters(newFilters);
+    setNotifPage(1);
+  };
 
   const userForm = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -2106,7 +2122,12 @@ export default function AdminUserDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <NotificationLogsList notifications={notifData?.data || []} isLoading={isFetchingNotif} />
+              <NotificationLogsList
+                notifications={notifData?.data || []}
+                isLoading={isFetchingNotif}
+                filters={notifFilters}
+                onFiltersChange={handleNotifFiltersChange}
+              />
 
               {notifData && notifData.total > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Bell, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
-import { NotificationLogsList } from "@/components/features/admin/NotificationLogsList";
+import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
+import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
 import { useAdminPassengerNotifications } from "@/hooks/api/adminHooks";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -22,11 +23,26 @@ export default function AdminPassengerNotificationsDialog({
 }: AdminPassengerNotificationsDialogProps) {
   const [page, setPage] = useState(1);
   const [limitStr, setLimitStr] = useState("25");
+  const [filters, setFilters] = useState<NotificationFiltersState>({
+    categoria: NotificationCategoryEnum.TODOS,
+    canal: NOTIFICATION_FILTER_ALL,
+    status: NOTIFICATION_FILTER_ALL,
+    search: "",
+  });
 
   const { data, isFetching, refetch } = useAdminPassengerNotifications(passageiroId, {
     page,
     limit: parseInt(limitStr),
+    categoria: filters.categoria === NotificationCategoryEnum.TODOS ? undefined : filters.categoria,
+    canal: filters.canal === NOTIFICATION_FILTER_ALL ? undefined : filters.canal,
+    status: filters.status === NOTIFICATION_FILTER_ALL ? undefined : filters.status,
+    search: filters.search.trim() || undefined,
   });
+
+  const handleFiltersChange = (newFilters: NotificationFiltersState) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
 
   return (
     <AdminBaseDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()} maxWidth="4xl">
@@ -54,7 +70,12 @@ export default function AdminPassengerNotificationsDialog({
             </Button>
           </div>
 
-          <NotificationLogsList notifications={data?.data || []} isLoading={isFetching} />
+          <NotificationLogsList
+            notifications={data?.data || []}
+            isLoading={isFetching}
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+          />
 
           {data && data.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between pt-3 border-t border-slate-800 gap-4">

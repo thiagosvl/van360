@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { adminNotificationApi } from "@/services/api/admin/admin-notification.api";
+import { adminNotificationApi, AdminNotificationQueryParams } from "@/services/api/admin/admin-notification.api";
 
-export function useAdminUserNotifications(id: string, params?: { page?: number; limit?: number }) {
+export function useAdminUserNotifications(id: string, params?: AdminNotificationQueryParams) {
   return useQuery({
     queryKey: ["admin", "users", id, "notifications", params],
     queryFn: () => adminNotificationApi.getUserNotifications(id, params),
@@ -12,7 +12,7 @@ export function useAdminUserNotifications(id: string, params?: { page?: number; 
   });
 }
 
-export function useAdminPassengerNotifications(id: string, params?: { page?: number; limit?: number }) {
+export function useAdminPassengerNotifications(id: string, params?: AdminNotificationQueryParams) {
   return useQuery({
     queryKey: ["admin", "passengers", id, "notifications", params],
     queryFn: () => adminNotificationApi.getPassengerNotifications(id, params),
@@ -22,3 +22,14 @@ export function useAdminPassengerNotifications(id: string, params?: { page?: num
     refetchOnWindowFocus: false,
   });
 }
+
+export function useAdminGlobalNotifications(params?: AdminNotificationQueryParams) {
+  return useQuery({
+    queryKey: ["admin", "global", "notifications", params],
+    queryFn: () => adminNotificationApi.getGlobalNotifications(params),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+  });
+}
+

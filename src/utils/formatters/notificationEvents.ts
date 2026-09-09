@@ -36,6 +36,15 @@ export enum NotificationCategoryEnum {
   SISTEMA = "SISTEMA",
 }
 
+export const NOTIFICATION_CATEGORY_TABS: { key: NotificationCategoryEnum; label: string }[] = [
+  { key: NotificationCategoryEnum.TODOS, label: "Todas" },
+  { key: NotificationCategoryEnum.ROTA, label: "Rotas" },
+  { key: NotificationCategoryEnum.COBRANCA, label: "Cobranças" },
+  { key: NotificationCategoryEnum.CONTRATO, label: "Contratos" },
+  { key: NotificationCategoryEnum.MOTORISTA, label: "Motorista" },
+  { key: NotificationCategoryEnum.SISTEMA, label: "Sistema" },
+];
+
 export enum NotificationAudienceEnum {
   RESPONSAVEL = "RESPONSAVEL",
   MOTORISTA = "MOTORISTA",
@@ -83,6 +92,7 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
   [NotificationEventEnum.MOTORISTA_TESTE_BOAS_VINDAS]: { title: "Boas-vindas ao App", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
   [NotificationEventEnum.MOTORISTA_TESTE_ENCERRADO]: { title: "Período de Teste Encerrado", category: NotificationCategoryEnum.MOTORISTA, icon: Clock, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },
   [NotificationEventEnum.MOTORISTA_TRIAL_D14_ULTIMO_AVISO]: { title: "Último Aviso de Teste (D14)", category: NotificationCategoryEnum.MOTORISTA, icon: AlertTriangle, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },
+  [NotificationEventEnum.MOTORISTA_TRIAL_BONUS_INATIVO]: { title: "Bônus Trial Inativo", category: NotificationCategoryEnum.MOTORISTA, icon: Gift, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
   [NotificationEventEnum.MOTORISTA_TRIAL_RECUPERACAO_1]: { title: "Oferta de Recuperação Trial", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-indigo-500/10 border-indigo-500/20", iconColor: "text-indigo-400" },
   [NotificationEventEnum.MOTORISTA_TRIAL_RECUPERACAO_2]: { title: "Oferta Final Trial", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-indigo-500/10 border-indigo-500/20", iconColor: "text-indigo-400" },
 
@@ -119,17 +129,19 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
 };
 
 export function getEventMeta(evento: string): EventMeta {
-  const normalized = (evento || "").toUpperCase() as NotificationEventEnum;
+  const normalized = (evento || "").trim().toUpperCase() as NotificationEventEnum;
   const meta = EVENT_METADATA[normalized];
   if (meta) return meta;
 
-  const isRota = normalized.startsWith("ROTA_");
+  const isRota = normalized.startsWith("ROTA_") || normalized.includes("AUSENCIA");
+  const isContrato = normalized.includes("CONTRATO");
   const isPassageiro = normalized.startsWith("PASSAGEIRO_");
   const isMotorista = normalized.startsWith("MOTORISTA_");
-  const isAdmin = normalized.startsWith("ADMIN_");
+  const isAdmin = normalized.startsWith("ADMIN_") || normalized.startsWith("AUTH_");
 
   let category: NotificationCategoryEnum = NotificationCategoryEnum.SISTEMA;
   if (isRota) category = NotificationCategoryEnum.ROTA;
+  else if (isContrato) category = NotificationCategoryEnum.CONTRATO;
   else if (isPassageiro) category = NotificationCategoryEnum.COBRANCA;
   else if (isMotorista) category = NotificationCategoryEnum.MOTORISTA;
   else if (isAdmin) category = NotificationCategoryEnum.SISTEMA;
@@ -204,7 +216,11 @@ export function getAudienceInfo(item: AdminNotificationLogItem): AudienceInfo {
     };
   }
 
-  const nomeMotorista = (item.payload?.nomeMotorista as string) || (item.payload?.nome as string) || null;
+  const nomeMotorista =
+    (item.payload?.nomeMotorista as string) ||
+    (item.payload?.nome as string) ||
+    item.usuarios?.nome ||
+    null;
   return {
     type: NotificationAudienceEnum.MOTORISTA,
     label: "Motorista",

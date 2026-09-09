@@ -9,7 +9,8 @@ import {
   ShieldAlert,
   Terminal,
   MessageSquare,
-  FileText
+  FileText,
+  Bell,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { isDevEnv } from "@/utils/detectPlatform";
@@ -29,6 +30,11 @@ const adminNavItems = [
     title: "Histórico de Atividades",
     href: ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY,
     icon: Terminal,
+  },
+  {
+    title: "Histórico de Notificações",
+    href: ROUTES.PRIVATE.ADMIN.NOTIFICATIONS,
+    icon: Bell,
   },
   {
     title: "Configurações",

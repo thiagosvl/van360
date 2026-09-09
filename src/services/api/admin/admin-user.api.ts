@@ -356,6 +356,35 @@ export interface DispatchDriverNotificationResponse {
   result?: unknown;
 }
 
+export interface MotoristaLatestActivityItem {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  telefone: string;
+  email: string;
+  cadastrado_em: string;
+  ultima_acao: string | null;
+  ultima_descricao: string | null;
+  ultima_atividade_at: string | null;
+  assinatura_status: string | null;
+  assinatura_vencimento: string | null;
+  dias_inativo: number;
+}
+
+export interface ListUsersLatestActivityParams {
+  search?: string;
+  sort?: "inactive_first" | "recent_first";
+  page?: number;
+  limit?: number;
+}
+
+export interface MotoristasLatestActivityResponse {
+  data: MotoristaLatestActivityItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 const BASE = "/admin";
 
 export const adminUserApi = {
@@ -364,6 +393,9 @@ export const adminUserApi = {
 
   getUsers: (params?: ListUsersParams) =>
     apiClient.get<AdminUserListResponse>(`${BASE}/users`, { params }).then(r => r.data),
+
+  getUsersLatestActivity: (params?: ListUsersLatestActivityParams) =>
+    apiClient.get<MotoristasLatestActivityResponse>(`${BASE}/users/latest-activity`, { params }).then(r => r.data),
 
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),
