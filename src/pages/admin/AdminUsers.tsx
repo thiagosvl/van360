@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminUsers, useAdminStats } from "@/hooks/api/adminHooks";
-import { SubscriptionStatus } from "@/types/enums";
+import { SubscriptionStatus, SUBSCRIPTION_VITALICIO_FILTER } from "@/types/enums";
 import {
   Search,
   ChevronLeft,
@@ -28,6 +28,8 @@ import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS, ExtendedSubscript
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { ROUTES } from "@/constants/routes";
+import { useDebounce } from "@/hooks/ui/useDebounce";
+import { cn } from "@/lib/utils";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
@@ -64,20 +66,29 @@ export default function AdminUsers() {
   const totalPages = Math.ceil(total / limit);
 
   const kpiCards = useMemo(() => {
+    const isTotalSelected = statusFilter === "";
+
     const totalCard = {
       key: "total",
       title: "TOTAL DE MOTORISTAS",
       value: stats?.totalMotoristas ?? total,
       subtext: "Cadastrados",
-      cardBorder: "border-blue-500/40 shadow-blue-500/10",
+      cardBorder: isTotalSelected
+        ? "border-blue-500 shadow-blue-500/20 ring-2 ring-blue-500/80"
+        : "border-blue-500/40 shadow-blue-500/10",
       iconBg: "bg-blue-500/10 text-blue-400 border-blue-500/20",
       icon: <Bus className="h-5 w-5" />,
+      isSelected: isTotalSelected,
+      onClick: () => {
+        setStatusFilter("");
+        setPage(1);
+      },
     };
 
     const statusItems: Array<{ status: ExtendedSubscriptionStatus; val: number | undefined; icon: React.ReactNode }> = [
       { status: SubscriptionStatus.ACTIVE, val: stats?.assinaturas?.active, icon: <ShieldCheck className="h-5 w-5" /> },
       { status: SubscriptionStatus.TRIAL, val: stats?.assinaturas?.trial, icon: <Clock className="h-5 w-5" /> },
-      { status: "VITALICIO", val: stats?.assinaturas?.vitalicio, icon: <InfinityIcon className="h-5 w-5" /> },
+      { status: SUBSCRIPTION_VITALICIO_FILTER, val: stats?.assinaturas?.vitalicio, icon: <InfinityIcon className="h-5 w-5" /> },
       { status: SubscriptionStatus.PAST_DUE, val: stats?.assinaturas?.past_due, icon: <AlertTriangle className="h-5 w-5" /> },
       { status: SubscriptionStatus.EXPIRED, val: stats?.assinaturas?.expired, icon: <CalendarOff className="h-5 w-5" /> },
       { status: SubscriptionStatus.CANCELED, val: stats?.assinaturas?.canceled, icon: <XCircle className="h-5 w-5" /> },
@@ -85,30 +96,43 @@ export default function AdminUsers() {
 
     const statusCards = statusItems.map((item) => {
       const detail = SUBSCRIPTION_STATUS_DETAILS[item.status];
+      const isSelected = statusFilter === item.status;
       return {
         key: item.status,
         title: detail.pluralLabel.toUpperCase(),
         value: item.val ?? 0,
         subtext: detail.subtext,
-        cardBorder: detail.cardBorder,
+        cardBorder: isSelected
+          ? cn(detail.cardBorder, "ring-2 ring-offset-2 ring-offset-[#0b101b] ring-blue-500 scale-[1.02]")
+          : detail.cardBorder,
         iconBg: detail.iconBg,
         icon: item.icon,
+        isSelected,
+        onClick: () => {
+          setStatusFilter(item.status);
+          setPage(1);
+        },
       };
     });
 
     return [totalCard, ...statusCards];
-  }, [stats, total]);
+  }, [stats, total, statusFilter]);
 
   return (
     <div className="space-y-8 text-left">
-      {/* 1. KPIS SUPERIORES PADRONIZADOS DO DASHBOARD (7 CARDS) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
         {kpiCards.map((card) => (
-          <AdminKpiCard key={card.key} {...card} />
+          <AdminKpiCard
+            key={card.key}
+            {...card}
+            className={cn(
+              "cursor-pointer transition-all duration-200",
+              card.isSelected && "bg-[#17223b]"
+            )}
+          />
         ))}
       </div>
 
-      {/* BARRA DE AÇÃO SUPERIOR */}
       <div className="flex items-center justify-between gap-4">
         <span className="text-xs font-semibold text-slate-400">
           Listando {users.length} de {total} motorista{total !== 1 ? "s" : ""}
@@ -122,7 +146,6 @@ export default function AdminUsers() {
         </Button>
       </div>
 
-      {/* TABELA E FILTROS */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardContent className="p-6 space-y-6">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
@@ -339,13 +362,4 @@ export default function AdminUsers() {
       </Card>
     </div>
   );
-}
-
-function useDebounce(value: string, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
 }

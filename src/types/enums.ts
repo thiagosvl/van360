@@ -261,6 +261,8 @@ export enum SubscriptionStatus {
   EXPIRED = "EXPIRED"
 }
 
+export const SUBSCRIPTION_VITALICIO_FILTER = "VITALICIO" as const;
+
 export enum SubscriptionInvoiceStatus {
   PENDING = "PENDING",
   PAID = "PAID",
