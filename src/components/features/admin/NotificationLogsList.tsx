@@ -451,24 +451,23 @@ export function NotificationLogsList({
 
                     {!hideDriverColumn && (
                       <td className="py-3.5 px-4">
-                        {item.usuarios || item.usuario_id ? (
+                        {item.usuarios || item.usuario_id || item.payload?.nomeMotorista ? (
                           <div>
                             {item.usuario_id ? (
                               <Link
                                 to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
                                 className="font-bold text-blue-400 hover:text-blue-300 hover:underline block truncate max-w-[150px]"
                               >
-                                {item.usuarios?.nome || "Motorista"}
+                                {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "Motorista"}
                               </Link>
                             ) : (
-
                               <span className="font-bold text-slate-200 block truncate max-w-[150px]">
-                                {item.usuarios?.nome || "Motorista"}
+                                {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "Motorista"}
                               </span>
                             )}
-                            {item.usuarios?.telefone && (
+                            {(item.usuarios?.telefone || item.payload?.telefoneMotorista) && (
                               <p className="text-[10px] font-mono text-slate-400">
-                                {phoneMask(item.usuarios.telefone)}
+                                {phoneMask((item.usuarios?.telefone || item.payload?.telefoneMotorista) as string)}
                               </p>
                             )}
                           </div>
@@ -588,7 +587,7 @@ export function NotificationLogsList({
                   </div>
                 )}
 
-                {!hideDriverColumn && (item.usuarios || item.usuario_id) && (
+                {!hideDriverColumn && (item.usuarios || item.usuario_id || item.payload?.nomeMotorista) && (
                   <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60 flex items-center justify-between text-xs">
                     <span className="text-slate-400">Motorista:</span>
                     {item.usuario_id ? (
@@ -596,12 +595,11 @@ export function NotificationLogsList({
                         to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
                         className="font-bold text-blue-400 hover:underline truncate max-w-[200px]"
                       >
-                        {item.usuarios?.nome || "Ver Motorista"}
+                        {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "Ver Motorista"}
                       </Link>
                     ) : (
-
                       <span className="font-semibold text-slate-200 truncate max-w-[200px]">
-                        {item.usuarios?.nome || "—"}
+                        {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "—"}
                       </span>
                     )}
                   </div>
