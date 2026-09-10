@@ -4,7 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAdminEvolutionInstances } from "@/hooks/api/adminHooks";
 import { Loader2, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
-import { formatWhatsappPurpose } from "@/utils/evolution";
+
+function formatWhatsappPurpose(purpose: string): string {
+  if (purpose === "BULK") return "Massa (Lento)";
+  if (purpose === "TRANSACTIONAL") return "Transacional (Rápido)";
+  return purpose;
+}
 
 export default function AdminEvolutionInstances() {
   const { setPageTitle } = useLayout();
