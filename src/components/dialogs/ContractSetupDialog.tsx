@@ -93,7 +93,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     tipo: ContractMultaTipo.PERCENTUAL,
   });
   const [multaRescisao, setMultaRescisao] = useState<{ valor: number; tipo: ContractMultaTipo }>({
-    valor: 15,
+    valor: 0,
     tipo: ContractMultaTipo.FIXO,
   });
 
@@ -197,7 +197,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         setJurosAtraso(isDefault ? { ...profile.config_contrato.juros_atraso, tipo: ContractMultaTipo.PERCENTUAL } : profile.config_contrato.juros_atraso);
       }
       if (profile.config_contrato?.multa_rescisao) {
-        setMultaRescisao(isDefault ? { ...profile.config_contrato.multa_rescisao, tipo: ContractMultaTipo.FIXO } : profile.config_contrato.multa_rescisao);
+        setMultaRescisao(profile.config_contrato.multa_rescisao);
+      } else {
+        setMultaRescisao({ valor: 0, tipo: ContractMultaTipo.FIXO });
       }
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
 
@@ -589,6 +591,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
+          inputFieldLabel: "o valor da multa",
         },
         {
           label: "Juros por Atraso",
@@ -605,6 +608,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
+          inputFieldLabel: "o valor dos juros",
         },
         {
           label: "Multa por Rescisão",
@@ -621,8 +625,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
           simColor: "text-[#1a3a5c]",
+          inputFieldLabel: "o valor da multa",
         },
-      ].map(({ label, desc, state, setState, icon: Icon, iconColor, simBaseLabel, simResultLabel, simBaseValue, simValue, simColor }) => (
+      ].map(({ label, desc, state, setState, icon: Icon, iconColor, simBaseLabel, simResultLabel, simBaseValue, simValue, simColor, inputFieldLabel }) => (
         <div key={label} className="p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
           <div className="flex gap-3">
             <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm", iconColor)}>
@@ -705,24 +710,34 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           </div>
 
           <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/40 space-y-2">
-            <div className="flex justify-between items-center text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-              <span>{simBaseLabel}</span>
-              <span>{simResultLabel}</span>
-            </div>
-            <div className="flex justify-between items-baseline">
-              <span className="text-xs font-bold text-slate-500">
-                {simBaseValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
-              <div className="text-right">
-                <span className={cn("text-base font-black leading-none", simColor)}>{simValue}</span>
-                <p className="text-[9px] font-bold text-slate-400 mt-1 leading-none">
-                  {state.tipo === ContractMultaTipo.PERCENTUAL
-                    ? `+ ${state.valor}% (${(simBaseValue * (state.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
-                    : `+ ${state.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
-                  }
-                </p>
+            {state.valor <= 0 ? (
+              <div className="flex items-center justify-center py-1">
+                <span className="text-xs font-bold text-slate-400">
+                  Preencha {inputFieldLabel} para ver uma simulação
+                </span>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                  <span>{simBaseLabel}</span>
+                  <span>{simResultLabel}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-bold text-slate-500">
+                    {simBaseValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </span>
+                  <div className="text-right">
+                    <span className={cn("text-base font-black leading-none", simColor)}>{simValue}</span>
+                    <p className="text-[9px] font-bold text-slate-400 mt-1 leading-none">
+                      {state.tipo === ContractMultaTipo.PERCENTUAL
+                        ? `+ ${state.valor}% (${(simBaseValue * (state.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
+                        : `+ ${state.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+                      }
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       ))}
@@ -839,19 +854,25 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
           <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
-            {multaAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor)}
+            {multaAtraso.valor <= 0
+              ? "Não informado"
+              : (multaAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor))}
           </p>
         </div>
         <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Juros Atraso</p>
           <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
-            {jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor)}
+            {jurosAtraso.valor <= 0
+              ? "Não informado"
+              : (jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor))}
           </p>
         </div>
         <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão</p>
           <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
-            {multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor)}
+            {multaRescisao.valor <= 0
+              ? "Não informado"
+              : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor))}
           </p>
         </div>
         <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
