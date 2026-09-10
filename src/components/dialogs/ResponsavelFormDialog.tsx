@@ -37,6 +37,7 @@ import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
   useBuscarResponsavel,
+  usePassageiro,
 } from "@/hooks";
 import {
   useAddResponsavelResponsavelMutation,
@@ -56,7 +57,9 @@ const responsavelSchema = z.object({
     }),
   cpf: z
     .string()
-    .min(1, "Campo obrigatório")
+    .optional()
+    .nullable()
+    .or(z.literal(""))
     .refine((val) => !val || isValidCPF(val), {
       message: "CPF inválido",
     }),
@@ -125,6 +128,14 @@ export default function ResponsavelFormDialog({
     updateResponsavel.isPending ||
     addResponsavelResponsavel.isPending ||
     updateResponsavelResponsavel.isPending;
+
+  const { data: passageiro } = usePassageiro(passageiroId, {
+    enabled: isOpen && Boolean(passageiroId) && !editingResponsavel,
+  });
+
+  const alunoBairro = passageiro?.responsavel_principal?.bairro || (passageiro as { bairro?: string })?.bairro || "";
+  const alunoCidade = passageiro?.responsavel_principal?.cidade || (passageiro as { cidade?: string })?.cidade || "";
+  const alunoEstado = passageiro?.responsavel_principal?.estado || (passageiro as { estado?: string })?.estado || "";
 
   const searchedTermsSet = useRef<Set<string>>(new Set());
 
@@ -267,9 +278,9 @@ export default function ResponsavelFormDialog({
           parentesco: "" as ParentescoResponsavel,
           logradouro: "",
           numero: "",
-          bairro: "",
-          cidade: "",
-          estado: "",
+          bairro: alunoBairro,
+          cidade: alunoCidade,
+          estado: alunoEstado,
           cep: "",
           referencia: "",
           complemento: "",
@@ -278,7 +289,21 @@ export default function ResponsavelFormDialog({
         });
       }
     }
-  }, [isOpen, editingResponsavel, form]);
+  }, [isOpen, editingResponsavel, form, alunoBairro, alunoCidade, alunoEstado]);
+
+  useEffect(() => {
+    if (isOpen && !editingResponsavel) {
+      if (alunoBairro && !form.getValues("bairro")) {
+        form.setValue("bairro", alunoBairro);
+      }
+      if (alunoCidade && !form.getValues("cidade")) {
+        form.setValue("cidade", alunoCidade);
+      }
+      if (alunoEstado && !form.getValues("estado")) {
+        form.setValue("estado", alunoEstado);
+      }
+    }
+  }, [isOpen, editingResponsavel, alunoBairro, alunoCidade, alunoEstado, form]);
 
   const cpfValue = form.watch("cpf");
   const telefoneValue = form.watch("telefone");
@@ -312,7 +337,7 @@ export default function ResponsavelFormDialog({
     const payload = {
       nome: data.nome,
       telefone: String(data.telefone || "").replace(/\D/g, ""),
-      cpf: String(data.cpf || "").replace(/\D/g, ""),
+      cpf: data.cpf && String(data.cpf).replace(/\D/g, "") ? String(data.cpf).replace(/\D/g, "") : null,
       email: data.email || null,
       parentesco: data.parentesco as ParentescoResponsavel,
       logradouro: data.logradouro || null,
@@ -455,11 +480,46 @@ export default function ResponsavelFormDialog({
 
               <FormField
                 control={form.control}
+                name="parentesco"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col space-y-2">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Parentesco <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(
+                            "h-12 rounded-xl bg-slate-50 border-slate-200 text-base focus:border-[#1a3a5c]",
+                            fieldState.error && "border-red-500"
+                          )}
+                        >
+                          <SelectValue placeholder="Selecione o parentesco" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {parentescos.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="cpf"
                 render={({ field, fieldState }) => (
                   <FormItem className="flex flex-col space-y-2">
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      CPF <span className="text-red-600">*</span>
+                      CPF
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -506,41 +566,6 @@ export default function ResponsavelFormDialog({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="parentesco"
-                render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Parentesco <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger
-                          className={cn(
-                            "h-12 rounded-xl bg-slate-50 border-slate-200 text-base focus:border-[#1a3a5c]",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          <SelectValue placeholder="Selecione o parentesco" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {parentescos.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <hr className="border-slate-100" />
@@ -550,7 +575,7 @@ export default function ResponsavelFormDialog({
                 <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
                   <MapPin className="w-4.5 h-4.5" />
                 </div>
-                Endereço do Responsável
+                Endereço <span className="font-normal text-xs text-slate-500">(Opcional)</span>
               </div>
               <FormEnderecoFields required={false} />
             </section>

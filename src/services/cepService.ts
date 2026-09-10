@@ -30,11 +30,13 @@ export const cepService = {
   },
 
   async buscarEnderecoPorTexto(logradouro: string, uf?: string, cidade?: string): Promise<EnderecoSugestao[]> {
-    const cleanLogradouro = logradouro.trim();
+    const cleanLogradouro = (logradouro || "").trim();
     if (cleanLogradouro.length < 3) return [];
 
-    const state = (uf).trim().toUpperCase();
-    const city = (cidade).trim();
+    const state = (uf || "").trim().toUpperCase();
+    const city = (cidade || "").trim();
+
+    if (state.length !== 2 || city.length < 3) return [];
 
     try {
       const response = await fetch(
@@ -42,11 +44,17 @@ export const cepService = {
       );
 
       if (!response.ok) return [];
-      const data = await response.json();
+      const data = (await response.json()) as Array<{
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+        cep?: string;
+      }>;
 
       if (!Array.isArray(data)) return [];
 
-      return data.slice(0, 5).map((item: any) => ({
+      return data.slice(0, 5).map((item) => ({
         logradouro: item.logradouro || "",
         bairro: item.bairro || "",
         cidade: item.localidade || "",

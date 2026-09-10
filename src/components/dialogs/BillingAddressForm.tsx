@@ -60,12 +60,17 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
 
     const timer = setTimeout(async () => {
       setIsSearchingAddress(true);
-      const uf = formData.state;
-      const cidade = formData.city;
-      const results = await cepService.buscarEnderecoPorTexto(formData.street!, uf, cidade);
-      setSugestoes(results);
-      setShowDropdown(results.length > 0 && isFocusedRef.current);
-      setIsSearchingAddress(false);
+      try {
+        const uf = formData.state;
+        const cidade = formData.city;
+        const results = await cepService.buscarEnderecoPorTexto(formData.street!, uf, cidade);
+        setSugestoes(results);
+        setShowDropdown(results.length > 0 && isFocusedRef.current);
+      } catch {
+        setSugestoes([]);
+      } finally {
+        setIsSearchingAddress(false);
+      }
     }, 400);
 
     return () => clearTimeout(timer);
@@ -279,20 +284,20 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
                 <button
                   key={idx}
                   type="button"
-                  className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 text-xs text-slate-700 font-medium group"
+                  className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3 text-xs text-slate-700 font-medium group"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     handleSelectSugestao(sugestao);
                   }}
                 >
-                  <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#002444] group-hover:bg-[#002444] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60">
+                  <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#002444] group-hover:bg-[#002444] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60 mt-0.5">
                     <Search className="w-3.5 h-3.5" />
                   </div>
-                  <div className="truncate flex-1">
-                    <span className="font-bold text-[#002444] block text-xs truncate">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-[#002444] block text-xs break-words leading-snug">
                       {sugestao.logradouro}
                     </span>
-                    <span className="text-slate-500 font-normal block text-[11px] truncate mt-0.5">
+                    <span className="text-slate-500 font-normal block text-[11px] break-words leading-relaxed mt-0.5">
                       {[sugestao.bairro, sugestao.cidade, sugestao.estado]
                         .filter(Boolean)
                         .join(", ")}
