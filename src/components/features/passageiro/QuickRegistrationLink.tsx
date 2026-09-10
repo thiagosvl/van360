@@ -23,6 +23,21 @@ export function QuickRegistrationLink({
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
 
+  const buildShareMessage = (link: string) => {
+    return [
+      "Olá! Tudo bem? 🚐✨",
+      "",
+      "Para trazer mais conforto, agilidade e segurança para o transporte do seu filho(a), estamos utilizando o aplicativo *Van360*.",
+      "",
+      "Por favor, acesse o link abaixo para preencher o cadastro do aluno(a). Leva menos de 2 minutinhos:",
+      "",
+      "📲 *Link de cadastro:*",
+      link,
+      "",
+      "Qualquer dúvida, estou à disposição!"
+    ].join("\n");
+  };
+
   const handleCopyLink = async () => {
     if (!profile?.id) {
       toast.error("erro.operacao", {
@@ -31,7 +46,9 @@ export function QuickRegistrationLink({
       return;
     }
 
-    const success = await copyToClipboard(buildPrepassageiroLink(profile?.id));
+    const link = buildPrepassageiroLink(profile.id);
+    const message = buildShareMessage(link);
+    const success = await copyToClipboard(message);
     if (success) {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 1000);
@@ -45,7 +62,7 @@ export function QuickRegistrationLink({
   const handleShareWhatsApp = () => {
     if (!profile?.id) return;
     const link = buildPrepassageiroLink(profile.id);
-    const message = `Olá! Clique no link abaixo para cadastrar o aluno(a) no transporte escolar: ${link}`;
+    const message = buildShareMessage(link);
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     openBrowserLink(url);
   };
