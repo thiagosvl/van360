@@ -227,7 +227,7 @@ export function AdminUserContractsTab({
                               contrato.status === ContratoStatus.ASSINADO ? (
                                 contrato.provider === ContratoProvider.IMPORTADO ? (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                                    <CheckCircle2 className="h-3 w-3" /> IMPORTADO
+                                    <CheckCircle2 className="h-3 w-3" /> ASSINADO (IMPORTADO)
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
@@ -295,7 +295,7 @@ export function AdminUserContractsTab({
                           contrato.status === ContratoStatus.ASSINADO ? (
                             contrato.provider === ContratoProvider.IMPORTADO ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 shrink-0">
-                                <CheckCircle2 className="h-3 w-3" /> IMPORTADO
+                                <CheckCircle2 className="h-3 w-3" /> ASSINADO (IMPORTADO)
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">

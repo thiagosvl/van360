@@ -76,6 +76,16 @@ const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
     ],
     category: "SaaS / Onboarding",
   },
+  {
+    id: NotificationEventEnum.MOTORISTA_TESTE_ENCERRADO,
+    title: "Período de Teste Encerrado",
+    description: "Notifica que o período de testes grátis chegou ao fim e disponibiliza o botão para assinar e reativar.",
+    channels: [
+      { type: "email", label: "E-mail" },
+      { type: "push", label: "Push no Celular" },
+    ],
+    category: "SaaS / Onboarding",
+  },
 ];
 
 function ChannelBadge({ type, label }: { type: NotificationChannelType; label: string }) {
