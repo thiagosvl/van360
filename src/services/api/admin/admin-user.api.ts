@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { DriverContractConfigStatus, WhatsappStatus } from "@/types/enums";
+import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus } from "@/types/enums";
 import { MetadadosCadastroData } from "@/types/usuario";
 
 export interface AdminDashboardStats {
@@ -173,6 +173,7 @@ export interface AdminUserContractItem {
   usuario_id: string;
   passageiro_id: string;
   status: string;
+  provider?: ContratoProvider | string | null;
   minuta_url?: string | null;
   contrato_final_url?: string | null;
   valor_total?: number | null;
