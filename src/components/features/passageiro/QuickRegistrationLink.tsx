@@ -1,12 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { openBrowserLink, copyToClipboard } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { buildPrePassageiroShareMessage, buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { toast } from "@/utils/notifications/toast";
 import {
   Check,
   Copy,
   Smartphone,
-  Sparkles
 } from "lucide-react";
 import { useState } from "react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -23,21 +22,6 @@ export function QuickRegistrationLink({
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
 
-  const buildShareMessage = (link: string) => {
-    return [
-      "Olá! Tudo bem? 🚐✨",
-      "",
-      "Para trazer mais conforto, agilidade e segurança para o transporte do seu filho(a), estamos utilizando o aplicativo *Van360*.",
-      "",
-      "Por favor, acesse o link abaixo para preencher o cadastro do aluno(a). Leva menos de 2 minutinhos:",
-      "",
-      "📲 *Link de cadastro:*",
-      link,
-      "",
-      "Qualquer dúvida, estou à disposição!"
-    ].join("\n");
-  };
-
   const handleCopyLink = async () => {
     if (!profile?.id) {
       toast.error("erro.operacao", {
@@ -47,7 +31,7 @@ export function QuickRegistrationLink({
     }
 
     const link = buildPrepassageiroLink(profile.id);
-    const message = buildShareMessage(link);
+    const message = buildPrePassageiroShareMessage(link);
     const success = await copyToClipboard(message);
     if (success) {
       setIsCopied(true);
@@ -62,8 +46,8 @@ export function QuickRegistrationLink({
   const handleShareWhatsApp = () => {
     if (!profile?.id) return;
     const link = buildPrepassageiroLink(profile.id);
-    const message = buildShareMessage(link);
-    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const message = buildPrePassageiroShareMessage(link);
+    const url = buildWhatsAppUrl(null, message);
     openBrowserLink(url);
   };
 

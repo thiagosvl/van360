@@ -16,7 +16,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
-import { buildContratoWhatsAppUrl } from "@/utils/evolution";
+import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { ContratoTab, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { ContratoListItem } from "@/types/contract";

@@ -21,8 +21,8 @@ import { toast } from "sonner";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { TipoResponsavel } from "@/types/enums";
 import { UnifiedEmptyState } from "@/components/empty";
-import { STORAGE_KEYS, BASE_DOMAIN } from "@/constants";
-import { PLAY_STORE_URL } from "@/utils/detectPlatform";
+import { STORAGE_KEYS } from "@/constants";
+import { buildResponsavelAppInviteUrl } from "@/utils/whatsappTemplates";
 
 export interface CarteirinhaResponsaveisProps {
   passageiro: Passageiro;
@@ -543,16 +543,12 @@ export const CarteirinhaResponsaveis = ({
                         <DropdownMenuContent align="end" className="w-60 rounded-xl border-gray-100 shadow-xl p-1">
                           <DropdownMenuItem
                             onClick={() => {
-                              const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
-                              const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
-                              const respNome = formatFirstName(currentResp.nome);
-                              const passNome = formatFirstName(passageiro.nome);
-                              const appAndroidLink = PLAY_STORE_URL;
-                              const webLoginLink = `${BASE_DOMAIN}/login`;
-
-                              const mensagem = `Olá, ${respNome}! Você foi convidado(a) para acompanhar a rotina escolar de *${passNome}* pelo aplicativo *Van360*!\n\n📲 *Baixe o app para Android:* ${appAndroidLink}\n🌐 *Ou acesse pelo navegador:* ${webLoginLink}`;
-
-                              openBrowserLink(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(mensagem)}`);
+                              const url = buildResponsavelAppInviteUrl({
+                                telefoneResponsavel: currentResp.telefone || "",
+                                nomeResponsavel: currentResp.nome,
+                                nomePassageiro: passageiro.nome,
+                              });
+                              openBrowserLink(url);
                             }}
                             className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
                           >

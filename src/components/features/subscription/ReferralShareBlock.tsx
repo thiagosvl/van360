@@ -3,7 +3,7 @@ import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { openBrowserLink, copyToClipboard } from "@/utils/browser";
-import { toast } from "sonner";
+import { buildReferralShareMessage, buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { cn } from "@/lib/utils";
 
 interface ReferralShareBlockProps {
@@ -23,6 +23,16 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
         setTimeout(() => setIsCopied(false), 2000);
       }
     }
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!referralLink) {
+      handleCopyReferral();
+      return;
+    }
+    const message = buildReferralShareMessage(referralLink);
+    const url = buildWhatsAppUrl(null, message);
+    openBrowserLink(url);
   };
 
   const isCompact = variant === "compact";
@@ -54,14 +64,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
           )}
         </Button>
         <Button
-          onClick={() => {
-            if (referralLink) {
-              const shareText = encodeURIComponent(`Use meu link para se cadastrar no Van360 e ganhe desconto na assinatura! ${referralLink}`);
-              openBrowserLink(`https://api.whatsapp.com/send?text=${shareText}`);
-            } else {
-              handleCopyReferral();
-            }
-          }}
+          onClick={handleShareWhatsApp}
           className={cn(
             "flex-1 rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-10 text-[10px] lg:text-[11px] whitespace-nowrap px-1 cursor-pointer active:scale-95",
             darkTheme
@@ -102,14 +105,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
       </div>
 
       <Button
-        onClick={() => {
-          if (referralLink) {
-            const shareText = encodeURIComponent(`Use meu link para se cadastrar no Van360 e ganhe desconto na assinatura! ${referralLink}`);
-            openBrowserLink(`https://api.whatsapp.com/send?text=${shareText}`);
-          } else {
-            handleCopyReferral();
-          }
-        }}
+        onClick={handleShareWhatsApp}
         className="w-full bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-11 text-[13px] gap-2 cursor-pointer active:scale-95"
       >
         <WhatsAppIcon className="w-4 h-4 shrink-0" />

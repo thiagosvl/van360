@@ -26,7 +26,7 @@ import {
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet, CalendarClock, History } from "lucide-react";
-import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
+import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
 import { memo, useState } from "react";
 import { CobrancaSummary } from "./CobrancaSummary";

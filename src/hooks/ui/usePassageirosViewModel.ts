@@ -18,7 +18,7 @@ import {
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { buildContratoWhatsAppUrl } from "@/utils/evolution";
+import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
@@ -26,7 +26,7 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 import { convertDateBrToISO } from "@/utils/formatters/date";
-import { moneyToNumber, phoneMask } from "@/utils/masks";
+import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -175,9 +175,9 @@ export function usePassageirosViewModel() {
 
   const isSubContaInitializingVeiculo = Boolean(
     isSubConta &&
-      profile?.veiculo_id &&
-      !hasInitializedSubContaVeiculo.current &&
-      !searchParams.has("veiculo")
+    profile?.veiculo_id &&
+    !hasInitializedSubContaVeiculo.current &&
+    !searchParams.has("veiculo")
   );
 
   const {
