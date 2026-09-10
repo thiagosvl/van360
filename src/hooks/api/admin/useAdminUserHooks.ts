@@ -36,14 +36,14 @@ export function useAdminUsersLatestActivity(params?: ListUsersLatestActivityPara
   });
 }
 
-export function useAdminUsers(params?: ListUsersParams) {
-
+export function useAdminUsers(params?: ListUsersParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: KEYS.users(params),
     queryFn: () => adminUserApi.getUsers(params),
     staleTime: 0,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
+    enabled: options?.enabled,
   });
 }
 

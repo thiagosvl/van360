@@ -50,6 +50,7 @@ import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/A
 import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/AdminUserSchoolsTab";
 import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { AdminUserReferralTab } from "@/components/features/admin/user-details/AdminUserReferralTab";
+import { AdminUserQuickSwitcher } from "@/components/features/admin/user-details/AdminUserQuickSwitcher";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
 import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
@@ -579,6 +580,20 @@ export default function AdminUserDetails() {
 
   return (
     <div className="space-y-6 text-left">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
+          className="rounded-xl border-slate-800 bg-[#131b2e] hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold h-10 px-3.5 gap-2 self-start shadow-sm"
+        >
+          <ArrowLeft className="h-4 w-4 text-slate-400" />
+          <span>Voltar para motoristas</span>
+        </Button>
+
+        <AdminUserQuickSwitcher currentUserId={data.user.id} />
+      </div>
+
       {/* HEADER DE TOPO STITCH DESIGN */}
       <div className="p-5 md:p-6 bg-gradient-to-r from-slate-900 via-[#131b2e] to-slate-900 border border-slate-800/80 rounded-[2rem] shadow-2xl space-y-4 relative">
         {/* BOTÃO COPIAR ID NO CANTO SUPERIOR DIREITO (APENAS MOBILE) */}
