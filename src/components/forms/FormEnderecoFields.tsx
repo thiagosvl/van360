@@ -420,7 +420,7 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                   </>
                 )}
               </FormControl>
-              <SelectContent className="max-h-62 overflow-y-auto rounded-2xl shadow-xl border-slate-200">
+              <SelectContent className="rounded-2xl shadow-xl border-slate-200">
                 {ESTADOS_BRASILEIROS.map((estado) => (
                   <SelectItem key={estado.value} value={estado.value}>
                     {estado.label}
