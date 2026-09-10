@@ -205,14 +205,16 @@ const Home = () => {
                   variant="info"
                   icon={<UserPlus className="w-5 h-5" />}
                   title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
-                  description={`Revise ${contadores.passageirosSolicitacoes === 1 ? "o cadastro enviado por um responsável" : "os cadastros enviados pelos responsáveis"} antes de ${contadores.passageirosSolicitacoes === 1 ? "adicioná-lo" : "adicioná-los"} à sua lista de alunos.`}
-                  action={{
-                    label: contadores.passageirosSolicitacoes === 1 ? "Revisar Cadastro" : "Revisar Cadastros",
-                    onClick: () =>
-                      navigateTo(
-                        `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
-                      ),
-                  }}
+                  description={
+                    contadores.passageirosSolicitacoes === 1
+                      ? "Clique para ver e revisar o cadastro agora."
+                      : "Clique para ver e revisar os cadastros agora."
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
+                    )
+                  }
                 />
               </section>
             )}
@@ -234,7 +236,7 @@ const Home = () => {
                 <Banner
                   variant="danger"
                   title={`${formatPrivateNumber(financeiro.countAtrasos)} ${financeiro.countAtrasos === 1 ? "parcela em atraso" : "parcelas em atraso"}`}
-                  description={`Referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}`}
+                  description={`Referente ao mês de ${getMesNome(getNowBR().getMonth() + 1)}. Clique para ver agora.`}
                   onClick={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
               </section>
