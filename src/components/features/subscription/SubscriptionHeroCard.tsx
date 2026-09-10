@@ -225,7 +225,7 @@ export function SubscriptionHeroCard({
                     <Tag className="w-5 h-5 text-[#047857]" />
                   </div>
                   <span className="text-xs font-bold text-[#065f46]">
-                    Desconto de {referral.discountPct}% por indicação ativo!
+                    Você ganhou um bônus de indicação de {referral.discountPct}% na 1ª mensalidade!
                   </span>
                 </div>
               </div>
@@ -256,11 +256,11 @@ export function SubscriptionHeroCard({
                   <Tag className="w-5 h-5 text-[#047857]" />
                 </div>
                 <span className="text-xs sm:text-sm font-bold text-[#065f46]">
-                  Desconto de {referral.discountPct}% por indicação ativo!
+                  Você ganhou um bônus de indicação de {referral.discountPct}% na 1ª mensalidade!
                 </span>
               </div>
               <span className="text-xs font-medium text-[#047857]/80 pr-2">
-                Benefício exclusivo aplicado ao assinar seu plano.
+                O desconto será aplicado automaticamente após você realizar a assinatura do app.
               </span>
             </div>
           </div>
