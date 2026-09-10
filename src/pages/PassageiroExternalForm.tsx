@@ -90,10 +90,10 @@ export default function PassageiroExternalForm() {
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
-                  Cadastro de Aluno
+                  Cadastro do Aluno
                 </h1>
                 <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4 max-w-md">
-                  Preencha as informações abaixo para enviar o cadastro diretamente ao motorista.
+                  Preencha os dados do seu filho(a) com rapidez e segurança. Leva menos de 2 minutinhos e as informações vão direto para o transporte escolar!
                 </p>
               </div>
             </div>
