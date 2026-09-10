@@ -66,6 +66,16 @@ const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
     ],
     category: "SaaS / Financeiro",
   },
+  {
+    id: NotificationEventEnum.MOTORISTA_TRIAL_D14_ULTIMO_AVISO,
+    title: "Último Dia de Teste Grátis (D-14)",
+    description: "Envia o aviso de encerramento do período de teste com os benefícios da plataforma e link direto para assinar.",
+    channels: [
+      { type: "email", label: "E-mail" },
+      { type: "push", label: "Push no Celular" },
+    ],
+    category: "SaaS / Onboarding",
+  },
 ];
 
 function ChannelBadge({ type, label }: { type: NotificationChannelType; label: string }) {
