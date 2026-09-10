@@ -310,6 +310,9 @@ export function useContratosViewModel() {
       return;
     }
 
+    setIsPreviewPdfOpen(true);
+    setPdfUrl(null);
+
     try {
       const result = await previewMutation.mutateAsync({});
 
@@ -319,11 +322,10 @@ export function useContratosViewModel() {
 
       pdfUrlRef.current = result.url;
       setPdfUrl(result.url);
-      setIsPreviewPdfOpen(true);
-    } catch (err) {
-      // Handled by mutation
+    } catch {
+      setIsPreviewPdfOpen(false);
     }
-  }, [isContratoAtivo, previewMutation]);
+  }, [isContratoConfigurado, previewMutation]);
 
   const isActionLoading =
     deleteMutation.isPending ||

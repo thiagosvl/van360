@@ -6,7 +6,7 @@ import { ContratosList } from "@/components/features/contrato/ContratosList";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
 import { Banner } from "@/components/ui/Banner";
 
-import { useContratosViewModel } from "@/hooks";
+import { useContratosViewModel, safeCloseDialog } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
@@ -133,7 +133,8 @@ const Contratos = () => {
 
       <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
-        onClose={() => setIsPreviewPdfOpen(false)}
+        isLoading={isPreviewLoading}
+        onClose={() => safeCloseDialog(() => setIsPreviewPdfOpen(false))}
         pdfUrl={pdfUrl}
         title="Prévia do Contrato"
       />

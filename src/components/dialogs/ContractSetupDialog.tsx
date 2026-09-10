@@ -1,6 +1,7 @@
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { SignaturePad, SignaturePadRef } from "@/components/common/SignaturePad";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
@@ -836,12 +838,12 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         </p>
       </div>
       <SignaturePad ref={sigPad} initialValue={signatureTemp} onChange={setSignatureTemp} />
-      <div className="bg-amber-50 rounded-3xl p-4 border border-amber-100 flex gap-3 mx-2">
-        <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-        <p className="text-[10px] text-amber-700 leading-relaxed font-medium">
-          <strong>Atenção:</strong> Esta assinatura tem validade jurídica. Certifique-se de que ela esteja legível e represente sua assinatura oficial.
-        </p>
-      </div>
+      <Banner
+        variant="warning"
+        title="Atenção"
+        description="Esta assinatura tem validade jurídica. Certifique-se de que esteja legível e represente sua assinatura oficial."
+        className="mx-1"
+      />
     </div>
   );
 
@@ -886,6 +888,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-lg font-bold uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98]"
           disabled={previewMutation.isPending}
           onClick={async () => {
+            setIsPreviewPdfOpen(true);
+            setPdfUrl(null);
             try {
               const result = await previewMutation.mutateAsync({
                 secoes: cleanSecoesDTO,
@@ -898,8 +902,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               if (pdfUrlRef.current) window.URL.revokeObjectURL(pdfUrlRef.current);
               pdfUrlRef.current = result.url;
               setPdfUrl(result.url);
-              setIsPreviewPdfOpen(true);
-            } catch (err) { }
+            } catch {
+              setIsPreviewPdfOpen(false);
+            }
           }}
         >
           {previewMutation.isPending ? (
@@ -909,12 +914,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           )}
           Visualizar Modelo
         </Button>
-        <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-blue-800 leading-relaxed italic">
-            Ao confirmar, os contratos passarão a ser gerados seguindo as configurações definidas acima.
-          </p>
-        </div>
+        <Banner
+          variant="info"
+          description="Ao confirmar, os contratos passarão a ser gerados seguindo as configurações definidas acima."
+        />
       </div>
     </div>
   );
@@ -989,7 +992,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       </BaseDialog>
       <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
-        onClose={() => setIsPreviewPdfOpen(false)}
+        isLoading={previewMutation.isPending}
+        onClose={() => safeCloseDialog(() => setIsPreviewPdfOpen(false))}
         pdfUrl={pdfUrl}
         title="Modelo do Contrato"
       />

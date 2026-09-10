@@ -59,6 +59,7 @@ import { formatarChavePix } from "@/utils/formatters/pix";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,6 +189,8 @@ export default function AdminUserDetails() {
 
   const handleOpenMinutaPreview = async () => {
     if (!data?.user) return;
+    setIsPreviewPdfOpen(true);
+    setPreviewPdfUrl(null);
     try {
       const config = data.user.config_contrato as Record<string, any> | null;
       const result = await previewContrato.mutateAsync({
@@ -200,8 +203,8 @@ export default function AdminUserDetails() {
         assinaturaCondutorUrl: data.user.assinatura_digital_url,
       });
       setPreviewPdfUrl(result.url);
-      setIsPreviewPdfOpen(true);
     } catch (error) {
+      setIsPreviewPdfOpen(false);
       console.error("Erro ao gerar prévia da minuta", error);
     }
   };
@@ -2255,7 +2258,8 @@ export default function AdminUserDetails() {
       {/* DIÁLOGO DE PRÉVIA DA MINUTA DO CONTRATO */}
       <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
-        onClose={() => setIsPreviewPdfOpen(false)}
+        isLoading={previewContrato.isPending}
+        onClose={() => safeCloseDialog(() => setIsPreviewPdfOpen(false))}
         pdfUrl={previewPdfUrl}
         title={`Minuta do Contrato — ${data.user.nome}`}
         fileName={`minuta_contrato_${data.user.nome.toLowerCase().replace(/[^a-z0-9]/g, "_")}.pdf`}

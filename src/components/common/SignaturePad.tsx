@@ -24,10 +24,8 @@ interface SignaturePadProps {
   penColor?: string;
 }
 
-/**
- * Componente unificado para captura de assinaturas digitais.
- * Resolve problemas de offset em diferentes DPIs e garante consistência visual.
- */
+const SIGNATURE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' fill='%231a3a5c' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='m15 5 4 4' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 2 22, crosshair`;
+
 const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
   ({ onChange, initialValue, className, penColor = "#1a3a5c" }, ref) => {
     const sigCanvasRef = useRef<SignatureCanvas>(null);
@@ -100,12 +98,12 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
     return (
       <div className={cn("space-y-4", className)}>
         <div className="relative group">
-          {/* Sombra de fundo inspirada no modelo do motorista */}
           <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-100 rounded-[2.2rem] blur opacity-40 group-hover:opacity-60 transition-opacity" />
 
           <div
             ref={containerRef}
-            className="relative border-4 border-white rounded-[2.1rem] bg-slate-50/50 overflow-hidden shadow-inner h-52 transition-all cursor-crosshair"
+            style={{ cursor: SIGNATURE_CURSOR }}
+            className="relative border-4 border-white rounded-[2.1rem] bg-slate-50/50 overflow-hidden shadow-inner h-52 transition-all"
           >
             <SignatureCanvas
               ref={sigCanvasRef}
@@ -115,11 +113,11 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
               onEnd={handleEnd}
               canvasProps={{
                 className: "w-full h-full",
+                style: { cursor: SIGNATURE_CURSOR },
               }}
               backgroundColor="transparent"
             />
 
-            {/* Selo flutuante de instrução */}
             <div className="absolute top-4 right-4 pointer-events-none">
               <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-slate-100 shadow-sm">
                 <PenTool className="w-3 h-3 text-[#1a3a5c] opacity-60" />

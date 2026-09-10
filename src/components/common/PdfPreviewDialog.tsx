@@ -1,5 +1,6 @@
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { Button } from "@/components/ui/button";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
 import { isNativeApp } from "@/utils/detectPlatform";
 import {
@@ -25,6 +26,7 @@ interface PdfPreviewDialogProps {
   fileName?: string;
   showDownload?: boolean;
   variant?: "default" | "admin";
+  isLoading?: boolean;
 }
 
 export function PdfPreviewDialog({
@@ -35,6 +37,7 @@ export function PdfPreviewDialog({
   fileName,
   showDownload = false,
   variant = "default",
+  isLoading = false,
 }: PdfPreviewDialogProps) {
   const isDark = variant === "admin";
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -97,10 +100,18 @@ export function PdfPreviewDialog({
   const baseWidth = Math.min(window.innerWidth - 48, 720);
   const pageWidth = Math.round(baseWidth * scale);
 
+  const handleClose = () => {
+    safeCloseDialog(onClose);
+  };
+
   return (
     <AdminBaseDialog
       open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={(open) => {
+        if (!open) {
+          handleClose();
+        }
+      }}
       maxWidth="5xl"
       description="Visualização do modelo do contrato em PDF"
       variant={variant}
@@ -108,7 +119,7 @@ export function PdfPreviewDialog({
       <AdminBaseDialog.Header
         title={title}
         icon={<FileText className={cn("h-5 w-5", isDark ? "text-blue-400" : "text-blue-600")} />}
-        onClose={onClose}
+        onClose={handleClose}
         variant={variant}
       />
 
@@ -136,7 +147,7 @@ export function PdfPreviewDialog({
             variant="ghost"
             size="icon"
             onClick={handleZoomOut}
-            disabled={scale <= 0.5}
+            disabled={isLoading || scale <= 0.5}
             className={cn(
               "h-8 w-8 rounded-lg disabled:opacity-30 transition-colors",
               isDark
@@ -148,7 +159,6 @@ export function PdfPreviewDialog({
             <Minus className="h-4 w-4" />
           </Button>
 
-          {/* Indicador Numérico Discreto */}
           <span
             className={cn(
               "px-3 text-xs font-bold font-mono tracking-wider select-none min-w-[52px] text-center",
@@ -163,7 +173,7 @@ export function PdfPreviewDialog({
             variant="ghost"
             size="icon"
             onClick={handleZoomIn}
-            disabled={scale >= 3.0}
+            disabled={isLoading || scale >= 3.0}
             className={cn(
               "h-8 w-8 rounded-lg disabled:opacity-30 transition-colors",
               isDark
@@ -177,7 +187,7 @@ export function PdfPreviewDialog({
         </div>
 
         <div className="w-10 sm:w-28 flex justify-end">
-          {showDownload && !isNativeApp() && pdfUrl && (
+          {showDownload && !isNativeApp() && !isLoading && pdfUrl && (
             <Button
               type="button"
               variant="ghost"
@@ -198,7 +208,6 @@ export function PdfPreviewDialog({
         </div>
       </div>
 
-      {/* Área do Documento com Scroll e Pan por Arraste */}
       <AdminBaseDialog.Body
         className={cn(
           "p-0 flex flex-col overflow-hidden relative",
@@ -221,26 +230,28 @@ export function PdfPreviewDialog({
           )}
         >
           <div className="w-max mx-auto flex flex-col items-center py-2 min-h-full">
-            {pdfUrl ? (
+            {(isLoading || !pdfUrl || !numPages) && (
+              <div className="py-24 flex flex-col items-center justify-center gap-3 select-none">
+                <Loader2 className={cn("h-8 w-8 animate-spin", isDark ? "text-blue-400" : "text-blue-600")} />
+                <p
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-widest animate-pulse",
+                    isDark ? "text-slate-400" : "text-slate-500"
+                  )}
+                >
+                  Carregando documento...
+                </p>
+              </div>
+            )}
+
+            {!isLoading && pdfUrl && (
               <Document
                 file={pdfUrl}
                 onLoadSuccess={onDocumentLoadSuccess}
-                loading={
-                  <div className="py-24 flex flex-col items-center gap-3">
-                    <Loader2 className={cn("h-8 w-8 animate-spin", isDark ? "text-blue-400" : "text-blue-600")} />
-                    <p
-                      className={cn(
-                        "text-[10px] font-black uppercase tracking-widest animate-pulse",
-                        isDark ? "text-slate-400" : "text-slate-500"
-                      )}
-                    >
-                      Carregando documento...
-                    </p>
-                  </div>
-                }
-                className="flex flex-col items-center"
+                loading={null}
+                className={cn("flex flex-col items-center", !numPages && "hidden")}
               >
-                {Array.from(new Array(numPages), (_, index) => (
+                {Array.from(new Array(numPages || 0), (_, index) => (
                   <div
                     key={`prev_page_${index + 1}`}
                     className={cn(
@@ -255,14 +266,11 @@ export function PdfPreviewDialog({
                       renderTextLayer={false}
                       renderAnnotationLayer={false}
                       width={pageWidth}
+                      loading={null}
                     />
                   </div>
                 ))}
               </Document>
-            ) : (
-              <div className="py-20 text-slate-500 font-bold uppercase tracking-widest text-[10px] italic">
-                Nenhum documento disponível para visualização
-              </div>
             )}
           </div>
         </div>
