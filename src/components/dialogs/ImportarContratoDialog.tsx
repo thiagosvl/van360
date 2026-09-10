@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Banner } from "@/components/ui/Banner";
+import { useDebounce } from "@/hooks/ui/useDebounce";
 import { usePassageiro } from "@/hooks/api/usePassageiro";
 import { usePassageiros } from "@/hooks/api/usePassageiros";
 import { useImportarContrato } from "@/hooks/api/useContratos";
@@ -33,10 +35,12 @@ export function ImportarContratoDialog({
 }: ImportarContratoDialogProps) {
   const { user } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   const initialPassageiroId = passageiroId || passageiro?.id || "";
   const [selectedPassageiroId, setSelectedPassageiroId] = useState<string>(initialPassageiroId);
   const [searchPassageiro, setSearchPassageiro] = useState("");
+  const debouncedSearch = useDebounce(searchPassageiro, 300);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [base64Content, setBase64Content] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -66,8 +70,8 @@ export function ImportarContratoDialog({
   }, [passageirosResponse]);
 
   const filteredPassageiros = useMemo(() => {
-    if (!searchPassageiro.trim()) return passageirosList;
-    const term = searchPassageiro.toLowerCase();
+    const term = debouncedSearch.trim().toLowerCase();
+    if (!term) return [];
     return passageirosList.filter((p) => {
       const nomeMatch = p.nome?.toLowerCase().includes(term);
       const respMatch = (p.responsavel_principal?.nome || p.responsaveis?.[0]?.nome || "")
@@ -76,7 +80,7 @@ export function ImportarContratoDialog({
       const escolaMatch = (p.escola?.nome || p.escola_nome || "").toLowerCase().includes(term);
       return nomeMatch || respMatch || escolaMatch;
     });
-  }, [passageirosList, searchPassageiro]);
+  }, [passageirosList, debouncedSearch]);
 
   const currentSelectedPassageiro = useMemo(() => {
     if (isFixedPassageiro) return fixedPassageiro;
@@ -93,6 +97,18 @@ export function ImportarContratoDialog({
       setBase64Content(null);
     }
   }, [isOpen, passageiroId, passageiro?.id]);
+
+  useEffect(() => {
+    if (selectedPassageiroId && !isFixedPassageiro) {
+      const timer = setTimeout(() => {
+        uploadSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedPassageiroId, isFixedPassageiro]);
 
   const handleFileProcess = (file: File) => {
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -191,15 +207,21 @@ export function ImportarContratoDialog({
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose} maxWidth="md" lockClose>
       <BaseDialog.Header
-        title="Importar Contrato"
+        title="Importar Contrato Assinado"
         icon={<FileText className="w-5 h-5 text-[#1a3a5c]" />}
         onClose={onClose}
       />
 
       <BaseDialog.Body className="space-y-5 py-2">
+        <Banner
+          variant="info"
+          description="Anexe o contrato já assinado em papel ou PDF para arquivar na carteirinha do aluno."
+          className="mb-1"
+        />
+
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-            Aluno <span className="text-red-500">*</span>
+            Aluno deste Contrato <span className="text-red-500">*</span>
           </label>
 
           {isFixedPassageiro || currentSelectedPassageiro ? (
@@ -224,7 +246,11 @@ export function ImportarContratoDialog({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setSelectedPassageiroId("")}
+                  onClick={() => {
+                    setSelectedPassageiroId("");
+                    setSelectedFile(null);
+                    setBase64Content(null);
+                  }}
                   className="h-8 px-3 text-xs font-bold text-[#1a3a5c] hover:bg-slate-100 rounded-xl shrink-0 border border-slate-200 bg-white shadow-2xs cursor-pointer"
                 >
                   Trocar
@@ -239,6 +265,7 @@ export function ImportarContratoDialog({
                   value={searchPassageiro}
                   onChange={(e) => setSearchPassageiro(e.target.value)}
                   className="h-10 text-xs rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] pl-9 pr-8"
+                  autoFocus
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 {searchPassageiro && (
@@ -257,9 +284,13 @@ export function ImportarContratoDialog({
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span className="text-xs font-medium">Carregando alunos...</span>
                 </div>
+              ) : !debouncedSearch.trim() ? (
+                <div className="py-6 text-center text-xs text-slate-400 font-medium bg-slate-50/40 rounded-xl border border-dashed border-slate-200/80 px-4">
+                  Digite acima o nome do aluno ou responsável para buscar
+                </div>
               ) : filteredPassageiros.length === 0 ? (
                 <div className="py-6 text-center text-xs text-slate-400 font-medium bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                  Nenhum aluno encontrado
+                  Nenhum aluno sem contrato encontrado para "{debouncedSearch}"
                 </div>
               ) : (
                 <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin border border-slate-100 rounded-xl p-1 bg-slate-50/30">
@@ -270,7 +301,10 @@ export function ImportarContratoDialog({
                       <button
                         key={p.id}
                         type="button"
-                        onClick={() => setSelectedPassageiroId(p.id)}
+                        onClick={() => {
+                          setSelectedPassageiroId(p.id);
+                          setSearchPassageiro("");
+                        }}
                         className="w-full bg-white hover:bg-blue-50/50 active:bg-blue-50 border border-slate-100 hover:border-blue-200/60 p-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all text-left group cursor-pointer"
                       >
                         <div className="min-w-0 flex-1">
@@ -295,83 +329,90 @@ export function ImportarContratoDialog({
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-            Arquivo do Contrato <span className="text-red-500">*</span>
-          </label>
+        {(isFixedPassageiro || currentSelectedPassageiro) && (
+          <div ref={uploadSectionRef} className="space-y-1.5 pt-1 animate-in fade-in-50 duration-200">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+              Documento Assinado (PDF) <span className="text-red-500">*</span>
+            </label>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            onChange={handleInputChange}
-            className="hidden"
-          />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={handleInputChange}
+              className="hidden"
+            />
 
-          {!selectedFile ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={cn(
-                "border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 gap-2.5",
-                isDragging
-                  ? "border-[#1a3a5c] bg-blue-50/50 scale-[1.01]"
-                  : "border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-slate-50"
-              )}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-[#1a3a5c]">
-                <UploadCloud className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-700">
-                  Clique ou arraste o arquivo PDF aqui
-                </p>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  Apenas formato PDF (máximo 10MB)
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 p-4 bg-emerald-50/40 rounded-2xl border border-emerald-200/80 transition-all animate-in fade-in-50 duration-200">
-              <div className="w-11 h-11 rounded-xl bg-red-100/80 text-red-600 flex items-center justify-center shrink-0 border border-red-200/40 shadow-xs">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-slate-800 truncate" title={selectedFile.name}>
-                  {selectedFile.name}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    {formatFileSize(selectedFile.size)}
-                  </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                    PDF Pronto
-                  </span>
+            {!selectedFile ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={cn(
+                  "border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 gap-2.5",
+                  isDragging
+                    ? "border-[#1a3a5c] bg-blue-50/50 scale-[1.01]"
+                    : "border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-slate-50"
+                )}
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-[#1a3a5c]">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-700">
+                    Clique ou arraste o PDF do contrato assinado aqui
+                  </p>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5">
+                    Apenas documento assinado em formato PDF (máximo 10MB)
+                  </p>
+                  <p className="text-[11px] text-slate-400 font-medium mt-1">
+                    Dica: Se tirou fotos das folhas de papel, salve-as como PDF no celular antes de anexar.
+                  </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={handleRemoveFile}
-                className="w-8 h-8 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"
-                title="Remover arquivo"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 bg-emerald-50/40 rounded-2xl border border-emerald-200/80 transition-all animate-in fade-in-50 duration-200">
+                <div className="w-11 h-11 rounded-xl bg-red-100/80 text-red-600 flex items-center justify-center shrink-0 border border-red-200/40 shadow-xs">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-slate-800 truncate" title={selectedFile.name}>
+                    {selectedFile.name}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      {formatFileSize(selectedFile.size)}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      PDF Pronto
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveFile}
+                  className="w-8 h-8 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"
+                  title="Remover arquivo"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </BaseDialog.Body>
 
       <BaseDialog.Footer>
         <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} />
-        <BaseDialog.Action
-          label="Salvar"
-          onClick={handleSubmit}
-          disabled={!isFormValid || importarMutation.isPending}
-          isLoading={importarMutation.isPending}
-        />
+        {(isFixedPassageiro || currentSelectedPassageiro) && (
+          <BaseDialog.Action
+            label="Importar"
+            onClick={handleSubmit}
+            disabled={!isFormValid || importarMutation.isPending}
+            isLoading={importarMutation.isPending}
+          />
+        )}
       </BaseDialog.Footer>
     </BaseDialog>
   );

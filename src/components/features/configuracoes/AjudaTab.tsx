@@ -117,9 +117,9 @@ const FAQS_DATA: FaqItemData[] = [
   {
     id: "importar-contrato-existente",
     category: "contratos",
-    question: "Posso importar contratos que já tenho em papel ou PDF?",
+    question: "Posso importar contratos que já tenho assinados no papel ou em PDF?",
     answer:
-      "Sim! Na aba Contratos, clique no botão 'Importar Contrato'. Você pode anexar o documento já assinado ou preencher os dados para vincular o contrato diretamente ao cadastro do aluno, mantendo todo o seu histórico centralizado no app.",
+      "Sim! Se você já possui um contrato assinado pelo responsável que esteja em PDF, basta ir em Contratos e clicar em 'Importar Contrato Assinado'. O documento digitalizado ficará arquivado na carteirinha do aluno como um contrato assinado e válido. Atenção: essa opção não serve para cadastrar modelos em branco; para personalizar as cláusulas e o modelo padrão da sua van, acesse 'Configurar Modelo de Contrato'.",
   },
 
   // GPS & Mapa

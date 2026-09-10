@@ -130,7 +130,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
             </p>
             {isImportado && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 shrink-0 border border-blue-100/60">
-                IMPORTADO
+                ASSINADO (IMPORTADO)
               </span>
             )}
           </div>
@@ -256,7 +256,7 @@ export const ContratosList = memo(function ContratosList({
                           </p>
                           {isImportado && (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                              PDF Importado
+                              Assinado (Importado)
                             </span>
                           )}
                         </div>

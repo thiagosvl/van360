@@ -74,7 +74,7 @@ export const CarteirinhaContrato = ({
       return {
         title: isImportado ? "Contrato Importado" : "Contrato Assinado",
         desc: isImportado
-          ? "Documento em PDF importado e arquivado"
+          ? "Documento assinado em papel/PDF anexado à carteirinha do aluno"
           : "Documento oficial assinado eletronicamente",
         color: "bg-slate-50/80 border-slate-100/80 hover:bg-slate-100/50 hover:border-slate-200/80",
         iconColor: isImportado
@@ -213,7 +213,7 @@ export const CarteirinhaContrato = ({
               className="flex items-center justify-center gap-1.5 w-full py-2 px-4 rounded-lg text-[12px] font-bold text-slate-700 bg-white border border-slate-200/80 hover:bg-slate-50 transition-all duration-200 shadow-xs active:scale-[0.99] shrink-0 cursor-pointer"
             >
               <UploadCloud className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-              <span>Importar Contrato</span>
+              <span>Importar Contrato Assinado (PDF)</span>
             </button>
           )}
 

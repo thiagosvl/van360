@@ -123,10 +123,11 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               <Button
                 type="button"
                 onClick={onImportarContrato}
+                title="Vincular contrato já assinado ao cadastro de um aluno"
                 className="hidden sm:inline-flex h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
               >
                 <UploadCloud className="w-4 h-4" />
-                <span>Importar Contrato</span>
+                <span>Importar Contrato Assinado</span>
               </Button>
             )}
 
@@ -150,14 +151,14 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
                   <DropdownMenuItem
                     disabled={isDesativado || isToggling}
                     onClick={onOpenConfig}
                     className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
                   >
                     <FileText className="w-4 h-4 opacity-70" />
-                    Configurar Contrato
+                    Configurar Modelo de Contrato
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
@@ -234,7 +235,8 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                           </div>
                         </div>
                         <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Configurar Contrato</span>
+                          <span className="font-bold text-sm tracking-tight truncate">Configurar Modelo de Contrato</span>
+                          <span className="text-[11px] text-slate-400 font-medium truncate">Cláusulas e regras padrão da sua van</span>
                         </div>
                       </button>
 
@@ -258,7 +260,8 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                             </div>
                           </div>
                           <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                            <span className="font-bold text-sm tracking-tight truncate">Importar Contrato</span>
+                            <span className="font-bold text-sm tracking-tight truncate">Importar Contrato Assinado</span>
+                            <span className="text-[11px] text-slate-400 font-medium truncate">Vincular documento assinado a um aluno</span>
                           </div>
                         </button>
                       )}

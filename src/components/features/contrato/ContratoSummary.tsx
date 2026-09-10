@@ -27,7 +27,7 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
   const isImportado = item.provider === ContratoProvider.IMPORTADO;
   const statusLabel = isImportado
-    ? "PDF Importado"
+    ? "Assinado (Importado)"
     : isSemContrato && isMissingResponsible
       ? "Cadastro Incompleto"
       : isSemContrato

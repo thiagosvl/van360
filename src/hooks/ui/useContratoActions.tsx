@@ -100,7 +100,7 @@ export function useContratoActions({
 
     if (onImportarContrato && !hasContract) {
       list.push({
-        label: 'Importar Contrato',
+        label: 'Importar Contrato Assinado',
         icon: <UploadCloud className="h-4 w-4" />,
         onClick: () => {
           const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
