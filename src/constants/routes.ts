@@ -26,6 +26,7 @@ export const ROUTES = {
       CALCULATOR: "/admin/calculadora",
       LOGIN_ATTEMPTS: "/admin/tentativas-login",
       ACTIVITY_HISTORY: "/admin/atividades",
+      USERS_RADAR: "/admin/radar",
       NOTIFICATIONS: "/admin/notificacoes",
       EVOLUTION_INSTANCES: "/admin/evolution",
       BLOG: "/admin/blog",

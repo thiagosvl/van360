@@ -3,8 +3,7 @@ import { useAdminVencimentosPorDia } from "@/hooks/api/admin/useAdminVencimentos
 
 export function useAdminVencimentosViewModel() {
   const { data, isLoading, isError, refetch } = useAdminVencimentosPorDia();
-  const [somenteComVencimento, setSomenteComVencimento] = useState(false);
-  const [buscaDia, setBuscaDia] = useState("");
+  const [somenteComVencimento, setSomenteComVencimento] = useState(true);
 
   const diasFiltrados = useMemo(() => {
     if (!data?.dias) return [];
@@ -15,13 +14,8 @@ export function useAdminVencimentosViewModel() {
       lista = lista.filter((item) => item.quantidade > 0 || item.isHoje);
     }
 
-    if (buscaDia.trim()) {
-      const termo = buscaDia.trim();
-      lista = lista.filter((item) => item.dia.toString().includes(termo));
-    }
-
     return lista;
-  }, [data?.dias, somenteComVencimento, buscaDia]);
+  }, [data?.dias, somenteComVencimento]);
 
   return {
     isLoading,
@@ -29,8 +23,6 @@ export function useAdminVencimentosViewModel() {
     refetch,
     somenteComVencimento,
     setSomenteComVencimento,
-    buscaDia,
-    setBuscaDia,
     dias: diasFiltrados,
     totalPassageiros: data?.totalPassageirosAtivosComVencimento ?? 0,
     vencimentosHoje: data?.vencimentosHoje ?? 0,

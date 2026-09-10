@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity, useAdminVencimentosPorDia } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity, useAdminUsersRadarStats } from "@/hooks/api/adminHooks";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { AdminVencimentosTabela } from "@/components/features/admin/AdminVencimentosTabela";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { openBrowserLink } from "@/utils/browser";
 import {
   Users,
   DollarSign,
@@ -38,6 +40,8 @@ import {
   UserPlus,
   Gift,
   Calendar,
+  AlertTriangle,
+  ArrowRight,
 } from "lucide-react";
 import {
   Card,
@@ -104,19 +108,14 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
-  const { data: vencimentosData } = useAdminVencimentosPorDia();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
-  const [radarSort, setRadarSort] = useState<"inactive_first" | "recent_first">("recent_first");
-  const [radarSearch, setRadarSearch] = useState("");
-  const [radarPage, setRadarPage] = useState(1);
-
-  const { data: radarData, isLoading: isLoadingRadar } = useAdminUsersLatestActivity({
-    sort: radarSort,
-    search: radarSearch.trim() || undefined,
-    page: radarPage,
-    limit: 6,
+  const { data: radarStats, isLoading: isLoadingRadarStats } = useAdminUsersRadarStats("active_trial");
+  const { data: topRiskData, isLoading: isLoadingTopRisk } = useAdminUsersLatestActivity({
+    sort: "inactive_first",
+    page: 1,
+    limit: 3,
   });
 
 
@@ -354,39 +353,6 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {vencimentosData && (
-            <div
-              onClick={() => handleTabChange("operacional")}
-              className="p-4 rounded-[1.5rem] bg-gradient-to-r from-blue-950/40 via-[#131b2e] to-[#131b2e] border border-blue-500/20 hover:border-blue-500/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer shadow-lg shadow-blue-500/5"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                  <Calendar className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">
-                      Vencimentos de Hoje (Dia {vencimentosData.diaAtual})
-                    </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500 text-white">
-                      {vencimentosData.vencimentosHoje} {vencimentosData.vencimentosHoje === 1 ? "aluno" : "alunos"}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-slate-300 mt-0.5">
-                    Total de {vencimentosData.totalPassageirosAtivosComVencimento} passageiros ativos distribuídos no mês. Clique para ver a tabela completa de vencimentos por dia.
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs font-bold text-blue-400 hover:text-white hover:bg-blue-600/20 rounded-xl h-8 px-3 shrink-0 self-end sm:self-center"
-              >
-                Ver Tabela Completa →
-              </Button>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
             <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] flex flex-col justify-between">
               <div>
@@ -529,171 +495,228 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-2">
                     <Radio className="h-4 w-4 text-emerald-400 animate-pulse" />
                     <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                      RADAR DE USUÁRIOS
+                      RADAR DE ENGAJAMENTO
                     </CardTitle>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                      Saúde da Base
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={radarSort}
-                      onValueChange={(val: "inactive_first" | "recent_first") => {
-                        setRadarSort(val);
-                        setRadarPage(1);
-                      }}
-                    >
-                      <SelectTrigger className="h-7 text-[10px] font-bold uppercase tracking-wider rounded-xl bg-slate-900 border-slate-800 text-slate-300 w-[135px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                        <SelectItem value="inactive_first">Mais Inativos</SelectItem>
-                        <SelectItem value="recent_first">Mais Recentes</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
-                      className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
-                    >
-                      Ver Todos
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS_RADAR)}
+                    className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Abrir Radar Completo</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
                 </CardHeader>
 
-                <CardContent className="p-6 pt-4 space-y-3">
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="Buscar por nome ou telefone..."
-                      value={radarSearch}
-                      onChange={(e) => {
-                        setRadarSearch(e.target.value);
-                        setRadarPage(1);
-                      }}
-                      className="h-8 text-xs rounded-xl bg-slate-900/90 border-slate-800 text-slate-200 placeholder:text-slate-500 focus-visible:ring-blue-500"
-                    />
-                  </div>
-
-                  {isLoadingRadar ? (
+                <CardContent className="p-6 pt-4 space-y-4">
+                  {isLoadingRadarStats ? (
                     <div className="flex justify-center py-12">
                       <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
                     </div>
-                  ) : !radarData || radarData.data.length === 0 ? (
-                    <AdminEmptyState
-                      icon={Users}
-                      title="Nenhum motorista encontrado"
-                      description="Nenhum registro corresponde aos critérios de busca."
-                    />
                   ) : (
-                    <div className="space-y-3">
-                      {radarData.data.map((item) => {
-                        const hasActivity = !!item.ultima_atividade_at;
-                        let badgeBg = "bg-slate-800 text-slate-400 border-slate-700";
-                        let badgeText = `Sem atividade (${item.dias_inativo}d)`;
-
-                        if (hasActivity) {
-                          if (item.dias_inativo <= 2) {
-                            badgeBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-                            badgeText = `Ativo • ${formatRelativeTime(item.ultima_atividade_at!)}`;
-                          } else if (item.dias_inativo <= 7) {
-                            badgeBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
-                            badgeText = `Alerta • ${item.dias_inativo}d sem uso`;
-                          } else {
-                            badgeBg = "bg-rose-500/15 text-rose-400 border-rose-500/30";
-                            badgeText = `Em Risco • ${item.dias_inativo}d sem uso`;
-                          }
-                        }
-
-                        return (
-                          <div
-                            key={item.id}
-                            className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col gap-2 transition-colors hover:bg-slate-900/90"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="space-y-0.5 min-w-0 flex-1 text-left">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <Link
-                                    to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.id}`}
-                                    className="text-xs font-bold text-white hover:text-blue-400 hover:underline transition-colors break-words"
-                                  >
-                                    {item.nome}
-                                  </Link>
-                                  {item.apelido && (
-                                    <span className="text-[10px] text-slate-400 font-medium">
-                                      ({item.apelido})
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-                                  <span>{phoneMask(item.telefone)}</span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                                <SubscriptionStatusBadge
-                                  status={item.assinatura_status}
-                                  dataVencimento={item.assinatura_vencimento}
-                                  className="text-[9px] px-2 py-0.5"
-                                />
-                                <span
-                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${badgeBg}`}
-                                >
-                                  {badgeText}
-                                </span>
-                              </div>
-                            </div>
-
-                            {hasActivity ? (
-                              <div className="pt-2 border-t border-slate-800/60 text-left space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-950 text-blue-400 border border-slate-800">
-                                    {item.ultima_acao?.replace(/_/g, " ")}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-slate-300 leading-snug break-words">
-                                  {item.ultima_descricao}
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="pt-2 border-t border-slate-800/60 text-left">
-                                <p className="text-xs text-slate-500 italic">
-                                  Nenhuma ação registrada desde o cadastro em {formatDateBR(item.cadastrado_em)}.
-                                </p>
-                              </div>
-                            )}
+                    <>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="p-3 rounded-xl bg-slate-900/90 border border-emerald-500/30 flex flex-col justify-between text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Ativos Recentes</span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                          <div className="mt-2 flex items-baseline justify-between">
+                            <span className="text-xl font-headline font-black text-white">{radarStats?.totalAtivos ?? 0}</span>
+                            <span className="text-xs font-bold font-mono text-emerald-400">
+                              {radarStats && radarStats.totalMotoristas > 0
+                                ? Math.round((radarStats.totalAtivos / radarStats.totalMotoristas) * 100)
+                                : 0}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">Uso nos últimos 2 dias</span>
+                        </div>
 
-                  {radarData && radarData.total > 6 && (
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
-                      <span className="text-[11px] font-semibold text-slate-400">
-                        Página {radarData.page} de {Math.ceil(radarData.total / radarData.limit)} ({radarData.total} motoristas)
-                      </span>
-                      <div className="flex gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={radarPage <= 1}
-                          onClick={() => setRadarPage((p) => p - 1)}
-                          className="h-7 px-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 text-[10px] font-bold"
-                        >
-                          Anterior
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={radarPage >= Math.ceil(radarData.total / radarData.limit)}
-                          onClick={() => setRadarPage((p) => p + 1)}
-                          className="h-7 px-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 text-[10px] font-bold"
-                        >
-                          Próxima
-                        </Button>
+                        <div className="p-3 rounded-xl bg-slate-900/90 border border-amber-500/30 flex flex-col justify-between text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Em Alerta</span>
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                          </div>
+                          <div className="mt-2 flex items-baseline justify-between">
+                            <span className="text-xl font-headline font-black text-white">{radarStats?.totalAlerta ?? 0}</span>
+                            <span className="text-xs font-bold font-mono text-amber-400">
+                              {radarStats && radarStats.totalMotoristas > 0
+                                ? Math.round((radarStats.totalAlerta / radarStats.totalMotoristas) * 100)
+                                : 0}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">3 a 7 dias sem uso</span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-slate-900/90 border border-rose-500/30 flex flex-col justify-between text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Em Risco Crítico</span>
+                            <span className="w-2 h-2 rounded-full bg-rose-400" />
+                          </div>
+                          <div className="mt-2 flex items-baseline justify-between">
+                            <span className="text-xl font-headline font-black text-white">{radarStats?.totalEmRisco ?? 0}</span>
+                            <span className="text-xs font-bold font-mono text-rose-400">
+                              {radarStats && radarStats.totalMotoristas > 0
+                                ? Math.round((radarStats.totalEmRisco / radarStats.totalMotoristas) * 100)
+                                : 0}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">Mais de 7 dias sem uso</span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-700/80 flex flex-col justify-between text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sem Atividade</span>
+                            <span className="w-2 h-2 rounded-full bg-slate-500" />
+                          </div>
+                          <div className="mt-2 flex items-baseline justify-between">
+                            <span className="text-xl font-headline font-black text-white">{radarStats?.totalSemAtividade ?? 0}</span>
+                            <span className="text-xs font-bold font-mono text-slate-400">
+                              {radarStats && radarStats.totalMotoristas > 0
+                                ? Math.round((radarStats.totalSemAtividade / radarStats.totalMotoristas) * 100)
+                                : 0}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">Nenhuma ação registrada</span>
+                        </div>
                       </div>
-                    </div>
+
+                      {radarStats && radarStats.totalMotoristas > 0 && (
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                            <span>Distribuição de Saúde</span>
+                            <span className="font-mono text-slate-300">{radarStats.totalMotoristas} Motoristas Monitorados</span>
+                          </div>
+                          <div className="h-2.5 w-full bg-slate-900 rounded-full overflow-hidden flex border border-slate-800">
+                            <div
+                              className="bg-emerald-500 transition-all duration-500"
+                              style={{ width: `${(radarStats.totalAtivos / radarStats.totalMotoristas) * 100}%` }}
+                              title={`Ativos: ${radarStats.totalAtivos}`}
+                            />
+                            <div
+                              className="bg-amber-500 transition-all duration-500"
+                              style={{ width: `${(radarStats.totalAlerta / radarStats.totalMotoristas) * 100}%` }}
+                              title={`Em Alerta: ${radarStats.totalAlerta}`}
+                            />
+                            <div
+                              className="bg-rose-500 transition-all duration-500"
+                              style={{ width: `${(radarStats.totalEmRisco / radarStats.totalMotoristas) * 100}%` }}
+                              title={`Em Risco: ${radarStats.totalEmRisco}`}
+                            />
+                            <div
+                              className="bg-slate-600 transition-all duration-500"
+                              style={{ width: `${(radarStats.totalSemAtividade / radarStats.totalMotoristas) * 100}%` }}
+                              title={`Sem Atividade: ${radarStats.totalSemAtividade}`}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="pt-2 space-y-2 text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
+                            <span>Atenção Imediata (Mais Inativos)</span>
+                          </span>
+                        </div>
+
+                        {isLoadingTopRisk ? (
+                          <div className="flex justify-center py-6">
+                            <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                          </div>
+                        ) : !topRiskData || topRiskData.data.length === 0 ? (
+                          <p className="text-xs text-slate-500 text-center py-4 italic">
+                            Nenhum motorista necessita de atenção no momento.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {topRiskData.data.map((item) => {
+                              const cleanPhone = item.telefone?.replace(/\D/g, "");
+                              let badgeBg = "bg-slate-800 text-slate-400 border-slate-700";
+                              let badgeText = `${item.dias_inativo}d sem uso`;
+
+                              if (item.dias_inativo <= 2) {
+                                badgeBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+                                badgeText = `Ativo`;
+                              } else if (item.dias_inativo <= 7) {
+                                badgeBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+                                badgeText = `${item.dias_inativo}d sem uso`;
+                              } else {
+                                badgeBg = "bg-rose-500/15 text-rose-400 border-rose-500/30";
+                                badgeText = `${item.dias_inativo}d sem uso`;
+                              }
+
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-3 hover:bg-slate-900 transition-colors"
+                                >
+                                  <div className="min-w-0 flex-1 space-y-0.5 text-left">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <Link
+                                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.id}`}
+                                        className="text-xs font-bold text-white hover:text-blue-400 hover:underline truncate"
+                                      >
+                                        {item.nome}
+                                      </Link>
+                                    </div>
+                                    <p className="text-[11px] text-slate-400 font-mono truncate">
+                                      {phoneMask(item.telefone)}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${badgeBg}`}>
+                                      {badgeText}
+                                    </span>
+
+                                    {cleanPhone && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => openBrowserLink(`https://wa.me/55${cleanPhone}`)}
+                                        className="h-7 w-7 p-0 rounded-lg border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white"
+                                        title="Chamar no WhatsApp"
+                                      >
+                                        <WhatsAppIcon className="h-3 w-3" />
+                                      </Button>
+                                    )}
+
+                                    <Link to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.id}`}>
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0 rounded-lg bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white"
+                                        title="Ver Carteirinha"
+                                      >
+                                        <Eye className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS_RADAR)}
+                        className="w-full h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
+                      >
+                        <Radio className="h-3.5 w-3.5 animate-pulse" />
+                        <span>Ver Todos os Motoristas no Radar Completo</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
                   )}
                 </CardContent>
               </div>

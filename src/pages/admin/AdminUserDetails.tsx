@@ -2279,11 +2279,11 @@ export default function AdminUserDetails() {
             onClose={() => setIsSignatureModalOpen(false)}
           />
           <AdminBaseDialog.Body>
-            <div className="p-6 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center">
+            <div className="p-6 bg-white rounded-2xl border border-slate-700 flex items-center justify-center">
               <img
                 src={data.user.assinatura_digital_url}
                 alt="Assinatura Digital"
-                className="max-h-48 object-contain filter invert opacity-90"
+                className="max-h-48 object-contain"
               />
             </div>
           </AdminBaseDialog.Body>

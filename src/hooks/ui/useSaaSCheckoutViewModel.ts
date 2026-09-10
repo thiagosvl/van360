@@ -27,6 +27,7 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "sonner";
 
 import { CreditCardData } from "@/components/dialogs/CreditCardForm";
+import { parseLocalDate, getNowBR } from "@/utils/dateUtils";
 
 interface UseSaaSCheckoutViewModelProps {
   plans: SaaSPlan[];
@@ -283,40 +284,44 @@ export function useSaaSCheckoutViewModel({
   let hasOverride = false;
 
   if (subscription?.valor_base_anual !== null && subscription?.valor_base_anual !== undefined) {
-    let finalAnnual = Number(subscription.valor_base_anual);
-    if (subscription.valor_promocional_anual !== null && subscription.valor_promocional_anual !== undefined) {
-      if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
-        finalAnnual = Number(subscription.valor_promocional_anual);
-      }
-    }
-    annualPrice = finalAnnual;
+    annualPrice = Number(subscription.valor_base_anual);
     hasOverride = true;
+  }
+  if (subscription?.valor_promocional_anual !== null && subscription?.valor_promocional_anual !== undefined) {
+    if (!subscription.data_fim_promocao || parseLocalDate(subscription.data_fim_promocao).getTime() >= getNowBR().getTime()) {
+      annualPrice = Number(subscription.valor_promocional_anual);
+      hasOverride = true;
+    }
   }
   
   if (subscription?.valor_base_mensal !== null && subscription?.valor_base_mensal !== undefined) {
-    let finalMonthly = Number(subscription.valor_base_mensal);
-    if (subscription.valor_promocional_mensal !== null && subscription.valor_promocional_mensal !== undefined) {
-      if (!subscription.data_fim_promocao || new Date(subscription.data_fim_promocao) > new Date()) {
-        finalMonthly = Number(subscription.valor_promocional_mensal);
-      }
-    }
-    monthlyPrice = finalMonthly;
+    monthlyPrice = Number(subscription.valor_base_mensal);
     hasOverride = true;
   }
+  if (subscription?.valor_promocional_mensal !== null && subscription?.valor_promocional_mensal !== undefined) {
+    if (!subscription.data_fim_promocao || parseLocalDate(subscription.data_fim_promocao).getTime() >= getNowBR().getTime()) {
+      monthlyPrice = Number(subscription.valor_promocional_mensal);
+      hasOverride = true;
+    }
+  }
+
+  const regularMonthlyPrice = monthlyPrice;
+  const regularAnnualPrice = annualPrice;
 
   const hasActiveDiscountLocal = referral?.hasActiveDiscount;
   const discountPctLocal = referral?.discountPct || 0;
 
   if (hasActiveDiscountLocal && discountPctLocal > 0) {
-    annualPrice = annualPrice * (1 - discountPctLocal / 100);
-    monthlyPrice = monthlyPrice * (1 - discountPctLocal / 100);
+    const discountAmount = regularMonthlyPrice * (discountPctLocal / 100);
+    monthlyPrice = Math.max(0, regularMonthlyPrice - discountAmount);
+    annualPrice = Math.max(0, regularAnnualPrice - discountAmount);
   }
 
   const totalPrice = isAnual ? annualPrice : monthlyPrice;
   const formattedPrice = SubscriptionUtils.formatCurrency(totalPrice);
-  const discountPercent = monthlyPrice > 0 ? Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100) : 0;
-  const totalDiscount = (monthlyPrice * 12) - annualPrice;
-  const freeMonths = monthlyPrice > 0 ? Math.round(totalDiscount / monthlyPrice) : 0;
+  const totalDiscount = (regularMonthlyPrice * 12) - annualPrice;
+  const discountPercent = regularMonthlyPrice > 0 ? Math.round((totalDiscount / (regularMonthlyPrice * 12)) * 100) : 0;
+  const freeMonths = regularMonthlyPrice > 0 ? Math.round(totalDiscount / regularMonthlyPrice) : 0;
 
   return {
     step,

@@ -328,6 +328,7 @@ export interface ListUsersParams {
   limit?: number;
   search?: string;
   status?: string;
+  tipo?: string;
 }
 
 export interface CreateUserPayload {
@@ -374,9 +375,19 @@ export interface MotoristaLatestActivityItem {
 
 export interface ListUsersLatestActivityParams {
   search?: string;
-  sort?: "inactive_first" | "recent_first";
+  sort?: "inactive_first" | "recent_first" | "oldest_first" | "newest_first" | "name_asc";
   page?: number;
   limit?: number;
+  healthStatus?: "all" | "active" | "alert" | "risk" | "inactive";
+  subscriptionStatus?: string;
+}
+
+export interface MotoristasRadarStats {
+  totalMotoristas: number;
+  totalAtivos: number;
+  totalAlerta: number;
+  totalEmRisco: number;
+  totalSemAtividade: number;
 }
 
 export interface MotoristasLatestActivityResponse {
@@ -401,6 +412,64 @@ export interface VencimentosPassageirosResponse {
   dias: VencimentoDiaItem[];
 }
 
+export interface CanaisNotificacaoResumo {
+  waba: number;
+  resend: number;
+  firebase: number;
+  custoEstimadoWabaBrl: number;
+}
+
+export interface CarteiraDiaResumo {
+  dia: number;
+  totalAlunos: number;
+  faturasPagas: number;
+  faturasPendentes: number;
+  valorPrevistoTotal: number;
+  valorPagoTotal: number;
+  valorPendenteTotal: number;
+  canaisDisponiveis: CanaisNotificacaoResumo;
+  diagnostico: {
+    comTelefoneValido: number;
+    comEmailValido: number;
+    semResponsavelPrincipal: number;
+    semContato: number;
+    notificacoesDesativadasMotorista: number;
+    lembretesDesativadosAluno: number;
+  };
+}
+
+export interface ReguaItemResumo {
+  titulo: string;
+  descricao: string;
+  totalFaturas: number;
+  canais: CanaisNotificacaoResumo;
+}
+
+export interface DisparosHojeResumo {
+  totalFaturasHoje: number;
+  totalNotificacoesPrevistas?: number;
+  totalJaEnviadasHoje: number;
+  totalAguardandoEnvioHoje: number;
+  canaisConsolidados: CanaisNotificacaoResumo;
+  reguas: {
+    vencendoHoje: ReguaItemResumo;
+    avisoPrevio: ReguaItemResumo;
+    atraso3Dias: ReguaItemResumo;
+    atraso5Dias: ReguaItemResumo;
+    atraso7Dias: ReguaItemResumo;
+    atrasados?: ReguaItemResumo;
+  };
+}
+
+export interface VencimentoDetalhesResponse {
+  dia: number;
+  isHoje: boolean;
+  mes: number;
+  ano: number;
+  carteira: CarteiraDiaResumo;
+  disparosHoje: DisparosHojeResumo | null;
+}
+
 const BASE = "/admin";
 
 export const adminUserApi = {
@@ -410,11 +479,19 @@ export const adminUserApi = {
   getVencimentosPorDia: () =>
     apiClient.get<VencimentosPassageirosResponse>(`${BASE}/vencimentos-por-dia`).then(r => r.data),
 
+  getVencimentoDetalhes: (dia: number, mes?: number, ano?: number) =>
+    apiClient.get<VencimentoDetalhesResponse>(`${BASE}/vencimentos-por-dia/${dia}/detalhes`, {
+      params: { mes, ano },
+    }).then(r => r.data),
+
   getUsers: (params?: ListUsersParams) =>
     apiClient.get<AdminUserListResponse>(`${BASE}/users`, { params }).then(r => r.data),
 
   getUsersLatestActivity: (params?: ListUsersLatestActivityParams) =>
     apiClient.get<MotoristasLatestActivityResponse>(`${BASE}/users/latest-activity`, { params }).then(r => r.data),
+
+  getUsersRadarStats: (subscriptionStatus: string = "active_trial") =>
+    apiClient.get<MotoristasRadarStats>(`${BASE}/users/latest-activity/stats`, { params: { subscriptionStatus } }).then(r => r.data),
 
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),

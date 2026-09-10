@@ -78,6 +78,7 @@ const AdminSettings = lazyLoad(() => import("./pages/admin/AdminSettings"));
 const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 const AdminLoginAttempts = lazyLoad(() => import("./pages/admin/AdminLoginAttempts"));
 const AdminActivityHistory = lazyLoad(() => import("./pages/admin/AdminActivityHistory"));
+const AdminUsersRadar = lazyLoad(() => import("./pages/admin/AdminUsersRadar"));
 const AdminNotificationsHistory = lazyLoad(() => import("./pages/admin/AdminNotificationsHistory"));
 const AdminEvolutionInstances = lazyLoad(() => import("./pages/admin/AdminEvolutionInstances"));
 const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
@@ -370,6 +371,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.USERS_RADAR} element={<AdminUsersRadar />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.NOTIFICATIONS} element={<AdminNotificationsHistory />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />

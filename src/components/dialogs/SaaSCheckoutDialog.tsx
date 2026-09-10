@@ -272,7 +272,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               <div className="flex items-center gap-2.5 p-3 bg-[#d1fae5] border border-[#a7f3d0] rounded-xl mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
                 <Tag className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
                 <p className="text-[11px] font-bold text-[#065f46]">
-                  Desconto de {discountPct}% de indicação ativo! Aproveite seu benefício.
+                  Desconto de {discountPct}% de indicação ativo na 1ª mensalidade! Aproveite seu benefício.
                 </p>
               </div>
             )}

@@ -173,6 +173,12 @@ export interface OpenAdminPassengerNotificationsDialogProps {
   passageiroNome: string;
 }
 
+export interface OpenAdminVencimentoDetalhesDialogProps {
+  dia: number;
+  mes?: number;
+  ano?: number;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -203,6 +209,7 @@ export interface LayoutContextType {
   openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;
   openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
   openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
+  openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
 
   isFirstChargeDialogOpen: boolean;
 

@@ -8,9 +8,9 @@ import {
   Calculator,
   ShieldAlert,
   Terminal,
-  MessageSquare,
   FileText,
   Bell,
+  Radio,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { isDevEnv } from "@/utils/detectPlatform";
@@ -25,6 +25,11 @@ const adminNavItems = [
     title: "Usuários",
     href: ROUTES.PRIVATE.ADMIN.USERS,
     icon: Users,
+  },
+  {
+    title: "Radar de Usuários",
+    href: ROUTES.PRIVATE.ADMIN.USERS_RADAR,
+    icon: Radio,
   },
   {
     title: "Histórico de Atividades",

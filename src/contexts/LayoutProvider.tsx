@@ -6,6 +6,7 @@ import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
 import AdminDispatchNotificationDialog from "@/components/dialogs/AdminDispatchNotificationDialog";
 import AdminPassengerNotificationsDialog from "@/components/dialogs/AdminPassengerNotificationsDialog";
+import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
@@ -28,7 +29,19 @@ import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassa
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenImportarContratoDialogProps, OpenResponsavelFormProps, OpenDefinirResponsavelPrincipalProps, OpenAdminDispatchNotificationDialogProps, OpenAdminPassengerNotificationsDialogProps } from "./LayoutContext";
+import {
+  OpenPixPaymentDialogProps,
+  OpenSaaSCheckoutDialogProps,
+  OpenReceiptDialogProps,
+  OpenQuickStartPassageiroProps,
+  OpenGerarContratoValidadorDialogProps,
+  OpenImportarContratoDialogProps,
+  OpenResponsavelFormProps,
+  OpenDefinirResponsavelPrincipalProps,
+  OpenAdminDispatchNotificationDialogProps,
+  OpenAdminPassengerNotificationsDialogProps,
+  OpenAdminVencimentoDetalhesDialogProps,
+} from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -243,6 +256,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenAdminPassengerNotificationsDialogProps;
   }>({ open: false });
+  const [adminVencimentoDetalhesDialogState, setAdminVencimentoDetalhesDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminVencimentoDetalhesDialogProps;
+  }>({ open: false });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
   const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
@@ -415,6 +432,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminPassengerNotificationsDialogState({ open: true, props });
   };
 
+  const openAdminVencimentoDetalhesDialog = (props: OpenAdminVencimentoDetalhesDialogProps) => {
+    setAdminVencimentoDetalhesDialogState({ open: true, props });
+  };
+
   const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
     setGerarContratoValidadorDialogState({ open: true, props });
   };
@@ -454,6 +475,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminCreateUserDialog,
         openAdminDispatchNotificationDialog,
         openAdminPassengerNotificationsDialog,
+        openAdminVencimentoDetalhesDialog,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
 
@@ -873,6 +895,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setAdminPassengerNotificationsDialogState({ open: false }))}
           passageiroId={adminPassengerNotificationsDialogState.props.passageiroId}
           passageiroNome={adminPassengerNotificationsDialogState.props.passageiroNome}
+        />
+      )}
+
+      {adminVencimentoDetalhesDialogState.open && adminVencimentoDetalhesDialogState.props && (
+        <AdminVencimentoDetalhesDialog
+          open={true}
+          onClose={() => safeCloseDialog(() => setAdminVencimentoDetalhesDialogState({ open: false }))}
+          dia={adminVencimentoDetalhesDialogState.props.dia}
+          mes={adminVencimentoDetalhesDialogState.props.mes}
+          ano={adminVencimentoDetalhesDialogState.props.ano}
         />
       )}
 

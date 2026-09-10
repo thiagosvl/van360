@@ -36,6 +36,16 @@ export function useAdminUsersLatestActivity(params?: ListUsersLatestActivityPara
   });
 }
 
+export function useAdminUsersRadarStats(subscriptionStatus: string = "active_trial") {
+  return useQuery({
+    queryKey: ["admin", "users", "radar-stats", subscriptionStatus],
+    queryFn: () => adminUserApi.getUsersRadarStats(subscriptionStatus),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useAdminUsers(params?: ListUsersParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: KEYS.users(params),

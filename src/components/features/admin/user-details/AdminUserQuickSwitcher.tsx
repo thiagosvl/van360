@@ -7,6 +7,7 @@ import { useAdminUsers } from "@/hooks/api/adminHooks";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 import { phoneMask } from "@/utils/masks";
 import { ROUTES } from "@/constants/routes";
+import { UserType } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import type { AdminUserListItem } from "@/services/api/admin/admin-user.api";
 
@@ -26,7 +27,7 @@ export function AdminUserQuickSwitcher({ currentUserId, className }: AdminUserQu
   const isSearchActive = debouncedSearch.length >= 1;
 
   const { data, isFetching } = useAdminUsers(
-    { search: debouncedSearch, limit: 15 },
+    { search: debouncedSearch, limit: 15, tipo: UserType.MOTORISTA },
     { enabled: isSearchActive }
   );
 
@@ -182,21 +183,13 @@ export function AdminUserQuickSwitcher({ currentUserId, className }: AdminUserQu
                         </div>
                       </div>
 
-                      {subscription ? (
+                      {subscription && (
                         <div className="shrink-0">
                           <SubscriptionStatusBadge
                             status={subscription.status}
                             dataVencimento={subscription.data_vencimento}
                           />
                         </div>
-                      ) : (
-                        user.tipo && user.tipo !== "motorista" && (
-                          <div className="shrink-0">
-                            <span className="text-[10px] uppercase font-bold text-amber-400/90 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                              {user.tipo === "motorista_auxiliar" ? "Auxiliar" : user.tipo}
-                            </span>
-                          </div>
-                        )
                       )}
                     </button>
                   );
