@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity } from "@/hooks/api/adminHooks";
+import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity, useAdminVencimentosPorDia } from "@/hooks/api/adminHooks";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { SubscriptionStatusBadge, getSubscriptionStatusDetails } from "@/compone
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { AdminVencimentosTabela } from "@/components/features/admin/AdminVencimentosTabela";
 import {
   Users,
   DollarSign,
@@ -36,6 +37,7 @@ import {
   Share2,
   UserPlus,
   Gift,
+  Calendar,
 } from "lucide-react";
 import {
   Card,
@@ -102,6 +104,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { setPageTitle } = useLayout();
   const { data: stats, isLoading } = useAdminStats();
+  const { data: vencimentosData } = useAdminVencimentosPorDia();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
@@ -350,6 +353,39 @@ export default function AdminDashboard() {
               icon={<FileText className="h-5 w-5" />}
             />
           </div>
+
+          {vencimentosData && (
+            <div
+              onClick={() => handleTabChange("operacional")}
+              className="p-4 rounded-[1.5rem] bg-gradient-to-r from-blue-950/40 via-[#131b2e] to-[#131b2e] border border-blue-500/20 hover:border-blue-500/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer shadow-lg shadow-blue-500/5"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">
+                      Vencimentos de Hoje (Dia {vencimentosData.diaAtual})
+                    </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500 text-white">
+                      {vencimentosData.vencimentosHoje} {vencimentosData.vencimentosHoje === 1 ? "aluno" : "alunos"}
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-300 mt-0.5">
+                    Total de {vencimentosData.totalPassageirosAtivosComVencimento} passageiros ativos distribuídos no mês. Clique para ver a tabela completa de vencimentos por dia.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs font-bold text-blue-400 hover:text-white hover:bg-blue-600/20 rounded-xl h-8 px-3 shrink-0 self-end sm:self-center"
+              >
+                Ver Tabela Completa →
+              </Button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
             <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] flex flex-col justify-between">
@@ -915,6 +951,8 @@ export default function AdminDashboard() {
 
         {/* ABA 3: OPERACIONAL */}
         <TabsContent value="operacional" className="space-y-6 m-0 outline-none">
+          <AdminVencimentosTabela />
+
           <div className="grid grid-cols-1 gap-6">
             {/* TENTATIVAS DE LOGIN */}
             <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] w-full">

@@ -385,11 +385,29 @@ export interface MotoristasLatestActivityResponse {
   limit: number;
 }
 
+export interface VencimentoDiaItem {
+  dia: number;
+  quantidade: number;
+  isHoje: boolean;
+  percentual: number;
+}
+
+export interface VencimentosPassageirosResponse {
+  totalPassageirosAtivosComVencimento: number;
+  vencimentosHoje: number;
+  diaComPico: { dia: number; quantidade: number } | null;
+  diaAtual: number;
+  dias: VencimentoDiaItem[];
+}
+
 const BASE = "/admin";
 
 export const adminUserApi = {
   getStats: () =>
     apiClient.get<AdminDashboardStats>(`${BASE}/dashboard`).then(r => r.data),
+
+  getVencimentosPorDia: () =>
+    apiClient.get<VencimentosPassageirosResponse>(`${BASE}/vencimentos-por-dia`).then(r => r.data),
 
   getUsers: (params?: ListUsersParams) =>
     apiClient.get<AdminUserListResponse>(`${BASE}/users`, { params }).then(r => r.data),

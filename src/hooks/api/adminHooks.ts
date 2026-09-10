@@ -6,3 +6,4 @@ export * from "./admin/useAdminEvolutionHooks";
 export * from "./admin/useAdminBlogHooks";
 export * from "./admin/useAdminNotificationHooks";
 export * from "./admin/useAdminCalculatorHooks";
+export * from "./admin/useAdminVencimentosHooks";
