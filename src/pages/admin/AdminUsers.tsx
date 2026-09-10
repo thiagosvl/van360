@@ -47,7 +47,7 @@ export default function AdminUsers() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search.trim(), 400);
 
   const { data: stats } = useAdminStats();
   const { data, isLoading } = useAdminUsers({
