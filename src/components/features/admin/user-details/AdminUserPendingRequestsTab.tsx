@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, MapPin, Search, X, MessageSquare, Share2, Copy, Check } from "lucide-react";
 import { phoneMask } from "@/utils/masks";
 import { formatShortName } from "@/utils/formatters/name";
-import { openBrowserLink } from "@/utils/browser";
+import { openBrowserLink, copyToClipboard } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { buildPrePassageiroShareMessage, buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/utils/formatters/date";
+import { cn } from "@/lib/utils";
 
 interface AdminUserPendingRequestsTabProps {
   solicitacoes: AdminUserPendingRequestItem[];
@@ -20,16 +23,39 @@ interface AdminUserPendingRequestsTabProps {
 
 export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserPendingRequestsTabProps) {
   const [search, setSearch] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   const linkBase = window.location.origin;
   const registrationLink = userId ? buildPrepassageiroLink(userId) : `${linkBase}/cadastro-passageiro`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(registrationLink);
-    setCopied(true);
-    toast.success("Link de cadastro copiado com sucesso!");
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyMessage = async () => {
+    const message = buildPrePassageiroShareMessage(registrationLink);
+    const success = await copyToClipboard(message);
+    if (success) {
+      setCopiedMessage(true);
+      toast.success("Mensagem completa de cadastro copiada!");
+      setTimeout(() => setCopiedMessage(false), 2000);
+    } else {
+      toast.error("Não foi possível copiar a mensagem.");
+    }
+  };
+
+  const handleCopyOnlyUrl = async () => {
+    const success = await copyToClipboard(registrationLink);
+    if (success) {
+      setCopiedUrl(true);
+      toast.success("Link copiado com sucesso!");
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } else {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const message = buildPrePassageiroShareMessage(registrationLink);
+    const url = buildWhatsAppUrl(null, message);
+    openBrowserLink(url);
   };
 
   const filtered = useMemo(() => {
@@ -75,27 +101,40 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCopy}
+                onClick={handleCopyOnlyUrl}
                 className="absolute right-1 top-1 bottom-1 h-9 w-9 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="Copiar link"
+                title="Copiar apenas o link"
               >
-                {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copiedUrl ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
 
             <Button
-              onClick={handleCopy}
-              className="w-full sm:w-auto h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-colors shadow-lg shadow-blue-600/20"
+              onClick={handleShareWhatsApp}
+              className="w-full sm:w-auto h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20b858] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer shadow-lg shadow-green-900/20 active:scale-95"
             >
-              {copied ? (
+              <WhatsAppIcon className="h-4 w-4 fill-current" />
+              <span>WhatsApp</span>
+            </Button>
+
+            <Button
+              onClick={handleCopyMessage}
+              className={cn(
+                "w-full sm:w-auto h-11 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer active:scale-95 shadow-lg",
+                copiedMessage
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
+              )}
+            >
+              {copiedMessage ? (
                 <>
-                  <Check className="h-4 w-4" />
+                  <Check className="h-4 w-4 text-emerald-400" />
                   <span>Copiado!</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  <span>Copiar Link</span>
+                  <span>Copiar Mensagem</span>
                 </>
               )}
             </Button>

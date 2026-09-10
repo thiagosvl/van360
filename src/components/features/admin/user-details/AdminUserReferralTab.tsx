@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { toast } from "sonner";
+import { openBrowserLink, copyToClipboard } from "@/utils/browser";
+import { buildReferralShareMessage, buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { cn } from "@/lib/utils";
 
 interface AdminUserReferralTabProps {
   user: {
@@ -23,7 +27,8 @@ interface AdminUserReferralTabProps {
 }
 
 export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferralTabProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   // Link derivado ou fallback
   const linkBase = window.location.origin;
@@ -35,11 +40,33 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
   const taxaConversao = total > 0 ? Math.round((completed / total) * 100) : 0;
   const diasBonusConcedidos = completed * 30;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    toast.success("Link de indicação copiado com sucesso!");
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyMessage = async () => {
+    const message = buildReferralShareMessage(referralLink);
+    const success = await copyToClipboard(message);
+    if (success) {
+      setCopiedMessage(true);
+      toast.success("Mensagem completa de indicação copiada!");
+      setTimeout(() => setCopiedMessage(false), 2000);
+    } else {
+      toast.error("Não foi possível copiar a mensagem.");
+    }
+  };
+
+  const handleCopyOnlyUrl = async () => {
+    const success = await copyToClipboard(referralLink);
+    if (success) {
+      setCopiedUrl(true);
+      toast.success("Link copiado com sucesso!");
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } else {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const message = buildReferralShareMessage(referralLink);
+    const url = buildWhatsAppUrl(null, message);
+    openBrowserLink(url);
   };
 
   return (
@@ -52,7 +79,7 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
             LINK DE INDICAÇÃO DO MOTORISTA
           </CardTitle>
           <p className="text-[11px] font-medium text-slate-400 mt-1">
-            Link exclusivo do motorista para cópia rápida pelo administrador.
+            Link exclusivo do motorista para cópia rápida e envio pelo WhatsApp.
           </p>
         </CardHeader>
         <CardContent className="p-6 pt-4 space-y-4">
@@ -66,27 +93,40 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCopy}
+                onClick={handleCopyOnlyUrl}
                 className="absolute right-1 top-1 bottom-1 h-9 w-9 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="Copiar link"
+                title="Copiar apenas o link"
               >
-                {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copiedUrl ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
 
             <Button
-              onClick={handleCopy}
-              className="w-full sm:w-auto h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-colors shadow-lg shadow-blue-600/20"
+              onClick={handleShareWhatsApp}
+              className="w-full sm:w-auto h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20b858] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer shadow-lg shadow-green-900/20 active:scale-95"
             >
-              {copied ? (
+              <WhatsAppIcon className="h-4 w-4 fill-current" />
+              <span>WhatsApp</span>
+            </Button>
+
+            <Button
+              onClick={handleCopyMessage}
+              className={cn(
+                "w-full sm:w-auto h-11 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer active:scale-95 shadow-lg",
+                copiedMessage
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
+              )}
+            >
+              {copiedMessage ? (
                 <>
-                  <Check className="h-4 w-4" />
+                  <Check className="h-4 w-4 text-emerald-400" />
                   <span>Copiado!</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  <span>Copiar Link</span>
+                  <span>Copiar Mensagem</span>
                 </>
               )}
             </Button>
