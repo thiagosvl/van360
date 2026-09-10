@@ -41,6 +41,7 @@ export interface NotificationKpisDTO {
   total: number;
   sent: number;
   failed: number;
+  cancelled: number;
   wabaSent: number;
   wabaFailed: number;
   custoEstimadoWaba: number;

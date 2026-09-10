@@ -255,7 +255,13 @@ export default function AdminNotificationsHistory() {
             <AdminKpiCard
               title="TAXA DE ENTREGA"
               value={kpis ? `${kpis.taxaSucesso}%` : (isFetching ? "..." : "100%")}
-              subtext={kpis ? `${kpis.sent} enviadas com sucesso` : "Envios concluídos"}
+              subtext={
+                kpis
+                  ? kpis.cancelled > 0
+                    ? `${kpis.sent} enviadas • ${kpis.cancelled} cancelada${kpis.cancelled > 1 ? "s" : ""} preventivamente`
+                    : `${kpis.sent} enviadas com sucesso`
+                  : "Envios concluídos"
+              }
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<CheckCircle2 className="h-5 w-5" />}
