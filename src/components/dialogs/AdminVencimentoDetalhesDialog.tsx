@@ -49,6 +49,8 @@ export default function AdminVencimentoDetalhesDialog({
   } = useAdminVencimentoDetalhes(open && dia > 0 ? dia : null, mes, ano);
 
   const isDiaHoje = Boolean(detalhes?.isHoje);
+  const isPassado = Boolean(detalhes?.isPassado);
+  const isFuturo = Boolean(detalhes?.isFuturo);
   const disparos = detalhes?.disparosDia || detalhes?.disparosHoje;
 
   return (
@@ -66,6 +68,8 @@ export default function AdminVencimentoDetalhesDialog({
         subtitle={
           isDiaHoje
             ? "Previsão consolidada de todas as réguas disparadas hoje e carteira de alunos deste dia"
+            : isPassado
+            ? `Histórico de disparos executados pelo sistema no dia ${dia?.toString().padStart(2, "0")} e carteira de alunos`
             : `Estimativa das réguas de notificação para o dia ${dia?.toString().padStart(2, "0")} e carteira de alunos`
         }
         icon={<Eye className="w-5 h-5 text-blue-400" />}
@@ -105,7 +109,11 @@ export default function AdminVencimentoDetalhesDialog({
                         className="text-xs font-bold rounded-lg data-[state=active]:bg-blue-600 data-[state=active]:text-white px-3 py-1.5"
                       >
                         <Sparkles className="h-3.5 w-3.5 mr-1.5 text-blue-300" />
-                        {isDiaHoje ? "Disparos de Hoje" : `Estimativa de Disparos (${dia?.toString().padStart(2, "0")})`} ({disparos.totalFaturasHoje} faturas)
+                        {isDiaHoje
+                          ? "Disparos de Hoje"
+                          : isPassado
+                          ? `Disparos Realizados (${dia?.toString().padStart(2, "0")})`
+                          : `Estimativa de Disparos (${dia?.toString().padStart(2, "0")})`} ({disparos.totalFaturasHoje} faturas)
                       </TabsTrigger>
                       <TabsTrigger
                         value="carteira"
@@ -132,13 +140,17 @@ export default function AdminVencimentoDetalhesDialog({
                       <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/30 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] font-black uppercase tracking-wider text-blue-300 block">
-                            {isDiaHoje ? "Total Escopo do Job Hoje" : `Total Escopo do Job (Dia ${dia?.toString().padStart(2, "0")})`}
+                            {isDiaHoje
+                              ? "Total Escopo do Job Hoje"
+                              : isPassado
+                              ? `Total Processado no Job (Dia ${dia?.toString().padStart(2, "0")})`
+                              : `Total Escopo do Job (Dia ${dia?.toString().padStart(2, "0")})`}
                           </span>
                           <span className="text-2xl font-mono font-black text-white mt-1 block">
                             {disparos.totalFaturasHoje}
                           </span>
                           <span className="text-[10px] text-blue-300/80 font-medium">
-                            Todas as 5 réguas ativas
+                            {isPassado ? "Executado às 13:30" : "Todas as 5 réguas ativas"}
                           </span>
                         </div>
                         <Send className="h-7 w-7 text-blue-400 shrink-0 opacity-80" />
@@ -147,13 +159,13 @@ export default function AdminVencimentoDetalhesDialog({
                       <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/30 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 block">
-                            {isDiaHoje ? "Já Enviadas Hoje" : "Já Disparadas"}
+                            {isDiaHoje ? "Já Enviadas Hoje" : isPassado ? "Disparos Concluídos" : "Já Disparadas"}
                           </span>
                           <span className="text-2xl font-mono font-black text-emerald-400 mt-1 block">
                             {disparos.totalJaEnviadasHoje}
                           </span>
                           <span className="text-[10px] text-emerald-300/80 font-medium">
-                            {isDiaHoje ? "Disparos concluídos" : "Histórico registrado"}
+                            {isDiaHoje ? "Disparos concluídos" : isPassado ? "Histórico executado" : "Aguardando data"}
                           </span>
                         </div>
                         <CheckCircle2 className="h-7 w-7 text-emerald-400 shrink-0 opacity-80" />
@@ -162,13 +174,17 @@ export default function AdminVencimentoDetalhesDialog({
                       <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 block">
-                            {isDiaHoje ? "Aguardando Envio" : "Previsão de Envio"}
+                            {isDiaHoje ? "Aguardando Envio" : isPassado ? "Status da Execução" : "Previsão de Envio"}
                           </span>
                           <span className="text-2xl font-mono font-black text-amber-400 mt-1 block">
-                            {disparos.totalAguardandoEnvioHoje}
+                            {isPassado ? "0" : disparos.totalAguardandoEnvioHoje}
                           </span>
                           <span className="text-[10px] text-amber-300/80 font-medium">
-                            {isDiaHoje ? "Próxima execução do job" : "Estimativa para a execução das 13:30"}
+                            {isDiaHoje
+                              ? "Próxima execução do job"
+                              : isPassado
+                              ? "Job do dia finalizado"
+                              : "Estimativa para a execução das 13:30"}
                           </span>
                         </div>
                         <Clock className="h-7 w-7 text-amber-400 shrink-0 opacity-80" />
@@ -177,7 +193,11 @@ export default function AdminVencimentoDetalhesDialog({
 
                     <div className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-3">
                       <span className="text-xs font-headline font-black text-slate-200 uppercase tracking-wider block">
-                        {isDiaHoje ? "Consolidação por Canal dos Disparos de Hoje" : `Consolidação por Canal — Estimativa Dia ${dia?.toString().padStart(2, "0")}`}
+                        {isDiaHoje
+                          ? "Consolidação por Canal dos Disparos de Hoje"
+                          : isPassado
+                          ? `Consolidação por Canal — Disparos Realizados (Dia ${dia?.toString().padStart(2, "0")})`
+                          : `Consolidação por Canal — Estimativa Dia ${dia?.toString().padStart(2, "0")}`}
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="p-3 bg-[#131b2e] rounded-xl border border-slate-800 flex items-center gap-3">
@@ -235,7 +255,11 @@ export default function AdminVencimentoDetalhesDialog({
 
                     <div className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-3">
                       <span className="text-xs font-headline font-black text-slate-200 uppercase tracking-wider block">
-                        {isDiaHoje ? "Detalhamento das 5 Réguas de Notificação de Hoje" : `Detalhamento das 5 Réguas de Notificação (Projeção Dia ${dia?.toString().padStart(2, "0")})`}
+                        {isDiaHoje
+                          ? "Detalhamento das 5 Réguas de Notificação de Hoje"
+                          : isPassado
+                          ? `Detalhamento das Réguas Disparadas no Dia ${dia?.toString().padStart(2, "0")}`
+                          : `Detalhamento das 5 Réguas de Notificação (Projeção Dia ${dia?.toString().padStart(2, "0")})`}
                       </span>
                       <div className="divide-y divide-slate-800/80 border border-slate-800 rounded-xl overflow-hidden bg-[#131b2e]">
                         {Object.entries(disparos.reguas)

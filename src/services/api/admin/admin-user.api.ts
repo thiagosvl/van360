@@ -487,6 +487,8 @@ export type DisparosDiaResumo = DisparosHojeResumo;
 export interface VencimentoDetalhesResponse {
   dia: number;
   isHoje: boolean;
+  isPassado?: boolean;
+  isFuturo?: boolean;
   mes: number;
   ano: number;
   carteira: CarteiraDiaResumo;
