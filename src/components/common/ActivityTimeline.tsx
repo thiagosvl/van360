@@ -145,6 +145,18 @@ const getEntityDotColor = (tipo: AtividadeEntidadeTipo | string) => {
   }
 };
 
+const formatAuditValue = (campo: string, val: unknown): string => {
+  if (val === null || val === undefined || val === "") return "Vazio";
+  if (typeof val === "boolean") return val ? "Sim" : "Não";
+  if (typeof val === "number" && (campo.includes("valor") || campo.includes("preco"))) {
+    return formatCurrency(val);
+  }
+  if (typeof val === "object") {
+    return JSON.stringify(val);
+  }
+  return String(val);
+};
+
 export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, limit }: ActivityTimelineProps) {
   const { data: atividades, isLoading, isError } = useHistoricoByEntidade(entidadeTipo, entidadeId);
 
@@ -258,7 +270,13 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                     </div>
 
                     {/* Meta Details */}
-                    {atividade.meta && (atividade.meta.valor || atividade.meta.campos || atividade.meta.motivo || atividade.meta.status) && (
+                    {atividade.meta && (
+                      atividade.meta.valor ||
+                      (atividade.meta.alteracoes && atividade.meta.alteracoes.length > 0) ||
+                      (atividade.meta.campos && atividade.meta.campos.length > 0) ||
+                      atividade.meta.motivo ||
+                      atividade.meta.status
+                    ) && (
                       <div className="mt-1 ml-9 overflow-hidden">
                         <div className="p-2.5 rounded-xl bg-gray-50/50 border border-gray-100/50 space-y-1.5">
                           {atividade.meta.valor && (
@@ -267,7 +285,27 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                               <span className="text-[11px] font-semibold text-foreground/60 leading-none">{formatCurrency(atividade.meta.valor)}</span>
                             </div>
                           )}
-                          {atividade.meta.campos && (
+                          {atividade.meta.alteracoes && atividade.meta.alteracoes.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Alterações</span>
+                              <div className="flex flex-col gap-1">
+                                {atividade.meta.alteracoes.map((alt) => (
+                                  <div key={alt.campo} className="inline-flex flex-wrap items-center gap-1.5 text-[11px] py-0.5">
+                                    <span className="font-semibold text-foreground/80 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50 text-[10px]">
+                                      {alt.campo}
+                                    </span>
+                                    <span className="line-through text-foreground/40 text-[10px]">
+                                      {formatAuditValue(alt.campo, alt.de)}
+                                    </span>
+                                    <span className="text-foreground/40 text-[10px]">➔</span>
+                                    <span className="font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/50 text-[10px]">
+                                      {formatAuditValue(alt.campo, alt.para)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : atividade.meta.campos && atividade.meta.campos.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 items-center">
                               <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Alterações</span>
                               <div className="flex flex-wrap gap-1">
@@ -278,7 +316,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                                 ))}
                               </div>
                             </div>
-                          )}
+                          ) : null}
                           {atividade.meta.motivo && (
                             <div className="flex flex-col gap-0.5">
                               <span className="text-[10px] font-bold text-rose-600 uppercase tracking-tighter">Motivo</span>
