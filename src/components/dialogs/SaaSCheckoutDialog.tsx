@@ -50,6 +50,8 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     profile,
     hasActiveDiscount,
     discountPct,
+    hasActiveReferralDiscount,
+    referralDiscountPct,
     isLoadingData,
     refetchInvoices,
     refetchStatus,
@@ -269,11 +271,11 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           </div>
         ) : step === 1 ? (
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-            {hasActiveDiscount && (
+            {hasActiveReferralDiscount && (
               <div className="flex items-center gap-2.5 p-3 bg-[#d1fae5] border border-[#a7f3d0] rounded-xl mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
                 <Tag className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
                 <p className="text-[11px] font-bold text-[#065f46]">
-                  Desconto de {discountPct}% de indicação ativo na 1ª mensalidade! Aproveite seu benefício.
+                  Você ganhou um desconto de indicação de {referralDiscountPct}% na 1ª mensalidade!
                 </p>
               </div>
             )}
@@ -323,11 +325,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                       {SubscriptionUtils.formatCurrency(annualPrice)}
                       <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">/ano</span>
                     </p>
-                    {isAnual && (
-                      <p className="text-[10px] sm:text-[13px] font-bold text-[#f59e0b] mt-0.5">
-                        <span className="hidden sm:inline">Equivalente a </span>{SubscriptionUtils.formatCurrency(annualPrice / 12)}/mês
-                      </p>
-                    )}
+                    <p className={cn("text-[10px] sm:text-[13px] font-bold mt-0.5", isAnual ? "text-[#f59e0b]" : "text-slate-400")}>
+                      <span className="hidden sm:inline">Equivalente a </span>{SubscriptionUtils.formatCurrency(annualPrice / 12)}/mês
+                    </p>
                   </div>
                 </div>
 
@@ -376,11 +376,13 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   <div className="text-right shrink-0">
                     <p className={cn("text-xl sm:text-3xl font-headline font-black tracking-tighter", !isAnual ? "text-[#1a3a5c]" : "text-slate-400")}>
                       {SubscriptionUtils.formatCurrency(monthlyPrice)}
-                      <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">/mês</span>
+                      <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">
+                        {hasActiveReferralDiscount ? " no 1º mês" : "/mês"}
+                      </span>
                     </p>
-                    {hasActiveDiscount && (
+                    {hasActiveReferralDiscount && (
                       <p className={cn("text-[10px] sm:text-xs font-bold mt-0.5 whitespace-nowrap", !isAnual ? "text-[#f59e0b]" : "text-slate-400")}>
-                        Depois {SubscriptionUtils.formatCurrency(regularMonthlyPrice)}/mês
+                        A partir do 2º mês: {SubscriptionUtils.formatCurrency(regularMonthlyPrice)}/mês
                       </p>
                     )}
                   </div>

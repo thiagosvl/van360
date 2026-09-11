@@ -348,6 +348,8 @@ export function useSaaSCheckoutViewModel({
     profile,
     hasActiveDiscount: referral?.hasActiveDiscount,
     discountPct: referral?.discountPct,
+    hasActiveReferralDiscount: Boolean(referral?.hasActiveDiscount),
+    referralDiscountPct: referral?.discountPct || 0,
     isLoadingData: isLoadingReferral || !plans,
     isSuccessState,
     handleFinishSuccess,

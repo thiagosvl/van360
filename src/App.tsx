@@ -67,6 +67,7 @@ const RouteDetailsPage = lazyLoad(() => import("./pages/RouteDetailsPage"));
 const Aniversariantes = lazyLoad(() => import("./pages/Aniversariantes"));
 const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
 const ExternalCheckoutBridge = lazyLoad(() => import("./pages/subscription/ExternalCheckoutBridge"));
+const ImpersonateBridgePage = lazyLoad(() => import("./pages/admin/ImpersonateBridgePage"));
 const PrivacyPolicy = lazyLoad(() => import("./pages/legal/PrivacyPolicyPage"));
 const TermsOfUse = lazyLoad(() => import("./pages/legal/TermsOfUsePage"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -320,6 +321,11 @@ const App = () => {
                     <Route
                       path={ROUTES.PUBLIC.EXTERNAL_CHECKOUT_BRIDGE}
                       element={<ExternalCheckoutBridge />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.IMPERSONATE_BRIDGE}
+                      element={<ImpersonateBridgePage />}
                     />
 
                     <Route

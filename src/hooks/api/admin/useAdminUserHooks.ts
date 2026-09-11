@@ -172,3 +172,51 @@ export function useDispatchDriverNotificationAdmin() {
   });
 }
 
+export function useSetUserReferralAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, indicadorId }: { id: string; indicadorId: string }) =>
+      adminUserApi.setReferral(id, indicadorId),
+    onSuccess: (_, variables) => {
+      toast.success("Indicação atribuída com sucesso!");
+      qc.invalidateQueries({ queryKey: ["admin", "users", variables.id] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao atribuir indicação.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useRemoveUserReferralAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminUserApi.removeReferral(id),
+    onSuccess: (_, id) => {
+      toast.success("Vínculo de indicação removido com sucesso!");
+      qc.invalidateQueries({ queryKey: ["admin", "users", id] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao remover indicação.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useAdminImpersonateUser() {
+  return useMutation({
+    mutationFn: (id: string) => adminUserApi.impersonateUser(id),
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao gerar link de acesso.";
+      toast.error(msg);
+    },
+  });
+}
+
+
+

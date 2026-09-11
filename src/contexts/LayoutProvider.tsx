@@ -29,6 +29,7 @@ import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassa
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
+import { AdminConfigureReferralDialog } from "@/components/dialogs/AdminConfigureReferralDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -41,6 +42,7 @@ import {
   OpenAdminDispatchNotificationDialogProps,
   OpenAdminPassengerNotificationsDialogProps,
   OpenAdminVencimentoDetalhesDialogProps,
+  OpenAdminConfigureReferralDialogProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -260,6 +262,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenAdminVencimentoDetalhesDialogProps;
   }>({ open: false });
+  const [adminConfigureReferralDialogState, setAdminConfigureReferralDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminConfigureReferralDialogProps;
+  }>({ open: false });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
   const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
@@ -436,6 +442,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminVencimentoDetalhesDialogState({ open: true, props });
   };
 
+  const openAdminConfigureReferralDialog = (props: OpenAdminConfigureReferralDialogProps) => {
+    setAdminConfigureReferralDialogState({ open: true, props });
+  };
+
   const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
     setGerarContratoValidadorDialogState({ open: true, props });
   };
@@ -476,6 +486,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminDispatchNotificationDialog,
         openAdminPassengerNotificationsDialog,
         openAdminVencimentoDetalhesDialog,
+        openAdminConfigureReferralDialog,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
 
@@ -905,6 +916,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           dia={adminVencimentoDetalhesDialogState.props.dia}
           mes={adminVencimentoDetalhesDialogState.props.mes}
           ano={adminVencimentoDetalhesDialogState.props.ano}
+        />
+      )}
+
+      {adminConfigureReferralDialogState.open && adminConfigureReferralDialogState.props && (
+        <AdminConfigureReferralDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAdminConfigureReferralDialogState({ open: false }))}
+          userId={adminConfigureReferralDialogState.props.userId}
+          userName={adminConfigureReferralDialogState.props.userName}
+          currentIndicadorId={adminConfigureReferralDialogState.props.currentIndicadorId}
+          currentIndicadorNome={adminConfigureReferralDialogState.props.currentIndicadorNome}
+          onSuccess={adminConfigureReferralDialogState.props.onSuccess}
         />
       )}
 

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Share2, CheckCircle2, Gift, UserPlus, Copy, Check } from "lucide-react";
+import {
+  Share2,
+  CheckCircle2,
+  Gift,
+  UserPlus,
+  Copy,
+  Check,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +16,9 @@ import { openBrowserLink, copyToClipboard } from "@/utils/browser";
 import { buildReferralShareMessage, buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { cn } from "@/lib/utils";
+import { phoneMask } from "@/utils/masks";
+import { IndicacaoStatus } from "@/types/enums";
+import { formatSafeBrazilianDate } from "@/utils/dateUtils";
 
 interface AdminUserReferralTabProps {
   user: {
@@ -24,13 +34,27 @@ interface AdminUserReferralTabProps {
     referralLink?: string;
     bonusDays?: number;
   };
+  referredUsers?: Array<{
+    id: string;
+    status: IndicacaoStatus;
+    created_at: string;
+    indicado: {
+      id: string;
+      nome: string;
+      telefone: string;
+      email: string;
+    } | null;
+  }>;
 }
 
-export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferralTabProps) {
+export function AdminUserReferralTab({
+  user,
+  referralSummary,
+  referredUsers = [],
+}: AdminUserReferralTabProps) {
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
-  // Link derivado ou fallback
   const linkBase = window.location.origin;
   const referralLink = referralSummary?.referralLink || `${linkBase}/cadastro?ref=${user.id}`;
 
@@ -69,14 +93,26 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
     openBrowserLink(url);
   };
 
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return "—";
+    try {
+      return new Date(dateString).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return "—";
+    }
+  };
+
   return (
     <div className="space-y-6 text-left">
-      {/* CARD 1: LINK DE INDICAÇÃO E AÇÃO DE CÓPIA */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="p-6 pb-2">
           <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
             <Share2 className="h-4 w-4 text-purple-400" />
-            LINK DE INDICAÇÃO DO MOTORISTA
+            LINK DE INDICAÇÃO DESTE MOTORISTA
           </CardTitle>
           <p className="text-[11px] font-medium text-slate-400 mt-1">
             Link exclusivo do motorista para cópia rápida e envio pelo WhatsApp.
@@ -134,17 +170,16 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
         </CardContent>
       </Card>
 
-      {/* CARD 2: KPIS INDIVIDUAIS DO MOTORISTA */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="p-6 pb-2">
           <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-            MÉTRICAS DE INDICAÇÃO DESTE MOTORISTA
+            MÉTRICAS DE INDICAÇÕES FEITAS POR ESTE MOTORISTA
           </CardTitle>
           <p className="text-[11px] font-medium text-slate-400 mt-1">
             Resumo de conversões e bônus acumulados por {user.nome}
           </p>
         </CardHeader>
-        <CardContent className="p-6 pt-4">
+        <CardContent className="p-6 pt-4 space-y-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <AdminKpiCard
               title="CADASTROS VIA INDICAÇÃO"
@@ -178,7 +213,7 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
               value={`${diasBonusConcedidos} Dias`}
               subtext={
                 diasBonusConcedidos === 0
-                  ? "0 meses grátis aos indicadores"
+                  ? "0 meses grátis acumulados"
                   : `~${Math.round(diasBonusConcedidos / 30)} meses grátis ao motorista`
               }
               cardBorder="border-amber-500/40 shadow-amber-500/10"
@@ -186,6 +221,46 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
               icon={<Gift className="h-5 w-5" />}
             />
           </div>
+
+          {referredUsers.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-slate-800/80">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                Motoristas Indicados por Ele ({referredUsers.length})
+              </h4>
+              <div className="grid gap-2">
+                {referredUsers.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-between text-xs"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <p className="font-bold text-white truncate">
+                        {item.indicado?.nome || "Motorista Indicado"}
+                      </p>
+                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                        {item.indicado?.telefone && (
+                          <span className="font-mono">{phoneMask(item.indicado.telefone)}</span>
+                        )}
+                        <span>•</span>
+                        <span>{formatSafeBrazilianDate(item.created_at)}</span>
+                      </div>
+                    </div>
+                    <div>
+                      {item.status === IndicacaoStatus.COMPLETED ? (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Convertido
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          Em Teste
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

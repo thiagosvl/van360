@@ -179,6 +179,14 @@ export interface OpenAdminVencimentoDetalhesDialogProps {
   ano?: number;
 }
 
+export interface OpenAdminConfigureReferralDialogProps {
+  userId: string;
+  userName: string;
+  currentIndicadorId?: string | null;
+  currentIndicadorNome?: string | null;
+  onSuccess?: () => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -210,6 +218,7 @@ export interface LayoutContextType {
   openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
   openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
   openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
+  openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
 
   isFirstChargeDialogOpen: boolean;
 

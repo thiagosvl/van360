@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus } from "@/types/enums";
+import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus } from "@/types/enums";
 import { MetadadosCadastroData } from "@/types/usuario";
 
 export interface AdminDashboardStats {
@@ -248,6 +248,27 @@ export interface AdminUserDetailsResponse {
     hasActiveDiscount: boolean;
     hasIndicator: boolean;
   };
+  indicador?: {
+    id: string;
+    nome: string;
+    telefone: string;
+    email: string;
+    cpfcnpj?: string | null;
+    status: IndicacaoStatus;
+    created_at: string;
+    fatura_origem_id?: string | null;
+  } | null;
+  referredUsers?: Array<{
+    id: string;
+    status: IndicacaoStatus;
+    created_at: string;
+    indicado: {
+      id: string;
+      nome: string;
+      telefone: string;
+      email: string;
+    } | null;
+  }>;
   passageiros?: AdminUserPassengerItem[];
   prePassageiros?: AdminUserPendingRequestItem[];
   veiculos?: AdminUserVehicleItem[];
@@ -513,5 +534,19 @@ export const adminUserApi = {
 
   dispatchNotification: (id: string, data: DispatchDriverNotificationPayload) =>
     apiClient.post<DispatchDriverNotificationResponse>(`${BASE}/users/${id}/dispatch-notification`, data).then(r => r.data),
+
+  setReferral: (id: string, indicadorId: string) =>
+    apiClient.put<{ success: boolean }>(`${BASE}/users/${id}/referral`, { indicadorId }).then(r => r.data),
+
+  removeReferral: (id: string) =>
+    apiClient.delete<{ success: boolean }>(`${BASE}/users/${id}/referral`).then(r => r.data),
+
+  impersonateUser: (id: string) =>
+    apiClient.post<ImpersonateUserResponse>(`${BASE}/users/${id}/impersonate`).then(r => r.data),
 };
+
+export interface ImpersonateUserResponse {
+  tokenHash: string;
+  impersonateUrl: string;
+}
 

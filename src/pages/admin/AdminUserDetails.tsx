@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
+import { toast } from "@/utils/notifications/toast";
 import {
   useAdminUserDetails,
   useUpdateUserAdmin,
@@ -9,6 +10,8 @@ import {
   useAdminUserLogs,
   useAdminUserNotifications,
   useDeleteUserAdmin,
+  useRemoveUserReferralAdmin,
+  useAdminImpersonateUser,
 } from "@/hooks/api/adminHooks";
 import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
@@ -24,6 +27,7 @@ import {
   Key,
   Check,
   Eye,
+  ExternalLink,
   Terminal,
   ChevronLeft,
   ChevronRight,
@@ -44,6 +48,9 @@ import {
   PenTool,
   FileText,
   CheckCircle2,
+  UserCheck,
+  UserPlus,
+  Edit2,
 } from "lucide-react";
 import { AdminUserPassengersTab } from "@/components/features/admin/user-details/AdminUserPassengersTab";
 import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/AdminUserVehiclesTab";
@@ -70,7 +77,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo, AdminUserTab, AdminUserSubTab, DriverContractConfigStatus,
-  ContractMultaTipo
+  ContractMultaTipo, IndicacaoStatus
 } from "@/types/enums";
 
 const ADMIN_USER_TABS = Object.values(AdminUserTab);
@@ -96,11 +103,15 @@ import {
 import { PhoneInput } from "@/components/forms";
 import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
-import { toPersistenceString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
+import { toPersistenceString, getNowBR, toISODateTimeBR, formatSafeBrazilianDate } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
 import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
 import { DispositivoCadastroLabels } from "@/utils/dispositivo-cadastro.utils";
+import { Banner } from "@/components/ui/Banner";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { openBrowserLink } from "@/utils/browser";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
@@ -152,9 +163,11 @@ export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, setPageTitle } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminConfigureReferralDialog, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
+  const removeReferralMutation = useRemoveUserReferralAdmin();
+  const impersonateUser = useAdminImpersonateUser();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
 
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
@@ -378,7 +391,7 @@ export default function AdminUserDetails() {
         data_fim_promocao: toDateInputValue(s.data_fim_promocao),
       });
     }
-  }, [data]);
+  }, [data, userForm]);
 
   const handleSaveUser = (formData: UserFormData) => {
     if (!id) return;
@@ -477,6 +490,19 @@ export default function AdminUserDetails() {
         }
       },
     });
+  };
+
+  const handleCopyImpersonateLink = async () => {
+    if (!id) return;
+    try {
+      const res = await impersonateUser.mutateAsync(id);
+      if (res?.impersonateUrl) {
+        await navigator.clipboard.writeText(res.impersonateUrl);
+        toast.success("Link de acesso copiado! Abra em uma janela anônima.");
+      }
+    } catch {
+      toast.error("Erro ao gerar link de acesso.");
+    }
   };
 
   const handleSaveSub = () => {
@@ -651,6 +677,20 @@ export default function AdminUserDetails() {
 
           {/* BOTÕES DE AÇÃO (TESTAR NOTIFICAÇÃO & RESETAR SENHA & EXCLUIR) */}
           <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <Button
+              type="button"
+              size="sm"
+              disabled={impersonateUser.isPending}
+              onClick={handleCopyImpersonateLink}
+              className="flex-1 md:flex-none rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25 hover:border-sky-500/70 hover:text-sky-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            >
+              {impersonateUser.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
+              ) : (
+                <ExternalLink className="h-4 w-4 text-sky-400" />
+              )}
+              <span>Link de Acesso</span>
+            </Button>
             <Button
               type="button"
               size="sm"
@@ -987,6 +1027,33 @@ export default function AdminUserDetails() {
                     <span className="font-medium text-slate-300 block">
                       {data.user.canal_aquisicao ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao : "—"}
                     </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Indicado por
+                    </span>
+                    {data.indicador ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleTabChange("dados");
+                        }}
+                        className="font-medium text-emerald-400 hover:underline text-left block"
+                      >
+                        {data.indicador.nome}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleTabChange("dados");
+                        }}
+                        className="font-medium text-slate-400 hover:text-slate-200 text-left block"
+                      >
+                        Cadastro Direto / Orgânico
+                      </button>
+                    )}
                   </div>
 
                   <div>
@@ -1718,6 +1785,170 @@ export default function AdminUserDetails() {
                 </CardContent>
               )}
             </Card>
+
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 xl:col-span-2">
+              <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-emerald-400" />
+                      Origem da Indicação
+                    </CardTitle>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Informações sobre a indicação que trouxe {data.user.nome} para a plataforma.
+                    </p>
+                  </div>
+
+                  {data.indicador ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          openAdminConfigureReferralDialog({
+                            userId: data.user.id,
+                            userName: data.user.nome,
+                            currentIndicadorId: data.indicador?.id,
+                            currentIndicadorNome: data.indicador?.nome,
+                          })
+                        }
+                        className="h-9 px-3 rounded-xl border-slate-700 bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold gap-1.5"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        Alterar Indicador
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          openConfirmationDialog({
+                            title: "Desvincular Indicador",
+                            description: `Tem certeza que deseja remover o vínculo de indicação de ${data.user.nome}?`,
+                            confirmText: "Sim, Desvincular",
+                            cancelText: "Cancelar",
+                            variant: "destructive",
+                            onConfirm: async () => {
+                              await removeReferralMutation.mutateAsync(data.user.id);
+                            },
+                          })
+                        }
+                        disabled={removeReferralMutation.isPending}
+                        className="h-9 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold gap-1.5"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Desvincular
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        openAdminConfigureReferralDialog({
+                          userId: data.user.id,
+                          userName: data.user.nome,
+                        })
+                      }
+                      className="h-9 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Atribuir Indicador
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {data.indicador ? (
+                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/10 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/10 pb-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                          Motorista Indicador
+                        </span>
+                        <p className="text-base font-bold text-white">{data.indicador.nome}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {data.indicador.status === IndicacaoStatus.PENDING && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <Clock className="h-3.5 w-3.5" />
+                            Em Teste (Aguardando 1ª Mensalidade)
+                          </span>
+                        )}
+                        {data.indicador.status === IndicacaoStatus.COMPLETED && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Convertido (Bônus Concedido)
+                          </span>
+                        )}
+                        {data.indicador.status === IndicacaoStatus.CANCELED && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                            Cancelado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                          WhatsApp / Telefone
+                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="font-mono font-medium text-slate-200">
+                            {phoneMask(data.indicador.telefone) || "—"}
+                          </span>
+                          {data.indicador.telefone && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const cleanPhone = data.indicador?.telefone?.replace(/\D/g, "") || "";
+                                if (cleanPhone) {
+                                  openBrowserLink(buildWhatsAppUrl(cleanPhone, `Olá ${data.indicador!.nome}!`));
+                                }
+                              }}
+                              className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                              title="Abrir no WhatsApp"
+                            >
+                              <WhatsAppIcon className="h-4 w-4 fill-current" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                          E-mail
+                        </span>
+                        <span className="font-medium text-slate-200 truncate block mt-1">
+                          {data.indicador.email || "—"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                          Data do Vínculo
+                        </span>
+                        <span className="font-medium text-slate-300 block mt-1">
+                          {data.indicador.created_at ? formatSafeBrazilianDate(data.indicador.created_at) : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Banner
+                      variant="neutral"
+                      title="Nenhum indicador vinculado"
+                      description="Este motorista realizou o cadastro diretamente na plataforma, sem link ou telefone de indicação."
+                    />
+                    <p className="text-xs text-slate-400">
+                      Caso ele informe que foi indicado por outro motorista, clique no botão &quot;Atribuir Indicador&quot; para pesquisar e vincular.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
@@ -2110,7 +2341,11 @@ export default function AdminUserDetails() {
                 />
               )}
               {activeSubTab === "indicacoes" && (
-                <AdminUserReferralTab user={data.user} referralSummary={data.referralSummary} />
+                <AdminUserReferralTab
+                  user={data.user}
+                  referralSummary={data.referralSummary}
+                  referredUsers={data.referredUsers}
+                />
               )}
             </div>
           </div>
