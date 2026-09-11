@@ -482,6 +482,8 @@ export interface DisparosHojeResumo {
   };
 }
 
+export type DisparosDiaResumo = DisparosHojeResumo;
+
 export interface VencimentoDetalhesResponse {
   dia: number;
   isHoje: boolean;
@@ -489,6 +491,7 @@ export interface VencimentoDetalhesResponse {
   ano: number;
   carteira: CarteiraDiaResumo;
   disparosHoje: DisparosHojeResumo | null;
+  disparosDia?: DisparosDiaResumo | null;
 }
 
 const BASE = "/admin";
