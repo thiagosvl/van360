@@ -32,12 +32,12 @@ const adminNavItems = [
     icon: Radio,
   },
   {
-    title: "Histórico de Atividades",
+    title: "Atividades",
     href: ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY,
     icon: Terminal,
   },
   {
-    title: "Histórico de Notificações",
+    title: "Notificações",
     href: ROUTES.PRIVATE.ADMIN.NOTIFICATIONS,
     icon: Bell,
   },
