@@ -22,8 +22,14 @@ function getActionBadgeStyle(acao: string) {
   if (normalized.includes("LOGIN") || normalized.includes("SESSAO")) {
     return "bg-sky-500/15 text-sky-400 border-sky-500/30";
   }
-  if (normalized.includes("CRIAR") || normalized.includes("CRIAD") || normalized.includes("CADASTRO") || normalized.includes("ADICIONAR")) {
+  if (normalized.includes("CRIAR") || normalized.includes("CRIAD") || normalized.includes("CADASTRO") || normalized.includes("CADASTRAD") || normalized.includes("ADICIONAR")) {
     return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+  }
+  if (normalized.includes("PRINCIPAL")) {
+    return "bg-indigo-500/15 text-indigo-400 border-indigo-500/30";
+  }
+  if (normalized.includes("NOTIFICACAO")) {
+    return "bg-cyan-500/15 text-cyan-400 border-cyan-500/30";
   }
   if (normalized.includes("ATUALIZAR") || normalized.includes("ATUALIZAD") || normalized.includes("ALTERAR") || normalized.includes("ALTERAD") || normalized.includes("EDITAR") || normalized.includes("EDITAD") || normalized.includes("CONCEDER")) {
     return "bg-amber-500/15 text-amber-400 border-amber-500/30";

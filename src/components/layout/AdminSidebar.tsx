@@ -27,12 +27,7 @@ const adminNavItems = [
     icon: Users,
   },
   {
-    title: "Radar de Usuários",
-    href: ROUTES.PRIVATE.ADMIN.USERS_RADAR,
-    icon: Radio,
-  },
-  {
-    title: "Atividades",
+    title: "Histórico de Atividades",
     href: ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY,
     icon: Terminal,
   },
@@ -40,6 +35,11 @@ const adminNavItems = [
     title: "Notificações",
     href: ROUTES.PRIVATE.ADMIN.NOTIFICATIONS,
     icon: Bell,
+  },
+  {
+    title: "Radar de Usuários",
+    href: ROUTES.PRIVATE.ADMIN.USERS_RADAR,
+    icon: Radio,
   },
   {
     title: "Configurações",

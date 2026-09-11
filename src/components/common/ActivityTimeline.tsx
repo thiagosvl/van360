@@ -22,6 +22,9 @@ import {
   CheckCircle2,
   Play,
   XCircle,
+  UserCheck,
+  Bell,
+  UserPlus,
 } from "lucide-react";
 
 interface ActivityTimelineProps {
@@ -79,6 +82,21 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
       return {
         icon: <MessageSquare className="w-3.5 h-3.5" />,
         color: "text-green-600 bg-green-50 border-green-100",
+      };
+    case AtividadeAcao.RESPONSAVEL_CADASTRADO:
+      return {
+        icon: <UserPlus className="w-3.5 h-3.5" />,
+        color: "text-emerald-600 bg-emerald-50 border-emerald-100",
+      };
+    case AtividadeAcao.RESPONSAVEL_PRINCIPAL:
+      return {
+        icon: <UserCheck className="w-3.5 h-3.5" />,
+        color: "text-indigo-600 bg-indigo-50 border-indigo-100",
+      };
+    case AtividadeAcao.RESPONSAVEL_NOTIFICACAO:
+      return {
+        icon: <Bell className="w-3.5 h-3.5" />,
+        color: "text-cyan-600 bg-cyan-50 border-cyan-100",
       };
   }
 
