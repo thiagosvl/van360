@@ -24,10 +24,9 @@ export default function AdminActivityHistory() {
   const [limit, setLimit] = useState("25");
 
   const today = toPersistenceString(getNowBR());
-  const sevenDaysAgo = toPersistenceString(new Date(getNowBR().getTime() - 7 * 24 * 60 * 60 * 1000));
 
   const [logsFilter, setLogsFilter] = useState({
-    dataInicio: sevenDaysAgo,
+    dataInicio: today,
     dataFim: today,
     acao: "all",
     entidade: "all",
@@ -59,8 +58,8 @@ export default function AdminActivityHistory() {
                 size="sm"
                 onClick={() => setIsMobileFiltersOpen(p => !p)}
                 className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
-                    ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                    : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                  ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
+                  : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
                   }`}
               >
                 <Filter className="h-3.5 w-3.5" />
