@@ -59,6 +59,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     selectedPlan,
     annualPrice,
     monthlyPrice,
+    regularMonthlyPrice,
     hasOverride,
     totalPrice,
     formattedPrice,
@@ -368,7 +369,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                         Mensal
                       </h3>
                       <p className="text-[11px] sm:text-sm text-slate-500 mt-0.5 line-clamp-2 leading-tight">
-                        Flexibilidade total
+                        Cancele quando quiser
                       </p>
                     </div>
                   </div>
@@ -377,6 +378,11 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                       {SubscriptionUtils.formatCurrency(monthlyPrice)}
                       <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">/mês</span>
                     </p>
+                    {hasActiveDiscount && (
+                      <p className={cn("text-[10px] sm:text-xs font-bold mt-0.5 whitespace-nowrap", !isAnual ? "text-[#f59e0b]" : "text-slate-400")}>
+                        Depois {SubscriptionUtils.formatCurrency(regularMonthlyPrice)}/mês
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

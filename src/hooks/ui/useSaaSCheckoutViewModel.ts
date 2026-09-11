@@ -359,6 +359,8 @@ export function useSaaSCheckoutViewModel({
     selectedPlan,
     annualPrice,
     monthlyPrice,
+    regularMonthlyPrice,
+    regularAnnualPrice,
     hasOverride,
     totalPrice,
     formattedPrice,
