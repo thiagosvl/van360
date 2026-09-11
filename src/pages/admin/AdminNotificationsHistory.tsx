@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Filter,
   RefreshCw,
+  RotateCcw,
   ChevronLeft,
   ChevronRight,
   Bell,
@@ -17,6 +18,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
+import { toast } from "@/utils/notifications/toast";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +36,10 @@ import {
   NOTIFICATION_FILTER_ALL,
 } from "@/components/features/admin/NotificationLogsList";
 import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
-import { useAdminGlobalNotifications } from "@/hooks/api/admin/useAdminNotificationHooks";
+import {
+  useAdminGlobalNotifications,
+  useAdminRetryBulkNotifications,
+} from "@/hooks/api/admin/useAdminNotificationHooks";
 import { useDebounce } from "@/hooks/ui/useDebounce";
 
 interface ExtendedNotificationFiltersState extends NotificationFiltersState {
@@ -44,7 +49,7 @@ interface ExtendedNotificationFiltersState extends NotificationFiltersState {
 }
 
 export default function AdminNotificationsHistory() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openConfirmationDialog } = useLayout();
   const queryClient = useQueryClient();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -124,6 +129,67 @@ export default function AdminNotificationsHistory() {
     filters.dataInicio !== sevenDaysAgo ||
     filters.dataFim !== today;
 
+  const bulkRetryMutation = useAdminRetryBulkNotifications();
+
+  const handleBatchRetryFiltered = () => {
+    openConfirmationDialog({
+      title: "Reprocessar Notificações em Lote",
+      description: (
+        <div className="space-y-3 text-left">
+          <p className="text-xs text-slate-300">
+            Deseja reenfileirar todas as notificações com falha ou canceladas que atendem aos filtros ativos?
+          </p>
+          <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5 text-xs text-slate-400 font-mono">
+            <div>
+              <span className="text-slate-500">Período: </span>
+              <strong className="text-slate-200">{filters.dataInicio} até {filters.dataFim}</strong>
+            </div>
+            {filters.canal !== NOTIFICATION_FILTER_ALL && (
+              <div>
+                <span className="text-slate-500">Canal: </span>
+                <strong className="text-slate-200">{filters.canal}</strong>
+              </div>
+            )}
+            {filters.categoria !== NotificationCategoryEnum.TODOS && (
+              <div>
+                <span className="text-slate-500">Categoria: </span>
+                <strong className="text-slate-200">{filters.categoria}</strong>
+              </div>
+            )}
+            {filters.searchMotorista && (
+              <div>
+                <span className="text-slate-500">Motorista: </span>
+                <strong className="text-slate-200">{filters.searchMotorista}</strong>
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+      confirmText: "Reenfileirar Notificações",
+      cancelText: "Cancelar",
+      variant: "default",
+      onConfirm: async () => {
+        try {
+          const res = await bulkRetryMutation.mutateAsync({
+            filters: {
+              categoria: filters.categoria === NotificationCategoryEnum.TODOS ? undefined : filters.categoria,
+              canal: filters.canal === NOTIFICATION_FILTER_ALL ? undefined : filters.canal,
+              status: filters.status === NOTIFICATION_FILTER_ALL ? undefined : filters.status,
+              search: filters.search.trim() || undefined,
+              searchMotorista: filters.searchMotorista.trim() || undefined,
+              dataInicio: filters.dataInicio || undefined,
+              dataFim: filters.dataFim || undefined,
+            },
+          });
+          toast.success(res.message || "Notificações reenfileiradas com sucesso!");
+        } catch (err: unknown) {
+          const error = err as Error;
+          toast.error(error.message || "Erro ao reenfileirar notificações.");
+        }
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
@@ -134,6 +200,20 @@ export default function AdminNotificationsHistory() {
               <span>Histórico de Notificações</span>
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleBatchRetryFiltered}
+                disabled={isFetching || bulkRetryMutation.isPending}
+                className="h-8 rounded-xl text-amber-400 bg-slate-900/60 border border-slate-800/80 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/40 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
+              >
+                {bulkRetryMutation.isPending ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="h-3.5 w-3.5" />
+                )}
+                <span className="hidden sm:inline">Reprocessar Falhas</span>
+              </Button>
               <Button
                 type="button"
                 size="sm"

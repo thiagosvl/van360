@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminNotificationApi, AdminNotificationQueryParams } from "@/services/api/admin/admin-notification.api";
 
 export function useAdminUserNotifications(id: string, params?: AdminNotificationQueryParams) {
@@ -30,6 +30,28 @@ export function useAdminGlobalNotifications(params?: AdminNotificationQueryParam
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminRetryNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, executeImmediately }: { id: string; executeImmediately?: boolean }) =>
+      adminNotificationApi.retryNotification(id, executeImmediately),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
+  });
+}
+
+export function useAdminRetryBulkNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { ids?: string[]; filters?: AdminNotificationQueryParams }) =>
+      adminNotificationApi.retryBulkNotifications(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
   });
 }
 

@@ -67,6 +67,20 @@ export interface AdminGlobalNotificationsResponse extends AdminUserNotifications
   kpis?: NotificationKpisDTO;
 }
 
+export interface RetrySingleNotificationResponse {
+  success: boolean;
+  status?: string;
+  providerMessageId?: string | null;
+  message: string;
+  error?: string;
+}
+
+export interface RetryBulkNotificationsResponse {
+  success: boolean;
+  count: number;
+  message: string;
+}
+
 const BASE = "/admin";
 
 export const adminNotificationApi = {
@@ -78,5 +92,11 @@ export const adminNotificationApi = {
 
   getGlobalNotifications: (params?: AdminNotificationQueryParams) =>
     apiClient.get<AdminGlobalNotificationsResponse>(`${BASE}/notifications`, { params }).then(r => r.data),
+
+  retryNotification: (id: string, executeImmediately = true) =>
+    apiClient.post<RetrySingleNotificationResponse>(`${BASE}/notifications/${id}/retry`, { executeImmediately }).then(r => r.data),
+
+  retryBulkNotifications: (payload: { ids?: string[]; filters?: AdminNotificationQueryParams }) =>
+    apiClient.post<RetryBulkNotificationsResponse>(`${BASE}/notifications/retry-bulk`, payload).then(r => r.data),
 };
 

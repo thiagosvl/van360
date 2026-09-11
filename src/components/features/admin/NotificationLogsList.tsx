@@ -22,6 +22,7 @@ import {
 import { AdminNotificationLogItem } from "@/services/api/admin/admin-notification.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { toast } from "@/utils/notifications/toast";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
@@ -30,6 +31,10 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { phoneMask } from "@/utils/masks";
 import { formatShortName } from "@/utils/formatters/name";
 import { ROUTES } from "@/constants/routes";
+import {
+  useAdminRetryNotification,
+  useAdminRetryBulkNotifications,
+} from "@/hooks/api/admin/useAdminNotificationHooks";
 import {
   Select,
   SelectContent,
@@ -64,6 +69,7 @@ interface NotificationLogsListProps {
   filters?: NotificationFiltersState;
   onFiltersChange?: (newFilters: NotificationFiltersState) => void;
   hideDriverColumn?: boolean;
+  enableSelection?: boolean;
 }
 
 function renderChannelBadge(canal: string) {
@@ -171,9 +177,24 @@ export function NotificationLogsList({
   filters,
   onFiltersChange,
   hideDriverColumn = true,
+  enableSelection = true,
 }: NotificationLogsListProps) {
   const [selectedNotification, setSelectedNotification] = useState<AdminNotificationLogItem | null>(null);
   const [copied, setCopied] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const singleRetryMutation = useAdminRetryNotification();
+  const bulkRetryMutation = useAdminRetryBulkNotifications();
+
+  const isEligibleForRetry = (status: string) => {
+    const norm = (status || "").toUpperCase();
+    return (
+      norm === NotificationStatusEnum.FAILED ||
+      norm === NotificationStatusEnum.RETRY_PENDING ||
+      norm === NotificationStatusEnum.CANCELLED ||
+      norm === "ERROR"
+    );
+  };
 
   const isControlled = !!(filters && onFiltersChange);
 
@@ -261,6 +282,51 @@ export function NotificationLogsList({
       return true;
     });
   }, [isControlled, notifications, activeFilters]);
+
+  const eligibleNotifications = useMemo(() => {
+    return filteredNotifications.filter((n) => isEligibleForRetry(n.status));
+  }, [filteredNotifications]);
+
+  const handleRetrySingle = async (id: string) => {
+    try {
+      const res = await singleRetryMutation.mutateAsync({ id, executeImmediately: true });
+      if (res.success) {
+        toast.success(res.message || "Notificação reenviada com sucesso!");
+        if (selectedNotification && selectedNotification.id === id) {
+          setSelectedNotification({
+            ...selectedNotification,
+            status: res.status || NotificationStatusEnum.SENT,
+            erro_mensagem: null,
+            provider_message_id: res.providerMessageId || selectedNotification.provider_message_id,
+          });
+        }
+      } else {
+        toast.error(res.message || "Falha ao reenviar notificação.");
+        if (selectedNotification && selectedNotification.id === id) {
+          setSelectedNotification({
+            ...selectedNotification,
+            status: res.status || NotificationStatusEnum.FAILED,
+            erro_mensagem: res.error || res.message,
+          });
+        }
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Erro ao processar retentativa.");
+    }
+  };
+
+  const handleRetryBulkSelected = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      const res = await bulkRetryMutation.mutateAsync({ ids: Array.from(selectedIds) });
+      toast.success(res.message || `${selectedIds.size} notificações reenfileiradas com sucesso!`);
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Erro ao reprocessar notificações selecionadas.");
+    }
+  };
 
   const handleCopyPayload = () => {
     if (!selectedNotification) return;
@@ -398,6 +464,32 @@ export function NotificationLogsList({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-800/80 bg-slate-900/60 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                {enableSelection && (
+                  <th className="py-3.5 px-3 w-10 text-center">
+                    <Checkbox
+                      checked={
+                        eligibleNotifications.length > 0 &&
+                        eligibleNotifications.every((n) => selectedIds.has(n.id))
+                          ? true
+                          : eligibleNotifications.some((n) => selectedIds.has(n.id))
+                          ? "indeterminate"
+                          : false
+                      }
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          const next = new Set(selectedIds);
+                          eligibleNotifications.forEach((n) => next.add(n.id));
+                          setSelectedIds(next);
+                        } else {
+                          const next = new Set(selectedIds);
+                          eligibleNotifications.forEach((n) => next.delete(n.id));
+                          setSelectedIds(next);
+                        }
+                      }}
+                      disabled={eligibleNotifications.length === 0}
+                    />
+                  </th>
+                )}
                 <th className="py-3.5 px-5">Evento & Detalhes</th>
                 {!hideDriverColumn && <th className="py-3.5 px-4">Motorista</th>}
                 <th className="py-3.5 px-4">Destinatário</th>
@@ -421,6 +513,23 @@ export function NotificationLogsList({
 
                 return (
                   <tr key={item.id} className="hover:bg-slate-800/30 transition-colors group">
+                    {enableSelection && (
+                      <td className="py-3.5 px-3 text-center">
+                        <Checkbox
+                          checked={selectedIds.has(item.id)}
+                          onCheckedChange={(checked) => {
+                            const next = new Set(selectedIds);
+                            if (checked) {
+                              next.add(item.id);
+                            } else {
+                              next.delete(item.id);
+                            }
+                            setSelectedIds(next);
+                          }}
+                          disabled={!isEligibleForRetry(item.status)}
+                        />
+                      </td>
+                    )}
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center border shrink-0 ${meta.iconBg}`}>
@@ -556,6 +665,20 @@ export function NotificationLogsList({
               >
                 <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
                   <div className="flex items-center gap-3">
+                    {enableSelection && (
+                      <div className="pt-0.5">
+                        <Checkbox
+                          checked={selectedIds.has(item.id)}
+                          onCheckedChange={(checked) => {
+                            const next = new Set(selectedIds);
+                            if (checked) next.add(item.id);
+                            else next.delete(item.id);
+                            setSelectedIds(next);
+                          }}
+                          disabled={!isEligibleForRetry(item.status)}
+                        />
+                      </div>
+                    )}
                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center border shrink-0 ${meta.iconBg}`}>
                       <Icon className={`h-5 w-5 ${meta.iconColor}`} />
                     </div>
@@ -650,6 +773,43 @@ export function NotificationLogsList({
           </>
         )}
       </div>
+
+      {enableSelection && selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-slate-700/80 shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-4 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-ping" />
+            <span className="text-xs font-bold text-slate-200 whitespace-nowrap">
+              {selectedIds.size} {selectedIds.size === 1 ? "selecionada" : "selecionadas"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="h-8 text-xs font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl"
+              disabled={bulkRetryMutation.isPending}
+            >
+              Limpar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleRetryBulkSelected}
+              disabled={bulkRetryMutation.isPending}
+              className="h-8 text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center gap-1.5 shadow-md shadow-blue-900/30"
+            >
+              {bulkRetryMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3.5 w-3.5" />
+              )}
+              <span>Retentar Selecionadas</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {selectedNotification && (
         <AdminBaseDialog
@@ -776,6 +936,16 @@ export function NotificationLogsList({
           </AdminBaseDialog.Body>
 
           <AdminBaseDialog.Footer>
+            {selectedNotification && isEligibleForRetry(selectedNotification.status) && (
+              <AdminBaseDialog.Action
+                label={singleRetryMutation.isPending ? "Enviando..." : "Retentar Envio Agora"}
+                variant="primary"
+                icon={<RotateCcw className="h-4 w-4 mr-1.5" />}
+                isLoading={singleRetryMutation.isPending}
+                disabled={singleRetryMutation.isPending}
+                onClick={() => handleRetrySingle(selectedNotification.id)}
+              />
+            )}
             <AdminBaseDialog.Action
               label="Fechar"
               variant="secondary"
