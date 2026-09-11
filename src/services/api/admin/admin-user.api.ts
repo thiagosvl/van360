@@ -134,6 +134,8 @@ export interface AdminUserPendingRequestItem {
   cidade: string | null;
   escolas?: { nome: string } | null;
   created_at: string;
+  dispositivo_cadastro?: string | null;
+  metadados_cadastro?: Record<string, unknown> | null;
 }
 
 export interface AdminUserVehicleItem {

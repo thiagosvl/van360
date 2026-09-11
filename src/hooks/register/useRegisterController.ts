@@ -3,14 +3,15 @@ import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { RegistrarPayloadDTO } from "@/services/api/usuario.api";
 import { sessionManager } from "@/services/sessionManager";
-import { getDispositivoCadastro, isNativeApp } from "@/utils/detectPlatform";
-import { useAttribution, getStoredAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
+import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
+import { useAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
 import { getCachedPushTokenInfo } from "@/hooks/ui/usePushNotifications";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { isNativeApp } from "@/utils/detectPlatform";
 
 export interface DuplicateError {
   field: "email" | "cpfcnpj" | "telefone" | "generic";
@@ -72,9 +73,7 @@ export function useRegisterController() {
       setLoading(true);
       setDuplicateError(null);
       const referralCode = localStorage.getItem("van360_referral_code") || undefined;
-      const attribution = getStoredAttribution();
-      const dispositivo_cadastro = getDispositivoCadastro();
-
+      const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
       const cachedPush = await getCachedPushTokenInfo();
 
       const payload: RegistrarPayloadDTO = {
@@ -91,10 +90,7 @@ export function useRegisterController() {
         dispositivo_cadastro,
         push_token: cachedPush?.token,
         platform: cachedPush?.platform,
-        metadados_cadastro: attribution ? {
-          referrer: attribution.referrer,
-          utm: attribution.utm,
-        } : undefined,
+        metadados_cadastro,
       };
 
       const result = await usuarioApi.registrar(payload);

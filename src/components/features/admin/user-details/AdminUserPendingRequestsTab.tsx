@@ -15,6 +15,7 @@ import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/utils/formatters/date";
 import { cn } from "@/lib/utils";
+import { AdminSolicitacaoAccessDetails } from "./AdminSolicitacaoAccessDetails";
 
 interface AdminUserPendingRequestsTabProps {
   solicitacoes: AdminUserPendingRequestItem[];
@@ -205,13 +206,13 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                       <th className="py-3.5 px-4">Responsável</th>
                       <th className="py-3.5 px-4">Escola</th>
                       <th className="py-3.5 px-4">Data da Solicitação</th>
+                      <th className="py-3.5 px-4">Acesso / Origem</th>
                       <th className="py-3.5 px-6 text-right">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-xs">
                     {filtered.map((s) => (
                       <tr key={s.id} className="hover:bg-slate-800/30 transition-colors group">
-                        {/* SOLICITANTE */}
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
                             <div className="h-9 w-9 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center font-black text-xs border border-amber-500/20 shrink-0">
@@ -231,7 +232,6 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                           </div>
                         </td>
 
-                        {/* RESPONSÁVEL */}
                         <td className="py-4 px-4">
                           {s.nome_responsavel ? (
                             <div>
@@ -249,14 +249,12 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                           )}
                         </td>
 
-                        {/* ESCOLA */}
                         <td className="py-4 px-4">
                           <p className="font-medium text-slate-300 truncate">
                             {s.escolas?.nome || "Não informada"}
                           </p>
                         </td>
 
-                        {/* DATA */}
                         <td className="py-4 px-4">
                           <span className="font-medium text-slate-300 text-xs">
                             {new Date(s.created_at).toLocaleDateString("pt-BR")}
@@ -267,7 +265,15 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                           </span>
                         </td>
 
-                        {/* STATUS */}
+                        <td className="py-4 px-4">
+                          <AdminSolicitacaoAccessDetails
+                            dispositivoCadastro={s.dispositivo_cadastro}
+                            metadadosCadastro={s.metadados_cadastro}
+                            createdAt={s.created_at}
+                            variant="table"
+                          />
+                        </td>
+
                         <td className="py-4 px-6 text-right">
                           <Badge
                             variant="outline"
@@ -345,6 +351,18 @@ export function AdminUserPendingRequestsTab({ solicitacoes, userId }: AdminUserP
                         </span>
                       </div>
                     )}
+
+                    <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between gap-2">
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        Acesso / Origem
+                      </span>
+                      <AdminSolicitacaoAccessDetails
+                        dispositivoCadastro={s.dispositivo_cadastro}
+                        metadadosCadastro={s.metadados_cadastro}
+                        createdAt={s.created_at}
+                        variant="mobile"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

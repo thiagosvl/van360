@@ -22,6 +22,8 @@ import { toast } from "@/utils/notifications/toast";
 import { getMessage } from "@/constants/messages";
 
 import { prePassageiroSchema, PrePassageiroFormData } from "@/schemas/prePassageiroSchema";
+import { useAttribution } from "@/hooks/business/useAttribution";
+import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
 
 export { prePassageiroSchema, type PrePassageiroFormData };
 
@@ -30,6 +32,8 @@ export function usePassageiroExternalForm() {
   useSEO({
     noindex: true,
   });
+
+  useAttribution();
 
   const { motoristaId } = useParams();
   const navigate = useNavigate();
@@ -179,10 +183,14 @@ export function usePassageiroExternalForm() {
 
       console.log("📤 [PassageiroExternalForm] Payload enviado para API:", payload);
 
+      const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
+
       await prePassageiroApi.createPrePassageiro({
         ...payload,
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,
         usuario_id: motoristaId,
+        dispositivo_cadastro,
+        metadados_cadastro,
       });
 
       console.log("✅ [PassageiroExternalForm] Cadastro realizado com sucesso!");

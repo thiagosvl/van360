@@ -37,4 +37,6 @@ export interface PrePassageiro {
     data_fim_transporte?: string;
     data_inicio_cobranca?: string;
     data_fim_cobranca?: string;
+    dispositivo_cadastro?: string | null;
+    metadados_cadastro?: Record<string, unknown> | null;
 }

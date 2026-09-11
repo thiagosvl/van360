@@ -64,9 +64,6 @@ export const SubscriptionUtils = {
     return plans.find((p) => p.id === planId);
   },
 
-  /**
-   * Calcula os dias restantes de trial. Retorna 0 se expirado ou nulo.
-   */
   calculateTrialDaysLeft: (trialEndsAt?: string | Date | null, referenceDate?: Date): number => {
     if (!trialEndsAt) return 0;
     const ref = referenceDate || getNowBR();
