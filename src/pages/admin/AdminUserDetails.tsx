@@ -103,7 +103,7 @@ import {
 import { PhoneInput } from "@/components/forms";
 import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
-import { toPersistenceString, getNowBR, toISODateTimeBR, formatSafeBrazilianDate } from "@/utils/dateUtils";
+import { toPersistenceString, getNowBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
 import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
@@ -1097,7 +1097,7 @@ export default function AdminUserDetails() {
                       Data de Cadastro
                     </span>
                     <span className="font-medium text-slate-300 block">
-                      {formatDate(data.user.created_at)}
+                      {formatDateTime(data.user.created_at)}
                     </span>
                   </div>
                 </div>

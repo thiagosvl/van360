@@ -99,8 +99,17 @@ export default function SubscriptionPage() {
   const isTrial = subscription?.status === SubscriptionStatus.TRIAL;
 
   const isTrialExpired = (() => {
-    if (!isTrial || !subscription?.trial_ends_at) return false;
-    return differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()) < 0;
+    if (isTrial && subscription?.trial_ends_at) {
+      return differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()) < 0;
+    }
+    if (
+      subscription?.status === SubscriptionStatus.EXPIRED &&
+      !!subscription?.trial_ends_at &&
+      !subscription?.data_vencimento
+    ) {
+      return true;
+    }
+    return false;
   })();
 
   const isCanceled = subscription?.status === SubscriptionStatus.CANCELED;
@@ -150,7 +159,7 @@ export default function SubscriptionPage() {
   const handleCancelSubscription = () => {
     openConfirmationDialog({
       title: "Cancelar Assinatura",
-      description: "Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso as funcionalidades e não será mais cobrado.",
+      description: "Tem certeza que deseja cancelar sua assinatura? Você não receberá novas cobranças e seu acesso será suspenso. Seus dados continuarão salvos e você poderá reativar a qualquer momento.",
       confirmText: "Sim, Cancelar",
       cancelText: "Voltar",
       variant: "destructive",
@@ -405,7 +414,7 @@ export default function SubscriptionPage() {
           </aside>
         </div>
 
-        {!isCanceled && !isTrial && (
+        {subscription?.status === SubscriptionStatus.ACTIVE && !!subscription?.data_vencimento && (
           <div className="flex justify-center pt-10">
             <button
               type="button"

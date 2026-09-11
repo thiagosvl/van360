@@ -36,11 +36,10 @@ export function UnifiedEmptyState({
         </div>
         {action && (
           <Button
-            variant="outline"
-            className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
+            className="border-none bg-[#1a3a5c] hover:bg-[#16314f] text-white hover:text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
             onClick={action.onClick}
           >
-            {action.icon && <action.icon className="w-3.5 h-3.5 mr-2 opacity-70" />}
+            {action.icon && <action.icon className="w-3.5 h-3.5 mr-2 opacity-80 text-white" />}
             {action.label}
           </Button>
         )}
