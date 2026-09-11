@@ -79,7 +79,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {escola.passageiros}{" "}
                       <span className="text-[10px] font-medium text-slate-400">
-                        alunos
+                        {escola.passageiros === 1 ? "aluno" : "alunos"}
                       </span>
                     </span>
                   </div>
@@ -130,7 +130,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {periodo.passageiros}{" "}
                       <span className="text-[10px] font-medium text-slate-400">
-                        alunos
+                        {periodo.passageiros === 1 ? "aluno" : "alunos"}
                       </span>
                     </span>
                   </div>
@@ -184,7 +184,7 @@ export const RelatoriosOperacional = ({
                       <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                         {veiculo.passageiros}{" "}
                         <span className="text-[10px] font-medium text-slate-400">
-                          alunos
+                          {veiculo.passageiros === 1 ? "aluno" : "alunos"}
                         </span>
                       </span>
                     </div>

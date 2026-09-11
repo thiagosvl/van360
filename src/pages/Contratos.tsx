@@ -102,7 +102,12 @@ const Contratos = () => {
                 {activeTab === ContratoTab.PENDENTES ? "Assinaturas Pendentes" : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "ALUNOS" : "CONTRATOS"}
+                {contratos.length}{" "}
+                {busca
+                  ? (contratos.length === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+                  : activeTab === ContratoTab.SEM_CONTRATO
+                    ? (contratos.length === 1 ? "ALUNO" : "ALUNOS")
+                    : (contratos.length === 1 ? "CONTRATO" : "CONTRATOS")}
               </span>
             </div>
 

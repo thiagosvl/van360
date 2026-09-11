@@ -143,7 +143,7 @@ export function EscolasList({
                           {escola.passageiros_ativos_count ?? 0}
                         </span>
                         <span className="text-xs font-medium text-slate-500">
-                          alunos
+                          {(escola.passageiros_ativos_count ?? 0) === 1 ? "aluno" : "alunos"}
                         </span>
                       </div>
                     </div>

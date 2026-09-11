@@ -120,7 +120,7 @@ export default function AdminVencimentoDetalhesDialog({
                         className="text-xs font-bold rounded-lg data-[state=active]:bg-blue-600 data-[state=active]:text-white px-3 py-1.5"
                       >
                         <Users className="h-3.5 w-3.5 mr-1.5" />
-                        Carteira do Dia {dia} ({detalhes.carteira.totalAlunos} alunos)
+                        Carteira do Dia {dia} ({detalhes.carteira.totalAlunos} {detalhes.carteira.totalAlunos === 1 ? "aluno" : "alunos"})
                       </TabsTrigger>
                     </TabsList>
 
