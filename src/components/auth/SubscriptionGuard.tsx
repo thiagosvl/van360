@@ -1,33 +1,34 @@
 import React from "react";
-import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
 import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { SubscriptionStatus } from "@/types/enums";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { Navigate, useLocation } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { InitialLoading } from "@/components/auth/InitialLoading";
 
 interface SubscriptionGuardProps {
   children: React.ReactNode;
 }
 
 export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({ children }) => {
-  const { session } = useSession();
+  const { session, loading: sessionLoading } = useSession();
   const { can } = usePermissions();
-  const { subscription, isLoading } = useSubscriptionStatus(session?.user?.id);
+  const { subscription, isLoading, isBlocked } = useSubscriptionAccess(session?.user?.id);
   const location = useLocation();
 
-  const isExpired =
-    subscription?.status === SubscriptionStatus.EXPIRED ||
-    subscription?.status === SubscriptionStatus.CANCELED;
-  const isTrialExpired =
-    subscription?.status === SubscriptionStatus.TRIAL &&
-    !!subscription?.trial_ends_at &&
-    new Date(subscription.trial_ends_at) < new Date();
+  const isChecking = sessionLoading || isLoading || !subscription;
 
-  if (!isLoading && (isExpired || isTrialExpired)) {
+  if (isChecking) {
+    return <InitialLoading />;
+  }
+
+  if (isBlocked) {
     if (can("assinatura.gerenciar")) {
-      if (location.pathname !== ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION) {
+      if (
+        location.pathname !== ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION &&
+        location.pathname !== ROUTES.PRIVATE.MOTORISTA.ACCOUNT
+      ) {
         return <Navigate to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} replace />;
       }
     } else {
@@ -42,3 +43,4 @@ export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({ children }
 
   return <>{children}</>;
 };
+

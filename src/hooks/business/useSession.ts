@@ -6,11 +6,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 export function useSession() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const userRef = useRef<AuthUser | null>(null);
-  const initialLoadDoneRef = useRef(false);
+  const [session, setSession] = useState<Session | null>(() => sessionManager.getCurrentSession());
+  const [user, setUser] = useState<AuthUser | null>(() => sessionManager.getCurrentUser());
+  const [loading, setLoading] = useState(() => !sessionManager.getCurrentSession());
+  const userRef = useRef<AuthUser | null>(user);
+  const initialLoadDoneRef = useRef(!!session);
 
   useEffect(() => {
     let mounted = true;
@@ -22,7 +22,6 @@ export function useSession() {
         const newUserId = session?.user?.id ?? null;
         const currentUserId = userRef.current?.id ?? null;
         
-        // Handle Initial Session (always updates state)
         if (event === "INITIAL_SESSION") {
             const newUser = session?.user ?? null;
             setSession(session);
@@ -33,7 +32,6 @@ export function useSession() {
             return; 
         }
 
-        // Handle Status Changes
         if (newUserId !== currentUserId) {
           const newUser = session?.user ?? null;
           setSession(session);
@@ -45,7 +43,6 @@ export function useSession() {
            userRef.current = null;
         }
         
-        // Always ensure loading is false after any auth event
         setLoading(false);
       }
     );

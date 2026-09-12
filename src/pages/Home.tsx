@@ -1,4 +1,3 @@
-import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { AcessoRapido } from "@/components/features/home/AcessoRapido";
 import confetti from "canvas-confetti";
@@ -12,20 +11,12 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
-import { SubscriptionStatus, SubscriptionIdentifer, UserType, AppPermissionStatus, PermissionRescueType } from "@/types/enums";
+import { SubscriptionIdentifer, UserType, AppPermissionStatus, PermissionRescueType } from "@/types/enums";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/utils/formatters/currency";
 import { getMesNome, formatFirstName } from "@/utils/formatters";
 import {
-  FileText,
-  Plus,
-  TrendingDown,
-  Route,
   GraduationCap,
   Users,
-  Car,
-  Rocket,
-  Settings,
   Eye,
   EyeOff,
   UserPlus,
@@ -45,12 +36,14 @@ import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
 
 const Home = () => {
-  const { isSubConta, can } = usePermissions();
+  const { isSubConta } = usePermissions();
   const { pushStatus, locationStatus, requestPushPermission, requestLocationPermission } = useAppPermissions();
-  const { hideValues, toggleHideValues, formatPrivateCurrency, formatPrivateNumber } = usePrivacy();
+  const { hideValues, toggleHideValues, formatPrivateNumber } = usePrivacy();
   const {
     profile,
-    subscription,
+    isPastDue,
+    isTrial,
+    trialDaysLeft,
     plans,
     isLoading,
     financeiro,
@@ -182,7 +175,7 @@ const Home = () => {
             )}
 
             {/* Banner de Carência (SaaS) */}
-            {!isSubConta && subscription?.status === SubscriptionStatus.PAST_DUE && (
+            {!isSubConta && isPastDue && (
               <PastDueBanner
                 onRegularize={() => {
                   if (plans && plans.length > 0) {
@@ -308,21 +301,10 @@ const Home = () => {
             </div>
           )}
 
-          {/* Banner de Trial (SaaS) - Oculto nos primeiros 5 dias */}
-          {!isSubConta && subscription?.status === SubscriptionStatus.TRIAL && subscription.trialDaysLeft !== undefined && daysSinceCreation >= 5 && (
+          {!isSubConta && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
             <TrialBanner
-              daysLeft={subscription.trialDaysLeft}
-              onSubscribe={() => {
-                if (plans && plans.length > 0) {
-                  const defaultPlan = plans.find(p => p.identificador === SubscriptionIdentifer.YEARLY) ?? plans[0];
-                  openSaaSCheckoutDialog({
-                    plans,
-                    initialPlanId: defaultPlan.id
-                  });
-                } else {
-                  navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
-                }
-              }}
+              daysLeft={trialDaysLeft}
+              onSubscribe={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
             />
           )}
 

@@ -559,6 +559,9 @@ export const adminUserApi = {
 
   impersonateUser: (id: string) =>
     apiClient.post<ImpersonateUserResponse>(`${BASE}/users/${id}/impersonate`).then(r => r.data),
+
+  deleteInvoice: (id: string) =>
+    apiClient.delete<{ success: boolean; message: string }>(`${BASE}/invoices/${id}`).then(r => r.data),
 };
 
 export interface ImpersonateUserResponse {

@@ -92,11 +92,11 @@ export const AcessoRapido = ({
         isAction: true,
       },
       {
-        id: AcessoRapidoItemKey.EQUIPE,
-        label: "Minha Equipe",
-        icon: Users2,
-        to: ROUTES.PRIVATE.MOTORISTA.TEAM,
-        show: can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES),
+        id: AcessoRapidoItemKey.CONTRATOS,
+        label: "Contratos",
+        icon: FileText,
+        to: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
+        show: can(PERMISSIONS.CONTRATOS_GERENCIAR),
       },
       {
         id: AcessoRapidoItemKey.GASTOS,
@@ -106,18 +106,18 @@ export const AcessoRapido = ({
         show: can(PERMISSIONS.GASTOS_VISUALIZAR),
       },
       {
-        id: AcessoRapidoItemKey.CONTRATOS,
-        label: "Contratos",
-        icon: FileText,
-        to: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
-        show: can(PERMISSIONS.CONTRATOS_GERENCIAR),
-      },
-      {
         id: AcessoRapidoItemKey.RELATORIOS,
         label: "Relatórios",
         icon: ChartArea,
         to: ROUTES.PRIVATE.MOTORISTA.REPORTS,
         show: can(PERMISSIONS.RELATORIOS_VISUALIZAR),
+      },
+      {
+        id: AcessoRapidoItemKey.EQUIPE,
+        label: "Minha Equipe",
+        icon: Users2,
+        to: ROUTES.PRIVATE.MOTORISTA.TEAM,
+        show: can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES),
       },
       {
         id: AcessoRapidoItemKey.ESCOLAS,
@@ -194,11 +194,10 @@ export const AcessoRapido = ({
               </>
             );
 
-            const itemClassName = `flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group cursor-pointer border-r border-b border-slate-100 ${
-              item.isAction
+            const itemClassName = `flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group cursor-pointer border-r border-b border-slate-100 ${item.isAction
                 ? "bg-[#f4f8fd] hover:bg-[#eaf2fc] active:bg-[#dfeaf8]"
                 : "bg-white hover:bg-slate-50/80 active:bg-slate-100"
-            }`;
+              }`;
 
             if (item.to) {
               return (

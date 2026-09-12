@@ -1,10 +1,7 @@
 import { memo, useMemo, useState } from "react";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { getWhatsAppUrl } from "@/constants";
-import { openBrowserLink } from "@/utils/browser";
+import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
 import {
   ChevronDown,
-  ExternalLink,
   HelpCircle,
   Lightbulb,
   MessageCircle,
@@ -66,21 +63,21 @@ const FAQS_DATA: FaqItemData[] = [
     category: "cobrancas",
     question: "Como dar baixa no pagamento de uma parcela?",
     answer:
-      "Acesse a aba Parcelas, localize o aluno desejado e clique em 'Dar Baixa'. Escolha a forma de pagamento (PIX, Dinheiro, Transferência ou Cartão) e confirme. Se desejar, o comprovante de pagamento fica pronto na hora para compartilhar no WhatsApp dos pais.",
+      "Acesse a aba Parcelas, localize o aluno desejado e clique em 'Dar Baixa'. Escolha a forma de pagamento (Pix, Dinheiro, Transferência ou Cartão) e confirme. Se desejar, o comprovante de pagamento fica pronto na hora para compartilhar no WhatsApp dos pais.",
   },
   {
     id: "lembretes-automaticos",
     category: "cobrancas",
     question: "Como funcionam os lembretes automáticos de parcelas para os pais?",
     answer:
-      "O Van360 envia mensagens educadas de cobrança antes da data de vencimento, no dia do vencimento e em caso de atraso (caso estejam ativadas em Conta > Notificações aos Pais). A sua chave PIX cadastrada é enviada junto na mensagem para facilitar o pagamento. Assim que você registra a baixa da parcela no sistema, os lembretes seguintes são cancelados automaticamente.",
+      "O Van360 envia mensagens educadas de cobrança antes da data de vencimento, no dia do vencimento e em caso de atraso (caso estejam ativadas em Conta > Notificações aos Pais). A sua chave Pix cadastrada é enviada junto na mensagem para facilitar o pagamento. Assim que você registra a baixa da parcela no sistema, os lembretes seguintes são cancelados automaticamente.",
   },
   {
     id: "configurar-pix",
     category: "cobrancas",
-    question: "Como cadastrar minha chave PIX de recebimento?",
+    question: "Como cadastrar minha chave Pix de recebimento?",
     answer:
-      "Vá em Conta > Pagamentos & PIX. Lá você informa sua chave PIX principal (CPF, CNPJ, Celular, E-mail ou Chave Aleatória). Essa chave será incluída automaticamente nos lembretes de cobrança enviados aos pais.",
+      "Vá em Conta > Pagamentos & Pix. Lá você informa sua chave Pix principal (CPF, CNPJ, Celular, E-mail ou Chave Aleatória). Essa chave será incluída automaticamente nos lembretes de cobrança enviados aos pais.",
   },
 
   // Rotas & Viagens
@@ -196,10 +193,6 @@ export const AjudaTab = memo(function AjudaTab() {
     });
   }, [searchQuery, selectedCategory]);
 
-  const handleWhatsAppSupport = () => {
-    openBrowserLink(getWhatsAppUrl());
-  };
-
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Suporte Direto WhatsApp */}
@@ -218,26 +211,12 @@ export const AjudaTab = memo(function AjudaTab() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleWhatsAppSupport}
-          className="w-full group flex items-center justify-between p-4 sm:p-5 bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200/70 rounded-2xl transition-all cursor-pointer shadow-2xs"
-        >
-          <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-[#25D366] flex items-center justify-center text-white shadow-md shadow-emerald-200/60 group-hover:scale-105 transition-transform shrink-0">
-              <WhatsAppIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <div className="text-left min-w-0">
-              <p className="text-sm sm:text-base font-bold text-emerald-950">
-                Falar com Suporte no WhatsApp
-              </p>
-              <p className="text-xs text-emerald-800 font-medium truncate">
-                Atendimento rápido para tirar dúvidas da sua operação
-              </p>
-            </div>
-          </div>
-          <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-700 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-        </button>
+        <WhatsAppSupportButton
+          size="lg"
+          title="Falar com Suporte"
+          subtitle="Atendimento rápido para tirar dúvidas da sua operação"
+          message="Olá, preciso de ajuda com o Van360"
+        />
       </div>
 
       {/* Central de Dúvidas Frequentes */}

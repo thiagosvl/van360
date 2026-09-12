@@ -6,26 +6,38 @@ interface TrialBannerProps {
 }
 
 export const TrialBanner = ({ daysLeft, onSubscribe }: TrialBannerProps) => {
+  const isLastDay = daysLeft <= 0;
+  const isSingleDay = daysLeft === 1;
+
+  const title = isLastDay
+    ? "Hoje é o seu último dia de teste gratuito"
+    : "Está gostando do Van360?";
+
+  const description = isLastDay ? (
+    <>
+      Mantenha seus alunos organizados e o controle de quem pagou em dia. Escolha seu plano para continuar.
+    </>
+  ) : (
+    <>
+      Você ainda tem{" "}
+      <span className="font-bold">
+        {isSingleDay ? "1 dia" : `${daysLeft} dias`}
+      </span>{" "}
+      gratuitos para cadastrar seus alunos e usar todas as funcionalidades do app.
+    </>
+  );
+
   return (
     <Banner
-      variant="warning"
-      title="Período de Teste Gratuito"
-      description={
-        <>
-          {daysLeft > 0 ? (
-            <>Você tem <span className="font-bold">{daysLeft} {daysLeft === 1 ? 'dia' : 'dias'}</span> restante{daysLeft === 1 ? '' : 's'}.</>
-          ) : (
-            <>Hoje é o seu <span className="font-bold">último dia</span> de teste gratuito!</>
-          )}
-          {" "}Assine agora para manter seu acesso completo!
-        </>
-      }
+      variant="success"
+      title={title}
+      description={description}
       action={
         onSubscribe
           ? {
-              label: "Ver Planos",
-              onClick: onSubscribe,
-            }
+            label: isLastDay ? "Ver Planos" : "Saiba Mais",
+            onClick: onSubscribe,
+          }
           : undefined
       }
       className="mb-6"

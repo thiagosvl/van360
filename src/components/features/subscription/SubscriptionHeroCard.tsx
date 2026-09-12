@@ -50,7 +50,8 @@ export function getSubscriptionHeroActionLabel({
   }
 
   if (isTrial) {
-    return trialDaysLeft !== null ? "Ver Planos" : null;
+    if (trialDaysLeft === null) return null;
+    return trialDaysLeft === 0 ? "Garantir Acesso" : "Ver Planos";
   }
 
   if (
@@ -203,12 +204,24 @@ export function SubscriptionHeroCard({
               </span>
             </div>
             <h3 className="font-headline font-bold text-2xl sm:text-[26px] text-[#0a2540] tracking-tight">
-              {trialDaysLeft !== null ? "Período de Testes" : "Acesso Ilimitado"}
+              {trialDaysLeft === 0
+                ? "Último dia de Testes"
+                : trialDaysLeft !== null
+                  ? "Período de Testes"
+                  : "Acesso Ilimitado"}
             </h3>
             <p className="text-slate-600 text-sm sm:text-base font-normal leading-snug">
-              {trialDaysLeft !== null ? (
+              {trialDaysLeft === 0 ? (
                 <>
-                  Você tem <span className="text-[#1a3a5c] font-bold">{trialDaysLeft} dias</span> de acesso gratuito restante.
+                  Aproveite: <span className="text-[#1a3a5c] font-bold">hoje é o seu último dia</span> de acesso gratuito!
+                </>
+              ) : trialDaysLeft === 1 ? (
+                <>
+                  Você tem <span className="text-[#1a3a5c] font-bold">1 dia</span> de acesso gratuito restante.
+                </>
+              ) : trialDaysLeft !== null ? (
+                <>
+                  Você tem <span className="text-[#1a3a5c] font-bold">{trialDaysLeft} dias</span> de acesso gratuito restantes.
                 </>
               ) : (
                 <>
@@ -292,7 +305,7 @@ export function SubscriptionHeroCard({
           </p>
         ) : (
           <p className="text-slate-600 text-sm sm:text-base font-normal">
-            Sua conta possui acesso vitalício e não requer renovações.
+            Você possui <span className="font-bold text-slate-800">acesso vitalício</span> ao Van360. Parabéns!
           </p>
         )}
       </div>

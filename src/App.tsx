@@ -393,6 +393,7 @@ const App = () => {
                       }
                     >
                       <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
+                      <Route path={ROUTES.PRIVATE.MOTORISTA.ACCOUNT} element={<Conta />} />
 
                       <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
                         <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
@@ -406,7 +407,6 @@ const App = () => {
                         <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
-                        <Route path={ROUTES.PRIVATE.MOTORISTA.ACCOUNT} element={<Conta />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />

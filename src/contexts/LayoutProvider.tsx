@@ -5,6 +5,7 @@ import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
 import AdminDispatchNotificationDialog from "@/components/dialogs/AdminDispatchNotificationDialog";
+import AdminConfirmBroadcastDialog from "@/components/dialogs/AdminConfirmBroadcastDialog";
 import AdminPassengerNotificationsDialog from "@/components/dialogs/AdminPassengerNotificationsDialog";
 import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
@@ -30,6 +31,7 @@ import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContrato
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
 import { AdminConfigureReferralDialog } from "@/components/dialogs/AdminConfigureReferralDialog";
+import { VideoStoriesDialog } from "@/components/dialogs/VideoStoriesDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -43,6 +45,8 @@ import {
   OpenAdminPassengerNotificationsDialogProps,
   OpenAdminVencimentoDetalhesDialogProps,
   OpenAdminConfigureReferralDialogProps,
+  OpenAdminConfirmBroadcastDialogProps,
+  OpenVideoStoriesDialogProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -266,6 +270,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenAdminConfigureReferralDialogProps;
   }>({ open: false });
+  const [adminConfirmBroadcastDialogState, setAdminConfirmBroadcastDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminConfirmBroadcastDialogProps;
+  }>({ open: false });
+  const [videoStoriesDialogState, setVideoStoriesDialogState] = useState<{
+    open: boolean;
+    props?: OpenVideoStoriesDialogProps;
+  }>({ open: false });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
   const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
@@ -446,12 +458,30 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminConfigureReferralDialogState({ open: true, props });
   };
 
+  const openAdminConfirmBroadcastDialog = (props: OpenAdminConfirmBroadcastDialogProps) => {
+    setAdminConfirmBroadcastDialogState({ open: true, props });
+  };
+
+  const closeAdminConfirmBroadcastDialog = () => {
+    safeCloseDialog(() => setAdminConfirmBroadcastDialogState({ open: false }));
+  };
+
   const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
     setGerarContratoValidadorDialogState({ open: true, props });
   };
 
   const openImportarContratoDialog = (props?: OpenImportarContratoDialogProps) => {
     setImportarContratoDialogState({ open: true, props });
+  };
+
+  const openVideoStoriesDialog = (props: OpenVideoStoriesDialogProps) => {
+    setVideoStoriesDialogState({ open: true, props });
+  };
+
+  const closeVideoStoriesDialog = () => {
+    safeCloseDialog(() => {
+      setVideoStoriesDialogState((prev) => ({ ...prev, open: false }));
+    });
   };
 
   return (
@@ -487,8 +517,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminPassengerNotificationsDialog,
         openAdminVencimentoDetalhesDialog,
         openAdminConfigureReferralDialog,
+        openAdminConfirmBroadcastDialog,
+        closeAdminConfirmBroadcastDialog,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
+        openVideoStoriesDialog,
+        closeVideoStoriesDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -931,6 +965,21 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {adminConfirmBroadcastDialogState.open && adminConfirmBroadcastDialogState.props && (
+        <AdminConfirmBroadcastDialog
+          isOpen={true}
+          onClose={closeAdminConfirmBroadcastDialog}
+          publicoDescricao={adminConfirmBroadcastDialogState.props.publicoDescricao}
+          totalEligivel={adminConfirmBroadcastDialogState.props.totalEligivel}
+          totalComPush={adminConfirmBroadcastDialogState.props.totalComPush}
+          selectedActionConfig={adminConfirmBroadcastDialogState.props.selectedActionConfig}
+          notificationTitle={adminConfirmBroadcastDialogState.props.notificationTitle}
+          notificationMessage={adminConfirmBroadcastDialogState.props.notificationMessage}
+          onConfirm={adminConfirmBroadcastDialogState.props.onConfirm}
+          isSubmitting={adminConfirmBroadcastDialogState.props.isSubmitting}
+        />
+      )}
+
       {gerarContratoValidadorDialogState.open && gerarContratoValidadorDialogState.props && (
         <GerarContratoValidadorDialog
           isOpen={true}
@@ -947,6 +996,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiroId={importarContratoDialogState.props?.passageiroId}
           passageiro={importarContratoDialogState.props?.passageiro}
           onSuccess={importarContratoDialogState.props?.onSuccess}
+        />
+      )}
+
+      {videoStoriesDialogState.open && videoStoriesDialogState.props && (
+        <VideoStoriesDialog
+          open={videoStoriesDialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeVideoStoriesDialog();
+            } else {
+              setVideoStoriesDialogState((prev) => ({ ...prev, open }));
+            }
+          }}
+          {...videoStoriesDialogState.props}
         />
       )}
 

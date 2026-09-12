@@ -18,6 +18,8 @@ import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import { ROUTES } from "@/constants/routes";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
+import { cn } from "@/lib/utils";
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
@@ -25,6 +27,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const { isMobileMenuOpen, setIsMobileMenuOpen, openConfirmationDialog, setIsGlobalLoading } = useLayout();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
 
   const displayName = profile?.apelido || formatFirstName(profile?.nome);
   const statusLabel = formatUserRoleLabel(profile?.tipo);
@@ -130,7 +133,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           </div>
         </div>
         <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5">
-          <AppSidebar role={role} />
+          <AppSidebar role={role} isSubscriptionBlocked={isSubscriptionBlocked} />
         </div>
         <div className="p-4 border-t border-white/5">
           <button
@@ -144,16 +147,19 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
         </div>
       </aside>
 
-      {/* Área de Conteúdo Principal */}
-      <main className="pt-[calc(5.5rem+var(--safe-area-top))] sm:pt-[calc(6rem+var(--safe-area-top))] pb-[calc(6rem+var(--safe-area-bottom))] md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 transition-all duration-300">
+      <main
+        className={cn(
+          "pt-[calc(5.5rem+var(--safe-area-top))] sm:pt-[calc(6rem+var(--safe-area-top))] px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 transition-all duration-300 md:pb-12",
+          isSubscriptionBlocked
+            ? "pb-[calc(1.5rem+var(--safe-area-bottom))]"
+            : "pb-[calc(6rem+var(--safe-area-bottom))]"
+        )}
+      >
         <Outlet />
       </main>
 
-      {/* Navegação Mobile Inferior (Fixa no rodapé) */}
-      <BottomNavbar />
+      {!isSubscriptionBlocked && <BottomNavbar />}
 
-
-      {/* Menu Lateral Mobile (Gatilhado pelo botão "Mais") */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent
           ref={sheetRef}
@@ -194,6 +200,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               role={role}
               onLinkClick={() => setIsMobileMenuOpen(false)}
               excludeBottomNavItems
+              isSubscriptionBlocked={isSubscriptionBlocked}
             />
           </div>
         </SheetContent>

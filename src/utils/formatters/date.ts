@@ -8,6 +8,17 @@ export {
   differenceInCalendarDaysBR
 } from "../dateUtils";
 
+export const nomesMesesAbreviado = [
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+  "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+];
+
+export const nomesMesesCompleto = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
+
 /**
  * Converte para string YYYY-MM-DD (persistência).
  */
@@ -51,6 +62,15 @@ export const formatMonthYearToBR = (date?: string | Date | null): string => {
   const month = String(parsed.getMonth() + 1).padStart(2, "0");
   const year = parsed.getFullYear();
   return `${month}/${year}`;
+};
+
+export const formatMonthYearAbbr = (date?: string | Date | null): string => {
+  if (!date) return "-";
+  const parsed = parseLocalDate(date);
+  if (isNaN(parsed.getTime())) return "-";
+  const m = nomesMesesCompleto[parsed.getMonth()];
+  const y = String(parsed.getFullYear()).slice(-2);
+  return `${m}/${y}`;
 };
 
 /**

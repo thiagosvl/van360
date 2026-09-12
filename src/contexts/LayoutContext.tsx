@@ -187,6 +187,27 @@ export interface OpenAdminConfigureReferralDialogProps {
   onSuccess?: () => void;
 }
 
+export interface OpenVideoStoriesDialogProps {
+  videos: string[];
+  title?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  onCtaClick?: () => void;
+  showCta?: boolean;
+  loop?: boolean;
+}
+
+export interface OpenAdminConfirmBroadcastDialogProps {
+  publicoDescricao: string;
+  totalEligivel: number;
+  totalComPush: number;
+  selectedActionConfig?: { label: string; route: string } | null;
+  notificationTitle: string;
+  notificationMessage: string;
+  onConfirm: () => Promise<void> | void;
+  isSubmitting?: boolean;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -219,12 +240,17 @@ export interface LayoutContextType {
   openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
   openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
   openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
+  openAdminConfirmBroadcastDialog: (props: OpenAdminConfirmBroadcastDialogProps) => void;
+  closeAdminConfirmBroadcastDialog: () => void;
 
   isFirstChargeDialogOpen: boolean;
 
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
   openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;
   openImportarContratoDialog: (props?: OpenImportarContratoDialogProps) => void;
+
+  openVideoStoriesDialog: (props: OpenVideoStoriesDialogProps) => void;
+  closeVideoStoriesDialog: () => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

@@ -7,7 +7,13 @@ import { useLayout } from "@/contexts/LayoutContext";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 
-export function BottomNavbar() {
+interface BottomNavbarProps {
+  isSubscriptionBlocked?: boolean;
+}
+
+export function BottomNavbar({ isSubscriptionBlocked }: BottomNavbarProps = {}) {
+  if (isSubscriptionBlocked) return null;
+
   const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
   const { isSubConta, isMotoristaAuxiliar, isMonitor } = usePermissions();

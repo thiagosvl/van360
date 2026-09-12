@@ -218,5 +218,25 @@ export function useAdminImpersonateUser() {
   });
 }
 
+export function useDeleteInvoiceAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId: string) => adminUserApi.deleteInvoice(invoiceId),
+    onSuccess: async () => {
+      toast.success("Fatura excluída com sucesso.");
+
+      if (userId) {
+        await qc.invalidateQueries({ queryKey: KEYS.userDetails(userId) });
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "logs"] });
+      }
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao excluir fatura.";
+      toast.error(msg);
+    },
+  });
+}
+
 
 

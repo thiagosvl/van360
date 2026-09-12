@@ -12,6 +12,7 @@ import {
   useDeleteUserAdmin,
   useRemoveUserReferralAdmin,
   useAdminImpersonateUser,
+  useDeleteInvoiceAdmin,
 } from "@/hooks/api/adminHooks";
 import {
   ArrowLeft,
@@ -165,6 +166,7 @@ export default function AdminUserDetails() {
   const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminConfigureReferralDialog, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
+  const deleteInvoiceMutation = useDeleteInvoiceAdmin(id);
   const removeReferralMutation = useRemoveUserReferralAdmin();
   const impersonateUser = useAdminImpersonateUser();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
@@ -486,6 +488,23 @@ export default function AdminUserDetails() {
           navigate(ROUTES.PRIVATE.ADMIN.USERS);
         } catch (error) {
           console.error("Falha ao excluir usuário", error);
+        }
+      },
+    });
+  };
+
+  const handleDeleteInvoice = (fatura: NonNullable<typeof data>["faturas"][number]) => {
+    openConfirmationDialog({
+      title: "Excluir Fatura",
+      description: `Deseja realmente excluir permanentemente a fatura de ${moneyMask(fatura.valor)} com vencimento em ${formatDate(fatura.data_vencimento)}? Esta ação é irreversível.`,
+      confirmText: "Sim, Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteInvoiceMutation.mutateAsync(fatura.id);
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error("Falha ao excluir fatura", error);
         }
       },
     });
@@ -2024,7 +2043,8 @@ export default function AdminUserDetails() {
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Status</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2050,8 +2070,21 @@ export default function AdminUserDetails() {
                               <td className="py-4 text-xs text-slate-400">
                                 {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
                               </td>
-                              <td className="py-4 text-right">
+                              <td className="py-4 text-center">
                                 <InvoiceStatusBadge status={f.status} />
+                              </td>
+                              <td className="py-4 text-right">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  title="Excluir fatura"
+                                  disabled={deleteInvoiceMutation.isPending}
+                                  onClick={() => handleDeleteInvoice(f)}
+                                  className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </td>
                             </tr>
                           ))}
@@ -2068,7 +2101,20 @@ export default function AdminUserDetails() {
                             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                               {formatDate(f.created_at)}
                             </span>
-                            <InvoiceStatusBadge status={f.status} />
+                            <div className="flex items-center gap-1.5">
+                              <InvoiceStatusBadge status={f.status} />
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                title="Excluir fatura"
+                                disabled={deleteInvoiceMutation.isPending}
+                                onClick={() => handleDeleteInvoice(f)}
+                                className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
 
                           <div className="flex items-center justify-between">

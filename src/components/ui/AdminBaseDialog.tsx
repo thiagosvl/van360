@@ -231,6 +231,7 @@ interface AdminBaseDialogActionProps extends React.ButtonHTMLAttributes<HTMLButt
   onClick?: () => void;
   variant?: "primary" | "secondary" | "ghost" | "outline" | "danger";
   isLoading?: boolean;
+  loading?: boolean;
   disabled?: boolean;
   icon?: React.ReactNode;
   className?: string;
@@ -242,12 +243,14 @@ const AdminBaseDialogAction = ({
   onClick,
   variant = "primary",
   isLoading = false,
+  loading = false,
   disabled = false,
   icon,
   className,
   type = "button",
   ...props
 }: AdminBaseDialogActionProps) => {
+  const isSpinner = isLoading || loading;
   const styles = {
     primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/25",
     secondary: "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/80",
@@ -260,7 +263,7 @@ const AdminBaseDialogAction = ({
     <Button
       type={type}
       onClick={onClick}
-      disabled={disabled || isLoading}
+      disabled={disabled || isSpinner}
       className={cn(
         "flex-1 h-11 rounded-xl font-bold uppercase text-xs tracking-wider transition-all active:scale-95 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
         styles[variant],
@@ -268,8 +271,11 @@ const AdminBaseDialogAction = ({
       )}
       {...props}
     >
-      {isLoading ? (
-        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      {isSpinner ? (
+        <div className="flex items-center gap-2 justify-center">
+          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <span>{label}</span>
+        </div>
       ) : (
         <div className="flex items-center gap-2 justify-center">
           {icon}

@@ -56,6 +56,14 @@ class SessionManager {
     };
   }
 
+  getCurrentSession(): Session {
+    return this.currentSession;
+  }
+
+  getCurrentUser(): AuthUser | null {
+    return this.currentSession?.user ?? null;
+  }
+
   async getSession(): Promise<{ data: { session: Session } }> {
     const { data } = await supabase.auth.getSession();
     return { data: { session: this.mapSupabaseSession(data.session) } };

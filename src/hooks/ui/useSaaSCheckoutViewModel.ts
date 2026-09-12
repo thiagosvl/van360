@@ -8,7 +8,6 @@ import {
   SubscriptionInvoiceStatus,
   SubscriptionIdentifer,
   CheckoutPaymentMethod,
-  SubscriptionStatus
 } from "@/types/enums";
 import {
   useSubscriptionStatus,
@@ -27,7 +26,6 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "sonner";
 
 import { CreditCardData } from "@/components/dialogs/CreditCardForm";
-import { parseLocalDate, getNowBR } from "@/utils/dateUtils";
 
 interface UseSaaSCheckoutViewModelProps {
   plans: SaaSPlan[];
@@ -58,7 +56,7 @@ export function useSaaSCheckoutViewModel({
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { subscription, refetch: refetchStatus } = useSubscriptionStatus(user?.id);
-  const { isPromotionActive, plans: plansFromApi, refetch: refetchPlans } = useSubscriptionPlans();
+  const { isPromotionActive, plans: plansFromApi, pricing: pricingFromApi, refetch: refetchPlans } = useSubscriptionPlans();
   const { invoices, refetchInvoices, paymentMethods } = useSubscriptionBilling(user?.id);
   const { createCheckout } = useSubscriptionCheckout();
   const { referral, isLoading: isLoadingReferral, refetch: refetchReferral } = useSubscriptionReferral(user?.id);
@@ -82,13 +80,16 @@ export function useSaaSCheckoutViewModel({
     if (isOpen && plans && plans.length > 0) {
       if (forcedPeriod) {
         setSelectedPeriod(forcedPeriod);
+        setStep(2);
       } else if (initialPlanId) {
         const targetPlan = plans.find(p => p.id === initialPlanId);
         if (targetPlan) {
           setSelectedPeriod(targetPlan.identificador);
+          setStep(2);
         }
       } else {
         setSelectedPeriod(SubscriptionIdentifer.YEARLY);
+        setStep(1);
       }
     }
   }, [isOpen, plans, initialPlanId, forcedPeriod]);
@@ -96,7 +97,7 @@ export function useSaaSCheckoutViewModel({
   useEffect(() => {
     if (!isOpen) {
       setStep(1);
-      if (!initialPlanId) setSelectedPeriod(SubscriptionIdentifer.YEARLY);
+      if (!initialPlanId && !forcedPeriod) setSelectedPeriod(SubscriptionIdentifer.YEARLY);
       setPaymentMethod(CheckoutPaymentMethod.PIX);
       setSelectedSavedCardId(null);
       setIsGenerating(false);
@@ -105,9 +106,8 @@ export function useSaaSCheckoutViewModel({
       setIsSuccessState(false);
       isHandlingConfirmation.current = false;
     }
-  }, [isOpen, initialPlanId]);
+  }, [isOpen, initialPlanId, forcedPeriod]);
 
-  // Pré-seleciona o cartão padrão ao entrar na aba cartão
   useEffect(() => {
     if (paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && selectedSavedCardId === null) {
       setSelectedSavedCardId(defaultCard ? defaultCard.id : "new");
@@ -274,54 +274,26 @@ export function useSaaSCheckoutViewModel({
     }
   };
 
-  const annualPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.YEARLY);
-  const monthlyPlan = plans?.find(p => p.identificador === SubscriptionIdentifer.MONTHLY);
+  const monthlyPlan = plans?.find((p) => p.identificador === SubscriptionIdentifer.MONTHLY);
+  const annualPlan = plans?.find((p) => p.identificador === SubscriptionIdentifer.YEARLY);
+
+  const annualPrice = pricingFromApi?.annualPrice ?? (annualPlan ? Number(annualPlan.valor) : 0);
+  const monthlyPrice = pricingFromApi?.monthlyPrice ?? (monthlyPlan ? Number(monthlyPlan.valor) : 0);
+  const regularMonthlyPrice = pricingFromApi?.regularMonthlyPrice ?? monthlyPrice;
+  const regularAnnualPrice = pricingFromApi?.regularAnnualPrice ?? annualPrice;
+  const totalAnnualSavings = pricingFromApi?.totalAnnualSavings ?? 0;
+  const discountPercent = pricingFromApi?.discountPercent ?? 0;
+  const annualMonthlyEquivalent = pricingFromApi?.annualMonthlyEquivalent ?? (annualPrice > 0 ? Number((annualPrice / 12).toFixed(2)) : 0);
+  const hasOverride = pricingFromApi?.hasOverride ?? false;
+  const freeMonths = pricingFromApi?.freeMonths ?? 2;
+  const hasActiveReferralDiscount = pricingFromApi?.hasReferralDiscount ?? Boolean(referral?.hasActiveDiscount);
+  const referralDiscountPct = pricingFromApi?.referralDiscountPct ?? (referral?.discountPct || 0);
+
   const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
   const selectedPlan = isAnual ? annualPlan : monthlyPlan;
-
-  let annualPrice = annualPlan ? SubscriptionUtils.getFinalPrice(annualPlan, isPromotionActive) : 0;
-  let monthlyPrice = monthlyPlan ? SubscriptionUtils.getFinalPrice(monthlyPlan, isPromotionActive) : 0;
-  let hasOverride = false;
-
-  if (subscription?.valor_base_anual !== null && subscription?.valor_base_anual !== undefined) {
-    annualPrice = Number(subscription.valor_base_anual);
-    hasOverride = true;
-  }
-  if (subscription?.valor_promocional_anual !== null && subscription?.valor_promocional_anual !== undefined) {
-    if (!subscription.data_fim_promocao || parseLocalDate(subscription.data_fim_promocao).getTime() >= getNowBR().getTime()) {
-      annualPrice = Number(subscription.valor_promocional_anual);
-      hasOverride = true;
-    }
-  }
-  
-  if (subscription?.valor_base_mensal !== null && subscription?.valor_base_mensal !== undefined) {
-    monthlyPrice = Number(subscription.valor_base_mensal);
-    hasOverride = true;
-  }
-  if (subscription?.valor_promocional_mensal !== null && subscription?.valor_promocional_mensal !== undefined) {
-    if (!subscription.data_fim_promocao || parseLocalDate(subscription.data_fim_promocao).getTime() >= getNowBR().getTime()) {
-      monthlyPrice = Number(subscription.valor_promocional_mensal);
-      hasOverride = true;
-    }
-  }
-
-  const regularMonthlyPrice = monthlyPrice;
-  const regularAnnualPrice = annualPrice;
-
-  const hasActiveDiscountLocal = referral?.hasActiveDiscount;
-  const discountPctLocal = referral?.discountPct || 0;
-
-  if (hasActiveDiscountLocal && discountPctLocal > 0) {
-    const discountAmount = regularMonthlyPrice * (discountPctLocal / 100);
-    monthlyPrice = Math.max(0, regularMonthlyPrice - discountAmount);
-    annualPrice = Math.max(0, regularAnnualPrice - discountAmount);
-  }
-
   const totalPrice = isAnual ? annualPrice : monthlyPrice;
   const formattedPrice = SubscriptionUtils.formatCurrency(totalPrice);
-  const totalDiscount = (regularMonthlyPrice * 12) - annualPrice;
-  const discountPercent = regularMonthlyPrice > 0 ? Math.round((totalDiscount / (regularMonthlyPrice * 12)) * 100) : 0;
-  const freeMonths = regularMonthlyPrice > 0 ? Math.round(totalDiscount / regularMonthlyPrice) : 0;
+  const totalDiscount = totalAnnualSavings;
 
   return {
     step,
@@ -346,21 +318,22 @@ export function useSaaSCheckoutViewModel({
     isPromotionActive,
     isProviderReady,
     profile,
-    hasActiveDiscount: referral?.hasActiveDiscount,
-    discountPct: referral?.discountPct,
-    hasActiveReferralDiscount: Boolean(referral?.hasActiveDiscount),
-    referralDiscountPct: referral?.discountPct || 0,
+    hasActiveDiscount: hasActiveReferralDiscount,
+    discountPct: referralDiscountPct,
+    hasActiveReferralDiscount,
+    referralDiscountPct,
     isLoadingData: isLoadingReferral || !plans,
     isSuccessState,
     handleFinishSuccess,
-    
-    // UI Computed Properties
+
     annualPlan,
     monthlyPlan,
     isAnual,
     selectedPlan,
     annualPrice,
     monthlyPrice,
+    annualMonthlyEquivalent,
+    totalAnnualSavings,
     regularMonthlyPrice,
     regularAnnualPrice,
     hasOverride,

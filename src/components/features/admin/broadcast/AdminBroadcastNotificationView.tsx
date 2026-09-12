@@ -127,7 +127,7 @@ const TARGET_GROUPS: TargetGroupOption[] = [
 ];
 
 export function AdminBroadcastNotificationView() {
-  const { openConfirmationDialog } = useLayout();
+  const { openAdminConfirmBroadcastDialog } = useLayout();
 
   const [targetMode, setTargetMode] = useState<'groups' | 'manual'>('groups');
   const [selectedGroups, setSelectedGroups] = useState<string[]>(['TODOS']);
@@ -303,45 +303,14 @@ export function AdminBroadcastNotificationView() {
               .join(', ')})`
         : `${selectedDrivers.length} motorista(s) selecionado(s) manualmente`;
 
-    openConfirmationDialog({
-      title: 'Confirmar Disparo de Notificação',
-      description: (
-        <div className="space-y-3 text-left">
-          <p className="text-xs text-slate-300">
-            Você está prestes a enviar uma notificação push para os motoristas selecionados.
-          </p>
-
-          <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2 text-xs font-mono">
-            <div className="flex justify-between">
-              <span className="text-slate-400">Público Destinatário:</span>
-              <strong className="text-slate-200">{publicoDescricao}</strong>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Motoristas no filtro:</span>
-              <strong className="text-slate-200">{totalEligivel} motoristas</strong>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Com app ativo (Push):</span>
-              <strong className="text-emerald-400">{totalComPush} aparelhos</strong>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Destino (Rota):</span>
-              <strong className="text-blue-400 font-mono text-[11px]">
-                {selectedActionConfig?.label} ({selectedActionConfig?.route})
-              </strong>
-            </div>
-          </div>
-
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-1">
-            <p className="text-[11px] font-bold text-blue-300 uppercase tracking-wider">Prévia da Notificação:</p>
-            <p className="text-xs font-bold text-white">{title}</p>
-            <p className="text-xs text-slate-300 line-clamp-2">{message}</p>
-          </div>
-        </div>
-      ),
-      confirmText: 'Enviar Notificação Agora',
-      cancelText: 'Cancelar',
-      variant: 'default',
+    openAdminConfirmBroadcastDialog({
+      publicoDescricao,
+      totalEligivel,
+      totalComPush,
+      selectedActionConfig,
+      notificationTitle: title.trim(),
+      notificationMessage: message.trim(),
+      isSubmitting: sendMutation.isPending,
       onConfirm: async () => {
         try {
           const payload =
@@ -368,6 +337,7 @@ export function AdminBroadcastNotificationView() {
         } catch (err: unknown) {
           const error = err as Error;
           toast.error(error.message || 'Falha ao enviar notificação.');
+          throw error;
         }
       },
     });

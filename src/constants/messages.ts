@@ -180,7 +180,7 @@ export const messages = {
       alterarNotificacoesDetalhe: "Não foi possível alterar as notificações.",
       registrarPagamentoDetalhe: "Não foi possível registrar o pagamento.",
       desfazerPagamentoDetalhe: "Não foi possível desfazer o pagamento.",
-      copiarPix: "Erro ao copiar código PIX.",
+      copiarPix: "Erro ao copiar código Pix.",
     },
     info: {
       nenhumaAlteracao: "Nenhuma alteração detectada.",
@@ -270,11 +270,11 @@ export const messages = {
   },
 
 
-  // ========== PIX ==========
+  // ========== Pix ==========
   pix: {
     erro: {
       falhaSalvar: "Falha ao salvar",
-      erroAoSalvar: "Erro ao salvar chave PIX.",
+      erroAoSalvar: "Erro ao salvar chave Pix.",
       validacaoFalhou: "A validação falhou. Verifique os dados.",
     },
     sucesso: {
@@ -284,7 +284,7 @@ export const messages = {
     info: {
       pendente: "Ainda pendente. Aguarde mais um pouco.",
       jaValidada: "Esta chave já está validada e atualizada.",
-      copiar: "Copiar código PIX",
+      copiar: "Copiar código Pix",
     }
   },
 

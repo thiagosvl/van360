@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Copy, QrCode, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { useSession } from "@/hooks/business/useSession";
 import { formatCurrency } from "@/utils/formatters";
-import { SubscriptionStatus } from "@/types/enums";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 export interface PixPaymentDialogProps {
   isOpen: boolean;
@@ -31,11 +31,10 @@ export default function PixPaymentDialog({
   onSwitchPaymentMethod,
 }: PixPaymentDialogProps) {
   const { user } = useSession();
-  const { subscription, refetch: refetchStatus } = useSubscriptionStatus(user?.id);
+  const { isActive, refetch: refetchStatus } = useSubscriptionAccess(user?.id);
   const [isVerifying, setIsVerifying] = useState(false);
   const [generatedQrCode, setGeneratedQrCode] = useState<string>("");
 
-  // Gerar QR Code se não houver imagem
   useEffect(() => {
     if (qrcode && !imagem_qrcode) {
       QRCode.toDataURL(qrcode, { width: 400, margin: 2 })
@@ -44,7 +43,6 @@ export default function PixPaymentDialog({
     }
   }, [qrcode, imagem_qrcode]);
 
-  // Polling automático a cada 10 segundos
   useEffect(() => {
     if (!isOpen) return;
 
@@ -55,14 +53,13 @@ export default function PixPaymentDialog({
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  // Monitorar mudança de status para fechar o diálogo
   useEffect(() => {
-    if (subscription?.status === SubscriptionStatus.ACTIVE && isOpen) {
+    if (isActive && isOpen) {
       toast.success("Pagamento confirmado com sucesso!");
       onSuccess?.();
-      onClose();
+      safeCloseDialog(onClose);
     }
-  }, [subscription?.status, isOpen]);
+  }, [isActive, isOpen]);
 
   const handleVerify = async (silent = false) => {
     if (!silent) setIsVerifying(true);
@@ -81,7 +78,7 @@ export default function PixPaymentDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && safeCloseDialog(onClose)}>
       <BaseDialog.Header
         title="Pagamento Assinatura"
         icon={<QrCode className="w-5 h-5 opacity-80" />}
@@ -156,7 +153,7 @@ export default function PixPaymentDialog({
           <BaseDialog.Action
             label="Fechar"
             variant="secondary"
-            onClick={onClose}
+            onClick={() => safeCloseDialog(onClose)}
           />
         </div>
       </BaseDialog.Footer>

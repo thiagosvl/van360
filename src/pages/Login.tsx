@@ -37,7 +37,9 @@ import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { useSEO } from "@/hooks/useSEO";
 
+import { subscriptionApi } from "@/services/api/subscription.api";
 import { UserType } from "@/types/enums";
+import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
   detectPlatform,
@@ -74,7 +76,7 @@ function LoginPlatformSuggestion() {
           <img
             src={PLAY_STORE_BADGE_URL}
             alt="Disponível no Google Play"
-            className="h-14 sm:h-16 w-auto object-contain"
+            className="h-10 sm:h-12 w-auto object-contain"
           />
         </a>
       </div>
@@ -223,11 +225,21 @@ export default function Login() {
       if (role === UserType.ADMIN) {
         navigate(ROUTES.PRIVATE.ADMIN.DASHBOARD, { replace: true });
       } else {
+        try {
+          const sub = await subscriptionApi.getSubscription();
+
+          if (SubscriptionUtils.isBlocked(sub)) {
+            navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION, { replace: true });
+            return;
+          }
+        } catch {
+        }
         navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      const msg = error.userMessage || error.message || "Erro ao fazer login.";
+      const err = error as { userMessage?: string; message?: string };
+      const msg = err.userMessage || err.message || "Erro ao fazer login.";
 
       if (
         msg.includes("inválidas") ||

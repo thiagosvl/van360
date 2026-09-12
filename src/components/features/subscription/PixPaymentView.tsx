@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Copy, RefreshCw, QrCode } from "lucide-react";
+import { Copy, Check, RefreshCw, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 
@@ -10,10 +10,14 @@ interface PixPaymentViewProps {
   isVerifying?: boolean;
   onVerify?: () => void;
   onCopy?: () => void;
+  isCopied?: boolean;
 }
 
-export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVerify, onCopy }: PixPaymentViewProps) {
+export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVerify, onCopy, isCopied: isCopiedProp }: PixPaymentViewProps) {
   const [generatedQrCode, setGeneratedQrCode] = useState<string>("");
+  const [localCopied, setLocalCopied] = useState(false);
+
+  const isCopied = isCopiedProp !== undefined ? isCopiedProp : localCopied;
 
   useEffect(() => {
     if (qrcode && !imagem_qrcode) {
@@ -24,6 +28,9 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
   }, [qrcode, imagem_qrcode]);
 
   const handleCopy = () => {
+    setLocalCopied(true);
+    setTimeout(() => setLocalCopied(false), 2500);
+
     if (onCopy) {
       onCopy();
     } else {
@@ -48,7 +55,7 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
         </div>
       </div>
 
-      <div className="w-full max-w-[320px] px-1">
+      <div className="w-full max-w-[340px] px-1">
         <button
           type="button"
           onClick={handleCopy}
@@ -61,8 +68,18 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
           </div>
 
           <div className="flex items-center shrink-0">
-            <div className="w-[1px] h-4 bg-[#002444]/15 mr-3" />
-            <Copy className="w-4 h-4 text-[#002444]/70 group-hover:text-[#002444] transition-colors" />
+            <div className="w-[1px] h-4 bg-[#002444]/15 mr-2.5" />
+            {isCopied ? (
+              <div className="flex items-center gap-1 text-emerald-600 font-bold text-xs animate-in zoom-in-95 duration-200">
+                <Check className="w-3.5 h-3.5 shrink-0" />
+                <span>Copiado!</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-[#002444]/80 group-hover:text-[#002444] transition-colors font-bold text-xs">
+                <Copy className="w-3.5 h-3.5 shrink-0" />
+                <span>Copiar</span>
+              </div>
+            )}
           </div>
         </button>
       </div>
@@ -72,8 +89,8 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
         <span className="text-[10px] sm:text-[11px] font-bold text-[#002444]/60 uppercase tracking-widest">Aguardando pagamento...</span>
       </div>
 
-      <div className="w-full max-w-[320px] pt-2 sm:pt-3 border-t border-slate-100">
-        <h4 className="text-[10px] font-black text-[#43474e]/60 uppercase tracking-widest mb-2 px-1">Como pagar:</h4>
+      <div className="w-full max-w-[340px] pt-2 sm:pt-3 border-t border-slate-100">
+        <h4 className="text-[10px] font-black text-[#43474e]/60 uppercase tracking-widest mb-2 px-1">Como funciona:</h4>
         <div className="grid grid-cols-1 gap-1.5">
           <div className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
             <div className="w-4 h-4 rounded bg-[#002444]/5 flex items-center justify-center text-[9px] font-black text-[#002444] shrink-0 border border-[#002444]/10">1</div>
@@ -82,6 +99,10 @@ export function PixPaymentView({ qrcode, imagem_qrcode, valor, isVerifying, onVe
           <div className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
             <div className="w-4 h-4 rounded bg-[#002444]/5 flex items-center justify-center text-[9px] font-black text-[#002444] shrink-0 border border-[#002444]/10">2</div>
             <p className="text-[11px] font-medium text-[#43474e] leading-tight">Pague no app do seu banco via <strong className="font-bold text-[#002444]">Pix Copia e Cola</strong></p>
+          </div>
+          <div className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
+            <div className="w-4 h-4 rounded bg-[#002444]/5 flex items-center justify-center text-[9px] font-black text-[#002444] shrink-0 border border-[#002444]/10">3</div>
+            <p className="text-[11px] font-medium text-[#43474e] leading-tight">Após o pagamento, basta aguardar a <strong className="font-bold text-[#002444]">confirmação automática</strong></p>
           </div>
         </div>
       </div>

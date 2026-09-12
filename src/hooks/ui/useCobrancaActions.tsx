@@ -418,7 +418,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
 
     if (!isPago && onPagarPix) {
       actions.push({
-        label: "Pagar via PIX",
+        label: "Pagar via Pix",
         icon: <QrCode className="h-4 w-4" />,
         onClick: () => {
           document.body.click();

@@ -227,9 +227,9 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
       </div>
 
       <div className="grid gap-4 sm:gap-5">
-        {/* Linha 1: CEP */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-1">
+        {/* Linha 1: CEP e Logradouro (mesma linha no desktop) */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+          <div className="sm:col-span-4 space-y-1">
             <label className={labelStyles}>CEP</label>
             <div className="relative">
               <input
@@ -245,72 +245,71 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
               )}
             </div>
           </div>
-        </div>
 
-        {/* Linha 2: Logradouro (100% da largura) */}
-        <div className="space-y-1 relative">
-          <label className={labelStyles}>Logradouro</label>
-          <div className="relative">
-            <input
-              className={cn(inputStyles, isSearchingAddress && "pr-10")}
-              placeholder="Rua, Avenida..."
-              autoComplete="off"
-              value={formData.street}
-              onChange={(e) => {
-                userTypedRef.current = true;
-                handleChange("street", e.target.value);
-              }}
-              onFocus={() => {
-                isFocusedRef.current = true;
-                if (userTypedRef.current && sugestoes.length > 0) {
-                  setShowDropdown(true);
-                }
-              }}
-              onBlur={() => {
-                isFocusedRef.current = false;
-                setTimeout(() => setShowDropdown(false), 200);
-              }}
-            />
-            {isSearchingAddress && (
-              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                <Loader2 className="h-4 w-4 animate-spin text-[#002444]" />
+          <div className="sm:col-span-8 space-y-1 relative">
+            <label className={labelStyles}>Logradouro</label>
+            <div className="relative">
+              <input
+                className={cn(inputStyles, isSearchingAddress && "pr-10")}
+                placeholder="Rua, Avenida..."
+                autoComplete="off"
+                value={formData.street}
+                onChange={(e) => {
+                  userTypedRef.current = true;
+                  handleChange("street", e.target.value);
+                }}
+                onFocus={() => {
+                  isFocusedRef.current = true;
+                  if (userTypedRef.current && sugestoes.length > 0) {
+                    setShowDropdown(true);
+                  }
+                }}
+                onBlur={() => {
+                  isFocusedRef.current = false;
+                  setTimeout(() => setShowDropdown(false), 200);
+                }}
+              />
+              {isSearchingAddress && (
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#002444]" />
+                </div>
+              )}
+            </div>
+
+            {showDropdown && sugestoes.length > 0 && (
+              <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+                {sugestoes.map((sugestao, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3 text-xs text-slate-700 font-medium group"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelectSugestao(sugestao);
+                    }}
+                  >
+                    <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#002444] group-hover:bg-[#002444] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60 mt-0.5">
+                      <Search className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-bold text-[#002444] block text-xs break-words leading-snug">
+                        {sugestao.logradouro}
+                      </span>
+                      <span className="text-slate-500 font-normal block text-[11px] break-words leading-relaxed mt-0.5">
+                        {[sugestao.bairro, sugestao.cidade, sugestao.estado]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {sugestao.cep ? ` • CEP: ${sugestao.cep}` : ""}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
-
-          {showDropdown && sugestoes.length > 0 && (
-            <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
-              {sugestoes.map((sugestao, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3 text-xs text-slate-700 font-medium group"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleSelectSugestao(sugestao);
-                  }}
-                >
-                  <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#002444] group-hover:bg-[#002444] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60 mt-0.5">
-                    <Search className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-bold text-[#002444] block text-xs break-words leading-snug">
-                      {sugestao.logradouro}
-                    </span>
-                    <span className="text-slate-500 font-normal block text-[11px] break-words leading-relaxed mt-0.5">
-                      {[sugestao.bairro, sugestao.cidade, sugestao.estado]
-                        .filter(Boolean)
-                        .join(", ")}
-                      {sugestao.cep ? ` • CEP: ${sugestao.cep}` : ""}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* Linha 3: Nº e Bairro */}
+        {/* Linha 2: Nº e Bairro */}
         <div className="grid grid-cols-4 sm:grid-cols-12 gap-4">
           <div className="col-span-1 sm:col-span-4 space-y-1">
             <label className={labelStyles}>Nº</label>
@@ -333,7 +332,7 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
           </div>
         </div>
 
-        {/* Linha 4: Cidade e UF */}
+        {/* Linha 3: Cidade e UF */}
         <div className="grid grid-cols-3 sm:grid-cols-12 gap-4">
           <div className="col-span-2 sm:col-span-9 space-y-1">
             <label className={labelStyles}>Cidade</label>
@@ -356,23 +355,19 @@ export default function BillingAddressForm({ onChange, initialBirthDate, initial
           </div>
         </div>
 
-        {/* Linha 4: Data de Nascimento */}
-        <div className="pt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className={labelStyles}>Data de Nascimento</label>
-              <input
-                className={cn(
-                  inputStyles,
-                  initialBirthDate && "bg-[#d2d5d8] cursor-not-allowed opacity-70 focus:ring-0"
-                )}
-                placeholder="dd/mm/aaaa"
-                value={maskedBirth}
-                onChange={(e) => handleChange("birth", e.target.value)}
-                readOnly={!!initialBirthDate}
-              />
-            </div>
-          </div>
+        {/* Linha 4: Data de Nascimento (100% da largura) */}
+        <div className="space-y-1">
+          <label className={labelStyles}>Data de Nascimento</label>
+          <input
+            className={cn(
+              inputStyles,
+              initialBirthDate && "bg-[#d2d5d8] cursor-not-allowed opacity-70 focus:ring-0"
+            )}
+            placeholder="dd/mm/aaaa"
+            value={maskedBirth}
+            onChange={(e) => handleChange("birth", e.target.value)}
+            readOnly={!!initialBirthDate}
+          />
         </div>
       </div>
     </div>

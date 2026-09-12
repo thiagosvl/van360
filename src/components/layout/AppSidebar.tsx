@@ -1,19 +1,21 @@
 import { cn } from "@/lib/utils";
 import { pagesItems, getBottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
-import { Gift } from "lucide-react";
+import { Gift, Lock } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
+import { toast } from "sonner";
 
 interface AppSidebarProps {
   role?: UserType | string;
   onLinkClick?: () => void;
   excludeBottomNavItems?: boolean;
+  isSubscriptionBlocked?: boolean;
 }
 
-export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarProps) {
+export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionBlocked }: AppSidebarProps) {
   const { openReferAndEarnDialog } = useLayout();
   const { can, isGestor, isSubConta, isMonitor, isMotoristaAuxiliar } = usePermissions();
 
@@ -26,50 +28,70 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems }: AppSidebarPro
   ).filter((item) => {
     if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
     if (!item.permission) return true;
-    return can(item.permission as any);
+    return can(item.permission);
   });
 
   return (
     <div className="flex h-full flex-col justify-between">
       <nav className={isMobile ? "space-y-2 py-2" : "space-y-1 py-1"}>
-        {itemsToRender.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            onClick={onLinkClick}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3.5 rounded-2xl px-4 transition-colors",
-                isMobile ? "py-3 sm:py-3.5 text-[15px] sm:text-[16px]" : "py-2.5 text-[15px]",
-                isActive
-                  ? "bg-white/10 text-white font-bold shadow-xs"
-                  : isMobile
-                  ? "text-slate-200 font-medium hover:bg-white/5 hover:text-white"
-                  : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon
-                  className={cn(
-                    "h-5 w-5 shrink-0 transition-colors",
-                    isActive ? "text-white" : isMobile ? "text-slate-200" : "text-slate-400"
-                  )}
-                />
-                <span className="truncate">{item.title}</span>
+        {itemsToRender.map((item) => {
+          const isItemBlocked =
+            isSubscriptionBlocked &&
+            item.href !== ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION &&
+            item.href !== ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
 
-                {(item as any).badge !== undefined && (item as any).badge > 0 && (
-                  <span className="ml-auto flex h-5 min-w-5 px-1.5 shrink-0 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold text-white">
-                    {(item as any).badge}
-                  </span>
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
+          return (
+            <NavLink
+              key={item.href}
+              to={isItemBlocked ? "#" : item.href}
+              onClick={(e) => {
+                if (isItemBlocked) {
+                  e.preventDefault();
+                  toast.warning("Acesso suspenso. Contrate um plano para reativar suas funcionalidades.");
+                  return;
+                }
+                onLinkClick?.();
+              }}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3.5 rounded-2xl px-4 transition-colors",
+                  isMobile ? "py-3 sm:py-3.5 text-[15px] sm:text-[16px]" : "py-2.5 text-[15px]",
+                  isItemBlocked
+                    ? "opacity-40 cursor-not-allowed hover:bg-transparent text-slate-500"
+                    : isActive
+                      ? "bg-white/10 text-white font-bold shadow-xs"
+                      : isMobile
+                        ? "text-slate-200 font-medium hover:bg-white/5 hover:text-white"
+                        : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon
+                    className={cn(
+                      "h-5 w-5 shrink-0 transition-colors",
+                      isItemBlocked
+                        ? "text-slate-500"
+                        : isActive
+                          ? "text-white"
+                          : isMobile
+                            ? "text-slate-200"
+                            : "text-slate-400"
+                    )}
+                  />
+                  <span className="truncate">{item.title}</span>
 
-        {isGestor && (
+                  {isItemBlocked ? (
+                    <Lock className="ml-auto h-3.5 w-3.5 text-slate-500 shrink-0" />
+                  ) : null}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
+
+        {isGestor && !isSubscriptionBlocked && (
           <button
             type="button"
             onClick={() => {

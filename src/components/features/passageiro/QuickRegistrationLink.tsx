@@ -58,7 +58,7 @@ export function QuickRegistrationLink({
           <Smartphone className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className="text-xs font-bold text-emerald-900">Deixe os pais preencherem o cadastro!</p>
+          <p className="text-[13px] font-bold text-emerald-950 tracking-tight leading-snug">Deixe os pais preencherem o cadastro!</p>
           <p className="text-[11px] text-emerald-700">
             Envie este link para os responsáveis. Eles preenchem o cadastro e os dados caem prontos no seu aplicativo.
           </p>

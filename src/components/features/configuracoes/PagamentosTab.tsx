@@ -117,7 +117,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
 
   return (
     <div className="space-y-6">
-      {/* Card 1: Configuração de Chave PIX */}
+      {/* Card 1: Configuração de Chave Pix */}
       <div className="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-xs space-y-6">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
           <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
@@ -125,10 +125,10 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
           </div>
           <div>
             <h2 className="text-base font-bold text-[#1a3a5c]">
-              Pagamentos & PIX
+              Pagamentos & Pix
             </h2>
             <p className="text-xs text-slate-500">
-              Chave PIX de recebimento e regras de multa e juros das parcelas.
+              Chave Pix de recebimento e regras de multa e juros das parcelas.
             </p>
           </div>
         </div>
@@ -136,7 +136,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
         {!profile?.chave_pix && (
           <Banner
             variant="info"
-            description="A chave PIX cadastrada será exibida nos lembretes automáticos de cobrança e na carteirinha digital enviada aos responsáveis."
+            description="A chave Pix cadastrada será exibida nos lembretes automáticos de cobrança e na carteirinha digital enviada aos responsáveis."
           />
         )}
 
@@ -221,11 +221,11 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
                   return (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Chave PIX
+                        Chave Pix
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Digite sua chave PIX"
+                          placeholder="Digite sua chave Pix"
                           {...field}
                           disabled={naoUsarPix}
                           value={field.value || ""}
@@ -261,7 +261,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
               />
             </div>
 
-            {/* Checkbox para desativar chave PIX caso o motorista ja tenha cadastrado */}
+            {/* Checkbox para desativar chave Pix caso o motorista ja tenha cadastrado */}
             {profile?.chave_pix && (
               <div className="flex items-center gap-3 pt-2">
                 <Checkbox
@@ -274,7 +274,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
                   htmlFor="nao-usar-pix"
                   className="text-[13px] sm:text-[14px] text-slate-600 cursor-pointer select-none leading-relaxed font-medium"
                 >
-                  Não utilizar chave PIX nos lembretes enviados
+                  Não utilizar chave Pix nos lembretes enviados
                 </Label>
               </div>
             )}

@@ -26,9 +26,43 @@ export interface Subscription {
   planos: SaaSPlan;
 }
 
+export interface PlanPricing {
+  basePrice: number;
+  regularPrice: number;
+  finalPrice: number;
+  monthlyEquivalent: number;
+  totalAnnualSavings: number;
+  freeMonths: number;
+  discountPercent: number;
+  hasPromo: boolean;
+  hasOverride: boolean;
+  hasReferralDiscount: boolean;
+  referralDiscountPct: number;
+  referralDiscountAmount: number;
+}
+
+export interface SubscriptionPricingSummary {
+  monthlyPrice: number;
+  annualPrice: number;
+  baseMonthlyPrice: number;
+  baseAnnualPrice: number;
+  regularMonthlyPrice: number;
+  regularAnnualPrice: number;
+  annualMonthlyEquivalent: number;
+  totalAnnualSavings: number;
+  freeMonths: number;
+  discountPercent: number;
+  hasPromoMonthly: boolean;
+  hasPromoAnnual: boolean;
+  hasOverride: boolean;
+  hasReferralDiscount: boolean;
+  referralDiscountPct: number;
+}
+
 export interface PlansResponse {
   plans: SaaSPlan[];
   isPromotionActive: boolean;
+  pricingSummary?: SubscriptionPricingSummary;
 }
 
 export interface SaaSPlan {
@@ -41,6 +75,7 @@ export interface SaaSPlan {
   ativo: boolean;
   created_at: string;
   updated_at: string;
+  pricing?: PlanPricing;
 }
 
 export interface ReferralData {

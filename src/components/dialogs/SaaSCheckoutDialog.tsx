@@ -10,7 +10,8 @@ import { useState, useEffect, useRef } from "react";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { PixPaymentView } from "@/components/features/subscription/PixPaymentView";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Banner } from "@/components/ui/Banner";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import confetti from "canvas-confetti";
 import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
 import { InstallmentOption } from "@/types/payment";
@@ -18,7 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Smartphone, CreditCard as CreditCardIcon, ShieldCheck, Tag, Loader2,
   ChevronLeft, ArrowRight, Check, Calendar, RefreshCw, Copy, Star, AlertCircle, Plus,
-  CircleCheckBig
+  CircleCheckBig,
+  Info
 } from "lucide-react";
 
 interface SaaSCheckoutDialogProps {
@@ -61,6 +63,8 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     selectedPlan,
     annualPrice,
     monthlyPrice,
+    annualMonthlyEquivalent,
+    totalAnnualSavings,
     regularMonthlyPrice,
     hasOverride,
     totalPrice,
@@ -177,8 +181,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
   const hasNewCardFlow = isCardStep4 && (!savedCards.length || selectedSavedCardId === "new");
   const totalSteps = hasNewCardFlow ? 4 : 3;
-
-  // Mapeamento dinâmico de passos dependendo se tem endereço ou não
   const currentStepDisplay = step === 4 ? totalSteps : step;
 
   const getStepTitle = (s: number) => {
@@ -186,14 +188,14 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
     if (s === 1) return "Assinatura Van360";
     if (s === 2) return "Forma de Pagamento";
     if (s === 3 && hasNewCardFlow) return "Dados do Cartão";
-    return paymentMethod === CheckoutPaymentMethod.PIX ? "Aguardando PIX" : "Confirmando Pagamento";
+    return paymentMethod === CheckoutPaymentMethod.PIX ? "Aguardando Pix" : "Confirmando Pagamento";
   };
 
   const getStepSubtitle = (s: number) => {
     if (isSuccessState) return undefined;
     if (s === 1) return "Escolha o melhor plano para você";
     if (s === 2) {
-      if (paymentMethod === CheckoutPaymentMethod.PIX) return "Pague com PIX e ative instantaneamente";
+      if (paymentMethod === CheckoutPaymentMethod.PIX) return "Pague com Pix e ative instantaneamente";
       if (hasNewCardFlow) return "Onde a fatura deve ser registrada";
       return "Selecione o cartão de crédito";
     }
@@ -204,7 +206,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
   return (
     <BaseDialog
       open={isOpen}
-      onOpenChange={(val) => !val && onClose()}
+      onOpenChange={(val) => !val && safeCloseDialog(onClose)}
       className="max-w-xl"
       lockClose={isLocked}
     >
@@ -214,7 +216,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
         showSteps={!isSuccessState}
         currentStep={currentStepDisplay}
         totalSteps={totalSteps}
-        onClose={onClose}
+        onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={shouldHideCloseButton}
         leftAction={step > 1 && !isSuccessState ? (
           <Button
@@ -229,14 +231,10 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
       />
 
       <BaseDialog.Body animate animationKey={`${step}-${paymentMethod}`} className="p-0">
-
-        {/* ── STEP 1: Seleção de Plano ── */}
         {step === 1 && isLoadingData ? (
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 animate-pulse">
-            {/* Skeleton do Alerta/Selo de Desconto */}
             <Skeleton className="h-12 w-full rounded-xl bg-slate-100" />
 
-            {/* Skeleton do Card Anual */}
             <div className="relative rounded-xl p-4 sm:p-6 border border-slate-100 bg-[#f8f9fa] space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3 flex-1">
@@ -255,7 +253,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               </div>
             </div>
 
-            {/* Skeleton do Card Mensal */}
             <div className="rounded-xl p-4 sm:p-6 border border-slate-100 bg-[#f8f9fa]">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3 flex-1">
@@ -272,27 +269,24 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
         ) : step === 1 ? (
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {hasActiveReferralDiscount && (
-              <div className="flex items-center gap-2.5 p-3 bg-[#d1fae5] border border-[#a7f3d0] rounded-xl mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
-                <Tag className="w-4.5 h-4.5 text-[#065f46] shrink-0" />
-                <p className="text-[11px] font-bold text-[#065f46]">
-                  Você ganhou um desconto de indicação de {referralDiscountPct}% na 1ª mensalidade!
-                </p>
-              </div>
+              <Banner
+                variant="success"
+                icon={<Tag className="w-4 h-4" />}
+                title={`Você ganhou um desconto de indicação de ${referralDiscountPct}% na 1ª mensalidade!`}
+                className="mb-4"
+              />
             )}
 
-            {/* Card Anual */}
             {annualPlan && (
               <div
-                onClick={() => !forcedPeriod && setSelectedPeriod(SubscriptionIdentifer.YEARLY)}
+                onClick={() => setSelectedPeriod(SubscriptionIdentifer.YEARLY)}
                 className={cn(
-                  "relative rounded-xl p-4 sm:p-6 border-2 transition-all duration-300 select-none",
-                  !forcedPeriod && "cursor-pointer",
+                  "relative rounded-xl p-4 sm:p-6 border-2 transition-all duration-300 select-none cursor-pointer",
                   isAnual
                     ? "bg-white border-[#1a3a5c] shadow-lg ring-4 ring-primary/5"
                     : "bg-[#f8f9fa] border-transparent hover:border-slate-200"
                 )}
               >
-                {/* Floating Badge baseada no modelo Meta */}
                 {(totalDiscount > 0 || discountPercent > 0) && (
                   <div
                     className={cn(
@@ -326,7 +320,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                       <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">/ano</span>
                     </p>
                     <p className={cn("text-[10px] sm:text-[13px] font-bold mt-0.5", isAnual ? "text-[#f59e0b]" : "text-slate-400")}>
-                      <span className="hidden sm:inline">Equivalente a </span>{SubscriptionUtils.formatCurrency(annualPrice / 12)}/mês
+                      <span className="hidden sm:inline">Equivalente a </span>{SubscriptionUtils.formatCurrency(annualMonthlyEquivalent)}/mês
                     </p>
                   </div>
                 </div>
@@ -344,13 +338,11 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               </div>
             )}
 
-            {/* Card Mensal */}
-            {monthlyPlan && (!forcedPeriod || !isAnual) && (
+            {monthlyPlan && (
               <div
-                onClick={() => !forcedPeriod && setSelectedPeriod(SubscriptionIdentifer.MONTHLY)}
+                onClick={() => setSelectedPeriod(SubscriptionIdentifer.MONTHLY)}
                 className={cn(
-                  "rounded-xl p-4 sm:p-6 border-2 transition-all duration-300 select-none",
-                  !forcedPeriod && "cursor-pointer",
+                  "rounded-xl p-4 sm:p-6 border-2 transition-all duration-300 select-none cursor-pointer",
                   !isAnual
                     ? "bg-white border-[#1a3a5c] shadow-lg ring-4 ring-primary/5"
                     : "bg-[#f8f9fa] border-transparent hover:border-slate-200"
@@ -392,10 +384,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           </div>
         ) : null}
 
-        {/* ── STEP 2: Forma de Pagamento ── */}
         {step === 2 && (
           <div className="p-6 space-y-5">
-            {/* Tabs PIX / Cartão */}
+
             <div className="flex p-1 bg-[#f2f4f6] rounded-full">
               <button
                 onClick={() => setPaymentMethod(CheckoutPaymentMethod.PIX)}
@@ -423,21 +414,19 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
               </button>
             </div>
 
-            {/* Conteúdo PIX */}
             {paymentMethod === CheckoutPaymentMethod.PIX && (
               <div className="space-y-5 animate-in fade-in duration-300">
                 <div className="bg-white p-4 rounded-xl space-y-3 border border-[#f2f4f6]">
                   <div className="flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-[#87a4cc] shrink-0 mt-0.5" />
                     <p className="text-xs text-[#43474e] leading-relaxed">
-                      Clique em Gerar PIX para visualizar o QR Code e realizar o pagamento.
+                      Gere o código Pix para pagar no app do seu banco. A ativação é feita na hora.
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Conteúdo Cartão */}
             {paymentMethod === CheckoutPaymentMethod.CREDIT_CARD && (
               <div className="animate-in fade-in duration-300 space-y-4">
                 {!hasNewCardFlow && cardError && (
@@ -447,7 +436,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   </div>
                 )}
 
-                {/* Cartões salvos */}
                 {savedCards.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-[11px] font-semibold text-[#545f73] uppercase tracking-tight">Seus cartões</p>
@@ -546,7 +534,6 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                   </div>
                 )}
 
-                {/* Formulário de novo cartão (Endereço Primeiro) */}
                 {(savedCards.length === 0 || selectedSavedCardId === "new") && (
                   <BillingAddressForm
                     onChange={setAddressData}
@@ -605,10 +592,10 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
                 <div className="space-y-2 max-w-sm px-2">
                   <h4 className="text-2xl font-black text-[#002444] tracking-tight">Pagamento Confirmado!</h4>
-                  <p className="text-sm text-[#43474e] leading-relaxed">
-                    Sua assinatura foi ativada com sucesso.<br className="hidden sm:inline" /> Todos os recursos do app estão liberados.
-                  </p>
                 </div>
+                <p className="text-sm text-[#43474e] leading-relaxed">
+                  Sua assinatura foi ativada com sucesso.<br className="hidden sm:inline" /> Todos os recursos do app estão liberados.
+                </p>
               </div>
             ) : isGenerating ? (
               <div className="flex flex-col items-center justify-center py-16 space-y-3">
@@ -640,6 +627,7 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
                 qrcode={activeInvoice.pix_copy_paste}
                 valor={totalPrice}
                 onCopy={handleCopyPix}
+                isCopied={pixCopied}
               />
             ) : null}
           </div>
@@ -675,9 +663,9 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
           {isSuccessState ? (
             <Button
               onClick={handleFinishSuccess}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 flex items-center justify-center w-full text-base font-bold rounded-xl shadow-sm transition-all duration-200 active:scale-[0.99]"
+              className="bg-[#002444] hover:bg-[#002444]/90 text-white h-12 flex items-center justify-center w-full text-base font-bold rounded-xl shadow-sm transition-all duration-200 active:scale-[0.99]"
             >
-              Concluir
+              Entendi
             </Button>
           ) : (
             <>
