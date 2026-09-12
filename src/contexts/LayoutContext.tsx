@@ -187,8 +187,15 @@ export interface OpenAdminConfigureReferralDialogProps {
   onSuccess?: () => void;
 }
 
+export interface VideoStoryItem {
+  url: string;
+  title?: string;
+}
+
 export interface OpenVideoStoriesDialogProps {
-  videos: string[];
+  videos?: (string | VideoStoryItem)[];
+  videosData?: VideoStoryItem[];
+  videoUrls?: string[];
   title?: string;
   ctaText?: string;
   ctaLink?: string;

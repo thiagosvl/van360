@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLayout } from "@/contexts/LayoutContext";
+import { X } from "lucide-react";
+import { useLayout, VideoStoryItem } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import { TRIAL_DURATION_DAYS } from "@/constants";
 
 export interface FloatingVideoBubbleProps {
   previewUrl: string;
+  videos?: (string | VideoStoryItem)[];
+  videosData?: VideoStoryItem[];
   videoUrls?: string[];
   fullUrl?: string;
   tooltipText?: string;
@@ -16,10 +20,19 @@ export interface FloatingVideoBubbleProps {
   requireScrollOnMobile?: boolean;
   title?: string;
   onCtaClick?: () => void;
+  dismissible?: boolean;
+  storageKey?: string;
+  onDismiss?: () => void;
+  confirmDialogTitle?: string;
+  confirmDialogDescription?: string;
+  confirmDialogConfirmText?: string;
+  confirmDialogCancelText?: string;
 }
 
 export function FloatingVideoBubble({
   previewUrl,
+  videos = [],
+  videosData,
   videoUrls = [],
   fullUrl,
   tooltipText = "Veja como funciona",
@@ -27,13 +40,29 @@ export function FloatingVideoBubble({
   showCta = true,
   ctaText = `Testar grátis por ${TRIAL_DURATION_DAYS} dias`,
   ctaLink = "/cadastro",
-  loop = false,
+  loop = true,
   requireScrollOnMobile = true,
   title,
   onCtaClick,
+  dismissible = true,
+  storageKey,
+  onDismiss,
+  confirmDialogTitle = "Não exibir novamente?",
+  confirmDialogDescription = "Este conteúdo em vídeo não será mais exibido nesta tela.",
+  confirmDialogConfirmText = "Ocultar",
+  confirmDialogCancelText = "Cancelar",
 }: FloatingVideoBubbleProps) {
-  const { openVideoStoriesDialog } = useLayout();
-  const activeVideos = videoUrls.length > 0 ? videoUrls : fullUrl ? [fullUrl] : [];
+  const { openVideoStoriesDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const rawList = videosData || (videos.length > 0 ? videos : (videoUrls.length > 0 ? videoUrls : (fullUrl ? [fullUrl] : [])));
+
+  const [isDismissed, setIsDismissed] = useState<boolean>(() => {
+    if (!storageKey) return false;
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  });
 
   const [showTooltip, setShowTooltip] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -74,11 +103,36 @@ export function FloatingVideoBubble({
     };
   }, [requireScrollOnMobile]);
 
+  const handleDismissClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    openConfirmationDialog({
+      title: confirmDialogTitle,
+      description: confirmDialogDescription,
+      confirmText: confirmDialogConfirmText,
+      cancelText: confirmDialogCancelText,
+      allowClose: true,
+      onConfirm: () => {
+        safeCloseDialog(closeConfirmationDialog);
+        setIsDismissed(true);
+        if (storageKey) {
+          try {
+            localStorage.setItem(storageKey, "true");
+          } catch {}
+        }
+        onDismiss?.();
+      },
+      onCancel: () => {
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
+
   const handleOpen = () => {
-    if (isDragging.current || activeVideos.length === 0) return;
+    if (isDragging.current || rawList.length === 0) return;
 
     openVideoStoriesDialog({
-      videos: activeVideos,
+      videos: rawList,
       title,
       ctaText,
       ctaLink,
@@ -87,6 +141,8 @@ export function FloatingVideoBubble({
       onCtaClick,
     });
   };
+
+  if (isDismissed) return null;
 
   return (
     <AnimatePresence>
@@ -106,11 +162,11 @@ export function FloatingVideoBubble({
               isDragging.current = false;
             }, 150);
           }}
-          onTap={handleOpen}
           className={`${positionClasses} flex items-center cursor-grab active:cursor-grabbing select-none`}
           style={{ zIndex: 50 }}
         >
           <div
+            onClick={handleOpen}
             className="relative rounded-full overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.3)] border-4 border-white transition-transform hover:scale-105 group w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] flex-shrink-0 z-20 bg-black cursor-pointer"
             aria-label="Abrir vídeo demonstrativo"
           >
@@ -127,12 +183,31 @@ export function FloatingVideoBubble({
           </div>
 
           <div
-            className={`z-10 transition-[max-width,opacity,margin] duration-300 ease-out flex items-center overflow-hidden ${
-              showTooltip ? "max-w-[200px] opacity-100 -ml-6" : "max-w-0 opacity-0 -ml-16"
+            className={`z-10 transition-[max-width,opacity,margin] duration-300 ease-out flex items-center ${
+              showTooltip ? "max-w-[320px] opacity-100 -ml-6" : "max-w-0 opacity-0 -ml-16 pointer-events-none"
             }`}
           >
-            <div className="bg-black/90 cursor-pointer text-white text-[10px] sm:text-[11px] uppercase font-bold pl-10 pr-5 py-3 rounded-r-full whitespace-nowrap shadow-xl tracking-widest border-y-2 border-r-2 border-white/10">
-              {tooltipText}
+            <div className="relative">
+              {dismissible && (
+                <button
+                  type="button"
+                  onClick={handleDismissClick}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  className="absolute -top-2 -right-1 z-30 bg-black/90 hover:bg-black text-white/80 hover:text-white rounded-full p-1 border border-white/20 shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                  aria-label="Não exibir novamente"
+                  title="Não exibir novamente"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              <div
+                onClick={handleOpen}
+                className="bg-black/90 cursor-pointer text-white text-[10px] sm:text-[11px] uppercase font-bold pl-10 pr-5 py-3 rounded-r-full whitespace-nowrap shadow-xl tracking-widest border-y-2 border-r-2 border-white/10 hover:bg-black transition-colors"
+              >
+                {tooltipText}
+              </div>
             </div>
           </div>
         </motion.div>

@@ -13,6 +13,8 @@ export function VideoStoryTrigger({
   asChild = false,
   className,
   videos,
+  videosData,
+  videoUrls,
   title,
   ctaText,
   ctaLink,
@@ -28,6 +30,8 @@ export function VideoStoryTrigger({
 
     openVideoStoriesDialog({
       videos,
+      videosData,
+      videoUrls,
       title,
       ctaText,
       ctaLink,

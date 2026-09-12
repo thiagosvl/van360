@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Play, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { safeCloseDialog } from "@/hooks";
 
+import { VideoStoryItem } from "@/contexts/LayoutContext";
+
 export interface VideoStoriesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  videos: string[];
+  videos?: (string | VideoStoryItem)[];
+  videosData?: VideoStoryItem[];
+  videoUrls?: string[];
   title?: string;
   ctaText?: string;
   ctaLink?: string;
@@ -20,51 +24,63 @@ export function VideoStoriesDialog({
   open,
   onOpenChange,
   videos = [],
+  videosData,
+  videoUrls,
   title,
   ctaText,
   ctaLink,
   onCtaClick,
   showCta = true,
-  loop = false,
+  loop = true,
 }: VideoStoriesDialogProps) {
+  const activeVideos: VideoStoryItem[] = useMemo(() => {
+    const rawList = videosData || (videos.length > 0 ? videos : (videoUrls || []));
+    return rawList.map((item) => {
+      if (typeof item === "string") {
+        return { url: item, title };
+      }
+      return { url: item.url, title: item.title || title };
+    });
+  }, [videosData, videos, videoUrls, title]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-
-  const activeVideos = videos.length > 0 ? videos : [];
 
   const handleClose = useCallback(() => {
     safeCloseDialog(() => onOpenChange(false));
   }, [onOpenChange]);
 
-  const updateProgress = useCallback(() => {
+  const handleTimeUpdate = () => {
     const video = videoRef.current;
-    if (!video || video.paused || video.ended || !video.duration) {
-      animationFrameRef.current = null;
-      return;
+    if (video && video.duration && !isNaN(video.duration)) {
+      const p = (video.currentTime / video.duration) * 100;
+      setProgress(p);
     }
+  };
 
-    const currentPercent = (video.currentTime / video.duration) * 100;
-    setProgress(currentPercent);
-    animationFrameRef.current = requestAnimationFrame(updateProgress);
-  }, []);
-
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (currentIndex < activeVideos.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setProgress(0);
     } else if (loop) {
-      setCurrentIndex(0);
+      if (activeVideos.length === 1 && videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(() => {});
+      } else {
+        setCurrentIndex(0);
+      }
       setProgress(0);
     } else {
       setIsPlaying(false);
     }
   }, [currentIndex, activeVideos.length, loop]);
 
-  const handlePrev = useCallback(() => {
+  const handlePrev = useCallback((e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
       setProgress(0);
@@ -111,37 +127,28 @@ export function VideoStoriesDialog({
       setProgress(0);
       setIsPlaying(true);
       setIsMuted(false);
-    } else {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
     }
   }, [open]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!open || !video) return;
-
-    setProgress(0);
-    video.src = activeVideos[currentIndex] || "";
-    video.load();
-    video.play().catch(() => {});
-    setIsPlaying(true);
-  }, [currentIndex, open, activeVideos]);
-
-  const handleVideoPlay = () => {
-    if (!animationFrameRef.current) {
-      animationFrameRef.current = requestAnimationFrame(updateProgress);
+    if (open && activeVideos.length > 0) {
+      setProgress(0);
+      setIsPlaying(true);
+      const video = videoRef.current;
+      if (video) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            if (videoRef.current) {
+              videoRef.current.muted = true;
+              setIsMuted(true);
+              videoRef.current.play().catch(() => {});
+            }
+          });
+        }
+      }
     }
-  };
-
-  const handleVideoPause = () => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-  };
+  }, [currentIndex, open]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -205,7 +212,7 @@ export function VideoStoriesDialog({
                       >
                         <div className="h-1 w-full bg-white/30 rounded-full overflow-hidden backdrop-blur-sm pointer-events-none">
                           <div
-                            className="h-full bg-white rounded-full transition-all duration-75 ease-linear"
+                            className="h-full bg-white rounded-full transition-all duration-100 ease-linear"
                             style={{ width: barWidth }}
                           />
                         </div>
@@ -225,9 +232,9 @@ export function VideoStoriesDialog({
                   {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                 </button>
 
-                {title && (
+                {(activeVideos[currentIndex]?.title || title) && (
                   <span className="text-white/90 text-xs font-semibold truncate max-w-[200px] px-2 drop-shadow">
-                    {title}
+                    {activeVideos[currentIndex]?.title || title}
                   </span>
                 )}
 
@@ -245,10 +252,7 @@ export function VideoStoriesDialog({
             <div className="absolute inset-0 z-40 flex touch-manipulation">
               <div
                 className="w-[30%] h-full cursor-pointer flex items-center justify-start group/navleft"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrev();
-                }}
+                onClick={handlePrev}
               >
                 {activeVideos.length > 1 && (
                   <div className="hidden md:flex ml-4 w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm items-center justify-center text-white/50 group-hover/navleft:bg-black/50 group-hover/navleft:text-white transition-all border border-white/5">
@@ -278,10 +282,7 @@ export function VideoStoriesDialog({
 
               <div
                 className="w-[30%] h-full cursor-pointer flex items-center justify-end group/navright"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNext();
-                }}
+                onClick={handleNext}
               >
                 {activeVideos.length > 1 && (
                   <div className="hidden md:flex mr-4 w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm items-center justify-center text-white/50 group-hover/navright:bg-black/50 group-hover/navright:text-white transition-all border border-white/5">
@@ -292,12 +293,17 @@ export function VideoStoriesDialog({
             </div>
 
             <video
+              key={currentIndex}
               ref={videoRef}
+              src={activeVideos[currentIndex]?.url}
+              autoPlay
               playsInline
+              loop={activeVideos.length === 1 ? loop : false}
               muted={isMuted}
-              onPlay={handleVideoPlay}
-              onPause={handleVideoPause}
-              onEnded={handleNext}
+              onTimeUpdate={handleTimeUpdate}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onEnded={() => handleNext()}
               className="w-full h-full object-contain bg-black pointer-events-none"
             />
 

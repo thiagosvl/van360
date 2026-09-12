@@ -13,8 +13,11 @@ import { Users2 } from "lucide-react";
 import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useSession } from "@/hooks/business/useSession";
 
 export default function Passageiros() {
+  const { user } = useSession();
   const { isSubConta, can } = usePermissions();
   const {
     profile,
@@ -277,6 +280,34 @@ export default function Passageiros() {
           )}
         </div>
       </PullToRefreshWrapper>
+
+      {(import.meta.env.DEV ||
+        user?.id === "f2dbd620-98ee-4168-894e-ac28eae3ce8b" ||
+        profile?.id === "f2dbd620-98ee-4168-894e-ac28eae3ce8b") && (
+        <VideoCommerce
+          previewUrl="https://res.cloudinary.com/demo/video/upload/dog.mp4"
+          videosData={[
+            {
+              url: "https://res.cloudinary.com/demo/video/upload/dog.mp4",
+              title: "Alunos: Lista e Carteirinha",
+            },
+            {
+              url: "https://res.cloudinary.com/demo/video/upload/elephants.mp4",
+              title: "Solicitações: Link para os Pais",
+            },
+            {
+              url: "https://www.w3schools.com/html/mov_bbb.mp4",
+              title: "Filtros Rápidos por Turno",
+            },
+          ]}
+          tooltipText="Veja como funciona"
+          ctaText="Cadastrar Aluno"
+          onCtaClick={handleOpenNewDialog}
+          positionClasses="fixed bottom-24 left-4 sm:left-6 z-40"
+          requireScrollOnMobile={false}
+          storageKey="van360_has_seen_alunos_guide"
+        />
+      )}
     </>
   );
 }
