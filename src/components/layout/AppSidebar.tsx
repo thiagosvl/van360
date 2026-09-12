@@ -122,7 +122,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
               className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors cursor-pointer"
             >
               <SlidersHorizontal className="h-3.5 w-3.5 text-slate-500" />
-              <span>Personalizar atalhos do rodapé</span>
+              <span>Personalizar atalhos de navegação</span>
             </button>
           </div>
         )}
