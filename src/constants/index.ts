@@ -13,7 +13,8 @@ export const STORAGE_KEYS = {
   RESPONSAVEL_TOKEN: "@van360:responsavel_token",
   RESPONSAVEL_PASSAGEIRO_ID: "@van360:responsavel_passageiro_id",
   DISMISS_NATIVE_UPDATE_PROMPT: "van360_dismiss_native_update_prompt",
-  PENDING_UPDATE: "pendingUpdate"
+  PENDING_UPDATE: "pendingUpdate",
+  BOTTOM_NAV_PREFERENCES: "van360:mobile_bottom_nav"
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */

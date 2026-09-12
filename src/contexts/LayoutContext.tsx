@@ -261,6 +261,8 @@ export interface LayoutContextType {
   // Mobile Menu
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
+  openPersonalizarMenuDialog: () => void;
+  closePersonalizarMenuDialog: () => void;
 
   // Loading Global
   isGlobalLoading: boolean;

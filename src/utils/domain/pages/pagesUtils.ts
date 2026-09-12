@@ -84,23 +84,20 @@ const pagesItems: PageItem[] = [
   },
 ];
 
-const defaultBottomNavHrefs: string[] = [
+import { STORAGE_KEYS } from "@/constants";
+
+export const STORAGE_KEY_BOTTOM_NAV = STORAGE_KEYS.BOTTOM_NAV_PREFERENCES;
+export const BOTTOM_NAV_CHANGE_EVENT = "van360:bottom_nav_change";
+
+export const defaultBottomNavHrefs: string[] = [
   ROUTES.PRIVATE.MOTORISTA.HOME,
   ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
   ROUTES.PRIVATE.MOTORISTA.BILLING,
-  ROUTES.PRIVATE.MOTORISTA.ROUTES,
+  ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
 ];
 
-// Centraliza a configuração dos itens que aparecem no rodapé mobile por perfil
 export function getBottomNavHrefs(isSubConta: boolean, isMotoristaAuxiliar: boolean, isMonitor: boolean): string[] {
-  if (isMonitor) {
-    return [
-      ROUTES.PRIVATE.MOTORISTA.HOME,
-      ROUTES.PRIVATE.MOTORISTA.ROUTES,
-      ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-    ];
-  }
-  if (isMotoristaAuxiliar) {
+  if (isMonitor || isMotoristaAuxiliar) {
     return [
       ROUTES.PRIVATE.MOTORISTA.HOME,
       ROUTES.PRIVATE.MOTORISTA.ROUTES,

@@ -4,8 +4,8 @@ import { useLocation, NavLink } from "react-router-dom";
 import { pagesItems, getBottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
 
 import { useLayout } from "@/contexts/LayoutContext";
-
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useSession } from "@/hooks/business/useSession";
+import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 
 interface BottomNavbarProps {
   isSubscriptionBlocked?: boolean;
@@ -16,11 +16,10 @@ export function BottomNavbar({ isSubscriptionBlocked }: BottomNavbarProps = {}) 
 
   const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
-  const { isSubConta, isMotoristaAuxiliar, isMonitor } = usePermissions();
+  const { user } = useSession();
+  const { activeHrefs } = useBottomNavPreferences(user?.id);
 
-  const targetHrefs = getBottomNavHrefs(isSubConta, isMotoristaAuxiliar, isMonitor);
-
-  const navItems = targetHrefs
+  const navItems = activeHrefs
     .map(href => pagesItems.find(item => item.href === href))
     .filter(Boolean) as typeof pagesItems;
   const isMoreActive = !navItems.some(item => location.pathname === item.href);

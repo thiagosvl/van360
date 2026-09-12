@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
-import { pagesItems, getBottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
+import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
-import { Gift, Lock } from "lucide-react";
+import { Gift, Lock, SlidersHorizontal } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useSession } from "@/hooks/business/useSession";
+import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
 import { toast } from "sonner";
@@ -16,11 +18,12 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionBlocked }: AppSidebarProps) {
-  const { openReferAndEarnDialog } = useLayout();
-  const { can, isGestor, isSubConta, isMonitor, isMotoristaAuxiliar } = usePermissions();
+  const { openReferAndEarnDialog, openPersonalizarMenuDialog } = useLayout();
+  const { can, isGestor } = usePermissions();
+  const { user } = useSession();
+  const { activeHrefs: activeBottomHrefs, isEligibleToCustomize } = useBottomNavPreferences(user?.id);
 
   const isMobile = !!excludeBottomNavItems;
-  const activeBottomHrefs = getBottomNavHrefs(isSubConta, isMotoristaAuxiliar, isMonitor);
 
   const itemsToRender = (isMobile
     ? pagesItems.filter((item) => !activeBottomHrefs.includes(item.href))
@@ -106,6 +109,22 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
             <Gift className="h-5 w-5 shrink-0 text-amber-400" />
             <span className="truncate">Indique e Ganhe</span>
           </button>
+        )}
+
+        {isMobile && isEligibleToCustomize && !isSubscriptionBlocked && (
+          <div className="pt-2 mt-2 border-t border-white/5 md:hidden">
+            <button
+              type="button"
+              onClick={() => {
+                onLinkClick?.();
+                openPersonalizarMenuDialog();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5 text-slate-500" />
+              <span>Personalizar atalhos do rodapé</span>
+            </button>
+          </div>
         )}
       </nav>
     </div>
