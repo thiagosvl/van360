@@ -276,6 +276,15 @@ export interface AdminUserDetailsResponse {
   veiculos?: AdminUserVehicleItem[];
   escolas?: AdminUserSchoolItem[];
   contratos?: AdminUserContractItem[];
+  dispositivos?: {
+    total: number;
+    itens: Array<{
+      id: string;
+      plataforma: string;
+      criado_em: string | null;
+      atualizado_em: string | null;
+    }>;
+  };
   assinatura: {
     id: string;
     usuario_id: string;

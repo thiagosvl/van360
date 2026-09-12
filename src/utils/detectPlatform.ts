@@ -74,5 +74,8 @@ export const PLAY_STORE_URL =
 export const PLAY_STORE_MARKET_URL =
   `market://details?id=${ANDROID_PACKAGE_NAME}`;
 
-export const PLAY_STORE_BADGE_URL =
-  "https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png";
+export const PLAY_STORE_BADGE_URL = "/assets/badge-google-play.png";
+
+export const APP_STORE_URL = "https://apps.apple.com/app/van360";
+
+export const APP_STORE_BADGE_URL = "/assets/badge-app-store.png";
