@@ -6,7 +6,6 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { formatMonthYearAbbr } from "@/utils/formatters/date";
 import { Copy, CopyCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Capacitor } from "@capacitor/core";
 
 interface SubscriptionInvoiceCardProps {
   invoice: SubscriptionInvoice;
@@ -31,8 +30,6 @@ export function SubscriptionInvoiceCard({
   const showActions =
     invoice.status === SubscriptionInvoiceStatus.FAILED ||
     invoice.status === SubscriptionInvoiceStatus.PENDING;
-
-  const isNative = Capacitor.isNativePlatform();
 
   return (
     <div
@@ -77,7 +74,7 @@ export function SubscriptionInvoiceCard({
 
       {showActions && (
         <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
-          {!isNative && invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
+          {invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"

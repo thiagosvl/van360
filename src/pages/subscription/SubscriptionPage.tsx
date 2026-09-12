@@ -11,6 +11,7 @@ import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEar
 import { SubscriptionHeroCard } from "@/components/features/subscription/SubscriptionHeroCard";
 import { SubscriptionPlansShowcase } from "@/components/features/subscription/SubscriptionPlansShowcase";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { copyToClipboard } from "@/utils/browser";
 import {
   Clock,
   CheckCircle2,
@@ -184,8 +185,8 @@ export default function SubscriptionPage() {
     });
   };
 
-  const handleCopyPix = (pixCode: string, invId: string) => {
-    navigator.clipboard.writeText(pixCode);
+  const handleCopyPix = async (pixCode: string, invId: string) => {
+    await copyToClipboard(pixCode);
     setCopiedPixId(invId);
     setTimeout(() => setCopiedPixId(null), 2000);
   };
@@ -325,8 +326,8 @@ export default function SubscriptionPage() {
                   }
                   message={
                     isTrial
-                      ? "Olá! Estou no período de teste do Van360 e gostaria de tirar uma dúvida sobre os planos."
-                      : "Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida sobre os planos."
+                      ? "Olá! Estou no período de teste do Van360 e gostaria de tirar uma dúvida."
+                      : "Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
                   }
                 />
               </div>
