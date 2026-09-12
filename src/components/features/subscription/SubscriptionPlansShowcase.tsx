@@ -8,7 +8,6 @@ import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-  Tag,
   ArrowRight,
   Lock,
   ChevronDown,
@@ -182,15 +181,9 @@ export function SubscriptionPlansShowcase({
   const hasPromoMonthly = pricing?.hasPromoMonthly ?? (regularMonthlyPrice < baseMonthlyPrice);
   const hasPromoAnnual = pricing?.hasPromoAnnual ?? (regularAnnualPrice < baseAnnualPrice);
   const hasReferralDiscount = pricing?.hasReferralDiscount ?? Boolean(referral?.hasActiveDiscount);
+
   const referralDiscountPct = pricing?.referralDiscountPct ?? (referral?.discountPct || 0);
   const freeMonths = pricing?.freeMonths ?? (regularMonthlyPrice > 0 && totalAnnualSavings > 0 ? Math.max(1, Math.round(totalAnnualSavings / regularMonthlyPrice)) : 2);
-
-  const discountPercent = regularAnnualPrice > 0
-    ? Math.max(1, Math.round(((regularMonthlyPrice * 12 - annualPrice) / (regularMonthlyPrice * 12)) * 100))
-    : 34;
-
-  const activePlan = selectedPeriod === SubscriptionIdentifer.YEARLY ? annualPlan : monthlyPlan;
-  const isAnual = selectedPeriod === SubscriptionIdentifer.YEARLY;
 
   const coreFeatures = [
     { feature: "Cobrança no WhatsApp", benefit: "lembretes com sua chave Pix, sem você ter que cobrar ninguém" },
@@ -266,9 +259,16 @@ export function SubscriptionPlansShowcase({
 
         <div className="mt-4 space-y-0.5">
           {(hasPromoMonthly || hasReferralDiscount) && (
-            <p className="text-xs text-slate-400 line-through font-medium">
-              De {SubscriptionUtils.formatCurrency(hasPromoMonthly ? baseMonthlyPrice : regularMonthlyPrice)}
-            </p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-slate-400 line-through font-medium">
+                De {SubscriptionUtils.formatCurrency(hasPromoMonthly ? baseMonthlyPrice : regularMonthlyPrice)}
+              </span>
+              {hasReferralDiscount && referralDiscountPct > 0 && (
+                <span className="text-xs text-emerald-600 font-semibold">
+                  (-{referralDiscountPct}% por indicação)
+                </span>
+              )}
+            </div>
           )}
           <div className="flex items-baseline gap-1">
             <span className="text-3xl sm:text-4xl font-black text-[#002444] tracking-tight">
@@ -366,9 +366,16 @@ export function SubscriptionPlansShowcase({
 
         <div className="mt-4 space-y-0.5">
           {(hasPromoAnnual || hasReferralDiscount || (regularMonthlyPrice * 12) > annualPrice) && (
-            <p className="text-xs text-slate-400 line-through font-medium">
-              De {SubscriptionUtils.formatCurrency(hasPromoAnnual ? baseAnnualPrice : (regularMonthlyPrice * 12))}
-            </p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-slate-400 line-through font-medium">
+                De {SubscriptionUtils.formatCurrency(hasPromoAnnual ? baseAnnualPrice : (regularMonthlyPrice * 12))}
+              </span>
+              {hasReferralDiscount && referralDiscountPct > 0 && (
+                <span className="text-xs text-emerald-600 font-semibold">
+                  (-{referralDiscountPct}% por indicação)
+                </span>
+              )}
+            </div>
           )}
           <div className="flex items-baseline gap-1">
             <span className="text-3xl sm:text-4xl font-black text-[#002444] tracking-tight">
@@ -517,17 +524,6 @@ export function SubscriptionPlansShowcase({
         </div>
       )}
 
-      {hasReferralDiscount && (
-        <div className="w-full">
-          <Banner
-            variant="success"
-            icon={<Tag className="w-5 h-5" />}
-            title={`Desconto de ${referralDiscountPct}% por indicação aplicado!`}
-            description="O valor com desconto já está calculado nos planos abaixo."
-            className="w-full"
-          />
-        </div>
-      )}
 
       <div className="max-w-sm sm:max-w-md mx-auto w-full pt-1">
         <Tabs
