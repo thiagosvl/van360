@@ -458,7 +458,7 @@ export function SubscriptionPlansShowcase({
             />
             <WhatsAppSupportButton
               subtitle="Tire dúvidas sobre os planos ou reativação"
-              message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida sobre os planos."
+              message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
             />
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl font-bold font-headline text-[#002444] tracking-tight">
@@ -480,7 +480,7 @@ export function SubscriptionPlansShowcase({
             />
             <WhatsAppSupportButton
               subtitle="Tire dúvidas sobre os planos ou reativação"
-              message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida sobre os planos."
+              message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
             />
           </div>
         ) : (
