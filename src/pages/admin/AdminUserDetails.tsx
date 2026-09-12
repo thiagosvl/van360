@@ -13,7 +13,6 @@ import {
   useRemoveUserReferralAdmin,
   useAdminImpersonateUser,
 } from "@/hooks/api/adminHooks";
-import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
   ArrowLeft,
   Bell,
@@ -83,7 +82,6 @@ import {
 const ADMIN_USER_TABS = Object.values(AdminUserTab);
 const ADMIN_USER_SUBTABS = Object.values(AdminUserSubTab);
 import { cpfCnpjMask as cpfMask, phoneMask, moneyMask, cpfCnpjMask } from "@/utils/masks";
-import { toast } from "sonner";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { ROUTES } from "@/constants/routes";
@@ -1879,11 +1877,6 @@ export default function AdminUserDetails() {
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             Convertido (Bônus Concedido)
-                          </span>
-                        )}
-                        {data.indicador.status === IndicacaoStatus.CANCELED && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">
-                            Cancelado
                           </span>
                         )}
                       </div>

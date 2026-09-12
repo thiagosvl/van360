@@ -23,10 +23,11 @@ export function useAdminPassengerNotifications(id: string, params?: AdminNotific
   });
 }
 
-export function useAdminGlobalNotifications(params?: AdminNotificationQueryParams) {
+export function useAdminGlobalNotifications(params?: AdminNotificationQueryParams, enabled = true) {
   return useQuery({
     queryKey: ["admin", "global", "notifications", params],
     queryFn: () => adminNotificationApi.getGlobalNotifications(params),
+    enabled,
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,

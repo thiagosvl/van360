@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   MessageSquare,
   DollarSign,
+  Send,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -19,6 +20,8 @@ import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { toast } from "@/utils/notifications/toast";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AdminBroadcastNotificationView } from "@/components/features/admin/broadcast/AdminBroadcastNotificationView";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,10 +54,11 @@ interface ExtendedNotificationFiltersState extends NotificationFiltersState {
 export default function AdminNotificationsHistory() {
   const { setPageTitle, openConfirmationDialog } = useLayout();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("historico");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
-    setPageTitle("Histórico de Notificações");
+    setPageTitle("Notificações");
   }, [setPageTitle]);
 
   const [page, setPage] = useState(1);
@@ -86,22 +90,25 @@ export default function AdminNotificationsHistory() {
     setPage(1);
   }, [debouncedMotorista]);
 
-  const { data, isFetching } = useAdminGlobalNotifications({
-    page,
-    limit: parseInt(limit),
-    categoria:
-      filters.categoria === NotificationCategoryEnum.TODOS
-        ? undefined
-        : filters.categoria,
-    canal:
-      filters.canal === NOTIFICATION_FILTER_ALL ? undefined : filters.canal,
-    status:
-      filters.status === NOTIFICATION_FILTER_ALL ? undefined : filters.status,
-    search: filters.search.trim() || undefined,
-    searchMotorista: filters.searchMotorista.trim() || undefined,
-    dataInicio: filters.dataInicio || undefined,
-    dataFim: filters.dataFim || undefined,
-  });
+  const { data, isFetching } = useAdminGlobalNotifications(
+    {
+      page,
+      limit: parseInt(limit),
+      categoria:
+        filters.categoria === NotificationCategoryEnum.TODOS
+          ? undefined
+          : filters.categoria,
+      canal:
+        filters.canal === NOTIFICATION_FILTER_ALL ? undefined : filters.canal,
+      status:
+        filters.status === NOTIFICATION_FILTER_ALL ? undefined : filters.status,
+      search: filters.search.trim() || undefined,
+      searchMotorista: filters.searchMotorista.trim() || undefined,
+      dataInicio: filters.dataInicio || undefined,
+      dataFim: filters.dataFim || undefined,
+    },
+    activeTab === "historico"
+  );
 
   const kpis = data?.kpis;
 
@@ -191,15 +198,45 @@ export default function AdminNotificationsHistory() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardHeader className="pb-2 border-b border-slate-800/80 bg-slate-900/40">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-              <Bell className="h-4 w-4 text-indigo-400" />
-              <span>Histórico de Notificações</span>
-            </CardTitle>
-            <div className="flex items-center gap-2">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-800/80 pb-4">
+        <div>
+          <h1 className="text-xl font-headline font-black text-white uppercase tracking-tight flex items-center gap-2.5">
+            <Bell className="h-5 w-5 text-blue-400" />
+            <span>Notificações</span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Histórico completo de eventos e disparo de comunicados em massa para motoristas
+          </p>
+        </div>
+
+        <TabsList className="bg-slate-900/90 border border-slate-800 p-1 rounded-2xl h-11">
+          <TabsTrigger
+            value="historico"
+            className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-2"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>Histórico e Reprocessamento</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="broadcast"
+            className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-2"
+          >
+            <Send className="h-3.5 w-3.5" />
+            <span>Disparar Notificações</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
+
+      <TabsContent value="historico" className="mt-0 space-y-6">
+        <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
+          <CardHeader className="pb-2 border-b border-slate-800/80 bg-slate-900/40">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                <Bell className="h-4 w-4 text-indigo-400" />
+                <span>Histórico de Notificações</span>
+              </CardTitle>
+              <div className="flex items-center gap-2">
               <Button
                 type="button"
                 size="sm"
@@ -527,6 +564,11 @@ export default function AdminNotificationsHistory() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="broadcast" className="mt-0">
+        <AdminBroadcastNotificationView />
+      </TabsContent>
+    </Tabs>
   );
 }
