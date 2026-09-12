@@ -50,6 +50,7 @@ import {
   UserCheck,
   UserPlus,
   Edit2,
+  Smartphone,
 } from "lucide-react";
 import { AdminUserPassengersTab } from "@/components/features/admin/user-details/AdminUserPassengersTab";
 import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/AdminUserVehiclesTab";
@@ -669,6 +670,25 @@ export default function AdminUserDetails() {
                     dataVencimento={data.assinatura.data_vencimento}
                   />
                 )}
+                {data.dispositivos && (
+                  data.dispositivos.total > 0 ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      title={`${data.dispositivos.total} ${data.dispositivos.total === 1 ? "aparelho conectado ao app" : "aparelhos conectados ao app"}`}
+                    >
+                      <Smartphone className="h-3.5 w-3.5" />
+                      <span>{data.dispositivos.total} {data.dispositivos.total === 1 ? "app conectado" : "apps conectados"}</span>
+                    </span>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60"
+                      title="Nenhum dispositivo móvel com push ativo"
+                    >
+                      <Smartphone className="h-3.5 w-3.5 text-slate-500" />
+                      <span>Sem app</span>
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </div>
@@ -1061,6 +1081,39 @@ export default function AdminUserDetails() {
                     <span className="font-medium text-slate-300 block">
                       {data.user.dispositivo_cadastro ? DispositivoCadastroLabels[data.user.dispositivo_cadastro as keyof typeof DispositivoCadastroLabels] || data.user.dispositivo_cadastro : "—"}
                     </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Dispositivos Conectados (App / Push)
+                    </span>
+                    {data.dispositivos && data.dispositivos.total > 0 ? (
+                      <div className="space-y-1 mt-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <Smartphone className="h-3 w-3" />
+                            {data.dispositivos.total} {data.dispositivos.total === 1 ? "aparelho conectado" : "aparelhos conectados"}
+                          </span>
+                        </div>
+                        <div className="space-y-0.5">
+                          {data.dispositivos.itens.map((disp) => (
+                            <span key={disp.id} className="text-[11px] text-slate-400 block font-mono">
+                              <span className="capitalize font-semibold text-slate-300">{disp.plataforma}</span>
+                              {disp.atualizado_em && (
+                                <span className="text-slate-500"> • Visto em {formatDateTime(disp.atualizado_em)}</span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60">
+                          <Smartphone className="h-3 w-3 text-slate-500" />
+                          Nenhum aparelho conectado
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {data.user.metadados_cadastro && (data.user.metadados_cadastro.utm || data.user.metadados_cadastro.referrer) && (
