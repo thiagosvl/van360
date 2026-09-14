@@ -292,45 +292,82 @@ export function usePassageiroFormViewModel({
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {
-          const normalizeForCompare = (val: unknown) => {
+          const normalizeText = (val: unknown) => {
             if (val === null || val === undefined) return "";
             return String(val).trim().toLowerCase();
           };
 
-          const checkStringChange = (formVal: unknown, dbVal: unknown) => {
-            return normalizeForCompare(formVal) !== normalizeForCompare(dbVal);
+          const checkTextChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeText(formVal) !== normalizeText(dbVal);
           };
 
+          const normalizeDigits = (val: unknown) => {
+            if (val === null || val === undefined) return "";
+            return String(val).replace(/\D/g, "");
+          };
+
+          const checkDigitsChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeDigits(formVal) !== normalizeDigits(dbVal);
+          };
+
+          const normalizeDate = (val: unknown) => {
+            if (!val) return "";
+            const str = String(val).trim();
+            if (str.includes("/")) {
+              const parts = str.split("/");
+              if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return str.slice(0, 10);
+          };
+
+          const checkDateChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeDate(formVal) !== normalizeDate(dbVal);
+          };
+
+          const normalizeTime = (val: unknown) => {
+            if (!val) return "";
+            return String(val).trim().slice(0, 5);
+          };
+
+          const checkTimeChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeTime(formVal) !== normalizeTime(dbVal);
+          };
+
+          const isIsento = !!purePayload.isento;
+          const isIsentoAtual = !!editingPassageiro.isento;
           const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca as string | number | null | undefined);
-          const vencimentoForm = Number(purePayload.dia_vencimento);
-          
+          const vencimentoForm = Number(purePayload.dia_vencimento || 0);
           const valorAtual = Number(editingPassageiro.valor_cobranca || 0);
           const vencimentoAtual = Number(editingPassageiro.dia_vencimento || 0);
 
-          hasCriticalContractChanges =
+          const hasFinancialChanges = isIsento !== isIsentoAtual || (!isIsento && (
             Math.abs(valorForm - valorAtual) > 0.01 ||
-            vencimentoForm !== vencimentoAtual ||
-            checkStringChange(purePayload.nome, editingPassageiro.nome) ||
-            checkStringChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
-            checkStringChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
-            checkStringChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
-            checkStringChange(data.responsavel_principal?.telefone?.replace(/\D/g, ""), editingPassageiro.responsavel_principal?.telefone?.replace(/\D/g, "")) ||
-            checkStringChange(purePayload.escola_id, editingPassageiro.escola_id) ||
-            checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
-            checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
-            checkStringChange(purePayload.turma, editingPassageiro.turma) ||
-            checkStringChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
-            checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
-            checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
-            checkStringChange(purePayload.horario_entrada, editingPassageiro.horario_entrada) ||
-            checkStringChange(purePayload.horario_saida, editingPassageiro.horario_saida) ||
-            checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
-            checkStringChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
-            checkStringChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
-            checkStringChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||
-            checkStringChange(data.responsavel_principal?.cidade, editingPassageiro.responsavel_principal?.cidade) ||
-            checkStringChange(data.responsavel_principal?.estado, editingPassageiro.responsavel_principal?.estado) ||
-            checkStringChange(data.responsavel_principal?.cep, editingPassageiro.responsavel_principal?.cep);
+            vencimentoForm !== vencimentoAtual
+          ));
+
+          hasCriticalContractChanges =
+            hasFinancialChanges ||
+            checkTextChange(purePayload.nome, editingPassageiro.nome) ||
+            checkTextChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
+            checkTextChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
+            checkDigitsChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
+            checkDigitsChange(data.responsavel_principal?.telefone, editingPassageiro.responsavel_principal?.telefone) ||
+            checkTextChange(purePayload.escola_id, editingPassageiro.escola_id) ||
+            checkTextChange(purePayload.periodo, editingPassageiro.periodo) ||
+            checkTextChange(purePayload.modalidade, editingPassageiro.modalidade) ||
+            checkTextChange(purePayload.turma, editingPassageiro.turma) ||
+            checkTextChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
+            checkDateChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
+            checkDateChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
+            checkTimeChange(purePayload.horario_entrada, editingPassageiro.horario_entrada) ||
+            checkTimeChange(purePayload.horario_saida, editingPassageiro.horario_saida) ||
+            checkDateChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
+            checkTextChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
+            checkTextChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
+            checkTextChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||
+            checkTextChange(data.responsavel_principal?.cidade, editingPassageiro.responsavel_principal?.cidade) ||
+            checkTextChange(data.responsavel_principal?.estado, editingPassageiro.responsavel_principal?.estado) ||
+            checkDigitsChange(data.responsavel_principal?.cep, editingPassageiro.responsavel_principal?.cep);
         }
 
         onSuccess(responseData, {
