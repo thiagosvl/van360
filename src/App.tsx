@@ -84,6 +84,25 @@ const AdminNotificationsHistory = lazyLoad(() => import("./pages/admin/AdminNoti
 const AdminEvolutionInstances = lazyLoad(() => import("./pages/admin/AdminEvolutionInstances"));
 const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 
+interface PendingOtaUpdate {
+  id: string;
+  version: string;
+}
+
+function getPendingUpdate(): PendingOtaUpdate | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.id === "string" && typeof parsed.version === "string") {
+      return parsed as PendingOtaUpdate;
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
+  }
+  return null;
+}
+
 const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -101,11 +120,22 @@ const App = () => {
       if (isDevEnv()) return;
 
       try {
-        const appInfo = await CapacitorApp.getInfo();
         const current = await CapacitorUpdater.current();
         const currentVersion =
           current?.bundle?.version || current?.native || "builtin";
 
+        const pendingUpdate = getPendingUpdate();
+        if (pendingUpdate && pendingUpdate.version !== currentVersion) {
+          localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
+          try {
+            await CapacitorUpdater.set({ id: pendingUpdate.id });
+            await CapacitorUpdater.reload();
+            return;
+          } catch {
+          }
+        }
+
+        const appInfo = await CapacitorApp.getInfo();
         const { data } = await apiClient.get("/app/updates", {
           params: {
             platform: Capacitor.getPlatform(),
@@ -148,12 +178,12 @@ const App = () => {
 
         if (!latest_version || currentVersion === latest_version) return;
 
-        const pendingUpdateId = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
-        if (pendingUpdateId && pendingUpdateId === latest_version && !force_update) {
+        if (pendingUpdate && pendingUpdate.version === latest_version && !force_update) {
           return;
         }
 
         if (force_update) {
+          localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
           setUpdating(true);
           setProgress(0);
 
@@ -190,14 +220,14 @@ const App = () => {
             }
           };
 
-          const TIMEOUT_MS = 7000;
+          const TIMEOUT_MS = 15000;
           const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error("OTA timeout limit exceeded")), TIMEOUT_MS);
           });
 
           try {
             await Promise.race([performForceUpdate(), timeoutPromise]);
-          } catch (err) {
+          } catch {
             setUpdating(false);
           }
           return;
@@ -209,11 +239,21 @@ const App = () => {
             url: url_zip,
           });
 
-          await CapacitorUpdater.next({ id: version.id });
-          localStorage.setItem(STORAGE_KEYS.PENDING_UPDATE, version.id);
-        } catch (err) {
+          try {
+            await CapacitorUpdater.next({ id: version.id });
+          } catch {
+          }
+
+          localStorage.setItem(
+            STORAGE_KEYS.PENDING_UPDATE,
+            JSON.stringify({
+              id: version.id,
+              version: latest_version,
+            })
+          );
+        } catch {
         }
-      } catch (err) {
+      } catch {
       }
     };
 
@@ -258,14 +298,16 @@ const App = () => {
     const notifyReady = async () => {
       try {
         const current = await CapacitorUpdater.current();
-        const pending = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
+        const currentVersion =
+          current?.bundle?.version || current?.native || "builtin";
+        const pending = getPendingUpdate();
 
-        if (pending && pending === current?.bundle?.id) {
+        if (pending && (pending.version === currentVersion || pending.id === current?.bundle?.id)) {
           localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
         }
 
         await CapacitorUpdater.notifyAppReady();
-      } catch (err) {
+      } catch {
       }
     };
 

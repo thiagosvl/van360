@@ -67,7 +67,7 @@ jobs:
           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
 
           # 2. Definir a flag force_update: 'true' se [FORCE] estiver na mensagem, senão 'false'
-          if [[ "$COMMIT_MESSAGE" == *"[FORCE]"* ]]; then
+          if [[ "$COMMIT_MESSAGE" =~ \[[Ff][Oo][Rr][Cc][Ee]\] ]]; then
             FORCE_UPDATE_VALUE="true"
           else
             FORCE_UPDATE_VALUE="false"
