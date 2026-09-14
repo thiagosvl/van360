@@ -48,7 +48,7 @@ export function useUpdatePassageiro() {
         toast.success("sucesso.atualizar");
       }
 
-      if (data) {
+      if (data && typeof data === "object" && "id" in data && data.id) {
         queryClient.setQueryData(["passageiro", variables.id], data);
       }
 
