@@ -4,11 +4,9 @@ import { toast } from "sonner";
 import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity, useAdminUsersRadarStats } from "@/hooks/api/adminHooks";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLayout } from "@/contexts/LayoutContext";
 import { phoneMask, cpfCnpjMask } from "@/utils/masks";
 import { apiClient } from "@/services/api/client";
 import { ROUTES } from "@/constants/routes";
@@ -42,6 +40,7 @@ import {
   Calendar,
   AlertTriangle,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -51,6 +50,7 @@ import {
 } from "@/components/ui/card";
 import { type LoginAttempt } from "./AdminLoginAttempts";
 import { formatRelativeTime } from "@/utils/formatters";
+import { useLayout } from "@/hooks";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -106,8 +106,8 @@ function CustomAcquisitionTooltip({ active, payload }: CustomAcquisitionTooltipP
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { data: stats, isLoading, refetch: refetchStats, isFetching: isFetchingStats } = useAdminStats();
   const { setPageTitle } = useLayout();
-  const { data: stats, isLoading } = useAdminStats();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
@@ -245,72 +245,98 @@ export default function AdminDashboard() {
       {/* SELETOR DE ABAS PRINCIPAIS DO DASHBOARD (DUAL-MODE) */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* MOBILE SELECT (< 768px) */}
-        <div className="md:hidden w-full bg-slate-900/90 border border-slate-800/80 p-2 rounded-[1.25rem] shadow-xl mb-6">
-          <Select value={activeTab} onValueChange={handleTabChange}>
-            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white font-bold h-12 rounded-[0.85rem] focus:ring-blue-500 text-xs">
-              <SelectValue placeholder="Selecione uma visão" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800 text-white rounded-2xl">
-              <SelectItem value="geral" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <LayoutDashboard className="h-4 w-4 text-blue-400" />
-                  <span>Visão Geral</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="usuarios" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-purple-400" />
-                  <span>Usuários</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="operacional" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-amber-400" />
-                  <span>Operacional</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="contratos" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-emerald-400" />
-                  <span>Contratos</span>
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="md:hidden flex items-center gap-2 mb-6">
+          <div className="flex-1 bg-slate-900/90 border border-slate-800/80 p-2 rounded-[1.25rem] shadow-xl">
+            <Select value={activeTab} onValueChange={handleTabChange}>
+              <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white font-bold h-12 rounded-[0.85rem] focus:ring-blue-500 text-xs">
+                <SelectValue placeholder="Selecione uma visão" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800 text-white rounded-2xl">
+                <SelectItem value="geral" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <LayoutDashboard className="h-4 w-4 text-blue-400" />
+                    <span>Visão Geral</span>
+                  </span>
+                </SelectItem>
+                <SelectItem value="usuarios" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-purple-400" />
+                    <span>Usuários</span>
+                  </span>
+                </SelectItem>
+                <SelectItem value="operacional" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-amber-400" />
+                    <span>Operacional</span>
+                  </span>
+                </SelectItem>
+                <SelectItem value="contratos" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-emerald-400" />
+                    <span>Contratos</span>
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => refetchStats()}
+            disabled={isFetchingStats}
+            title="Atualizar dados do dashboard"
+            className="h-16 w-14 border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white rounded-[1.25rem] shadow-xl shrink-0"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetchingStats ? "animate-spin text-blue-400" : ""}`} />
+          </Button>
         </div>
 
         {/* DESKTOP TABS (≥ 768px) */}
-        <div className="hidden md:block bg-slate-900/90 border border-slate-800/80 rounded-[1.25rem] shadow-xl overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mb-6">
-          <TabsList className="flex w-full min-h-[48px] bg-transparent p-0 gap-1.5 mt-0">
-            <TabsTrigger
-              value="geral"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
-            >
-              <LayoutDashboard className="h-4 w-4 text-blue-300" />
-              <span>Visão Geral</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="usuarios"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
-            >
-              <Users className="h-4 w-4 text-purple-300" />
-              <span>Usuários</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="operacional"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
-            >
-              <Activity className="h-4 w-4 text-amber-300" />
-              <span>Operacional</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="contratos"
-              className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4 text-emerald-300" />
-              <span>Contratos</span>
-            </TabsTrigger>
-          </TabsList>
+        <div className="hidden md:flex items-center gap-3 mb-6">
+          <div className="flex-1 bg-slate-900/90 border border-slate-800/80 rounded-[1.25rem] shadow-xl overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <TabsList className="flex w-full min-h-[48px] bg-transparent p-0 gap-1.5 mt-0">
+              <TabsTrigger
+                value="geral"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <LayoutDashboard className="h-4 w-4 text-blue-300" />
+                <span>Visão Geral</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="usuarios"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <Users className="h-4 w-4 text-purple-300" />
+                <span>Usuários</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="operacional"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <Activity className="h-4 w-4 text-amber-300" />
+                <span>Operacional</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="contratos"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <FileText className="h-4 w-4 text-emerald-300" />
+                <span>Contratos</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => refetchStats()}
+            disabled={isFetchingStats}
+            className="h-12 px-4 border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white rounded-[1.25rem] shadow-xl flex items-center gap-2 shrink-0 font-headline font-bold text-xs"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isFetchingStats ? "animate-spin text-blue-400" : ""}`} />
+            <span>Atualizar</span>
+          </Button>
         </div>
 
         {/* ABA 1: VISÃO GERAL */}

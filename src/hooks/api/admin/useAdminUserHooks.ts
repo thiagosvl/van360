@@ -19,10 +19,9 @@ export function useAdminStats() {
   return useQuery({
     queryKey: KEYS.stats,
     queryFn: adminUserApi.getStats,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -50,7 +49,7 @@ export function useAdminUsers(params?: ListUsersParams, options?: { enabled?: bo
   return useQuery({
     queryKey: KEYS.users(params),
     queryFn: () => adminUserApi.getUsers(params),
-    staleTime: 0,
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     enabled: options?.enabled,
@@ -62,7 +61,67 @@ export function useAdminUserDetails(id: string) {
     queryKey: KEYS.userDetails(id),
     queryFn: () => adminUserApi.getUserDetails(id),
     enabled: !!id,
-    staleTime: 0,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserContracts(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "contracts"],
+    queryFn: () => adminUserApi.getUserContratos(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserPassageiros(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "passageiros"],
+    queryFn: () => adminUserApi.getUserPassageiros(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserPrePassageiros(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "pre-passageiros"],
+    queryFn: () => adminUserApi.getUserPrePassageiros(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserVeiculos(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "veiculos"],
+    queryFn: () => adminUserApi.getUserVeiculos(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserEscolas(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "escolas"],
+    queryFn: () => adminUserApi.getUserEscolas(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserReferral(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "referral"],
+    queryFn: () => adminUserApi.getUserReferral(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }

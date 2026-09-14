@@ -533,6 +533,24 @@ export const adminUserApi = {
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),
 
+  getUserContratos: (id: string) =>
+    apiClient.get<AdminUserContractItem[]>(`${BASE}/users/${id}/contratos`).then(r => r.data),
+
+  getUserPassageiros: (id: string) =>
+    apiClient.get<AdminUserPassengerItem[]>(`${BASE}/users/${id}/passageiros`).then(r => r.data),
+
+  getUserPrePassageiros: (id: string) =>
+    apiClient.get<AdminUserPendingRequestItem[]>(`${BASE}/users/${id}/pre-passageiros`).then(r => r.data),
+
+  getUserVeiculos: (id: string) =>
+    apiClient.get<AdminUserVehicleItem[]>(`${BASE}/users/${id}/veiculos`).then(r => r.data),
+
+  getUserEscolas: (id: string) =>
+    apiClient.get<AdminUserSchoolItem[]>(`${BASE}/users/${id}/escolas`).then(r => r.data),
+
+  getUserReferral: (id: string) =>
+    apiClient.get<AdminUserReferralData>(`${BASE}/users/${id}/referral`).then(r => r.data),
+
   updateUser: (id: string, data: UpdateUserPayload) =>
     apiClient.patch(`${BASE}/users/${id}`, data).then(r => r.data),
 

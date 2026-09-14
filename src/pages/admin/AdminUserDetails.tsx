@@ -13,6 +13,12 @@ import {
   useRemoveUserReferralAdmin,
   useAdminImpersonateUser,
   useDeleteInvoiceAdmin,
+  useAdminUserContracts,
+  useAdminUserPassageiros,
+  useAdminUserPrePassageiros,
+  useAdminUserVeiculos,
+  useAdminUserEscolas,
+  useAdminUserReferral,
 } from "@/hooks/api/adminHooks";
 import {
   ArrowLeft,
@@ -180,26 +186,79 @@ export default function AdminUserDetails() {
   const sub = data?.assinatura;
   const updateUser = useUpdateUserAdmin();
 
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ADMIN_USER_TABS.includes(tabParam as AdminUserTab)) return tabParam as AdminUserTab;
+    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return AdminUserTab.CADASTROS;
+    return AdminUserTab.GERAL;
+  }, [searchParams]);
+
+  const activeSubTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    const subTabParam = searchParams.get("subtab");
+    if (subTabParam && ADMIN_USER_SUBTABS.includes(subTabParam as AdminUserSubTab)) return subTabParam as AdminUserSubTab;
+    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return tabParam as AdminUserSubTab;
+    return AdminUserSubTab.PASSAGEIROS;
+  }, [searchParams]);
+
+  const isCadastros = activeTab === AdminUserTab.CADASTROS;
+  const isPassageirosTab = isCadastros && activeSubTab === AdminUserSubTab.PASSAGEIROS;
+  const isSolicitacoesTab = isCadastros && activeSubTab === AdminUserSubTab.SOLICITACOES;
+  const isVeiculosTab = isCadastros && activeSubTab === AdminUserSubTab.VEICULOS;
+  const isEscolasTab = isCadastros && activeSubTab === AdminUserSubTab.ESCOLAS;
+  const isContratosTab = isCadastros && activeSubTab === AdminUserSubTab.CONTRATOS;
+  const isIndicacoesTab = isCadastros && activeSubTab === AdminUserSubTab.INDICACOES;
+
+  const { data: passageirosLazy } = useAdminUserPassageiros(id!, {
+    enabled: isPassageirosTab || isContratosTab,
+  });
+
+  const { data: prePassageirosLazy } = useAdminUserPrePassageiros(id!, {
+    enabled: isSolicitacoesTab,
+  });
+
+  const { data: veiculosLazy } = useAdminUserVeiculos(id!, {
+    enabled: isVeiculosTab,
+  });
+
+  const { data: escolasLazy } = useAdminUserEscolas(id!, {
+    enabled: isEscolasTab,
+  });
+
+  const { data: contratosLazy } = useAdminUserContracts(id!, {
+    enabled: isContratosTab,
+  });
+
+  const { data: referralLazy } = useAdminUserReferral(id!, {
+    enabled: isIndicacoesTab,
+  });
+
+  const passageirosList = passageirosLazy || data?.passageiros || [];
+  const prePassageirosList = prePassageirosLazy || data?.prePassageiros || [];
+  const veiculosList = veiculosLazy || data?.veiculos || [];
+  const escolasList = escolasLazy || data?.escolas || [];
+  const contratosList = contratosLazy || data?.contratos || [];
+  const referralSummaryData = referralLazy?.referralSummary || data?.referralSummary;
+  const referredUsersList = referralLazy?.referredUsers || data?.referredUsers || [];
+
   const passageirosComContratoSet = useMemo(() => {
     const set = new Set<string>();
-    if (data?.contratos) {
-      for (const c of data.contratos) {
-        if (c.passageiro_id) {
-          set.add(c.passageiro_id);
-        }
+    for (const c of contratosList) {
+      if (c.passageiro_id) {
+        set.add(c.passageiro_id);
       }
     }
     return set;
-  }, [data?.contratos]);
+  }, [contratosList]);
 
   const passageirosSemContrato = useMemo(() => {
-    const totalPassageiros = data?.kpis?.passageirosCount ?? data?.passageiros?.length ?? 0;
-    if (!data?.passageiros || data.passageiros.length === 0) {
-      const totalContratos = data?.kpis?.contratosCount ?? data?.contratos?.length ?? 0;
+    const totalPassageiros = data?.kpis?.passageirosCount ?? passageirosList.length ?? 0;
+    if (passageirosList.length === 0) {
+      const totalContratos = data?.kpis?.contratosCount ?? contratosList.length ?? 0;
       return Math.max(0, totalPassageiros - totalContratos);
     }
-    return data.passageiros.filter((p) => !passageirosComContratoSet.has(p.id)).length;
-  }, [data?.passageiros, data?.kpis?.passageirosCount, data?.kpis?.contratosCount, data?.contratos?.length, passageirosComContratoSet]);
+    return passageirosList.filter((p) => !passageirosComContratoSet.has(p.id)).length;
+  }, [data?.kpis?.passageirosCount, data?.kpis?.contratosCount, passageirosList, contratosList, passageirosComContratoSet]);
 
   const handleOpenMinutaPreview = async () => {
     if (!data?.user) return;
@@ -238,20 +297,7 @@ export default function AdminUserDetails() {
     setPageTitle("Detalhes do Usuário");
   }, [setPageTitle]);
 
-  const activeTab = useMemo(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam && ADMIN_USER_TABS.includes(tabParam as AdminUserTab)) return tabParam as AdminUserTab;
-    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return AdminUserTab.CADASTROS;
-    return AdminUserTab.GERAL;
-  }, [searchParams]);
 
-  const activeSubTab = useMemo(() => {
-    const tabParam = searchParams.get("tab");
-    const subTabParam = searchParams.get("subtab");
-    if (subTabParam && ADMIN_USER_SUBTABS.includes(subTabParam as AdminUserSubTab)) return subTabParam as AdminUserSubTab;
-    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return tabParam as AdminUserSubTab;
-    return AdminUserSubTab.PASSAGEIROS;
-  }, [searchParams]);
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -2410,33 +2456,33 @@ export default function AdminUserDetails() {
             {/* CONTEÚDO DO MÓDULO SELECIONADO */}
             <div className="flex-1 w-full min-w-0">
               {activeSubTab === "passageiros" && (
-                <AdminUserPassengersTab passageiros={data.passageiros || []} />
+                <AdminUserPassengersTab passageiros={passageirosList} />
               )}
               {activeSubTab === "solicitacoes" && (
                 <AdminUserPendingRequestsTab
-                  solicitacoes={data.prePassageiros || []}
+                  solicitacoes={prePassageirosList}
                   userId={data.user.id}
                 />
               )}
               {activeSubTab === "veiculos" && (
-                <AdminUserVehiclesTab veiculos={data.veiculos || []} />
+                <AdminUserVehiclesTab veiculos={veiculosList} />
               )}
               {activeSubTab === "escolas" && (
-                <AdminUserSchoolsTab escolas={data.escolas || []} />
+                <AdminUserSchoolsTab escolas={escolasList} />
               )}
               {activeSubTab === "contratos" && (
                 <AdminUserContractsTab
                   user={data.user}
                   kpis={data.kpis}
-                  passageiros={data.passageiros || []}
-                  contratos={data.contratos || []}
+                  passageiros={passageirosList}
+                  contratos={contratosList}
                 />
               )}
               {activeSubTab === "indicacoes" && (
                 <AdminUserReferralTab
                   user={data.user}
-                  referralSummary={data.referralSummary}
-                  referredUsers={data.referredUsers}
+                  referralSummary={referralSummaryData}
+                  referredUsers={referredUsersList}
                 />
               )}
             </div>
