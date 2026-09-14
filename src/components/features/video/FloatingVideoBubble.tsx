@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useLayout, VideoStoryItem } from "@/contexts/LayoutContext";
@@ -36,7 +36,7 @@ export function FloatingVideoBubble({
   videoUrls = [],
   fullUrl,
   tooltipText = "Veja como funciona",
-  positionClasses = "fixed bottom-6 left-6 z-50",
+  positionClasses = "fixed bottom-28 sm:bottom-32 md:bottom-8 left-4 md:left-auto md:right-8 z-40",
   showCta = true,
   ctaText = `Testar grátis por ${TRIAL_DURATION_DAYS} dias`,
   ctaLink = "/cadastro",
@@ -54,6 +54,16 @@ export function FloatingVideoBubble({
 }: FloatingVideoBubbleProps) {
   const { openVideoStoriesDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const rawList = videosData || (videos.length > 0 ? videos : (videoUrls.length > 0 ? videoUrls : (fullUrl ? [fullUrl] : [])));
+
+  const dismissButtonRef = useCallback((node: HTMLButtonElement | null) => {
+    if (!node) return;
+    const stopEvent = (e: Event) => {
+      e.stopPropagation();
+    };
+    node.addEventListener("pointerdown", stopEvent);
+    node.addEventListener("mousedown", stopEvent);
+    node.addEventListener("touchstart", stopEvent);
+  }, []);
 
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {
     if (!storageKey) return false;
@@ -148,10 +158,10 @@ export function FloatingVideoBubble({
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, x: -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -100 }}
-          transition={{ type: "spring", damping: 20, stiffness: 100 }}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.85 }}
+          transition={{ type: "spring", damping: 20, stiffness: 120 }}
           drag
           dragMomentum={false}
           onDragStart={() => {
@@ -162,8 +172,8 @@ export function FloatingVideoBubble({
               isDragging.current = false;
             }, 150);
           }}
-          className={`${positionClasses} flex items-center cursor-grab active:cursor-grabbing select-none`}
-          style={{ zIndex: 50 }}
+          className={`${positionClasses} flex md:flex-row-reverse items-center cursor-grab active:cursor-grabbing select-none`}
+          style={{ zIndex: 40 }}
         >
           <div
             onClick={handleOpen}
@@ -184,17 +194,18 @@ export function FloatingVideoBubble({
 
           <div
             className={`z-10 transition-[max-width,opacity,margin] duration-300 ease-out flex items-center ${
-              showTooltip ? "max-w-[320px] opacity-100 -ml-6" : "max-w-0 opacity-0 -ml-16 pointer-events-none"
+              showTooltip
+                ? "max-w-[320px] opacity-100 -ml-6 md:-mr-6 md:ml-0"
+                : "max-w-0 opacity-0 -ml-16 md:-mr-16 md:ml-0 pointer-events-none"
             }`}
           >
             <div className="relative">
               {dismissible && (
                 <button
+                  ref={dismissButtonRef}
                   type="button"
                   onClick={handleDismissClick}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  className="absolute -top-2 -right-1 z-30 bg-black/90 hover:bg-black text-white/80 hover:text-white rounded-full p-1 border border-white/20 shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="absolute -top-2 -right-1 md:-top-2 md:-left-1 md:right-auto z-30 bg-black/90 hover:bg-black text-white/80 hover:text-white rounded-full p-1 border border-white/20 shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                   aria-label="Não exibir novamente"
                   title="Não exibir novamente"
                 >
@@ -204,7 +215,7 @@ export function FloatingVideoBubble({
 
               <div
                 onClick={handleOpen}
-                className="bg-black/90 cursor-pointer text-white text-[10px] sm:text-[11px] uppercase font-bold pl-10 pr-5 py-3 rounded-r-full whitespace-nowrap shadow-xl tracking-widest border-y-2 border-r-2 border-white/10 hover:bg-black transition-colors"
+                className="bg-black/90 cursor-pointer text-white text-[10px] sm:text-[11px] uppercase font-bold pl-10 pr-5 md:pr-10 md:pl-5 py-3 rounded-r-full md:rounded-l-full md:rounded-r-none whitespace-nowrap shadow-xl tracking-widest border-y-2 border-r-2 md:border-l-2 md:border-r-0 border-white/10 hover:bg-black transition-colors"
               >
                 {tooltipText}
               </div>

@@ -316,6 +316,7 @@ export function VideoStoriesDialog({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        handleClose();
                         onCtaClick();
                       }}
                       className="w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-4 rounded-xl shadow-[0_4px_20px_rgba(245,158,11,.4)] transition-all text-center text-[0.95rem] active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2 cursor-pointer"
@@ -325,7 +326,10 @@ export function VideoStoriesDialog({
                   ) : ctaLink ? (
                     <a
                       href={ctaLink}
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose();
+                      }}
                       className="w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-4 rounded-xl shadow-[0_4px_20px_rgba(245,158,11,.4)] transition-all text-center text-[0.95rem] active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2"
                     >
                       {ctaText || "Continuar"}

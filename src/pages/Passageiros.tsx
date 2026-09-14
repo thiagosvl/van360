@@ -15,6 +15,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useSession } from "@/hooks/business/useSession";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Passageiros() {
   const { user } = useSession();
@@ -303,9 +304,9 @@ export default function Passageiros() {
           tooltipText="Veja como funciona"
           ctaText="Cadastrar Aluno"
           onCtaClick={handleOpenNewDialog}
-          positionClasses="fixed bottom-24 left-4 sm:left-6 z-40"
+          positionClasses="fixed bottom-28 sm:bottom-32 md:bottom-8 left-4 md:left-auto md:right-8 z-40"
           requireScrollOnMobile={false}
-          storageKey="van360_has_seen_alunos_guide"
+          storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
         />
       )}
     </>
