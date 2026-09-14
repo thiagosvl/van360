@@ -93,3 +93,31 @@ export const dateMask = (value?: string | null): string => {
     .replace(/(\d{2})(\d)/, "$1/$2")
     .replace(/(\d{2})(\d)/, "$1/$2");
 };
+
+export const timeMask = (value?: string | null): string => {
+  if (!value) return "";
+  const raw = value.replace(/\D/g, "");
+  let formatted = "";
+
+  for (let i = 0; i < raw.length && formatted.length < 5; i++) {
+    const char = raw[i];
+    if (formatted.length === 0) {
+      if (char <= "2") formatted += char;
+    } else if (formatted.length === 1) {
+      if (formatted[0] === "2") {
+        if (char <= "3") formatted += char;
+      } else {
+        formatted += char;
+      }
+    } else if (formatted.length === 2) {
+      if (char <= "5") formatted += `:${char}`;
+    } else if (formatted.length === 3) {
+      if (char <= "5") formatted += char;
+    } else if (formatted.length === 4) {
+      formatted += char;
+    }
+  }
+
+  return formatted;
+};
+

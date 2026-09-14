@@ -46,6 +46,8 @@ export function mapearPrePassageiroParaFormulario(pre: PrePassageiro): Partial<P
     dia_vencimento: pre.dia_vencimento?.toString() || "",
     data_inicio_transporte: pre.data_inicio_transporte ? formatDateToBR(pre.data_inicio_transporte) : "",
     data_fim_transporte: pre.data_fim_transporte ? formatDateToBR(pre.data_fim_transporte) : "",
+    horario_entrada: pre.horario_entrada || "",
+    horario_saida: pre.horario_saida || "",
     mes_inicio_cobranca: pre.data_inicio_cobranca ? getMonthFromDate(pre.data_inicio_cobranca) : "",
     mes_fim_cobranca: pre.data_fim_cobranca ? getMonthFromDate(pre.data_fim_cobranca) : "",
     ativo: true,

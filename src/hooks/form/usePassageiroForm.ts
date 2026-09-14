@@ -1,8 +1,6 @@
 import {
-  cepSchema,
-  cpfSchema,
   dateSchema,
-  phoneSchema,
+  timeSchema,
 } from "@/schemas/common";
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -10,7 +8,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
-import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
+import { isValidCPF } from "@/utils/validators";
 import { mapearPrePassageiroParaFormulario } from "@/utils/domain/passageiro/prePassageiroConverter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
@@ -70,6 +68,8 @@ export const passageiroSchema = z
     dia_vencimento: z.string().optional().or(z.literal("")),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
+    horario_entrada: timeSchema,
+    horario_saida: timeSchema,
     mes_inicio_cobranca: z.string().optional().or(z.literal("")),
     mes_fim_cobranca: z.string().optional().or(z.literal("")),
     ativo: z.boolean().optional(),
@@ -109,7 +109,16 @@ export const passageiroSchema = z
           });
         }
       } catch {
-        // Silencioso
+      }
+    }
+
+    if (data.horario_entrada && data.horario_saida) {
+      if (data.horario_saida <= data.horario_entrada) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Horário de saída deve ser maior que o horário de entrada",
+          path: ["horario_saida"],
+        });
       }
     }
 
@@ -206,6 +215,8 @@ export function usePassageiroForm({
       dia_vencimento: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
+      horario_entrada: "",
+      horario_saida: "",
       mes_inicio_cobranca: "",
       mes_fim_cobranca: "",
 
@@ -255,6 +266,8 @@ export function usePassageiroForm({
           dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
           data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
+          horario_entrada: editingPassageiro.horario_entrada || "",
+          horario_saida: editingPassageiro.horario_saida || "",
           mes_inicio_cobranca: getMonthFromDate(editingPassageiro.data_inicio_cobranca) || "",
           mes_fim_cobranca: getMonthFromDate(editingPassageiro.data_fim_cobranca) || "",
           observacoes: editingPassageiro.observacoes || "",
@@ -329,6 +342,8 @@ export function usePassageiroForm({
           dia_vencimento: "",
           data_inicio_transporte: "",
           data_fim_transporte: "",
+          horario_entrada: "",
+          horario_saida: "",
           mes_inicio_cobranca: "",
           mes_fim_cobranca: "",
 

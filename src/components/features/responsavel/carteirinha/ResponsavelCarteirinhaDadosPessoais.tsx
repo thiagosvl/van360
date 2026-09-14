@@ -1,7 +1,7 @@
 import React from "react";
 import { ResponsavelCarteirinhaData } from "@/types/responsavel";
 import { formatDateToBR, formatGenero, formatarEnderecoCompleto, formatFirstName } from "@/utils/formatters";
-import { Calendar, User, MapPin, Users, BookOpen } from "lucide-react";
+import { Calendar, Clock, User, MapPin, Users, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { ResponsavelCarteirinhaObservacoes } from "./ResponsavelCarteirinhaObservacoes";
@@ -111,6 +111,18 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
             icon={<Calendar className="h-3.5 w-3.5" />}
             label="Término do transporte"
             value={fimTransporteTexto}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+          <InfoField
+            icon={<Clock className="h-3.5 w-3.5" />}
+            label="Horário de entrada"
+            value={carteirinha.horario_entrada}
+          />
+          <InfoField
+            icon={<Clock className="h-3.5 w-3.5" />}
+            label="Horário de saída"
+            value={carteirinha.horario_saida}
           />
         </div>
       </div>

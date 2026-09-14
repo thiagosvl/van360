@@ -260,6 +260,14 @@ export function usePassageiroFormViewModel({
       ? convertDateBrToISO(purePayload.data_fim_transporte)
       : null;
 
+    purePayload.horario_entrada = typeof purePayload.horario_entrada === "string" && purePayload.horario_entrada.trim()
+      ? purePayload.horario_entrada.trim()
+      : null;
+
+    purePayload.horario_saida = typeof purePayload.horario_saida === "string" && purePayload.horario_saida.trim()
+      ? purePayload.horario_saida.trim()
+      : null;
+
     const currentYear = new Date().getFullYear();
 
     purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
@@ -306,6 +314,7 @@ export function usePassageiroFormViewModel({
             checkStringChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
             checkStringChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
             checkStringChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
+            checkStringChange(data.responsavel_principal?.telefone?.replace(/\D/g, ""), editingPassageiro.responsavel_principal?.telefone?.replace(/\D/g, "")) ||
             checkStringChange(purePayload.escola_id, editingPassageiro.escola_id) ||
             checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
             checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
@@ -313,6 +322,8 @@ export function usePassageiroFormViewModel({
             checkStringChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
             checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
             checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
+            checkStringChange(purePayload.horario_entrada, editingPassageiro.horario_entrada) ||
+            checkStringChange(purePayload.horario_saida, editingPassageiro.horario_saida) ||
             checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
             checkStringChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
             checkStringChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||

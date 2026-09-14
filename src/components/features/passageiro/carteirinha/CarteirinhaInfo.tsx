@@ -481,6 +481,18 @@ export const CarteirinhaDadosPessoais = ({
               value={fimTransporteTexto}
             />
           </div>
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Horário de entrada"
+              value={passageiro.horario_entrada}
+            />
+            <InfoField
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Horário de saída"
+              value={passageiro.horario_saida}
+            />
+          </div>
           <div className="pt-2.5 border-t border-slate-200/50 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-1.5 mb-1.5">

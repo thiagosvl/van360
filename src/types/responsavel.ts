@@ -95,6 +95,8 @@ export interface ResponsavelCarteirinhaData {
   data_nascimento?: string | null;
   data_inicio_transporte?: string | null;
   data_fim_transporte?: string | null;
+  horario_entrada?: string | null;
+  horario_saida?: string | null;
   valor_cobranca?: number | null;
   dia_vencimento?: number | null;
   data_inicio_cobranca?: string | null;

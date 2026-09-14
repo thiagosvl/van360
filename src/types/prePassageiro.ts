@@ -35,6 +35,8 @@ export interface PrePassageiro {
     turma?: string;
     nome_professor?: string;
     data_fim_transporte?: string;
+    horario_entrada?: string | null;
+    horario_saida?: string | null;
     data_inicio_cobranca?: string;
     data_fim_cobranca?: string;
     dispositivo_cadastro?: string | null;

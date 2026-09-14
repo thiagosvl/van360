@@ -89,6 +89,8 @@ export function usePassageiroExternalForm() {
       genero: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
+      horario_entrada: "",
+      horario_saida: "",
     },
     mode: "onBlur",
   });
@@ -180,6 +182,8 @@ export function usePassageiroExternalForm() {
       if (payload.data_fim_transporte) {
         payload.data_fim_transporte = convertDateBrToISO(payload.data_fim_transporte);
       }
+      payload.horario_entrada = payload.horario_entrada?.trim() || null;
+      payload.horario_saida = payload.horario_saida?.trim() || null;
 
       console.log("📤 [PassageiroExternalForm] Payload enviado para API:", payload);
 
@@ -256,6 +260,8 @@ export function usePassageiroExternalForm() {
       modalidade: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
+      horario_entrada: "",
+      horario_saida: "",
       observacoes: "",
 
       valor_cobranca: "",
@@ -316,6 +322,8 @@ export function usePassageiroExternalForm() {
       dia_vencimento: "",
       data_inicio_transporte: mockData.data_inicio_transporte,
       data_fim_transporte: mockData.data_fim_transporte,
+      horario_entrada: "07:30",
+      horario_saida: "12:00",
       ativo: true,
     });
 

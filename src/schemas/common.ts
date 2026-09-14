@@ -46,3 +46,9 @@ export function dateSchema(required: boolean = false, allowFuture: boolean = fal
     return isValidDateBr(val, allowFuture);
   }, "Data inválida ou inexistente");
 }
+
+export const timeSchema = z.string().optional().nullable().refine((val) => {
+  if (!val || val.trim() === "") return true;
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(val);
+}, { message: "Informe um horário válido entre 00:00 e 23:59" });
+

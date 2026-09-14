@@ -25,8 +25,8 @@ import {
 } from "@/hooks";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
-import { dateMask } from "@/utils/masks";
-import { AlertTriangle, Car, Compass, School, Sun, User, UserCheck, CalendarIcon, X } from "lucide-react";
+import { dateMask, timeMask } from "@/utils/masks";
+import { AlertTriangle, Car, Clock, Compass, School, Sun, User, UserCheck, CalendarIcon, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
@@ -726,6 +726,150 @@ export function PassageiroFormDadosCadastrais({
                         />
                       </PopoverContent>
                     </Popover>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <FormField
+            control={form.control}
+            name="horario_entrada"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={Clock} label="Horário de Entrada" error={!!fieldState.error}>
+                      <div className="relative flex items-center w-full">
+                        <Input
+                          type="time"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                          aria-invalid={!!fieldState.error}
+                        />
+                        {field.value && (
+                          <button
+                            type="button"
+                            tabIndex={-1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                            className="text-slate-400 hover:text-slate-600 focus:outline-none p-1"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Horário de Entrada
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 pointer-events-none" />
+                        <Input
+                          type="time"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                        {field.value && (
+                          <div
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                          >
+                            <X className="h-5 w-5" />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="horario_saida"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                {isExternal ? (
+                  <FormControl>
+                    <StitchField icon={Clock} label="Horário de Saída" error={!!fieldState.error}>
+                      <div className="relative flex items-center w-full">
+                        <Input
+                          type="time"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                          aria-invalid={!!fieldState.error}
+                        />
+                        {field.value && (
+                          <button
+                            type="button"
+                            tabIndex={-1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                            className="text-slate-400 hover:text-slate-600 focus:outline-none p-1"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </StitchField>
+                  </FormControl>
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Horário de Saída
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 pointer-events-none" />
+                        <Input
+                          type="time"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                        {field.value && (
+                          <div
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              field.onChange("");
+                            }}
+                          >
+                            <X className="h-5 w-5" />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
                   </>
                 )}
                 <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />

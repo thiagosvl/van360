@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
+import { cepSchema, cpfSchema, dateSchema, phoneSchema, timeSchema } from "@/schemas/common";
 import { convertDateBrToISO, parseCurrencyToNumber } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
 
@@ -33,6 +33,8 @@ export const prePassageiroSchema = z.object({
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
   data_inicio_transporte: dateSchema(false, true),
   data_fim_transporte: dateSchema(false, true),
+  horario_entrada: timeSchema,
+  horario_saida: timeSchema,
 
   valor_cobranca: z
     .string()
@@ -56,6 +58,15 @@ export const prePassageiroSchema = z.object({
   {
     message: "Término deve ser maior que o Início",
     path: ["data_fim_transporte"],
+  }
+).refine(
+  (data) => {
+    if (!data.horario_entrada || !data.horario_saida) return true;
+    return data.horario_saida > data.horario_entrada;
+  },
+  {
+    message: "Horário de saída deve ser maior que o horário de entrada",
+    path: ["horario_saida"],
   }
 );
 
