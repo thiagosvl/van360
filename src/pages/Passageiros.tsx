@@ -304,7 +304,7 @@ export default function Passageiros() {
           tooltipText="Veja como funciona"
           ctaText="Cadastrar Aluno"
           onCtaClick={handleOpenNewDialog}
-          positionClasses="fixed bottom-28 sm:bottom-32 md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
         />

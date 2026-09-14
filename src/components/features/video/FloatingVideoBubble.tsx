@@ -36,7 +36,7 @@ export function FloatingVideoBubble({
   videoUrls = [],
   fullUrl,
   tooltipText = "Veja como funciona",
-  positionClasses = "fixed bottom-28 sm:bottom-32 md:bottom-8 left-4 md:left-auto md:right-8 z-40",
+  positionClasses = "fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40",
   showCta = true,
   ctaText = `Testar grátis por ${TRIAL_DURATION_DAYS} dias`,
   ctaLink = "/cadastro",

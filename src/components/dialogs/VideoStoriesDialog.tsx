@@ -194,9 +194,9 @@ export function VideoStoriesDialog({
               {title || "Histórias em Vídeo"}
             </DialogPrimitive.Title>
 
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-40 pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-[calc(8rem+var(--safe-area-top,0px))] bg-gradient-to-b from-black/80 to-transparent z-40 pointer-events-none" />
 
-            <div className="absolute top-0 left-0 right-0 p-4 pt-5 z-50 pointer-events-none flex flex-col gap-3">
+            <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(1.25rem+var(--safe-area-top,0px))] z-50 pointer-events-none flex flex-col gap-3">
               {activeVideos.length > 0 && (
                 <div className="flex gap-1.5 w-full pointer-events-auto">
                   {activeVideos.map((_, index) => {
@@ -309,8 +309,8 @@ export function VideoStoriesDialog({
 
             {showCta && (ctaText || ctaLink || onCtaClick) && (
               <>
-                <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/90 to-transparent z-40 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col px-6 pb-6 pointer-events-none">
+                <div className="absolute bottom-0 left-0 right-0 h-[calc(12rem+var(--safe-area-bottom,0px))] bg-gradient-to-t from-black/90 to-transparent z-40 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col px-6 pb-[calc(1.5rem+var(--safe-area-bottom,0px))] pointer-events-none">
                   {onCtaClick ? (
                     <button
                       type="button"
