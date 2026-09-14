@@ -285,30 +285,30 @@ export default function Passageiros() {
       {(import.meta.env.DEV ||
         user?.id === "f2dbd620-98ee-4168-894e-ac28eae3ce8b" ||
         profile?.id === "f2dbd620-98ee-4168-894e-ac28eae3ce8b") && (
-        <VideoCommerce
-          previewUrl="https://res.cloudinary.com/demo/video/upload/dog.mp4"
-          videosData={[
-            {
-              url: "https://res.cloudinary.com/demo/video/upload/dog.mp4",
-              title: "Alunos: Lista e Carteirinha",
-            },
-            {
-              url: "https://res.cloudinary.com/demo/video/upload/elephants.mp4",
-              title: "Solicitações: Link para os Pais",
-            },
-            {
-              url: "https://www.w3schools.com/html/mov_bbb.mp4",
-              title: "Filtros Rápidos por Turno",
-            },
-          ]}
-          tooltipText="Veja como funciona"
-          ctaText="Cadastrar Aluno"
-          onCtaClick={handleOpenNewDialog}
-          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
-          requireScrollOnMobile={false}
-          storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
-        />
-      )}
+          <VideoCommerce
+            previewUrl="https://res.cloudinary.com/demo/video/upload/dog.mp4"
+            videosData={[
+              {
+                url: "https://res.cloudinary.com/demo/video/upload/dog.mp4",
+                title: "Alunos: Lista e Carteirinha",
+              },
+              {
+                url: "https://res.cloudinary.com/demo/video/upload/elephants.mp4",
+                title: "Solicitações: Link para os Pais",
+              },
+              {
+                url: "https://www.w3schools.com/html/mov_bbb.mp4",
+                title: "Filtros Rápidos por Turno",
+              },
+            ]}
+            tooltipText="Veja como funciona"
+            ctaText="Cadastrar Aluno"
+            onCtaClick={handleOpenNewDialog}
+            positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+            requireScrollOnMobile={false}
+            storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
+          />
+        )}
     </>
   );
 }
