@@ -106,13 +106,20 @@ export function useRegisterController() {
       // Apenas em Produção e Apenas no Web (para não sujar métricas com o app nativo)
       const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
 
-      if (typeof window !== "undefined" && import.meta.env.PROD && !isNative) {
-        (window as any).dataLayer = (window as any).dataLayer || [];
-        (window as any).dataLayer.push({
+      const sessionUser = result.session?.user || result.user;
+      const userId = sessionUser?.id;
+
+      if (typeof window !== "undefined" && !isNative) {
+        const win = window as unknown as { dataLayer?: Array<Record<string, unknown>>; fbq?: (...args: unknown[]) => void };
+        win.dataLayer = win.dataLayer || [];
+        win.dataLayer.push({
           event: "generate_lead",
         });
+
+        if (typeof win.fbq === "function" && userId) {
+          win.fbq("track", "Lead", {}, { eventID: `lead_${userId}` });
+        }
       }
-      const sessionUser = result.session.user || result.user;
 
 
       // Define a flag de recém-cadastrado para disparar os confetes na Home
