@@ -245,29 +245,7 @@ export const Conta = memo(function Conta() {
               <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 3: Minhas Notificações (Alertas no celular do motorista) */}
-            <button
-              type="button"
-              onClick={() => handleSelectTab("minhas_notificacoes")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                    Minhas Notificações
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-            </button>
-
-            {/* Opção 4: Assinatura do App (Gestor) */}
+            {/* Opção 3: Assinatura do App (Gestor) */}
             {can("assinatura.gerenciar") && (
               <button
                 type="button"
@@ -293,14 +271,36 @@ export const Conta = memo(function Conta() {
           </div>
         </div>
 
-        {/* Grupo 2: Preferências da van */}
-        {!isSubConta && (
-          <div className="space-y-2">
-            <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
-              Preferências da van
-            </h2>
-            <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-              {/* Opção 1: Notificações aos Pais */}
+        {/* Grupo 2: Notificações */}
+        <div className="space-y-2">
+          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+            Notificações
+          </h2>
+          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+            {/* Opção 1: Minhas Notificações (Alertas no celular do motorista) */}
+            <button
+              type="button"
+              onClick={() => handleSelectTab("minhas_notificacoes")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Minhas Notificações
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+
+            {/* Opção 2: Notificações aos Pais */}
+            {!isSubConta && (
               <button
                 type="button"
                 onClick={() => handleSelectFleetTab("notificacoes_pais")}
@@ -340,8 +340,18 @@ export const Conta = memo(function Conta() {
                   <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                 )}
               </button>
+            )}
+          </div>
+        </div>
 
-              {/* Opção 2: Rastreamento & GPS */}
+        {/* Grupo 3: Preferências da van */}
+        {!isSubConta && (
+          <div className="space-y-2">
+            <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+              Preferências da van
+            </h2>
+            <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+              {/* Opção 1: Rastreamento & GPS */}
               {ENABLE_LIVE_TRACKING && (
                 <button
                   type="button"
@@ -384,7 +394,7 @@ export const Conta = memo(function Conta() {
                 </button>
               )}
 
-              {/* Opção 3: Pagamentos & PIX */}
+              {/* Opção 2: Pagamentos & PIX */}
               <button
                 type="button"
                 onClick={() => handleSelectFleetTab("pagamentos")}
@@ -428,7 +438,7 @@ export const Conta = memo(function Conta() {
           </div>
         )}
 
-        {/* Grupo 3: Suporte e sessão */}
+        {/* Grupo 4: Suporte e sessão */}
         <div className="space-y-2">
           <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
             Suporte e sessão

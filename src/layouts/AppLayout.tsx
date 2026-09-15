@@ -13,7 +13,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 const SWIPE_CLOSE_THRESHOLD = 100;
 
 function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) {
+  const navigate = useNavigate();
   const { isMobileMenuOpen, setIsMobileMenuOpen, openConfirmationDialog, setIsGlobalLoading } = useLayout();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
@@ -31,6 +32,11 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
 
   const displayName = profile?.apelido || formatFirstName(profile?.nome);
   const statusLabel = formatUserRoleLabel(profile?.tipo);
+
+  const handleAccountClick = () => {
+    setIsMobileMenuOpen(false);
+    navigate(ROUTES.PRIVATE.MOTORISTA.ACCOUNT);
+  };
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
@@ -115,7 +121,11 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
       <AppNavbar role={role} />
 
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        <div className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4">
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ACCOUNT)}
+          className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4 text-left cursor-pointer hover:opacity-90 transition-opacity w-full"
+        >
           <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center shadow-sm shrink-0 p-2 overflow-hidden">
             <img
               src={profile?.logo_url || "/assets/logo-van360.webp"}
@@ -134,7 +144,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
             </div>
           </div>
-        </div>
+        </button>
         <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5">
           <AppSidebar role={role} isSubscriptionBlocked={isSubscriptionBlocked} />
         </div>
@@ -174,7 +184,11 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
         >
           <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
-            <div className="flex items-center gap-3.5 min-w-0">
+            <button
+              type="button"
+              onClick={handleAccountClick}
+              className="flex items-center gap-3.5 min-w-0 text-left cursor-pointer group hover:opacity-90 transition-opacity"
+            >
               <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center shadow-sm shrink-0 p-2 overflow-hidden">
                 <img
                   src={profile?.logo_url || "/assets/logo-van360.webp"}
@@ -193,10 +207,10 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
                   <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
                 </div>
               </div>
-            </div>
+            </button>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="p-1.5 text-slate-400 hover:text-white transition-colors shrink-0"
+              className="p-1.5 text-slate-400 hover:text-white transition-colors shrink-0 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
