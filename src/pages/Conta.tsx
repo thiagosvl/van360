@@ -169,7 +169,7 @@ export const Conta = memo(function Conta() {
               <img
                 src={profile.logo_url}
                 alt={displayName}
-                className="h-full w-full object-contain p-2"
+                className="h-full w-full object-contain p-1.5"
               />
             ) : (
               <span>{userInitials}</span>
