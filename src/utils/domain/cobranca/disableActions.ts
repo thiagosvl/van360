@@ -10,7 +10,7 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
 };
 
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
-  return cobranca.status === CobrancaStatus.CANCELADA;
+  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA;
 };
 
 export const disableEditarCobranca = (cobranca: Cobranca): boolean => {

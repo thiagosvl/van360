@@ -63,10 +63,10 @@ export function useCobrancaOperations({
   const handleToggleLembretes = useCallback(async () => {
     const desativar = !cobranca.desativar_lembretes;
     openConfirmationDialog({
-      title: desativar ? "Desativar lembretes?" : "Ativar lembretes?",
+      title: desativar ? "Desativar lembretes aos pais?" : "Ativar lembretes aos pais?",
       description: desativar
-        ? "Os lembretes automáticos desta parcela serão pausados."
-        : "Os lembretes automáticos desta parcela serão reativados.",
+        ? "Os lembretes automáticos desta parcela serão pausados e voltarão a ser reenviados para os pais, caso seja necessário."
+        : "Os lembretes automáticos desta parcela serão reativados e voltarão a ser reenviados para os pais, caso seja necessário.",
       variant: desativar ? "warning" : "default",
       confirmText: desativar ? "Desativar" : "Ativar",
       onConfirm: async () => {
@@ -228,6 +228,19 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     if (cobranca.isProjection) {
       const projActions: ActionItem[] = [];
 
+      if (onRegistrarPagamento) {
+        projActions.push({
+          label: "Registrar Pagamento",
+          icon: <CheckCircle2 className="h-4 w-4" />,
+          onClick: () => {
+            document.body.click();
+            setTimeout(() => onRegistrarPagamento(), 10);
+          },
+          swipeColor: "bg-emerald-500",
+          hasSeparatorAfter: true,
+        });
+      }
+
       if (onEditarCobranca) {
         projActions.push({
           label: "Editar",
@@ -238,19 +251,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           },
           disabled: isActionLoading,
           swipeColor: "bg-blue-600",
-          hasSeparatorAfter: true,
-        });
-      }
-
-      if (onRegistrarPagamento) {
-        projActions.push({
-          label: "Registrar Pagamento",
-          icon: <CheckCircle2 className="h-4 w-4" />,
-          onClick: () => {
-            document.body.click();
-            setTimeout(() => onRegistrarPagamento(), 10);
-          },
-          swipeColor: "bg-emerald-500",
           hasSeparatorAfter: true,
         });
       }
@@ -365,25 +365,26 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
+    if (!isPago && onRegistrarPagamento) {
+      actions.push({
+        label: "Registrar Pagamento",
+        icon: <CheckCircle2 className="h-4 w-4" />,
+        onClick: () => {
+          document.body.click();
+          setTimeout(() => onRegistrarPagamento(), 10);
+        },
+        disabled: disableRegistrarPagamento(cobranca) || isActionLoading,
+        swipeColor: "bg-emerald-500",
+        hasSeparatorAfter: true,
+      });
+    }
+
     if (!isPago && onEnviarCobranca && isMobilePlatform()) {
       actions.push({
         label: "Enviar Cobrança",
         icon: <WhatsAppIcon className="h-4 w-4" />,
         onClick: onEnviarCobranca,
         swipeColor: "bg-[#25D366]",
-        hasSeparatorAfter: true,
-      });
-    }
-
-    if (!isPago) {
-      const desativar = cobranca.desativar_lembretes ?? false;
-      actions.push({
-        label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
-        icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
-        onClick: handleToggleLembretes,
-        disabled: isActionLoading,
-        isLoading: isTogglingNotificacoes,
-        swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
         hasSeparatorAfter: true,
       });
     }
@@ -402,16 +403,15 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (!isPago && onRegistrarPagamento) {
+    if (!isPago) {
+      const desativar = cobranca.desativar_lembretes ?? false;
       actions.push({
-        label: "Registrar Pagamento",
-        icon: <CheckCircle2 className="h-4 w-4" />,
-        onClick: () => {
-          document.body.click();
-          setTimeout(() => onRegistrarPagamento(), 10);
-        },
-        disabled: disableRegistrarPagamento(cobranca) || isActionLoading,
-        swipeColor: "bg-emerald-500",
+        label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
+        icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
+        onClick: handleToggleLembretes,
+        disabled: isActionLoading,
+        isLoading: isTogglingNotificacoes,
+        swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
         hasSeparatorAfter: true,
       });
     }
@@ -440,7 +440,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (props.onExcluirCobranca) {
+    if (!isPago && props.onExcluirCobranca) {
       actions.push({
         label: "Cancelar Parcela",
         icon: <Ban className="h-4 w-4" />,
