@@ -213,7 +213,7 @@ export const Conta = memo(function Conta() {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                    Meus Dados e logotipo
+                    Meus Dados e Logotipo
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed">
                     Seus dados cadastrais, logotipo da van e informações de contato
