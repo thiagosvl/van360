@@ -139,6 +139,7 @@ export interface PreviewConfig {
   jurosAtraso?: { valor: number; tipo: ContractMultaTipo };
   multaRescisao?: { valor: number; tipo: ContractMultaTipo };
   assinaturaCondutorUrl?: string | null;
+  logoCondutorUrl?: string | null;
 }
 
 export function usePreviewContrato() {

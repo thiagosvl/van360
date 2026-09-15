@@ -1,5 +1,6 @@
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { SignaturePad, SignaturePadRef } from "@/components/common/SignaturePad";
+import { LogoUpload } from "@/components/forms/LogoUpload";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,7 @@ enum SetupStep {
 const SETUP_STEPS = [
   { id: SetupStep.FEES, label: "Multas" },
   { id: SetupStep.CLAUSES, label: "Cláusulas" },
-  { id: SetupStep.SIGNATURE, label: "Assinatura" },
+  { id: SetupStep.SIGNATURE, label: "Identidade & Assinatura" },
   { id: SetupStep.PREVIEW, label: "Revisão" },
 ];
 
@@ -152,6 +153,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   }, [expandedClauseKey, hasConfiguredBefore, step]);
 
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
+  const [logoTemp, setLogoTemp] = useState<string | null>(null);
   const sigPad = useRef<SignaturePadRef>(null);
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -168,6 +170,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   useEffect(() => {
     if (!isOpen) {
       initializedRef.current = false;
+      setLogoTemp(null);
       return;
     }
     if (isOpen && profile && !initializedRef.current) {
@@ -204,6 +207,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         setMultaRescisao({ valor: 0, tipo: ContractMultaTipo.FIXO });
       }
       if (profile.assinatura_digital_url && !signatureTemp) setSignatureTemp(profile.assinatura_digital_url);
+      setLogoTemp(profile.logo_url || null);
 
       setStep(SetupStep.FEES);
       setExpandedClauseKey(null);
@@ -515,7 +519,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     switch (step) {
       case SetupStep.FEES: return "Penalidades e Multas";
       case SetupStep.CLAUSES: return "Cláusulas";
-      case SetupStep.SIGNATURE: return "Assinatura Digital";
+      case SetupStep.SIGNATURE: return "Identidade e Assinatura";
       case SetupStep.PREVIEW: return "Revisão do Contrato";
       default: return "Configurar Contratos";
     }
@@ -555,6 +559,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
 
       await usuarioApi.atualizarUsuario(profile.id, {
         assinatura_digital_url: signatureUrl,
+        logo_url: logoTemp !== null ? logoTemp : profile.logo_url,
         config_contrato: {
           usar_contratos: true,
           multa_atraso: multaAtraso,
@@ -772,6 +777,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               jurosAtraso,
               multaRescisao,
               assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
+              logoCondutorUrl: logoTemp !== null ? logoTemp : profile?.logo_url,
             });
             if (pdfUrlRef.current) window.URL.revokeObjectURL(pdfUrlRef.current);
             pdfUrlRef.current = result.url;
@@ -831,19 +837,47 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   );
 
   const renderSignature = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-2 mb-2">
-        <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
-          Sua assinatura aparecerá no final de todos os contratos em PDF de forma automatizada.
-        </p>
+    <div className="space-y-4">
+      {profile && (
+        <div className="space-y-2 pb-4 border-b border-slate-100">
+          <div>
+            <h4 className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+              Logotipo da Van / Empresa
+            </h4>
+            <p className="text-[11px] text-slate-500 font-medium">
+              Sua marca será exibida no cabeçalho timbrado dos contratos e recibos que você emitir.
+            </p>
+          </div>
+          <LogoUpload
+            userId={profile.id}
+            currentLogoUrl={logoTemp !== null ? logoTemp : (profile.logo_url || null)}
+            variant="contract"
+            onLogoChange={async (newLogoUrl) => {
+              setLogoTemp(newLogoUrl);
+              await usuarioApi.atualizarUsuario(profile.id, { logo_url: newLogoUrl });
+              await refreshProfile();
+            }}
+          />
+        </div>
+      )}
+
+      <div className="space-y-2.5">
+        <div>
+          <h4 className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+            Assinatura Digital
+          </h4>
+          <p className="text-[11px] text-slate-500 font-medium">
+            Sua assinatura aparecerá no final de todos os contratos em PDF de forma automatizada.
+          </p>
+        </div>
+        <SignaturePad ref={sigPad} initialValue={signatureTemp} onChange={setSignatureTemp} />
+        <Banner
+          variant="warning"
+          title="Atenção"
+          description="Esta assinatura tem validade jurídica. Certifique-se de que esteja legível e represente sua assinatura oficial."
+          className="mx-1"
+        />
       </div>
-      <SignaturePad ref={sigPad} initialValue={signatureTemp} onChange={setSignatureTemp} />
-      <Banner
-        variant="warning"
-        title="Atenção"
-        description="Esta assinatura tem validade jurídica. Certifique-se de que esteja legível e represente sua assinatura oficial."
-        className="mx-1"
-      />
     </div>
   );
 
@@ -869,23 +903,28 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
               : (jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor))}
           </p>
         </div>
-        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão</p>
+        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center col-span-2">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão Antecipada</p>
           <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
             {multaRescisao.valor <= 0
               ? "Não informado"
               : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor))}
           </p>
         </div>
-        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
-          <p className="text-sm font-black text-[#1a3a5c] uppercase">{flatClausulas.length}</p>
-        </div>
       </div>
-      <div className="space-y-3 px-2">
+
+      <div className="p-4 bg-blue-50/50 rounded-3xl border border-blue-100/60 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-[#1a3a5c]">Visualizar Contrato Completo</span>
+          <span className="text-[10px] text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-200 font-semibold">
+            {cleanSecoesDTO.length} seções
+          </span>
+        </div>
+
         <Button
+          type="button"
           variant="outline"
-          className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-lg font-bold uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98]"
+          className="w-full h-11 border-blue-200 text-blue-700 hover:bg-blue-50/80 rounded-xl font-bold uppercase text-[11px] tracking-wider group transition-all active:scale-[0.98] shadow-2xs"
           disabled={previewMutation.isPending}
           onClick={async () => {
             setIsPreviewPdfOpen(true);
@@ -898,6 +937,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                 jurosAtraso,
                 multaRescisao,
                 assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
+                logoCondutorUrl: logoTemp !== null ? logoTemp : profile?.logo_url,
               });
               if (pdfUrlRef.current) window.URL.revokeObjectURL(pdfUrlRef.current);
               pdfUrlRef.current = result.url;

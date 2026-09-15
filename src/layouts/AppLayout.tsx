@@ -116,11 +116,14 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
 
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4">
-          <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center shadow-sm shrink-0 p-2">
+          <div className="h-12 w-12 rounded-full bg-white/10 border border-white/5 flex items-center justify-center shadow-sm shrink-0 p-2 overflow-hidden">
             <img
-              src="/assets/logo-van360.webp"
-              alt="Van360"
-              className="h-full w-full object-contain brightness-0 invert"
+              src={profile?.logo_url || "/assets/logo-van360.webp"}
+              alt={profile?.logo_url ? displayName : "Van360"}
+              className={cn(
+                "h-full w-full object-contain",
+                !profile?.logo_url && "brightness-0 invert"
+              )}
             />
           </div>
           <div className="flex flex-col min-w-0 pr-2">
@@ -172,11 +175,14 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
             <SheetTitle className="sr-only">Menu de Opções</SheetTitle>
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0 p-2">
+              <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center shadow-sm shrink-0 p-2 overflow-hidden">
                 <img
-                  src="/assets/logo-van360.webp"
-                  alt="Van360"
-                  className="h-full w-full object-contain brightness-0 invert"
+                  src={profile?.logo_url || "/assets/logo-van360.webp"}
+                  alt={profile?.logo_url ? displayName : "Van360"}
+                  className={cn(
+                    "h-full w-full object-contain",
+                    !profile?.logo_url && "brightness-0 invert"
+                  )}
                 />
               </div>
               <div className="flex flex-col min-w-0 pr-2">

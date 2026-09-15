@@ -416,6 +416,7 @@ export function usePassageiroFormViewModel({
         },
         {
           onSuccess: commonOptions.onSuccess,
+          onError: commonOptions.onError,
         }
       );
     } else {

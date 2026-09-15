@@ -162,9 +162,15 @@ export const Conta = memo(function Conta() {
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex items-center gap-4">
-          <div className="h-16 w-16 sm:h-18 sm:w-18 rounded-full bg-slate-100 border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0 shadow-xs select-none">
+          <div className="h-16 w-16 sm:h-18 sm:w-18 rounded-full bg-slate-100 border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0 shadow-xs select-none overflow-hidden">
             {isLoadingProfile ? (
               <Skeleton className="h-full w-full rounded-full" />
+            ) : profile?.logo_url ? (
+              <img
+                src={profile.logo_url}
+                alt={displayName}
+                className="h-full w-full object-contain p-2"
+              />
             ) : (
               <span>{userInitials}</span>
             )}

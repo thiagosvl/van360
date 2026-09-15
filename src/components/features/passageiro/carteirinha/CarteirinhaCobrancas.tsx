@@ -138,7 +138,7 @@ export const CarteirinhaCobrancas = ({
       return {
         icon: ShieldCheck,
         title: "Aluno Isento",
-        description: "Este aluno foi marcado como isento e não possui cobranças de mensalidade.",
+        description: "Este aluno foi marcado como isento e não possui parcelas.",
       };
     }
 
@@ -490,10 +490,11 @@ const CobrancaItemPassageiro = forwardRef<
                   : isCancelada
                     ? undefined
                     : () => onRegistrarPagamento(cobranca)}
-                onExcluirCobranca={cobranca.isProjection || isCancelada ? undefined : () => onExcluirCobranca(cobranca)}
+                onExcluirCobranca={isCancelada ? undefined : () => onExcluirCobranca(cobranca)}
                 onDesfazerPagamento={cobranca.isProjection || isCancelada ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined)}
                 onVerRecibo={cobranca.isProjection || isCancelada ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined)}
                 onEnviarCobranca={cobranca.isProjection || isCancelada ? undefined : onEnviarCobranca}
+                onActionSuccess={onActionSuccess}
               />
             </div>
           </div>

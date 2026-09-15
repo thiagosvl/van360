@@ -52,6 +52,7 @@ export interface Usuario {
 
   // Configurações de contrato
   assinatura_digital_url?: string;
+  logo_url?: string | null;
   config_contrato?: {
     usar_contratos: boolean;
     multa_atraso: { valor: number; tipo: ContractMultaTipo };

@@ -37,6 +37,7 @@ export const usuarioApi = {
     apelido?: string;
     telefone?: string;
     assinatura_digital_url?: string;
+    logo_url?: string | null;
     config_contrato?: any;
     data_nascimento?: string;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),

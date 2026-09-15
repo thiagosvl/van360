@@ -1,4 +1,5 @@
 import { PhoneInput } from "@/components/forms";
+import { LogoUpload } from "@/components/forms/LogoUpload";
 import {
   Form,
   FormControl,
@@ -17,6 +18,7 @@ import { usuarioApi } from "@/services/api/usuario.api";
 import { cpfCnpjMask as maskCpf, phoneMask as maskPhone, dateMask as maskDate } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
+import { getDriverDisplayName } from "@/utils/formatters/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar, Info, Loader2, Mail, User, Save } from "lucide-react";
 import React from "react";
@@ -183,6 +185,27 @@ export const PerfilTab = React.memo(function PerfilTab() {
         </div>
       </div>
 
+      {profile?.id && (
+        <div className="space-y-3 pb-6 border-b border-slate-100">
+          <div>
+            <h3 className="text-sm font-bold text-[#1a3a5c]">
+              Logotipo da Van / Empresa
+            </h3>
+            <p className="text-xs text-slate-500">
+              Personalize os contratos e recibos gerados com a marca do seu transporte escolar.
+            </p>
+          </div>
+          <LogoUpload
+            userId={profile.id}
+            currentLogoUrl={profile.logo_url}
+            onLogoChange={async (newLogoUrl) => {
+              await usuarioApi.atualizarUsuario(profile.id, { logo_url: newLogoUrl });
+              await refreshProfile();
+            }}
+          />
+        </div>
+      )}
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-5">
           {/* 1. Campos Protegidos (Leitura): CPF ou CNPJ e E-mail */}
@@ -235,7 +258,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
             variant="warning"
             description={
               <>
-                Por motivos de segurança, para alterar seu{" "}
+                Para alterar seu{" "}
                 <span className="font-black">CPF/CNPJ</span> ou{" "}
                 <span className="font-black">E-mail</span> cadastrados, é necessário entrar em contato com o suporte.
               </>

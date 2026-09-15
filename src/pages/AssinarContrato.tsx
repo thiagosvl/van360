@@ -65,14 +65,27 @@ export default function AssinarContrato() {
     );
   }
 
+  const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, any>;
+  const logoCondutorUrl = dadosContrato.logoCondutorUrl as string | undefined;
+  const nomeCondutorExibicao = (dadosContrato.apelidoCondutor || dadosContrato.nomeCondutor) as string | undefined;
+
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-center z-50 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-between px-6 z-50 shadow-lg">
+          <div className="flex items-center gap-2">
+            {logoCondutorUrl && (
+              <img
+                src={logoCondutorUrl}
+                alt="Logo do Transporte"
+                className="h-10 w-auto max-w-[130px] object-contain rounded-xs"
+              />
+            )}
+          </div>
           <img
             src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-10 w-auto filter brightness-0 invert opacity-90"
+            className="h-8 w-auto filter brightness-0 invert opacity-80"
           />
         </div>
 
@@ -110,16 +123,39 @@ export default function AssinarContrato() {
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
           </div>
           <div>
-            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato de Transporte</h3>
+            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">
+              {nomeCondutorExibicao ? `Transporte ${nomeCondutorExibicao}` : "Contrato de Transporte"}
+            </h3>
             <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinatura Digital</p>
           </div>
         </div>
 
-        <img
-          src="/assets/logo-van360.webp"
-          alt="Van360"
-          className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
-        />
+        <div className="flex items-center gap-3 sm:absolute sm:left-1/2 sm:-translate-x-1/2">
+          {logoCondutorUrl ? (
+            <img
+              src={logoCondutorUrl}
+              alt="Logo do Transporte"
+              className="h-8 sm:h-10 w-auto max-w-[120px] object-contain rounded-xs"
+            />
+          ) : (
+            <img
+              src="/assets/logo-van360.webp"
+              alt="Van360"
+              className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90"
+            />
+          )}
+        </div>
+
+        {logoCondutorUrl && (
+          <div className="hidden sm:flex items-center gap-1.5 opacity-60">
+            <span className="text-[9px] text-white/60 font-semibold tracking-wider uppercase">Powered by</span>
+            <img
+              src="/assets/logo-van360.webp"
+              alt="Van360"
+              className="h-4 w-auto filter brightness-0 invert"
+            />
+          </div>
+        )}
       </header>
 
       <main className="flex-1 overflow-auto bg-slate-100 pb-32 scroll-smooth block touch-auto">

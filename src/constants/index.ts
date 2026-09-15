@@ -23,4 +23,6 @@ export function getWhatsAppUrl(message = "Olá, preciso de ajuda com o Van360") 
   return `https://wa.me/${WHATSAPP_SUPORTE}?text=${encodeURIComponent(message)}`;
 }
 
+export const BUCKET_LOGOS = "logos" as const;
+
 export * from "./navigation";

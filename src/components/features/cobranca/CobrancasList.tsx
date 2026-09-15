@@ -331,7 +331,9 @@ export function CobrancasList({
             cobranca={cobranca}
             onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
             onEditarCobranca={() => props.onEditarCobranca(cobranca)}
-            onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
+            onRegistrarPagamento={cobranca.isProjection
+              ? () => handleOpenCreateForProjection(cobranca)
+              : () => props.onRegistrarPagamento(cobranca)}
             onActionSuccess={props.onActionSuccess}
             onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
             onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
