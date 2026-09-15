@@ -208,6 +208,7 @@ export interface AdminUserDetailsResponse {
     created_at: string;
     updated_at: string;
     data_nascimento: string | null;
+    logo_url?: string | null;
     chave_pix?: string | null;
     chave_pix_tipo?: string | null;
     canal_aquisicao?: string | null;

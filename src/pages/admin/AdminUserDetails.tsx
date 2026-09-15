@@ -701,8 +701,16 @@ export default function AdminUserDetails() {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start md:items-center gap-4 min-w-0 pr-10 md:pr-0">
-            <div className="h-14 w-14 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-black text-xl shrink-0 shadow-inner">
-              {data.user.nome.charAt(0).toUpperCase()}
+            <div className="h-14 w-14 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-black text-xl shrink-0 shadow-inner overflow-hidden">
+              {data.user.logo_url ? (
+                <img
+                  src={data.user.logo_url}
+                  alt={data.user.nome}
+                  className="h-full w-full object-contain p-1.5"
+                />
+              ) : (
+                data.user.nome.charAt(0).toUpperCase()
+              )}
             </div>
 
             <div className="space-y-1.5 min-w-0 flex-1">

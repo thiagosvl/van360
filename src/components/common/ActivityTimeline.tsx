@@ -25,6 +25,7 @@ import {
   UserCheck,
   Bell,
   UserPlus,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface ActivityTimelineProps {
@@ -97,6 +98,16 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
       return {
         icon: <Bell className="w-3.5 h-3.5" />,
         color: "text-cyan-600 bg-cyan-50 border-cyan-100",
+      };
+    case AtividadeAcao.LOGO_ATUALIZADO:
+      return {
+        icon: <ImageIcon className="w-3.5 h-3.5" />,
+        color: "text-blue-600 bg-blue-50 border-blue-100",
+      };
+    case AtividadeAcao.LOGO_REMOVIDO:
+      return {
+        icon: <Trash2 className="w-3.5 h-3.5" />,
+        color: "text-rose-600 bg-rose-50 border-rose-100",
       };
   }
 

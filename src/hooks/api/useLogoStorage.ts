@@ -10,7 +10,7 @@ interface UploadLogoParams {
   file: File;
 }
 
-async function optimizeImageForUpload(file: File, maxDimension = 800): Promise<File> {
+async function optimizeImageForUpload(file: File, maxDimension = 1200): Promise<File> {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -19,7 +19,7 @@ async function optimizeImageForUpload(file: File, maxDimension = 800): Promise<F
       URL.revokeObjectURL(url);
       const { width, height } = img;
 
-      if (width <= maxDimension && height <= maxDimension && file.size <= 300 * 1024) {
+      if (width <= maxDimension && height <= maxDimension && file.size <= 1024 * 1024) {
         resolve(file);
         return;
       }
