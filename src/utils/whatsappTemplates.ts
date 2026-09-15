@@ -106,7 +106,7 @@ export function buildCobrancaWhatsAppMessage(params: CobrancaWhatsAppParams): st
   const linhas = [
     `Olá, ${primeiroNomeResp}! Tudo bem? 🚐`,
     "",
-    `Passando para lembrar sobre a mensalidade do transporte escolar de *${nomePassageiro}*.`,
+    `Passando para lembrar sobre a parcela do transporte escolar de *${nomePassageiro}*.`,
     "",
     "📋 *Detalhes do pagamento:*",
     `• Valor: *${valorFormatado}*`,
