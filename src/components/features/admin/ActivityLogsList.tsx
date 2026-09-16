@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Terminal, Eye, FileText } from "lucide-react";
+import { Terminal, Eye, FileText, Clock, Loader2 } from "lucide-react";
 import { AdminUserLogItem } from "@/services/api/admin.api";
 import { Button } from "@/components/ui/button";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { phoneMask } from "@/utils/masks";
 import { formatRelativeTime } from "@/utils/formatters/date";
+import { safeCloseDialog } from "@/hooks";
 
 interface ActivityLogsListProps {
   logs: AdminUserLogItem[];
   isLoading?: boolean;
   hideUserColumn?: boolean;
+  highlightFirst?: boolean;
 }
 
 function getActionBadgeStyle(acao: string) {
@@ -40,8 +41,17 @@ function getActionBadgeStyle(acao: string) {
   return "bg-purple-500/15 text-purple-400 border-purple-500/30";
 }
 
-export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: ActivityLogsListProps) {
+export function ActivityLogsList({
+  logs,
+  isLoading,
+  hideUserColumn = false,
+  highlightFirst = true,
+}: ActivityLogsListProps) {
   const [selectedLog, setSelectedLog] = useState<AdminUserLogItem | null>(null);
+
+  const handleCloseModal = () => {
+    safeCloseDialog(() => setSelectedLog(null));
+  };
 
   if (isLoading) {
     return (
@@ -61,161 +71,143 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
     );
   }
 
+  const latestLog = highlightFirst && logs.length > 0 ? logs[0] : null;
+  const remainingLogs = highlightFirst ? logs.slice(1) : logs;
+
   return (
     <>
-      {/* DESKTOP TABLE VIEW */}
-      <div className="hidden md:block overflow-x-auto mt-2">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-slate-800/80">
-              <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data e Hora</th>
-              <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Ação</th>
-              {!hideUserColumn && (
-                <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Usuário</th>
-              )}
-              <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Entidade</th>
-              <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ação</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/40">
-            {logs.map((log) => {
-
-              const actionLabel = log.acao.replace(/_/g, " ");
-              const badgeStyle = getActionBadgeStyle(log.acao);
-              const userId = log.usuario_id || log.usuarios?.id;
-
-              return (
-                <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-4 text-xs font-mono font-semibold text-slate-300 whitespace-nowrap">
-                    {formatRelativeTime(log.created_at)}
-                  </td>
-                  <td className="py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${badgeStyle}`}>
-                      {actionLabel}
-                    </span>
-                  </td>
-                  {!hideUserColumn && (
-                    <td className="py-4">
-                      {log.usuarios ? (
-                        userId ? (
-                          <Link
-                            to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
-                            className="text-xs font-bold text-slate-100 uppercase hover:text-blue-400 hover:underline transition-colors"
-                          >
-                            {log.usuarios.nome}
-                          </Link>
-                        ) : (
-                          <span className="text-xs font-bold text-slate-100 uppercase">{log.usuarios.nome}</span>
-                        )
-                      ) : (
-                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Sistema</span>
-                      )}
-                    </td>
-                  )}
-                  <td className="py-4 text-xs font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">
-                    {log.entidade_tipo}
-                  </td>
-                  <td className="py-4 text-right whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 rounded-xl text-blue-400 hover:bg-slate-800 hover:text-blue-300 px-2.5 flex items-center gap-1.5 ml-auto"
-                      onClick={() => setSelectedLog(log)}
-                      title="Ver detalhes da atividade"
+      <div className="space-y-3">
+        {latestLog && (
+          <div className="p-4 rounded-2xl bg-blue-950/30 border-2 border-blue-500/60 shadow-lg shadow-blue-500/10 relative space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1 min-w-0 flex-1">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2 break-words">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                  {!hideUserColumn && (latestLog.usuario_id || latestLog.usuarios?.id) ? (
+                    <Link
+                      to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
+                      className="hover:text-blue-400 hover:underline transition-colors"
                     >
-                      <Eye className="h-3.5 w-3.5" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Inspecionar</span>
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                      {latestLog.usuarios?.nome || latestLog.entidade_tipo}
+                    </Link>
+                  ) : (
+                    <span>
+                      {hideUserColumn
+                        ? latestLog.acao.replace(/_/g, " ")
+                        : (latestLog.usuarios?.nome || latestLog.entidade_tipo)}
+                    </span>
+                  )}
+                </h4>
+                <p className="text-xs font-medium text-slate-200 leading-relaxed break-words">
+                  {latestLog.descricao}
+                </p>
+              </div>
+              <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
+                <FileText className="h-4 w-4" />
+              </div>
+            </div>
 
-      {/* MOBILE CARDS VIEW */}
-      <div className="md:hidden space-y-3 mb-4">
-        {logs.map((log) => {
+            <div className="flex items-center justify-between pt-2.5 border-t border-blue-500/20 gap-2">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 text-xs font-extrabold font-mono shadow-sm shadow-blue-500/10">
+                <Clock className="h-4 w-4 text-blue-400" />
+                {formatRelativeTime(latestLog.created_at)}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedLog(latestLog)}
+                className="h-8 px-3 bg-blue-600 text-white hover:bg-blue-500 rounded-xl shadow-md flex items-center gap-1.5 shrink-0"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">INSPECIONAR</span>
+              </Button>
+            </div>
+          </div>
+        )}
 
-          const actionLabel = log.acao.replace(/_/g, " ");
-          const badgeStyle = getActionBadgeStyle(log.acao);
+        {remainingLogs.map((log) => {
           const userId = log.usuario_id || log.usuarios?.id;
+          const displayName = hideUserColumn
+            ? log.acao.replace(/_/g, " ")
+            : (log.usuarios?.nome || log.entidade_tipo);
 
           return (
             <div
               key={log.id}
-              className="p-3.5 bg-[#172136] rounded-2xl border border-slate-700/80 shadow-md space-y-2 text-left"
+              className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4 transition-colors hover:bg-slate-900/90"
             >
-              {/* LINHA 1: AÇÃO */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shrink-0 ${badgeStyle}`}>
-                  {actionLabel}
-                </span>
-              </div>
+              <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800/80 shrink-0">
+                <Clock className="h-3.5 w-3.5 text-slate-400" />
+                {formatRelativeTime(log.created_at)}
+              </span>
 
-              {/* LINHA 2: CONTEÚDO (DESCRIÇÃO NA TELA DO USUÁRIO | NOME + DESCRIÇÃO NA GERAL) */}
-              <div className="py-1">
-                {hideUserColumn ? (
-                  <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">
-                    {log.descricao || actionLabel}
-                  </p>
-                ) : (
-                  <div className="space-y-0.5">
-                    {log.usuarios ? (
-                      userId ? (
-                        <Link
-                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
-                          className="text-xs font-bold text-slate-100 uppercase hover:text-blue-400 hover:underline transition-colors block break-words"
-                        >
-                          {log.usuarios.nome}
-                        </Link>
-                      ) : (
-                        <span className="text-xs font-bold text-slate-100 uppercase block break-words">{log.usuarios.nome}</span>
-                      )
+              <div className="space-y-1.5 md:space-y-0.5 min-w-0 flex-1 text-left">
+                <div className="flex items-center justify-between gap-2 md:block">
+                  <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight">
+                    {!hideUserColumn && userId ? (
+                      <Link
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
+                        className="hover:text-blue-400 hover:underline transition-colors"
+                      >
+                        {displayName}
+                      </Link>
                     ) : (
-                      <span className="text-xs font-bold text-slate-300 uppercase block">Sistema</span>
+                      <span>{displayName}</span>
                     )}
-                    {log.descricao && (
-                      <p className="text-[11px] font-medium text-slate-400 leading-snug break-words">
-                        {log.descricao}
-                      </p>
-                    )}
-                  </div>
-                )}
+                  </h5>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedLog(log)}
+                    className="md:hidden h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                    title="Ver detalhes da atividade"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+
+                <p className="text-xs text-slate-300 md:text-slate-400 leading-relaxed md:leading-normal break-words md:truncate">
+                  {log.descricao}
+                </p>
+
+                <div className="pt-1 md:hidden">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800/80">
+                    <Clock className="h-3 w-3 text-slate-400" />
+                    {formatRelativeTime(log.created_at)}
+                  </span>
+                </div>
               </div>
 
-              {/* LINHA 3: DATA & HORA (ESQUERDA COM ÊNFASE) & BOTÃO OLHINHO (DIREITA) */}
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                <span className="text-xs font-bold font-mono text-slate-200">
-                  {formatRelativeTime(log.created_at)}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm active:scale-95 transition-all shrink-0"
-                  onClick={() => setSelectedLog(log)}
-                  title="Inspecionar atividade"
-                >
-                  <Eye className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedLog(log)}
+                className="hidden md:flex h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
+                title="Ver detalhes da atividade"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
             </div>
           );
         })}
       </div>
 
-      {/* MODAL DE DETALHES COMPLETO DO LOG COM ADMINBASEDIALOG */}
       {selectedLog && (
-        <AdminBaseDialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)} maxWidth="lg">
+        <AdminBaseDialog
+          open={!!selectedLog}
+          onOpenChange={(open) => {
+            if (!open) handleCloseModal();
+          }}
+          maxWidth="lg"
+        >
           <AdminBaseDialog.Header
             title="Detalhes da Atividade"
             subtitle="Informações registradas no sistema"
             icon={<FileText className="w-5 h-5 text-blue-400" />}
-            onClose={() => setSelectedLog(null)}
+            onClose={handleCloseModal}
           />
           <AdminBaseDialog.Body>
-            {/* BADGES AÇÃO & ENTIDADE */}
             <div className="grid grid-cols-2 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
               <div>
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Ação</p>
@@ -231,7 +223,6 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
               </div>
             </div>
 
-            {/* USUÁRIO / AUTOR */}
             <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Usuário / Autor</p>
               {selectedLog.usuarios ? (
@@ -241,7 +232,7 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
                       <Link
                         to={`${ROUTES.PRIVATE.ADMIN.USERS}/${selectedLog.usuario_id || selectedLog.usuarios?.id}`}
                         className="hover:text-blue-400 hover:underline transition-colors"
-                        onClick={() => setSelectedLog(null)}
+                        onClick={handleCloseModal}
                       >
                         {selectedLog.usuarios.nome}
                       </Link>
@@ -261,13 +252,11 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
               )}
             </div>
 
-            {/* DESCRIÇÃO COMPLETA */}
             <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Descrição da Ação</p>
               <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">{selectedLog.descricao}</p>
             </div>
 
-            {/* DATA, HORA, IP & ENTIDADE ID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
               <div>
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Data e Hora</p>
@@ -287,7 +276,6 @@ export function ActivityLogsList({ logs, isLoading, hideUserColumn = false }: Ac
               )}
             </div>
 
-            {/* METADADOS JSON */}
             {selectedLog.meta && Object.keys(selectedLog.meta).length > 0 && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">

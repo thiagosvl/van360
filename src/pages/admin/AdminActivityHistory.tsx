@@ -140,7 +140,11 @@ export default function AdminActivityHistory() {
             </div>
           </div>
 
-          <ActivityLogsList logs={logsData?.data || []} isLoading={isFetchingLogs} />
+          <ActivityLogsList
+            logs={logsData?.data || []}
+            isLoading={isFetchingLogs}
+            highlightFirst={logsPage === 1}
+          />
 
           {!isFetchingLogs && logsData && logsData.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
