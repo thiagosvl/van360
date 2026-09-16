@@ -90,6 +90,7 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
   const totalNovosTrials = visibleSafras.reduce((acc, s) => acc + (s.novosTrials || 0), 0);
   const totalConvertidos = visibleSafras.reduce((acc, s) => acc + (s.convertidos || 0), 0);
   const totalVitalicios = visibleSafras.reduce((acc, s) => acc + (s.vitalicios || 0), 0);
+  const totalEmAndamento = visibleSafras.reduce((acc, s) => acc + (s.emAndamento || 0), 0);
   const concluidos = totalNovosTrials - totalEmAndamento - totalVitalicios;
   const taxaMediaGeral = concluidos > 0 ? Number(((totalConvertidos / concluidos) * 100).toFixed(1)) : 0;
 

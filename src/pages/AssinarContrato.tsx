@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InitialLoading } from "@/components/auth/InitialLoading";
@@ -27,6 +28,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 
 export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
+  const [logoFailed, setLogoFailed] = useState(false);
 
   const {
     contrato,
@@ -67,8 +69,9 @@ export default function AssinarContrato() {
   }
 
   const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, unknown>;
-  const logoCondutorUrl = (dadosContrato.logoCondutorUrl as string | undefined) || contrato.usuario?.logo_url || undefined;
-  
+  const rawLogoUrl = contrato.usuario?.logo_url || (dadosContrato.logoCondutorUrl as string | undefined) || undefined;
+  const logoCondutorUrl = !logoFailed ? rawLogoUrl : undefined;
+
   const condutorInfo = contrato.usuario || {
     apelido: (dadosContrato.apelidoCondutor as string | null | undefined) || null,
     nome: (dadosContrato.nomeCondutor as string | null | undefined) || null,
@@ -86,6 +89,7 @@ export default function AssinarContrato() {
                 src={logoCondutorUrl}
                 alt="Logo do Transporte"
                 className="h-10 w-auto max-w-[130px] object-contain rounded-xs"
+                onError={() => setLogoFailed(true)}
               />
             ) : (
               <div className="flex items-center gap-2">
@@ -152,6 +156,7 @@ export default function AssinarContrato() {
               src={logoCondutorUrl}
               alt="Logo do Transporte"
               className="h-8 sm:h-10 w-auto max-w-[120px] object-contain rounded-xs"
+              onError={() => setLogoFailed(true)}
             />
           ) : (
             <img
@@ -209,7 +214,7 @@ export default function AssinarContrato() {
         <div className="flex items-center justify-between w-full pointer-events-auto gap-4">
           <Button
             onClick={() => openBrowserLink(contrato.minuta_url)}
-            className="bg-emerald-600/90 hover:bg-emerald-700 text-white h-11 sm:h-13 sm:py-8 px-5 sm:px-8 rounded-full shadow-2xl flex items-center gap-2 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0"
+            className="bg-emerald-600/90 hover:bg-emerald-700 text-white h-11 sm:h-13 sm:py-8 px-5 sm:px-8 rounded-full shadow-2xl flex items-center gap-2 font-headline font-bold text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0"
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">Baixar </span>PDF
@@ -219,7 +224,7 @@ export default function AssinarContrato() {
             onClick={() => setModalAberto(true)}
             disabled={contrato.status !== ContratoStatus.PENDENTE}
             className={cn(
-              "h-11 sm:h-13 px-8 sm:px-12 sm:py-8 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0",
+              "h-11 sm:h-13 px-8 sm:px-12 sm:py-8 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 font-headline font-bold text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0",
               contrato.status === ContratoStatus.PENDENTE
                 ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
