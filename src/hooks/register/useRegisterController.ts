@@ -110,7 +110,11 @@ export function useRegisterController() {
       const userId = sessionUser?.id;
 
       if (typeof window !== "undefined" && !isNative) {
-        const win = window as unknown as { dataLayer?: Array<Record<string, unknown>>; fbq?: (...args: unknown[]) => void };
+        const win = window as unknown as {
+          dataLayer?: Array<Record<string, unknown>>;
+          fbq?: (...args: unknown[]) => void;
+          clarity?: (action: string, ...args: unknown[]) => void;
+        };
         win.dataLayer = win.dataLayer || [];
         win.dataLayer.push({
           event: "generate_lead",
@@ -118,6 +122,10 @@ export function useRegisterController() {
 
         if (typeof win.fbq === "function" && userId) {
           win.fbq("track", "Lead", {}, { eventID: `lead_${userId}` });
+        }
+
+        if (typeof win.clarity === "function" && userId) {
+          win.clarity("identify", userId);
         }
       }
 
