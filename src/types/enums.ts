@@ -426,6 +426,11 @@ export enum NotificationChannelEnum {
   TELEGRAM = "TELEGRAM",
 }
 
+export enum EvolutionPurpose {
+  BULK = "BULK",
+  TRANSACTIONAL = "TRANSACTIONAL",
+}
+
 export enum NotificationStatusEnum {
   PENDING = "PENDING",
   PROCESSING = "PROCESSING",

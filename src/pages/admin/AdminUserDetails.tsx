@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/utils/notifications/toast";
 import {
@@ -84,7 +84,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo, AdminUserTab, AdminUserSubTab, DriverContractConfigStatus,
-  ContractMultaTipo, IndicacaoStatus
+  ContractMultaTipo, IndicacaoStatus, CanalAquisicao
 } from "@/types/enums";
 
 const ADMIN_USER_TABS = Object.values(AdminUserTab);
@@ -241,6 +241,7 @@ export default function AdminUserDetails() {
   const contratosList = contratosLazy || data?.contratos || [];
   const referralSummaryData = referralLazy?.referralSummary || data?.referralSummary;
   const referredUsersList = referralLazy?.referredUsers || data?.referredUsers || [];
+  const indicadorData = data?.indicador || referralLazy?.indicador;
 
   const passageirosComContratoSet = useMemo(() => {
     const set = new Set<string>();
@@ -1124,7 +1125,11 @@ export default function AdminUserDetails() {
                       Canal de Aquisição
                     </span>
                     <span className="font-medium text-slate-300 block">
-                      {data.user.canal_aquisicao ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao : "—"}
+                      {data.user.canal_aquisicao
+                        ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao
+                        : indicadorData
+                        ? CanalAquisicaoLabels[CanalAquisicao.INDICACAO]
+                        : "—"}
                     </span>
                   </div>
 
@@ -1132,16 +1137,13 @@ export default function AdminUserDetails() {
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
                       Indicado por
                     </span>
-                    {data.indicador ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleTabChange("dados");
-                        }}
-                        className="font-medium text-emerald-400 hover:underline text-left block"
+                    {indicadorData ? (
+                      <Link
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${indicadorData.id}`}
+                        className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline text-left block"
                       >
-                        {data.indicador.nome}
-                      </button>
+                        {indicadorData.nome}
+                      </Link>
                     ) : (
                       <button
                         type="button"
@@ -1931,7 +1933,7 @@ export default function AdminUserDetails() {
                     </p>
                   </div>
 
-                  {data.indicador ? (
+                  {indicadorData ? (
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
@@ -1940,8 +1942,8 @@ export default function AdminUserDetails() {
                           openAdminConfigureReferralDialog({
                             userId: data.user.id,
                             userName: data.user.nome,
-                            currentIndicadorId: data.indicador?.id,
-                            currentIndicadorNome: data.indicador?.nome,
+                            currentIndicadorId: indicadorData?.id,
+                            currentIndicadorNome: indicadorData?.nome,
                           })
                         }
                         className="h-9 px-3 rounded-xl border-slate-700 bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold gap-1.5"
@@ -1990,24 +1992,29 @@ export default function AdminUserDetails() {
               </CardHeader>
 
               <CardContent className="p-6">
-                {data.indicador ? (
+                {indicadorData ? (
                   <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/10 p-5 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/10 pb-4">
                       <div className="space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
                           Motorista Indicador
                         </span>
-                        <p className="text-base font-bold text-white">{data.indicador.nome}</p>
+                        <Link
+                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${indicadorData.id}`}
+                          className="text-base font-bold text-white hover:text-blue-400 hover:underline transition-colors block"
+                        >
+                          {indicadorData.nome}
+                        </Link>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {data.indicador.status === IndicacaoStatus.PENDING && (
+                        {indicadorData.status === IndicacaoStatus.PENDING && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             <Clock className="h-3.5 w-3.5" />
                             Em Teste (Aguardando 1ª Mensalidade)
                           </span>
                         )}
-                        {data.indicador.status === IndicacaoStatus.COMPLETED && (
+                        {indicadorData.status === IndicacaoStatus.COMPLETED && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             Convertido (Bônus Concedido)
@@ -2023,15 +2030,15 @@ export default function AdminUserDetails() {
                         </span>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="font-mono font-medium text-slate-200">
-                            {phoneMask(data.indicador.telefone) || "—"}
+                            {phoneMask(indicadorData.telefone) || "—"}
                           </span>
-                          {data.indicador.telefone && (
+                          {indicadorData.telefone && (
                             <button
                               type="button"
                               onClick={() => {
-                                const cleanPhone = data.indicador?.telefone?.replace(/\D/g, "") || "";
+                                const cleanPhone = indicadorData?.telefone?.replace(/\D/g, "") || "";
                                 if (cleanPhone) {
-                                  openBrowserLink(buildWhatsAppUrl(cleanPhone, `Olá ${data.indicador!.nome}!`));
+                                  openBrowserLink(buildWhatsAppUrl(cleanPhone, `Olá ${indicadorData!.nome}!`));
                                 }
                               }}
                               className="text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -2048,7 +2055,7 @@ export default function AdminUserDetails() {
                           E-mail
                         </span>
                         <span className="font-medium text-slate-200 truncate block mt-1">
-                          {data.indicador.email || "—"}
+                          {indicadorData.email || "—"}
                         </span>
                       </div>
 
@@ -2057,7 +2064,7 @@ export default function AdminUserDetails() {
                           Data do Vínculo
                         </span>
                         <span className="font-medium text-slate-300 block mt-1">
-                          {data.indicador.created_at ? formatSafeBrazilianDate(data.indicador.created_at) : "—"}
+                          {indicadorData.created_at ? formatSafeBrazilianDate(indicadorData.created_at) : "—"}
                         </span>
                       </div>
                     </div>

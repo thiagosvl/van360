@@ -21,6 +21,7 @@ import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { useAdminVencimentoDetalhes } from "@/hooks/api/admin/useAdminVencimentosHooks";
+import type { CarteiraDiaResumo } from "@/services/api/admin/admin-user.api";
 
 export interface AdminVencimentoDetalhesDialogProps {
   open: boolean;
@@ -136,6 +137,18 @@ export default function AdminVencimentoDetalhesDialog({
                   </div>
 
                   <TabsContent value="disparos" className="space-y-5 mt-0 focus-visible:outline-none">
+                    <Banner
+                      variant="info"
+                      title="Critério das Notificações"
+                      description={
+                        isDiaHoje
+                          ? "Lista as faturas com data de vencimento efetiva para hoje nas réguas automáticas."
+                          : isPassado
+                          ? `Lista as faturas que venceram na data ${dia?.toString().padStart(2, "0")} e o histórico de réguas processadas.`
+                          : `Projeção das faturas com vencimento agendado para o dia ${dia?.toString().padStart(2, "0")}.`
+                      }
+                    />
+
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/30 flex items-center justify-between">
                         <div>
@@ -341,35 +354,16 @@ export default function AdminVencimentoDetalhesDialog({
   );
 }
 
-function CarteiraDetalhesView({
-  carteira,
-}: {
-  carteira: {
-    dia: number;
-    totalAlunos: number;
-    faturasPagas: number;
-    faturasPendentes: number;
-    valorPrevistoTotal: number;
-    valorPagoTotal: number;
-    valorPendenteTotal: number;
-    canaisDisponiveis: {
-      waba: number;
-      resend: number;
-      firebase: number;
-      custoEstimadoWabaBrl: number;
-    };
-    diagnostico: {
-      comTelefoneValido: number;
-      comEmailValido: number;
-      semResponsavelPrincipal: number;
-      semContato: number;
-      notificacoesDesativadasMotorista: number;
-      lembretesDesativadosAluno: number;
-    };
-  };
-}) {
+function CarteiraDetalhesView({ carteira }: { carteira: CarteiraDiaResumo }) {
   return (
     <div className="space-y-5">
+      {Boolean(carteira.faturasNaoGeradas && carteira.faturasNaoGeradas > 0) && (
+        <Banner
+          variant="warning"
+          title="Faturas Pendentes de Emissão"
+          description={`${carteira.faturasNaoGeradas} aluno(s) possui(em) vencimento contratual no dia ${carteira.dia}, mas o motorista ainda não emitiu a fatura para o mês selecionado.`}
+        />
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3.5 bg-slate-900/90 rounded-2xl border border-slate-800">
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">

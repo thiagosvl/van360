@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Clock, Eye, Calendar, Mail, Phone, ExternalLink } from "lucide-react";
 import { type MotoristaLatestActivityItem } from "@/services/api/admin/admin-user.api";
 import { ROUTES } from "@/constants/routes";
@@ -6,29 +6,11 @@ import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { phoneMask } from "@/utils/masks";
-import { formatRelativeTime } from "@/utils/formatters";
+import { formatRelativeTime, formatDateBR, formatDateTimeToBR } from "@/utils/formatters";
 import { openBrowserLink } from "@/utils/browser";
 
 interface AdminRadarDriverCardProps {
   driver: MotoristaLatestActivityItem;
-}
-
-function formatDateBR(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function formatDateTimeBR(iso: string) {
-  return new Date(iso).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export function AdminRadarDriverCard({ driver }: AdminRadarDriverCardProps) {
@@ -116,9 +98,9 @@ export function AdminRadarDriverCard({ driver }: AdminRadarDriverCardProps) {
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 {driver.ultima_acao?.replace(/_/g, " ")}
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400" title={formatDateTimeBR(driver.ultima_atividade_at!)}>
+              <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400" title={formatDateTimeToBR(driver.ultima_atividade_at!)}>
                 <Clock className="h-3 w-3 text-slate-500" />
-                {formatDateTimeBR(driver.ultima_atividade_at!)}
+                {formatDateTimeToBR(driver.ultima_atividade_at!)}
               </span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed break-words">

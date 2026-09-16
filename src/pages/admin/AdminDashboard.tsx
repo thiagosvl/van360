@@ -1,7 +1,21 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAdminStats, useAdminLogs, useAdminUsersLatestActivity, useAdminUsersRadarStats } from "@/hooks/api/adminHooks";
+import {
+  useAdminStats,
+  useAdminLogs,
+  useAdminUsersLatestActivity,
+  useAdminUsersRadarStats,
+  useAdminFinancialStats,
+  useAdminDemographicsStats,
+} from "@/hooks/api/adminHooks";
+import { AdminFinancialKpis } from "@/components/features/admin/financial/AdminFinancialKpis";
+import { AdminRevenueProjectionChart } from "@/components/features/admin/financial/AdminRevenueProjectionChart";
+import { AdminDailyMaturityScatter } from "@/components/features/admin/financial/AdminDailyMaturityScatter";
+import { AdminPaymentMethodBreakdown } from "@/components/features/admin/financial/AdminPaymentMethodBreakdown";
+import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financial/AdminUpcomingRenewalsTable";
+import { AdminAgeDemographicsChart } from "@/components/features/admin/users/AdminAgeDemographicsChart";
+import { AdminUserGrowthFunnel } from "@/components/features/admin/users/AdminUserGrowthFunnel";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,30 +63,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { type LoginAttempt } from "./AdminLoginAttempts";
-import { formatRelativeTime } from "@/utils/formatters";
+import { formatRelativeTime, formatCurrency, formatDateBR, formatDateTimeToBR } from "@/utils/formatters";
 import { useLayout } from "@/hooks";
-
-function formatCurrency(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function formatDateBR(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-  });
-}
-
-function formatDateTimeBR(iso: string) {
-  return new Date(iso).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 interface CustomTooltipPayloadItem {
   color: string;
@@ -107,6 +99,8 @@ function CustomAcquisitionTooltip({ active, payload }: CustomAcquisitionTooltipP
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { data: stats, isLoading, refetch: refetchStats, isFetching: isFetchingStats } = useAdminStats();
+  const { data: financialData, isLoading: isLoadingFinancial, refetch: refetchFinancial, isFetching: isFetchingFinancial } = useAdminFinancialStats();
+  const { data: demographicsData, isLoading: isLoadingDemographics, refetch: refetchDemographics } = useAdminDemographicsStats();
   const { setPageTitle } = useLayout();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
@@ -276,6 +270,12 @@ export default function AdminDashboard() {
                     <span>Contratos</span>
                   </span>
                 </SelectItem>
+                <SelectItem value="financeiro" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-emerald-400" />
+                    <span>Financeiro & Previsões</span>
+                  </span>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -283,12 +283,16 @@ export default function AdminDashboard() {
             type="button"
             variant="outline"
             size="icon"
-            onClick={() => refetchStats()}
-            disabled={isFetchingStats}
+            onClick={() => {
+              refetchStats();
+              refetchFinancial();
+              refetchDemographics();
+            }}
+            disabled={isFetchingStats || isFetchingFinancial}
             title="Atualizar dados do dashboard"
             className="h-16 w-14 border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white rounded-[1.25rem] shadow-xl shrink-0"
           >
-            <RefreshCw className={`h-4 w-4 ${isFetchingStats ? "animate-spin text-blue-400" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${isFetchingStats || isFetchingFinancial ? "animate-spin text-blue-400" : ""}`} />
           </Button>
         </div>
 
@@ -311,6 +315,13 @@ export default function AdminDashboard() {
                 <span>Usuários</span>
               </TabsTrigger>
               <TabsTrigger
+                value="financeiro"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <DollarSign className="h-4 w-4 text-emerald-300" />
+                <span>Financeiro</span>
+              </TabsTrigger>
+              <TabsTrigger
                 value="operacional"
                 className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
               >
@@ -330,11 +341,15 @@ export default function AdminDashboard() {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => refetchStats()}
-            disabled={isFetchingStats}
+            onClick={() => {
+              refetchStats();
+              refetchFinancial();
+              refetchDemographics();
+            }}
+            disabled={isFetchingStats || isFetchingFinancial}
             className="h-12 px-4 border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white rounded-[1.25rem] shadow-xl flex items-center gap-2 shrink-0 font-headline font-bold text-xs"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isFetchingStats ? "animate-spin text-blue-400" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isFetchingStats || isFetchingFinancial ? "animate-spin text-blue-400" : ""}`} />
             <span>Atualizar</span>
           </Button>
         </div>
@@ -996,6 +1011,24 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          {/* DEMOGRAFIA POR FAIXA ETÁRIA & FUNIL DE CRESCIMENTO */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {isLoadingDemographics ? (
+              <div className="col-span-full p-12 text-center text-slate-500 font-semibold flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                <span>Carregando dados demográficos e funil...</span>
+              </div>
+            ) : demographicsData ? (
+              <>
+                <AdminAgeDemographicsChart data={demographicsData.faixasEtarias} />
+                <AdminUserGrowthFunnel
+                  funnel={demographicsData.funil}
+                  evolution={demographicsData.evolucaoMensal}
+                />
+              </>
+            ) : null}
+          </div>
         </TabsContent>
 
         {/* ABA 3: OPERACIONAL */}
@@ -1116,6 +1149,49 @@ export default function AdminDashboard() {
             </div>
           </div>
         </TabsContent>
+
+        {/* ABA 5: FINANCEIRO & PREVISÕES */}
+        <TabsContent value="financeiro" className="space-y-6 m-0 outline-none">
+          {isLoadingFinancial ? (
+            <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              <p className="text-sm font-bold text-slate-400">Carregando inteligência financeira e projeções...</p>
+            </div>
+          ) : financialData ? (
+            <>
+              {/* 1. KPIS FINANCEIROS DE TOPO */}
+              <AdminFinancialKpis kpis={financialData.kpis} />
+
+              {/* 2. PROJEÇÃO DE RECEITA 12 MESES */}
+              <AdminRevenueProjectionChart
+                data={financialData.projecao12Meses}
+                diasRetencaoCartao={financialData.diasRetencaoCartao}
+              />
+
+              {/* 3. DISPERSÃO DIÁRIA & MEIOS DE PAGAMENTO */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <AdminDailyMaturityScatter data={financialData.distribuicaoDiasMes} />
+                </div>
+                <div className="lg:col-span-1">
+                  <AdminPaymentMethodBreakdown
+                    data={financialData.meiosPagamento}
+                    diasRetencaoCartao={financialData.diasRetencaoCartao}
+                  />
+                </div>
+              </div>
+
+              {/* 4. TABELA DE PRÓXIMAS RENOVAÇÕES */}
+              <AdminUpcomingRenewalsTable renewals={financialData.proximasRenovacoes} />
+            </>
+          ) : (
+            <AdminEmptyState
+              icon={DollarSign}
+              title="Sem dados financeiros disponíveis"
+              description="Não foram encontradas informações financeiras suficientes para calcular projeções."
+            />
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* MODAL DE INSPEÇÃO DE DETALHES DA ATIVIDADE COMPLETO COM ADMINBASEDIALOG */}
@@ -1182,7 +1258,7 @@ export default function AdminDashboard() {
                     Data e Hora
                   </span>
                   <p className="text-xs font-mono font-bold text-blue-400 mt-0.5">
-                    {formatDateTimeBR(selectedLogModal.created_at)}
+                    {formatDateTimeToBR(selectedLogModal.created_at)}
                   </p>
                 </div>
                 <div>

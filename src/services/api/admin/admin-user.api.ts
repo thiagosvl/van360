@@ -457,6 +457,7 @@ export interface CarteiraDiaResumo {
   totalAlunos: number;
   faturasPagas: number;
   faturasPendentes: number;
+  faturasNaoGeradas?: number;
   valorPrevistoTotal: number;
   valorPagoTotal: number;
   valorPendenteTotal: number;

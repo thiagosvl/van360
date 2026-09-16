@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import {
   Share2,
   CheckCircle2,
@@ -234,9 +236,18 @@ export function AdminUserReferralTab({
                     className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-between text-xs"
                   >
                     <div className="space-y-1 min-w-0 flex-1">
-                      <p className="font-bold text-white truncate">
-                        {item.indicado?.nome || "Motorista Indicado"}
-                      </p>
+                      {item.indicado?.id ? (
+                        <Link
+                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado.id}`}
+                          className="font-bold text-white hover:text-blue-400 hover:underline transition-colors truncate block"
+                        >
+                          {item.indicado.nome}
+                        </Link>
+                      ) : (
+                        <p className="font-bold text-white truncate">
+                          {item.indicado?.nome || "Motorista Indicado"}
+                        </p>
+                      )}
                       <div className="flex items-center gap-3 text-[11px] text-slate-400">
                         {item.indicado?.telefone && (
                           <span className="font-mono">{phoneMask(item.indicado.telefone)}</span>

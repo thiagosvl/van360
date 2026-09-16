@@ -39,6 +39,7 @@ export const formatDate = (date: string | Date): Date => {
 export const formatDateToBR = (date: string | Date): string => {
   return formatSafeBrazilianDate(date);
 };
+export const formatDateBR = formatDateToBR;
 
 /**
  * Formata para MM/YYYY (mês e ano).
@@ -77,7 +78,7 @@ export const formatMonthYearAbbr = (date?: string | Date | null): string => {
  * Formata para data e opcionalmente hora.
  */
 export const formatDateTimeToBR = (
-  date: string | Date,
+  date?: string | Date | null,
   options: { includeTime?: boolean } = {}
 ): string => {
   if (!date) return "-";

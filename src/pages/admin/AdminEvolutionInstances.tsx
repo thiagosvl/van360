@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAdminEvolutionInstances } from "@/hooks/api/adminHooks";
 import { Loader2, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { WhatsappStatusBadge } from "@/components/ui/WhatsappStatusBadge";
+import { EvolutionPurpose } from "@/types/enums";
 
 function formatWhatsappPurpose(purpose: string): string {
-  if (purpose === "BULK") return "Massa (Lento)";
-  if (purpose === "TRANSACTIONAL") return "Transacional (Rápido)";
+  if (purpose === EvolutionPurpose.BULK) return "Massa (Lento)";
+  if (purpose === EvolutionPurpose.TRANSACTIONAL) return "Transacional (Rápido)";
   return purpose;
 }
 
@@ -70,7 +71,7 @@ export default function AdminEvolutionInstances() {
                       </td>
                       <td className="py-4">
                         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                          instance.purpose === "BULK" 
+                          instance.purpose === EvolutionPurpose.BULK 
                             ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" 
                             : "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                         }`}>
