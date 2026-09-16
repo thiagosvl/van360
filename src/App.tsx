@@ -27,9 +27,15 @@ import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
 import { LayoutProvider } from "@/contexts/LayoutProvider";
+import { useAttribution } from "@/hooks/business/useAttribution";
 
 const PushNotificationController = () => {
   usePushNotifications();
+  return null;
+};
+
+const AttributionController = () => {
+  useAttribution();
   return null;
 };
 
@@ -324,6 +330,7 @@ const App = () => {
               <AppErrorBoundary>
                 <BackButtonController />
                 <PushNotificationController />
+                <AttributionController />
                 <ScrollToTop />
                 <Suspense fallback={<InitialLoading />}>
                   <Routes>

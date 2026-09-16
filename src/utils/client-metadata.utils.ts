@@ -15,11 +15,15 @@ export function collectClientRegistrationMetadata(
 
   const isBrowser = typeof window !== "undefined";
 
+  const rawReferrer = isBrowser && document.referrer ? document.referrer : undefined;
+  const isExternalReferrer = Boolean(rawReferrer && !rawReferrer.startsWith(window.location.origin));
+  const finalReferrer = attribution?.referrer || (isExternalReferrer ? rawReferrer : undefined);
+
   const metadados_cadastro: Record<string, unknown> = {
     screen: isBrowser && window.screen ? `${window.screen.width}x${window.screen.height}` : undefined,
     language: typeof navigator !== "undefined" ? navigator.language : undefined,
     timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined,
-    referrer: isBrowser && document.referrer ? document.referrer : attribution?.referrer || undefined,
+    referrer: finalReferrer,
     utm: attribution?.utm || undefined,
     ...extra,
   };
