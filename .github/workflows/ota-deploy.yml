@@ -31,6 +31,7 @@ jobs:
           echo "VITE_PUBLIC_APP_DOMAIN=${{ secrets.VITE_PUBLIC_APP_DOMAIN }}" >> $GITHUB_ENV
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> $GITHUB_ENV
           echo "VITE_EFI_ACCOUNT_ID=${{ secrets.VITE_EFI_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "VITE_PUBLIC_CLARITY_ID=${{ secrets.VITE_PUBLIC_CLARITY_ID }}" >> $GITHUB_ENV
 
       - name: Build app
         run: npm run build
@@ -42,6 +43,7 @@ jobs:
           VITE_PUBLIC_APP_DOMAIN: ${{ secrets.VITE_PUBLIC_APP_DOMAIN }}
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_EFI_ACCOUNT_ID: ${{ secrets.VITE_EFI_ACCOUNT_ID }}
+          VITE_PUBLIC_CLARITY_ID: ${{ secrets.VITE_PUBLIC_CLARITY_ID }}
 
       - name: Compactar bundle
         run: |
