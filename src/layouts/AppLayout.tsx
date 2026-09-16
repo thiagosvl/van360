@@ -126,11 +126,21 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ACCOUNT)}
           className="flex h-20 items-center justify-start px-6 border-b border-white/5 bg-transparent gap-4 text-left cursor-pointer hover:opacity-90 transition-opacity w-full"
         >
-          <div className="h-12 w-12 rounded-full bg-white border border-white/10 flex items-center justify-center shadow-sm shrink-0 p-0.5 overflow-hidden">
+          <div
+            className={cn(
+              "h-12 w-12 rounded-full flex items-center justify-center shadow-sm shrink-0 overflow-hidden",
+              profile?.logo_url
+                ? "bg-white border border-white/10 p-0.5"
+                : "bg-white/10 border border-white/5 p-2"
+            )}
+          >
             <img
               src={profile?.logo_url || "/assets/logo-van360.webp"}
               alt={profile?.logo_url ? displayName : "Van360"}
-              className="h-full w-full object-contain"
+              className={cn(
+                "h-full w-full object-contain",
+                !profile?.logo_url && "brightness-0 invert"
+              )}
             />
           </div>
           <div className="flex flex-col min-w-0 pr-2">
@@ -186,11 +196,21 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               onClick={handleAccountClick}
               className="flex items-center gap-3.5 min-w-0 text-left cursor-pointer group hover:opacity-90 transition-opacity"
             >
-              <div className="h-11 w-11 rounded-full bg-white border border-white/10 flex items-center justify-center shadow-sm shrink-0 p-0.5 overflow-hidden">
+              <div
+                className={cn(
+                  "h-11 w-11 rounded-full flex items-center justify-center shadow-sm shrink-0 overflow-hidden",
+                  profile?.logo_url
+                    ? "bg-white border border-white/10 p-0.5"
+                    : "bg-white/10 border border-white/5 p-2"
+                )}
+              >
                 <img
                   src={profile?.logo_url || "/assets/logo-van360.webp"}
                   alt={profile?.logo_url ? displayName : "Van360"}
-                  className="h-full w-full object-contain"
+                  className={cn(
+                    "h-full w-full object-contain",
+                    !profile?.logo_url && "brightness-0 invert"
+                  )}
                 />
               </div>
               <div className="flex flex-col min-w-0 pr-2">
