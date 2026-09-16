@@ -60,9 +60,9 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
             <span className="font-bold">{formatCurrency(mensalVal)}</span>
           </div>
 
-          <div className="flex justify-between items-center text-emerald-400">
+          <div className="flex justify-between items-center text-sky-400">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+              <span className="w-2 h-2 rounded-full bg-sky-500 inline-block" />
               Plano Anual:
             </span>
             <span className="font-bold">{formatCurrency(anualVal)}</span>
@@ -169,7 +169,7 @@ export function AdminRevenueProjectionChart({
                 formatter={(value) => <span className="text-slate-300 font-semibold">{value}</span>}
               />
               <Bar dataKey={mode === "caixa" ? "mensalCaixa" : "mensal"} name="Mensal" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
-              <Bar dataKey={mode === "caixa" ? "anualCaixa" : "anual"} name="Anual" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+              <Bar dataKey={mode === "caixa" ? "anualCaixa" : "anual"} name="Anual" stackId="a" fill="#0284c7" radius={[0, 0, 0, 0]} />
               <Bar dataKey="trialPotencial" name="Potencial Trial" stackId="a" fill="#a855f7" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

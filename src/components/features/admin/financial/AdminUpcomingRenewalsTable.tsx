@@ -137,8 +137,8 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                           variant="outline"
                           className={`text-[10px] font-bold ${
                             isYearly
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                              : "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                              ? "bg-sky-500/15 text-sky-400 border-sky-500/30"
+                              : "bg-blue-500/15 text-blue-400 border-blue-500/30"
                           }`}
                         >
                           {isYearly ? "Anual" : "Mensal"}
@@ -153,13 +153,20 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                       </td>
 
                       <td className="py-3 px-3">
-                        <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
+                        <div className="flex items-center gap-1.5 font-semibold">
                           {isCartao ? (
-                            <CreditCard className="h-3.5 w-3.5 text-blue-400" />
+                            <>
+                              <CreditCard className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                              <span className="text-slate-200">{item.dataLiquidacaoPrevista ? formatDateToBR(item.dataLiquidacaoPrevista) : "-"}</span>
+                              <span className="text-[10px] text-blue-300 bg-blue-500/20 px-1 py-0.2 rounded border border-blue-500/30 font-bold">Cartão (D+21)</span>
+                            </>
                           ) : (
-                            <QrCode className="h-3.5 w-3.5 text-emerald-400" />
+                            <>
+                              <QrCode className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                              <span className="text-slate-200">{item.dataLiquidacaoPrevista ? formatDateToBR(item.dataLiquidacaoPrevista) : "-"}</span>
+                              <span className="text-[10px] text-emerald-300 bg-emerald-500/20 px-1 py-0.2 rounded border border-emerald-500/30 font-bold">Pix (D+0)</span>
+                            </>
                           )}
-                          <span>{item.dataLiquidacaoPrevista ? formatDateToBR(item.dataLiquidacaoPrevista) : "-"}</span>
                         </div>
                       </td>
 
