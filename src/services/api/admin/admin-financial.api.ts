@@ -16,6 +16,11 @@ export interface AdminFinancialKpis {
   taxaConversaoTrial: number;
   trialsAtivosCount: number;
   trialsReceitaPotencial: number;
+  totalAssinantesAtivos: number;
+  totalMensais: number;
+  totalAnuais: number;
+  totalVitalicios: number;
+  previsaoFechamentoMes: number;
 }
 
 export interface Projecao12MesesItem {
@@ -23,6 +28,8 @@ export interface Projecao12MesesItem {
   labelMes: string;
   mensal: number;
   anual: number;
+  mensalCaixa: number;
+  anualCaixa: number;
   trialPotencial: number;
   totalVencimento: number;
   totalCaixaReal: number;
@@ -40,6 +47,7 @@ export interface MeioPagamentoItem {
   count: number;
   total: number;
   pct: number;
+  pctValor: number;
 }
 
 export interface MeiosPagamentoBreakdown {
@@ -56,9 +64,20 @@ export interface ProximaRenovacaoItem {
   planoNome: string;
   tipoPlano: "MONTHLY" | "YEARLY";
   metodoPagamento: string | null;
-  dataVencimento: string;
-  dataLiquidacaoPrevista: string;
+  dataVencimento: string | null;
+  dataLiquidacaoPrevista: string | null;
   valor: number;
+  isVitalicio: boolean;
+}
+
+export interface SafraTrialItem {
+  chaveMes: string;
+  labelMes: string;
+  novosTrials: number;
+  convertidos: number;
+  vitalicios: number;
+  emAndamento: number;
+  taxaConversao: number;
 }
 
 export interface AdminFinancialStatsResponse {
@@ -67,6 +86,7 @@ export interface AdminFinancialStatsResponse {
   distribuicaoDiasMes: DistribuicaoDiaMesItem[];
   meiosPagamento: MeiosPagamentoBreakdown;
   proximasRenovacoes: ProximaRenovacaoItem[];
+  safrasTrials: SafraTrialItem[];
   diasRetencaoCartao: number;
 }
 

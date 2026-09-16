@@ -4,6 +4,7 @@ import { InitialLoading } from "@/components/auth/InitialLoading";
 import { useAssinarContratoViewModel } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
+import { getDriverDisplayName } from "@/utils/formatters";
 import {
   CheckCircle2,
   Download,
@@ -65,21 +66,34 @@ export default function AssinarContrato() {
     );
   }
 
-  const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, any>;
-  const logoCondutorUrl = dadosContrato.logoCondutorUrl as string | undefined;
-  const nomeCondutorExibicao = (dadosContrato.apelidoCondutor || dadosContrato.nomeCondutor) as string | undefined;
+  const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, unknown>;
+  const logoCondutorUrl = (dadosContrato.logoCondutorUrl as string | undefined) || contrato.usuario?.logo_url || undefined;
+  
+  const condutorInfo = contrato.usuario || {
+    apelido: (dadosContrato.apelidoCondutor as string | null | undefined) || null,
+    nome: (dadosContrato.nomeCondutor as string | null | undefined) || null,
+    cpfcnpj: (dadosContrato.cpfCnpjCondutor as string | null | undefined) || null,
+  };
+  const nomeCondutorExibicao = getDriverDisplayName(condutorInfo);
 
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
         <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-between px-6 z-50 shadow-lg">
           <div className="flex items-center gap-2">
-            {logoCondutorUrl && (
+            {logoCondutorUrl ? (
               <img
                 src={logoCondutorUrl}
                 alt="Logo do Transporte"
                 className="h-10 w-auto max-w-[130px] object-contain rounded-xs"
               />
+            ) : (
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-white/80" />
+                <span className="font-headline font-black text-xs text-white uppercase tracking-tight">
+                  {nomeCondutorExibicao || "Contrato de Transporte"}
+                </span>
+              </div>
             )}
           </div>
           <img
@@ -118,19 +132,21 @@ export default function AssinarContrato() {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
       <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shadow-lg shrink-0 overflow-hidden">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
           </div>
-          <div>
-            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">
-              {nomeCondutorExibicao ? `Transporte ${nomeCondutorExibicao}` : "Contrato de Transporte"}
+          <div className="min-w-0">
+            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1 truncate max-w-[170px] sm:max-w-xs">
+              {nomeCondutorExibicao || "Contrato de Transporte"}
             </h3>
-            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinatura Digital</p>
+            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+              Contrato de Transporte
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 sm:absolute sm:left-1/2 sm:-translate-x-1/2">
+        <div className="flex items-center gap-3 sm:absolute sm:left-1/2 sm:-translate-x-1/2 shrink-0">
           {logoCondutorUrl ? (
             <img
               src={logoCondutorUrl}
@@ -147,7 +163,7 @@ export default function AssinarContrato() {
         </div>
 
         {logoCondutorUrl && (
-          <div className="hidden sm:flex items-center gap-1.5 opacity-60">
+          <div className="hidden sm:flex items-center gap-1.5 opacity-60 shrink-0">
             <span className="text-[9px] text-white/60 font-semibold tracking-wider uppercase">Powered by</span>
             <img
               src="/assets/logo-van360.webp"

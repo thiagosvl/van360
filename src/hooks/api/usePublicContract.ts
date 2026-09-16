@@ -13,6 +13,17 @@ export interface PublicContract {
   contrato_final_url?: string;
   provider: ContratoProvider;
   created_at: string;
+  dados_contrato?: Record<string, unknown> | null;
+  usuario?: {
+    id: string;
+    nome: string;
+    apelido?: string | null;
+    razao_social?: string | null;
+    cpfcnpj?: string | null;
+    telefone?: string | null;
+    email?: string | null;
+    logo_url?: string | null;
+  } | null;
 }
 
 export function useGetPublicContract(token: string) {

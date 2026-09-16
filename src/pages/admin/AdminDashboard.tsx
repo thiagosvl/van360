@@ -11,6 +11,7 @@ import {
 } from "@/hooks/api/adminHooks";
 import { AdminFinancialKpis } from "@/components/features/admin/financial/AdminFinancialKpis";
 import { AdminRevenueProjectionChart } from "@/components/features/admin/financial/AdminRevenueProjectionChart";
+import { AdminTrialCohortChart } from "@/components/features/admin/financial/AdminTrialCohortChart";
 import { AdminDailyMaturityScatter } from "@/components/features/admin/financial/AdminDailyMaturityScatter";
 import { AdminPaymentMethodBreakdown } from "@/components/features/admin/financial/AdminPaymentMethodBreakdown";
 import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financial/AdminUpcomingRenewalsTable";
@@ -1159,16 +1160,15 @@ export default function AdminDashboard() {
             </div>
           ) : financialData ? (
             <>
-              {/* 1. KPIS FINANCEIROS DE TOPO */}
               <AdminFinancialKpis kpis={financialData.kpis} />
 
-              {/* 2. PROJEÇÃO DE RECEITA 12 MESES */}
               <AdminRevenueProjectionChart
                 data={financialData.projecao12Meses}
                 diasRetencaoCartao={financialData.diasRetencaoCartao}
               />
 
-              {/* 3. DISPERSÃO DIÁRIA & MEIOS DE PAGAMENTO */}
+              <AdminTrialCohortChart safras={financialData.safrasTrials} />
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <AdminDailyMaturityScatter data={financialData.distribuicaoDiasMes} />
@@ -1181,7 +1181,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* 4. TABELA DE PRÓXIMAS RENOVAÇÕES */}
               <AdminUpcomingRenewalsTable renewals={financialData.proximasRenovacoes} />
             </>
           ) : (

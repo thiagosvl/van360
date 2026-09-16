@@ -39,6 +39,8 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const item = payload[0].payload;
     const total = mode === "caixa" ? item.totalCaixaReal : item.totalVencimento;
+    const mensalVal = mode === "caixa" ? item.mensalCaixa : item.mensal;
+    const anualVal = mode === "caixa" ? item.anualCaixa : item.anual;
 
     return (
       <div className="bg-[#0f172a] text-slate-100 p-3.5 rounded-xl border border-slate-700 shadow-2xl text-xs space-y-2 text-left min-w-[200px]">
@@ -55,7 +57,7 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
               <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
               Plano Mensal:
             </span>
-            <span className="font-bold">{formatCurrency(item.mensal)}</span>
+            <span className="font-bold">{formatCurrency(mensalVal)}</span>
           </div>
 
           <div className="flex justify-between items-center text-emerald-400">
@@ -63,7 +65,7 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
               Plano Anual:
             </span>
-            <span className="font-bold">{formatCurrency(item.anual)}</span>
+            <span className="font-bold">{formatCurrency(anualVal)}</span>
           </div>
 
           {item.trialPotencial > 0 && (
@@ -157,7 +159,7 @@ export function AdminRevenueProjectionChart({
                 tick={{ fill: "#94a3b8", fontSize: 11 }}
                 axisLine={{ stroke: "#334155" }}
                 tickLine={false}
-                tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
+                tickFormatter={(v) => (v >= 1000 ? `R$ ${(v / 1000).toFixed(1)}k` : `R$ ${v}`)}
               />
               <Tooltip content={<CustomTooltip mode={mode} />} />
               <Legend
@@ -166,8 +168,8 @@ export function AdminRevenueProjectionChart({
                 wrapperStyle={{ paddingBottom: 16, fontSize: 12 }}
                 formatter={(value) => <span className="text-slate-300 font-semibold">{value}</span>}
               />
-              <Bar dataKey="mensal" name="Mensal" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="anual" name="Anual" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+              <Bar dataKey={mode === "caixa" ? "mensalCaixa" : "mensal"} name="Mensal" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
+              <Bar dataKey={mode === "caixa" ? "anualCaixa" : "anual"} name="Anual" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
               <Bar dataKey="trialPotencial" name="Potencial Trial" stackId="a" fill="#a855f7" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

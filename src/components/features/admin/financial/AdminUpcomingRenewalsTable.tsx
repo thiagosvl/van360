@@ -18,15 +18,26 @@ function formatCurrency(val: number) {
 }
 
 export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTableProps) {
-  const [windowFilter, setWindowFilter] = useState<7 | 15 | 30>(30);
+  const [windowFilter, setWindowFilter] = useState<number>(30);
+
+  const filterOptions = [
+    { label: "7 dias", value: 7 },
+    { label: "15 dias", value: 15 },
+    { label: "30 dias", value: 30 },
+    { label: "60 dias", value: 60 },
+    { label: "90 dias", value: 90 },
+    { label: "Todas", value: 0 },
+  ];
 
   const filteredRenewals = useMemo(() => {
-    const now = new Date();
-    const limit = new Date();
-    limit.setDate(now.getDate() + windowFilter);
+    const activePaying = renewals.filter((r) => !r.isVitalicio && r.dataVencimento);
+    if (windowFilter === 0) return activePaying;
 
-    return renewals.filter((r) => {
-      const dt = new Date(r.dataVencimento);
+    const limit = new Date();
+    limit.setDate(limit.getDate() + windowFilter);
+
+    return activePaying.filter((r) => {
+      const dt = new Date(r.dataVencimento!);
       return dt <= limit;
     });
   }, [renewals, windowFilter]);
@@ -51,21 +62,21 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
-          {[7, 15, 30].map((days) => (
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
+          {filterOptions.map((opt) => (
             <Button
-              key={days}
+              key={opt.value}
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => setWindowFilter(days as 7 | 15 | 30)}
-              className={`h-7 px-3 text-xs rounded-lg font-bold transition-all ${
-                windowFilter === days
+              onClick={() => setWindowFilter(opt.value)}
+              className={`h-7 px-2.5 text-xs rounded-lg font-bold transition-all ${
+                windowFilter === opt.value
                   ? "bg-blue-600 text-white shadow-md"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              {days} dias
+              {opt.label}
             </Button>
           ))}
         </div>
@@ -124,7 +135,7 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
                           <Clock className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{formatDateToBR(item.dataVencimento)}</span>
+                          <span>{item.dataVencimento ? formatDateToBR(item.dataVencimento) : "-"}</span>
                         </div>
                       </td>
 
@@ -135,7 +146,7 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                           ) : (
                             <QrCode className="h-3.5 w-3.5 text-emerald-400" />
                           )}
-                          <span>{formatDateToBR(item.dataLiquidacaoPrevista)}</span>
+                          <span>{item.dataLiquidacaoPrevista ? formatDateToBR(item.dataLiquidacaoPrevista) : "-"}</span>
                         </div>
                       </td>
 

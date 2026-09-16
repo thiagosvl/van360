@@ -17,16 +17,16 @@ export function AdminFinancialKpis({ kpis }: AdminFinancialKpisProps) {
       <AdminKpiCard
         title="MRR (MENSAL RECORRENTE)"
         value={formatCurrency(kpis.mrr)}
-        subtext={`ARR: ${formatCurrency(kpis.arr)}`}
+        subtext={`ARR: ${formatCurrency(kpis.arr)} · ${kpis.totalAssinantesAtivos} pagantes (${kpis.totalMensais}M/${kpis.totalAnuais}A) + ${kpis.totalVitalicios} vit.`}
         cardBorder="border-blue-500/40 shadow-blue-500/10"
         iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
         icon={<TrendingUp className="h-5 w-5" />}
       />
 
       <AdminKpiCard
-        title="RECEITA REALIZADA (MÊS)"
-        value={formatCurrency(kpis.receitaRealizadaMes)}
-        subtext={`Mês anterior: ${formatCurrency(kpis.receitaRealizadaMesAnterior)}`}
+        title="PREV. FECHAMENTO (MÊS)"
+        value={formatCurrency(kpis.previsaoFechamentoMes)}
+        subtext={`Realizado: ${formatCurrency(kpis.receitaRealizadaMes)} (ant: ${formatCurrency(kpis.receitaRealizadaMesAnterior)})`}
         cardBorder="border-emerald-500/40 shadow-emerald-500/10"
         iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
         icon={<DollarSign className="h-5 w-5" />}
@@ -44,7 +44,7 @@ export function AdminFinancialKpis({ kpis }: AdminFinancialKpisProps) {
       <AdminKpiCard
         title="CONVERSÃO DE TRIAL"
         value={`${kpis.taxaConversaoTrial}%`}
-        subtext={`${kpis.trialsAtivosCount} no trial (+${formatCurrency(kpis.trialsReceitaPotencial)} estim.)`}
+        subtext={`${kpis.trialsAtivosCount} em teste ativo (+${formatCurrency(kpis.trialsReceitaPotencial)} pot.)`}
         cardBorder="border-purple-500/40 shadow-purple-500/10"
         iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
         icon={<Zap className="h-5 w-5" />}

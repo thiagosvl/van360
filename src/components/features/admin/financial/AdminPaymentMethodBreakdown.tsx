@@ -20,6 +20,7 @@ interface CustomTooltipProps {
       value: number;
       count: number;
       pct: number;
+      pctValor: number;
       color: string;
     };
   }>;
@@ -37,7 +38,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
         <p className="text-slate-300 font-semibold">
           {item.count} faturas ({item.pct}%)
         </p>
-        <p className="text-white font-bold">{formatCurrency(item.value)}</p>
+        <p className="text-white font-bold">{formatCurrency(item.value)} ({item.pctValor}% do total)</p>
       </div>
     );
   }
@@ -54,6 +55,7 @@ export function AdminPaymentMethodBreakdown({
       value: data.pix.total,
       count: data.pix.count,
       pct: data.pix.pct,
+      pctValor: data.pix.pctValor,
       color: "#10b981",
     },
     {
@@ -61,6 +63,7 @@ export function AdminPaymentMethodBreakdown({
       value: data.cartao.total,
       count: data.cartao.count,
       pct: data.cartao.pct,
+      pctValor: data.cartao.pctValor,
       color: "#3b82f6",
     },
     ...(data.outros.count > 0
@@ -70,6 +73,7 @@ export function AdminPaymentMethodBreakdown({
             value: data.outros.total,
             count: data.outros.count,
             pct: data.outros.pct,
+            pctValor: data.outros.pctValor,
             color: "#64748b",
           },
         ]
@@ -116,8 +120,8 @@ export function AdminPaymentMethodBreakdown({
               <QrCode className="h-4 w-4" />
               <span>Pix (D+0)</span>
             </div>
-            <p className="text-lg font-black text-white">{data.pix.pct}%</p>
-            <p className="text-[11px] text-slate-400 font-semibold">{formatCurrency(data.pix.total)}</p>
+            <p className="text-lg font-black text-white">{data.pix.pctValor}%</p>
+            <p className="text-[11px] text-slate-400 font-semibold">{formatCurrency(data.pix.total)} · {data.pix.count} transações ({data.pix.pct}%)</p>
             <span className="text-[10px] text-emerald-300 font-semibold block pt-0.5">Liquidação imediata</span>
           </div>
 
@@ -126,8 +130,8 @@ export function AdminPaymentMethodBreakdown({
               <CreditCard className="h-4 w-4" />
               <span>Cartão (D+{diasRetencaoCartao})</span>
             </div>
-            <p className="text-lg font-black text-white">{data.cartao.pct}%</p>
-            <p className="text-[11px] text-slate-400 font-semibold">{formatCurrency(data.cartao.total)}</p>
+            <p className="text-lg font-black text-white">{data.cartao.pctValor}%</p>
+            <p className="text-[11px] text-slate-400 font-semibold">{formatCurrency(data.cartao.total)} · {data.cartao.count} transações ({data.cartao.pct}%)</p>
             <span className="text-[10px] text-blue-300 font-semibold block pt-0.5">Repasse em {diasRetencaoCartao} dias</span>
           </div>
         </div>
