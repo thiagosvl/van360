@@ -118,6 +118,7 @@ import { Banner } from "@/components/ui/Banner";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
+import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
