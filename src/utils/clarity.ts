@@ -1,4 +1,4 @@
-﻿interface ClarityFunction {
+interface ClarityFunction {
   (action: string, ...args: unknown[]): void;
   q?: unknown[];
 }
@@ -18,6 +18,8 @@ export function initClarity(): void {
   if (!import.meta.env.PROD || !clarityId) return;
 
   const win = window as unknown as CustomWindow;
+  if (win.location.pathname.startsWith("/admin")) return;
+
   const isLocal = win.location.hostname === "localhost" || win.location.hostname === "127.0.0.1";
   const isCapacitor = Boolean(win.Capacitor?.isNativePlatform?.());
 
