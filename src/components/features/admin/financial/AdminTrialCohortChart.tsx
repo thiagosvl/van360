@@ -1,4 +1,5 @@
-﻿import {
+import { useState, useMemo } from "react";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -9,7 +10,8 @@
   Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UserCheck, Sparkles, Filter } from "lucide-react";
 import type { SafraTrialItem } from "@/services/api/admin/admin-financial.api";
 
 interface AdminTrialCohortChartProps {
@@ -79,10 +81,16 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 }
 
 export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
-  const totalNovosTrials = safras.reduce((acc, s) => acc + s.novosTrials, 0);
-  const totalConvertidos = safras.reduce((acc, s) => acc + s.convertidos, 0);
-  const totalVitalicios = safras.reduce((acc, s) => acc + s.vitalicios, 0);
-  const totalEmAndamento = safras.reduce((acc, s) => acc + s.emAndamento, 0);
+  const [periodFilter, setPeriodFilter] = useState<3 | 6 | 12>(6);
+
+  const visibleSafras = useMemo(() => {
+    return safras.slice(-periodFilter);
+  }, [safras, periodFilter]);
+
+  const totalNovosTrials = visibleSafras.reduce((acc, s) => acc + (s.novosTrials || 0), 0);
+  const totalConvertidos = visibleSafras.reduce((acc, s) => acc + (s.convertidos || 0), 0);
+  const totalVitalicios = visibleSafras.reduce((acc, s) => acc + (s.vitalicios || 0), 0);
+  const totalEmAndamento = visibleSafras.reduce((acc, s) => acc + (s.emAndamento || 0), 0);
 
   const concluidos = totalNovosTrials - totalEmAndamento;
   const taxaMediaGeral = concluidos > 0 ? Number(((totalConvertidos / concluidos) * 100).toFixed(1)) : 0;
@@ -100,18 +108,39 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-          <Sparkles className="h-4 w-4 text-purple-400" />
-          <span className="text-xs font-bold text-purple-300">
-            Taxa Média de Conversão: {taxaMediaGeral}%
-          </span>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            {([3, 6, 12] as const).map((months) => (
+              <Button
+                key={months}
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setPeriodFilter(months)}
+                className={`h-7 px-2.5 text-xs rounded-lg font-bold transition-all ${
+                  periodFilter === months
+                    ? "bg-purple-600 text-white shadow-md"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                {months} meses
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-xl">
+            <Sparkles className="h-4 w-4 text-purple-400" />
+            <span className="text-xs font-bold text-purple-300">
+              Conversão Média: {taxaMediaGeral}%
+            </span>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-6 space-y-6">
         <div className="h-[280px] sm:h-[320px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={safras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={visibleSafras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
               <XAxis
                 dataKey="labelMes"
@@ -145,7 +174,7 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total em Testes</p>
             <p className="text-xl font-black text-white mt-1">{totalNovosTrials}</p>
-            <p className="text-[10px] text-slate-500 font-semibold">nos últimos 6 meses</p>
+            <p className="text-[10px] text-slate-500 font-semibold">nos últimos {periodFilter} meses</p>
           </div>
 
           <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl p-3">

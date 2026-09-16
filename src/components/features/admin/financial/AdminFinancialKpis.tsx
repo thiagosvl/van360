@@ -17,7 +17,7 @@ export function AdminFinancialKpis({ kpis }: AdminFinancialKpisProps) {
       <AdminKpiCard
         title="MRR (MENSAL RECORRENTE)"
         value={formatCurrency(kpis.mrr)}
-        subtext={`ARR: ${formatCurrency(kpis.arr)} · ${kpis.totalAssinantesAtivos} pagantes (${kpis.totalMensais}M/${kpis.totalAnuais}A) + ${kpis.totalVitalicios} vit.`}
+        subtext={`ARR: ${formatCurrency(kpis.arr)} · ${kpis.totalAssinantesAtivos} pagantes (${kpis.totalMensais}M/${kpis.totalAnuais}A) + ${kpis.totalVitalicios} vitalícios`}
         cardBorder="border-blue-500/40 shadow-blue-500/10"
         iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
         icon={<TrendingUp className="h-5 w-5" />}
@@ -26,7 +26,7 @@ export function AdminFinancialKpis({ kpis }: AdminFinancialKpisProps) {
       <AdminKpiCard
         title="PREV. FECHAMENTO (MÊS)"
         value={formatCurrency(kpis.previsaoFechamentoMes)}
-        subtext={`Realizado: ${formatCurrency(kpis.receitaRealizadaMes)} (ant: ${formatCurrency(kpis.receitaRealizadaMesAnterior)})`}
+        subtext={`Realizado: ${formatCurrency(kpis.receitaRealizadaMes)} | Mês ant.: ${formatCurrency(kpis.receitaRealizadaMesAnterior)}`}
         cardBorder="border-emerald-500/40 shadow-emerald-500/10"
         iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
         icon={<DollarSign className="h-5 w-5" />}

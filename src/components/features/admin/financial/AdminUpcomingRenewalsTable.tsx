@@ -1,12 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Clock, QrCode, CreditCard, ChevronRight } from "lucide-react";
+import { Calendar, User, Clock, QrCode, CreditCard, ChevronLeft, ChevronRight } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { openBrowserLink } from "@/utils/browser";
 import { phoneMask } from "@/utils/masks";
 import { formatDateToBR } from "@/utils/formatters";
+import { CheckoutPaymentMethod } from "@/types/enums";
 import type { ProximaRenovacaoItem } from "@/services/api/admin/admin-financial.api";
 
 interface AdminUpcomingRenewalsTableProps {
@@ -19,6 +20,8 @@ function formatCurrency(val: number) {
 
 export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTableProps) {
   const [windowFilter, setWindowFilter] = useState<number>(30);
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 5;
 
   const filterOptions = [
     { label: "7 dias", value: 7 },
@@ -41,6 +44,16 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
       return dt <= limit;
     });
   }, [renewals, windowFilter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [windowFilter]);
+
+  const totalPages = Math.ceil(filteredRenewals.length / pageSize) || 1;
+  const paginatedRenewals = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredRenewals.slice(start, start + pageSize);
+  }, [filteredRenewals, page, pageSize]);
 
   const handleWhatsApp = (telefone: string, nome: string) => {
     if (!telefone) return;
@@ -101,9 +114,9 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50 text-slate-200">
-                {filteredRenewals.map((item) => {
+                {paginatedRenewals.map((item) => {
                   const isYearly = item.tipoPlano === "YEARLY";
-                  const isCartao = (item.metodoPagamento || "").toLowerCase().includes("cartao");
+                  const isCartao = item.metodoPagamento === CheckoutPaymentMethod.CREDIT_CARD;
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
@@ -173,6 +186,41 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                 })}
               </tbody>
             </table>
+
+            {totalPages > 1 && (
+              <div className="p-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                <span>
+                  Mostrando {((page - 1) * pageSize) + 1} a {Math.min(page * pageSize, filteredRenewals.length)} de {filteredRenewals.length}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="h-7 px-2 text-xs text-slate-300 disabled:opacity-40"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Anterior
+                  </Button>
+                  <span className="px-2 font-bold text-white">
+                    {page} / {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="h-7 px-2 text-xs text-slate-300 disabled:opacity-40"
+                  >
+                    Próxima
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

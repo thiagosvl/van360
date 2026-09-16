@@ -1,4 +1,5 @@
 import { apiClient } from "../client";
+import { CheckoutPaymentMethod } from "@/types/enums";
 
 export interface ProjecaoMesValor {
   total: number;
@@ -63,7 +64,7 @@ export interface ProximaRenovacaoItem {
   motoristaTelefone: string;
   planoNome: string;
   tipoPlano: "MONTHLY" | "YEARLY";
-  metodoPagamento: string | null;
+  metodoPagamento: CheckoutPaymentMethod | null;
   dataVencimento: string | null;
   dataLiquidacaoPrevista: string | null;
   valor: number;
