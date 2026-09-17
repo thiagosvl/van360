@@ -12,6 +12,7 @@ import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 interface FirstChargeViewModelProps {
@@ -50,7 +51,7 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen }: FirstCh
 
   useEffect(() => {
     if (isOpen && !showContractStep && !showPaymentStep) {
-      onClose();
+      safeCloseDialog(onClose);
       if (passageiro?.id) {
         navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
       }
@@ -112,7 +113,7 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen }: FirstCh
   const finalizeFlow = useCallback(async (status?: CobrancaStatus) => {
     setIsGeneratingContract(true);
     try {
-      if (status === CobrancaStatus.PAGO) {
+      if (status) {
         await submitCobranca(status);
       }
 
@@ -124,7 +125,7 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen }: FirstCh
           }
         });
       }
-      onClose();
+      safeCloseDialog(onClose);
       if (passageiro?.id) {
         navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
       }
@@ -150,7 +151,7 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen }: FirstCh
       if (paymentStatus === CobrancaStatus.PAGO) {
         setStep("PAYMENT_METHOD");
       } else {
-        await finalizeFlow();
+        await finalizeFlow(CobrancaStatus.PENDENTE);
       }
       return;
     }
