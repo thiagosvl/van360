@@ -25,6 +25,7 @@ export const prePassageiroSchema = z.object({
 
   escola_id: z.string().optional().nullable().or(z.literal("")),
   turma: z.string().optional().nullable().or(z.literal("")),
+  sala: z.string().optional().nullable().or(z.literal("")),
   nome_professor: z.string().optional().nullable().or(z.literal("")),
   periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),

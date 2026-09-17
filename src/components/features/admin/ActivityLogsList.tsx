@@ -74,6 +74,12 @@ export function ActivityLogsList({
   const latestLog = highlightFirst && logs.length > 0 ? logs[0] : null;
   const remainingLogs = highlightFirst ? logs.slice(1) : logs;
 
+  const latestUserName = latestLog
+    ? hideUserColumn
+      ? latestLog.acao.replace(/_/g, " ")
+      : (latestLog.usuarios?.apelido || latestLog.usuarios?.nome || latestLog.entidade_tipo)
+    : "";
+
   return (
     <>
       <div className="space-y-3">
@@ -88,14 +94,10 @@ export function ActivityLogsList({
                       to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
                       className="hover:text-blue-400 hover:underline transition-colors"
                     >
-                      {latestLog.usuarios?.nome || latestLog.entidade_tipo}
+                      {latestUserName}
                     </Link>
                   ) : (
-                    <span>
-                      {hideUserColumn
-                        ? latestLog.acao.replace(/_/g, " ")
-                        : (latestLog.usuarios?.nome || latestLog.entidade_tipo)}
-                    </span>
+                    <span>{latestUserName}</span>
                   )}
                 </h4>
                 <p className="text-xs font-medium text-slate-200 leading-relaxed break-words">
@@ -129,7 +131,7 @@ export function ActivityLogsList({
           const userId = log.usuario_id || log.usuarios?.id;
           const displayName = hideUserColumn
             ? log.acao.replace(/_/g, " ")
-            : (log.usuarios?.nome || log.entidade_tipo);
+            : (log.usuarios?.apelido || log.usuarios?.nome || log.entidade_tipo);
 
           return (
             <div
@@ -234,12 +236,15 @@ export function ActivityLogsList({
                         className="hover:text-blue-400 hover:underline transition-colors"
                         onClick={handleCloseModal}
                       >
-                        {selectedLog.usuarios.nome}
+                        {selectedLog.usuarios.apelido || selectedLog.usuarios.nome}
                       </Link>
                     ) : (
-                      selectedLog.usuarios.nome
+                      selectedLog.usuarios.apelido || selectedLog.usuarios.nome
                     )}
                   </p>
+                  {selectedLog.usuarios.apelido && selectedLog.usuarios.nome && (
+                    <p className="text-xs text-slate-400">Nome: {selectedLog.usuarios.nome}</p>
+                  )}
                   {selectedLog.usuarios.email && (
                     <p className="text-xs font-semibold text-slate-400">{selectedLog.usuarios.email}</p>
                   )}
