@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminUsers, useAdminStats } from "@/hooks/api/adminHooks";
-import { SubscriptionStatus, SUBSCRIPTION_VITALICIO_FILTER } from "@/types/enums";
+import { SubscriptionStatus, SUBSCRIPTION_VITALICIO_FILTER, UserType } from "@/types/enums";
 import {
   Search,
   ChevronLeft,
@@ -55,6 +55,7 @@ export default function AdminUsers() {
     limit,
     search: debouncedSearch || undefined,
     status: statusFilter || undefined,
+    tipo: UserType.MOTORISTA,
   });
 
   useEffect(() => {

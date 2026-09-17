@@ -22,10 +22,10 @@ import {
 import { AdminNotificationLogItem } from "@/services/api/admin/admin-notification.api";
 import { phoneMask } from "@/utils/masks";
 import { formatShortName } from "@/utils/formatters/name";
+import { getDriverDisplayName } from "./user";
 import {
   NotificationEventEnum,
   NotificationChannelEnum,
-  NotificationStatusEnum,
 } from "@/types/enums";
 
 export enum NotificationCategoryEnum {
@@ -219,16 +219,18 @@ export function getAudienceInfo(item: AdminNotificationLogItem): AudienceInfo {
     };
   }
 
-  const nomeMotorista =
-    (item.payload?.nomeMotorista as string) ||
-    (item.payload?.nome as string) ||
-    item.usuarios?.nome ||
-    null;
+  const nomeMotorista = getDriverDisplayName(
+    {
+      apelido: item.usuarios?.apelido,
+      nome: item.usuarios?.nome || (item.payload?.nomeMotorista as string) || (item.payload?.nome as string),
+    },
+    { shortName: true, fallback: "Motorista da Conta" }
+  );
   return {
     type: NotificationAudienceEnum.MOTORISTA,
     label: "Motorista",
     badgeStyle: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    primaryName: nomeMotorista || "Motorista da Conta",
+    primaryName: nomeMotorista,
     subName: undefined,
   };
 }

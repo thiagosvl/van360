@@ -29,7 +29,7 @@ import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { formatRelativeTime, formatDateTimeToBR } from "@/utils/formatters/date";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { phoneMask } from "@/utils/masks";
-import { formatShortName } from "@/utils/formatters/name";
+import { formatShortName, getDriverDisplayName } from "@/utils/formatters";
 import { ROUTES } from "@/constants/routes";
 import {
   useAdminRetryNotification,
@@ -567,11 +567,11 @@ export function NotificationLogsList({
                                 to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
                                 className="font-bold text-blue-400 hover:text-blue-300 hover:underline block truncate max-w-[150px]"
                               >
-                                {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "Motorista"}
+                                {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "Motorista" })}
                               </Link>
                             ) : (
                               <span className="font-bold text-slate-200 block truncate max-w-[150px]">
-                                {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "Motorista"}
+                                {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "Motorista" })}
                               </span>
                             )}
                             {(item.usuarios?.telefone || item.payload?.telefoneMotorista) && (
@@ -718,11 +718,11 @@ export function NotificationLogsList({
                         to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
                         className="font-bold text-blue-400 hover:underline truncate max-w-[200px]"
                       >
-                        {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "Ver Motorista"}
+                        {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "Ver Motorista" })}
                       </Link>
                     ) : (
                       <span className="font-semibold text-slate-200 truncate max-w-[200px]">
-                        {item.usuarios?.nome || (item.payload?.nomeMotorista as string) || "—"}
+                        {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "—" })}
                       </span>
                     )}
                   </div>
@@ -860,8 +860,11 @@ export function NotificationLogsList({
                   <div>
                     <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Motorista Associado</span>
                     <span className="text-xs font-bold text-slate-200">
-                      {selectedNotification.usuarios?.nome || "Motorista"}
+                      {getDriverDisplayName(selectedNotification.usuarios, { shortName: true, fallback: "Motorista" })}
                     </span>
+                    {selectedNotification.usuarios?.apelido && selectedNotification.usuarios.nome && (
+                      <p className="text-xs text-slate-400">Nome: {selectedNotification.usuarios.nome}</p>
+                    )}
                     {selectedNotification.usuarios?.telefone && (
                       <p className="text-[11px] font-mono text-slate-400 mt-0.5">
                         {phoneMask(selectedNotification.usuarios.telefone)}

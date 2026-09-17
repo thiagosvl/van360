@@ -21,6 +21,7 @@ export interface AdminNotificationLogItem {
     email: string;
     telefone: string;
     cpfcnpj: string;
+    apelido?: string | null;
   } | null;
 }
 
