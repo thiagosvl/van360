@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalForm";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -8,11 +9,14 @@ import { PassageiroFormEndereco } from "@/components/features/passageiro/form/Pa
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
 import { getNowBR } from "@/utils/dateUtils";
 import { isDevEnv } from "@/utils/detectPlatform";
+import { cn } from "@/lib/utils";
 
 export default function PassageiroExternalForm() {
   const {
     form,
     loading,
+    motoristaDisplayName,
+    motoristaLogoUrl,
     submitting,
     success,
     escolasList,
@@ -21,6 +25,13 @@ export default function PassageiroExternalForm() {
     handleNewCadastro,
     handleFillMock,
   } = usePassageiroExternalForm();
+
+  const subtitleDestino = useMemo(() => {
+    if (!motoristaDisplayName) return "o transporte escolar";
+    return motoristaDisplayName.toLowerCase().includes("transporte")
+      ? `o ${motoristaDisplayName}`
+      : `o transporte escolar ${motoristaDisplayName}`;
+  }, [motoristaDisplayName]);
 
   if (loading) {
     return <InitialLoading />;
@@ -39,7 +50,7 @@ export default function PassageiroExternalForm() {
             Cadastro Enviado!
           </h2>
           <p className="text-slate-500 mb-8 leading-relaxed text-base font-medium">
-            Tudo certo! Os dados do aluno foram enviados com sucesso ao motorista.
+            Tudo certo! Os dados do aluno foram enviados com sucesso para {subtitleDestino}.
           </p>
           <div className="pt-2 space-y-4">
             <Button
@@ -63,7 +74,6 @@ export default function PassageiroExternalForm() {
 
         <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-200">
           <div className="text-center p-6 pb-2 relative">
-            {/* Botão de Mock discreto */}
             {isDevEnv() && (
               <div className="absolute right-2 top-2 z-10">
                 <Button
@@ -79,13 +89,18 @@ export default function PassageiroExternalForm() {
               </div>
             )}
 
-            {/* Header Logo, Title & Subtitle */}
             <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center justify-center gap-3 mb-2 min-h-[3.5rem] sm:min-h-[4.5rem]">
                 <img
-                  src="/assets/logo-van360.webp"
-                  alt="Van360"
-                  className="h-12 w-auto select-none drop-shadow-sm"
+                  src={motoristaLogoUrl || "/assets/logo-van360.webp"}
+                  alt={motoristaDisplayName || "Van360"}
+                  fetchPriority="high"
+                  className={cn(
+                    "select-none drop-shadow-sm transition-all",
+                    motoristaLogoUrl
+                      ? "h-16 sm:h-20 max-w-[220px] object-contain"
+                      : "h-12 w-auto"
+                  )}
                 />
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
@@ -93,7 +108,7 @@ export default function PassageiroExternalForm() {
                   Cadastro do Aluno
                 </h1>
                 <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4 max-w-md">
-                  Preencha os dados do seu filho(a) com rapidez e segurança. Leva menos de 2 minutinhos e as informações vão direto para o transporte escolar!
+                  Leva menos de 2 minutinhos e as informações vão direto para {subtitleDestino}!
                 </p>
               </div>
             </div>

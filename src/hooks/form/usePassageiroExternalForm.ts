@@ -27,6 +27,13 @@ import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils
 
 export { prePassageiroSchema, type PrePassageiroFormData };
 
+interface PublicMotoristaData {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  logo_url: string | null;
+  display_name?: string | null;
+}
 
 export function usePassageiroExternalForm() {
   useSEO({
@@ -40,6 +47,8 @@ export function usePassageiroExternalForm() {
 
   const [loading, setLoading] = useState(true);
   const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
+  const [motoristaDisplayName, setMotoristaDisplayName] = useState<string>("");
+  const [motoristaLogoUrl, setMotoristaLogoUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
@@ -102,7 +111,7 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      const { data } = await apiClient.get<any>(`/public/motoristas/${motoristaId}/validate`)
+      const { data } = await apiClient.get<PublicMotoristaData>(`/public/motoristas/${motoristaId}/validate`)
         .catch(() => ({ data: null }));
 
       if (!data) {
@@ -113,7 +122,10 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      setMotoristaApelido((data as any).apelido || formatShortName((data as any).nome, true));
+      const displayName = data.display_name || data.apelido || formatShortName(data.nome, true);
+      setMotoristaApelido(displayName);
+      setMotoristaDisplayName(displayName);
+      setMotoristaLogoUrl(data.logo_url || null);
 
       setLoading(false);
     };
@@ -340,6 +352,8 @@ export function usePassageiroExternalForm() {
     form,
     loading,
     motoristaApelido,
+    motoristaDisplayName,
+    motoristaLogoUrl,
     submitting,
     success,
     openAccordionItems,
