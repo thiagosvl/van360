@@ -17,6 +17,7 @@ import { AdminPaymentMethodBreakdown } from "@/components/features/admin/financi
 import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financial/AdminUpcomingRenewalsTable";
 import { AdminAgeDemographicsChart } from "@/components/features/admin/users/AdminAgeDemographicsChart";
 import { AdminUserGrowthFunnel } from "@/components/features/admin/users/AdminUserGrowthFunnel";
+import { AdminStateDemographicsChart } from "@/components/features/admin/users/AdminStateDemographicsChart";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -904,13 +905,16 @@ export default function AdminDashboard() {
                 <span>Carregando dados demográficos e funil...</span>
               </div>
             ) : demographicsData ? (
-              <>
-                <AdminAgeDemographicsChart data={demographicsData.faixasEtarias} />
-                <AdminUserGrowthFunnel
-                  funnel={demographicsData.funil}
-                  evolution={demographicsData.evolucaoMensal}
-                />
-              </>
+                <>
+                  <AdminAgeDemographicsChart data={demographicsData.faixasEtarias} />
+                  <AdminUserGrowthFunnel
+                    funnel={demographicsData.funil}
+                    evolution={demographicsData.evolucaoMensal}
+                  />
+                  <div className="col-span-full">
+                    <AdminStateDemographicsChart data={demographicsData.distribuicaoEstados || []} />
+                  </div>
+                </>
             ) : null}
           </div>
         </TabsContent>

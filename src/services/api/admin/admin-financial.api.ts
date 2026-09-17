@@ -115,10 +115,19 @@ export interface EvolucaoMensalUsuarioItem {
   cancelados: number;
 }
 
+export interface AdminEstadoDemographics {
+  uf: string;
+  nome: string;
+  regiao: string;
+  quantidade: number;
+  porcentagem: number;
+}
+
 export interface AdminDemographicsStatsResponse {
   faixasEtarias: FaixaEtariaItem[];
   funil: FunilConversao;
   evolucaoMensal: EvolucaoMensalUsuarioItem[];
+  distribuicaoEstados: AdminEstadoDemographics[];
 }
 
 export const adminFinancialApi = {

@@ -197,6 +197,39 @@ export const useRelatoriosCalculations = ({
       .filter((f) => f.valor > 0)
       .sort((a, b) => b.valor - a.valor);
 
+    const vencimentosPorDiaMap: Record<number, { valor: number; count: number }> = {};
+    let totalValorVencimentos = 0;
+
+    passageirosList.forEach((p: Passageiro) => {
+      if (!p.ativo) return;
+      const dia = p.dia_vencimento ? Number(p.dia_vencimento) : null;
+      if (!dia || dia < 1 || dia > 31) return;
+
+      const valor = Number(p.valor_mensalidade ?? p.valor_cobranca ?? 0);
+      if (valor <= 0) return;
+
+      if (!vencimentosPorDiaMap[dia]) {
+        vencimentosPorDiaMap[dia] = { valor: 0, count: 0 };
+      }
+      vencimentosPorDiaMap[dia].valor += valor;
+      vencimentosPorDiaMap[dia].count += 1;
+      totalValorVencimentos += valor;
+    });
+
+    const vencimentosPorDia = Object.entries(vencimentosPorDiaMap)
+      .map(([diaStr, dados]) => {
+        const dia = Number(diaStr);
+        return {
+          dia,
+          titulo: `Dia ${dia.toString().padStart(2, "0")}`,
+          valor: dados.valor,
+          count: dados.count,
+          percentual: totalValorVencimentos > 0 ? (dados.valor / totalValorVencimentos) * 100 : 0,
+        };
+      })
+      .filter((item) => item.valor > 0)
+      .sort((a, b) => b.valor - a.valor);
+
     // Saídas
     const diasComGastos = new Set(
       gastos.map((g: any) => parseLocalDate(g.data).getDate())
@@ -455,6 +488,7 @@ export const useRelatoriosCalculations = ({
         passageirosPagantes,
         passageirosPagos,
         formasPagamento,
+        vencimentosPorDia,
       },
       saidas: {
         total: gasto,

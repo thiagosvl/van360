@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
+import { AdminDriverVencimentosTabela } from "@/components/features/admin/user-details/AdminDriverVencimentosTabela";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { StatusFilter } from "@/types/enums";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -103,6 +104,8 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
           icon={<DollarSign className="h-5 w-5" />}
         />
       </div>
+
+      <AdminDriverVencimentosTabela passageiros={passageiros} />
 
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
