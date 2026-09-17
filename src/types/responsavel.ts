@@ -105,6 +105,7 @@ export interface ResponsavelCarteirinhaData {
   periodo?: string | null;
   modalidade?: string | null;
   turma?: string | null;
+  sala?: string | null;
   nome_professor?: string | null;
   logradouro?: string | null;
   numero?: string | null;

@@ -66,6 +66,7 @@ export interface Passageiro {
   genero?: PassageiroGenero;
   data_inicio_transporte?: string;
   turma?: string;
+  sala?: string | null;
   nome_professor?: string;
   data_fim_transporte?: string;
   horario_entrada?: string | null;

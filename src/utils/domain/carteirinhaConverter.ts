@@ -12,6 +12,7 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
     periodo: (carteirinha.periodo as PassageiroPeriodo) || ("integral" as PassageiroPeriodo),
     modalidade: (carteirinha.modalidade as PassageiroModalidade) || undefined,
     turma: carteirinha.turma || undefined,
+    sala: carteirinha.sala || undefined,
     nome_professor: carteirinha.nome_professor || undefined,
     veiculo_id: "",
     observacoes: carteirinha.observacoes || undefined,

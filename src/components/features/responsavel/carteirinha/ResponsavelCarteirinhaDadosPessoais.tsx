@@ -1,7 +1,7 @@
 import React from "react";
 import { ResponsavelCarteirinhaData } from "@/types/responsavel";
-import { formatDateToBR, formatGenero, formatarEnderecoCompleto, formatFirstName } from "@/utils/formatters";
-import { Calendar, Clock, User, MapPin, Users } from "lucide-react";
+import { formatDateToBR, formatGenero, formatPeriodo, formatarEnderecoCompleto, formatFirstName } from "@/utils/formatters";
+import { Calendar, Clock, User, MapPin, Users, DoorClosed, BookOpen, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { ResponsavelCarteirinhaObservacoes } from "./ResponsavelCarteirinhaObservacoes";
@@ -75,11 +75,38 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
             Informações do Aluno
           </h3>
         </div>
-        <InfoField
-          label="Professor(a)"
-          value={carteirinha.nome_professor}
-          fullWidth
-        />
+        {carteirinha.escola_nome && (
+          <InfoField
+            icon={<GraduationCap className="h-3.5 w-3.5" />}
+            label="Escola"
+            value={carteirinha.escola_nome}
+            fullWidth
+          />
+        )}
+        <div className={cn("grid grid-cols-2 gap-3", carteirinha.escola_nome && "pt-2.5 border-t border-slate-200/50")}>
+          <InfoField
+            icon={<Clock className="h-3.5 w-3.5" />}
+            label="Período"
+            value={carteirinha.periodo ? formatPeriodo(carteirinha.periodo) : null}
+          />
+          <InfoField
+            icon={<BookOpen className="h-3.5 w-3.5" />}
+            label="Turma"
+            value={carteirinha.turma}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+          <InfoField
+            icon={<DoorClosed className="h-3.5 w-3.5" />}
+            label="Sala"
+            value={carteirinha.sala}
+          />
+          <InfoField
+            icon={<User className="h-3.5 w-3.5" />}
+            label="Professor(a)"
+            value={carteirinha.nome_professor}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
           <InfoField
             icon={<Calendar className="h-3.5 w-3.5" />}

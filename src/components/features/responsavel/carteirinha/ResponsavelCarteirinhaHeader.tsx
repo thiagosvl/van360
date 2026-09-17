@@ -31,7 +31,7 @@ export const ResponsavelCarteirinhaHeader: React.FC<ResponsavelCarteirinhaHeader
           </h2>
           {carteirinha.escola_nome && (
             <p className="text-xs sm:text-sm font-medium text-slate-300/90 mt-1">
-              {carteirinha.escola_nome} {carteirinha.turma ? `• ${carteirinha.turma}` : ""}
+              {carteirinha.escola_nome} {carteirinha.turma ? `• ${carteirinha.turma}` : ""} {carteirinha.sala ? `• Sala ${carteirinha.sala}` : ""}
             </p>
           )}
         </div>

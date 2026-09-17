@@ -32,6 +32,7 @@ export interface CarteirinhaResponsaveisProps {
   hideAddress?: boolean;
   hideWhatsappButton?: boolean;
   hideEditButton?: boolean;
+  hideNotificacoesRota?: boolean;
   isResponsavelPortal?: boolean;
   onRefresh?: () => void;
 }
@@ -44,6 +45,7 @@ export const CarteirinhaResponsaveis = ({
   hideAddress = false,
   hideWhatsappButton = false,
   hideEditButton = false,
+  hideNotificacoesRota = false,
   isResponsavelPortal = false,
   onRefresh,
 }: CarteirinhaResponsaveisProps) => {
@@ -376,17 +378,19 @@ export const CarteirinhaResponsaveis = ({
                             <Check className="h-4 w-4 text-slate-500" /> Definir como Principal
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={handleToggleNotificacoesRota} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
-                          {currentResp.notificacoes_rota_habilitadas !== false ? (
-                            <>
-                              <BellOff className="h-4 w-4 text-slate-500" /> Desativar Notificações de Rota
-                            </>
-                          ) : (
-                            <>
-                              <Bell className="h-4 w-4 text-slate-500" /> Ativar Notificações de Rota
-                            </>
-                          )}
-                        </DropdownMenuItem>
+                        {!hideNotificacoesRota && (
+                          <DropdownMenuItem onClick={handleToggleNotificacoesRota} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
+                            {currentResp.notificacoes_rota_habilitadas !== false ? (
+                              <>
+                                <BellOff className="h-4 w-4 text-slate-500" /> Desativar Notificações de Rota
+                              </>
+                            ) : (
+                              <>
+                                <Bell className="h-4 w-4 text-slate-500" /> Ativar Notificações de Rota
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        )}
                         {!isPrincipalTab && (
                           <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
                             <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
@@ -501,23 +505,25 @@ export const CarteirinhaResponsaveis = ({
               )}
 
               {/* Linha de Notificações de Rota */}
-              <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-2 min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Bell className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                  <span className="text-xs font-normal text-slate-500">Notificações de Rota</span>
+              {!hideNotificacoesRota && (
+                <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-2 min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Bell className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                    <span className="text-xs font-normal text-slate-500">Notificações de Rota</span>
+                  </div>
+                  {currentResp.notificacoes_rota_habilitadas !== false ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Ativas
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200/60">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                      Inativas
+                    </span>
+                  )}
                 </div>
-                {currentResp.notificacoes_rota_habilitadas !== false ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Ativas
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200/60">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    Inativas
-                  </span>
-                )}
-              </div>
+              )}
 
               {/* Linha 6: Acesso ao App */}
               {!hideAppAccess && (

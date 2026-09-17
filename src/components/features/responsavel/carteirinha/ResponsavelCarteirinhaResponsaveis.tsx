@@ -13,6 +13,7 @@ export const ResponsavelCarteirinhaResponsaveis: React.FC<ResponsavelCarteirinha
   onRefresh,
 }) => {
   const passageiroConvertido = useMemo(() => mapearCarteirinhaParaPassageiro(carteirinha), [carteirinha]);
+  const temRotas = (carteirinha.rotas || []).length > 0;
 
   return (
     <CarteirinhaResponsaveis
@@ -23,6 +24,7 @@ export const ResponsavelCarteirinhaResponsaveis: React.FC<ResponsavelCarteirinha
       hideAddress={false}
       hideWhatsappButton={true}
       hideEditButton={false}
+      hideNotificacoesRota={!temRotas}
       isResponsavelPortal={true}
       onRefresh={onRefresh}
     />

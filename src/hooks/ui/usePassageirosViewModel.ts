@@ -13,6 +13,7 @@ import {
   useEscolas,
   useFilters,
   usePassageiros,
+  usePrePassageiros,
   useToggleAtivoPassageiro,
   useVeiculos,
 } from "@/hooks";
@@ -24,6 +25,7 @@ import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
+import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber } from "@/utils/masks";
@@ -195,7 +197,27 @@ export function usePassageirosViewModel() {
       }),
   });
 
-  const countPrePassageiros = resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
+  const {
+    data: prePassageirosData,
+    isLoading: isPrePassageirosLoading,
+    isFetching: isPrePassageirosFetching,
+    refetch: refetchPrePassageiros,
+  } = usePrePassageiros(
+    {
+      usuarioId: profile?.id,
+      search: activeTab === PassageiroTab.SOLICITACOES ? debouncedSearchTerm : undefined,
+    },
+    {
+      enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")),
+      onError: () => toast.error("erro.carregar"),
+    }
+  );
+
+  const prePassageiros = (prePassageirosData as PrePassageiro[] | undefined) ?? [];
+  const countPrePassageiros =
+    prePassageirosData && !debouncedSearchTerm
+      ? prePassageirosData.length
+      : (resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0);
   const totalPassageirosResumo = resumo?.contadores.passageiros.total;
 
   const userQueryFilters = useMemo(
@@ -492,9 +514,10 @@ export function usePassageirosViewModel() {
       refetchPassageiros(),
       refetchEscolas(),
       refetchVeiculos(),
+      refetchPrePassageiros(),
       refreshProfile(),
     ]);
-  }, [refetchPassageiros, refetchEscolas, refetchVeiculos, refreshProfile]);
+  }, [refetchPassageiros, refetchEscolas, refetchVeiculos, refetchPrePassageiros, refreshProfile]);
 
   return {
     profile,
@@ -503,6 +526,10 @@ export function usePassageirosViewModel() {
     handleTabChange,
     countPassageiros,
     countPrePassageiros,
+    prePassageiros,
+    isPrePassageirosLoading,
+    isPrePassageirosFetching,
+    refetchPrePassageiros,
     searchTerm,
     setSearchTerm,
     debouncedSearchTerm,

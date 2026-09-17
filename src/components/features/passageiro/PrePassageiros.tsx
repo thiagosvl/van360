@@ -28,7 +28,6 @@ import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import {
   formatarTelefone,
-  formatFirstName,
   formatRelativeTime,
   formatShortName,
   getInitials,
@@ -42,15 +41,23 @@ import {
   Users2
 } from "lucide-react";
 
+import { Usuario } from "@/types/usuario";
+
+interface PrePassageirosProps {
+  onFinalizeNewPrePassageiro?: () => Promise<void>;
+  profile?: Usuario | null;
+  searchTerm?: string;
+  prePassageiros?: PrePassageiro[];
+  isLoading?: boolean;
+}
+
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   profile: initialProfile,
   searchTerm = "",
-}: {
-  onFinalizeNewPrePassageiro?: () => Promise<void>;
-  profile?: any;
-  searchTerm?: string;
-}) {
+  prePassageiros: prePassageirosProp,
+  isLoading: isLoadingProp,
+}: PrePassageirosProps) {
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -63,25 +70,21 @@ export default function PrePassageiros({
   const deletePrePassageiro = useDeletePrePassageiro();
 
   const {
-    data: prePassageirosData,
-    isLoading: isPrePassageirosLoading,
-    isFetching: isPrePassageirosFetching,
-    refetch: refetchPrePassageiros,
+    data: prePassageirosQueryData,
+    isLoading: isPrePassageirosQueryLoading,
   } = usePrePassageiros(
     {
       usuarioId: profile?.id,
       search: searchTerm || undefined,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !prePassageirosProp && !!profile?.id,
       onError: () => toast.error("erro.carregar"),
     },
   );
 
-  const prePassageiros =
-    (prePassageirosData as PrePassageiro[] | undefined) ?? [];
-
-  const loading = isPrePassageirosLoading;
+  const prePassageiros = prePassageirosProp ?? (prePassageirosQueryData as PrePassageiro[] | undefined) ?? [];
+  const loading = isLoadingProp !== undefined ? isLoadingProp : isPrePassageirosQueryLoading;
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     openPassageiroFormDialog({

@@ -369,6 +369,10 @@ export const generateTurma = (): string => {
   return turmas[randomNumber(0, turmas.length - 1)];
 };
 
+export const generateSala = (): string => {
+  const salas = ["Sala 1", "Sala 2", "Sala 3B", "Sala 4", "Sala 12", "Sala 15"];
+  return salas[randomNumber(0, salas.length - 1)];
+};
 
 export const generateProfessor = (): string => {
   return "Claudia";
@@ -469,6 +473,7 @@ export const mockGenerator = {
 
       // New fields from Schema/Enums
       turma: generateTurma(),
+      sala: generateSala(),
       nome_professor: generateProfessor(),
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),

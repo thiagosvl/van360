@@ -25,8 +25,8 @@ import {
 } from "@/hooks";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
-import { dateMask, timeMask } from "@/utils/masks";
-import { AlertTriangle, Car, Clock, Compass, School, Sun, User, UserCheck, CalendarIcon, X } from "lucide-react";
+import { dateMask } from "@/utils/masks";
+import { AlertTriangle, Car, Clock, Compass, DoorClosed, School, Sun, User, UserCheck, CalendarIcon, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
@@ -530,14 +530,14 @@ export function PassageiroFormDadosCadastrais({
 
           <FormField
             control={form.control}
-            name="nome_professor"
+            name="sala"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
                 {isExternal ? (
                   <FormControl>
-                    <StitchField icon={UserCheck} label="Professor(a)" error={!!fieldState.error}>
+                    <StitchField icon={DoorClosed} label="Sala" error={!!fieldState.error}>
                       <Input
-                        placeholder="Ex: Cláudia"
+                        placeholder="Ex: Sala 12"
                         {...field}
                         value={field.value || ""}
                         className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
@@ -548,13 +548,13 @@ export function PassageiroFormDadosCadastrais({
                 ) : (
                   <>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Professor(a)
+                      Sala
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <UserCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <DoorClosed className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                         <Input
-                          placeholder="Ex: Cláudia"
+                          placeholder="Ex: Sala 12"
                           {...field}
                           value={field.value || ""}
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
@@ -569,6 +569,47 @@ export function PassageiroFormDadosCadastrais({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="nome_professor"
+          render={({ field, fieldState }) => (
+            <FormItem className="col-span-1">
+              {isExternal ? (
+                <FormControl>
+                  <StitchField icon={UserCheck} label="Professor(a)" error={!!fieldState.error}>
+                    <Input
+                      placeholder="Ex: Cláudia"
+                      {...field}
+                      value={field.value || ""}
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      aria-invalid={!!fieldState.error}
+                    />
+                  </StitchField>
+                </FormControl>
+              ) : (
+                <>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Professor(a)
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <UserCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                      <Input
+                        placeholder="Ex: Cláudia"
+                        {...field}
+                        value={field.value || ""}
+                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                        aria-invalid={!!fieldState.error}
+                      />
+                    </div>
+                  </FormControl>
+                </>
+              )}
+              <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+            </FormItem>
+          )}
+        />
 
         {!isExternal && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

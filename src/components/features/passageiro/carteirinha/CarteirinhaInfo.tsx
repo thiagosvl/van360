@@ -19,12 +19,10 @@ import {
   formatarEnderecoCompleto,
   formatDateToBR,
   formatMonthYearToBR,
-  formatParentesco,
   formatFirstName,
 } from "@/utils/formatters";
-import { cpfMask, moneyMask, phoneMask } from "@/utils/masks";
+import { moneyMask } from "@/utils/masks";
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
-import { openBrowserLink } from "@/utils/browser";
 import {
   Check,
   Copy,
@@ -35,18 +33,17 @@ import {
   PowerOff,
   Trash2,
   User,
-  UserCheck,
   Bot,
   BotOff,
   MoreHorizontal,
   Wallet,
   Clock,
   BookOpen,
+  DoorClosed,
   Bus,
   Calendar,
   CalendarClock,
   Users,
-  Phone,
 } from "lucide-react";
 import React from "react";
 
@@ -385,7 +382,7 @@ export const CarteirinhaDadosPessoais = ({
   const enderecoFormatado = respPrincipal?.logradouro
     ? formatarEnderecoCompleto(respPrincipal)
     : formatarEnderecoCompleto(passageiro);
-  const referenciaEmbarque = respPrincipal?.referencia || passageiro.referencia || null;
+  const referenciaEmbarque = respPrincipal?.referencia || null;
   const primeiroNomeResp = formatFirstName(respPrincipal?.nome);
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
@@ -443,13 +440,18 @@ export const CarteirinhaDadosPessoais = ({
               value={passageiro.turma}
             />
           </div>
-          <InfoField
-            icon={<User className="h-3.5 w-3.5" />}
-            label="Professor(a)"
-            value={passageiro.nome_professor}
-            fullWidth
-            hasBorder
-          />
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<DoorClosed className="h-3.5 w-3.5" />}
+              label="Sala"
+              value={passageiro.sala}
+            />
+            <InfoField
+              icon={<User className="h-3.5 w-3.5" />}
+              label="Professor(a)"
+              value={passageiro.nome_professor}
+            />
+          </div>
         </div>
       </div>
 

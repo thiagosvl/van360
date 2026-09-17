@@ -61,6 +61,7 @@ export const passageiroSchema = z
       notificacoes_rota_habilitadas: z.boolean().optional().default(true),
     }),
     turma: z.string().optional().nullable().or(z.literal("")),
+    sala: z.string().optional().nullable().or(z.literal("")),
     nome_professor: z.string().optional().nullable().or(z.literal("")),
 
     isento: z.boolean().optional().default(false),
@@ -209,6 +210,7 @@ export function usePassageiroForm({
       genero: "",
       observacoes: "",
       turma: "",
+      sala: "",
       nome_professor: "",
       isento: false,
       valor_cobranca: "",
@@ -238,6 +240,7 @@ export function usePassageiroForm({
           data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
           genero: editingPassageiro.genero || "",
           turma: editingPassageiro.turma || "",
+          sala: editingPassageiro.sala || "",
           nome_professor: editingPassageiro.nome_professor || "",
           responsavel_principal: {
             nome: editingPassageiro.responsavel_principal?.nome || "",
@@ -320,6 +323,7 @@ export function usePassageiroForm({
           genero: "",
           observacoes: "",
           turma: "",
+          sala: "",
           nome_professor: "",
           responsavel_principal: {
             nome: "",

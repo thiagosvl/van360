@@ -34,6 +34,7 @@ export function mapearPrePassageiroParaFormulario(pre: PrePassageiro): Partial<P
     periodo: pre.periodo || "",
     modalidade: pre.modalidade || "",
     turma: pre.turma || "",
+    sala: pre.sala || "",
     nome_professor: pre.nome_professor || "",
     data_nascimento: pre.data_nascimento ? formatDateToBR(pre.data_nascimento) : "",
     genero: pre.genero || "",

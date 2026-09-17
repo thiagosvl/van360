@@ -15,6 +15,7 @@ export interface AdminUserLogItem {
     nome: string;
     telefone: string;
     email?: string;
+    apelido?: string | null;
   };
 }
 

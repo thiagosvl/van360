@@ -356,6 +356,7 @@ export function usePassageiroFormViewModel({
             checkTextChange(purePayload.periodo, editingPassageiro.periodo) ||
             checkTextChange(purePayload.modalidade, editingPassageiro.modalidade) ||
             checkTextChange(purePayload.turma, editingPassageiro.turma) ||
+            checkTextChange(purePayload.sala, editingPassageiro.sala) ||
             checkTextChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
             checkDateChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
             checkDateChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||

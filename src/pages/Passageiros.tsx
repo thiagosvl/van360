@@ -26,6 +26,8 @@ export default function Passageiros() {
     handleTabChange,
     countPassageiros,
     countPrePassageiros,
+    prePassageiros,
+    isPrePassageirosLoading: isPrePassageirosListLoading,
     searchTerm,
     setSearchTerm,
     debouncedSearchTerm,
@@ -65,7 +67,9 @@ export default function Passageiros() {
 
   const isMainTab = activeTab === PassageiroTab.ALUNOS;
   const sectionTitle = isMainTab ? "Alunos" : "Solicitações";
-  const sectionCount = isMainTab ? (totalItems || passageiros.length) : countPrePassageiros;
+  const sectionCount = isMainTab
+    ? (totalItems || passageiros.length)
+    : (debouncedSearchTerm.trim() || searchTerm.trim() ? prePassageiros.length : countPrePassageiros);
   let countLabel = "";
 
   if (isMainTab) {
@@ -149,7 +153,7 @@ export default function Passageiros() {
                   <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
                     {/* {sectionTitle} */}
                   </h2>
-                  {passageiros.length > 0 && (
+                  {(isMainTab ? passageiros.length > 0 : prePassageiros.length > 0) && (
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                       {sectionCount} {countLabel}
                     </span>
@@ -201,6 +205,8 @@ export default function Passageiros() {
                     onFinalizeNewPrePassageiro={async () => { }}
                     profile={profile}
                     searchTerm={debouncedSearchTerm}
+                    prePassageiros={prePassageiros}
+                    isLoading={isPrePassageirosListLoading}
                   />
                 )}
               </TabsContent>
