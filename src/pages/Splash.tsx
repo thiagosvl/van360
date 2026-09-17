@@ -132,10 +132,10 @@ export default function Splash() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
-                      Motorista ou Equipe
+                      Transporte Escolar
                     </span>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
-                      Gerenciar rotas, alunos e financeiro
+                      Motoristas, monitores ou donos de van
                     </p>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function Splash() {
 
             <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
               <h1 className="font-bold text-[#081A34] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
-                Área do Motorista
+                Transporte Escolar
               </h1>
 
               <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
