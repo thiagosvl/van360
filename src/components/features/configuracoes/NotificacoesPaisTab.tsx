@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useConfiguracoes } from "@/hooks";
-import { ReceiptText, Navigation, Smartphone, Loader2, Mail, Minus, Plus, CheckCircle2 } from "lucide-react";
+import { ReceiptText, Navigation, Smartphone, Loader2, Mail, Minus, Plus } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 type ConfigKey =
@@ -151,12 +151,14 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
 
         {lembretesPaisAtivos ? (
           <div className="space-y-4">
-            <div className="flex items-start gap-2 bg-slate-50 border border-slate-200/70 rounded-xl p-3 text-[11px] sm:text-xs text-slate-600">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-              <span>
-                Ao registrar o pagamento de uma parcela, os lembretes seguintes <strong>não serão mais enviados</strong>.
-              </span>
-            </div>
+            <Banner
+              variant="info"
+              description={
+                <span>
+                  Ao registrar o pagamento de uma parcela, os lembretes seguintes <strong>não serão mais enviados</strong>.
+                </span>
+              }
+            />
 
             <div className="divide-y divide-slate-100 space-y-3.5 pt-1">
               {/* 1. Lembrete Prévio */}
