@@ -1786,6 +1786,7 @@ export type Database = {
           cobranca_atraso_5_dias_ativo: boolean
           cobranca_atraso_7_dias_ativo: boolean
           cobranca_aviso_previo_ativo: boolean
+          cobranca_aviso_previo_whatsapp_ativo: boolean
           cobranca_dias_aviso_previo: number | null
           cobranca_vencimento_hoje_ativo: boolean
           created_at: string
@@ -1805,6 +1806,7 @@ export type Database = {
           cobranca_atraso_5_dias_ativo?: boolean
           cobranca_atraso_7_dias_ativo?: boolean
           cobranca_aviso_previo_ativo?: boolean
+          cobranca_aviso_previo_whatsapp_ativo?: boolean
           cobranca_dias_aviso_previo?: number | null
           cobranca_vencimento_hoje_ativo?: boolean
           created_at?: string
@@ -1824,6 +1826,7 @@ export type Database = {
           cobranca_atraso_5_dias_ativo?: boolean
           cobranca_atraso_7_dias_ativo?: boolean
           cobranca_aviso_previo_ativo?: boolean
+          cobranca_aviso_previo_whatsapp_ativo?: boolean
           cobranca_dias_aviso_previo?: number | null
           cobranca_vencimento_hoje_ativo?: boolean
           created_at?: string

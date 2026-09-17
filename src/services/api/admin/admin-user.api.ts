@@ -331,6 +331,11 @@ export interface AdminUserDetailsResponse {
     valor_promocional: number | null;
     ativo: boolean;
   }>;
+  configuracoes?: {
+    cobranca_aviso_previo_whatsapp_ativo?: boolean;
+    cobranca_aviso_previo_ativo?: boolean;
+    cobranca_dias_aviso_previo?: number | null;
+  } | null;
 }
 
 export interface UpdateUserPayload {
@@ -342,6 +347,7 @@ export interface UpdateUserPayload {
   cpfcnpj?: string;
   ativo?: boolean;
   data_nascimento?: string | null;
+  cobranca_aviso_previo_whatsapp_ativo?: boolean;
 }
 
 export interface UpdateSubscriptionPayload {

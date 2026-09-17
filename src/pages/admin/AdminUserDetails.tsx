@@ -134,6 +134,7 @@ const userSchema = z.object({
   telefone: phoneSchema,
   email: emailSchema,
   ativo: z.boolean(),
+  cobranca_aviso_previo_whatsapp_ativo: z.boolean().optional(),
   data_nascimento: z.string().optional().refine((val) => {
     if (!val) return true;
     const regex = /^\d{2}\/\d{2}\/\d{4}$/;
@@ -384,6 +385,7 @@ export default function AdminUserDetails() {
       cpfcnpj: "",
       ativo: true,
       data_nascimento: "",
+      cobranca_aviso_previo_whatsapp_ativo: false,
     },
   });
 
@@ -424,6 +426,7 @@ export default function AdminUserDetails() {
         cpfcnpj: cpfMask(u.cpfcnpj || ""),
         ativo: u.ativo ?? true,
         data_nascimento: formatBirth(),
+        cobranca_aviso_previo_whatsapp_ativo: data?.configuracoes?.cobranca_aviso_previo_whatsapp_ativo ?? false,
       });
     }
     if (data?.assinatura) {
@@ -461,6 +464,7 @@ export default function AdminUserDetails() {
         cpfcnpj: cleanCpf,
         ativo: formData.ativo,
         data_nascimento: formData.data_nascimento || null,
+        cobranca_aviso_previo_whatsapp_ativo: formData.cobranca_aviso_previo_whatsapp_ativo,
       },
     });
   };
@@ -1543,6 +1547,36 @@ export default function AdminUserDetails() {
                                             onCheckedChange={field.onChange}
                                           />
                                           <ActiveStatusBadge active={field.value} />
+                                        </div>
+                                      </div>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* SEÇÃO 4: RECURSOS ESPECIAIS & PERMISSÕES */}
+                            <div className="pt-5 border-t border-slate-800/80">
+                              <FormField
+                                control={userForm.control}
+                                name="cobranca_aviso_previo_whatsapp_ativo"
+                                render={({ field }) => (
+                                  <FormItem className="w-full">
+                                    <FormControl>
+                                      <div className="flex items-start justify-between gap-4">
+                                        <div className="space-y-0.5">
+                                          <Label className="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+                                            WhatsApp no Lembrete Prévio
+                                          </Label>
+                                          <p className="text-[11px] text-slate-400">
+                                            Permite enviar lembretes com antecedência via WhatsApp para os responsáveis deste motorista.
+                                          </p>
+                                        </div>
+                                        <div className="pt-0.5 shrink-0">
+                                          <Switch
+                                            checked={field.value ?? false}
+                                            onCheckedChange={field.onChange}
+                                          />
                                         </div>
                                       </div>
                                     </FormControl>

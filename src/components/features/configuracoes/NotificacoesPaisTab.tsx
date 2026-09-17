@@ -222,7 +222,13 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
                       </div>
                     </div>
 
-                    <NotificationChannelsList channels={["app", "email"]} />
+                    <NotificationChannelsList
+                      channels={
+                        configuracoes?.cobranca_aviso_previo_whatsapp_ativo
+                          ? ["whatsapp", "app", "email"]
+                          : ["app", "email"]
+                      }
+                    />
                   </div>
                 )}
               </div>
