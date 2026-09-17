@@ -1,7 +1,7 @@
 import React from "react";
 import { ResponsavelCarteirinhaData } from "@/types/responsavel";
 import { formatDateToBR, formatGenero, formatarEnderecoCompleto, formatFirstName } from "@/utils/formatters";
-import { Calendar, Clock, User, MapPin, Users, BookOpen } from "lucide-react";
+import { Calendar, Clock, User, MapPin, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { ResponsavelCarteirinhaObservacoes } from "./ResponsavelCarteirinhaObservacoes";
@@ -66,17 +66,8 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
   const referenciaEmbarque = respPrincipal?.referencia || null;
   const primeiroNomeResp = formatFirstName(respPrincipal?.nome);
 
-  const inicioTransporteTexto = carteirinha.data_inicio_transporte
-    ? formatDateToBR(carteirinha.data_inicio_transporte)
-    : null;
-
-  const fimTransporteTexto = carteirinha.data_fim_transporte
-    ? formatDateToBR(carteirinha.data_fim_transporte)
-    : null;
-
   return (
     <div className="space-y-4 text-left">
-      {/* 1. Bloco: Informações do Passageiro */}
       <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-5 space-y-3">
         <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
           <User className="w-4.5 h-4.5 text-[#1a3a5c]" />
@@ -103,18 +94,6 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
         </div>
         <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
           <InfoField
-            icon={<Calendar className="h-3.5 w-3.5" />}
-            label="Início do transporte"
-            value={inicioTransporteTexto}
-          />
-          <InfoField
-            icon={<Calendar className="h-3.5 w-3.5" />}
-            label="Término do transporte"
-            value={fimTransporteTexto}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-          <InfoField
             icon={<Clock className="h-3.5 w-3.5" />}
             label="Horário de entrada"
             value={carteirinha.horario_entrada}
@@ -127,7 +106,6 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
         </div>
       </div>
 
-      {/* 2. Bloco: Endereço de Embarque */}
       <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-5 space-y-3">
         <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
           <MapPin className="w-4.5 h-4.5 text-[#1a3a5c]" />
@@ -150,7 +128,6 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
         </div>
       </div>
 
-      {/* 3. Observações */}
       <ResponsavelCarteirinhaObservacoes carteirinha={carteirinha} />
     </div>
   );
