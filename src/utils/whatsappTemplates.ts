@@ -51,16 +51,18 @@ export function buildWhatsAppUrl(phone?: string | null, message?: string): strin
 
 export function buildPrePassageiroShareMessage(link: string): string {
   return [
-    "Olá! Tudo bem? 🚐✨",
+    "Olá! Tudo bem? 🚐",
     "",
-    "Para trazer mais conforto, agilidade e segurança para o transporte do seu filho(a), estamos utilizando o aplicativo *Van360*.",
+    "Estamos começando a utilizar o _Van360_ para deixar o transporte escolar mais organizado e facilitar o acompanhamento das informações do seu filho(a).",
     "",
-    "Por favor, acesse o link abaixo para preencher o cadastro do aluno(a). Leva menos de 2 minutinhos:",
+    "Para isso, precisamos que você faça o cadastro do aluno pelo link abaixo. É rapidinho e leva menos de 2 minutos:",
     "",
-    "📲 *Link de cadastro:*",
+    "📲 _Cadastro do aluno(a):_",
     link,
     "",
-    "Qualquer dúvida, estou à disposição!"
+    "Em breve, você também terá acesso ao aplicativo para acompanhar as informações do transporte do seu filho(a), como carteirinha, recibos, parcelas e contrato.",
+    "",
+    "Se tiver alguma dúvida, estou à disposição!",
   ].join("\n");
 }
 
