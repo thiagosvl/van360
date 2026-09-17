@@ -65,9 +65,6 @@ export default function AdminNotificationsHistory() {
   const [limit, setLimit] = useState("25");
 
   const today = toPersistenceString(getNowBR());
-  const sevenDaysAgo = toPersistenceString(
-    new Date(getNowBR().getTime() - 7 * 24 * 60 * 60 * 1000)
-  );
 
   const [filters, setFilters] = useState<ExtendedNotificationFiltersState>({
     categoria: NotificationCategoryEnum.TODOS,
@@ -75,7 +72,7 @@ export default function AdminNotificationsHistory() {
     status: NOTIFICATION_FILTER_ALL,
     search: "",
     searchMotorista: "",
-    dataInicio: sevenDaysAgo,
+    dataInicio: today,
     dataFim: today,
   });
 
@@ -125,7 +122,7 @@ export default function AdminNotificationsHistory() {
     setFilters((prev) => ({
       ...prev,
       searchMotorista: "",
-      dataInicio: sevenDaysAgo,
+      dataInicio: today,
       dataFim: today,
     }));
     setPage(1);
@@ -133,7 +130,7 @@ export default function AdminNotificationsHistory() {
 
   const hasUpperFiltersActive =
     motoristaInput.trim() !== "" ||
-    filters.dataInicio !== sevenDaysAgo ||
+    filters.dataInicio !== today ||
     filters.dataFim !== today;
 
   const bulkRetryMutation = useAdminRetryBulkNotifications();
