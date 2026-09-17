@@ -537,7 +537,6 @@ export function PassageiroFormDadosCadastrais({
                   <FormControl>
                     <StitchField icon={DoorClosed} label="Sala" error={!!fieldState.error}>
                       <Input
-                        placeholder="Ex: Sala 12"
                         {...field}
                         value={field.value || ""}
                         className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
@@ -554,7 +553,6 @@ export function PassageiroFormDadosCadastrais({
                       <div className="relative">
                         <DoorClosed className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                         <Input
-                          placeholder="Ex: Sala 12"
                           {...field}
                           value={field.value || ""}
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
