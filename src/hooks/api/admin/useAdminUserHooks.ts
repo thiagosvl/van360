@@ -267,6 +267,32 @@ export function useDispatchPassengerCobrancaAdmin(userId?: string) {
   });
 }
 
+export function useDispatchDriverCobrancaDemoAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (driverId: string) => adminUserApi.dispatchDriverCobrancaDemo(driverId),
+    onSuccess: (res) => {
+      const isSuccess = res.success !== false;
+      const message = res.message || "Demonstração de cobrança enviada com sucesso ao WhatsApp!";
+      if (isSuccess) {
+        toast.success(message);
+      } else {
+        toast.warning(message);
+      }
+      if (userId) {
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "notifications"] });
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao disparar demonstração de cobrança.";
+      toast.error(msg);
+    },
+  });
+}
+
 export function useSetUserReferralAdmin() {
   const qc = useQueryClient();
   return useMutation({

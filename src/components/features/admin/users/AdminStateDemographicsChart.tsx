@@ -29,14 +29,14 @@ export function AdminStateDemographicsChart({ data }: AdminStateDemographicsChar
   const totalMotoristas = data.reduce((acc, item) => acc + item.quantidade, 0);
 
   return (
-    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left h-full">
+    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left h-full w-full min-w-0">
       <CardHeader className="p-6 pb-2">
-        <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-emerald-400" />
-            <span>DISTRIBUIÇÃO DE MOTORISTAS POR ESTADO (DDD)</span>
+        <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span className="truncate">DISTRIBUIÇÃO DE MOTORISTAS POR ESTADO (DDD)</span>
           </div>
-          <span className="text-[10px] font-bold font-mono text-slate-400">
+          <span className="text-[10px] font-bold font-mono text-slate-400 shrink-0 ml-2">
             {totalMotoristas} {totalMotoristas === 1 ? "MOTORISTA" : "MOTORISTAS"}
           </span>
         </CardTitle>
@@ -45,7 +45,7 @@ export function AdminStateDemographicsChart({ data }: AdminStateDemographicsChar
         </p>
       </CardHeader>
 
-      <CardContent className="p-6 pt-4">
+      <CardContent className="p-6 pt-4 w-full min-w-0">
         {data.length === 0 ? (
           <div className="py-12">
             <AdminEmptyState
@@ -55,7 +55,7 @@ export function AdminStateDemographicsChart({ data }: AdminStateDemographicsChar
             />
           </div>
         ) : (
-          <div className="space-y-4 max-h-[360px] overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#1e293b_transparent]">
+          <div className="space-y-4 max-h-[360px] overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#1e293b_transparent] w-full min-w-0">
             {data.map((item) => {
               const corBarra = REGIAO_COLORS[item.regiao] || "bg-blue-500";
               const badgeClass = REGIAO_BADGES[item.regiao] || REGIAO_BADGES.Outros;

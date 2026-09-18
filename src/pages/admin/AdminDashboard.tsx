@@ -17,7 +17,7 @@ import { AdminPaymentMethodBreakdown } from "@/components/features/admin/financi
 import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financial/AdminUpcomingRenewalsTable";
 import { AdminAgeDemographicsChart } from "@/components/features/admin/users/AdminAgeDemographicsChart";
 import { AdminUserGrowthFunnel } from "@/components/features/admin/users/AdminUserGrowthFunnel";
-import { AdminStateDemographicsChart } from "@/components/features/admin/users/AdminStateDemographicsChart";
+import { AdminGeographicSection } from "@/components/features/admin/users/AdminGeographicSection";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -65,7 +65,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { type LoginAttempt } from "./AdminLoginAttempts";
+
 import { formatRelativeTime, formatCurrency, formatDateBR, formatDateTimeToBR } from "@/utils/formatters";
 import { useLayout } from "@/hooks";
 
@@ -116,18 +116,6 @@ export default function AdminDashboard() {
   });
 
 
-  const { data: loginAttemptsResponse, isLoading: isLoadingLoginAttempts } = useQuery({
-    queryKey: ["admin", "login-attempts", "recent-dashboard"],
-    queryFn: async () => {
-      const { data } = await apiClient.get<{ data: LoginAttempt[]; total: number }>("/admin/login-attempts", {
-        params: { page: 1, limit: 5 }
-      });
-      return data;
-    },
-    staleTime: 60 * 1000,
-  });
-
-  const recentLoginAttempts = loginAttemptsResponse?.data || [];
 
   useEffect(() => {
     setPageTitle("Dashboard");
@@ -652,7 +640,7 @@ export default function AdminDashboard() {
 
         {/* ABA 2: USUÁRIOS */}
         <TabsContent value="usuarios" className="space-y-6 m-0 outline-none">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
             {/* DISTRIBUIÇÃO DE USUÁRIOS POR STATUS */}
             <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
               <CardHeader className="p-6 pb-2">
@@ -683,49 +671,6 @@ export default function AdminDashboard() {
                     </div>
                   );
                 })}
-              </CardContent>
-            </Card>
-
-            {/* NOVOS MOTORISTAS */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-              <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                  NOVOS MOTORISTAS
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
-                  className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
-                >
-                  Ver Todos
-                </Button>
-              </CardHeader>
-              <CardContent className="p-6 pt-2 space-y-3">
-                {stats.recentUsers.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-12 text-center">Nenhum motorista cadastrado recentemente.</p>
-                ) : (
-                  stats.recentUsers.slice(0, 5).map((user) => {
-                    const sub = user.assinaturas?.[0];
-
-                    return (
-                      <div
-                        key={user.id}
-                        onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors"
-                      >
-                        <div className="space-y-0.5">
-                          <h4 className="text-sm font-bold text-white">{user.nome}</h4>
-                          <p className="text-[11px] font-semibold text-slate-400">
-                            {formatRelativeTime(user.created_at)}
-                          </p>
-                        </div>
-
-                        <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} className="text-[10px] px-2.5 py-1" />
-                      </div>
-                    );
-                  })
-                )}
               </CardContent>
             </Card>
 
@@ -898,102 +843,33 @@ export default function AdminDashboard() {
           </Card>
 
           {/* DEMOGRAFIA POR FAIXA ETÁRIA & FUNIL DE CRESCIMENTO */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {isLoadingDemographics ? (
-              <div className="col-span-full p-12 text-center text-slate-500 font-semibold flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                <span>Carregando dados demográficos e funil...</span>
+          {isLoadingDemographics ? (
+            <div className="w-full p-12 text-center text-slate-500 font-semibold flex items-center justify-center gap-2 border border-slate-800/80 rounded-[2rem] bg-[#131b2e]">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+              <span>Carregando dados demográficos e funil...</span>
+            </div>
+          ) : demographicsData ? (
+            <div className="space-y-6 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+                <AdminAgeDemographicsChart data={demographicsData.faixasEtarias} />
+                <AdminUserGrowthFunnel
+                  funnel={demographicsData.funil}
+                  evolution={demographicsData.evolucaoMensal}
+                />
               </div>
-            ) : demographicsData ? (
-                <>
-                  <AdminAgeDemographicsChart data={demographicsData.faixasEtarias} />
-                  <AdminUserGrowthFunnel
-                    funnel={demographicsData.funil}
-                    evolution={demographicsData.evolucaoMensal}
-                  />
-                  <div className="col-span-full">
-                    <AdminStateDemographicsChart data={demographicsData.distribuicaoEstados || []} />
-                  </div>
-                </>
-            ) : null}
-          </div>
+
+              <div className="w-full">
+                <AdminGeographicSection data={demographicsData.distribuicaoEstados || []} />
+              </div>
+            </div>
+          ) : null}
         </TabsContent>
 
         {/* ABA 3: OPERACIONAL */}
         <TabsContent value="operacional" className="space-y-6 m-0 outline-none">
           <AdminVencimentosTabela />
 
-          <div className="grid grid-cols-1 gap-6">
-            {/* TENTATIVAS DE LOGIN */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] w-full">
-              <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                  TENTATIVAS DE LOGIN
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS)}
-                  className="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300 h-7 px-2.5 rounded-xl border border-transparent hover:border-slate-700/80 transition-colors"
-                >
-                  Ver Todas
-                </Button>
-              </CardHeader>
-              <CardContent className="p-6 pt-2 space-y-3">
-                {isLoadingLoginAttempts ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-                  </div>
-                ) : !recentLoginAttempts || recentLoginAttempts.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-12 text-center">Nenhuma tentativa de login recente.</p>
-                ) : (
-                  recentLoginAttempts.slice(0, 5).map((attempt) => {
-                    const loginFormatted = cpfCnpjMask(attempt.login_tentado);
-                    const deviceInfo = attempt.dispositivo || "Desconhecido";
-                    const detailInfo = !attempt.sucesso && attempt.motivo_falha ? attempt.motivo_falha : deviceInfo;
 
-                    return (
-                      <div
-                        key={attempt.id}
-                        onClick={() => navigate(ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS)}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col gap-1.5 cursor-pointer hover:bg-slate-800/80 transition-colors text-left"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-mono font-bold text-slate-100 truncate">
-                            {loginFormatted}
-                          </span>
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shrink-0 ${attempt.sucesso
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                              }`}
-                          >
-                            {attempt.sucesso ? "Sucesso" : "Falha"}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 text-[10px]">
-                          <span className="font-semibold text-slate-400 truncate">
-                            {detailInfo}
-                          </span>
-                          <div className="flex items-center gap-2 shrink-0 font-mono text-slate-400">
-                            {attempt.ip && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-400 font-mono">
-                                {attempt.ip}
-                              </span>
-                            )}
-                            <span className="font-bold">
-                              {formatRelativeTime(attempt.created_at)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
 
         <TabsContent value="contratos" className="space-y-6 m-0 outline-none">

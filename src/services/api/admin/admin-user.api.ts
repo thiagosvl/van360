@@ -626,6 +626,15 @@ export const adminUserApi = {
         ano: number;
       };
     }>(`${BASE}/passengers/${passengerId}/dispatch-cobranca`, payload).then(r => r.data),
+
+  dispatchDriverCobrancaDemo: (id: string) =>
+    apiClient.post<{
+      success: boolean;
+      message: string;
+      destinatario?: string;
+      alunoTeste?: string;
+      valor?: number;
+    }>(`${BASE}/users/${id}/dispatch-cobranca-demo`).then(r => r.data),
 };
 
 export interface ImpersonateUserResponse {
