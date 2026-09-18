@@ -93,9 +93,9 @@ export function AdminRegionDemographicsChart({
         </p>
       </CardHeader>
 
-      <CardContent className="p-6 pt-4 flex-1 flex flex-col justify-between space-y-4 w-full min-w-0">
+      <CardContent className="p-5 pt-3 w-full min-w-0">
         {totalMotoristas === 0 ? (
-          <div className="py-8">
+          <div className="py-6">
             <AdminEmptyState
               icon={Layers}
               title="Sem dados de regiões"
@@ -103,9 +103,9 @@ export function AdminRegionDemographicsChart({
             />
           </div>
         ) : (
-          <>
+          <div className="flex flex-col sm:flex-row items-center gap-5 w-full">
             {chartData.length > 0 && (
-              <div className="h-[140px] w-full min-w-0 shrink-0">
+              <div className="h-[150px] w-[150px] shrink-0 relative flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <RechartsTooltip content={<CustomRegionTooltip />} />
@@ -113,9 +113,9 @@ export function AdminRegionDemographicsChart({
                       data={chartData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={42}
-                      outerRadius={62}
-                      paddingAngle={3}
+                      innerRadius={44}
+                      outerRadius={68}
+                      paddingAngle={4}
                       dataKey="value"
                     >
                       {chartData.map((entry, index) => (
@@ -124,12 +124,20 @@ export function AdminRegionDemographicsChart({
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                  <span className="text-base font-black font-headline text-white leading-none">
+                    {totalMotoristas}
+                  </span>
+                  <span className="text-[9px] uppercase font-mono text-slate-400 tracking-wider">
+                    Total
+                  </span>
+                </div>
               </div>
             )}
 
-            <div className="space-y-3 flex-1 w-full min-w-0">
+            <div className="space-y-2.5 flex-1 w-full min-w-0">
               {regioes.map((item) => (
-                <div key={item.regiao} className="space-y-1.5">
+                <div key={item.regiao} className="space-y-1">
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <span
@@ -137,8 +145,8 @@ export function AdminRegionDemographicsChart({
                       >
                         {item.regiao}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold truncate hidden sm:inline-block">
-                        {item.estadosComMotoristas} {item.estadosComMotoristas === 1 ? "estado ativo" : "estados ativos"}
+                      <span className="text-[10px] text-slate-400 font-semibold truncate">
+                        {item.estadosComMotoristas} {item.estadosComMotoristas === 1 ? "UF ativa" : "UFs ativas"}
                       </span>
                     </div>
 
@@ -152,7 +160,7 @@ export function AdminRegionDemographicsChart({
                     </div>
                   </div>
 
-                  <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                  <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                     <div
                       className={`h-full ${item.corBarra} transition-all duration-700 rounded-full`}
                       style={{ width: `${Math.max(item.porcentagem, item.quantidade > 0 ? 3 : 0)}%` }}
@@ -161,7 +169,7 @@ export function AdminRegionDemographicsChart({
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

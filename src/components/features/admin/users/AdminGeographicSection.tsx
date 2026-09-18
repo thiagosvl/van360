@@ -13,7 +13,7 @@ export function AdminGeographicSection({ data }: AdminGeographicSectionProps) {
     useAdminGeographicDemographics(data);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-start">
       <div className="lg:col-span-7 w-full min-w-0 flex flex-col">
         <AdminBrazilMapChart
           estadosMap={estadosMap}

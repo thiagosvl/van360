@@ -21,30 +21,35 @@ interface AdminUserGrowthFunnelProps {
 }
 
 export function AdminUserGrowthFunnel({ funnel, evolution }: AdminUserGrowthFunnelProps) {
+  const trialsAtivos =
+    funnel.trialsAtivos !== undefined
+      ? funnel.trialsAtivos
+      : Math.max(0, funnel.trialsIniciados - funnel.convertidosPagantes - funnel.expiradosOuCancelados);
+
   const steps = [
     {
       label: "Cadastrados",
       value: funnel.cadastrados,
       pct: 100,
-      color: "bg-slate-700 text-slate-200 border-slate-600",
+      color: "bg-slate-700/60 text-slate-200 border-slate-600/80",
     },
     {
-      label: "Iniciaram Trial",
-      value: funnel.trialsIniciados,
-      pct: funnel.cadastrados > 0 ? Math.round((funnel.trialsIniciados / funnel.cadastrados) * 100) : 0,
+      label: "Em Teste (Trial)",
+      value: trialsAtivos,
+      pct: funnel.cadastrados > 0 ? Math.round((trialsAtivos / funnel.cadastrados) * 100) : 0,
       color: "bg-purple-500/20 text-purple-300 border-purple-500/30",
     },
     {
-      label: "Primeira Assinatura",
+      label: "Assinantes Pagantes",
       value: funnel.convertidosPagantes,
-      pct: funnel.taxaConversaoTrial,
-      color: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+      pct: funnel.cadastrados > 0 ? Math.round((funnel.convertidosPagantes / funnel.cadastrados) * 100) : 0,
+      color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
     },
     {
-      label: "Ativos Recorrentes",
-      value: funnel.assinantesAtivos,
-      pct: funnel.taxaRetencaoAtiva,
-      color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+      label: "Não Converteram / Exp.",
+      value: funnel.expiradosOuCancelados,
+      pct: funnel.cadastrados > 0 ? Math.round((funnel.expiradosOuCancelados / funnel.cadastrados) * 100) : 0,
+      color: "bg-rose-500/20 text-rose-300 border-rose-500/30",
     },
   ];
 
@@ -56,7 +61,7 @@ export function AdminUserGrowthFunnel({ funnel, evolution }: AdminUserGrowthFunn
           <span>Funil de Aquisição & Retenção de Motoristas</span>
         </CardTitle>
         <p className="text-xs text-slate-400 mt-1">
-          Jornada desde o cadastro até a conversão e permanência na assinatura.
+          Jornada desde o cadastro inicial até a conversão e competência real de expiração/cancelamento.
         </p>
       </CardHeader>
 

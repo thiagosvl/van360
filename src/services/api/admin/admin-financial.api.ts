@@ -100,6 +100,7 @@ export interface FaixaEtariaItem {
 export interface FunilConversao {
   cadastrados: number;
   trialsIniciados: number;
+  trialsAtivos?: number;
   convertidosPagantes: number;
   assinantesAtivos: number;
   expiradosOuCancelados: number;
