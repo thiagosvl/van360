@@ -191,10 +191,6 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               variant="warning"
               title="Modo Visualização (Administrador)"
               description="Acesso como suporte ativo. Telemetria e estatísticas de acesso não são registradas."
-              action={{
-                label: "Encerrar Suporte",
-                onClick: handleSignOut,
-              }}
             />
           </div>
         )}
