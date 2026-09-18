@@ -33,15 +33,18 @@ export default function AdminActivityHistory() {
     search_cpf: "",
   });
 
-  const { data: logsData, isFetching: isFetchingLogs } = useAdminLogs({
-    page: logsPage,
-    limit: parseInt(limit),
-    dataInicio: logsFilter.dataInicio || undefined,
-    dataFim: logsFilter.dataFim || undefined,
-    acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
-    entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
-    search_cpf: logsFilter.search_cpf || undefined,
-  });
+  const { data: logsData, isFetching: isFetchingLogs } = useAdminLogs(
+    {
+      page: logsPage,
+      limit: parseInt(limit),
+      dataInicio: logsFilter.dataInicio || undefined,
+      dataFim: logsFilter.dataFim || undefined,
+      acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
+      entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
+      search_cpf: logsFilter.search_cpf || undefined,
+    },
+    { refetchOnWindowFocus: "always" }
+  );
 
   return (
     <div className="space-y-6">

@@ -12,12 +12,25 @@ export function useAdminUserLogs(id: string, params?: { page?: number; limit?: n
   });
 }
 
-export function useAdminLogs(params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) {
+export function useAdminLogs(
+  params?: {
+    page?: number;
+    limit?: number;
+    dataInicio?: string;
+    dataFim?: string;
+    acao?: string;
+    entidade?: string;
+    search_cpf?: string;
+  },
+  options?: {
+    refetchOnWindowFocus?: boolean | "always";
+  }
+) {
   return useQuery({
     queryKey: ["admin", "logs", params],
     queryFn: () => adminLogApi.getLogs(params),
     staleTime: 0,
     refetchOnMount: "always",
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: options?.refetchOnWindowFocus ?? "always",
   });
 }
