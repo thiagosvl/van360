@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { LogOut, X } from "lucide-react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -10,6 +10,7 @@ import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useActivityTracker } from "@/hooks/business/useActivityTracker";
 import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
@@ -29,6 +30,13 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
+  const { trackAppOpen } = useActivityTracker();
+
+  useEffect(() => {
+    if (user?.id) {
+      trackAppOpen(user.id);
+    }
+  }, [user?.id, trackAppOpen]);
 
   const displayName = profile?.apelido || formatFirstName(profile?.nome);
   const statusLabel = formatUserRoleLabel(profile?.tipo);

@@ -775,6 +775,17 @@ export default function AdminUserDetails() {
                     </span>
                   )
                 )}
+                {data.ultimo_acesso && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    title={`Último acesso registrado em ${formatDateTime(data.ultimo_acesso.data_hora)} via ${DispositivoCadastroLabels[data.ultimo_acesso.dispositivo] || data.ultimo_acesso.dispositivo}`}
+                  >
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>
+                      Último acesso: {formatDateTime(data.ultimo_acesso.data_hora)} ({DispositivoCadastroLabels[data.ultimo_acesso.dispositivo] || data.ultimo_acesso.dispositivo})
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1200,6 +1211,28 @@ export default function AdminUserDetails() {
                           Nenhum aparelho conectado
                         </span>
                       </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Últimos Acessos por Dispositivo
+                    </span>
+                    {data.ultimo_acesso && data.ultimo_acesso.por_dispositivo && data.ultimo_acesso.por_dispositivo.length > 0 ? (
+                      <div className="space-y-1 mt-1">
+                        {data.ultimo_acesso.por_dispositivo.map((item) => (
+                          <span key={item.dispositivo} className="text-[11px] text-slate-400 block font-mono">
+                            <span className="font-semibold text-slate-300">
+                              {DispositivoCadastroLabels[item.dispositivo] || item.dispositivo}
+                            </span>
+                            <span className="text-slate-500"> • Visto em {formatDateTime(item.data_hora)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500 block mt-1">
+                        Nenhum acesso registrado
+                      </span>
                     )}
                   </div>
 

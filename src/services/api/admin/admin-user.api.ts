@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus } from "@/types/enums";
+import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus, DispositivoCadastro } from "@/types/enums";
 import { MetadadosCadastroData } from "@/types/usuario";
 
 export interface AdminDashboardStats {
@@ -286,6 +286,14 @@ export interface AdminUserDetailsResponse {
       atualizado_em: string | null;
     }>;
   };
+  ultimo_acesso?: {
+    data_hora: string;
+    dispositivo: DispositivoCadastro;
+    por_dispositivo: Array<{
+      dispositivo: DispositivoCadastro;
+      data_hora: string;
+    }>;
+  } | null;
   assinatura: {
     id: string;
     usuario_id: string;
