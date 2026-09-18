@@ -21,6 +21,8 @@ import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import { ROUTES } from "@/constants/routes";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { cn } from "@/lib/utils";
+import { Banner } from "@/components/ui/Banner";
+import { isImpersonating } from "@/utils/impersonate";
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
@@ -183,6 +185,19 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
             : "pb-[calc(6rem+var(--safe-area-bottom))]"
         )}
       >
+        {isImpersonating() && (
+          <div className="mb-4">
+            <Banner
+              variant="warning"
+              title="Modo Visualização (Administrador)"
+              description="Acesso como suporte ativo. Telemetria e estatísticas de acesso não são registradas."
+              action={{
+                label: "Encerrar Suporte",
+                onClick: handleSignOut,
+              }}
+            />
+          </div>
+        )}
         <Outlet />
       </main>
 
