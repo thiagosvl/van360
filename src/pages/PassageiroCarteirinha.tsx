@@ -467,17 +467,15 @@ export default function PassageiroCarteirinha() {
           } else {
             await deleteCobranca.mutateAsync(cobranca.id);
           }
-          refetchCobrancas();
         },
         onEdit: cobranca.isProjection ? undefined : () => {
           openCobrancaEditDialog({
             cobranca,
-            onSuccess: refetchCobrancas,
           });
         }
       });
     },
-    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas, passageiro?.usuario_id, user?.id]
+    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, passageiro?.usuario_id, user?.id]
   );
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -488,9 +486,6 @@ export default function PassageiroCarteirinha() {
       valorOriginal: Number(cobranca.valor),
       status: cobranca.status,
       dataVencimento: cobranca.data_vencimento,
-      onPaymentRecorded: () => {
-        refetchCobrancas();
-      },
     });
   };
 

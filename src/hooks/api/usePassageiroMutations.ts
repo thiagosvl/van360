@@ -56,6 +56,7 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });

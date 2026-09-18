@@ -396,12 +396,12 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
             <div className="shrink-0">
               <Switch
                 id="switch-notificar-inicio-rota"
-                checked={configuracoes?.notificar_inicio_rota ?? true}
+                checked={configuracoes?.notificar_inicio_rota ?? false}
                 loading={updatingKey === "notificar_inicio_rota"}
                 onCheckedChange={() =>
                   handleToggle(
                     "notificar_inicio_rota",
-                    configuracoes?.notificar_inicio_rota ?? true
+                    configuracoes?.notificar_inicio_rota ?? false
                   )
                 }
               />
@@ -422,12 +422,12 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
             <div className="shrink-0">
               <Switch
                 id="switch-notificar-proxima-parada"
-                checked={configuracoes?.notificar_proxima_parada ?? true}
+                checked={configuracoes?.notificar_proxima_parada ?? false}
                 loading={updatingKey === "notificar_proxima_parada"}
                 onCheckedChange={() =>
                   handleToggle(
                     "notificar_proxima_parada",
-                    configuracoes?.notificar_proxima_parada ?? true
+                    configuracoes?.notificar_proxima_parada ?? false
                   )
                 }
               />
@@ -448,12 +448,12 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
             <div className="shrink-0">
               <Switch
                 id="switch-notificar-conclusao-parada"
-                checked={configuracoes?.notificar_conclusao_parada ?? true}
+                checked={configuracoes?.notificar_conclusao_parada ?? false}
                 loading={updatingKey === "notificar_conclusao_parada"}
                 onCheckedChange={() =>
                   handleToggle(
                     "notificar_conclusao_parada",
-                    configuracoes?.notificar_conclusao_parada ?? true
+                    configuracoes?.notificar_conclusao_parada ?? false
                   )
                 }
               />

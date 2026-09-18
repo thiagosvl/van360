@@ -236,11 +236,23 @@ export function usePassageiroExternalForm() {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
-      if (errorMsg.toLowerCase().includes("cpf") || errorMsg.toLowerCase().includes("telefone") || errorMsg.toLowerCase().includes("responsável") || error.response?.status === 409) {
-        form.setError("telefone_responsavel", { type: "manual", message: errorMsg });
-        if (errorMsg.toLowerCase().includes("cpf")) {
-          form.setError("cpf_responsavel", { type: "manual", message: errorMsg });
-        }
+      if (
+        errorMsg.toLowerCase().includes("telefone") ||
+        errorMsg.toLowerCase().includes("outro responsável") ||
+        error.response?.status === 409
+      ) {
+        form.setError("telefone_responsavel", {
+          type: "manual",
+          message: errorMsg.toLowerCase().includes("outro responsável")
+            ? "Este telefone já está cadastrado para outro responsável"
+            : errorMsg.replace(/ no sistema/gi, ""),
+        });
+        setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
+      } else if (errorMsg.toLowerCase().includes("cpf")) {
+        form.setError("cpf_responsavel", {
+          type: "manual",
+          message: errorMsg.replace(/ no sistema/gi, ""),
+        });
         setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
       }
 

@@ -38,6 +38,7 @@ export { useBuscarResponsavel } from "./api/useBuscarResponsavel";
 export { useCobranca } from "./api/useCobranca";
 export { useCobrancas } from "./api/useCobrancas";
 export { useCobrancasByPassageiro } from "./api/useCobrancasByPassageiro";
+export { useReciboAnual } from "./api/useReciboAnual";
 export { useEscolas } from "./api/useEscolas";
 export { useEscolasWithFilters } from "./api/useEscolasWithFilters";
 export { useGastos } from "./api/useGastos";

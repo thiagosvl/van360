@@ -228,7 +228,7 @@ export default function ManualPaymentDialog({
                     </FormControl>
                     <div className="flex-1 space-y-1 leading-none">
                       <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
-                        Enviar Comprovante no WhatsApp
+                        Enviar Recibo no WhatsApp
                       </FormLabel>
                     </div>
                   </div>

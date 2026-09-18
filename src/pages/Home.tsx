@@ -191,25 +191,34 @@ const Home = () => {
               />
             )}
 
-            {/* Notificação de Solicitações Pendentes */}
-            {!isSubConta && contadores.passageirosSolicitacoes > 0 && (
-              <section className="px-1">
-                <Banner
-                  variant="info"
-                  icon={<UserPlus className="w-5 h-5" />}
-                  title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
-                  description={
-                    contadores.passageirosSolicitacoes === 1
-                      ? "Clique para ver e revisar o cadastro agora."
-                      : "Clique para ver e revisar os cadastros agora."
-                  }
-                  onClick={() =>
-                    navigateTo(
-                      `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
-                    )
-                  }
-                />
-              </section>
+            {!isSubConta && (
+              contadores.passageirosSolicitacoes > 0 ? (
+                <section className="px-1">
+                  <Banner
+                    variant="info"
+                    icon={<UserPlus className="w-5 h-5" />}
+                    title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
+                    description={
+                      contadores.passageirosSolicitacoes === 1
+                        ? "Clique para ver e revisar o cadastro agora."
+                        : "Clique para ver e revisar os cadastros agora."
+                    }
+                    onClick={() =>
+                      navigateTo(
+                        `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
+                      )
+                    }
+                  />
+                </section>
+              ) : !onboarding.showOnboarding && contadores.passageirosAtivos < 10 ? (
+                <section className="px-1">
+                  <QuickRegistrationLink
+                    profile={profile}
+                    pendingCount={contadores.passageirosSolicitacoes}
+                    className="mb-0"
+                  />
+                </section>
+              ) : null
             )}
 
             {/* Onboarding - Primeiros Passos */}
@@ -295,24 +304,21 @@ const Home = () => {
             </div>
           </div>
 
-          {!isSubConta && !onboarding.showOnboarding && contadores.passageirosAtivos < 10 && (
-            <div className="px-1">
-              <QuickRegistrationLink profile={profile} pendingCount={contadores.passageirosSolicitacoes} />
-            </div>
-          )}
-
-          {!isSubConta && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
-            <TrialBanner
-              daysLeft={trialDaysLeft}
-              onSubscribe={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
-            />
-          )}
 
           {/* Acessos Rápidos */}
           <AcessoRapido
             onCadastrarPassageiro={handleOpenPassageiroDialog}
             onRegistrarGasto={handleOpenGastoDialog}
           />
+
+          {!isSubConta && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
+            <section className="px-1">
+              <TrialBanner
+                daysLeft={trialDaysLeft}
+                onSubscribe={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
+              />
+            </section>
+          )}
 
           {/* Aniversariantes */}
           <AniversariantesWidget />

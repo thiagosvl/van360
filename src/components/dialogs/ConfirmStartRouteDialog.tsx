@@ -27,9 +27,9 @@ export function ConfirmStartRouteDialog({
   const { locationStatus, openDeviceSettings } = useAppPermissions();
 
   const temNotificacoesAtivas =
-    (configuracoes?.notificar_inicio_rota ?? true) ||
-    (configuracoes?.notificar_proxima_parada ?? true) ||
-    (configuracoes?.notificar_conclusao_parada ?? true);
+    (configuracoes?.notificar_inicio_rota ?? false) ||
+    (configuracoes?.notificar_proxima_parada ?? false) ||
+    (configuracoes?.notificar_conclusao_parada ?? false);
 
   const [notificarPais, setNotificarPais] = useState<boolean>(temNotificacoesAtivas);
 

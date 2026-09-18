@@ -9,6 +9,8 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { ResponsavelReceiptDialog } from "@/components/dialogs/ResponsavelReceiptDialog";
+import { AnnualReceiptDialog } from "@/components/dialogs/AnnualReceiptDialog";
+import { CarteirinhaReciboAnualCard } from "@/components/features/passageiro/carteirinha/CarteirinhaReciboAnualCard";
 import { cn } from "@/lib/utils";
 import { mapearCarteirinhaParaPassageiro } from "@/utils/domain/carteirinhaConverter";
 import { getNowBR } from "@/utils/dateUtils";
@@ -75,6 +77,12 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
     descricao?: string;
   }>({ open: false, url: null });
 
+  const [annualReceiptOpen, setAnnualReceiptOpen] = useState(false);
+
+  const reciboAnualDoAno = useMemo(() => {
+    return carteirinha.recibos_anuais?.find((r) => r.ano === currentYear) || null;
+  }, [carteirinha.recibos_anuais, currentYear]);
+
   const handleOpenReceiptDialog = (url: string, descricao?: string) => {
     setReceiptDialogState({ open: true, url, descricao });
   };
@@ -96,6 +104,16 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
   return (
     <div className="space-y-4 text-left">
+      {reciboAnualDoAno && (
+        <CarteirinhaReciboAnualCard
+          ano={currentYear}
+          totalPago={reciboAnualDoAno.total_pago}
+          quantidadeMeses={reciboAnualDoAno.quantidade_meses}
+          reciboUrl={reciboAnualDoAno.recibo_url}
+          onVisualizar={() => setAnnualReceiptOpen(true)}
+        />
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
@@ -266,6 +284,16 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
           onClose={handleCloseReceiptDialog}
           receiptUrl={receiptDialogState.url}
           cobrancaDescricao={receiptDialogState.descricao}
+        />
+      )}
+
+      {reciboAnualDoAno && (
+        <AnnualReceiptDialog
+          isOpen={annualReceiptOpen}
+          onClose={() => safeCloseDialog(() => setAnnualReceiptOpen(false))}
+          receiptUrl={reciboAnualDoAno.recibo_url}
+          ano={currentYear}
+          alunoNome={carteirinha.nome}
         />
       )}
     </div>

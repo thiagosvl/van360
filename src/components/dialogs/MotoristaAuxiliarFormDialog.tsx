@@ -164,14 +164,10 @@ export function MotoristaAuxiliarFormDialog({
     if (isDuplicateEmail) {
       form.setError("email", { message: "E-mail já cadastrado." });
       hasFieldError = true;
-    }
-
-    if (isDuplicateCpf) {
+    } else if (isDuplicateCpf) {
       form.setError("cpf", { message: "CPF/CNPJ já cadastrado." });
       hasFieldError = true;
-    }
-
-    if (isDuplicatePhone) {
+    } else if (isDuplicatePhone) {
       form.setError("telefone", { message: "Telefone já cadastrado." });
       hasFieldError = true;
     }

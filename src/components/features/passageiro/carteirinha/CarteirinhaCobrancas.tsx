@@ -33,6 +33,10 @@ import { forwardRef } from "react";
 import { getNowBR } from "@/utils/dateUtils";
 import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString, parseMonthYearFromDateString } from "@/utils/domain";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
+import { useReciboAnualElegibilidade } from "@/hooks/business/useReciboAnualElegibilidade";
+import { useReciboAnual } from "@/hooks/api/useReciboAnual";
+import { CarteirinhaReciboAnualCard } from "./CarteirinhaReciboAnualCard";
+import { useLayout } from "@/contexts/LayoutContext";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -52,7 +56,7 @@ interface CarteirinhaCobrancasProps {
 }
 
 import { CobrancaStatus } from "@/types/enums";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export const CarteirinhaCobrancas = ({
   cobrancas,
@@ -73,6 +77,34 @@ export const CarteirinhaCobrancas = ({
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const selectedYear = Number(yearFilter) || currentYear;
+
+  const { openAnnualReceiptDialog } = useLayout();
+  const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
+    passageiro,
+    selectedYear,
+    cobrancas,
+  });
+
+  const {
+    data: reciboAnual,
+    isLoading: isPendingReciboAnual,
+    isFetching: isFetchingReciboAnual,
+  } = useReciboAnual(
+    passageiro?.id,
+    selectedYear,
+    { enabled: elegibilidadeReciboAnual.isElegivel }
+  );
+
+  const isCarregandoReciboAnual = isPendingReciboAnual || isFetchingReciboAnual;
+
+  const handleVerReciboAnual = useCallback(() => {
+    if (!reciboAnual?.recibo_url) return;
+    openAnnualReceiptDialog({
+      receiptUrl: reciboAnual.recibo_url,
+      ano: selectedYear,
+      alunoNome: passageiro?.nome || "Aluno",
+    });
+  }, [openAnnualReceiptDialog, reciboAnual?.recibo_url, selectedYear, passageiro?.nome]);
 
   const displayCobrancas = useMemo(() => {
     const list = [...cobrancas];
@@ -234,6 +266,17 @@ export const CarteirinhaCobrancas = ({
 
   return (
     <div className="space-y-4">
+      {elegibilidadeReciboAnual.isElegivel && (
+        <CarteirinhaReciboAnualCard
+          ano={selectedYear}
+          totalPago={elegibilidadeReciboAnual.totalPago}
+          quantidadeMeses={elegibilidadeReciboAnual.totalMesesPagos}
+          reciboUrl={reciboAnual?.recibo_url}
+          isLoading={isCarregandoReciboAnual}
+          onVisualizar={handleVerReciboAnual}
+        />
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">

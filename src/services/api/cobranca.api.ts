@@ -62,4 +62,8 @@ export const cobrancaApi = {
             .patch(`${endpointBase}/${passageiroId}/toggle-notificacoes`, { novoStatus })
             .then(res => res.data),
 
+    obterReciboAnual: (passageiroId: string, ano: number) =>
+        apiClient
+            .get(`${endpointBase}/passageiro/${passageiroId}/recibo-anual`, { params: { ano } })
+            .then(res => res.data),
 };

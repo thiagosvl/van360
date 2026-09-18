@@ -29,6 +29,7 @@ import RouteFormDialog from "@/components/dialogs/RouteFormDialog";
 import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
+import { AnnualReceiptDialog } from "@/components/dialogs/AnnualReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
@@ -39,6 +40,7 @@ import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
   OpenReceiptDialogProps,
+  OpenAnnualReceiptDialogProps,
   OpenQuickStartPassageiroProps,
   OpenGerarContratoValidadorDialogProps,
   OpenImportarContratoDialogProps,
@@ -198,6 +200,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [receiptDialogState, setReceiptDialogState] = useState<{
     open: boolean;
     props?: OpenReceiptDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [annualReceiptDialogState, setAnnualReceiptDialogState] = useState<{
+    open: boolean;
+    props?: OpenAnnualReceiptDialogProps;
   }>({
     open: false,
   });
@@ -418,6 +427,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openAnnualReceiptDialog = (props: OpenAnnualReceiptDialogProps) => {
+    setAnnualReceiptDialogState({
+      open: true,
+      props,
+    });
+  };
+
   const openCobrancaFormDialog = (props: OpenCobrancaFormProps) => {
     setCobrancaFormDialogState({
       open: true,
@@ -530,6 +546,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openCobrancaEditDialog,
         openManualPaymentDialog,
         openReceiptDialog,
+        openAnnualReceiptDialog,
         openCobrancaFormDialog,
         openFirstChargeDialog,
         openPixPaymentDialog,
@@ -945,6 +962,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setReceiptDialogState({ open: false }))}
           receiptUrl={receiptDialogState.props.receiptUrl}
           cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
+        />
+      )}
+
+      {annualReceiptDialogState.open && annualReceiptDialogState.props && (
+        <AnnualReceiptDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAnnualReceiptDialogState({ open: false }))}
+          receiptUrl={annualReceiptDialogState.props.receiptUrl}
+          ano={annualReceiptDialogState.props.ano}
+          alunoNome={annualReceiptDialogState.props.alunoNome}
         />
       )}
 

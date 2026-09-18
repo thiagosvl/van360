@@ -10,6 +10,8 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { phoneMask } from "@/utils/masks";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { useBuscarResponsavel } from "@/hooks/api/useBuscarResponsavel";
+import { getErrorMessage } from "@/utils/errorHandler";
+import type { Passageiro } from "@/types/passageiro";
 
 export const quickStartPassageiroBaseSchema = z.object({
   nome: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
@@ -168,8 +170,18 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         onSuccess(response.data, keepOpen);
       }
     } catch (error: any) {
+      const msg = getErrorMessage(error);
+      const status = error?.response?.status;
+      if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("responsável") || status === 409)) {
+        form.setError("responsavel_principal.telefone", {
+          type: "manual",
+          message: msg.toLowerCase().includes("outro responsável")
+            ? "Este telefone já está cadastrado para outro responsável"
+            : msg.replace(/ no sistema/gi, ""),
+        });
+      }
       toast.error("Erro ao salvar aluno", {
-        description: error.response?.data?.error || "Verifique os dados e tente novamente",
+        description: msg ? msg.replace(/ no sistema/gi, "") : "Verifique os dados e tente novamente",
       });
     } finally {
       setIsSubmitting(false);

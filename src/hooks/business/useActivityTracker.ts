@@ -1,26 +1,11 @@
 import { useCallback } from "react";
 import { historicoApi, RegistrarEventoDTO } from "@/services/api/historico.api";
-import { AtividadeAcao, AtividadeEntidadeTipo, DispositivoCadastro } from "@/types/enums";
+import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { getDispositivoCadastro } from "@/utils/detectPlatform";
 import { isImpersonating } from "@/utils/impersonate";
 
 const STORAGE_KEY_LAST_APP_OPEN = "van360_last_app_open_timestamp";
 const APP_OPEN_THROTTLE_MS = 15 * 60 * 1000;
-
-function resolveDescricaoAcesso(dispositivo: DispositivoCadastro): string {
-  switch (dispositivo) {
-    case DispositivoCadastro.APP_ANDROID:
-    case DispositivoCadastro.APP_IOS:
-      return "Acesso registrado via aplicativo móvel.";
-    case DispositivoCadastro.WEB_DESKTOP:
-      return "Acesso registrado via navegador (computador).";
-    case DispositivoCadastro.WEB_MOBILE_ANDROID:
-    case DispositivoCadastro.WEB_MOBILE_IOS:
-      return "Acesso registrado via navegador (celular).";
-    default:
-      return "Acesso ao sistema registrado.";
-  }
-}
 
 export interface TrackActivityOptions {
   entidadeTipo?: AtividadeEntidadeTipo;
@@ -43,7 +28,7 @@ export function useActivityTracker() {
       meta: options?.meta,
     };
 
-    historicoApi.registrarEvento(payload).catch(() => {});
+    historicoApi.registrarEvento(payload).catch(() => { });
   }, []);
 
   const trackAppOpen = useCallback((usuarioId?: string) => {
@@ -68,13 +53,12 @@ export function useActivityTracker() {
         acao: AtividadeAcao.APP_ABERTO,
         entidade_tipo: AtividadeEntidadeTipo.USUARIO,
         entidade_id: usuarioId,
-        descricao: resolveDescricaoAcesso(dispositivo),
         meta: {
           dispositivo,
         },
       };
 
-      historicoApi.registrarEvento(payload).catch(() => {});
+      historicoApi.registrarEvento(payload).catch(() => { });
     } catch {
       return;
     }

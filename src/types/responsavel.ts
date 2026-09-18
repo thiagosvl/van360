@@ -131,4 +131,14 @@ export interface ResponsavelCarteirinhaData {
   responsaveis?: ResponsavelAdicionalItem[];
   rotas?: ResponsavelRotaItem[];
   responsavel_logado_id?: string | null;
+  recibos_anuais?: ResponsavelReciboAnualItem[];
+}
+
+export interface ResponsavelReciboAnualItem {
+  id: string;
+  ano: number;
+  recibo_url: string;
+  total_pago: number;
+  quantidade_meses: number;
+  created_at: string;
 }

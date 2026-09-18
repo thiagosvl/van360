@@ -17,11 +17,13 @@ import { AtividadeAcao } from "@/types/enums";
 interface QuickRegistrationLinkProps {
   profile: { id?: string } | null | undefined;
   pendingCount?: number;
+  className?: string;
 }
 
 export function QuickRegistrationLink({
   profile,
   pendingCount = 0,
+  className,
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -86,7 +88,7 @@ export function QuickRegistrationLink({
   };
 
   return (
-    <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col lg:flex-row items-start lg:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+    <div className={cn("mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col lg:flex-row items-start lg:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500", className)}>
       <div className="flex items-center gap-4 flex-1 w-full">
         <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
           <Smartphone className="h-5 w-5" />

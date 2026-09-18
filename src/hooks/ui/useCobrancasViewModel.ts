@@ -234,7 +234,7 @@ export function useCobrancasViewModel() {
           if (cobranca.isProjection) {
             await createCobranca.mutateAsync({
               passageiro_id: cobranca.passageiro_id,
-              usuario_id: cobranca.usuario_id || cobranca.passageiro?.usuario_id || profile?.id,
+              usuario_id: profile?.id,
               mes: Number(cobranca.mes),
               ano: Number(cobranca.ano),
               valor: Number(cobranca.valor),
@@ -244,17 +244,15 @@ export function useCobrancasViewModel() {
           } else {
             await deleteCobranca.mutateAsync(cobranca.id);
           }
-          refetchCobrancas();
         },
         onEdit: cobranca.isProjection ? undefined : () => {
           openCobrancaEditDialog({
             cobranca,
-            onSuccess: () => refetchCobrancas(),
           });
         }
       });
     },
-    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas, profile?.id]
+    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, profile?.id]
   );
 
   const openPaymentDialog = useCallback(
@@ -266,12 +264,9 @@ export function useCobrancasViewModel() {
         valorOriginal: Number(cobranca.valor),
         status: cobranca.status,
         dataVencimento: cobranca.data_vencimento,
-        onPaymentRecorded: () => {
-          refetchCobrancas();
-        },
       });
     },
-    [openManualPaymentDialog, refetchCobrancas]
+    [openManualPaymentDialog]
   );
 
 

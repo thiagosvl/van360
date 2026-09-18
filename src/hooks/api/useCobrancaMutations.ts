@@ -57,6 +57,7 @@ export function useUpdateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.atualizada");
     },
@@ -78,6 +79,7 @@ export function useDeleteCobranca() {
       
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       
       if (id) {
@@ -98,6 +100,7 @@ export function useDesfazerPagamento() {
     onSuccess: (updatedCobranca, cobrancaId) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
@@ -120,6 +123,7 @@ export function useRegistrarPagamentoManual() {
     onSuccess: (_, { cobrancaId }) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });

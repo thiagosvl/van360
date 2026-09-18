@@ -106,6 +106,12 @@ export interface OpenReceiptDialogProps {
   cobrancaDescricao?: string;
 }
 
+export interface OpenAnnualReceiptDialogProps {
+  receiptUrl: string;
+  ano: number;
+  alunoNome?: string;
+}
+
 export interface OpenFirstChargeDialogProps {
   passageiro: Passageiro;
   onSuccess?: () => void;
@@ -254,6 +260,7 @@ export interface LayoutContextType {
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
   openReceiptDialog: (props: OpenReceiptDialogProps) => void;
+  openAnnualReceiptDialog: (props: OpenAnnualReceiptDialogProps) => void;
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openPixPaymentDialog: (props: OpenPixPaymentDialogProps) => void;
