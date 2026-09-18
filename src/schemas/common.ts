@@ -14,9 +14,12 @@ export const cpfCnpjSchema = z.string().refine((val) => {
 });
 
 export const phoneSchema = z
-  .string()
-  .min(15, "Telefone inválido")
-  .max(15, "Telefone inválido")
+  .string({ required_error: "Campo obrigatório" })
+  .min(1, "Campo obrigatório")
+  .refine((val) => {
+    const digits = (val || "").replace(/\D/g, "");
+    return digits.length >= 10 && digits.length <= 11;
+  }, "Telefone inválido")
   .transform((val) => val.replace(/\D/g, ""));
 
 export const placaSchema = z

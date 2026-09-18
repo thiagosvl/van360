@@ -21,6 +21,7 @@ import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { isSamePerson } from "@/utils/person";
 
 interface UsePassageiroFormViewModelProps {
   isOpen: boolean;
@@ -99,7 +100,7 @@ export function usePassageiroFormViewModel({
   const handleSearchResponsavel = useCallback(async (term: string) => {
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const pureTerm = term.replace(/\D/g, "");
-    if (pureTerm.length !== 11 || !profile?.id) return;
+    if ((pureTerm.length < 10 || pureTerm.length > 11) || !profile?.id) return;
     if (searchedTermsSet.current.has(pureTerm)) return;
 
     try {
@@ -114,12 +115,22 @@ export function usePassageiroFormViewModel({
           searchedTermsSet.current.add(responsavel.telefone.replace(/\D/g, ""));
         }
 
+        const currentName = form.getValues("responsavel_principal.nome");
+        if (currentName && !isSamePerson(currentName, responsavel.nome)) {
+          form.setError("responsavel_principal.telefone", {
+            type: "manual",
+            message: "Este telefone já está cadastrado para outro responsável",
+          });
+          return;
+        }
+
         if (responsavel.nome) {
           form.setValue("responsavel_principal.nome", responsavel.nome, { shouldValidate: true });
         }
         if (responsavel.telefone) {
           form.setValue("responsavel_principal.telefone", phoneMask(responsavel.telefone), { shouldValidate: true });
         }
+        form.clearErrors("responsavel_principal.telefone");
         if (responsavel.cpf) {
           form.setValue("responsavel_principal.cpf", cpfMask(responsavel.cpf), { shouldValidate: true });
         }
@@ -176,7 +187,7 @@ export function usePassageiroFormViewModel({
   useEffect(() => {
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const purePhone = telefoneResponsavelValue?.replace(/\D/g, "");
-    if (purePhone && purePhone.length === 11) {
+    if (purePhone && (purePhone.length === 10 || purePhone.length === 11)) {
       handleSearchResponsavel(purePhone);
     }
   }, [telefoneResponsavelValue, handleSearchResponsavel, mode]);
@@ -215,7 +226,7 @@ export function usePassageiroFormViewModel({
   }, [form, escolasData, veiculosData, setOpenAccordionItems]);
 
   const onFormError = useCallback(() => {
-    toast.error("validacao.formularioComErros");
+    toast.error("Por favor, verifique os campos destacados em vermelho.");
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -379,10 +390,11 @@ export function usePassageiroFormViewModel({
       },
       onError: (err: unknown) => {
         const msg = getErrorMessage(err);
-        if (msg && msg.toLowerCase().includes("telefone")) {
+        const status = (err as any)?.response?.status;
+        if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("responsável") || status === 409)) {
           form.setError("responsavel_principal.telefone", {
             type: "manual",
-            message: msg,
+            message: msg.toLowerCase().includes("outro responsável") ? "Este telefone já está cadastrado para outro responsável" : msg.replace(/ no sistema/gi, ""),
           });
           setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
         } else if (msg && msg.toLowerCase().includes("cpf")) {
@@ -392,6 +404,9 @@ export function usePassageiroFormViewModel({
           });
           setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
         }
+        toast.error("Erro ao salvar aluno", {
+          description: msg ? msg.replace(/ no sistema/gi, "") : "Verifique os dados e tente novamente",
+        });
       },
     };
 
@@ -405,7 +420,10 @@ export function usePassageiroFormViewModel({
           },
         },
         {
-          onSuccess: (res) => commonOptions.onSuccess(res.passageiro),
+          onSuccess: (res) => {
+            const passageiro = (res as any)?.passageiro || res;
+            commonOptions.onSuccess(passageiro);
+          },
           onError: commonOptions.onError,
         }
       );

@@ -116,6 +116,18 @@ export interface AdminUserPassengerItem {
   escolas?: { nome: string } | null;
   veiculos?: { modelo: string; placa: string } | null;
   created_at: string;
+  cobranca_mes_atual?: {
+    id: string;
+    mes: number;
+    ano: number;
+    valor: number;
+    status: string;
+    data_vencimento: string;
+    data_envio_ultima_notificacao: string | null;
+    desativar_lembretes: boolean;
+  } | null;
+  pode_cobrar?: boolean;
+  motivo_bloqueio?: string | null;
 }
 
 export interface AdminUserPendingRequestItem {
@@ -194,7 +206,42 @@ export interface AdminUserContractItem {
   } | null;
 }
 
-export interface AdminUserDetailsResponse {
+export interface AdminUserReferralData {
+  referralSummary?: {
+    total: number;
+    completed: number;
+    pending: number;
+    referralCode: string;
+    referralLink: string;
+    bonusDays: number;
+    discountPct: number;
+    hasActiveDiscount: boolean;
+    hasIndicator: boolean;
+  };
+  indicador?: {
+    id: string;
+    nome: string;
+    telefone: string;
+    email: string;
+    cpfcnpj?: string | null;
+    status: IndicacaoStatus;
+    created_at: string;
+    fatura_origem_id?: string | null;
+  } | null;
+  referredUsers?: Array<{
+    id: string;
+    status: IndicacaoStatus;
+    created_at: string;
+    indicado: {
+      id: string;
+      nome: string;
+      telefone: string;
+      email: string;
+    } | null;
+  }>;
+}
+
+export interface AdminUserDetailsResponse extends AdminUserReferralData {
   user: {
     id: string;
     nome: string;
@@ -240,38 +287,6 @@ export interface AdminUserDetailsResponse {
     valorTotalContratos?: number;
     statusConfiguracaoContrato?: DriverContractConfigStatus;
   };
-  referralSummary?: {
-    total: number;
-    completed: number;
-    pending: number;
-    referralCode: string;
-    referralLink: string;
-    bonusDays: number;
-    discountPct: number;
-    hasActiveDiscount: boolean;
-    hasIndicator: boolean;
-  };
-  indicador?: {
-    id: string;
-    nome: string;
-    telefone: string;
-    email: string;
-    cpfcnpj?: string | null;
-    status: IndicacaoStatus;
-    created_at: string;
-    fatura_origem_id?: string | null;
-  } | null;
-  referredUsers?: Array<{
-    id: string;
-    status: IndicacaoStatus;
-    created_at: string;
-    indicado: {
-      id: string;
-      nome: string;
-      telefone: string;
-      email: string;
-    } | null;
-  }>;
   passageiros?: AdminUserPassengerItem[];
   prePassageiros?: AdminUserPendingRequestItem[];
   veiculos?: AdminUserVehicleItem[];
@@ -596,6 +611,21 @@ export const adminUserApi = {
 
   deleteInvoice: (id: string) =>
     apiClient.delete<{ success: boolean; message: string }>(`${BASE}/invoices/${id}`).then(r => r.data),
+
+  dispatchPassengerCobranca: (passengerId: string, payload?: { cobrancaId?: string; force?: boolean }) =>
+    apiClient.post<{
+      success: boolean;
+      message: string;
+      evento: string;
+      destinatario?: string;
+      cobranca?: {
+        id: string;
+        valor: number;
+        data_vencimento: string;
+        mes: number;
+        ano: number;
+      };
+    }>(`${BASE}/passengers/${passengerId}/dispatch-cobranca`, payload).then(r => r.data),
 };
 
 export interface ImpersonateUserResponse {

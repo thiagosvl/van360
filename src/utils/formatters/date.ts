@@ -161,7 +161,11 @@ export const formatDiasAtraso = (dataVencimento: string): string => {
  * Converte DD/MM/YYYY para YYYY-MM-DD.
  */
 export const convertDateBrToISO = (dateBr: string): string => {
-  if (!dateBr || dateBr.length !== 10) return "";
-  const [day, month, year] = dateBr.split("/");
-  return `${year}-${month}-${day}`;
+  if (!dateBr) return "";
+  const clean = dateBr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+  if (!clean.includes("/")) return clean;
+  const [day, month, year] = clean.split("/");
+  if (!day || !month || !year) return clean;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };

@@ -3,11 +3,21 @@ import { parseCurrencyToNumber } from "./formatters/currency";
 export const phoneMask = (value?: string | null): string => {
   if (!value) return "";
   
-  const numericValue = value.replace(/\D/g, '').slice(0, 11);
+  let numericValue = value.replace(/\D/g, "");
+  if (numericValue.length > 11 && numericValue.startsWith("55")) {
+    numericValue = numericValue.substring(2);
+  }
+  numericValue = numericValue.slice(0, 11);
+
+  if (numericValue.length <= 10) {
+    return numericValue
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+  }
   
   return numericValue
-    .replace(/(\d{2})(\d)/, '($1) $2')
-    .replace(/(\d{5})(\d{1,4})/, '$1-$2');
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d{1,4})/, "$1-$2");
 };
 
 export const moneyMask = (value: string | number): string => {

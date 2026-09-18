@@ -236,6 +236,11 @@ export function QuickStartPassageiroDialog({
                 onSubmit={fullFormViewModel.form.handleSubmit(fullFormViewModel.handleSubmit, fullFormViewModel.onFormError)}
                 className="space-y-8 pb-6"
               >
+                <Banner
+                  variant="info"
+                  description="Seus dados são 100% privativos e protegidos. Ficam salvos apenas para a organização da sua van."
+                  className="mb-4"
+                />
                 <section>
                   <PassageiroFormDadosCadastrais
                     profile={profile}
@@ -273,6 +278,12 @@ export function QuickStartPassageiroDialog({
               onSubmit={form.handleSubmit((data) => handleSubmit(data, false), onFormError)}
               className={cn("pb-6", isOnboarding ? "space-y-4" : "space-y-8")}
             >
+              <Banner
+                variant="info"
+                description="Seus dados são 100% privativos e protegidos. Ficam salvos apenas para a organização da sua van."
+                className="mb-4"
+              />
+
               <div className={cn(!isOnboarding && "space-y-5")}>
                 {!isOnboarding && (
                   <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">

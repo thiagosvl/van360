@@ -13,6 +13,7 @@ import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFo
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
 import { PassageiroFormResponsavel } from "../features/passageiro/form/PassageiroFormResponsavel";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -242,6 +243,11 @@ export default function PassengerFormDialog({
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
                 className="space-y-8 pb-6"
               >
+                <Banner
+                  variant="info"
+                  description="Seus dados são 100% privativos e protegidos. Ficam salvos apenas para a organização da sua van."
+                  className="mb-4"
+                />
                 <section>
                   <PassageiroFormDadosCadastrais
                     profile={profile}

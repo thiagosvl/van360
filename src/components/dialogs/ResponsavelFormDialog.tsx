@@ -33,6 +33,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "sonner";
+import { isSamePerson } from "@/utils/person";
 import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
@@ -196,7 +197,7 @@ export default function ResponsavelFormDialog({
   const handleSearchResponsavel = useCallback(async (term: string) => {
     if (editingResponsavel || isResponsavelPortal) return;
     const pureTerm = String(term || "").replace(/\D/g, "");
-    if (pureTerm.length !== 11) return;
+    if (pureTerm.length < 10 || pureTerm.length > 11) return;
     if (searchedTermsSet.current.has(pureTerm)) return;
 
     try {
@@ -211,12 +212,22 @@ export default function ResponsavelFormDialog({
           searchedTermsSet.current.add(String(responsavel.telefone).replace(/\D/g, ""));
         }
 
+        const currentName = form.getValues("nome");
+        if (currentName && !isSamePerson(currentName, responsavel.nome)) {
+          form.setError("telefone", {
+            type: "manual",
+            message: "Este telefone já está cadastrado para outro responsável",
+          });
+          return;
+        }
+
         if (responsavel.nome) {
           form.setValue("nome", responsavel.nome, { shouldValidate: true });
         }
         if (responsavel.telefone) {
           form.setValue("telefone", phoneMask(responsavel.telefone), { shouldValidate: true });
         }
+        form.clearErrors("telefone");
         if (responsavel.cpf) {
           form.setValue("cpf", cpfMask(responsavel.cpf), { shouldValidate: true });
         }
@@ -319,7 +330,7 @@ export default function ResponsavelFormDialog({
   useEffect(() => {
     if (editingResponsavel || isResponsavelPortal) return;
     const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
-    if (purePhone && purePhone.length === 11) {
+    if (purePhone && (purePhone.length === 10 || purePhone.length === 11)) {
       handleSearchResponsavel(purePhone);
     }
   }, [telefoneValue, handleSearchResponsavel, editingResponsavel, isResponsavelPortal]);
@@ -393,17 +404,21 @@ export default function ResponsavelFormDialog({
     } catch (error: unknown) {
       console.error("Erro ao processar responsável:", error);
       const msg = getErrorMessage(error);
-      if (msg && msg.toLowerCase().includes("telefone")) {
+      const status = (error as any)?.response?.status;
+      if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("outro responsável") || status === 409)) {
         form.setError("telefone", {
           type: "manual",
-          message: msg,
+          message: msg.toLowerCase().includes("outro responsável") ? "Este telefone já está cadastrado para outro responsável" : msg.replace(/ no sistema/gi, ""),
         });
       } else if (msg && msg.toLowerCase().includes("cpf")) {
         form.setError("cpf", {
           type: "manual",
-          message: msg,
+          message: msg.replace(/ no sistema/gi, ""),
         });
       }
+      toast.error("Erro ao salvar responsável", {
+        description: msg ? msg.replace(/ no sistema/gi, "") : "Verifique os dados e tente novamente",
+      });
     }
   };
 
@@ -434,7 +449,9 @@ export default function ResponsavelFormDialog({
         <Form {...form}>
           <form
             id="responsavel-adicional-form"
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit, () => {
+              toast.error("Por favor, preencha todos os campos obrigatórios.");
+            })}
             className="space-y-4 mt-2"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

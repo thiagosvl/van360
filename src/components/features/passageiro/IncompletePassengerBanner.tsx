@@ -8,10 +8,10 @@ export const IncompletePassengerBanner = ({ onEdit }: IncompletePassengerBannerP
   return (
     <Banner
       variant="warning"
-      title="Cadastro Incompleto"
-      description="Para que as cobranças automáticas funcionem, finalize o preenchimento do cadastro do aluno."
+      title="Cobrança Automática Pendente"
+      description="O aluno já está registrado na sua van! Para ativar os lembretes automáticos no WhatsApp, configure o valor da mensalidade e o contato do responsável."
       action={{
-        label: "Completar Cadastro",
+        label: "Configurar Cobrança",
         onClick: onEdit,
       }}
       className="mb-6"

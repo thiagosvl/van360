@@ -451,7 +451,7 @@ export const mockGenerator = {
       ...overrides,
     };
   },
-  passenger: (overrides?: Record<string, unknown>) => {
+  passenger: (overrides?: Partial<{ escola_id: string; veiculo_id: string } & Record<string, unknown>>) => {
     const name = generateName();
     const address = generateAddress();
     return {
@@ -466,6 +466,8 @@ export const mockGenerator = {
         parentesco: randomEnum(ParentescoResponsavel),
         ...address,
       },
+      escola_id: overrides?.escola_id || "",
+      veiculo_id: overrides?.veiculo_id || "",
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
       ativo: true,

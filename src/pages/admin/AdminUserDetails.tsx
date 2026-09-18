@@ -2546,7 +2546,11 @@ export default function AdminUserDetails() {
             {/* CONTEÚDO DO MÓDULO SELECIONADO */}
             <div className="flex-1 w-full min-w-0">
               {activeSubTab === "passageiros" && (
-                <AdminUserPassengersTab passageiros={passageirosList} />
+                <AdminUserPassengersTab
+                  passageiros={passageirosList}
+                  userId={id}
+                  motoristaNome={data?.user?.nome || data?.user?.apelido}
+                />
               )}
               {activeSubTab === "solicitacoes" && (
                 <AdminUserPendingRequestsTab

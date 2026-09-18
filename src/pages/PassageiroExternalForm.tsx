@@ -10,6 +10,7 @@ import { PassageiroFormResponsavel } from "@/components/features/passageiro/form
 import { getNowBR } from "@/utils/dateUtils";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { cn } from "@/lib/utils";
+import { Banner } from "@/components/ui/Banner";
 
 export default function PassageiroExternalForm() {
   const {
@@ -115,6 +116,11 @@ export default function PassageiroExternalForm() {
           </div>
 
           <div className="p-6 sm:p-10 lg:p-12 lg:pt-6 lg:pb-10">
+            <Banner
+              variant="info"
+              description="Ambiente seguro e protegido. Os dados preenchidos são confidenciais e compartilhados exclusivamente com o transporte escolar."
+              className="mb-6"
+            />
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}

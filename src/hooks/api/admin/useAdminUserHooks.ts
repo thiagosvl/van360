@@ -231,6 +231,42 @@ export function useDispatchDriverNotificationAdmin() {
   });
 }
 
+export function useDispatchPassengerCobrancaAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      passengerId,
+      cobrancaId,
+      force,
+    }: {
+      passengerId: string;
+      cobrancaId?: string;
+      force?: boolean;
+    }) => adminUserApi.dispatchPassengerCobranca(passengerId, { cobrancaId, force }),
+    onSuccess: (res, variables) => {
+      const isSuccess = res.success !== false;
+      const message = res.message || "Lembrete de cobrança enviado com sucesso!";
+      if (isSuccess) {
+        toast.success(message);
+      } else {
+        toast.warning(message);
+      }
+      if (userId) {
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "passageiros"] });
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "notifications"] });
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "passengers", variables.passengerId, "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao disparar lembrete de cobrança.";
+      toast.error(msg);
+    },
+  });
+}
+
 export function useSetUserReferralAdmin() {
   const qc = useQueryClient();
   return useMutation({

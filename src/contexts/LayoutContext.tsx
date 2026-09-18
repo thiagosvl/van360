@@ -6,6 +6,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
 import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
+import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import {
   createContext,
   useContext,
@@ -173,6 +174,12 @@ export interface OpenAdminPassengerNotificationsDialogProps {
   passageiroNome: string;
 }
 
+export interface OpenAdminPassengerSendCobrancaDialogProps {
+  userId: string;
+  passageiro: AdminUserPassengerItem;
+  motoristaNome?: string;
+}
+
 export interface OpenAdminVencimentoDetalhesDialogProps {
   dia: number;
   mes?: number;
@@ -245,6 +252,7 @@ export interface LayoutContextType {
   openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;
   openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
   openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
+  openAdminPassengerSendCobrancaDialog: (props: OpenAdminPassengerSendCobrancaDialogProps) => void;
   openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
   openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
   openAdminConfirmBroadcastDialog: (props: OpenAdminConfirmBroadcastDialogProps) => void;

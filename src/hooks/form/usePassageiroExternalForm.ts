@@ -148,7 +148,7 @@ export function usePassageiroExternalForm() {
     console.log("Valores atuais de form.getValues():", form.getValues());
     console.groupEnd();
 
-    toast.error("validacao.formularioComErros");
+    toast.error("Por favor, verifique os campos destacados em vermelho.");
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -218,14 +218,14 @@ export function usePassageiroExternalForm() {
       console.error("Resposta da API:", error.response?.data);
       console.groupEnd();
 
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "Tente novamente mais tarde.";
+
       if (error.response?.data?.details) {
         const issues = error.response.data.details;
         issues.forEach((issue: any) => {
           const field = issue.path.join('.');
           form.setError(field as any, { type: 'manual', message: issue.message });
         });
-        toast.error("validacao.formularioComErros");
-
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
@@ -234,11 +234,19 @@ export function usePassageiroExternalForm() {
           "observacoes",
         ]);
         window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        toast.error("sistema.erro.enviarDados", {
-          description: error.response?.data?.error || error.message || "Tente novamente mais tarde.",
-        });
       }
+
+      if (errorMsg.toLowerCase().includes("cpf") || errorMsg.toLowerCase().includes("telefone") || errorMsg.toLowerCase().includes("responsável") || error.response?.status === 409) {
+        form.setError("telefone_responsavel", { type: "manual", message: errorMsg });
+        if (errorMsg.toLowerCase().includes("cpf")) {
+          form.setError("cpf_responsavel", { type: "manual", message: errorMsg });
+        }
+        setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
+      }
+
+      toast.error("Erro ao enviar solicitação", {
+        description: errorMsg.replace(/ no sistema/gi, "") || "Verifique os dados e tente novamente",
+      });
     } finally {
       setSubmitting(false);
     }

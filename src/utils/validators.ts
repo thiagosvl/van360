@@ -110,7 +110,7 @@ export function isValidDateBr(dateString: string | undefined | null, allowFuture
 export function isValidPhoneFormat(phone: string | undefined | null): boolean {
   if (!phone) return false;
   const cleaned = phone.replace(/\D/g, "");
-  return cleaned.length === 11;
+  return cleaned.length >= 10 && cleaned.length <= 11;
 }
 
 /**
