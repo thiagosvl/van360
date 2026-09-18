@@ -101,8 +101,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       dia_vencimento: "",
       escola_id: "",
       veiculo_id: "",
-      mes_inicio_cobranca: "",
-      mes_fim_cobranca: "",
+      mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+      mes_fim_cobranca: "12",
     },
     mode: "onChange",
   });

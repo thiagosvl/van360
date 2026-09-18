@@ -219,8 +219,8 @@ export function usePassageiroForm({
       data_fim_transporte: "",
       horario_entrada: "",
       horario_saida: "",
-      mes_inicio_cobranca: "",
-      mes_fim_cobranca: "",
+      mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+      mes_fim_cobranca: "12",
 
       ativo: true,
     },
@@ -288,8 +288,11 @@ export function usePassageiroForm({
           "observacoes",
         ]);
       } else if (isFinalizeMode && prePassageiro) {
+        const preData = mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData;
         form.reset({
-          ...(mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData),
+          ...preData,
+          mes_inicio_cobranca: preData.mes_inicio_cobranca || (new Date().getMonth() + 1).toString(),
+          mes_fim_cobranca: preData.mes_fim_cobranca || "12",
           isento: false,
         });
 
@@ -348,8 +351,8 @@ export function usePassageiroForm({
           data_fim_transporte: "",
           horario_entrada: "",
           horario_saida: "",
-          mes_inicio_cobranca: "",
-          mes_fim_cobranca: "",
+          mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+          mes_fim_cobranca: "12",
 
           ativo: true,
         });
