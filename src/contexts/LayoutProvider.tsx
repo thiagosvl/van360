@@ -8,6 +8,7 @@ import AdminDispatchNotificationDialog from "@/components/dialogs/AdminDispatchN
 import AdminConfirmBroadcastDialog from "@/components/dialogs/AdminConfirmBroadcastDialog";
 import AdminPassengerNotificationsDialog from "@/components/dialogs/AdminPassengerNotificationsDialog";
 import AdminPassengerSendCobrancaDialog from "@/components/dialogs/AdminPassengerSendCobrancaDialog";
+import AdminDriverCobrancaDemoDialog from "@/components/dialogs/AdminDriverCobrancaDemoDialog";
 import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
@@ -46,6 +47,7 @@ import {
   OpenAdminDispatchNotificationDialogProps,
   OpenAdminPassengerNotificationsDialogProps,
   OpenAdminPassengerSendCobrancaDialogProps,
+  OpenAdminDriverCobrancaDemoDialogProps,
   OpenAdminVencimentoDetalhesDialogProps,
   OpenAdminConfigureReferralDialogProps,
   OpenAdminConfirmBroadcastDialogProps,
@@ -270,6 +272,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenAdminPassengerSendCobrancaDialogProps;
   }>({ open: false });
+  const [adminDriverCobrancaDemoDialogState, setAdminDriverCobrancaDemoDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminDriverCobrancaDemoDialogProps;
+  }>({ open: false });
   const [adminVencimentoDetalhesDialogState, setAdminVencimentoDetalhesDialogState] = useState<{
     open: boolean;
     props?: OpenAdminVencimentoDetalhesDialogProps;
@@ -462,6 +468,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminPassengerSendCobrancaDialogState({ open: true, props });
   };
 
+  const openAdminDriverCobrancaDemoDialog = (props: OpenAdminDriverCobrancaDemoDialogProps) => {
+    setAdminDriverCobrancaDemoDialogState({ open: true, props });
+  };
+
   const openAdminVencimentoDetalhesDialog = (props: OpenAdminVencimentoDetalhesDialogProps) => {
     setAdminVencimentoDetalhesDialogState({ open: true, props });
   };
@@ -528,6 +538,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminDispatchNotificationDialog,
         openAdminPassengerNotificationsDialog,
         openAdminPassengerSendCobrancaDialog,
+        openAdminDriverCobrancaDemoDialog,
         openAdminVencimentoDetalhesDialog,
         openAdminConfigureReferralDialog,
         openAdminConfirmBroadcastDialog,
@@ -972,6 +983,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           userId={adminPassengerSendCobrancaDialogState.props.userId}
           passageiro={adminPassengerSendCobrancaDialogState.props.passageiro}
           motoristaNome={adminPassengerSendCobrancaDialogState.props.motoristaNome}
+        />
+      )}
+
+      {adminDriverCobrancaDemoDialogState.open && adminDriverCobrancaDemoDialogState.props && (
+        <AdminDriverCobrancaDemoDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAdminDriverCobrancaDemoDialogState({ open: false }))}
+          userId={adminDriverCobrancaDemoDialogState.props.userId}
+          userName={adminDriverCobrancaDemoDialogState.props.userName}
+          userPhone={adminDriverCobrancaDemoDialogState.props.userPhone}
+          userApelido={adminDriverCobrancaDemoDialogState.props.userApelido}
+          userChavePix={adminDriverCobrancaDemoDialogState.props.userChavePix}
+          userTipoChavePix={adminDriverCobrancaDemoDialogState.props.userTipoChavePix}
         />
       )}
 

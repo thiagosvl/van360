@@ -5,6 +5,7 @@ import { ROUTES } from "@/constants/routes";
 import { useSEO } from "@/hooks/useSEO";
 import { toast } from "@/utils/notifications/toast";
 import { InitialLoading } from "@/components/auth/InitialLoading";
+import { markAsImpersonating } from "@/utils/impersonate";
 
 export default function ImpersonateBridgePage() {
   useSEO({
@@ -34,6 +35,8 @@ export default function ImpersonateBridgePage() {
         if (error) {
           throw error;
         }
+
+        markAsImpersonating();
 
         navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
       } catch (err) {

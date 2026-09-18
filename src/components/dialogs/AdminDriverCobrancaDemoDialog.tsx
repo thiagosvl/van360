@@ -28,7 +28,7 @@ export interface AdminDriverCobrancaDemoDialogProps {
   userTipoChavePix?: string;
 }
 
-export default function AdminDriverCobrancaDemoDialog({
+export function AdminDriverCobrancaDemoDialog({
   isOpen,
   onClose,
   userId,
@@ -185,3 +185,5 @@ export default function AdminDriverCobrancaDemoDialog({
     </AdminBaseDialog>
   );
 }
+
+export default AdminDriverCobrancaDemoDialog;

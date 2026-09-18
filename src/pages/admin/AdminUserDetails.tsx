@@ -58,6 +58,7 @@ import {
   UserPlus,
   Edit2,
   Smartphone,
+  Sparkles,
 } from "lucide-react";
 import { AdminUserPassengersTab } from "@/components/features/admin/user-details/AdminUserPassengersTab";
 import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/AdminUserVehiclesTab";
@@ -171,7 +172,7 @@ export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminConfigureReferralDialog, setPageTitle } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminDriverCobrancaDemoDialog, openAdminConfigureReferralDialog, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
   const deleteInvoiceMutation = useDeleteInvoiceAdmin(id);
@@ -526,6 +527,18 @@ export default function AdminUserDetails() {
     });
   };
 
+  const handleDispatchDriverCobrancaDemo = () => {
+    if (!data?.user) return;
+    openAdminDriverCobrancaDemoDialog({
+      userId: data.user.id,
+      userName: data.user.nome,
+      userPhone: data.user.telefone,
+      userApelido: data.user.apelido || undefined,
+      userChavePix: data.user.chave_pix || undefined,
+      userTipoChavePix: data.user.tipo_chave_pix || undefined,
+    });
+  };
+
   const handleDeleteUser = () => {
     if (!id || !data?.user) return;
     openConfirmationDialog({
@@ -814,6 +827,15 @@ export default function AdminUserDetails() {
             >
               <Bell className="h-4 w-4 text-indigo-400" />
               <span>Testar Notificação</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleDispatchDriverCobrancaDemo}
+              className="flex-1 md:flex-none rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25 hover:border-emerald-500/70 hover:text-emerald-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              <span>Cobrança Teste</span>
             </Button>
             <Button
               type="button"

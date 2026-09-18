@@ -180,6 +180,15 @@ export interface OpenAdminPassengerSendCobrancaDialogProps {
   motoristaNome?: string;
 }
 
+export interface OpenAdminDriverCobrancaDemoDialogProps {
+  userId: string;
+  userName: string;
+  userPhone?: string;
+  userApelido?: string;
+  userChavePix?: string;
+  userTipoChavePix?: string;
+}
+
 export interface OpenAdminVencimentoDetalhesDialogProps {
   dia: number;
   mes?: number;
@@ -253,6 +262,7 @@ export interface LayoutContextType {
   openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
   openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
   openAdminPassengerSendCobrancaDialog: (props: OpenAdminPassengerSendCobrancaDialogProps) => void;
+  openAdminDriverCobrancaDemoDialog: (props: OpenAdminDriverCobrancaDemoDialogProps) => void;
   openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
   openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
   openAdminConfirmBroadcastDialog: (props: OpenAdminConfirmBroadcastDialogProps) => void;

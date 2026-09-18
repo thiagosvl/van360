@@ -1,10 +1,11 @@
 import { BASE_DOMAIN } from "@/constants";
-
+import { clearImpersonating } from "@/utils/impersonate";
 
 export const clearAppSession = () => {
+    clearImpersonating();
+
     const savedCpf = localStorage.getItem("van360_saved_cpf");
 
-    // Limpar apenas chaves da sessao do motorista / Supabase
     const keys = Object.keys(localStorage);
     keys.forEach((key) => {
         if (
