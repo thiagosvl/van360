@@ -56,6 +56,7 @@ import {
   OpenVideoStoriesDialogProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
+import { Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Capacitor } from "@capacitor/core";
@@ -1094,6 +1095,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }}
           {...videoStoriesDialogState.props}
         />
+      )}
+
+      {isGlobalLoading && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 select-none">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-4 max-w-xs mx-4 text-center border border-slate-100 animate-in zoom-in-95 duration-200">
+            <Loader2 className="w-10 h-10 animate-spin text-[#1a3a5c]" />
+            <p className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">
+              {globalLoadingText || "Salvando..."}
+            </p>
+          </div>
+        </div>
       )}
 
     </LayoutContext.Provider>

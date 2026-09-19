@@ -13,6 +13,17 @@ export interface ListPassageirosResponse {
   totalPages?: number;
 }
 
+export interface PassageiroBatchUpdateItem {
+  id: string;
+  escola_id?: string | null;
+  veiculo_id?: string | null;
+  turma?: string | null;
+  periodo?: string | null;
+  valor_cobranca?: number | null;
+  dia_vencimento?: number | null;
+  ativo?: boolean;
+}
+
 export const passageiroApi = {
   listPassageiros: (usuarioId: string, filtros?: Record<string, unknown>): Promise<ListPassageirosResponse> =>
     apiClient
@@ -130,5 +141,10 @@ export const passageiroApi = {
       .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/toggle-notificacoes-rota`, {
         status,
       })
+      .then(res => res.data),
+
+  updateBatch: (passageiros: PassageiroBatchUpdateItem[]): Promise<{ success: boolean; updatedCount: number }> =>
+    apiClient
+      .put(`${endpointBase}/batch`, { passageiros })
       .then(res => res.data),
 };

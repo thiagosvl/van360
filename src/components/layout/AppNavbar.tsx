@@ -6,6 +6,7 @@ import {
   IdCard,
   Route,
   User,
+  Users,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
@@ -22,7 +23,13 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
 
   let currentPage: PageItem | undefined = pagesItems.find(item => item.href === location.pathname);
-  if (!currentPage && location.pathname.startsWith(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}/`)) {
+  if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH) {
+    currentPage = {
+      title: "Atualização Rápida",
+      href: location.pathname,
+      icon: Users,
+    };
+  } else if (!currentPage && location.pathname.startsWith(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}/`)) {
     currentPage = {
       title: "Carteirinha",
       href: location.pathname,

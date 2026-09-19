@@ -1,12 +1,12 @@
 import { ComponentType } from "react";
-import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User } from "lucide-react";
+import { LucideProps, Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
 
 export interface PageItem {
   title: string;
   href: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: ComponentType<LucideProps>;
   permission?: PermissionKey;
 }
 

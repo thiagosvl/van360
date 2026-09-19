@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
-import { Users2 } from "lucide-react";
+import { Users2, SlidersHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
 import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
@@ -150,9 +151,17 @@ export default function Passageiros() {
                 </div>
 
                 <div className="flex items-center justify-between px-1">
-                  <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                    {/* {sectionTitle} */}
-                  </h2>
+                  {isMainTab && can("passageiros.gerenciar") ? (
+                    <Link
+                      to="/alunos/atualizacao-rapida"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-200/60 px-2.5 py-1 rounded-xl transition-all active:scale-95 -ml-1"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Ajustar vários</span>
+                    </Link>
+                  ) : (
+                    <div />
+                  )}
                   {(isMainTab ? passageiros.length > 0 : prePassageiros.length > 0) && (
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                       {sectionCount} {countLabel}

@@ -35,6 +35,7 @@ export const ROUTES = {
     MOTORISTA: {
       HOME: "/inicio",
       PASSENGERS: "/alunos",
+      PASSENGERS_BATCH: "/alunos/atualizacao-rapida",
       PASSENGER_DETAILS: "/alunos/:passageiro_id",
       BILLING: "/parcelas",
       SCHOOLS: "/escolas",

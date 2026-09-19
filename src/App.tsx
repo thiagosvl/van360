@@ -51,6 +51,7 @@ const Splash = lazyLoad(() => import("./pages/Splash"));
 const Home = lazyLoad(() => import("./pages/Home"));
 
 const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
+const AtualizacaoRapidaPassageiros = lazyLoad(() => import("./pages/AtualizacaoRapidaPassageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
 const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
 const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
@@ -447,6 +448,10 @@ const App = () => {
                       <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
                         <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
+                        <Route
+                          path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH}
+                          element={<AtualizacaoRapidaPassageiros />}
+                        />
                         <Route
                           path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
                           element={<PassageiroCarteirinha />}
