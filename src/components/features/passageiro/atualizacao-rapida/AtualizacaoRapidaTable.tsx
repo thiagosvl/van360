@@ -59,14 +59,16 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
         <table className="w-full text-left border-collapse text-xs min-w-[650px] sm:min-w-[880px]">
           <thead>
             <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-8 sm:w-10 text-center">
+              <th className="py-2 sm:py-3 px-2 sm:px-3 w-10 sm:w-12 text-center">
                 {onToggleSelectAll ? (
-                  <Checkbox
-                    checked={isAllSelected}
-                    onCheckedChange={onToggleSelectAll}
-                    aria-label="Selecionar todos os alunos"
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
-                  />
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={onToggleSelectAll}
+                      aria-label="Selecionar todos os alunos"
+                      className="w-5 h-5 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                    />
+                  </div>
                 ) : (
                   "#"
                 )}
@@ -107,12 +109,14 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                       : "hover:bg-slate-50/60"
                   )}
                 >
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 text-center">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => onToggleSelect(pId)}
-                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
-                    />
+                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3 text-center">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => onToggleSelect(pId)}
+                        className="w-5 h-5 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                      />
+                    </div>
                   </td>
 
                   <td className="py-1.5 sm:py-2.5 px-2 sm:px-3">

@@ -5,11 +5,12 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { useAtualizacaoRapidaViewModel } from "@/hooks/ui/useAtualizacaoRapidaViewModel";
 import { FilterDefaults } from "@/types/enums";
 import { periodos } from "@/utils/formatters/periodo";
-import { ArrowLeft, Car, ChevronDown, Clock, Filter, RotateCcw, School, Search, Users2, X } from "lucide-react";
+import { ArrowLeft, Car, Clock, Filter, RotateCcw, School, Search, Users2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLayout, safeCloseDialog } from "@/hooks";
 import { AtualizacaoRapidaTable } from "@/components/features/passageiro/atualizacao-rapida/AtualizacaoRapidaTable";
 import { AtualizacaoRapidaStickyBar } from "@/components/features/passageiro/atualizacao-rapida/AtualizacaoRapidaStickyBar";
+import { DataTableFilterSelect } from "@/components/features/common/DataTableFilterSelect";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -141,56 +142,44 @@ export default function AtualizacaoRapidaPassageiros() {
         </div>
 
         <div className={cn("grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3", !isFilterOpen && "hidden sm:grid")}>
-          <div className="relative">
-            <select
-              value={selectedVeiculo}
-              onChange={(e) => setSelectedVeiculo(e.target.value)}
-              className="w-full h-12 md:h-14 pl-11 pr-10 text-xs md:text-sm bg-white border border-slate-100 rounded-2xl font-bold text-[#1a3a5c] shadow-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c]/30 hover:bg-gray-50 transition-colors"
-            >
-              <option value={FilterDefaults.TODOS}>Todos Veículos</option>
-              {(veiculos || []).map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.modelo} - {v.placa}
-                </option>
-              ))}
-            </select>
-            <Car className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <DataTableFilterSelect
+            label="Veículo"
+            placeholder="Todos Veículos"
+            value={selectedVeiculo}
+            onValueChange={setSelectedVeiculo}
+            icon={<Car className="w-3.5 h-3.5 shrink-0" />}
+            triggerClassName="bg-white border-slate-100 shadow-sm"
+            options={[
+              { label: "Todos Veículos", value: FilterDefaults.TODOS },
+              ...(veiculos?.map((v) => ({ label: `${v.modelo} - ${v.placa}`, value: v.id })) || []),
+            ]}
+          />
 
-          <div className="relative">
-            <select
-              value={selectedEscola}
-              onChange={(e) => setSelectedEscola(e.target.value)}
-              className="w-full h-12 md:h-14 pl-11 pr-10 text-xs md:text-sm bg-white border border-slate-100 rounded-2xl font-bold text-[#1a3a5c] shadow-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c]/30 hover:bg-gray-50 transition-colors"
-            >
-              <option value={FilterDefaults.TODAS}>Todas Escolas</option>
-              {(escolas || []).map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.nome}
-                </option>
-              ))}
-            </select>
-            <School className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <DataTableFilterSelect
+            label="Escola"
+            placeholder="Todas Escolas"
+            value={selectedEscola}
+            onValueChange={setSelectedEscola}
+            icon={<School className="w-3.5 h-3.5 shrink-0" />}
+            triggerClassName="bg-white border-slate-100 shadow-sm"
+            options={[
+              { label: "Todas Escolas", value: FilterDefaults.TODAS },
+              ...(escolas?.map((e) => ({ label: e.nome, value: e.id })) || []),
+            ]}
+          />
 
-          <div className="relative">
-            <select
-              value={selectedPeriodo}
-              onChange={(e) => setSelectedPeriodo(e.target.value)}
-              className="w-full h-12 md:h-14 pl-11 pr-10 text-xs md:text-sm bg-white border border-slate-100 rounded-2xl font-bold text-[#1a3a5c] shadow-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c]/30 hover:bg-gray-50 transition-colors"
-            >
-              <option value={FilterDefaults.TODOS}>Todos Períodos</option>
-              {periodos.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-            <Clock className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <DataTableFilterSelect
+            label="Período"
+            placeholder="Todos Períodos"
+            value={selectedPeriodo}
+            onValueChange={setSelectedPeriodo}
+            icon={<Clock className="w-3.5 h-3.5 shrink-0" />}
+            triggerClassName="bg-white border-slate-100 shadow-sm"
+            options={[
+              { label: "Todos Períodos", value: FilterDefaults.TODOS },
+              ...(periodos?.map((p) => ({ label: p.label, value: p.value })) || []),
+            ]}
+          />
         </div>
 
         {hasActiveFilters && (

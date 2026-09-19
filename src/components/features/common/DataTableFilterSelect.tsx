@@ -22,6 +22,7 @@ interface DataTableFilterSelectProps {
   placeholder?: string;
   icon?: React.ReactNode;
   className?: string;
+  triggerClassName?: string;
 }
 
 export const DataTableFilterSelect = ({
@@ -32,6 +33,7 @@ export const DataTableFilterSelect = ({
   placeholder,
   icon,
   className,
+  triggerClassName,
 }: DataTableFilterSelectProps) => {
   return (
     <div className={cn("space-y-1.5 md:space-y-2", className)}>
@@ -45,10 +47,10 @@ export const DataTableFilterSelect = ({
         value={value}
         onValueChange={onValueChange}
       >
-        <SelectTrigger className="w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c] shadow-sm hover:bg-gray-100/50 transition-colors">
+        <SelectTrigger className={cn("w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c] shadow-sm hover:bg-gray-100/50 transition-colors", triggerClassName)}>
           <SelectValue placeholder={placeholder || label} />
         </SelectTrigger>
-        <SelectContent className="z-[9999] rounded-xl border-gray-100 shadow-xl overflow-hidden">
+        <SelectContent className="z-[9999] rounded-xl border-gray-100 shadow-xl overflow-hidden bg-white">
           {options.map((opt) => (
             <SelectItem 
                 key={opt.value} 
