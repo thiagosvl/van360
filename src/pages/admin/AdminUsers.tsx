@@ -223,13 +223,25 @@ export default function AdminUsers() {
                           onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
                         >
                           <td className="py-4">
-                            <div>
-                              <p className="text-sm font-bold text-slate-100 truncate max-w-[200px]">
-                                {user.nome}
-                              </p>
-                              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                                {user.apelido || "—"}
-                              </p>
+                            <div className="flex items-center gap-3">
+                              {user.logo_url?.trim() && (
+                                <div className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                                  <img
+                                    src={user.logo_url}
+                                    alt={user.nome}
+                                    className="h-full w-full object-contain"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-100 truncate max-w-[200px]">
+                                  {user.nome}
+                                </p>
+                                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                                  {user.apelido || "—"}
+                                </p>
+                              </div>
                             </div>
                           </td>
                           <td className="py-4 hidden md:table-cell">
@@ -283,15 +295,27 @@ export default function AdminUsers() {
                       className="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-3 text-left cursor-pointer hover:bg-slate-800/80 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-100 line-clamp-1">
-                            {user.nome}
-                          </h3>
-                          {user.apelido && (
-                            <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                              {user.apelido}
-                            </p>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {user.logo_url?.trim() && (
+                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                              <img
+                                src={user.logo_url}
+                                alt={user.nome}
+                                className="h-full w-full object-contain"
+                                loading="lazy"
+                              />
+                            </div>
                           )}
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-bold text-slate-100 line-clamp-1">
+                              {user.nome}
+                            </h3>
+                            {user.apelido && (
+                              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                                {user.apelido}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} />
                       </div>

@@ -67,6 +67,7 @@ export interface AdminUserListItem {
   tipo: string;
   created_at: string;
   data_nascimento: string | null;
+  logo_url: string | null;
   assinaturas: Array<{
     id: string;
     status: string;
