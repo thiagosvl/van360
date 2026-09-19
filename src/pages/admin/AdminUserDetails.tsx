@@ -1165,8 +1165,8 @@ export default function AdminUserDetails() {
                       {data.user.canal_aquisicao
                         ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao
                         : indicadorData
-                        ? CanalAquisicaoLabels[CanalAquisicao.INDICACAO]
-                        : "—"}
+                          ? CanalAquisicaoLabels[CanalAquisicao.INDICACAO]
+                          : "—"}
                     </span>
                   </div>
 
@@ -1499,12 +1499,12 @@ export default function AdminUserDetails() {
                                   render={({ field }) => (
                                     <FormItem className="space-y-2">
                                       <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        Apelido / Nome Fantasia
+                                        Nome de Exibição / Apelido
                                       </FormLabel>
                                       <FormControl>
                                         <Input
                                           {...field}
-                                          placeholder="Apelido ou nome fantasia"
+                                          placeholder="Ex.: Tio Thiago"
                                           className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
                                         />
                                       </FormControl>

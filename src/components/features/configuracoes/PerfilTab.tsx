@@ -13,14 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { emailSchema, phoneSchema } from "@/schemas/common";
+import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { cpfCnpjMask as maskCpf, phoneMask as maskPhone, dateMask as maskDate } from "@/utils/masks";
+import { cpfCnpjMask, phoneMask, dateMask as maskDate } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
-import { getDriverDisplayName } from "@/utils/formatters/user";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Info, Loader2, Mail, User, Save } from "lucide-react";
+import { Calendar, Loader2, Mail, User } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,7 +30,7 @@ const basicSchema = z.object({
     .min(2, "Deve ter pelo menos 2 caracteres")
     .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
   apelido: z.string().optional(),
-  cpfcnpj: z.string(),
+  cpfcnpj: cpfCnpjSchema,
   telefone: phoneSchema,
   email: emailSchema,
   data_nascimento: z.string()
@@ -82,6 +82,13 @@ export const PerfilTab = React.memo(function PerfilTab() {
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
 
+  const [initialSnapshot, setInitialSnapshot] = React.useState<{
+    cpfcnpj: string;
+    email: string;
+  } | null>(null);
+
+  const hasInitializedRef = React.useRef(false);
+
   const form = useForm<FormData>({
     resolver: zodResolver(basicSchema),
     defaultValues: {
@@ -96,11 +103,9 @@ export const PerfilTab = React.memo(function PerfilTab() {
   });
 
   React.useEffect(() => {
-    refreshProfile();
-  }, [refreshProfile]);
+    if (profile && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
 
-  React.useEffect(() => {
-    if (profile) {
       const formatBirth = () => {
         if (!profile.data_nascimento) return "";
         const clean = profile.data_nascimento.trim();
@@ -114,27 +119,64 @@ export const PerfilTab = React.memo(function PerfilTab() {
         return clean;
       };
 
+      const formattedCpfCnpj = cpfCnpjMask(profile.cpfcnpj) || "";
+      const profileEmail = profile.email || "";
+      const profileRazaoSocial = profile.razao_social || "";
+
+      setInitialSnapshot({
+        cpfcnpj: formattedCpfCnpj,
+        email: profileEmail,
+      });
+
       form.reset({
         nome: profile.nome || "",
-        razao_social: profile.razao_social || "",
+        razao_social: profileRazaoSocial,
         apelido: profile.apelido || "",
-        cpfcnpj: maskCpf(profile.cpfcnpj) || "",
-        telefone: profile.telefone ? maskPhone(profile.telefone) : "",
-        email: profile.email || "",
+        cpfcnpj: formattedCpfCnpj,
+        telefone: profile.telefone ? phoneMask(profile.telefone) : "",
+        email: profileEmail,
         data_nascimento: formatBirth(),
       });
     }
   }, [profile, form]);
 
+  const currentCpfCnpj = form.watch("cpfcnpj") || "";
+  const currentCpfCnpjDigits = currentCpfCnpj.replace(/\D/g, "");
+  const initialCpfCnpjDigits = initialSnapshot ? initialSnapshot.cpfcnpj.replace(/\D/g, "") : "";
+  const hasCpfCnpjChanged = Boolean(initialSnapshot && currentCpfCnpjDigits !== initialCpfCnpjDigits);
+  const isCnpj = currentCpfCnpjDigits.length > 11;
+  const tipoDocumento = isCnpj ? "CNPJ" : "CPF";
+
+  const prevIsCnpjRef = React.useRef<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (!hasInitializedRef.current) return;
+    if (prevIsCnpjRef.current === null) {
+      prevIsCnpjRef.current = isCnpj;
+      return;
+    }
+    if (prevIsCnpjRef.current !== isCnpj) {
+      if (isCnpj) {
+        const savedRazao = profile?.razao_social || "";
+        form.setValue("razao_social", savedRazao, { shouldValidate: false });
+      } else {
+        form.setValue("razao_social", "", { shouldValidate: false });
+      }
+      prevIsCnpjRef.current = isCnpj;
+    }
+  }, [isCnpj, profile?.razao_social, form]);
+
   const handleSubmit = async (data: FormData) => {
     try {
       if (!profile?.id) return;
       const nome = cleanString(data.nome, true);
-      const isCnpj = data.cpfcnpj.replace(/\D/g, "").length > 11;
-      const razao_social = isCnpj && data.razao_social ? cleanString(data.razao_social, true) : undefined;
+      const isCnpjSubmit = data.cpfcnpj.replace(/\D/g, "").length > 11;
+      const razao_social = isCnpjSubmit ? (cleanString(data.razao_social || "", true) || null) : null;
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");
       const data_nascimento = data.data_nascimento;
+      const cpfcnpj = data.cpfcnpj.replace(/\D/g, "");
+      const email = data.email.toLowerCase().trim();
 
       await usuarioApi.atualizarUsuario(profile.id, {
         nome,
@@ -142,13 +184,36 @@ export const PerfilTab = React.memo(function PerfilTab() {
         apelido,
         telefone,
         data_nascimento,
+        cpfcnpj,
+        email,
       });
 
       await refreshProfile();
+
+      const formattedCpfCnpj = cpfCnpjMask(cpfcnpj) || "";
+      setInitialSnapshot({
+        cpfcnpj: formattedCpfCnpj,
+        email,
+      });
+      prevIsCnpjRef.current = isCnpjSubmit;
+      form.reset({
+        ...data,
+        cpfcnpj: formattedCpfCnpj,
+        telefone: phoneMask(data.telefone),
+        razao_social: razao_social || "",
+      });
+
       toast.success("cadastro.sucesso.perfilAtualizado");
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Ocorreu um erro ao salvar as alterações.";
+      const errorMessage = getErrorMessage(err, "Ocorreu um erro ao salvar as alterações.");
+      const lower = errorMessage.toLowerCase();
+      if (lower.includes("cpf") || lower.includes("cnpj")) {
+        form.setError("cpfcnpj", { message: errorMessage });
+      } else if (lower.includes("e-mail") || lower.includes("email")) {
+        form.setError("email", { message: errorMessage });
+      } else if (lower.includes("razão social") || lower.includes("razao social")) {
+        form.setError("razao_social", { message: errorMessage });
+      }
       toast.error("cadastro.erro.atualizar", { description: errorMessage });
     }
   };
@@ -164,9 +229,6 @@ export const PerfilTab = React.memo(function PerfilTab() {
       </div>
     );
   }
-
-  const cpfcnpjLimpo = profile?.cpfcnpj ? profile.cpfcnpj.replace(/\D/g, "") : "";
-  const isCnpj = cpfcnpjLimpo.length > 11;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-xs space-y-6">
@@ -208,22 +270,30 @@ export const PerfilTab = React.memo(function PerfilTab() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-5">
-          {/* 1. Campos Protegidos (Leitura): CPF ou CNPJ e E-mail */}
+          {/* 1. Campos: CPF ou CNPJ e E-mail */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="cpfcnpj"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-500 font-semibold ml-1">
-                    CPF ou CNPJ <span className="text-red-600/60">*</span>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    CPF ou CNPJ <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      readOnly
-                      className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                    />
+                    <div className="relative">
+                      <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        inputMode="numeric"
+                        maxLength={18}
+                        onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
+                        placeholder="000.000.000-00"
+                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                        aria-invalid={!!fieldState.error}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -232,18 +302,22 @@ export const PerfilTab = React.memo(function PerfilTab() {
             <FormField
               control={form.control}
               name="email"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-500 font-semibold ml-1">
-                    E-mail <span className="text-red-600/60">*</span>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    E-mail <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                      <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                       <Input
                         {...field}
-                        readOnly
-                        className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                        value={field.value ?? ""}
+                        type="email"
+                        maxLength={255}
+                        placeholder="seu.email@exemplo.com"
+                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                        aria-invalid={!!fieldState.error}
                       />
                     </div>
                   </FormControl>
@@ -251,19 +325,19 @@ export const PerfilTab = React.memo(function PerfilTab() {
                 </FormItem>
               )}
             />
+            {hasCpfCnpjChanged && (
+              <div className="sm:col-span-2">
+                <Banner
+                  variant="warning"
+                  description={
+                    <strong className="font-semibold text-amber-950">
+                      Ao alterar o documento, utilize o novo {tipoDocumento} para fazer login no futuro.
+                    </strong>
+                  }
+                />
+              </div>
+            )}
           </div>
-
-          {/* Banner Informativo sobre alteracao de CPF e Email */}
-          <Banner
-            variant="warning"
-            description={
-              <>
-                Para alterar seu{" "}
-                <span className="font-black">CPF/CNPJ</span> ou{" "}
-                <span className="font-black">E-mail</span> cadastrados, é necessário entrar em contato com o suporte.
-              </>
-            }
-          />
 
           {/* 2. Razao Social (Exibido apenas se for CNPJ, posicionado abaixo do CNPJ e antes do Nome) */}
           {isCnpj && (
@@ -334,13 +408,13 @@ export const PerfilTab = React.memo(function PerfilTab() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Apelido / Nome de Exibição
+                    Nome de Exibição / Apelido
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                       <Input
-                        placeholder="Ex: Tio Fulano"
+                        placeholder="Ex: Tio Thiago"
                         {...field}
                         className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
                       />

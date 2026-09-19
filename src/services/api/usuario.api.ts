@@ -33,13 +33,15 @@ export const usuarioApi = {
 
   atualizarUsuario: (usuarioId: string, payload: {
     nome?: string;
-    razao_social?: string;
+    razao_social?: string | null;
     apelido?: string;
     telefone?: string;
     assinatura_digital_url?: string;
     logo_url?: string | null;
     config_contrato?: any;
     data_nascimento?: string;
+    cpfcnpj?: string;
+    email?: string;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),
 
   atualizarPixUsuario: (usuarioId: string, payload: {

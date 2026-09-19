@@ -96,7 +96,7 @@ export function QuickRegistrationLink({
         <div className="flex-1">
           <p className="text-[13px] font-bold text-emerald-950 tracking-tight leading-snug">Deixe os pais preencherem o cadastro!</p>
           <p className="text-[11px] text-emerald-700">
-            Envie este link para os responsáveis. Eles preenchem o cadastro e os dados caem prontos no seu aplicativo.
+            Envie este link para os responsáveis. Eles preenchem o cadastro e os dados aparecem no seu aplicativo. Depois, você só precisa preencher o valor e dia do vencimento de cada aluno.
           </p>
         </div>
       </div>
@@ -133,8 +133,8 @@ export function QuickRegistrationLink({
             isCopied
               ? "bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-not-allowed pointer-events-none"
               : isCopying
-              ? "bg-white text-emerald-700 border border-emerald-200 opacity-75 cursor-not-allowed pointer-events-none"
-              : "bg-white text-emerald-700 border border-emerald-200 hover:bg-white hover:border-emerald-300 hover:text-emerald-800"
+                ? "bg-white text-emerald-700 border border-emerald-200 opacity-75 cursor-not-allowed pointer-events-none"
+                : "bg-white text-emerald-700 border border-emerald-200 hover:bg-white hover:border-emerald-300 hover:text-emerald-800"
           )}
         >
           {isCopying ? (
