@@ -4,6 +4,41 @@ import { PassageiroBatchUpdateItem } from "@/services/api/passageiro.api";
 
 type EditableField = "escola_id" | "veiculo_id" | "turma" | "periodo" | "valor_cobranca" | "dia_vencimento" | "ativo";
 
+function isFieldValueEqual(
+  originalValue: unknown,
+  newValue: unknown,
+  isNumeric: boolean
+): boolean {
+  if (isNumeric) {
+    const numOrig = originalValue ? Number(originalValue) : null;
+    const numNew = newValue ? Number(newValue) : null;
+    return numOrig === numNew;
+  }
+  return (
+    originalValue === newValue ||
+    (newValue === null && (originalValue === null || originalValue === undefined || originalValue === ""))
+  );
+}
+
+function resolvePendingChanges(
+  current: Partial<PassageiroBatchUpdateItem>,
+  field: EditableField,
+  value: PassageiroBatchUpdateItem[EditableField],
+  originalValue: unknown
+): Partial<PassageiroBatchUpdateItem> | null {
+  const isNumeric = field === "valor_cobranca" || field === "dia_vencimento";
+  const isEqual = isFieldValueEqual(originalValue, value, isNumeric);
+
+  const next = { ...current };
+  if (isEqual) {
+    delete next[field];
+  } else {
+    Object.assign(next, { [field]: value });
+  }
+
+  return Object.keys(next).length === 0 ? null : next;
+}
+
 export function useAtualizacaoRapidaBusiness() {
   const [pendingChanges, setPendingChanges] = useState<Record<string, Partial<PassageiroBatchUpdateItem>>>({});
 
@@ -14,28 +49,20 @@ export function useAtualizacaoRapidaBusiness() {
     original: Passageiro
   ) => {
     setPendingChanges((prev) => {
-      const currentChanges = { ...(prev[passageiroId] || {}) };
-      const originalValue = original[field as keyof Passageiro];
+      const updated = resolvePendingChanges(
+        prev[passageiroId] || {},
+        field,
+        value,
+        original[field as keyof Passageiro]
+      );
 
-      const isSameAsOriginal = originalValue === value ||
-        (value === null && (originalValue === null || originalValue === undefined || originalValue === ""));
-
-      if (isSameAsOriginal) {
-        delete currentChanges[field];
-      } else {
-        currentChanges[field] = value as never;
-      }
-
-      if (Object.keys(currentChanges).length === 0) {
-        const next = { ...prev };
+      const next = { ...prev };
+      if (!updated) {
         delete next[passageiroId];
-        return next;
+      } else {
+        next[passageiroId] = updated;
       }
-
-      return {
-        ...prev,
-        [passageiroId]: currentChanges,
-      };
+      return next;
     });
   }, []);
 
@@ -52,22 +79,17 @@ export function useAtualizacaoRapidaBusiness() {
         const original = originalMap.get(id);
         if (!original) continue;
 
-        const currentChanges = { ...(next[id] || {}) };
-        const originalValue = original[field as keyof Passageiro];
+        const updated = resolvePendingChanges(
+          next[id] || {},
+          field,
+          value,
+          original[field as keyof Passageiro]
+        );
 
-        const isSameAsOriginal = originalValue === value ||
-          (value === null && (originalValue === null || originalValue === undefined || originalValue === ""));
-
-        if (isSameAsOriginal) {
-          delete currentChanges[field];
-        } else {
-          currentChanges[field] = value as never;
-        }
-
-        if (Object.keys(currentChanges).length === 0) {
+        if (!updated) {
           delete next[id];
         } else {
-          next[id] = currentChanges;
+          next[id] = updated;
         }
       }
 

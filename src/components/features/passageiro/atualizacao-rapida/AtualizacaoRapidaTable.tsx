@@ -11,6 +11,15 @@ import { memo } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+export type AtualizacaoRapidaEditableField =
+  | "escola_id"
+  | "veiculo_id"
+  | "turma"
+  | "periodo"
+  | "valor_cobranca"
+  | "dia_vencimento"
+  | "ativo";
+
 interface AtualizacaoRapidaTableProps {
   passageiros: Passageiro[];
   selectedIds: Set<string>;
@@ -19,11 +28,11 @@ interface AtualizacaoRapidaTableProps {
   onToggleSelectAll?: () => void;
   onUpdateField: (
     passageiroId: string,
-    field: "escola_id" | "veiculo_id" | "turma" | "periodo" | "valor_cobranca" | "dia_vencimento" | "ativo",
+    field: AtualizacaoRapidaEditableField,
     value: unknown,
     original: Passageiro
   ) => void;
-  getEffectiveValue: <K extends "escola_id" | "veiculo_id" | "turma" | "periodo" | "valor_cobranca" | "dia_vencimento" | "ativo">(
+  getEffectiveValue: <K extends AtualizacaoRapidaEditableField>(
     passageiro: Passageiro,
     field: K
   ) => unknown;
@@ -47,7 +56,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
   return (
     <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs min-w-[620px] sm:min-w-[880px]">
+        <table className="w-full text-left border-collapse text-xs min-w-[650px] sm:min-w-[880px]">
           <thead>
             <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-8 sm:w-10 text-center">
@@ -67,7 +76,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
               <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[170px]">Escola</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-32">Período</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28">Turma</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-32">Valor</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-32 min-w-[115px]">Valor</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28">Vencimento</th>
             </tr>
           </thead>
@@ -202,8 +211,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                         const numeric = moneyToNumber(formatted);
                         onUpdateField(pId, "valor_cobranca", numeric > 0 ? numeric : null, p);
                       }}
-                      placeholder="R$ 0,00"
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-emerald-700"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-emerald-700 min-w-[100px] w-full"
                     />
                   </td>
 
