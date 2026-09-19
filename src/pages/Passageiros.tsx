@@ -157,7 +157,7 @@ export default function Passageiros() {
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-200/60 px-2.5 py-1 rounded-xl transition-all active:scale-95 -ml-1"
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Ajustar vários</span>
+                      <span>Edição em lote</span>
                     </Link>
                   ) : (
                     <div />
