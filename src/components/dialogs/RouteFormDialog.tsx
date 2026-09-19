@@ -134,7 +134,7 @@ export default function RouteFormDialog({
         <div className="space-y-4 text-left pt-4">
           <div className="space-y-1">
             <Label className="text-slate-700 font-semibold ml-1">
-              Nome identificador <span className="text-red-500">*</span>
+              Qual o nome desta rota? <span className="text-red-500">*</span>
             </Label>
             <Input
               value={nome}
@@ -142,7 +142,7 @@ export default function RouteFormDialog({
                 setNome(e.target.value);
                 setErrors(prev => ({ ...prev, nome: "" }));
               }}
-              placeholder="Ex: Rota das Escolas Municipais"
+              placeholder="Ex: Rota da Manhã"
               className="h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
             />
             {errors.nome && (

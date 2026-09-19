@@ -43,6 +43,7 @@ export function useRegisterController() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "",
+      apelido: "",
       cpfcnpj: "",
       razao_social: "",
       email: "",
@@ -60,6 +61,7 @@ export function useRegisterController() {
       cpfcnpj: "395.423.918-38",
       razao_social: "THIAGO BARROS SOLUCOES",
       nome: "Thiago Barros",
+      apelido: "Tio Thiago",
       telefone: "(11) 95118-6951",
       email: "thiago-svl@hotmail.com",
       data_nascimento: "30/06/1997",
@@ -78,6 +80,7 @@ export function useRegisterController() {
 
       const payload: RegistrarPayloadDTO = {
         nome: data.nome,
+        apelido: data.apelido?.trim() || undefined,
         email: data.email,
         senha: data.senha,
         termos_aceitos: data.termos_aceitos,

@@ -181,32 +181,61 @@ export default function Register() {
                       />
                     )}
 
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                <User className="w-5 h-5" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="nome"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
+                                  <User className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                    Nome completo <span className="text-red-600">*</span>
+                                  </label>
+                                  <Input
+                                    placeholder="Digite seu nome completo"
+                                    {...field}
+                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
+                                  />
+                                </div>
                               </div>
-                              <div className="flex flex-col flex-1 min-w-0">
-                                <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                  Nome completo <span className="text-red-600">*</span>
-                                </label>
-                                <Input
-                                  placeholder="Digite seu nome completo"
-                                  {...field}
-                                  className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                />
+                            </FormControl>
+                            <FormMessage className="text-xs ml-1" />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="apelido"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
+                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
+                                  <User className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
+                                    Nome de Exibição / Apelido
+                                  </label>
+                                  <Input
+                                    placeholder="Ex: Tio Thiago"
+                                    {...field}
+                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage className="text-xs ml-1" />
-                        </FormItem>
-                      )}
-                    />
+                            </FormControl>
+                            <FormMessage className="text-xs ml-1" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
