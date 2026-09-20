@@ -166,17 +166,6 @@ export default function AssinarContrato() {
             />
           )}
         </div>
-
-        {logoCondutorUrl && (
-          <div className="hidden sm:flex items-center gap-1.5 opacity-60 shrink-0">
-            <span className="text-[9px] text-white/60 font-semibold tracking-wider uppercase">Powered by</span>
-            <img
-              src="/assets/logo-van360.webp"
-              alt="Van360"
-              className="h-4 w-auto filter brightness-0 invert"
-            />
-          </div>
-        )}
       </header>
 
       <main className="flex-1 overflow-auto bg-slate-100 pb-32 scroll-smooth block touch-auto">

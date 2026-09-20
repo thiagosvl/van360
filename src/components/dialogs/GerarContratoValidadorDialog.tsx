@@ -246,7 +246,6 @@ export function GerarContratoValidadorDialog({
                                 field.onChange("");
                               }
                             }}
-                            disabled={(date) => date < getStartOfDayBR()}
                             locale={ptBR}
                           />
                         </PopoverContent>
