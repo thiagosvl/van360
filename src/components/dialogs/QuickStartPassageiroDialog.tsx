@@ -196,12 +196,6 @@ export function QuickStartPassageiroDialog({
   const isRetroativo = useMemo(() => isCobrancaRetroativa(mesInicio, anoInicio), [mesInicio, anoInicio]);
 
   useEffect(() => {
-    if (form.formState.errors.mes_fim_cobranca) {
-      form.trigger("mes_fim_cobranca");
-    }
-  }, [mesInicio, anoInicio, mesFim, anoFim, form]);
-
-  useEffect(() => {
     if (isOpen && escolasList?.length === 1 && !form.getValues("escola_id")) {
       form.setValue("escola_id", escolasList[0].id, { shouldValidate: true });
     }

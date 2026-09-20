@@ -49,6 +49,7 @@ export function usePassageiroFormViewModel({
   
   const searchedTermsSet = useRef<Set<string>>(new Set());
   const isFillingMockRef = useRef<boolean>(false);
+  const prevAnoLetivoRef = useRef<string | null>(null);
 
   const { data: fullPassageiro, isLoading: isLoadingFullPassageiro } = usePassageiro(
     editingPassageiro?.id || "",
@@ -94,6 +95,7 @@ export function usePassageiroFormViewModel({
   useEffect(() => {
     if (!isOpen) {
       searchedTermsSet.current.clear();
+      prevAnoLetivoRef.current = null;
     }
   }, [isOpen]);
 
@@ -196,6 +198,18 @@ export function usePassageiroFormViewModel({
 
   useEffect(() => {
     if (!anoLetivoValue) return;
+
+    if (mode === PassageiroFormModes.EDIT) {
+      if (prevAnoLetivoRef.current === null) {
+        prevAnoLetivoRef.current = anoLetivoValue;
+        return;
+      }
+      if (prevAnoLetivoRef.current === anoLetivoValue) {
+        return;
+      }
+    }
+
+    prevAnoLetivoRef.current = anoLetivoValue;
     const currentYear = new Date().getFullYear();
     const selectedAno = anoLetivoValue;
     form.setValue("ano_inicio_cobranca", selectedAno);

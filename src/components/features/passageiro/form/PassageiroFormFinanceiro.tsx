@@ -1,4 +1,5 @@
 import { MoneyInput } from "@/components/forms";
+import { useFormContext } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -19,7 +20,7 @@ import { Passageiro } from "@/types/passageiro";
 import { CalendarDays, DollarSign, ShieldCheck } from "lucide-react";
 import { monthOptions } from "@/utils/dateUtils";
 import { Banner } from "@/components/ui/Banner";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import {
   getAnoCobrancaFimOptions,
   getAnoCobrancaInicioOptions,
@@ -48,12 +49,6 @@ export function PassageiroFormFinanceiro({
   const anoFimOptions = getAnoCobrancaFimOptions(anoInicio);
 
   const isRetroativo = useMemo(() => isCobrancaRetroativa(mesInicio, anoInicio), [mesInicio, anoInicio]);
-
-  useEffect(() => {
-    if (form.formState.errors.mes_fim_cobranca) {
-      form.trigger("mes_fim_cobranca");
-    }
-  }, [mesInicio, anoInicio, mesFim, anoFim, form]);
 
   return (
     <div id="section-parcelas" className="space-y-6">

@@ -29,7 +29,7 @@ import { getAnoLetivoOptions } from "@/utils/domain/anoLetivo";
 import { dateMask } from "@/utils/masks";
 import { AlertTriangle, Car, Clock, Compass, DoorClosed, School, Sun, User, UserCheck, CalendarIcon, CalendarDays, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ptBR } from "date-fns/locale";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseLocalDate } from "@/utils/dateUtils";
@@ -66,24 +66,6 @@ export function PassageiroFormDadosCadastrais({
   const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
   const anoLetivoOptions = getAnoLetivoOptions();
-
-  const dataInicioTransporte = form.watch("data_inicio_transporte");
-  const dataFimTransporte = form.watch("data_fim_transporte");
-
-  useEffect(() => {
-    if (form.formState.errors.data_fim_transporte) {
-      form.trigger("data_fim_transporte");
-    }
-  }, [dataInicioTransporte, dataFimTransporte, form]);
-
-  const horarioEntrada = form.watch("horario_entrada");
-  const horarioSaida = form.watch("horario_saida");
-
-  useEffect(() => {
-    if (form.formState.errors.horario_saida) {
-      form.trigger("horario_saida");
-    }
-  }, [horarioEntrada, horarioSaida, form]);
 
   return (
     <div className="space-y-8">
@@ -716,6 +698,9 @@ export function PassageiroFormDadosCadastrais({
                                 e.stopPropagation();
                                 e.preventDefault();
                                 field.onChange("");
+                                if (form.getValues("data_fim_transporte")) {
+                                  form.trigger("data_fim_transporte");
+                                }
                               }}
                             >
                               <X className="h-5 w-5" />
@@ -734,6 +719,9 @@ export function PassageiroFormDadosCadastrais({
                             setOpenCalendarInicio(false);
                           } else {
                             field.onChange("");
+                          }
+                          if (form.getValues("data_fim_transporte")) {
+                            form.trigger("data_fim_transporte");
                           }
                         }}
                         locale={ptBR}
@@ -833,6 +821,9 @@ export function PassageiroFormDadosCadastrais({
                               e.stopPropagation();
                               e.preventDefault();
                               field.onChange("");
+                              if (form.getValues("horario_saida")) {
+                                form.trigger("horario_saida");
+                              }
                             }}
                             className="text-slate-400 hover:text-slate-600 focus:outline-none p-1"
                           >
@@ -854,7 +845,12 @@ export function PassageiroFormDadosCadastrais({
                           type="time"
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                            if (form.getValues("horario_saida")) {
+                              form.trigger("horario_saida");
+                            }
+                          }}
                           className="pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
                           aria-invalid={!!fieldState.error}
                         />
@@ -865,6 +861,9 @@ export function PassageiroFormDadosCadastrais({
                               e.stopPropagation();
                               e.preventDefault();
                               field.onChange("");
+                              if (form.getValues("horario_saida")) {
+                                form.trigger("horario_saida");
+                              }
                             }}
                           >
                             <X className="h-5 w-5" />

@@ -220,7 +220,7 @@ export default function AssinarContrato() {
             )}
           >
             <PenTool className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            Assinar <span className="hidden sm:inline">Documento</span>
+            Assinar
           </Button>
         </div>
       </div>
