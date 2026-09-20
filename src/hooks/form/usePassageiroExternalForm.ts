@@ -95,6 +95,7 @@ export function usePassageiroExternalForm() {
       nome_professor: "",
       periodo: "",
       modalidade: "",
+      ano_letivo: "",
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
@@ -184,6 +185,7 @@ export function usePassageiroExternalForm() {
         dia_vencimento: data.dia_vencimento
           ? parseInt(String(data.dia_vencimento))
           : null,
+        ano_letivo: parseInt(String(data.ano_letivo), 10),
       };
 
       if (payload.data_nascimento) {
@@ -292,6 +294,7 @@ export function usePassageiroExternalForm() {
       nome_professor: "",
       periodo: "",
       modalidade: "",
+      ano_letivo: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
       horario_entrada: "",
@@ -336,6 +339,7 @@ export function usePassageiroExternalForm() {
       escola_id: escolaId,
       periodo: mockData.periodo,
       modalidade: mockData.modalidade,
+      ano_letivo: new Date().getFullYear().toString(),
       turma: mockData.turma,
       sala: mockData.sala || "",
       nome_professor: mockData.nome_professor,

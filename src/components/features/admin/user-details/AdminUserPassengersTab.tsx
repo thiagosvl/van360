@@ -30,7 +30,7 @@ interface AdminUserPassengersTabProps {
 }
 
 const getValorMensalidade = (p: AdminUserPassengerItem) => {
-  const val = p.valor_cobranca ?? p.valor_mensalidade;
+  const val = p.valor_cobranca;
   return val ? Number(val) : 0;
 };
 

@@ -22,8 +22,19 @@ const getMonthFromDate = (dateStr?: string) => {
   return parseInt(parts[1], 10).toString();
 };
 
+const getYearFromDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 1) return "";
+  return parts[0];
+};
+
+import { getDefaultAnoLetivo } from "@/utils/domain";
+export { getDefaultAnoLetivo };
+
 export const passageiroSchema = z
   .object({
+    ano_letivo: z.string().optional().or(z.literal("")),
     escola_id: z.string().min(1, "Campo obrigatório"),
     veiculo_id: z.string().min(1, "Campo obrigatório"),
     nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
@@ -73,6 +84,8 @@ export const passageiroSchema = z
     horario_saida: timeSchema,
     mes_inicio_cobranca: z.string().optional().or(z.literal("")),
     mes_fim_cobranca: z.string().optional().or(z.literal("")),
+    ano_inicio_cobranca: z.string().optional().or(z.literal("")),
+    ano_fim_cobranca: z.string().optional().or(z.literal("")),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
@@ -123,6 +136,14 @@ export const passageiroSchema = z
       }
     }
 
+    if (!data.ano_letivo || data.ano_letivo.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Campo obrigatório",
+        path: ["ano_letivo"],
+      });
+    }
+
     if (!data.isento) {
       if (!data.valor_cobranca || data.valor_cobranca.trim() === "") {
         ctx.addIssue({
@@ -149,6 +170,9 @@ export const passageiroSchema = z
         });
       }
 
+      const anoInicio = data.ano_inicio_cobranca || new Date().getFullYear().toString();
+      const anoFim = data.ano_fim_cobranca || anoInicio;
+
       if (!data.mes_inicio_cobranca || data.mes_inicio_cobranca.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -163,12 +187,16 @@ export const passageiroSchema = z
           message: "Campo obrigatório",
           path: ["mes_fim_cobranca"],
         });
-      } else if (data.mes_inicio_cobranca && parseInt(data.mes_fim_cobranca, 10) < parseInt(data.mes_inicio_cobranca, 10)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Término da cobrança deve ser igual ou posterior ao início",
-          path: ["mes_fim_cobranca"],
-        });
+      } else if (data.mes_inicio_cobranca) {
+        const totalInicio = parseInt(anoInicio, 10) * 12 + parseInt(data.mes_inicio_cobranca, 10);
+        const totalFim = parseInt(anoFim, 10) * 12 + parseInt(data.mes_fim_cobranca, 10);
+        if (totalFim < totalInicio) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Término da cobrança deve ser igual ou posterior ao início",
+            path: ["mes_fim_cobranca"],
+          });
+        }
       }
     }
   });
@@ -201,6 +229,7 @@ export function usePassageiroForm({
     mode: "onChange",
     resolver: zodResolver(passageiroSchema),
     defaultValues: {
+      ano_letivo: getDefaultAnoLetivo(),
       escola_id: "",
       veiculo_id: "",
       nome: "",
@@ -221,6 +250,8 @@ export function usePassageiroForm({
       horario_saida: "",
       mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
       mes_fim_cobranca: "12",
+      ano_inicio_cobranca: new Date().getFullYear().toString(),
+      ano_fim_cobranca: new Date().getFullYear().toString(),
 
       ativo: true,
     },
@@ -273,6 +304,9 @@ export function usePassageiroForm({
           horario_saida: editingPassageiro.horario_saida || "",
           mes_inicio_cobranca: getMonthFromDate(editingPassageiro.data_inicio_cobranca) || "",
           mes_fim_cobranca: getMonthFromDate(editingPassageiro.data_fim_cobranca) || "",
+          ano_inicio_cobranca: getYearFromDate(editingPassageiro.data_inicio_cobranca) || new Date().getFullYear().toString(),
+          ano_fim_cobranca: getYearFromDate(editingPassageiro.data_fim_cobranca) || new Date().getFullYear().toString(),
+          ano_letivo: editingPassageiro.ano_letivo?.toString() || getYearFromDate(editingPassageiro.data_inicio_cobranca) || new Date().getFullYear().toString(),
           observacoes: editingPassageiro.observacoes || "",
           escola_id: editingPassageiro.escola_id || "",
           veiculo_id: editingPassageiro.veiculo_id || "",
@@ -289,10 +323,14 @@ export function usePassageiroForm({
         ]);
       } else if (isFinalizeMode && prePassageiro) {
         const preData = mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData;
+        const targetAnoLetivo = preData.ano_letivo || getDefaultAnoLetivo();
         form.reset({
           ...preData,
+          ano_letivo: targetAnoLetivo,
           mes_inicio_cobranca: preData.mes_inicio_cobranca || (new Date().getMonth() + 1).toString(),
           mes_fim_cobranca: preData.mes_fim_cobranca || "12",
+          ano_inicio_cobranca: preData.ano_inicio_cobranca || targetAnoLetivo || new Date().getFullYear().toString(),
+          ano_fim_cobranca: preData.ano_fim_cobranca || targetAnoLetivo || new Date().getFullYear().toString(),
           isento: false,
         });
 
@@ -317,6 +355,7 @@ export function usePassageiroForm({
         ]);
       } else {
         form.reset({
+          ano_letivo: getDefaultAnoLetivo(),
           escola_id: "",
           veiculo_id: "",
           nome: "",
@@ -353,6 +392,8 @@ export function usePassageiroForm({
           horario_saida: "",
           mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
           mes_fim_cobranca: "12",
+          ano_inicio_cobranca: new Date().getFullYear().toString(),
+          ano_fim_cobranca: new Date().getFullYear().toString(),
 
           ativo: true,
         });

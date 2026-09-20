@@ -482,6 +482,9 @@ export const mockGenerator = {
       data_nascimento: generateDate(2010, 2020), // 4-14 years old
       data_inicio_transporte: generateDate(2024, 2026),
       data_fim_transporte: generateDate(2024, 2026),
+      ano_letivo: new Date().getFullYear().toString(),
+      ano_inicio_cobranca: new Date().getFullYear().toString(),
+      ano_fim_cobranca: new Date().getFullYear().toString(),
       mes_inicio_cobranca: "1",
       mes_fim_cobranca: "12",
 

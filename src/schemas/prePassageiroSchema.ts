@@ -29,6 +29,7 @@ export const prePassageiroSchema = z.object({
   nome_professor: z.string().optional().nullable().or(z.literal("")),
   periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
+  ano_letivo: z.string({ required_error: "Selecione o ano letivo" }).min(1, "Selecione o ano letivo"),
   data_nascimento: dateSchema(true),
   genero: z.string().min(1, "Campo obrigatório"),
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),

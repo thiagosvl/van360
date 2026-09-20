@@ -25,10 +25,11 @@ import {
 } from "@/hooks";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
+import { getAnoLetivoOptions } from "@/utils/domain/anoLetivo";
 import { dateMask } from "@/utils/masks";
-import { AlertTriangle, Car, Clock, Compass, DoorClosed, School, Sun, User, UserCheck, CalendarIcon, X } from "lucide-react";
+import { AlertTriangle, Car, Clock, Compass, DoorClosed, School, Sun, User, UserCheck, CalendarIcon, CalendarDays, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ptBR } from "date-fns/locale";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseLocalDate } from "@/utils/dateUtils";
@@ -64,6 +65,25 @@ export function PassageiroFormDadosCadastrais({
   const form = useFormContext();
   const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
+  const anoLetivoOptions = getAnoLetivoOptions();
+
+  const dataInicioTransporte = form.watch("data_inicio_transporte");
+  const dataFimTransporte = form.watch("data_fim_transporte");
+
+  useEffect(() => {
+    if (form.formState.errors.data_fim_transporte) {
+      form.trigger("data_fim_transporte");
+    }
+  }, [dataInicioTransporte, dataFimTransporte, form]);
+
+  const horarioEntrada = form.watch("horario_entrada");
+  const horarioSaida = form.watch("horario_saida");
+
+  useEffect(() => {
+    if (form.formState.errors.horario_saida) {
+      form.trigger("horario_saida");
+    }
+  }, [horarioEntrada, horarioSaida, form]);
 
   return (
     <div className="space-y-8">
@@ -75,12 +95,12 @@ export function PassageiroFormDadosCadastrais({
           </div>
           Identificação
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           <FormField
             control={form.control}
             name="nome"
             render={({ field, fieldState }) => (
-              <FormItem className="col-span-1 md:col-span-2">
+              <FormItem className="col-span-1">
                 {isExternal ? (
                   <FormControl>
                     <StitchField icon={User} label="Nome do Aluno" required error={!!fieldState.error}>
@@ -110,6 +130,58 @@ export function PassageiroFormDadosCadastrais({
                     </FormControl>
                   </>
                 )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="ano_letivo"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || undefined}
+                >
+                  <FormControl>
+                    {isExternal ? (
+                      <StitchField icon={CalendarIcon} label="Ano Letivo" required error={!!fieldState.error}>
+                        <SelectTrigger
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione o ano" />
+                        </SelectTrigger>
+                      </StitchField>
+                    ) : (
+                      <>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Ano Letivo <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <div className="relative">
+                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione o ano" />
+                          </SelectTrigger>
+                        </div>
+                      </>
+                    )}
+                  </FormControl>
+                  <SelectContent>
+                    {anoLetivoOptions.map((ano) => (
+                      <SelectItem key={ano} value={ano}>
+                        {ano}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
               </FormItem>
             )}
@@ -248,7 +320,7 @@ export function PassageiroFormDadosCadastrais({
           Escola e Transporte
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           {!hideVeiculo && (
             <FormField
               control={form.control}
@@ -306,7 +378,7 @@ export function PassageiroFormDadosCadastrais({
             control={form.control}
             name="escola_id"
             render={({ field, fieldState }) => (
-              <FormItem className={cn("col-span-1", hideVeiculo && "md:col-span-2")}>
+              <FormItem className={cn("col-span-1", hideVeiculo && !isExternal && "sm:col-span-2")}>
                 <Select
                   value={field.value || undefined}
                   onValueChange={(value) => {
@@ -385,58 +457,6 @@ export function PassageiroFormDadosCadastrais({
 
           <FormField
             control={form.control}
-            name="periodo"
-            render={({ field, fieldState }) => (
-              <FormItem className="col-span-1">
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || undefined}
-                >
-                  <FormControl>
-                    {isExternal ? (
-                      <StitchField icon={Sun} label="Período" required={isExternal} error={!!fieldState.error}>
-                        <SelectTrigger
-                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
-                          aria-invalid={!!fieldState.error}
-                        >
-                          <SelectValue placeholder="Selecione o período" />
-                        </SelectTrigger>
-                      </StitchField>
-                    ) : (
-                      <>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Período {isExternal && <span className="text-red-600">*</span>}
-                        </FormLabel>
-                        <div className="relative">
-                          <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                              fieldState.error && "border-red-500"
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione o período" />
-                          </SelectTrigger>
-                        </div>
-                      </>
-                    )}
-                  </FormControl>
-                  <SelectContent>
-                    {periodos.map((tipo) => (
-                      <SelectItem key={tipo.value} value={tipo.value}>
-                        {tipo.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="modalidade"
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1">
@@ -478,6 +498,58 @@ export function PassageiroFormDadosCadastrais({
                     {modalidades.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="periodo"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || undefined}
+                >
+                  <FormControl>
+                    {isExternal ? (
+                      <StitchField icon={Sun} label="Período" required={isExternal} error={!!fieldState.error}>
+                        <SelectTrigger
+                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
+                          aria-invalid={!!fieldState.error}
+                        >
+                          <SelectValue placeholder="Selecione o período" />
+                        </SelectTrigger>
+                      </StitchField>
+                    ) : (
+                      <>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Período {isExternal && <span className="text-red-600">*</span>}
+                        </FormLabel>
+                        <div className="relative">
+                          <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione o período" />
+                          </SelectTrigger>
+                        </div>
+                      </>
+                    )}
+                  </FormControl>
+                  <SelectContent>
+                    {periodos.map((tipo) => (
+                      <SelectItem key={tipo.value} value={tipo.value}>
+                        {tipo.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -568,51 +640,51 @@ export function PassageiroFormDadosCadastrais({
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="nome_professor"
-          render={({ field, fieldState }) => (
-            <FormItem className="col-span-1">
-              {isExternal ? (
-                <FormControl>
-                  <StitchField icon={UserCheck} label="Professor(a)" error={!!fieldState.error}>
-                    <Input
-                      placeholder="Ex: Cláudia"
-                      {...field}
-                      value={field.value || ""}
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                      aria-invalid={!!fieldState.error}
-                    />
-                  </StitchField>
-                </FormControl>
-              ) : (
-                <>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Professor(a)
-                  </FormLabel>
+          <FormField
+            control={form.control}
+            name="nome_professor"
+            render={({ field, fieldState }) => (
+              <FormItem className={cn("col-span-1", !isExternal && "sm:col-span-2")}>
+                {isExternal ? (
                   <FormControl>
-                    <div className="relative">
-                      <UserCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                    <StitchField icon={UserCheck} label="Professor(a)" error={!!fieldState.error}>
                       <Input
                         placeholder="Ex: Cláudia"
                         {...field}
                         value={field.value || ""}
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                         aria-invalid={!!fieldState.error}
                       />
-                    </div>
+                    </StitchField>
                   </FormControl>
-                </>
-              )}
-              <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
-            </FormItem>
-          )}
-        />
+                ) : (
+                  <>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Professor(a)
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <UserCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          placeholder="Ex: Cláudia"
+                          {...field}
+                          value={field.value || ""}
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                  </>
+                )}
+                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {!isExternal && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <FormField
               control={form.control}
               name="data_inicio_transporte"
@@ -735,7 +807,7 @@ export function PassageiroFormDadosCadastrais({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={form.control}
             name="horario_entrada"

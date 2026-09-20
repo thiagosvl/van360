@@ -73,6 +73,7 @@ export interface Passageiro {
   horario_saida?: string | null;
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
+  ano_letivo?: number;
   responsaveis?: PassageiroResponsavel[];
   responsavel_logado_id?: string | null;
 }

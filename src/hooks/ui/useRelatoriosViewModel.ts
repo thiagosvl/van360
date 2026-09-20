@@ -133,6 +133,8 @@ export function useRelatoriosViewModel() {
 
   // 4. Data Processing (Calculations)
   const dados = useRelatoriosCalculations({
+    mes,
+    ano,
     financeiro: systemSummary?.financeiro,
     cobrancasData: shouldFetchEntradas ? cobrancasData : undefined,
     gastosData: shouldFetchSaidas ? gastosData : undefined,

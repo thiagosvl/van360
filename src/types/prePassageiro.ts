@@ -42,4 +42,5 @@ export interface PrePassageiro {
     data_fim_cobranca?: string;
     dispositivo_cadastro?: string | null;
     metadados_cadastro?: Record<string, unknown> | null;
+    ano_letivo?: number;
 }

@@ -19,4 +19,5 @@ export interface Cobranca {
   data_envio_ultima_notificacao?: string;
   recibo_url?: string;
   isProjection?: boolean;
+  ano_letivo?: number;
 }

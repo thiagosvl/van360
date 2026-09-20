@@ -213,9 +213,16 @@ export default function PrePassageiros({
                           </span>
                         </div>
                         <div className="flex flex-col">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                            {formatShortName(prePassageiro.nome, true)}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                              {formatShortName(prePassageiro.nome, true)}
+                            </p>
+                            {prePassageiro.ano_letivo && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                {prePassageiro.ano_letivo}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                             {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                           </p>
@@ -326,9 +333,16 @@ export default function PrePassageiros({
                     </div>
 
                     <div className="flex-grow min-w-0 pr-10">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                        {formatShortName(prePassageiro.nome, true)}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                          {formatShortName(prePassageiro.nome, true)}
+                        </p>
+                        {prePassageiro.ano_letivo && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                            {prePassageiro.ano_letivo}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
                           {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}

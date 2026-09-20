@@ -50,7 +50,7 @@ export function PassageiroFormResponsavel({
           Responsável Financeiro
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           {/* 1. Nome do Responsável (No form externo ocupa 100%, no interno vem após o CPF) */}
           {!isExternal && (
             <FormField
@@ -87,7 +87,7 @@ export function PassageiroFormResponsavel({
             control={form.control}
             name={fieldNames.nome}
             render={({ field, fieldState }) => (
-              <FormItem className={isExternal ? "md:col-span-2" : ""}>
+              <FormItem className={isExternal ? "sm:col-span-2" : ""}>
                 {isExternal ? (
                   <FormControl>
                     <StitchField icon={User} label="Nome do Responsável" required error={!!fieldState.error}>
@@ -220,7 +220,7 @@ export function PassageiroFormResponsavel({
             control={form.control}
             name={fieldNames.email}
             render={({ field, fieldState }) => (
-              <FormItem className={isExternal ? "" : "md:col-span-2"}>
+              <FormItem className={isExternal ? "" : "sm:col-span-2"}>
                 {isExternal ? (
                   <FormControl>
                     <StitchField icon={Mail} label="E-mail" required={true} error={!!fieldState.error}>

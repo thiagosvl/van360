@@ -140,7 +140,44 @@ export const CarteirinhaCobrancas = ({
             data_vencimento: dataVenc,
             isProjection: true,
             passageiro,
+            ano_letivo: passageiro.ano_letivo || selectedYear,
           });
+        }
+      }
+    }
+
+    if (passageiro.data_fim_cobranca) {
+      const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
+      if (fim && fim.year > selectedYear) {
+        for (let y = selectedYear + 1; y <= fim.year; y++) {
+          const maxM = y === fim.year ? fim.month : 12;
+          const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
+          for (let m = 1; m <= maxM; m++) {
+            if (!dbMonthsFuture.has(m)) {
+              const canGenerate = shouldGeneratePassengerProjection({
+                passageiro,
+                driverCreatedAt: profile?.created_at,
+                targetMonth: m,
+                targetYear: y,
+              });
+
+              if (canGenerate) {
+                const dataVenc = getSafeDueDateString(passageiro.dia_vencimento, m, y);
+                list.push({
+                  id: `proj_pass_${passageiro.id}_${m}_${y}`,
+                  passageiro_id: passageiro.id!,
+                  mes: m,
+                  ano: y,
+                  valor: Number(passageiro.valor_cobranca),
+                  status: CobrancaStatus.PENDENTE,
+                  data_vencimento: dataVenc,
+                  isProjection: true,
+                  passageiro,
+                  ano_letivo: passageiro.ano_letivo || selectedYear,
+                });
+              }
+            }
+          }
         }
       }
     }
@@ -317,6 +354,7 @@ export const CarteirinhaCobrancas = ({
                 key={cobranca.id}
                 cobranca={cobranca}
                 passageiro={passageiro}
+                selectedYear={selectedYear}
                 index={idx}
                 chavePix={profile?.chave_pix}
                 tipoChavePix={profile?.tipo_chave_pix}
@@ -373,6 +411,7 @@ const CobrancaItemPassageiro = forwardRef<
   {
     cobranca: Cobranca;
     passageiro: Passageiro;
+    selectedYear?: number;
     index: number;
     chavePix?: string | null;
     tipoChavePix?: string | null;
@@ -387,6 +426,7 @@ const CobrancaItemPassageiro = forwardRef<
 >(({
   cobranca,
   passageiro,
+  selectedYear,
   index,
   chavePix,
   tipoChavePix,
@@ -487,6 +527,7 @@ const CobrancaItemPassageiro = forwardRef<
           <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
             <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
               {getMesNome(cobranca.mes)}
+              {cobranca.ano && cobranca.ano !== (selectedYear || passageiro.ano_letivo) ? `/${cobranca.ano}` : ""}
             </p>
             <div className="flex items-center gap-2 mt-0.5">
               <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">

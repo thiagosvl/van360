@@ -11,9 +11,11 @@ import { phoneMask } from "@/utils/masks";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { useBuscarResponsavel } from "@/hooks/api/useBuscarResponsavel";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { getDefaultAnoLetivo } from "@/utils/domain";
 import type { Passageiro } from "@/types/passageiro";
 
 export const quickStartPassageiroBaseSchema = z.object({
+  ano_letivo: z.string().optional(),
   nome: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
   escola_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
   veiculo_id: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
@@ -26,10 +28,13 @@ export const quickStartPassageiroBaseSchema = z.object({
   dia_vencimento: z.string().optional(),
   mes_inicio_cobranca: z.string().optional(),
   mes_fim_cobranca: z.string().optional(),
+  ano_inicio_cobranca: z.string().optional(),
+  ano_fim_cobranca: z.string().optional(),
 });
 
 export const getQuickStartPassageiroSchema = (isOnboarding?: boolean) => {
   return z.object({
+    ano_letivo: z.string().optional().or(z.literal("")),
     nome: z.string({ required_error: "Campo obrigatório" })
       .min(1, "Campo obrigatório")
       .min(2, "Deve ter pelo menos 2 caracteres"),
@@ -58,7 +63,13 @@ export const getQuickStartPassageiroSchema = (isOnboarding?: boolean) => {
     dia_vencimento: z.string().optional(),
     mes_inicio_cobranca: z.string().optional(),
     mes_fim_cobranca: z.string().optional(),
+    ano_inicio_cobranca: z.string().optional(),
+    ano_fim_cobranca: z.string().optional(),
   }).superRefine((data, ctx) => {
+    if (!data.ano_letivo || data.ano_letivo.trim() === "") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["ano_letivo"] });
+    }
+
     if (isOnboarding || data.isento) return;
 
     if (!data.valor_cobranca || data.valor_cobranca.trim() === "") {
@@ -67,13 +78,21 @@ export const getQuickStartPassageiroSchema = (isOnboarding?: boolean) => {
     if (!data.dia_vencimento || data.dia_vencimento.trim() === "") {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["dia_vencimento"] });
     }
+
+    const anoInicio = data.ano_inicio_cobranca || new Date().getFullYear().toString();
+    const anoFim = data.ano_fim_cobranca || anoInicio;
+
     if (!data.mes_inicio_cobranca || data.mes_inicio_cobranca.trim() === "") {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["mes_inicio_cobranca"] });
     }
     if (!data.mes_fim_cobranca || data.mes_fim_cobranca.trim() === "") {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Campo obrigatório", path: ["mes_fim_cobranca"] });
-    } else if (data.mes_inicio_cobranca && parseInt(data.mes_fim_cobranca, 10) < parseInt(data.mes_inicio_cobranca, 10)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Término da cobrança deve ser igual ou posterior ao início", path: ["mes_fim_cobranca"] });
+    } else if (data.mes_inicio_cobranca) {
+      const totalInicio = parseInt(anoInicio, 10) * 12 + parseInt(data.mes_inicio_cobranca, 10);
+      const totalFim = parseInt(anoFim, 10) * 12 + parseInt(data.mes_fim_cobranca, 10);
+      if (totalFim < totalInicio) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Término da cobrança deve ser igual ou posterior ao início", path: ["mes_fim_cobranca"] });
+      }
     }
   });
 };
@@ -93,6 +112,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
   const form = useForm<QuickStartPassageiroFormData>({
     resolver: zodResolver(getQuickStartPassageiroSchema(isOnboarding)),
     defaultValues: {
+      ano_letivo: getDefaultAnoLetivo(),
       nome: "",
       responsavel_principal: {
         nome: "",
@@ -105,6 +125,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       veiculo_id: "",
       mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
       mes_fim_cobranca: "12",
+      ano_inicio_cobranca: new Date().getFullYear().toString(),
+      ano_fim_cobranca: new Date().getFullYear().toString(),
     },
     mode: "onChange",
   });
@@ -135,6 +157,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
     try {
       setIsSubmitting(true);
       const currentYear = new Date().getFullYear();
+      const anoInicio = data.ano_inicio_cobranca || currentYear.toString();
+      const anoFim = data.ano_fim_cobranca || anoInicio;
 
       const isIsento = !!data.isento;
 
@@ -153,8 +177,9 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         dia_vencimento: isIsento ? null : (data.dia_vencimento ? parseInt(String(data.dia_vencimento)) : null),
         escola_id: data.escola_id,
         veiculo_id: data.veiculo_id,
-        data_inicio_cobranca: (!isIsento && data.mes_inicio_cobranca) ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
-        data_fim_cobranca: (!isIsento && data.mes_fim_cobranca) ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
+        data_inicio_cobranca: (!isIsento && data.mes_inicio_cobranca) ? `${anoInicio}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null,
+        data_fim_cobranca: (!isIsento && data.mes_fim_cobranca) ? `${anoFim}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null,
+        ano_letivo: parseInt(data.ano_letivo || anoInicio, 10),
         ativo: true,
         usuario_id: usuarioId,
       };
@@ -213,6 +238,7 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       form.setValue("veiculo_id", mockPassenger.veiculo_id || "");
       
       if (!isOnboarding && mockPassenger.responsavel_principal) {
+        form.setValue("ano_letivo", new Date().getFullYear().toString());
         form.setValue("responsavel_principal.nome", mockPassenger.responsavel_principal.nome);
         form.setValue("responsavel_principal.telefone", phoneMask(mockPassenger.responsavel_principal.telefone));
         form.setValue("isento", false);
@@ -220,6 +246,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         form.setValue("dia_vencimento", mockPassenger.dia_vencimento);
         form.setValue("mes_inicio_cobranca", "2");
         form.setValue("mes_fim_cobranca", "12");
+        form.setValue("ano_inicio_cobranca", new Date().getFullYear().toString());
+        form.setValue("ano_fim_cobranca", new Date().getFullYear().toString());
       }
     }
   };

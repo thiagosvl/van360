@@ -59,8 +59,11 @@ import { Passageiro } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { Usuario } from "@/types/usuario";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 interface UseRelatoriosCalculationsProps {
+  mes?: number;
+  ano?: number;
   cobrancasData?: { all: Cobranca[]; recebidos: Cobranca[]; areceber: Cobranca[] };
   gastosData?: { list: Gasto[] };
   passageirosData?: { list: Passageiro[] };
@@ -93,6 +96,8 @@ interface UseRelatoriosCalculationsProps {
 }
 
 export const useRelatoriosCalculations = ({
+  mes,
+  ano,
   cobrancasData,
   gastosData,
   passageirosData,
@@ -201,11 +206,14 @@ export const useRelatoriosCalculations = ({
     let totalValorVencimentos = 0;
 
     passageirosList.forEach((p: Passageiro) => {
-      if (!p.ativo) return;
+      if (!p.ativo || p.isento) return;
+      if (mes && ano && !shouldGeneratePassengerProjection({ passageiro: p, targetMonth: mes, targetYear: ano })) {
+        return;
+      }
       const dia = p.dia_vencimento ? Number(p.dia_vencimento) : null;
       if (!dia || dia < 1 || dia > 31) return;
 
-      const valor = Number(p.valor_mensalidade ?? p.valor_cobranca ?? 0);
+      const valor = Number(p.valor_cobranca ?? 0);
       if (valor <= 0) return;
 
       if (!vencimentosPorDiaMap[dia]) {
@@ -375,19 +383,26 @@ export const useRelatoriosCalculations = ({
     const temGastosVinculados = veiculosListFull.length > 0;
 
     // --- OPERATIONAL DATA (METADATA - Visible even if restricted) ---
+    const isPassageiroVigente = (p: Passageiro) => {
+      if (!p.ativo || p.isento) return false;
+      if (mes && ano) {
+        return shouldGeneratePassengerProjection({ passageiro: p, targetMonth: mes, targetYear: ano });
+      }
+      return true;
+    };
 
     // Escolas
     const totalPassageirosPorEscola = escolasList.reduce(
-      (acc: number, e: any) => acc + (e.passageiros_ativos_count || 0),
+      (acc: number, e) => acc + (e.passageiros_ativos_count || 0),
       0
     );
 
     const escolas = escolasList
-      .filter((e: any) => (e.passageiros_ativos_count || 0) > 0)
-      .map((e: any) => {
+      .filter((e) => (e.passageiros_ativos_count || 0) > 0)
+      .map((e) => {
         const valor = passageirosList
-          .filter((p: any) => p.ativo && String(p.escola_id) === String(e.id))
-          .reduce((acc: number, p: any) => acc + Number(p.valor_cobranca || 0), 0);
+          .filter((p: Passageiro) => isPassageiroVigente(p) && String(p.escola_id) === String(e.id))
+          .reduce((acc: number, p: Passageiro) => acc + Number(p.valor_cobranca || 0), 0);
 
         return {
           nome: e.nome,
@@ -401,21 +416,21 @@ export const useRelatoriosCalculations = ({
               : 0,
         };
       })
-      .sort((a: any, b: any) => b.passageiros - a.passageiros)
+      .sort((a, b) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
     // Veículos (Lista Operacional)
     const totalPassageirosPorVeiculo = veiculosListFull.reduce(
-      (acc: number, v: any) => acc + (v.passageiros_ativos_count || 0),
+      (acc: number, v) => acc + (v.passageiros_ativos_count || 0),
       0
     );
 
     const veiculos = veiculosListFull
-      .filter((v: any) => (v.passageiros_ativos_count || 0) > 0)
-      .map((v: any) => {
+      .filter((v) => (v.passageiros_ativos_count || 0) > 0)
+      .map((v) => {
         const valor = passageirosList
-          .filter((p: any) => p.ativo && String(p.veiculo_id) === String(v.id))
-          .reduce((acc: number, p: any) => acc + Number(p.valor_cobranca || 0), 0);
+          .filter((p: Passageiro) => isPassageiroVigente(p) && String(p.veiculo_id) === String(v.id))
+          .reduce((acc: number, p: Passageiro) => acc + Number(p.valor_cobranca || 0), 0);
 
         return {
           placa: formatarPlacaExibicao(v.placa),
@@ -431,14 +446,14 @@ export const useRelatoriosCalculations = ({
               : 0,
         };
       })
-      .sort((a: any, b: any) => b.passageiros - a.passageiros)
+      .sort((a, b) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
     // Períodos
     const periodosMap: Record<string, { count: number; valor: number }> = {};
     passageirosList
-      .filter((p: any) => p.ativo)
-      .forEach((p: any) => {
+      .filter((p: Passageiro) => isPassageiroVigente(p))
+      .forEach((p: Passageiro) => {
         const periodo = p.periodo || PERIODO_NAO_INFORMADO;
         if (!periodosMap[periodo]) {
           periodosMap[periodo] = { count: 0, valor: 0 };
@@ -520,7 +535,9 @@ export const useRelatoriosCalculations = ({
     profile,
     financeiro,
     hasVeiculoFilter,
-    categoriasData
+    categoriasData,
+    mes,
+    ano
   ]);
 
   return dados;

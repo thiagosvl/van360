@@ -95,7 +95,7 @@ export default function PassageiroExternalForm() {
                 <img
                   src={motoristaLogoUrl || "/assets/logo-van360.webp"}
                   alt={motoristaDisplayName || "Van360"}
-                  fetchPriority="high"
+                  {...({ fetchpriority: "high" } as Record<string, string>)}
                   className={cn(
                     "select-none drop-shadow-sm transition-all",
                     motoristaLogoUrl

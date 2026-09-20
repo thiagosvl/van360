@@ -215,7 +215,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                         const numeric = moneyToNumber(formatted);
                         onUpdateField(pId, "valor_cobranca", numeric > 0 ? numeric : null, p);
                       }}
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-emerald-700 min-w-[100px] w-full"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-slate-800 min-w-[100px] w-full"
                     />
                   </td>
 

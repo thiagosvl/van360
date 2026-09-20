@@ -102,9 +102,24 @@ export function useGerarContratoValidadorViewModel({
       onCloseRef.current();
       onSuccessRef.current(passageiroId, true);
     } else {
+      let suggestedFim = passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "";
+      if (!suggestedFim && passageiro.data_fim_cobranca) {
+        const parts = passageiro.data_fim_cobranca.split("-");
+        if (parts.length >= 2) {
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10);
+          const lastDay = new Date(year, month, 0).getDate();
+          suggestedFim = `${String(lastDay).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+        }
+      }
+
+      const suggestedInicio = passageiro.data_inicio_transporte
+        ? formatDateToBR(passageiro.data_inicio_transporte)
+        : (passageiro.data_inicio_cobranca ? formatDateToBR(passageiro.data_inicio_cobranca) : "");
+
       form.reset({
-        data_inicio_transporte: passageiro.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "",
-        data_fim_transporte: passageiro.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "",
+        data_inicio_transporte: suggestedInicio,
+        data_fim_transporte: suggestedFim,
         responsavel_principal: {
           cpf: passageiro.responsavel_principal?.cpf ? cpfMask(passageiro.responsavel_principal.cpf) : "",
         },

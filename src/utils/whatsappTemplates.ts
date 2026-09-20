@@ -53,7 +53,7 @@ export function buildPrePassageiroShareMessage(link: string): string {
   return [
     "Olá! Tudo bem? 🚐",
     "",
-    "Estamos começando a utilizar o _Van360_ para deixar o transporte escolar mais organizado e facilitar o acompanhamento das informações do seu filho(a).",
+    "Começamos a utilizar o _Van360_ para deixar o transporte escolar mais organizado e facilitar o acompanhamento das informações do seu filho(a).",
     "",
     "Para isso, precisamos que você faça o cadastro do aluno pelo link abaixo. É rapidinho e leva menos de 2 minutos:",
     "",

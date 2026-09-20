@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { mapearCarteirinhaParaPassageiro } from "@/utils/domain/carteirinhaConverter";
 import { getNowBR } from "@/utils/dateUtils";
 import { CobrancaStatus } from "@/types/enums";
-import { shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
+import { shouldGeneratePassengerProjection, getSafeDueDateString, parseMonthYearFromDateString } from "@/utils/domain";
 
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
@@ -61,6 +61,38 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
             data_vencimento: dataVenc,
             isProjection: true,
           });
+        }
+      }
+    }
+
+    if (passageiroConvertido.data_fim_cobranca) {
+      const fim = parseMonthYearFromDateString(passageiroConvertido.data_fim_cobranca);
+      if (fim && fim.year > currentYear) {
+        for (let y = currentYear + 1; y <= fim.year; y++) {
+          const maxM = y === fim.year ? fim.month : 12;
+          const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
+          for (let m = 1; m <= maxM; m++) {
+            if (!dbMonthsFuture.has(m)) {
+              const canGenerate = shouldGeneratePassengerProjection({
+                passageiro: passageiroConvertido,
+                targetMonth: m,
+                targetYear: y,
+              });
+
+              if (canGenerate) {
+                const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, y);
+                list.push({
+                  id: `proj_resp_${carteirinha.id}_${m}_${y}`,
+                  mes: m,
+                  ano: y,
+                  valor: Number(carteirinha.valor_cobranca || 0),
+                  status: CobrancaStatus.PENDENTE,
+                  data_vencimento: dataVenc,
+                  isProjection: true,
+                });
+              }
+            }
+          }
         }
       }
     }
@@ -233,6 +265,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                   <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
                     <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
                       {nomeMes}
+                      {item.ano && item.ano !== currentYear ? `/${item.ano}` : ""}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">

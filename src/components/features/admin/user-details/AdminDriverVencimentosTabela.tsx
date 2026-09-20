@@ -30,7 +30,7 @@ export function AdminDriverVencimentosTabela({ passageiros }: AdminDriverVencime
       const dia = p.dia_vencimento ? Number(p.dia_vencimento) : null;
       if (!dia || dia < 1 || dia > 31) continue;
 
-      const valor = Number(p.valor_cobranca ?? p.valor_mensalidade ?? 0);
+      const valor = Number(p.valor_cobranca ?? 0);
       const atual = mapaDias.get(dia) || { quantidade: 0, valorTotal: 0 };
       atual.quantidade += 1;
       atual.valorTotal += valor;

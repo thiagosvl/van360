@@ -8,6 +8,7 @@ export interface CreateCobrancaDTO {
   status: CobrancaStatus;
   mes: number;
   ano: number;
+  ano_letivo?: number;
   tipo_pagamento?: CobrancaTipoPagamento;
   data_pagamento?: string;
   valor_pago?: number;

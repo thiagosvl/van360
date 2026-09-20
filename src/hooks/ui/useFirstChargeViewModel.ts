@@ -94,6 +94,7 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen }: FirstCh
         status,
         mes: today.getMonth() + 1,
         ano: today.getFullYear(),
+        ano_letivo: passageiro.ano_letivo || today.getFullYear(),
       };
 
       if (status === CobrancaStatus.PAGO) {

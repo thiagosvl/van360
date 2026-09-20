@@ -192,6 +192,21 @@ export function usePassageiroFormViewModel({
     }
   }, [telefoneResponsavelValue, handleSearchResponsavel, mode]);
 
+  const anoLetivoValue = form.watch("ano_letivo");
+
+  useEffect(() => {
+    if (!anoLetivoValue) return;
+    const currentYear = new Date().getFullYear();
+    const selectedAno = anoLetivoValue;
+    form.setValue("ano_inicio_cobranca", selectedAno);
+    form.setValue("ano_fim_cobranca", selectedAno);
+
+    if (parseInt(selectedAno, 10) > currentYear && mode !== PassageiroFormModes.EDIT) {
+      form.setValue("mes_inicio_cobranca", "");
+      form.setValue("mes_fim_cobranca", "");
+    }
+  }, [anoLetivoValue, form, mode]);
+
   const handleFillMock = useCallback(() => {
     const currentValues = form.getValues();
 
@@ -280,11 +295,16 @@ export function usePassageiroFormViewModel({
       : null;
 
     const currentYear = new Date().getFullYear();
+    const anoInicio = data.ano_inicio_cobranca || currentYear.toString();
+    const anoFim = data.ano_fim_cobranca || anoInicio;
 
-    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${currentYear}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
-    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${currentYear}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${anoInicio}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${anoFim}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.ano_letivo = parseInt(data.ano_letivo || anoInicio, 10);
     delete purePayload.mes_inicio_cobranca;
     delete purePayload.mes_fim_cobranca;
+    delete purePayload.ano_inicio_cobranca;
+    delete purePayload.ano_fim_cobranca;
 
     purePayload.genero = purePayload.genero || null;
     purePayload.periodo = purePayload.periodo || null;
@@ -374,6 +394,7 @@ export function usePassageiroFormViewModel({
             checkTimeChange(purePayload.horario_entrada, editingPassageiro.horario_entrada) ||
             checkTimeChange(purePayload.horario_saida, editingPassageiro.horario_saida) ||
             checkDateChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
+            checkDateChange(purePayload.data_fim_cobranca, editingPassageiro.data_fim_cobranca) ||
             checkTextChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
             checkTextChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
             checkTextChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||

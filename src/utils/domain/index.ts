@@ -9,6 +9,7 @@ export * from "./veiculo/placaUtils";
 // Cobrança
 export * from "./cobranca/disableActions";
 export * from "./cobrancaProjection";
+export * from "./anoLetivo";
 
 // Pages
 export * from "./pages/pagesUtils";
