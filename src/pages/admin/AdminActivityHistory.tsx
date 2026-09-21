@@ -3,7 +3,7 @@ import { Filter, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAdminLogs } from "@/hooks/api/adminHooks";
 import { useLayout } from "@/contexts/LayoutContext";
-import { getNowBR, toPersistenceString } from "@/utils/dateUtils";
+import { getNowBR, toPersistenceString, addDays } from "@/utils/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +24,10 @@ export default function AdminActivityHistory() {
   const [limit, setLimit] = useState("25");
 
   const today = toPersistenceString(getNowBR());
+  const yesterday = toPersistenceString(addDays(getNowBR(), -1));
 
   const [logsFilter, setLogsFilter] = useState({
-    dataInicio: today,
+    dataInicio: yesterday,
     dataFim: today,
     acao: "all",
     entidade: "all",

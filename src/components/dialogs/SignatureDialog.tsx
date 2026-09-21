@@ -2,8 +2,7 @@ import React from "react";
 import { BaseDialog } from "../ui/BaseDialog";
 import { Banner } from "../ui/Banner";
 import { SignaturePad, SignaturePadRef } from "../common/SignaturePad";
-import { Loader2, Trash2, PenTool, ShieldCheck, AlertCircle } from "lucide-react";
-import { Button } from "../ui/button";
+import { PenTool, ShieldCheck } from "lucide-react";
 
 interface SignatureDialogProps {
   isOpen: boolean;

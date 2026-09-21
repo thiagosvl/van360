@@ -97,9 +97,12 @@ export function AddressDetailsDialog({
   const formattedParentesco = rawParentesco ? formatParentesco(rawParentesco) : "";
   const parentescoLabel = formattedParentesco;
 
-  const activeAddress = activeResp?.logradouro
+  const rawAddress = activeResp?.logradouro
     ? (formatarEnderecoCompleto(activeResp) || formatarEnderecoParcialRota(activeResp))
-    : (addressDialogData.address || (allResponsaveis[0]?.logradouro ? formatarEnderecoCompleto(allResponsaveis[0]) : ""));
+    : (allResponsaveis[0]?.logradouro ? formatarEnderecoCompleto(allResponsaveis[0]) : (addressDialogData.address !== "Sem endereço cadastrado" ? addressDialogData.address : ""));
+
+  const hasValidAddress = Boolean(rawAddress && rawAddress.trim() && rawAddress !== "Sem endereço cadastrado");
+  const activeAddress = hasValidAddress ? rawAddress : "";
 
   const activeTabValue = activeResp?.id || activeResp?.responsavel_id || allResponsaveis[0]?.id || "principal";
 
@@ -183,44 +186,52 @@ export function AddressDetailsDialog({
           />
         )}
 
-        {/* Card de Endereço Ativo (Com Waze e Google Maps) */}
-        <div className="bg-slate-50/80 border border-slate-100/80 p-4 rounded-2xl space-y-3.5 text-left">
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-[#1a3a5c]" />
-              <span className="text-xs uppercase font-semibold text-slate-500">
-                Endereço
-              </span>
+        {/* Card de Endereço Ativo (Com Waze e Google Maps) ou Banner Informativo */}
+        {!hasValidAddress ? (
+          <Banner
+            variant="warning"
+            title="Endereço não cadastrado"
+            description="Este aluno ainda não possui endereço residencial informado no cadastro."
+          />
+        ) : (
+          <div className="bg-slate-50/80 border border-slate-100/80 p-4 rounded-2xl space-y-3.5 text-left">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-[#1a3a5c]" />
+                <span className="text-xs uppercase font-semibold text-slate-500">
+                  Endereço
+                </span>
+              </div>
+              {activeRespFirstName && (
+                <span className="text-[10px] font-normal tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
+                  {activeRespFirstName} ({parentescoLabel})
+                </span>
+              )}
             </div>
-            {activeRespFirstName && (
-              <span className="text-[10px] font-normal tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
-                {activeRespFirstName} ({parentescoLabel})
-              </span>
-            )}
-          </div>
-          <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
-            {activeAddress || <span className="text-slate-400 font-normal">—</span>}
-          </p>
+            <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
+              {activeAddress}
+            </p>
 
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
-            <Button
-              type="button"
-              onClick={() => openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress)}
-              className="h-11 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
-            >
-              <GoogleMapsIcon className="w-4 h-4 shrink-0" />
-              <span>Maps</span>
-            </Button>
-            <Button
-              type="button"
-              onClick={() => openNavigation(NavigationApp.WAZE, activeAddress)}
-              className="h-11 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
-            >
-              <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />
-              <span>Waze</span>
-            </Button>
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
+              <Button
+                type="button"
+                onClick={() => openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress)}
+                className="h-11 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
+              >
+                <GoogleMapsIcon className="w-4 h-4 shrink-0" />
+                <span>Maps</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={() => openNavigation(NavigationApp.WAZE, activeAddress)}
+                className="h-11 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
+              >
+                <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />
+                <span>Waze</span>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </BaseDialog.Body>
     </BaseDialog>
   );

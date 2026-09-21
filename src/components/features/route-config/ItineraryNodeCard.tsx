@@ -152,7 +152,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5">
                       <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="break-words">
-                        {formatarEnderecoParcialRota(item.passageiro) || "Endereço não informado"}
+                        {formatarEnderecoParcialRota(item.passageiro) || "Sem endereço cadastrado"}
                       </span>
                     </div>
                   </div>

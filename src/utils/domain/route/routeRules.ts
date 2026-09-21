@@ -315,7 +315,17 @@ export function getAlunosEscolaPorPosicao(todasParadasList: any[], escolaNodeInd
     if (passEscolaId !== escolaId) return false;
     if (node.sentido !== RouteSentido.INDO) return false;
     if (i >= escolaNodeIndex) return false;
-    return true;
+
+    let temOutraParadaDestaMesmaEscolaEntre = false;
+    for (let idx = i + 1; idx < escolaNodeIndex; idx++) {
+      const n = todasParadasList[idx];
+      const nEscolaId = n.escola_id || n.escola?.id;
+      if (n.tipo_no === RouteNodeType.ESCOLA && nEscolaId === escolaId) {
+        temOutraParadaDestaMesmaEscolaEntre = true;
+        break;
+      }
+    }
+    return !temOutraParadaDestaMesmaEscolaEntre;
   });
 
   const subes = todasParadasList.filter((node, i) => {
@@ -323,32 +333,19 @@ export function getAlunosEscolaPorPosicao(todasParadasList: any[], escolaNodeInd
     const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id || node.escola_id;
     if (passEscolaId !== escolaId) return false;
     if (node.sentido !== RouteSentido.VOLTANDO) return false;
+    if (i <= escolaNodeIndex) return false;
 
-    let ultimaEscolaAntesDeP = -1;
-    for (let idx = i - 1; idx >= 0; idx--) {
-      if (todasParadasList[idx].tipo_no === RouteNodeType.ESCOLA) {
-        ultimaEscolaAntesDeP = idx;
+    let temOutraParadaDestaMesmaEscolaEntre = false;
+    for (let idx = escolaNodeIndex + 1; idx < i; idx++) {
+      const n = todasParadasList[idx];
+      const nEscolaId = n.escola_id || n.escola?.id;
+      if (n.tipo_no === RouteNodeType.ESCOLA && nEscolaId === escolaId) {
+        temOutraParadaDestaMesmaEscolaEntre = true;
         break;
       }
     }
 
-    if (node.status === RouteStopStatus.PENDENTE && i > escolaNodeIndex) {
-      let temEscolaDestaEntrem = false;
-      for (let idx = escolaNodeIndex + 1; idx < i; idx++) {
-        if (todasParadasList[idx].tipo_no === RouteNodeType.ESCOLA) {
-          const eId = todasParadasList[idx].escola_id || todasParadasList[idx].escola?.id;
-          if (eId === escolaId) {
-            temEscolaDestaEntrem = true;
-            break;
-          }
-        }
-      }
-      if (!temEscolaDestaEntrem && ultimaEscolaAntesDeP < escolaNodeIndex) {
-        return true;
-      }
-    }
-
-    return i > escolaNodeIndex && ultimaEscolaAntesDeP === escolaNodeIndex;
+    return !temOutraParadaDestaMesmaEscolaEntre;
   });
 
   return { desces, subes };

@@ -69,13 +69,19 @@ export function ActiveRouteCurrentCard({
   const displayOrdem = parada.ordem || 0;
   const pass = parada.passageiro;
 
+  const temEnderecoValido = Boolean(
+    isEscola
+      ? parada.escola?.logradouro
+      : (pass?.responsavel_principal?.logradouro || pass?.responsaveis?.some((r: any) => r.logradouro))
+  );
+
   const currentAddressStr = isEscola
-    ? formatarEnderecoParcialRota(parada.escola)
-    : formatarEnderecoParcialRota(pass);
+    ? (formatarEnderecoParcialRota(parada.escola) || "Endereço da escola")
+    : (formatarEnderecoParcialRota(pass) || "Sem endereço cadastrado");
 
   const activeAddressStr = isEscola
-    ? formatarEnderecoParcialRota(parada.escola)
-    : formatarEnderecoParcialRota(pass);
+    ? (formatarEnderecoParcialRota(parada.escola) || "Endereço da escola")
+    : (formatarEnderecoParcialRota(pass) || "Sem endereço cadastrado");
 
   const cardClass = "bg-white p-3.5 sm:p-4 rounded-2xl shadow-md space-y-3 animate-in fade-in zoom-in-95 duration-200 text-left border-2 border-[#1a3a5c] relative z-10";
 
@@ -109,8 +115,9 @@ export function ActiveRouteCurrentCard({
                 type="button"
                 variant="outline"
                 size="icon"
-                disabled={isAnyActionBusy}
+                disabled={isAnyActionBusy || !temEnderecoValido}
                 onClick={() => {
+                  if (!temEnderecoValido) return;
                   onOpenAddressDialog({
                     open: true,
                     title: parada.passageiro?.nome,
@@ -122,7 +129,7 @@ export function ActiveRouteCurrentCard({
                   });
                 }}
                 className="h-8 w-8 rounded-lg border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Ver endereço e detalhes da parada"
+                title={temEnderecoValido ? "Ver endereço e detalhes da parada" : "Endereço não cadastrado"}
               >
                 <MapPin className="w-4 h-4 text-[#1a3a5c]" />
               </Button>

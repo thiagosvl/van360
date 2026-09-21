@@ -86,12 +86,6 @@ export function useConfigurarRotaViewModel() {
 
   const listBottomRef = useRef<HTMLDivElement | null>(null);
 
-  const triggerScrollToBottom = () => {
-    setTimeout(() => {
-      listBottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 200);
-  };
-
   const { isPronto: isRotaPronta, errorMsg: msgErroRota } = validarItinerarioPronto(null, itinerario);
 
   const temPassageiro = useMemo(() => itinerario.some((item) => item.tipo_no === RouteNodeType.PASSAGEIRO), [itinerario]);
@@ -158,6 +152,11 @@ export function useConfigurarRotaViewModel() {
         const sortedNos = [...rawNos].sort((a, b) => a.ordem - b.ordem);
         const mappedItems: ItineraryItem[] = sortedNos.map((no: any) => {
           const isEscola = no.tipo_no === RouteNodeType.ESCOLA;
+          const resp = no.passageiro?.responsavel_principal;
+          const temEndereco = isEscola
+            ? Boolean(no.escola?.logradouro)
+            : Boolean((resp?.logradouro && resp?.numero) || (no.passageiro?.logradouro && no.passageiro?.numero));
+
           return {
             id: no.id || `no-${no.tipo_no}-${Date.now()}`,
             tipo_no: no.tipo_no as RouteNodeType,
@@ -165,7 +164,7 @@ export function useConfigurarRotaViewModel() {
             escola_id: no.escola_id,
             nome: isEscola ? no.escola?.nome || "Escola" : no.passageiro?.nome || "Aluno",
             detalhe: isEscola ? "Parada em Escola" : no.passageiro?.escola?.nome ? `Escola: ${no.passageiro.escola.nome}` : undefined,
-            temEndereco: true,
+            temEndereco,
             responsaveisAdicionais: no.passageiro?.responsaveis || [],
             escola: no.escola,
             passageiro: no.passageiro,
@@ -207,6 +206,11 @@ export function useConfigurarRotaViewModel() {
     }
   };
 
+  const handleOpenCadastrarEndereco = (passId: string) => {
+    setEditingInlinePassageiroId(passId);
+    setShouldAutoAddPassageiro(true);
+  };
+
   const handleAddPassageiro = (passId: string) => {
     const pass = passageirosList.find((p) => p.id === passId);
     if (!pass) return;
@@ -217,11 +221,9 @@ export function useConfigurarRotaViewModel() {
     }
 
     const resp = pass.responsavel_principal;
-    if (!resp?.logradouro || !resp?.numero) {
-      setEditingInlinePassageiroId(pass.id);
-      setShouldAutoAddPassageiro(true);
-      return;
-    }
+    const temEndereco = Boolean(
+      (resp?.logradouro && resp?.numero) || (pass.logradouro && pass.numero)
+    );
 
     const passEscolaId = pass.escola_id || pass.escola?.id;
     const sentidoInicial = getInitialSentido(itinerario, insertTarget, passEscolaId);
@@ -232,7 +234,7 @@ export function useConfigurarRotaViewModel() {
       passageiro_id: pass.id,
       nome: pass.nome,
       detalhe: pass.escola?.nome ? `Escola: ${pass.escola.nome}` : undefined,
-      temEndereco: true,
+      temEndereco,
       responsaveisAdicionais: (pass as any).responsaveis || [],
       passageiro: pass,
       sentido: sentidoInicial,
@@ -240,7 +242,6 @@ export function useConfigurarRotaViewModel() {
 
     setItinerario((prev) => insertItemIntoItinerario(prev, newItem, insertTarget));
     setIsDialogOpen(false);
-    triggerScrollToBottom();
   };
 
   const handleAddEscola = (escolaId: string) => {
@@ -259,7 +260,6 @@ export function useConfigurarRotaViewModel() {
 
     setItinerario((prev) => insertItemIntoItinerario(prev, newItem, insertTarget));
     setIsDialogOpen(false);
-    triggerScrollToBottom();
   };
 
   const handleMove = (index: number, direction: "up" | "down") => {
@@ -298,7 +298,7 @@ export function useConfigurarRotaViewModel() {
   };
 
   const openModalParadaIntermediaria = (index: number) => {
-    setInsertTarget(index + 1);
+    setInsertTarget(index);
     setIsDialogOpen(true);
   };
 
@@ -414,6 +414,7 @@ export function useConfigurarRotaViewModel() {
     listBottomRef,
     validarMovimentoPermitido,
     handleAddPassageiro,
+    handleOpenCadastrarEndereco,
     handleAddEscola,
     handleMove,
     handleRemove,

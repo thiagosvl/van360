@@ -164,6 +164,7 @@ export default function ConfigurarRota() {
         passageirosList={vm.passageirosList}
         escolasList={vm.escolasList}
         onAddPassageiro={vm.handleAddPassageiro}
+        onOpenCadastrarEndereco={vm.handleOpenCadastrarEndereco}
         onAddEscola={vm.handleAddEscola}
       />
 

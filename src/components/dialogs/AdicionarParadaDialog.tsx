@@ -14,6 +14,7 @@ interface AdicionarParadaDialogProps {
   passageirosList: any[];
   escolasList: any[];
   onAddPassageiro: (id: string) => void;
+  onOpenCadastrarEndereco?: (id: string) => void;
   onAddEscola: (id: string) => void;
 }
 
@@ -25,6 +26,7 @@ export function AdicionarParadaDialog({
   passageirosList,
   escolasList,
   onAddPassageiro,
+  onOpenCadastrarEndereco,
   onAddEscola,
 }: AdicionarParadaDialogProps) {
   const [activeTab, setActiveTab] = useState<"passageiros" | "escolas">("passageiros");
@@ -184,14 +186,20 @@ export function AdicionarParadaDialog({
                             <span className="break-words leading-snug">{p.escola.nome}</span>
                           </div>
                         )}
-                        <div className="flex flex-col gap-0.5 mt-0.5 text-left">
-                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-700">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                            <span className="break-words leading-snug">Sem endereço cadastrado</span>
+                        <div className="flex items-center gap-2 mt-1 text-left flex-wrap">
+                          <div className="flex items-center gap-1 text-[11px] font-semibold text-amber-700">
+                            <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                            <span>Sem endereço</span>
                           </div>
-                          <p className="text-[10px] text-amber-800/90 font-medium leading-tight">
-                            Clique no botão <span className="font-bold text-amber-900">+</span> para cadastrar o endereço e incluir na rota
-                          </p>
+                          {onOpenCadastrarEndereco && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenCadastrarEndereco(p.id)}
+                              className="text-[11px] font-bold text-[#1a3a5c] hover:underline cursor-pointer transition-colors"
+                            >
+                              Cadastrar endereço
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -200,8 +208,8 @@ export function AdicionarParadaDialog({
                         size="sm"
                         onClick={() => onAddPassageiro(p.id)}
                         disabled={estaAdicionado}
-                        title={estaAdicionado ? "Adicionado à Rota" : "Cadastrar endereço e adicionar à rota"}
-                        className="h-8 w-8 rounded-lg bg-amber-500 hover:bg-amber-600 text-white p-0 shrink-0 shadow-sm cursor-pointer flex items-center justify-center transition-colors disabled:opacity-30"
+                        title={estaAdicionado ? "Aluno já adicionado" : "Adicionar à rota sem endereço"}
+                        className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
                       >
                         {estaAdicionado ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                       </Button>

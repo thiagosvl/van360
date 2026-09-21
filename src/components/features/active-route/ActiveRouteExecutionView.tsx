@@ -70,7 +70,7 @@ export function ActiveRouteExecutionView({
 }: ActiveRouteExecutionViewProps) {
   const navigate = useNavigate();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const { validarMovimentoPermitido, validarItinerarioPronto } = useRouteRules();
+  const { validarMovimentoPermitido, validarItinerarioPronto, getAlunosEscolaPorPosicao } = useRouteRules();
   const [selectedRespTab, setSelectedRespTab] = useState<string>(TAB_DEFAULT);
   const activeCardRef = useRef<HTMLDivElement | null>(null);
 
@@ -197,68 +197,6 @@ export function ActiveRouteExecutionView({
     ...(activeParadaToRender ? [activeParadaToRender] : []),
     ...(proximasParadas || [])
   ];
-
-  const getAlunosEscolaPorPosicao = (todasParadasList: any[], escolaNodeIndex: number) => {
-    if (escolaNodeIndex < 0 || escolaNodeIndex >= todasParadasList.length) {
-      return { desces: [], subes: [] };
-    }
-
-    const escolaNode = todasParadasList[escolaNodeIndex];
-    if (escolaNode.tipo_no !== RouteNodeType.ESCOLA) {
-      return { desces: [], subes: [] };
-    }
-
-    const escolaId = escolaNode.escola_id || escolaNode.escola?.id;
-    if (!escolaId) return { desces: [], subes: [] };
-
-    const desces = todasParadasList.filter((node, i) => {
-      if (node.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
-      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id || node.escola_id;
-      if (passEscolaId !== escolaId) return false;
-      if (node.sentido !== RouteSentido.INDO) return false;
-      if (i >= escolaNodeIndex) return false;
-      return true;
-    });
-
-    const subes = todasParadasList.filter((node, i) => {
-      if (node.tipo_no !== RouteNodeType.PASSAGEIRO) return false;
-      const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id || node.escola_id;
-      if (passEscolaId !== escolaId) return false;
-      if (node.sentido !== RouteSentido.VOLTANDO) return false;
-
-      let ultimaEscolaAntesDeP = -1;
-      for (let idx = i - 1; idx >= 0; idx--) {
-        if (todasParadasList[idx].tipo_no === RouteNodeType.ESCOLA) {
-          ultimaEscolaAntesDeP = idx;
-          break;
-        }
-      }
-
-      if (node.status === RouteStopStatus.PENDENTE && i > escolaNodeIndex) {
-        let temEscolaDestaEntrem = false;
-        for (let idx = escolaNodeIndex + 1; idx < i; idx++) {
-          const n = todasParadasList[idx];
-          if (n.tipo_no === RouteNodeType.ESCOLA && (n.escola_id === escolaId || n.escola?.id === escolaId)) {
-            temEscolaDestaEntrem = true;
-            break;
-          }
-        }
-        if (!temEscolaDestaEntrem) return true;
-      }
-
-      for (let idx = i - 1; idx >= 0; idx--) {
-        const node = todasParadasList[idx];
-        if (node.tipo_no === RouteNodeType.ESCOLA && (node.escola_id === escolaId || node.escola?.id === escolaId)) {
-          ultimaEscolaAntesDeP = idx;
-          break;
-        }
-      }
-
-      return ultimaEscolaAntesDeP === escolaNodeIndex;
-    });
-
-    return { desces, subes };
-  };
 
   const { desces: alunosParaDesembarcar, subes: alunosParaEmbarcar } = useMemo(() => {
     const paradaAtualIndexInTodas = activeParadaToRender ? (paradasConcluidas?.length || 0) : -1;
