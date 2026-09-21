@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InitialLoading } from "@/components/auth/InitialLoading";
-import { useAssinarContratoViewModel } from "@/hooks";
+import { useAssinarContratoViewModel, safeCloseDialog } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { getDriverDisplayName } from "@/utils/formatters";
@@ -227,7 +227,7 @@ export default function AssinarContrato() {
 
       <SignatureDialog
         isOpen={modalAberto}
-        onClose={() => setModalAberto(false)}
+        onClose={() => safeCloseDialog(() => setModalAberto(false))}
         sigCanvas={sigCanvas}
         onAssinar={handleAssinar}
         isSigning={isSigning}

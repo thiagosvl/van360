@@ -3,6 +3,7 @@ import { BaseDialog } from "../ui/BaseDialog";
 import { Banner } from "../ui/Banner";
 import { SignaturePad, SignaturePadRef } from "../common/SignaturePad";
 import { PenTool, ShieldCheck } from "lucide-react";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface SignatureDialogProps {
   isOpen: boolean;
@@ -23,17 +24,18 @@ export function SignatureDialog({
   return (
     <BaseDialog
       open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={(open) => !open && safeCloseDialog(onClose)}
+      lockClose={isSigning}
       description="Espaço para desenho da assinatura digital do contratante"
     >
       <BaseDialog.Header
         title="Assine o Contrato"
         icon={<PenTool className="h-5 w-5" />}
-        onClose={onClose}
+        onClose={() => safeCloseDialog(onClose)}
+        hideCloseButton={isSigning}
       />
 
       <BaseDialog.Body className="space-y-6">
-
         <div className="text-center space-y-2 mb-2">
           <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
             Sua assinatura aparecerá no final do contrato em PDF automaticamente.
@@ -60,13 +62,14 @@ export function SignatureDialog({
         <BaseDialog.Action
           label="Cancelar"
           variant="secondary"
-          onClick={onClose}
+          onClick={() => safeCloseDialog(onClose)}
           disabled={isSigning}
         />
         <BaseDialog.Action
           label="Confirmar"
           onClick={onAssinar}
           isLoading={isSigning}
+          disabled={isSigning}
           icon={<ShieldCheck className="h-4 w-4" />}
           className="bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/10"
         />
