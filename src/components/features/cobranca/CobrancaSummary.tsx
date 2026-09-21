@@ -6,7 +6,7 @@ import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import {
   Calendar,
-  MessageSquare,
+  MessageSquare
 } from "lucide-react";
 
 interface CobrancaSummaryProps {
