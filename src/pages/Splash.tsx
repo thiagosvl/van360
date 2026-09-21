@@ -3,6 +3,7 @@ import { ROUTES } from "@/constants/routes";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Bus, ChevronRight, LogIn, Sparkles, Users } from "lucide-react";
 
+
 function SplashIllustration({
   src,
   alt,
