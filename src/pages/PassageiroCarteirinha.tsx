@@ -246,12 +246,18 @@ export default function PassageiroCarteirinha() {
       setPageTitle(`Carteirinha Digital`);
     }
   }, [passageiro, setPageTitle]);
-  const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
+  const handlePassageiroFormSuccess = useCallback((data?: Passageiro | { passageiro?: Passageiro; id?: string }, meta?: { hasCriticalContractChanges?: boolean }) => {
     const hasChanges = meta?.hasCriticalContractChanges === true;
     const usarContratos = !!profile?.config_contrato?.usar_contratos;
 
     if (hasChanges && usarContratos) {
-      const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
+      const rawData = data?.id ? data : (data?.passageiro || {});
+      const updatedPassageiro: Passageiro = {
+        ...passageiro,
+        ...rawData,
+        status_contrato: passageiro?.status_contrato ?? rawData.status_contrato,
+        contrato_id: passageiro?.contrato_id ?? rawData.contrato_id,
+      };
 
       setTimeout(() => {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
@@ -268,20 +274,24 @@ export default function PassageiroCarteirinha() {
           cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
           onConfirm: async () => {
             safeCloseDialog(closeConfirmationDialog);
-            openGerarContratoValidadorDialog({
-              passageiroId: updatedPassageiro.id!,
-              onSuccess: async (id) => {
-                if (updatedPassageiro.contrato_id) {
-                  await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
-                } else {
-                  await createContrato.mutateAsync({
-                    passageiroId: id,
-                    valorMensal: updatedPassageiro.valor_cobranca,
-                    diaVencimento: updatedPassageiro.dia_vencimento
-                  });
-                }
-              }
-            });
+            setTimeout(() => {
+              openGerarContratoValidadorDialog({
+                passageiroId: updatedPassageiro.id!,
+                onSuccess: async (id) => {
+                  try {
+                    if (updatedPassageiro.contrato_id) {
+                      await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
+                    } else {
+                      await createContrato.mutateAsync({
+                        passageiroId: id,
+                        valorMensal: Number(updatedPassageiro.valor_cobranca) || undefined,
+                        diaVencimento: Number(updatedPassageiro.dia_vencimento) || undefined,
+                      });
+                    }
+                  } catch {}
+                },
+              });
+            }, 100);
           },
         });
       }, 300);

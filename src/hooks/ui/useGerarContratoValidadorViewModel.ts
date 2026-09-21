@@ -98,25 +98,27 @@ export function useGerarContratoValidadorViewModel({
     const hasFim = !!passageiro.data_fim_transporte;
     const hasCpf = !!passageiro.responsavel_principal?.cpf;
 
+    const suggestedInicio = passageiro.data_inicio_transporte
+      ? formatDateToBR(passageiro.data_inicio_transporte)
+      : "";
+
+    const suggestedFim = passageiro.data_fim_transporte
+      ? formatDateToBR(passageiro.data_fim_transporte)
+      : "";
+
+    form.reset({
+      data_inicio_transporte: suggestedInicio,
+      data_fim_transporte: suggestedFim,
+      responsavel_principal: {
+        cpf: passageiro.responsavel_principal?.cpf ? cpfMask(passageiro.responsavel_principal.cpf) : "",
+      },
+    });
+
+    setIsChecking(false);
+
     if (hasInicio && hasFim && hasCpf) {
       onCloseRef.current();
       onSuccessRef.current(passageiroId, true);
-      const suggestedInicio = passageiro.data_inicio_transporte
-        ? formatDateToBR(passageiro.data_inicio_transporte)
-        : "";
-
-      const suggestedFim = passageiro.data_fim_transporte
-        ? formatDateToBR(passageiro.data_fim_transporte)
-        : "";
-
-      form.reset({
-        data_inicio_transporte: suggestedInicio,
-        data_fim_transporte: suggestedFim,
-        responsavel_principal: {
-          cpf: passageiro.responsavel_principal?.cpf ? cpfMask(passageiro.responsavel_principal.cpf) : "",
-        },
-      });
-      setIsChecking(false);
     }
   }, [isOpen, isChecking, passageiro, passageiroId, isLoadingPassageiro, isFetchingPassageiro, form]);
 
