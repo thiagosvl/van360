@@ -30,6 +30,7 @@ interface ActiveRouteUpcomingCardProps {
   onConfirmFalta: (id: string, nome: string) => void;
   getAlunosEscolaPorPosicao: (paradas: any[], index: number) => { desces: any[]; subes: any[] };
   onOpenReordenarSheet?: (parada: any) => void;
+  chamadaRapidaSavedMap?: Record<string, RouteStopStatus> | null;
 }
 
 export function ActiveRouteUpcomingCard({
@@ -54,6 +55,7 @@ export function ActiveRouteUpcomingCard({
   onConfirmFalta,
   getAlunosEscolaPorPosicao,
   onOpenReordenarSheet,
+  chamadaRapidaSavedMap,
 }: ActiveRouteUpcomingCardProps) {
   const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
   const pass = parada.passageiro;
@@ -150,7 +152,16 @@ export function ActiveRouteUpcomingCard({
             const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
             const descesAtivos = desces.filter(d => d.status !== RouteStopStatus.AUSENTE);
-            const subesAtivos = subes.filter(s => s.status !== RouteStopStatus.AUSENTE);
+            const subesAtivos = subes.filter(s => {
+              if (s.status === RouteStopStatus.AUSENTE || s.is_ausente || s.ausencia_id) return false;
+              if (isPreview && chamadaRapidaSavedMap) {
+                const pid = s.passageiro_id || s.passageiro?.id;
+                if (pid && chamadaRapidaSavedMap[pid] === RouteStopStatus.AUSENTE) {
+                  return false;
+                }
+              }
+              return true;
+            });
 
             return (
               <div className="mt-1 space-y-1 w-full text-left">

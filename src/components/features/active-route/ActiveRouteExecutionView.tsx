@@ -681,6 +681,7 @@ export function ActiveRouteExecutionView({
                 onConfirmFalta={handleConfirmFalta}
                 getAlunosEscolaPorPosicao={getAlunosEscolaPorPosicao}
                 onOpenReordenarSheet={(p) => setReordenarSheetTarget(p)}
+                chamadaRapidaSavedMap={chamadaRapidaSavedMap}
               />
             );
           })}
