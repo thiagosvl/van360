@@ -154,7 +154,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
         {!profile?.chave_pix && (
           <Banner
             variant="info"
-            description="A chave Pix cadastrada será exibida nos lembretes automáticos de cobrança e na carteirinha digital enviada aos responsáveis."
+            description="A chave Pix cadastrada será exibida nos lembretes automáticos de cobrança enviada aos responsáveis e no app dos pais."
           />
         )}
 

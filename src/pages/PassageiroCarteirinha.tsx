@@ -118,22 +118,19 @@ export default function PassageiroCarteirinha() {
       updated.set("tab", val);
       return updated;
     });
-    setTimeout(() => {
-      const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-      }
-    }, 50);
   };
 
   useEffect(() => {
     if (activeTab) {
-      setTimeout(() => {
-        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
-        if (activeEl) {
-          activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      const timer = setTimeout(() => {
+        const container = tabListRef.current?.parentElement;
+        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`) as HTMLElement | null;
+        if (container && activeEl) {
+          const left = activeEl.offsetLeft - (container.clientWidth / 2) + (activeEl.clientWidth / 2);
+          container.scrollTo({ left, behavior: "smooth" });
         }
-      }, 100);
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [activeTab]);
 
