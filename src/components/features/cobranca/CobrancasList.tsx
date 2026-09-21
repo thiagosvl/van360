@@ -25,7 +25,7 @@ import {
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
-import { DollarSign, Wallet, CalendarClock, History } from "lucide-react";
+import { DollarSign, Wallet, CalendarClock, History, MessageSquare } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
 import { memo, useState } from "react";
@@ -154,9 +154,14 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
         </div>
 
         <div className="flex-grow min-w-0 pr-[88px] sm:pr-24">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-            {shortName}
-          </p>
+          <div className="flex items-center gap-1 min-w-0">
+            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+              {shortName}
+            </p>
+            {cobranca.observacao?.trim() && (
+              <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+            )}
+          </div>
           <div className="flex flex-col min-w-0 mt-0.5">
             <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
               {firstNomeResponsavel}
@@ -306,9 +311,14 @@ export function CobrancasList({
               {getVencimentoDia(cobranca)}
             </div>
             <div className="flex flex-col">
-              <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                {formatShortName(cobranca?.passageiro?.nome, true)}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                  {formatShortName(cobranca?.passageiro?.nome, true)}
+                </p>
+                {cobranca.observacao?.trim() && (
+                  <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+                )}
+              </div>
               <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                 {formatNomeResponsavelExibicao(cobranca?.passageiro?.responsavel_principal?.nome)}
               </p>

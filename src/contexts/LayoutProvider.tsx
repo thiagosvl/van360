@@ -871,6 +871,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           valorOriginal={manualPaymentDialogState.props.valorOriginal}
           status={manualPaymentDialogState.props.status}
           dataVencimento={manualPaymentDialogState.props.dataVencimento}
+          observacao={manualPaymentDialogState.props.observacao}
           onPaymentRecorded={(updatedCobranca) => {
             manualPaymentDialogState.props?.onPaymentRecorded?.(updatedCobranca);
           }}
@@ -893,6 +894,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           dataVencimento={complementarPagamentoDialogState.props.dataVencimento}
           mes={complementarPagamentoDialogState.props.mes}
           ano={complementarPagamentoDialogState.props.ano}
+          observacao={complementarPagamentoDialogState.props.observacao}
           onPaymentRecorded={(updatedCobranca, dataSent) => {
             complementarPagamentoDialogState.props?.onPaymentRecorded?.(updatedCobranca, dataSent);
           }}

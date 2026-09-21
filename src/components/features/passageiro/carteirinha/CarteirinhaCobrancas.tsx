@@ -26,6 +26,7 @@ import {
   Info,
   Plus,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { UnifiedEmptyState } from "@/components/empty";
@@ -526,10 +527,15 @@ const CobrancaItemPassageiro = forwardRef<
           </div>
 
           <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
-            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-              {getMesNome(cobranca.mes)}
-              {cobranca.ano && cobranca.ano !== (selectedYear || passageiro.ano_letivo) ? `/${cobranca.ano}` : ""}
-            </p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                {getMesNome(cobranca.mes)}
+                {cobranca.ano && cobranca.ano !== (selectedYear || passageiro.ano_letivo) ? `/${cobranca.ano}` : ""}
+              </p>
+              {cobranca.observacao?.trim() && (
+                <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+              )}
+            </div>
             <div className="flex items-center gap-2 mt-0.5">
               <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">
                 {isCancelada

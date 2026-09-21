@@ -16,6 +16,7 @@ export const paymentSchema = z.object({
     errorMap: () => ({ message: "A forma de pagamento é obrigatória." }),
   }),
   enviar_recibo_whatsapp_manual: z.boolean().default(false),
+  observacao: z.string().trim().max(1000, "Máximo de 1.000 caracteres").optional(),
 });
 
 export type PaymentFormData = z.infer<typeof paymentSchema>;
@@ -34,6 +35,7 @@ export const complementarPaymentSchema = z.object({
     errorMap: () => ({ message: "A forma de pagamento é obrigatória." }),
   }),
   enviar_recibo_whatsapp_manual: z.boolean().default(false),
+  observacao: z.string().trim().max(1000, "Máximo de 1.000 caracteres").optional(),
 });
 
 export type ComplementarPaymentFormData = z.infer<typeof complementarPaymentSchema>;

@@ -19,6 +19,7 @@ interface ComplementarPagamentoViewModelProps {
   valorOriginal: number;
   valorJaPago: number;
   passageiroNome?: string;
+  observacao?: string | null;
   onPaymentRecorded: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: ComplementarPagamentoManualDTO) => void;
 }
 
@@ -29,6 +30,7 @@ export function useComplementarPagamentoViewModel({
   valorOriginal,
   valorJaPago,
   passageiroNome,
+  observacao,
   onPaymentRecorded,
 }: ComplementarPagamentoViewModelProps) {
   const complementarPagamento = useComplementarPagamentoManual();
@@ -44,6 +46,7 @@ export function useComplementarPagamentoViewModel({
       valor_adicional: "",
       data_pagamento: getNowBR(),
       enviar_recibo_whatsapp_manual: false,
+      observacao: "",
     },
   });
 
@@ -55,9 +58,10 @@ export function useComplementarPagamentoViewModel({
         data_pagamento: getNowBR(),
         tipo_pagamento: undefined,
         enviar_recibo_whatsapp_manual: false,
+        observacao: observacao || "",
       });
     }
-  }, [isOpen, saldoRestanteAtual, form]);
+  }, [isOpen, saldoRestanteAtual, observacao, form]);
 
   const valorAdicionalWatcher = useWatch({
     control: form.control,
@@ -92,6 +96,7 @@ export function useComplementarPagamentoViewModel({
       valor_adicional: valorAdicionalNumber,
       data_pagamento: toISODateTimeBR(data.data_pagamento),
       tipo_pagamento: data.tipo_pagamento,
+      observacao: data.observacao?.trim() ? data.observacao.trim() : null,
     };
 
     complementarPagamento.mutate(

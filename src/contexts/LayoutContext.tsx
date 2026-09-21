@@ -98,7 +98,8 @@ export interface OpenManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded?: (updatedCobranca?: any, dataSent?: RegistrarPagamentoManualDTO) => void;
+  observacao?: string | null;
+  onPaymentRecorded?: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
 export interface OpenComplementarPagamentoDialogProps {
@@ -110,7 +111,8 @@ export interface OpenComplementarPagamentoDialogProps {
   dataVencimento: string;
   mes?: number;
   ano?: number;
-  onPaymentRecorded?: (updatedCobranca?: any, dataSent?: ComplementarPagamentoManualDTO) => void;
+  observacao?: string | null;
+  onPaymentRecorded?: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: ComplementarPagamentoManualDTO) => void;
 }
 
 export interface OpenReceiptDialogProps {

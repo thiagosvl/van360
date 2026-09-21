@@ -11,12 +11,15 @@ import { parseCurrencyToNumber } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 
+import { safeCloseDialog } from "@/hooks";
+
 interface ManualPaymentViewModelProps {
   isOpen: boolean;
   onClose: () => void;
   cobrancaId: string;
   valorOriginal: number;
   passageiroNome?: string;
+  observacao?: string | null;
   onPaymentRecorded: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
@@ -26,6 +29,7 @@ export function useManualPaymentViewModel({
   cobrancaId,
   valorOriginal,
   passageiroNome,
+  observacao,
   onPaymentRecorded,
 }: ManualPaymentViewModelProps) {
   const registrarPagamento = useRegistrarPagamentoManual();
@@ -37,6 +41,7 @@ export function useManualPaymentViewModel({
       valor_pago: "",
       data_pagamento: getNowBR(),
       enviar_recibo_whatsapp_manual: false,
+      observacao: "",
     },
   });
 
@@ -48,15 +53,17 @@ export function useManualPaymentViewModel({
         data_pagamento: getNowBR(),
         tipo_pagamento: undefined,
         enviar_recibo_whatsapp_manual: false,
+        observacao: observacao || "",
       });
     }
-  }, [isOpen, valorOriginal, form]);
+  }, [isOpen, valorOriginal, observacao, form]);
 
   const handleSubmit = useCallback(async (data: PaymentFormData) => {
     const pagamentoData: RegistrarPagamentoManualDTO = {
       valor_pago: typeof data.valor_pago === 'string' ? parseCurrencyToNumber(data.valor_pago) : data.valor_pago,
       data_pagamento: toISODateTimeBR(data.data_pagamento),
       tipo_pagamento: data.tipo_pagamento,
+      observacao: data.observacao?.trim() ? data.observacao.trim() : null,
     };
 
     registrarPagamento.mutate(
@@ -64,7 +71,7 @@ export function useManualPaymentViewModel({
       {
         onSuccess: async (updatedCobranca) => {
           onPaymentRecorded(updatedCobranca, pagamentoData);
-          onClose();
+          safeCloseDialog(onClose);
 
           if (data.enviar_recibo_whatsapp_manual && updatedCobranca?.recibo_url) {
             const mes = updatedCobranca.mes;

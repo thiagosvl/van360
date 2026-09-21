@@ -473,6 +473,7 @@ export default function PassageiroCarteirinha() {
       valorOriginal: Number(cobranca.valor),
       status: cobranca.status,
       dataVencimento: cobranca.data_vencimento,
+      observacao: cobranca.observacao,
     });
   };
 

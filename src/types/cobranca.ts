@@ -20,4 +20,5 @@ export interface Cobranca {
   recibo_url?: string;
   isProjection?: boolean;
   ano_letivo?: number;
+  observacao?: string | null;
 }

@@ -3,6 +3,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Form,
     FormControl,
@@ -448,6 +449,27 @@ export function CobrancaFormContent({
                     />
                 </div>
             )}
+
+            <FormField
+                control={form.control}
+                name="observacao"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                        </FormLabel>
+                        <FormControl>
+                            <Textarea
+                                placeholder="Anotações internas sobre esta parcela..."
+                                className="min-h-[70px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                                {...field}
+                                value={field.value || ""}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
             {!hideButtons && (
                 <div className="flex gap-4 pt-4">

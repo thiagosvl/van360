@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useComplementarPagamentoViewModel } from "@/hooks/ui/useComplementarPagamentoViewModel";
 import { safeCloseDialog } from "@/hooks";
@@ -42,6 +43,7 @@ export interface ComplementarPagamentoDialogProps {
   dataVencimento: string;
   mes?: number;
   ano?: number;
+  observacao?: string | null;
   onPaymentRecorded: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: ComplementarPagamentoManualDTO) => void;
 }
 
@@ -56,6 +58,7 @@ export default function ComplementarPagamentoDialog({
   dataVencimento,
   mes,
   ano,
+  observacao,
   onPaymentRecorded,
 }: ComplementarPagamentoDialogProps) {
   const {
@@ -75,19 +78,20 @@ export default function ComplementarPagamentoDialog({
     valorOriginal,
     valorJaPago,
     passageiroNome,
+    observacao,
     onPaymentRecorded,
   });
 
   const mesExibicao = mes
     ? getMesAbreviado(mes)
     : dataVencimento
-    ? format(parseLocalDate(dataVencimento), "MMM", { locale: ptBR })
-    : "";
+      ? format(parseLocalDate(dataVencimento), "MMM", { locale: ptBR })
+      : "";
   const anoExibicao = ano
     ? String(ano).slice(-2)
     : dataVencimento
-    ? format(parseLocalDate(dataVencimento), "yy")
-    : "";
+      ? format(parseLocalDate(dataVencimento), "yy")
+      : "";
 
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
@@ -261,6 +265,27 @@ export default function ComplementarPagamentoDialog({
                     </div>
                   </div>
                   <FormMessage className="pt-2" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="observacao"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder=""
+                      className="min-h-[60px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

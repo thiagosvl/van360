@@ -6,13 +6,15 @@ import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import {
   Calendar,
+  MessageSquare,
 } from "lucide-react";
 
 interface CobrancaSummaryProps {
   cobranca: Cobranca;
+  isMotorista?: boolean;
 }
 
-export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
+export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummaryProps) => {
   const isProjection = cobranca.isProjection === true;
   const isCancelada = !isProjection && cobranca.status === CobrancaStatus.CANCELADA;
   const isPago = !isProjection && !isCancelada && cobranca.status === CobrancaStatus.PAGO;
@@ -22,12 +24,12 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const statusLabel = isCancelada
     ? "Cancelada"
     : isParcial
-    ? "Parcial"
-    : isPago
-    ? "Pago"
-    : isAtrasado
-    ? "Em Atraso"
-    : "Pendente";
+      ? "Parcial"
+      : isPago
+        ? "Pago"
+        : isAtrasado
+          ? "Em Atraso"
+          : "Pendente";
 
   const mesAbreviado = cobranca.mes ? getMesAbreviado(cobranca.mes) : "--";
   const anoFormatado = cobranca.ano ? String(cobranca.ano).slice(-2) : "--";
@@ -42,10 +44,10 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
         <div className={cn(
           "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
           isCancelada ? "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400" :
-          isParcial ? "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300" :
-          isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
-            isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
-              "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
+            isParcial ? "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300" :
+              isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
+                isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
+                  "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
         )}>
           {statusLabel}
         </div>
@@ -78,8 +80,8 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
               {isCancelada
                 ? `Vencimento ${formatDateToBR(cobranca.data_vencimento)}`
                 : isAtrasado
-                ? formatDiasAtraso(cobranca.data_vencimento)
-                : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
+                  ? formatDiasAtraso(cobranca.data_vencimento)
+                  : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
             </span>
           </div>
         </div>
@@ -90,6 +92,20 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
           </span>
         </div>
       </div>
+
+      {isMotorista && cobranca.observacao?.trim() && (
+        <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/60 flex items-start gap-2 bg-slate-50/80 dark:bg-zinc-800/40 rounded-xl p-2.5">
+          <MessageSquare className="h-3.5 w-3.5 text-slate-400 mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
+              Observação
+            </p>
+            <p className="text-xs text-slate-600 dark:text-zinc-300 font-medium whitespace-pre-wrap break-words leading-relaxed">
+              {cobranca.observacao.trim()}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

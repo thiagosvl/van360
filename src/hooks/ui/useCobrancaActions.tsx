@@ -335,6 +335,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
             dataVencimento: cobranca.data_vencimento,
             mes: cobranca.mes,
             ano: cobranca.ano,
+            observacao: cobranca.observacao,
             onPaymentRecorded: () => {
               if (props.onActionSuccess) props.onActionSuccess();
             },

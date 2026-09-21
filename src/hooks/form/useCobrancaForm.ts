@@ -45,6 +45,7 @@ export const cobrancaSchema = z
     ano: z.union([z.string(), z.number()]).optional(),
 
     is_future: z.boolean().optional(),
+    observacao: z.string().trim().max(1000, "Máximo de 1.000 caracteres").optional(),
   })
   .refine(
     (data) => !data.foi_pago || (data.foi_pago && data.data_pagamento),
@@ -139,6 +140,7 @@ export function useCobrancaForm({
         enviar_recibo_whatsapp_manual: false,
         mes: cobranca.mes != null ? String(cobranca.mes) : undefined,
         ano: cobranca.ano != null ? String(cobranca.ano) : undefined,
+        observacao: cobranca.observacao || "",
       };
     }
 
@@ -165,6 +167,7 @@ export function useCobrancaForm({
       enviar_recibo_whatsapp_manual: false,
       mes: hasExplicitMes ? targetMonthNum.toString() : "",
       ano: targetYearNum.toString(),
+      observacao: "",
     };
   }, [mode, cobranca, diaVencimento, valor, mes, ano, lockFoiPago]);
 
@@ -203,6 +206,7 @@ export function useCobrancaForm({
         tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
         pagamento_manual: data.foi_pago,
         usuario_id: profile.id,
+        observacao: data.observacao?.trim() ? data.observacao.trim() : null,
       };
 
       createCobranca.mutate(payload, {
@@ -241,6 +245,7 @@ export function useCobrancaForm({
           tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
           pagamento_manual: data.foi_pago,
           desativar_lembretes: cobranca.desativar_lembretes ?? false,
+          observacao: data.observacao?.trim() ? data.observacao.trim() : null,
         };
 
         createCobranca.mutate(createPayload, {
@@ -273,6 +278,7 @@ export function useCobrancaForm({
         tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
         data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
+        observacao: data.observacao?.trim() ? data.observacao.trim() : null,
       };
 
       updateCobranca.mutate({

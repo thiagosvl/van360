@@ -19,8 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
+import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import { Cobranca } from "@/types/cobranca";
@@ -39,6 +41,7 @@ export interface ManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
+  observacao?: string | null;
   onPaymentRecorded: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
@@ -51,6 +54,7 @@ export default function ManualPaymentDialog({
   valorOriginal,
   status,
   dataVencimento,
+  observacao,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
   const { form, openCalendar, setOpenCalendar, handleSubmit, onFormError, isPending } = useManualPaymentViewModel({
@@ -59,6 +63,7 @@ export default function ManualPaymentDialog({
     cobrancaId,
     valorOriginal,
     passageiroNome,
+    observacao,
     onPaymentRecorded,
   });
 
@@ -236,11 +241,32 @@ export default function ManualPaymentDialog({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="observacao"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder=""
+                      className="min-h-[60px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={isPending} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={() => safeCloseDialog(onClose)} disabled={isPending} />
         <BaseDialog.Action label="Registrar" onClick={form.handleSubmit(handleSubmit, onFormError)} isLoading={isPending} />
       </BaseDialog.Footer>
     </BaseDialog>
