@@ -78,15 +78,27 @@ export function useDeletePassageiro() {
 
   return useMutation({
     mutationFn: (id: string) => passageiroApi.deletePassageiro(id),
-    onError: (error: any) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ["passageiro", id] });
+      queryClient.setQueryData(["passageiro", id], null);
+    },
+    onError: (error: unknown) => {
       toast.error("passageiro.erro.excluir", {
         description: getErrorMessage(error, "passageiro.erro.excluirDetalhe"),
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
       toast.success("passageiro.sucesso.excluido");
-      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
 
+      if (deletedId) {
+        queryClient.removeQueries({ queryKey: ["passageiro", deletedId] });
+        queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", deletedId] });
+        queryClient.removeQueries({ queryKey: ["passageiro-ausencias", deletedId] });
+        queryClient.removeQueries({ queryKey: ["passageiro-rotas", deletedId] });
+        queryClient.removeQueries({ queryKey: ["available-years", deletedId] });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
