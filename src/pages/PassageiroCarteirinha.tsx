@@ -31,6 +31,7 @@ import { IncompletePassengerBanner } from "@/components/features/passageiro/Inco
 import { isCadastroPassageiroIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarClock, FileText, User, Users, Wallet } from "lucide-react";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -88,6 +89,7 @@ export default function PassageiroCarteirinha() {
 
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const [isDeleting, setIsDeleting] = useState(false);
+  const isDeletedRef = useRef(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const validTabs = useMemo(() => {
@@ -179,7 +181,7 @@ export default function PassageiroCarteirinha() {
     error: passageiroError,
     refetch: refetchPassageiro,
   } = usePassageiro(passageiro_id, {
-    enabled: !!passageiro_id,
+    enabled: !!passageiro_id && !isDeleting && !isDeletedRef.current,
   });
 
   const passageiro = passageiroData as Passageiro;
@@ -195,7 +197,7 @@ export default function PassageiroCarteirinha() {
     refetch: refetchCobrancas,
     isError: isCobrancasError,
   } = useCobrancasByPassageiro(passageiro_id, yearFilter, {
-    enabled: !!passageiro_id && canViewFinancials,
+    enabled: !!passageiro_id && canViewFinancials && !isDeleting && !isDeletedRef.current,
   });
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
@@ -216,10 +218,7 @@ export default function PassageiroCarteirinha() {
   }, [isCobrancasError]);
 
   useEffect(() => {
-    if (!passageiro_id) return;
-
-    if (isPassageiroLoading) return;
-    if (isDeleting) return;
+    if (!passageiro_id || isDeleting || isDeletedRef.current || isPassageiroLoading) return;
 
     const isNotFoundError =
       isPassageiroError &&
@@ -227,14 +226,6 @@ export default function PassageiroCarteirinha() {
         (passageiroError as any)?.status === 404);
 
     if (isNotFoundError || (!isPassageiroError && !passageiro)) {
-      queryClient.removeQueries({ queryKey: ["passageiro", passageiro_id] });
-      queryClient.removeQueries({
-        queryKey: ["cobrancas-by-passageiro", passageiro_id],
-      });
-      queryClient.removeQueries({
-        queryKey: ["available-years", passageiro_id],
-      });
-
       navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
     }
   }, [
@@ -244,7 +235,6 @@ export default function PassageiroCarteirinha() {
     passageiro,
     passageiro_id,
     navigate,
-    queryClient,
     isDeleting,
   ]);
 
@@ -609,13 +599,17 @@ export default function PassageiroCarteirinha() {
           if (!passageiro_id) return;
           setIsDeleting(true);
           try {
+            isDeletedRef.current = true;
             await deletePassageiro.mutateAsync(passageiro_id);
             safeCloseDialog(closeConfirmationDialog);
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
+            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
           } catch (error) {
+            isDeletedRef.current = false;
             safeCloseDialog(closeConfirmationDialog);
           } finally {
-            setIsDeleting(false);
+            if (!isDeletedRef.current) {
+              setIsDeleting(false);
+            }
           }
         },
       }),
@@ -707,6 +701,70 @@ export default function PassageiroCarteirinha() {
     onSave: handleSaveObservacoes,
   };
 
+  const renderTabContents = (extraClassName?: string) => (
+    <>
+      {canViewFinancials && (
+        <TabsContent value="parcelas" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+          <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+            <CarteirinhaCobrancas {...cobrancasProps} />
+          </Suspense>
+        </TabsContent>
+      )}
+
+      <TabsContent value="dados-pessoais" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+          <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
+            <CarteirinhaDadosPessoais
+              passageiro={passageiro}
+              isCopiedEndereco={isCopiedEndereco}
+              isCopiedTelefone={isCopiedTelefone}
+              onCopyToClipboard={handleCopyToClipboard}
+              onContractAction={infoProps.onContractAction}
+              contratosAtivos={infoProps.contratosAtivos}
+              onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+              onEditClick={handleEditClick}
+            />
+          </div>
+        </Suspense>
+
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+          <CarteirinhaObservacoes {...observacoesProps} />
+        </Suspense>
+      </TabsContent>
+
+      <TabsContent value="responsaveis" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+          <CarteirinhaResponsaveis
+            passageiro={passageiro}
+            onEditClick={handleEditClick}
+            onRefresh={() => {
+              refetchPassageiro();
+            }}
+          />
+        </Suspense>
+      </TabsContent>
+
+      <TabsContent value="contrato" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+          <CarteirinhaContrato
+            passageiro={passageiro}
+            contratosAtivos={infoProps.contratosAtivos}
+            onContractAction={infoProps.onContractAction}
+            onDeleteContrato={handleDeleteContrato}
+            onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+            onEditClick={handleEditClick}
+          />
+        </Suspense>
+      </TabsContent>
+
+      <TabsContent value="ausencias" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+          <CarteirinhaAusencias passageiro={passageiro} />
+        </Suspense>
+      </TabsContent>
+    </>
+  );
+
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
@@ -718,124 +776,132 @@ export default function PassageiroCarteirinha() {
               <PixNudgeBanner hasPix={false} />
             ) : null}
 
-            {/* Header do passageiro (avatar, nome, badges, ações) — sempre visível no topo */}
-            <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-              <CarteirinhaHeader
-                passageiro={passageiro}
-                temCobrancasVencidas={temCobrancasVencidas}
-                onToggleClick={handleToggleClick}
-                onEditClick={handleEditClick}
-                onDeleteClick={infoProps.onDeleteClick}
-                onEnviarWhatsApp={handleEnviarWhatsApp}
-                onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
-              />
-            </Suspense>
+            {isMobile ? (
+              <>
+                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                  <CarteirinhaHeader
+                    passageiro={passageiro}
+                    temCobrancasVencidas={temCobrancasVencidas}
+                    onToggleClick={handleToggleClick}
+                    onEditClick={handleEditClick}
+                    onDeleteClick={infoProps.onDeleteClick}
+                    onEnviarWhatsApp={handleEnviarWhatsApp}
+                    onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
+                  />
+                </Suspense>
 
-            {/* Abas com Scroll Lateral no Mobile e Grid no Desktop */}
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
-                <TabsList
-                  ref={tabListRef}
-                  className={cn(
-                    "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px]",
-                    canViewFinancials ? "md:grid md:grid-cols-5" : "md:grid md:grid-cols-4"
-                  )}
-                >
-                  {canViewFinancials && (
-                    <TabsTrigger
-                      value="parcelas"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                  <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
+                    <TabsList
+                      ref={tabListRef}
+                      className={cn(
+                        "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px]",
+                        canViewFinancials ? "md:grid md:grid-cols-5" : "md:grid md:grid-cols-4"
+                      )}
                     >
-                      Parcelas
-                    </TabsTrigger>
-                  )}
-                  <TabsTrigger
-                    value="dados-pessoais"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Dados Pessoais
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="responsaveis"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Responsáveis
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="contrato"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Contrato
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="ausencias"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Ausências
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              {canViewFinancials && (
-                <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                  <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                    <CarteirinhaCobrancas {...cobrancasProps} />
-                  </Suspense>
-                </TabsContent>
-              )}
-
-              <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                  <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
-                    <CarteirinhaDadosPessoais
-                      passageiro={passageiro}
-                      isCopiedEndereco={isCopiedEndereco}
-                      isCopiedTelefone={isCopiedTelefone}
-                      onCopyToClipboard={handleCopyToClipboard}
-                      onContractAction={infoProps.onContractAction}
-                      contratosAtivos={infoProps.contratosAtivos}
-                      onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-                      onEditClick={handleEditClick}
-                    />
+                      {canViewFinancials && (
+                        <TabsTrigger
+                          value="parcelas"
+                          className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        >
+                          Parcelas
+                        </TabsTrigger>
+                      )}
+                      <TabsTrigger
+                        value="dados-pessoais"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Dados Pessoais
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="responsaveis"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Responsáveis
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="contrato"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Contrato
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="ausencias"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Ausências
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
-                </Suspense>
 
-                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                  <CarteirinhaObservacoes {...observacoesProps} />
-                </Suspense>
-              </TabsContent>
+                  {renderTabContents("mt-5")}
+                </Tabs>
+              </>
+            ) : (
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <div className="grid grid-cols-12 gap-8 items-start">
+                  <div className="col-span-4 space-y-6 sticky top-6">
+                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                      <CarteirinhaHeader
+                        passageiro={passageiro}
+                        temCobrancasVencidas={temCobrancasVencidas}
+                        onToggleClick={handleToggleClick}
+                        onEditClick={handleEditClick}
+                        onDeleteClick={infoProps.onDeleteClick}
+                        onEnviarWhatsApp={handleEnviarWhatsApp}
+                        onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
+                      />
+                    </Suspense>
 
-              <TabsContent value="responsaveis" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                  <CarteirinhaResponsaveis
-                    passageiro={passageiro}
-                    onEditClick={handleEditClick}
-                    onRefresh={() => {
-                      refetchPassageiro();
-                    }}
-                  />
-                </Suspense>
-              </TabsContent>
+                    <div className="bg-slate-200/50 p-2 rounded-[2rem] shadow-xs">
+                      <TabsList className="flex flex-col w-full bg-transparent p-0 gap-1 h-auto">
+                        {canViewFinancials && (
+                          <TabsTrigger
+                            value="parcelas"
+                            className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                          >
+                            <Wallet className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span>Parcelas</span>
+                          </TabsTrigger>
+                        )}
+                        <TabsTrigger
+                          value="dados-pessoais"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        >
+                          <User className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Dados Pessoais</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="responsaveis"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        >
+                          <Users className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Responsáveis</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="contrato"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        >
+                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Contrato</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="ausencias"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        >
+                          <CalendarClock className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Ausências</span>
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+                  </div>
 
-              <TabsContent value="contrato" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                  <CarteirinhaContrato
-                    passageiro={passageiro}
-                    contratosAtivos={infoProps.contratosAtivos}
-                    onContractAction={infoProps.onContractAction}
-                    onDeleteContrato={handleDeleteContrato}
-                    onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-                    onEditClick={handleEditClick}
-                  />
-                </Suspense>
-              </TabsContent>
-
-              <TabsContent value="ausencias" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                  <CarteirinhaAusencias passageiro={passageiro} />
-                </Suspense>
-              </TabsContent>
-            </Tabs>
+                  <div className="col-span-8 space-y-6">
+                    {renderTabContents()}
+                  </div>
+                </div>
+              </Tabs>
+            )}
           </div>
         </div>
       </PullToRefreshWrapper>
