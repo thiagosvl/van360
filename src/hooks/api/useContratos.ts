@@ -23,6 +23,7 @@ export function useContratos(
     enabled: options?.enabled !== false,
     staleTime: 3000,
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
     select: (data) => ({
       list: data.data ?? [],
       pagination: data.pagination,
@@ -40,6 +41,7 @@ export function useContratosKPIs(options?: UseContratosOptions) {
     enabled: options?.enabled !== false,
     staleTime: 3000,
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -158,4 +160,19 @@ export function usePreviewContrato() {
     },
   });
 }
+
+export function useDownloadContrato() {
+  return useMutation({
+    mutationFn: async (contratoId: string) => {
+      return await contratoApi.downloadContrato(contratoId);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
+      const message =
+        err.response?.data?.error || "Erro ao baixar o contrato.";
+      toast.error(message);
+    },
+  });
+}
+
 

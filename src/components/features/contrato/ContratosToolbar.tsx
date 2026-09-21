@@ -28,6 +28,7 @@ interface ContratosToolbarProps {
   activeTab: ContratoTab;
   countPendentes?: number;
   countSemContrato?: number;
+  countAssinados?: number;
   onOpenConfig: () => void;
   onOpenPreview: () => void;
   onImportarContrato?: () => void;
@@ -44,6 +45,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   activeTab,
   countPendentes,
   countSemContrato,
+  countAssinados,
   onOpenConfig,
   onOpenPreview,
   onImportarContrato,
@@ -96,6 +98,24 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                   activeTab === ContratoTab.PENDENTES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
                 )}>
                   {countPendentes}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value={ContratoTab.ASSINADOS}
+              className={cn(
+                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
+                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
+                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+              )}
+            >
+              Assinados
+              {countAssinados !== undefined && (
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                  activeTab === ContratoTab.ASSINADOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                )}>
+                  {countAssinados}
                 </span>
               )}
             </TabsTrigger>

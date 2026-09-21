@@ -13,6 +13,8 @@ interface ContratoActionsMenuProps {
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
   onEnviarWhatsApp?: () => void;
+  onCompartilharWhatsApp?: (item: ContratoListItem) => void;
+  onDownload?: (item: ContratoListItem) => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;

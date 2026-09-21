@@ -43,3 +43,30 @@ export function substituirPlaceholdersContrato(
   });
 }
 
+export function gerarNomeArquivoContrato(
+  nomePassageiro?: string | null,
+  ano?: number | string | null
+): string {
+  const anoFinal = ano || new Date().getFullYear();
+  if (!nomePassageiro || !nomePassageiro.trim()) {
+    return `contrato-${anoFinal}.pdf`;
+  }
+
+  const preposicoes = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const partes = nomePassageiro
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const nomesRelevantes = partes.filter((parte) => !preposicoes.has(parte));
+  const selecionados = nomesRelevantes.slice(0, 2);
+
+  const slug = selecionados.length > 0 ? selecionados.join("-") : partes.slice(0, 2).join("-");
+
+  return slug ? `contrato-${slug}-${anoFinal}.pdf` : `contrato-${anoFinal}.pdf`;
+}
+

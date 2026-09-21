@@ -1,7 +1,13 @@
 import { ROUTES } from "@/constants/routes";
 import { BASE_DOMAIN } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
-import { obterStatusConfiguracaoContrato, StatusConfiguracaoContrato } from "@/utils/domain";
+import {
+  obterStatusConfiguracaoContrato,
+  StatusConfiguracaoContrato,
+  obterUrlDocumentoContrato,
+  gerarNomeArquivoContrato,
+  shareContratoFile,
+} from "@/utils/domain";
 import {
   useContratos,
   useContratosKPIs,
@@ -9,6 +15,7 @@ import {
   useDeleteContrato,
   usePreviewContrato,
   useSubstituirContrato,
+  useDownloadContrato,
 } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -17,7 +24,7 @@ import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
-import { ContratoTab, PassageiroFormModes } from "@/types/enums";
+import { ContratoStatus, ContratoTab, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { ContratoListItem } from "@/types/contract";
 import { openBrowserLink } from "@/utils/browser";
@@ -26,6 +33,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 
 export function useContratosViewModel() {
   const queryClient = useQueryClient();
@@ -73,7 +96,12 @@ export function useContratosViewModel() {
   });
 
   const rawTab = searchParams.get("tab");
-  const activeTab = rawTab === ContratoTab.PENDENTES ? ContratoTab.PENDENTES : ContratoTab.SEM_CONTRATO;
+  const activeTab =
+    rawTab === ContratoTab.PENDENTES
+      ? ContratoTab.PENDENTES
+      : rawTab === ContratoTab.ASSINADOS
+        ? ContratoTab.ASSINADOS
+        : ContratoTab.SEM_CONTRATO;
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
@@ -81,33 +109,34 @@ export function useContratosViewModel() {
     return () => clearTimeout(handler);
   }, [busca]);
 
-  const handleTabChange = useCallback((val: string) => {
-    setSearchParams((prev) => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set("tab", val);
-      return newParams;
-    });
-  }, [setSearchParams]);
-
-  // Queries e Mutations
-  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
-    enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")),
-  });
-
   const contratosFilters = useMemo(
     () => ({ tab: activeTab, search: debouncedSearch }),
     [activeTab, debouncedSearch]
   );
+
+  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
+    enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")),
+  });
 
   const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
     contratosFilters,
     { enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")) }
   );
 
+  const handleTabChange = useCallback((val: string) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("tab", val);
+      return newParams;
+    });
+    refetchKPIs();
+  }, [setSearchParams, refetchKPIs]);
+
   const deleteMutation = useDeleteContrato();
   const substituirMutation = useSubstituirContrato();
   const createMutation = useCreateContrato();
   const previewMutation = usePreviewContrato();
+  const downloadMutation = useDownloadContrato();
 
   const handleRefresh = async () => {
     await Promise.all([refetchKPIs(), refetchContratos()]);
@@ -327,11 +356,119 @@ export function useContratosViewModel() {
     }
   }, [isContratoConfigurado, previewMutation]);
 
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
+
+  const handleDownloadContrato = useCallback(
+    async (item: ContratoListItem) => {
+      const status = (item.status || item.status_contrato)?.toString().toLowerCase();
+      if (status !== ContratoStatus.ASSINADO) {
+        toast.error("O download do documento só está disponível para contratos assinados.");
+        return;
+      }
+
+      const urlContrato = obterUrlDocumentoContrato(item);
+      const targetId = item.id || item.contrato_id;
+      if (!urlContrato && !targetId) {
+        toast.error("Documento do contrato não encontrado.");
+        return;
+      }
+
+      const nomeAluno = item.passageiro?.nome || item.nome || "";
+      const ano = (item.dados_contrato?.ano as number | undefined) || (item.created_at ? new Date(item.created_at).getFullYear() : undefined);
+      const fileName = gerarNomeArquivoContrato(nomeAluno, ano);
+
+      setIsDownloading(item.id);
+      try {
+        let blob: Blob;
+        if (targetId) {
+          try {
+            blob = await downloadMutation.mutateAsync(targetId);
+          } catch {
+            if (urlContrato) {
+              const res = await fetch(urlContrato);
+              if (!res.ok) throw new Error("Erro ao baixar documento");
+              blob = await res.blob();
+            } else {
+              throw new Error("Falha no download");
+            }
+          }
+        } else if (urlContrato) {
+          const res = await fetch(urlContrato);
+          if (!res.ok) throw new Error("Erro ao baixar documento");
+          blob = await res.blob();
+        } else {
+          throw new Error("Identificador não encontrado");
+        }
+
+        if (Capacitor.isNativePlatform()) {
+          const base64Data = await blobToBase64(blob);
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Cache,
+          });
+
+          await Share.share({
+            title: `Download Contrato - ${nomeAluno}`,
+            files: [savedFile.uri],
+            dialogTitle: "Download do Contrato",
+          });
+        } else {
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = downloadUrl;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(downloadUrl);
+          toast.success("Download iniciado com sucesso!");
+        }
+      } catch (err: unknown) {
+        const errorMsg = String((err as { message?: string })?.message || "").toLowerCase();
+        const isCancel =
+          errorMsg.includes("canceled") ||
+          errorMsg.includes("cancelled") ||
+          errorMsg.includes("dismissed") ||
+          errorMsg.includes("abort");
+
+        if (!isCancel) {
+          toast.error("Erro ao realizar download do contrato.");
+        }
+      } finally {
+        setIsDownloading(null);
+      }
+    },
+    [downloadMutation]
+  );
+
+  const handleCompartilharContrato = useCallback(
+    async (item: ContratoListItem) => {
+      const urlContrato = obterUrlDocumentoContrato(item);
+      if (!urlContrato) {
+        toast.error("Documento do contrato não disponível.");
+        return;
+      }
+
+      const nomeAluno = item.passageiro?.nome || item.nome || "";
+      const ano = (item.dados_contrato?.ano as number | undefined) || (item.created_at ? new Date(item.created_at).getFullYear() : undefined);
+      const fileName = gerarNomeArquivoContrato(nomeAluno, ano);
+
+      await shareContratoFile({
+        url: urlContrato,
+        filename: fileName,
+        title: `Contrato - ${nomeAluno}`,
+      });
+    },
+    []
+  );
+
   const isActionLoading =
     deleteMutation.isPending ||
     substituirMutation.isPending ||
     createMutation.isPending ||
-    previewMutation.isPending;
+    previewMutation.isPending ||
+    downloadMutation.isPending;
 
   return {
     profile,
@@ -345,6 +482,7 @@ export function useContratosViewModel() {
     contratos: contratosRes?.list || [],
     isLoading: isLoadingContratos || isLoadingKPIs,
     isActionLoading,
+    isDownloading,
     isContratoAtivo,
     isContratoConfigurado,
     handleRefresh,
@@ -354,6 +492,8 @@ export function useContratosViewModel() {
     isToggling,
     handleOpenPreview,
     handleOpenImportarContrato,
+    handleDownloadContrato,
+    handleCompartilharContrato,
     isPreviewLoading: previewMutation.isPending,
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
@@ -364,6 +504,8 @@ export function useContratosViewModel() {
       onVerPassageiro: handleVerPassageiro,
       onCopiarLink: handleCopiarLink,
       onEnviarWhatsApp: handleEnviarWhatsApp,
+      onCompartilharWhatsApp: handleCompartilharContrato,
+      onDownload: handleDownloadContrato,
       onExcluir: handleExcluir,
       onSubstituir: handleSubstituir,
       onGerarContrato: handleGerarContrato,

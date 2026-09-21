@@ -94,8 +94,9 @@ export enum CobrancaTab {
 }
 
 export enum ContratoTab {
-  PENDENTES = "pendentes",
   SEM_CONTRATO = "sem_contrato",
+  PENDENTES = "pendentes",
+  ASSINADOS = "assinados",
 }
 
 export enum RelatorioTab {

@@ -2,6 +2,7 @@ import { ActionItem } from "@/types/actions";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import {
   Copy,
+  Download,
   ExternalLink,
   Eye,
   FileText,
@@ -26,6 +27,8 @@ interface UseContratoActionsProps {
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
   onEnviarWhatsApp?: () => void;
+  onCompartilharWhatsApp?: (item: ContratoListItem) => void;
+  onDownload?: (item: ContratoListItem) => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
@@ -44,6 +47,8 @@ export function useContratoActions({
   onVerPassageiro,
   onCopiarLink,
   onEnviarWhatsApp,
+  onCompartilharWhatsApp,
+  onDownload,
   onExcluir,
   onSubstituir,
   onGerarContrato,
@@ -123,6 +128,27 @@ export function useContratoActions({
         isLink: !!urlContrato,
         href: urlContrato || undefined,
         swipeColor: 'bg-green-600',
+        hasSeparatorAfter: false
+      });
+
+      if (isAssinado && urlContrato && onDownload) {
+        list.push({
+          label: 'Download',
+          icon: <Download className="h-4 w-4" />,
+          onClick: () => onDownload(item),
+          swipeColor: 'bg-indigo-600',
+          hasSeparatorAfter: true
+        });
+      }
+    }
+
+    if (isAssinado && isMobile && onCompartilharWhatsApp && urlContrato) {
+      list.push({
+        label: 'Enviar por WhatsApp',
+        icon: <WhatsAppIcon className="h-4 w-4" />,
+        onClick: () => onCompartilharWhatsApp(item),
+        disabled: isFeatureDisabled,
+        swipeColor: 'bg-[#25D366]',
         hasSeparatorAfter: true
       });
     }
@@ -168,7 +194,7 @@ export function useContratoActions({
       hasSeparatorAfter: true
     });
 
-    if (hasContract) {
+    if (hasContract && !isAssinado) {
       list.push({
         label: 'Excluir Contrato',
         icon: <Trash2 className="h-4 w-4" />,
@@ -181,5 +207,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onEnviarWhatsApp, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
+  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onEnviarWhatsApp, onCompartilharWhatsApp, onDownload, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
 }

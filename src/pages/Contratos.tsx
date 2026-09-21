@@ -24,6 +24,7 @@ const Contratos = () => {
     kpis,
     contratos,
     isLoading,
+    isDownloading,
     isContratoAtivo,
     isContratoConfigurado,
     handleRefresh,
@@ -58,6 +59,7 @@ const Contratos = () => {
               activeTab={activeTab}
               countPendentes={kpis?.pendentes}
               countSemContrato={kpis?.semContrato}
+              countAssinados={kpis?.assinados}
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
               onImportarContrato={() => handleOpenImportarContrato()}
@@ -99,7 +101,11 @@ const Contratos = () => {
 
             <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                {activeTab === ContratoTab.PENDENTES ? "Assinaturas Pendentes" : "Sem Contrato"}
+                {activeTab === ContratoTab.PENDENTES
+                  ? "Assinaturas Pendentes"
+                  : activeTab === ContratoTab.ASSINADOS
+                    ? "Contratos Assinados"
+                    : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                 {contratos.length}{" "}
@@ -111,17 +117,6 @@ const Contratos = () => {
               </span>
             </div>
 
-            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none transform-gpu will-change-transform">
-              <ContratosList
-                data={contratos}
-                isLoading={isLoading}
-                activeTab={ContratoTab.PENDENTES}
-                busca={debouncedSearch}
-                isDesativado={!isContratoAtivo}
-                {...actions}
-              />
-            </TabsContent>
-
             <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
                 data={contratos}
@@ -129,6 +124,31 @@ const Contratos = () => {
                 activeTab={ContratoTab.SEM_CONTRATO}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
+                isDownloading={isDownloading}
+                {...actions}
+              />
+            </TabsContent>
+
+            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none transform-gpu will-change-transform">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.PENDENTES}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                isDownloading={isDownloading}
+                {...actions}
+              />
+            </TabsContent>
+
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none transform-gpu will-change-transform">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.ASSINADOS}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                isDownloading={isDownloading}
                 {...actions}
               />
             </TabsContent>
