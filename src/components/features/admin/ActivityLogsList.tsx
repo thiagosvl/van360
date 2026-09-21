@@ -9,6 +9,7 @@ import { ROUTES } from "@/constants/routes";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { phoneMask } from "@/utils/masks";
 import { formatRelativeTime } from "@/utils/formatters/date";
+import { formatActivityDescription } from "@/utils/formatters/name";
 import { safeCloseDialog } from "@/hooks";
 
 interface ActivityLogsListProps {
@@ -101,7 +102,7 @@ export function ActivityLogsList({
                   )}
                 </h4>
                 <p className="text-xs font-medium text-slate-200 leading-relaxed break-words">
-                  {latestLog.descricao}
+                  {formatActivityDescription(latestLog.descricao)}
                 </p>
               </div>
               <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
@@ -170,7 +171,7 @@ export function ActivityLogsList({
                 </div>
 
                 <p className="text-xs text-slate-300 md:text-slate-400 leading-relaxed md:leading-normal break-words md:truncate">
-                  {log.descricao}
+                  {formatActivityDescription(log.descricao)}
                 </p>
 
                 <div className="pt-1 md:hidden">
@@ -259,7 +260,7 @@ export function ActivityLogsList({
 
             <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Descrição da Ação</p>
-              <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">{selectedLog.descricao}</p>
+              <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">{formatActivityDescription(selectedLog.descricao)}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">

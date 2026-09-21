@@ -3,6 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useHistoricoByEntidade } from "@/hooks/api/useHistorico";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { formatActivityDescription } from "@/utils/formatters/name";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { format, isSameDay } from "date-fns";
@@ -271,7 +272,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                         </div>
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[13px] font-semibold text-foreground/90 leading-tight">
-                            {atividade.descricao}
+                            {formatActivityDescription(atividade.descricao)}
                           </span>
                           <span className="text-[10px] text-foreground/40 font-medium tracking-tight">
                             {format(parseLocalDate(atividade.created_at), "HH:mm", { locale: ptBR })}
