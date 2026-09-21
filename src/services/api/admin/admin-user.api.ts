@@ -126,6 +126,7 @@ export interface AdminUserPassengerItem {
     data_envio_ultima_notificacao: string | null;
     desativar_lembretes: boolean;
   } | null;
+  enviar_notificacoes?: boolean;
   pode_cobrar?: boolean;
   motivo_bloqueio?: string | null;
 }

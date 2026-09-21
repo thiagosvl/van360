@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, X, School, Home, Check, AlertTriangle, MapPin } from "lucide-react";
+import { Route, Plus, X, School, Home, Check, AlertTriangle, MapPin } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -62,18 +62,14 @@ export function AdicionarParadaDialog({
         <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-2xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c]">
-              <Plus className="w-5 h-5 stroke-[2.5px]" />
+              <Route className="w-5 h-5 stroke-[2.2px]" />
             </div>
             <div className="text-left">
               <DialogTitle className="text-base font-extrabold text-[#1a3a5c] uppercase tracking-tight">
                 Adicionar Parada
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-slate-400 font-medium">
-                {typeof insertTarget === "number"
-                  ? `Inserir na posição ${insertTarget + 1}`
-                  : insertTarget === "top"
-                    ? "Inserir no início da rota"
-                    : "Inserir no final da rota"}
+              <DialogDescription className="sr-only">
+                Selecione um aluno ou escola para adicionar ao itinerário
               </DialogDescription>
             </div>
           </div>

@@ -48,7 +48,7 @@ export function useConfigurarRotaViewModel() {
 
   const { data: routeData, isLoading: isLoadingRoute } = useRouteDetail(isEditing && id ? id : "");
 
-  const { data: passageirosData, isLoading: isLoadingPassageiros } = usePassageiros(
+  const { data: passageirosData, isLoading: isLoadingPassageiros, refetch: refetchPassageiros } = usePassageiros(
     { usuarioId },
     {
       enabled: !!usuarioId && (!isEditing || !isLoadingRoute),
@@ -208,7 +208,7 @@ export function useConfigurarRotaViewModel() {
 
   const handleOpenCadastrarEndereco = (passId: string) => {
     setEditingInlinePassageiroId(passId);
-    setShouldAutoAddPassageiro(true);
+    setShouldAutoAddPassageiro(false);
   };
 
   const handleAddPassageiro = (passId: string) => {
@@ -222,7 +222,7 @@ export function useConfigurarRotaViewModel() {
 
     const resp = pass.responsavel_principal;
     const temEndereco = Boolean(
-      (resp?.logradouro && resp?.numero) || (pass.logradouro && pass.numero)
+      (resp?.logradouro && resp?.numero)
     );
 
     const passEscolaId = pass.escola_id || pass.escola?.id;
@@ -395,6 +395,7 @@ export function useConfigurarRotaViewModel() {
     passageirosList,
     escolasList,
     veiculosList,
+    refetchPassageiros,
     isLoading: isLoadingRoute || isLoadingPassageiros || isLoadingEscolas || isLoadingVeiculos,
     isSaving: createRouteMutation.isPending || updateRouteMutation.isPending,
     isDeleting: deleteRouteMutation.isPending,

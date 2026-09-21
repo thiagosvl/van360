@@ -22,6 +22,7 @@ import { phoneMask } from "@/utils/masks";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatShortName } from "@/utils/formatters/name";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdminUserPassengersTabProps {
   passageiros: AdminUserPassengerItem[];
@@ -32,6 +33,21 @@ interface AdminUserPassengersTabProps {
 const getValorMensalidade = (p: AdminUserPassengerItem) => {
   const val = p.valor_cobranca;
   return val ? Number(val) : 0;
+};
+
+const getMotivoBloqueio = (p: AdminUserPassengerItem): string => {
+  if (p.motivo_bloqueio) return p.motivo_bloqueio;
+  if (!p.ativo) return "Aluno inativo";
+  if (p.enviar_notificacoes === false) return "Notificações desativadas para o aluno";
+  const resp = p.responsavel_principal;
+  if (!resp || (!resp.telefone && !resp.email)) return "Responsável sem contato cadastrado";
+  const valor = getValorMensalidade(p);
+  if (valor <= 0) return "Valor da mensalidade não informado";
+  if (!p.dia_vencimento || Number(p.dia_vencimento) <= 0) return "Dia de vencimento não informado";
+  if (!p.cobranca_mes_atual) return "Parcela do mês atual não gerada";
+  if (p.cobranca_mes_atual.status === "PAGO") return "Parcela do mês já foi paga";
+  if (p.cobranca_mes_atual.status === "CANCELADA") return "Parcela do mês cancelada";
+  return "Lembrete indisponível para este aluno";
 };
 
 export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: AdminUserPassengersTabProps) {
@@ -293,32 +309,53 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
 
                           <td className="py-4 px-6 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={!p.pode_cobrar}
-                                onClick={() =>
-                                  openAdminPassengerSendCobrancaDialog({
-                                    userId: userId || "",
-                                    passageiro: p,
-                                    motoristaNome,
-                                  })
-                                }
-                                title={
-                                  p.pode_cobrar
-                                    ? "Forçar envio do lembrete de cobrança para o responsável"
-                                    : p.motivo_bloqueio || "Lembrete indisponível para este aluno"
-                                }
-                                className={`h-8 rounded-xl border text-xs font-bold flex items-center gap-1.5 px-3 transition-all ${
-                                  p.pode_cobrar
-                                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 hover:border-emerald-500/50 shadow-sm shadow-emerald-500/10"
-                                    : "bg-slate-900/40 border-slate-800/60 text-slate-500 opacity-40 cursor-not-allowed"
-                                }`}
-                              >
-                                <Send className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">Lembrete</span>
-                              </Button>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className={`inline-flex ${!p.pode_cobrar ? "cursor-not-allowed" : ""}`}
+                                    title={
+                                      !p.pode_cobrar
+                                        ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                        : "Forçar envio do lembrete de cobrança para o responsável"
+                                    }
+                                  >
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      disabled={!p.pode_cobrar}
+                                      onClick={() =>
+                                        openAdminPassengerSendCobrancaDialog({
+                                          userId: userId || "",
+                                          passageiro: p,
+                                          motoristaNome,
+                                        })
+                                      }
+                                      className={`h-8 rounded-xl border text-xs font-bold flex items-center gap-1.5 px-3 transition-all ${
+                                        p.pode_cobrar
+                                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 hover:border-emerald-500/50 shadow-sm shadow-emerald-500/10"
+                                          : "bg-slate-900/40 border-slate-800/60 text-slate-500 opacity-40"
+                                      }`}
+                                    >
+                                      <Send className="h-3.5 w-3.5" />
+                                      <span className="hidden sm:inline">Lembrete</span>
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="bg-slate-900 border-slate-800 text-slate-200 text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
+                                >
+                                  {!p.pode_cobrar && (
+                                    <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                                  )}
+                                  <span>
+                                    {!p.pode_cobrar
+                                      ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                      : "Forçar envio do lembrete de cobrança para o responsável"}
+                                  </span>
+                                </TooltipContent>
+                              </Tooltip>
 
                               <Button
                                 type="button"
@@ -426,32 +463,53 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                         </div>
 
                         <div className="pt-2 border-t border-slate-800/60 grid grid-cols-2 gap-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={!p.pode_cobrar}
-                            onClick={() =>
-                              openAdminPassengerSendCobrancaDialog({
-                                userId: userId || "",
-                                passageiro: p,
-                                motoristaNome,
-                              })
-                            }
-                            title={
-                              p.pode_cobrar
-                                ? "Forçar envio do lembrete de cobrança para o responsável"
-                                : p.motivo_bloqueio || "Lembrete indisponível para este aluno"
-                            }
-                            className={`w-full h-8 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all ${
-                              p.pode_cobrar
-                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
-                                : "bg-slate-800/40 border-slate-800/60 text-slate-500 opacity-40 cursor-not-allowed"
-                            }`}
-                          >
-                            <Send className="h-3.5 w-3.5" />
-                            <span>Lembrete</span>
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className={`w-full inline-flex ${!p.pode_cobrar ? "cursor-not-allowed" : ""}`}
+                                title={
+                                  !p.pode_cobrar
+                                    ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                    : "Forçar envio do lembrete de cobrança para o responsável"
+                                }
+                              >
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={!p.pode_cobrar}
+                                  onClick={() =>
+                                    openAdminPassengerSendCobrancaDialog({
+                                      userId: userId || "",
+                                      passageiro: p,
+                                      motoristaNome,
+                                    })
+                                  }
+                                  className={`w-full h-8 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                    p.pode_cobrar
+                                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                                      : "bg-slate-800/40 border-slate-800/60 text-slate-500 opacity-40"
+                                  }`}
+                                >
+                                  <Send className="h-3.5 w-3.5" />
+                                  <span>Lembrete</span>
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              className="bg-slate-900 border-slate-800 text-slate-200 text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
+                            >
+                              {!p.pode_cobrar && (
+                                <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                              )}
+                              <span>
+                                {!p.pode_cobrar
+                                  ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                  : "Forçar envio do lembrete de cobrança para o responsável"}
+                              </span>
+                            </TooltipContent>
+                          </Tooltip>
 
                           <Button
                             type="button"

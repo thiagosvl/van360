@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
-import { XCircle, UserMinus, Route, Loader2, Play, AlertTriangle, Edit } from "lucide-react";
+import { XCircle, UserMinus, Route, Loader2, Play, AlertTriangle, Edit, Users } from "lucide-react";
 import { RouteExecution, RouteExecutionStatus } from "@/types/route";
+import { cn } from "@/lib/utils";
 
 interface ActiveRouteHeaderProps {
   execucao?: RouteExecution | null;
@@ -16,7 +17,11 @@ interface ActiveRouteHeaderProps {
   isLoading: boolean;
   can: (permission: string) => boolean;
   isAnyActionBusy?: boolean;
+  temAlunosVolta?: boolean;
+  chamadaRealizada?: boolean;
+  resumoChamada?: { presentes: number; total: number } | null;
   onOpenAusenciaDialog: () => void;
+  onOpenChamadaRapida?: () => void;
   onCancel: () => void;
   onEditRoute: () => void;
   onIniciarRota: () => void;
@@ -35,7 +40,11 @@ export function ActiveRouteHeader({
   isLoading,
   can,
   isAnyActionBusy = false,
+  temAlunosVolta = false,
+  chamadaRealizada = false,
+  resumoChamada = null,
   onOpenAusenciaDialog,
+  onOpenChamadaRapida,
   onCancel,
   onEditRoute,
   onIniciarRota
@@ -114,6 +123,28 @@ export function ActiveRouteHeader({
                   </Button>
                 )}
               </div>
+            )}
+
+            {temAlunosVolta && onOpenChamadaRapida && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onOpenChamadaRapida}
+                className={cn(
+                  "w-full h-10 rounded-lg font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2",
+                  chamadaRealizada
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100/80"
+                    : "border-[#1a3a5c]/25 bg-white text-[#1a3a5c] hover:bg-[#1a3a5c]/5"
+                )}
+                title={chamadaRealizada ? "Editar chamada de embarque realizada hoje" : "Realizar conferência de chamada dos alunos"}
+              >
+                <Users className={cn("w-4 h-4 shrink-0", chamadaRealizada ? "text-emerald-700" : "text-[#1a3a5c]")} />
+                {chamadaRealizada ? (
+                  <span>Chamada Realizada • Editar</span>
+                ) : (
+                  <span>Fazer Chamada de Embarque</span>
+                )}
+              </Button>
             )}
           </div>
         </div>

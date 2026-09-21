@@ -21,6 +21,8 @@ import { formatFirstName, formatShortName } from "@/utils/formatters/name";
 import { useProcessarChamadaEscola } from "@/hooks/api/useRouteMutations";
 import { formatarEnderecoParcialRota } from "@/utils/formatters/address";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { ChamadaRapidaDialog, EscolaChamadaItem } from "@/components/dialogs/ChamadaRapidaDialog";
+import { obterChamadaRapida, salvarChamadaRapida, limparChamadasRapidasObsoletas } from "@/utils/domain/route/routeStorage.utils";
 
 const TAB_DEFAULT = "default";
 const TAB_PRINCIPAL = "principal";
@@ -92,6 +94,8 @@ export function ActiveRouteExecutionView({
   }, [paradaAtual?.id, isPreview]);
   const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
   const [isChamadaDialogOpen, setIsChamadaDialogOpen] = useState(false);
+  const [isChamadaRapidaOpen, setIsChamadaRapidaOpen] = useState(false);
+  const [chamadaRapidaSavedMap, setChamadaRapidaSavedMap] = useState<Record<string, RouteStopStatus> | null>(null);
   const [isConfirmStartDialogOpen, setIsConfirmStartDialogOpen] = useState(false);
   const [reordenarSheetTarget, setReordenarSheetTarget] = useState<ExecucaoParada | null>(null);
   const chamadaEscolaMutation = useProcessarChamadaEscola();
@@ -153,6 +157,16 @@ export function ActiveRouteExecutionView({
               passageiro_id: pid,
               rota_id: rid,
             });
+
+            if (rid && pid && chamadaRapidaSavedMap && chamadaRapidaSavedMap[pid]) {
+              const updated = {
+                ...chamadaRapidaSavedMap,
+                [pid]: RouteStopStatus.EMBARCADO,
+              };
+              salvarChamadaRapida(rid, updated);
+              setChamadaRapidaSavedMap(updated);
+            }
+
             toast.success("Registro de Ausência desfeito!", { description: "Aluno retornado ao itinerário." });
           } else if (execucao?.id) {
             await handleStep(parada.id, RouteStopStatus.PENDENTE);
@@ -192,19 +206,121 @@ export function ActiveRouteExecutionView({
 
   const isActionDisabled = isLoading || isStepping || isFinalizing || (!!submittingStopId && submittingStopId === activeParadaToRender?.id);
 
-  const todasParadas = [
-    ...(paradasConcluidas || []),
-    ...(activeParadaToRender ? [activeParadaToRender] : []),
-    ...(proximasParadas || [])
-  ];
+  const todasParadas = useMemo(() => {
+    const list = [
+      ...(paradasConcluidas || []),
+      ...(activeParadaToRender ? [activeParadaToRender] : []),
+      ...(proximasParadas || [])
+    ];
+    if (isPreview) {
+      return [...list].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+    }
+    return list;
+  }, [paradasConcluidas, activeParadaToRender, proximasParadas, isPreview]);
 
   const { desces: alunosParaDesembarcar, subes: alunosParaEmbarcar } = useMemo(() => {
-    const paradaAtualIndexInTodas = activeParadaToRender ? (paradasConcluidas?.length || 0) : -1;
+    const paradaAtualIndexInTodas = activeParadaToRender ? todasParadas.findIndex((p) => p.id === activeParadaToRender.id) : -1;
     if (activeParadaToRender?.tipo_no === RouteNodeType.ESCOLA && !isPreview && paradaAtualIndexInTodas >= 0) {
       return getAlunosEscolaPorPosicao(todasParadas, paradaAtualIndexInTodas);
     }
     return { desces: [], subes: [] };
-  }, [activeParadaToRender, isPreview, paradasConcluidas?.length, todasParadas]);
+  }, [activeParadaToRender, isPreview, todasParadas]);
+
+  useEffect(() => {
+    if (isPreview && execucao?.rota_id) {
+      limparChamadasRapidasObsoletas();
+      const saved = obterChamadaRapida(execucao.rota_id);
+      setChamadaRapidaSavedMap(saved ? saved.statusAlunos : null);
+    }
+  }, [isPreview, execucao?.rota_id]);
+
+  const escolasComAlunosVolta = useMemo<EscolaChamadaItem[]>(() => {
+    if (!isPreview) return [];
+
+    const passageirosAusentesSet = new Set<string>();
+    todasParadas.forEach((p) => {
+      if (p.status === RouteStopStatus.AUSENTE || p.is_ausente || p.ausencia_id) {
+        const pid = p.passageiro_id || p.passageiro?.id;
+        if (pid) passageirosAusentesSet.add(pid);
+      }
+    });
+
+    const escolasMap = new Map<string, EscolaChamadaItem>();
+
+    todasParadas.forEach((parada, index) => {
+      if (parada.tipo_no !== RouteNodeType.ESCOLA) return;
+      const escolaId = parada.escola_id || parada.escola?.id;
+      if (!escolaId) return;
+
+      const { subes } = getAlunosEscolaPorPosicao(todasParadas, index);
+      if (!subes || subes.length === 0) return;
+
+      if (!escolasMap.has(escolaId)) {
+        escolasMap.set(escolaId, {
+          escolaId,
+          escolaNome: parada.escola?.nome || "Escola",
+          alunos: [],
+        });
+      }
+
+      const escolaEntry = escolasMap.get(escolaId)!;
+      subes.forEach((node) => {
+        const passageiroId = node.passageiro_id || node.passageiro?.id || node.id;
+        const jaExiste = escolaEntry.alunos.some((a) => a.passageiroId === passageiroId);
+        if (!jaExiste) {
+          const temAusenciaRegistrada = passageirosAusentesSet.has(passageiroId) ||
+            node.status === RouteStopStatus.AUSENTE || !!node.is_ausente || !!node.ausencia_id;
+
+          escolaEntry.alunos.push({
+            id: node.id,
+            passageiroId,
+            nome: node.passageiro?.nome || node.nome || "Aluno",
+            turma: node.passageiro?.turma || null,
+            temAusenciaRegistrada,
+          });
+        }
+      });
+    });
+
+    return Array.from(escolasMap.values()).filter((e) => e.alunos.length > 0);
+  }, [isPreview, todasParadas, getAlunosEscolaPorPosicao]);
+
+  const chamadaRealizada = chamadaRapidaSavedMap !== null;
+
+  const resumoChamada = useMemo(() => {
+    if (!chamadaRapidaSavedMap || escolasComAlunosVolta.length === 0) return null;
+    let presentes = 0;
+    let total = 0;
+
+    escolasComAlunosVolta.forEach((escola) => {
+      escola.alunos.forEach((aluno) => {
+        total += 1;
+        const status = chamadaRapidaSavedMap[aluno.passageiroId];
+        if (status !== RouteStopStatus.AUSENTE) {
+          presentes += 1;
+        }
+      });
+    });
+
+    return { presentes, total };
+  }, [chamadaRapidaSavedMap, escolasComAlunosVolta]);
+
+  const handleOpenChamadaRapida = () => {
+    limparChamadasRapidasObsoletas();
+    if (execucao?.rota_id) {
+      const saved = obterChamadaRapida(execucao.rota_id);
+      setChamadaRapidaSavedMap(saved ? saved.statusAlunos : null);
+    }
+    setIsChamadaRapidaOpen(true);
+  };
+
+  const handleSalvarChamadaRapida = (statusMap: Record<string, RouteStopStatus>) => {
+    if (!execucao?.rota_id) return;
+    salvarChamadaRapida(execucao.rota_id, statusMap);
+    setChamadaRapidaSavedMap(statusMap);
+    setIsChamadaRapidaOpen(false);
+    toast.success("Chamada rápida salva com sucesso!");
+  };
 
   const onCancel = () => {
     openConfirmationDialog({
@@ -454,7 +570,11 @@ export function ActiveRouteExecutionView({
         isLoading={isLoading}
         can={can}
         isAnyActionBusy={isAnyActionBusy}
+        temAlunosVolta={escolasComAlunosVolta.length > 0}
+        chamadaRealizada={chamadaRealizada}
+        resumoChamada={resumoChamada}
         onOpenAusenciaDialog={() => setIsAusenciaDialogOpen(true)}
+        onOpenChamadaRapida={handleOpenChamadaRapida}
         onCancel={onCancel}
         onEditRoute={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
         onIniciarRota={() => {
@@ -620,6 +740,16 @@ export function ActiveRouteExecutionView({
           }
         }}
       />
+
+      {isPreview && escolasComAlunosVolta.length > 0 && (
+        <ChamadaRapidaDialog
+          open={isChamadaRapidaOpen}
+          onOpenChange={setIsChamadaRapidaOpen}
+          escolas={escolasComAlunosVolta}
+          initialStatusMap={chamadaRapidaSavedMap || undefined}
+          onSalvar={handleSalvarChamadaRapida}
+        />
+      )}
     </div>
   );
 }

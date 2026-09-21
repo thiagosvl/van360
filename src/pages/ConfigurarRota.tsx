@@ -173,49 +173,13 @@ export default function ConfigurarRota() {
           passageiroId={vm.editingInlinePassageiroId}
           nomePassageiro={vm.passageirosList.find((p) => p.id === vm.editingInlinePassageiroId)?.nome || ""}
           isOpen={!!vm.editingInlinePassageiroId}
-          onSuccess={(addressData?: any) => {
-            const targetId = vm.editingInlinePassageiroId;
-            const isAutoAdd = vm.shouldAutoAddPassageiro;
-
-            vm.setIsDialogOpen(false);
+          onSuccess={() => {
             vm.setEditingInlinePassageiroId(null);
             vm.setShouldAutoAddPassageiro(false);
-
-            if (isAutoAdd && targetId) {
-              const pass = vm.passageirosList.find((p) => p.id === targetId);
-              const passName = pass?.nome || "Aluno";
-
-              const updatedPass = pass ? {
-                ...pass,
-                responsavel_principal: {
-                  ...pass.responsavel_principal,
-                  nome: pass.responsavel_principal?.nome || "",
-                  telefone: pass.responsavel_principal?.telefone || "",
-                  logradouro: addressData?.logradouro || pass.responsavel_principal?.logradouro || "Endereço cadastrado",
-                  numero: addressData?.numero || pass.responsavel_principal?.numero || "",
-                  bairro: addressData?.bairro || pass.responsavel_principal?.bairro || "",
-                  cidade: addressData?.cidade || pass.responsavel_principal?.cidade || "",
-                  estado: addressData?.estado || pass.responsavel_principal?.estado || "",
-                },
-              } : null;
-
-              const newItem: ItineraryItem = {
-                id: `no-pass-${targetId}-${Date.now()}`,
-                tipo_no: RouteNodeType.PASSAGEIRO,
-                passageiro_id: targetId,
-                nome: passName,
-                detalhe: pass?.escola?.nome ? `Escola: ${pass.escola.nome}` : undefined,
-                temEndereco: true,
-                responsaveisAdicionais: (pass as any)?.responsaveis || [],
-                passageiro: updatedPass,
-                sentido: RouteSentido.INDO,
-              };
-
-              vm.setItinerario((prev) => [...prev, newItem]);
-              toast.success(`Endereço salvo e ${formatShortName(passName, true)} adicionado(a) à rota!`);
-            } else {
-              toast.success("Endereço atualizado com sucesso!");
-            }
+            toast.success("Endereço adicionado!", {
+              description: "Agora é só adicionar a parada do aluno ao itinerário.",
+              duration: 3500,
+            });
           }}
           onClose={() => {
             vm.setEditingInlinePassageiroId(null);

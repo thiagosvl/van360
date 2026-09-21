@@ -6,6 +6,7 @@ import { toast } from "@/utils/notifications/toast";
 import { useCallback, useRef, useState } from "react";
 import { SignaturePadRef } from "@/components/common/SignaturePad";
 import { getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface UseAssinarContratoViewModelProps {
   token: string | undefined;
@@ -13,6 +14,7 @@ interface UseAssinarContratoViewModelProps {
 
 export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewModelProps) {
   const [modalAberto, setModalAberto] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
   const sigCanvas = useRef<SignaturePadRef>(null);
 
@@ -26,9 +28,12 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
 
   const obterIP = useCallback(async (): Promise<string> => {
     try {
-      const response = await fetch("https://api.ipify.org?format=json");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const response = await fetch("https://api.ipify.org?format=json", { signal: controller.signal });
+      clearTimeout(timeoutId);
       const data = await response.json();
-      return data.ip;
+      return data.ip || "unknown";
     } catch {
       return "unknown";
     }
@@ -41,6 +46,8 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
     }
 
     if (!token) return;
+
+    setIsSubmitting(true);
 
     try {
       const assinaturaBase64 = sigCanvas.current.toDataURL("image/png");
@@ -58,9 +65,9 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
         metadados,
       });
 
-      // Não fechamos o modal aqui. Ele será desmontado automaticamente 
-      // quando a página receber o status ASSINADO e mudar a tela de fundo.
-    } catch (error: any) {
+      safeCloseDialog(() => setModalAberto(false));
+    } catch {
+      setIsSubmitting(false);
       toast.error("contrato.erro.assinar");
     }
   }, [token, signMutation, obterIP]);
@@ -84,6 +91,6 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
     handleAssinar,
     onDocumentLoadSuccess,
     clearSignature,
-    isSigning: signMutation.isPending,
+    isSigning: isSubmitting || signMutation.isPending,
   };
 }
