@@ -17,11 +17,11 @@ import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus, ContratoTab } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
-import { Clock, Download, Eye, FileCheck2, FileSignature, FileText, FileX2, Loader2, Users } from "lucide-react";
+import { Clock, Download, Eye, FileCheck2, FileSignature, FileText, FileX2, Loader2, User, Users } from "lucide-react";
 import { memo } from "react";
 import { ContratoListItem } from "@/types/contract";
 import { Passageiro } from "@/types/passageiro";
-import { obterUrlDocumentoContrato } from "@/utils/domain";
+import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 import { ContratoSummary } from "./ContratoSummary";
 
@@ -255,6 +255,14 @@ export const ContratosList = memo(function ContratosList({
               const isImportado = item?.provider === ContratoProvider.IMPORTADO;
               const status = item.status as ContratoStatus | null;
               const isAssinado = status === ContratoStatus.ASSINADO;
+              const isPendente = status === ContratoStatus.PENDENTE;
+              const hasContract = isPendente || isAssinado || !!item?.contrato_id;
+
+              const respObj = item?.responsavel_principal || item?.passageiro?.responsavel_principal;
+              const respNome = respObj?.nome;
+              const respTelefone = respObj?.telefone;
+              const isMissingResponsible = isResponsavelIncompleto(respNome, respTelefone);
+              const passId = (item.tipo === "passageiro" ? item.id : item.passageiro_id) || item.id;
 
               const iconConfig = getIconConfig(isAssinado, isSemContrato);
               const urlContrato = obterUrlDocumentoContrato(item);
@@ -303,6 +311,36 @@ export const ContratosList = memo(function ContratosList({
                   </TableCell>
                   <TableCell className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2 pr-2">
+                      {!hasContract && (
+                        isMissingResponsible ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => actions.onCompletarCadastro?.(passId, item)}
+                            disabled={isDesativado}
+                            className="h-8 px-2.5 rounded-lg border-amber-200 hover:border-amber-300 hover:bg-amber-50 text-amber-700 text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            title="Completar dados e gerar contrato"
+                          >
+                            <User className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Completar e Gerar</span>
+                          </Button>
+                        ) : actions.onGerarContrato ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => actions.onGerarContrato?.(passId)}
+                            disabled={isDesativado}
+                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            title="Gerar contrato"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                            <span>Gerar Contrato</span>
+                          </Button>
+                        ) : null
+                      )}
+
                       {urlContrato && (
                         <>
                           <Button
