@@ -32,3 +32,9 @@ export interface RegistrarPagamentoManualDTO {
   data_pagamento: string;
   tipo_pagamento: CobrancaTipoPagamento;
 }
+
+export interface ComplementarPagamentoManualDTO {
+  valor_adicional: number | string;
+  data_pagamento?: string;
+  tipo_pagamento?: CobrancaTipoPagamento;
+}

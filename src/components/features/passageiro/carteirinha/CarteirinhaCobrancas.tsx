@@ -441,6 +441,7 @@ const CobrancaItemPassageiro = forwardRef<
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const isCancelada = cobranca.status === CobrancaStatus.CANCELADA;
   const isPaid = !isCancelada && cobranca.status === CobrancaStatus.PAGO;
+  const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isCancelada && !isPaid && !isIncomplete && checkCobrancaEmAtraso(cobranca.data_vencimento);
   const valorExibicao = getCobrancaValorExibicao(cobranca);
 
@@ -554,14 +555,20 @@ const CobrancaItemPassageiro = forwardRef<
                   })
                   : "R$ --"}
               </p>
-              <StatusBadge
-                status={cobranca.status}
-                dataVencimento={isIncomplete || isCancelada ? undefined : cobranca.data_vencimento}
-                className={cn(
-                  "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                  statusColor
-                )}
-              />
+              {isParcial ? (
+                <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
+                  Parcial
+                </span>
+              ) : (
+                <StatusBadge
+                  status={cobranca.status}
+                  dataVencimento={isIncomplete || isCancelada ? undefined : cobranca.data_vencimento}
+                  className={cn(
+                    "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                    statusColor
+                  )}
+                />
+              )}
             </div>
 
             <div className="hidden sm:flex items-center ml-1" onClick={(e) => e.stopPropagation()}>

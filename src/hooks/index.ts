@@ -53,7 +53,7 @@ export { useConfiguracoes } from "./api/useConfiguracoes";
 // API hooks (mutations)
 export {
     useCreateCobranca, useDeleteCobranca,
-    useDesfazerPagamento, useRegistrarPagamentoManual, useRestaurarCobranca, useToggleNotificacoesCobranca, useUpdateCobranca
+    useDesfazerPagamento, useRegistrarPagamentoManual, useComplementarPagamentoManual, useRestaurarCobranca, useToggleNotificacoesCobranca, useUpdateCobranca
 } from "./api/useCobrancaMutations";
 export {
     useContratos, useContratosKPIs, useCreateContrato, useDeleteContrato, usePreviewContrato, useSubstituirContrato

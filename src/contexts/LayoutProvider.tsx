@@ -21,6 +21,7 @@ import ReferAndEarnDialog from "@/components/dialogs/ReferAndEarnDialog";
 import PersonalizarMenuDialog from "@/components/dialogs/PersonalizarMenuDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import ComplementarPagamentoDialog from "@/components/dialogs/ComplementarPagamentoDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import ResponsavelFormDialog from "@/components/dialogs/ResponsavelFormDialog";
 
@@ -77,6 +78,7 @@ import {
   OpenFirstChargeDialogProps,
   OpenGastoFormProps,
   OpenManualPaymentDialogProps,
+  OpenComplementarPagamentoDialogProps,
   OpenPassageiroFormProps,
   OpenVeiculoFormProps,
   OpenRouteFormProps,
@@ -194,6 +196,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [manualPaymentDialogState, setManualPaymentDialogState] = useState<{
     open: boolean;
     props?: OpenManualPaymentDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [complementarPagamentoDialogState, setComplementarPagamentoDialogState] = useState<{
+    open: boolean;
+    props?: OpenComplementarPagamentoDialogProps;
   }>({
     open: false,
   });
@@ -421,6 +430,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openComplementarPagamentoDialog = (props: OpenComplementarPagamentoDialogProps) => {
+    setComplementarPagamentoDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeComplementarPagamentoDialog = () => {
+    safeCloseDialog(() => {
+      setComplementarPagamentoDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   const openReceiptDialog = (props: OpenReceiptDialogProps) => {
     setReceiptDialogState({
       open: true,
@@ -546,6 +568,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
         openManualPaymentDialog,
+        openComplementarPagamentoDialog,
+        closeComplementarPagamentoDialog,
         openReceiptDialog,
         openAnnualReceiptDialog,
         openCobrancaFormDialog,
@@ -849,6 +873,28 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           dataVencimento={manualPaymentDialogState.props.dataVencimento}
           onPaymentRecorded={(updatedCobranca) => {
             manualPaymentDialogState.props?.onPaymentRecorded?.(updatedCobranca);
+          }}
+        />
+      )}
+
+      {complementarPagamentoDialogState.open && complementarPagamentoDialogState.props && (
+        <ComplementarPagamentoDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setComplementarPagamentoDialogState((prev) => ({ ...prev, open: false })),
+            )
+          }
+          cobrancaId={complementarPagamentoDialogState.props.cobrancaId}
+          passageiroNome={complementarPagamentoDialogState.props.passageiroNome}
+          responsavelNome={complementarPagamentoDialogState.props.responsavelNome}
+          valorOriginal={complementarPagamentoDialogState.props.valorOriginal}
+          valorJaPago={complementarPagamentoDialogState.props.valorJaPago}
+          dataVencimento={complementarPagamentoDialogState.props.dataVencimento}
+          mes={complementarPagamentoDialogState.props.mes}
+          ano={complementarPagamentoDialogState.props.ano}
+          onPaymentRecorded={(updatedCobranca, dataSent) => {
+            complementarPagamentoDialogState.props?.onPaymentRecorded?.(updatedCobranca, dataSent);
           }}
         />
       )}

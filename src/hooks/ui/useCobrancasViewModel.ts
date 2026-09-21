@@ -197,9 +197,17 @@ export function useCobrancasViewModel() {
     setPageTitle("Parcelas");
   }, [setPageTitle]);
 
+  const saldoParcialRecebidas = useMemo(() => {
+    return cobrancasRecebidas.reduce((acc, curr) => {
+      const pago = Number(curr.valor_pago ?? curr.valor ?? 0);
+      const total = Number(curr.valor || 0);
+      return acc + (pago < total ? total - pago : 0);
+    }, 0);
+  }, [cobrancasRecebidas]);
+
   const totalAReceber = useMemo(
-    () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0),
-    [cobrancasAReceber]
+    () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialRecebidas,
+    [cobrancasAReceber, saldoParcialRecebidas]
   );
 
   const totalRecebido = useMemo(

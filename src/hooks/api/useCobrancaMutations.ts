@@ -1,4 +1,4 @@
-import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
+import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
@@ -120,6 +120,29 @@ export function useRegistrarPagamentoManual() {
   return useMutation({
     mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: RegistrarPagamentoManualDTO }) =>
       cobrancaApi.registrarPagamentoManual(cobrancaId, data),
+    onSuccess: (_, { cobrancaId }) => {
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
+      queryClient.invalidateQueries({ queryKey: ["historico"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      toast.success("cobranca.sucesso.pagamentoRegistrado");
+    },
+    onError: (error: any) => {
+      toast.error("cobranca.erro.registrarPagamento", {
+        description: getErrorMessage(error, "cobranca.erro.registrarPagamentoDetalhe"),
+      });
+    },
+  });
+}
+
+export function useComplementarPagamentoManual() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: ComplementarPagamentoManualDTO }) =>
+      cobrancaApi.complementarPagamentoManual(cobrancaId, data),
     onSuccess: (_, { cobrancaId }) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });

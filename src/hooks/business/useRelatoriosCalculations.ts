@@ -139,10 +139,13 @@ export const useRelatoriosCalculations = ({
     const taxaRecebimento =
       financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
 
-    // A Receber (Vencidos + Pendentes)
-    const valorAReceber = financeiro?.receita.pendente ?? cobrancasAbertas.reduce(
-      (acc: number, c: any) => acc + Number(c.valor || 0),
-      0
+    const saldoParcialRecebidas = cobrancasPagas.reduce((acc: number, c: any) => {
+      const pago = Number(c.valor_pago ?? c.valor ?? 0);
+      const total = Number(c.valor || 0);
+      return acc + (pago < total ? total - pago : 0);
+    }, 0);
+    const valorAReceber = financeiro?.receita.pendente ?? (
+      cobrancasAbertas.reduce((acc: number, c: any) => acc + Number(c.valor || 0), 0) + saldoParcialRecebidas
     );
     const aReceberCount = cobrancasAbertas.length;
 

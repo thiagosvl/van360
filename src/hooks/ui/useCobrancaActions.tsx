@@ -27,7 +27,8 @@ import {
   QrCode,
   Receipt,
   RotateCcw,
-  User
+  User,
+  Wallet
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { isMobilePlatform } from "@/utils/detectPlatform";
@@ -201,6 +202,7 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
 }
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
+  const { openComplementarPagamentoDialog } = useLayout();
   const {
     cobranca,
     onVerCarteirinha,
@@ -315,7 +317,34 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     }
 
     const isPago = seForPago(cobranca);
+    const isParcial = isPago && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
     const actions: ActionItem[] = [];
+
+    if (isParcial) {
+      actions.push({
+        label: "Complementar Pagamento",
+        icon: <Wallet className="h-4 w-4" />,
+        onClick: () => {
+          document.body.click();
+          openComplementarPagamentoDialog({
+            cobrancaId: cobranca.id,
+            passageiroNome: cobranca.passageiro?.nome || "",
+            responsavelNome: cobranca.passageiro?.responsavel_principal?.nome,
+            valorOriginal: Number(cobranca.valor),
+            valorJaPago: Number(cobranca.valor_pago || 0),
+            dataVencimento: cobranca.data_vencimento,
+            mes: cobranca.mes,
+            ano: cobranca.ano,
+            onPaymentRecorded: () => {
+              if (props.onActionSuccess) props.onActionSuccess();
+            },
+          });
+        },
+        disabled: isActionLoading,
+        swipeColor: "bg-emerald-500",
+        hasSeparatorAfter: true,
+      });
+    }
 
     const handleShareDirect = async () => {
       await shareReceiptFile({
@@ -471,5 +500,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     props.onVerRecibo,
     props.onExcluirCobranca,
     props.onDesfazerPagamento,
+    openComplementarPagamentoDialog,
   ]);
 }

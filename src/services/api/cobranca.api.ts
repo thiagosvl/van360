@@ -1,4 +1,4 @@
-import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
+import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
@@ -52,6 +52,16 @@ export const cobrancaApi = {
         };
         return apiClient
             .post(`${endpointBase}/${cobrancaId}/registrar-pagamento-manual`, payload)
+            .then(res => res.data);
+    },
+
+    complementarPagamentoManual: (cobrancaId: string, data: ComplementarPagamentoManualDTO) => {
+        const payload = {
+            ...data,
+            valor_adicional: typeof data.valor_adicional === 'string' ? moneyToNumber(data.valor_adicional) : data.valor_adicional,
+        };
+        return apiClient
+            .post(`${endpointBase}/${cobrancaId}/complementar-pagamento-manual`, payload)
             .then(res => res.data);
     },
 

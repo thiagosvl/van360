@@ -21,6 +21,8 @@ export interface ResponsavelCobrancaItem {
   mes: number;
   ano: number;
   valor: number;
+  valor_pago?: number | null;
+  tipo_pagamento?: string | null;
   status: string;
   data_vencimento: string;
   recibo_url?: string | null;

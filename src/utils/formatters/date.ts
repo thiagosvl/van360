@@ -110,6 +110,11 @@ export const getMesNome = (mes: number) => {
   return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
 };
 
+export const getMesAbreviado = (mes: number): string => {
+  const index = Number(mes) - 1;
+  return nomesMesesAbreviado[index] || "";
+};
+
 /**
  * Formata o tempo relativo (há X min, etc).
  */

@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { CobrancaStatus } from "@/types/enums";
 import type { Cobranca } from "@/types/cobranca";
 import type { Passageiro } from "@/types/passageiro";
@@ -56,7 +56,12 @@ export function useReciboAnualElegibilidade({
     let totalPago = 0;
 
     for (const c of cobrancasDoAno) {
-      if (c.status === CobrancaStatus.PAGO && c.mes && mesesEsperados.has(c.mes)) {
+      const isParcial =
+        c.status === CobrancaStatus.PAGO &&
+        c.valor_pago !== null &&
+        Number(c.valor_pago) < Number(c.valor);
+
+      if (c.status === CobrancaStatus.PAGO && !isParcial && c.mes && mesesEsperados.has(c.mes)) {
         mesesPagos.add(c.mes);
         totalPago += Number(c.valor_pago || c.valor || 0);
       }
@@ -64,7 +69,11 @@ export function useReciboAnualElegibilidade({
 
     const temParcelaNaoPagaNoIntervalo = cobrancasDoAno.some((c) => {
       if (!c.mes || !mesesEsperados.has(c.mes)) return false;
-      return c.status !== CobrancaStatus.PAGO;
+      const isParcial =
+        c.status === CobrancaStatus.PAGO &&
+        c.valor_pago !== null &&
+        Number(c.valor_pago) < Number(c.valor);
+      return c.status !== CobrancaStatus.PAGO || isParcial;
     });
 
     const todosMesesPagos =

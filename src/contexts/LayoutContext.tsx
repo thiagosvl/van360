@@ -5,7 +5,7 @@ import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
-import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
+import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import {
   createContext,
@@ -99,6 +99,18 @@ export interface OpenManualPaymentDialogProps {
   status: string;
   dataVencimento: string;
   onPaymentRecorded?: (updatedCobranca?: any, dataSent?: RegistrarPagamentoManualDTO) => void;
+}
+
+export interface OpenComplementarPagamentoDialogProps {
+  cobrancaId: string;
+  passageiroNome: string;
+  responsavelNome?: string;
+  valorOriginal: number;
+  valorJaPago: number;
+  dataVencimento: string;
+  mes?: number;
+  ano?: number;
+  onPaymentRecorded?: (updatedCobranca?: any, dataSent?: ComplementarPagamentoManualDTO) => void;
 }
 
 export interface OpenReceiptDialogProps {
@@ -259,6 +271,8 @@ export interface LayoutContextType {
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
+  openComplementarPagamentoDialog: (props: OpenComplementarPagamentoDialogProps) => void;
+  closeComplementarPagamentoDialog: () => void;
   openReceiptDialog: (props: OpenReceiptDialogProps) => void;
   openAnnualReceiptDialog: (props: OpenAnnualReceiptDialogProps) => void;
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;

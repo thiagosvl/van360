@@ -122,6 +122,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
   const vencDia = getVencimentoDia(cobranca);
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
+  const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
   const shortName = formatShortName(cobranca?.passageiro?.nome, true);
@@ -172,14 +173,20 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
               })
               : "R$ --"}
           </p>
-          <StatusBadge
-            status={cobranca?.status}
-            dataVencimento={cobranca?.data_vencimento}
-            className={cn(
-              "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-              statusColor
-            )}
-          />
+          {isParcial ? (
+            <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
+              Parcial
+            </span>
+          ) : (
+            <StatusBadge
+              status={cobranca?.status}
+              dataVencimento={cobranca?.data_vencimento}
+              className={cn(
+                "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                statusColor
+              )}
+            />
+          )}
         </div>
       </div>
     </MobileActionItem>
@@ -320,10 +327,16 @@ export function CobrancasList({
         </TableCell>
 
         <TableCell className="px-6 py-4 text-center">
-          <StatusBadge
-            status={cobranca?.status}
-            dataVencimento={cobranca?.data_vencimento}
-          />
+          {cobranca?.status === CobrancaStatus.PAGO && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor) ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/60">
+              Parcial
+            </span>
+          ) : (
+            <StatusBadge
+              status={cobranca?.status}
+              dataVencimento={cobranca?.data_vencimento}
+            />
+          )}
         </TableCell>
 
         <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
