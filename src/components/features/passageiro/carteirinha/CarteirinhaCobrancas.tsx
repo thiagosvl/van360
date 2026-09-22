@@ -284,16 +284,30 @@ export const CarteirinhaCobrancas = ({
         }
 
         const isPago = c.status === CobrancaStatus.PAGO;
-        const atrasado = !isPago && checkCobrancaEmAtraso(c.data_vencimento);
+        const valorTotal = Number(c.valor || 0);
+        const valorPago = isPago ? Number(c.valor_pago ?? c.valor ?? 0) : 0;
+        const isParcial = isPago && valorPago < valorTotal;
+        const atrasado = checkCobrancaEmAtraso(c.data_vencimento);
 
         if (isPago) {
-          acc.pago += Number(c.valor);
-          acc.qtdPago++;
+          acc.pago += valorPago;
+          if (isParcial) {
+            const saldoRestante = valorTotal - valorPago;
+            if (atrasado) {
+              acc.atrasado += saldoRestante;
+              acc.qtdAtrasado++;
+            } else {
+              acc.pendente += saldoRestante;
+              acc.qtdPendente++;
+            }
+          } else {
+            acc.qtdPago++;
+          }
         } else if (atrasado) {
-          acc.atrasado += Number(c.valor);
+          acc.atrasado += valorTotal;
           acc.qtdAtrasado++;
         } else {
-          acc.pendente += Number(c.valor);
+          acc.pendente += valorTotal;
           acc.qtdPendente++;
         }
         return acc;

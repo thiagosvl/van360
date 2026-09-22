@@ -53,10 +53,10 @@ export function useManualPaymentViewModel({
         data_pagamento: getNowBR(),
         tipo_pagamento: undefined,
         enviar_recibo_whatsapp_manual: false,
-        observacao: observacao || "",
+        observacao: "",
       });
     }
-  }, [isOpen, valorOriginal, observacao, form]);
+  }, [isOpen, valorOriginal, form]);
 
   const handleSubmit = useCallback(async (data: PaymentFormData) => {
     const pagamentoData: RegistrarPagamentoManualDTO = {

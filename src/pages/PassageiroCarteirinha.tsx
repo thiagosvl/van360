@@ -251,13 +251,15 @@ export default function PassageiroCarteirinha() {
     const usarContratos = !!profile?.config_contrato?.usar_contratos;
 
     if (hasChanges && usarContratos) {
-      const rawData = data?.id ? data : (data?.passageiro || {});
+      const rawData: Partial<Passageiro> = data
+        ? ("passageiro" in data && data.passageiro ? data.passageiro : data)
+        : {};
       const updatedPassageiro: Passageiro = {
         ...passageiro,
         ...rawData,
-        status_contrato: passageiro?.status_contrato ?? rawData.status_contrato,
-        contrato_id: passageiro?.contrato_id ?? rawData.contrato_id,
-      };
+        status_contrato: rawData.status_contrato ?? passageiro?.status_contrato,
+        contrato_id: rawData.contrato_id ?? passageiro?.contrato_id,
+      } as Passageiro;
 
       setTimeout(() => {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||

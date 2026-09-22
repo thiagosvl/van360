@@ -205,6 +205,15 @@ export function useCobrancasViewModel() {
     }, 0);
   }, [cobrancasRecebidas]);
 
+  const saldoParcialAtrasadas = useMemo(() => {
+    return cobrancasRecebidas.reduce((acc, curr) => {
+      if (!checkCobrancaEmAtraso(curr.data_vencimento)) return acc;
+      const pago = Number(curr.valor_pago ?? curr.valor ?? 0);
+      const total = Number(curr.valor || 0);
+      return acc + (pago < total ? total - pago : 0);
+    }, 0);
+  }, [cobrancasRecebidas]);
+
   const totalAReceber = useMemo(
     () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialRecebidas,
     [cobrancasAReceber, saldoParcialRecebidas]
@@ -218,8 +227,8 @@ export function useCobrancasViewModel() {
   const totalAtrasado = useMemo(
     () => cobrancasAReceber
       .filter((c) => checkCobrancaEmAtraso(c.data_vencimento))
-      .reduce((acc, curr) => acc + Number(curr.valor), 0),
-    [cobrancasAReceber]
+      .reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialAtrasadas,
+    [cobrancasAReceber, saldoParcialAtrasadas]
   );
 
   const totalPrevisto = totalAReceber + totalRecebido;

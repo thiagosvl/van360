@@ -144,10 +144,15 @@ export const useRelatoriosCalculations = ({
       const total = Number(c.valor || 0);
       return acc + (pago < total ? total - pago : 0);
     }, 0);
+    const parciaisCount = cobrancasPagas.filter((c: any) => {
+      const pago = Number(c.valor_pago ?? c.valor ?? 0);
+      const total = Number(c.valor || 0);
+      return pago < total;
+    }).length;
     const valorAReceber = financeiro?.receita.pendente ?? (
       cobrancasAbertas.reduce((acc: number, c: any) => acc + Number(c.valor || 0), 0) + saldoParcialRecebidas
     );
-    const aReceberCount = cobrancasAbertas.length;
+    const aReceberCount = cobrancasAbertas.length + parciaisCount;
 
     // Passageiros
     const passageirosCount = passageirosList.length > 0 ? passageirosList.length : (contadores?.passageiros.total ?? 0);

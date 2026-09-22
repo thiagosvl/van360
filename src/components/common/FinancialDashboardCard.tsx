@@ -23,7 +23,7 @@ export function FinancialDashboardCard({
 
   const recebidoPercent = totalEsperado > 0 ? (recebido / totalEsperado) * 100 : 0;
   const atrasadoPercent = totalEsperado > 0 && atrasado ? (atrasado / totalEsperado) * 100 : 0;
-  const pendentePercent = totalEsperado > 0 ? ((pendente - (atrasado || 0)) / totalEsperado) * 100 : 0;
+  const pendentePercent = totalEsperado > 0 ? (Math.max(0, pendente - (atrasado || 0)) / totalEsperado) * 100 : 0;
 
   const getDynamicFontSize = (val: number) => {
     const str = formatPrivateCurrency(val);

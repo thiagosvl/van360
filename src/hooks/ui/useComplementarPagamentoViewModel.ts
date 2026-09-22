@@ -58,10 +58,10 @@ export function useComplementarPagamentoViewModel({
         data_pagamento: getNowBR(),
         tipo_pagamento: undefined,
         enviar_recibo_whatsapp_manual: false,
-        observacao: observacao || "",
+        observacao: "",
       });
     }
-  }, [isOpen, saldoRestanteAtual, observacao, form]);
+  }, [isOpen, saldoRestanteAtual, form]);
 
   const valorAdicionalWatcher = useWatch({
     control: form.control,
