@@ -238,10 +238,9 @@ export function useCobrancasViewModel() {
     (cobranca: Cobranca) => {
       openCobrancaEditDialog({
         cobranca,
-        onSuccess: () => refetchCobrancas(),
       });
     },
-    [openCobrancaEditDialog, refetchCobrancas]
+    [openCobrancaEditDialog]
   );
 
   const handleDeleteCobrancaClick = useCallback(

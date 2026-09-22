@@ -585,7 +585,6 @@ export default function PassageiroCarteirinha() {
       receiptUrl: url,
       cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
     }),
-    onActionSuccess: refetchCobrancas,
   };
 
   const infoProps = {

@@ -1,3 +1,4 @@
+import { Cobranca } from "@/types/cobranca";
 import { PassageiroFormModes, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -80,7 +81,7 @@ export interface OpenCobrancaFormProps {
 
 export interface OpenCobrancaEditDialogProps {
   onSuccess?: () => void;
-  cobranca: any; // Using any to avoid complex type issues for now, can be Cobranca
+  cobranca: Cobranca;
 }
 
 export interface OpenCobrancaDeleteDialogProps {
