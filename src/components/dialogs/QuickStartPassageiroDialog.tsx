@@ -273,7 +273,7 @@ export function QuickStartPassageiroDialog({
               >
                 <Banner
                   variant="info"
-                  description="Seus dados são 100% privativos e protegidos. Ficam salvos apenas para a organização da sua van."
+                  description="Seus dados estão 100% seguros e privados. Ficam salvos apenas para a organização da sua van."
                   className="mb-4"
                 />
                 <section>
@@ -316,7 +316,7 @@ export function QuickStartPassageiroDialog({
               {!isOnboarding && (
                 <Banner
                   variant="info"
-                  description="Seus dados são 100% privativos e protegidos. Ficam salvos apenas para a organização da sua van."
+                  description="Seus dados estão 100% seguros e privados. Ficam salvos apenas para a organização da sua van."
                   className="mb-4"
                 />
               )}
