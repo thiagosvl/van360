@@ -372,6 +372,7 @@ export default function AdminUsersRadar() {
                   <SelectItem value="all" className="text-xs">Todas as assinaturas</SelectItem>
                   <SelectItem value="ACTIVE" className="text-xs">Somente Ativos (Pagantes)</SelectItem>
                   <SelectItem value="TRIAL" className="text-xs">Somente Em Teste (Trial)</SelectItem>
+                  <SelectItem value="VITALICIO" className="text-xs">Vitalício</SelectItem>
                   <SelectItem value="PAST_DUE" className="text-xs">Atrasados (Past Due)</SelectItem>
                   <SelectItem value="EXPIRED" className="text-xs">Expirados</SelectItem>
                   <SelectItem value="CANCELED" className="text-xs">Cancelados</SelectItem>

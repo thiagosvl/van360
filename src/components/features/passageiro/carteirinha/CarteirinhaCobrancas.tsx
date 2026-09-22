@@ -353,7 +353,7 @@ export const CarteirinhaCobrancas = ({
       {!passageiro.isento && isIncomplete && (
         <Banner
           variant="info"
-          title="Defina o valor da mensalidade"
+          title="Informe o valor e dia do vencimento"
           description="Toque para preencher os valores das parcelas deste aluno."
           onClick={() =>
             openPassageiroFormDialog({
