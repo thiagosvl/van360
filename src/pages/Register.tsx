@@ -221,7 +221,7 @@ export default function Register() {
                                 </div>
                                 <div className="flex flex-col flex-1 min-w-0">
                                   <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                    Nome de Exibição / Apelido
+                                    Nome do Transporte / Apelido
                                   </label>
                                   <Input
                                     placeholder="Ex: Tio Thiago"

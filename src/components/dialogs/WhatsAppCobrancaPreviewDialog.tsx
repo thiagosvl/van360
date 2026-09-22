@@ -40,11 +40,6 @@ export function WhatsAppCobrancaPreviewDialog({
 
   const activeChavePix = customChavePix !== undefined ? customChavePix : profile?.chave_pix;
 
-  const handleCopyClick = () => {
-    const chaveToCopy = activeChavePix || "van360@pagamentos.com.br";
-    navigator.clipboard.writeText(chaveToCopy);
-  };
-
   return (
     <BaseDialog
       open={isOpen}
@@ -98,7 +93,6 @@ export function WhatsAppCobrancaPreviewDialog({
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
                 }
-                onClick={handleCopyClick}
               />
             ) : undefined
           }

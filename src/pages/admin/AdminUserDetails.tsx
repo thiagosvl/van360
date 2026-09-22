@@ -1487,7 +1487,7 @@ export default function AdminUserDetails() {
                                   render={({ field }) => (
                                     <FormItem className="space-y-2">
                                       <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        Nome de Exibição / Apelido
+                                        Nome do Transporte / Apelido
                                       </FormLabel>
                                       <FormControl>
                                         <Input

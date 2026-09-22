@@ -69,21 +69,21 @@ export function ShowcaseTransporteEscolarDialog({
   const demoItems = [
     {
       id: "cobranca_automatica",
-      title: "Cobrança Automática",
+      title: "Cobrança automática aos pais",
       description: "Cobramos os pais automaticamente pelo WhatsApp sem você precisar fazer nada.",
       icon: BellRing,
       action: handleOpenCobranca,
     },
     {
       id: "recibos",
-      title: "Recibos no WhatsApp",
+      title: "Recibo no WhatsApp dos pais",
       description: "Envie o comprovante digital aos pais com um toque.",
       icon: Receipt,
       action: handleOpenRecibo,
     },
     {
       id: "contratos",
-      title: "Contratos Digitais",
+      title: "Faça contratos pelo celular",
       description: "Gere contratos com assinatura online pelo celular e validade jurídica.",
       icon: FileText,
       action: handleOpenContrato,
