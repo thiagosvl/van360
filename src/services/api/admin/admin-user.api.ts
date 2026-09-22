@@ -441,6 +441,7 @@ export interface AdminAcquisitionStatsResponse {
     total_leads: number;
     em_trial: number;
     ativos_pagantes: number;
+    vitalicios?: number;
     taxa_conversao: number;
     com_alunos_cadastrados: number;
   };
