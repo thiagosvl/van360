@@ -26,6 +26,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cepSchema } from "@/schemas/common";
 import { Escola } from "@/types/escola";
+import { Usuario } from "@/types/usuario";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 
 import { toast } from "@/utils/notifications/toast";

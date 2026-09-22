@@ -64,13 +64,15 @@ export function useRouteSetupViewModel({
   useEffect(() => {
     if (routeToEdit) {
       form.setValue("nome", routeToEdit.nome);
-      form.setValue("periodo", routeToEdit.periodo);
+      if (routeToEdit.periodo) {
+        form.setValue("periodo", routeToEdit.periodo);
+      }
       if (routeToEdit.paradas) {
         const mapped = routeToEdit.paradas.map((p) => ({
           id: p.passageiro_id || "",
-          nome: p.nome || "",
-          bairro: p.bairro || "",
-          escola_nome: p.escola?.nome,
+          nome: p.passageiro?.nome || "",
+          bairro: p.passageiro?.responsavel_principal?.bairro || "",
+          escola_nome: p.escola?.nome || p.passageiro?.escola?.nome,
           ordem: p.ordem
         }));
         form.setValue("passageiros", mapped.sort((a, b) => a.ordem - b.ordem));
@@ -83,7 +85,7 @@ export function useRouteSetupViewModel({
   const periodo = form.watch("periodo");
 
   const setNome = (val: string) => form.setValue("nome", val, { shouldValidate: true });
-  const setPeriodo = (val: string) => form.setValue("periodo", val, { shouldValidate: true });
+  const setPeriodo = (val: PassageiroPeriodo) => form.setValue("periodo", val, { shouldValidate: true });
 
   const togglePassengerSelection = (passenger: Passageiro) => {
     const isSelected = selectedPassengers.some((p) => p.id === passenger.id);
@@ -97,9 +99,9 @@ export function useRouteSetupViewModel({
       form.setValue("passageiros", reordered, { shouldValidate: true });
     } else {
       const newPassenger: SetupPassenger = {
-        id: passenger.id,
+        id: passenger.id || "",
         nome: passenger.nome,
-        bairro: passenger.bairro,
+        bairro: passenger.responsavel_principal?.bairro || "",
         escola_nome: passenger.escola?.nome,
         ordem: selectedPassengers.length + 1
       };

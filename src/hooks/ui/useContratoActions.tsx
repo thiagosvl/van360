@@ -31,7 +31,7 @@ interface UseContratoActionsProps {
   onDownload?: (item: ContratoListItem) => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
-  onGerarContrato?: (passageiroId: string) => void;
+  onGerarContrato?: (passageiroId: string, item?: ContratoListItem) => void;
   onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
   onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink?: (token: string) => void;
@@ -79,12 +79,12 @@ export function useContratoActions({
       if (isMissingResponsible) {
         list.push({
           label: 'Completar e Gerar Contrato',
-          icon: <User className="h-4 w-4 text-amber-500" />,
+          icon: <User className="h-4 w-4" />,
           onClick: () => {
             const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
             onCompletarCadastro?.(passId, item);
           },
-          swipeColor: 'bg-amber-600',
+          swipeColor: 'bg-slate-600',
           hasSeparatorAfter: false
         });
       } else if (onGerarContrato) {
@@ -94,10 +94,10 @@ export function useContratoActions({
           onClick: () => {
             if (isFeatureDisabled) return;
             const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
-            onGerarContrato(passId);
+            onGerarContrato(passId, item);
           },
           disabled: isFeatureDisabled,
-          swipeColor: 'bg-blue-600',
+          swipeColor: 'bg-slate-600',
           hasSeparatorAfter: false
         });
       }

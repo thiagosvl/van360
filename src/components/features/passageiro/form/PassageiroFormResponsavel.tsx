@@ -59,7 +59,7 @@ export function PassageiroFormResponsavel({
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-semibold ml-1">
-                    CPF
+                    CPF do Responsável
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -104,7 +104,7 @@ export function PassageiroFormResponsavel({
                 ) : (
                   <>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome <span className="text-red-600">*</span>
+                      Nome do Responsável <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -190,7 +190,7 @@ export function PassageiroFormResponsavel({
                     ) : (
                       <>
                         <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Parentesco
+                          Parentesco do Responsável
                         </FormLabel>
                         <SelectTrigger
                           className={cn(
@@ -238,7 +238,7 @@ export function PassageiroFormResponsavel({
                 ) : (
                   <>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      E-mail
+                      E-mail do Responsável
                     </FormLabel>
                     <FormControl>
                       <div className="relative">

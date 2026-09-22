@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
@@ -21,6 +22,15 @@ import { STORAGE_KEYS } from "@/constants";
 export default function Passageiros() {
   const { user } = useSession();
   const { isSubConta, can } = usePermissions();
+
+  const [isDismissedAlunos, setIsDismissedAlunos] = useState(() => {
+    return localStorage.getItem("van360:dismiss:quick-registration-alunos") === "true";
+  });
+
+  const handleDismissAlunos = () => {
+    setIsDismissedAlunos(true);
+    localStorage.setItem("van360:dismiss:quick-registration-alunos", "true");
+  };
   const {
     profile,
     activeTab,
@@ -120,11 +130,23 @@ export default function Passageiros() {
 
               <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
                 <div className="space-y-6">
-                  {(isMainTab ? countPassageiros < 10 : true) && can("passageiros.gerenciar") && (
-                    <QuickRegistrationLink
-                      profile={profile}
-                      pendingCount={countPrePassageiros}
-                    />
+                  {can("passageiros.gerenciar") && (
+                    isMainTab ? (
+                      countPassageiros < 10 && !isDismissedAlunos && (
+                        <QuickRegistrationLink
+                          profile={profile}
+                          pendingCount={countPrePassageiros}
+                          onDismiss={handleDismissAlunos}
+                        />
+                      )
+                    ) : (
+                      prePassageiros.length === 0 && (
+                        <QuickRegistrationLink
+                          profile={profile}
+                          pendingCount={countPrePassageiros}
+                        />
+                      )
+                    )
                   )}
 
                   <PassageirosToolbar
@@ -210,13 +232,23 @@ export default function Passageiros() {
                     )}
                   </>
                 ) : (
-                  <PrePassageiros
-                    onFinalizeNewPrePassageiro={async () => { }}
-                    profile={profile}
-                    searchTerm={debouncedSearchTerm}
-                    prePassageiros={prePassageiros}
-                    isLoading={isPrePassageirosListLoading}
-                  />
+                  <div className="space-y-6">
+                    <PrePassageiros
+                      onFinalizeNewPrePassageiro={async () => { }}
+                      profile={profile}
+                      searchTerm={debouncedSearchTerm}
+                      prePassageiros={prePassageiros}
+                      countPassageiros={countPassageiros}
+                      isLoading={isPrePassageirosListLoading}
+                    />
+                    {can("passageiros.gerenciar") && prePassageiros.length > 0 && (
+                      <QuickRegistrationLink
+                        profile={profile}
+                        pendingCount={countPrePassageiros}
+                        className="mb-0"
+                      />
+                    )}
+                  </div>
                 )}
               </TabsContent>
             </Tabs>

@@ -22,6 +22,7 @@ export interface FirstChargeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   passageiro: Passageiro;
+  isFirstPassageiro?: boolean;
 }
 
 const STEP_INDEX: Record<Step, number> = {
@@ -30,7 +31,7 @@ const STEP_INDEX: Record<Step, number> = {
   PAYMENT_METHOD: 2,
 };
 
-export default function FirstChargeDialog({ isOpen, onClose, passageiro }: FirstChargeDialogProps) {
+export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirstPassageiro }: FirstChargeDialogProps) {
   const {
     step,
     showContractStep,
@@ -44,7 +45,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro }: First
     handleBack,
     handleNext,
     isLoading,
-  } = useFirstChargeViewModel({ passageiro, onClose, isOpen });
+  } = useFirstChargeViewModel({ passageiro, onClose, isOpen, isFirstPassageiro });
 
   if (!isOpen || (!showContractStep && !showPaymentStep)) {
     return null;

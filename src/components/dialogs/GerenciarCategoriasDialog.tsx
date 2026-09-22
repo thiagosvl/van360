@@ -7,6 +7,7 @@ import { Edit2, Plus, Tag, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { GastoCategoriaForm } from "@/components/features/financeiro/GastoCategoriaForm";
+import { GastoCategoriaResponse } from "@/services/api/gasto-categoria.api";
 
 interface GerenciarCategoriasDialogProps {
   isOpen: boolean;
@@ -46,7 +47,7 @@ export default function GerenciarCategoriasDialog({
     });
   }, [categoriasData]);
 
-  const handleStartEdit = (cat: CategoriaGasto) => {
+  const handleStartEdit = (cat: GastoCategoriaResponse) => {
     setIsAdding(false); // Recolhe o bloco de cadastro do topo se estiver aberto
     setEditingId(cat.id);
   };

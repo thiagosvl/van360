@@ -2,6 +2,8 @@ import { memo, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConfiguracoes } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/config/permissions";
 import { Smartphone } from "lucide-react";
 
 type ConfigKey =
@@ -9,6 +11,8 @@ type ConfigKey =
   | "notificar_motorista_aniversarios";
 
 export const MinhasNotificacoesTab = memo(function MinhasNotificacoesTab() {
+  const { can, isSubConta } = usePermissions();
+  const canViewFinancials = can(PERMISSIONS.FINANCEIRO_VISUALIZAR) && !isSubConta;
   const { configuracoes, isLoading, updateConfiguracoes } = useConfiguracoes();
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
 
@@ -49,31 +53,32 @@ export const MinhasNotificacoesTab = memo(function MinhasNotificacoesTab() {
         </div>
 
         <div className="divide-y divide-slate-100 space-y-3.5 pt-1">
-          {/* Item 1: Lembrete de Parcelas e Pagamentos */}
-          <div className="flex items-center justify-between gap-3 pt-1 first:pt-0">
-            <div className="space-y-0.5 min-w-0 pr-1">
-              <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
-                Lembrete de pagamentos e parcelas
-              </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
-                Notificação semanal para você acompanhar os pagamentos e dar baixa nas parcelas recebidas.
-              </p>
-            </div>
+          {canViewFinancials && (
+            <div className="flex items-center justify-between gap-3 pt-1 first:pt-0">
+              <div className="space-y-0.5 min-w-0 pr-1">
+                <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
+                  Lembrete de pagamentos e parcelas
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+                  Notificação semanal para você acompanhar os pagamentos e dar baixa nas parcelas recebidas.
+                </p>
+              </div>
 
-            <div className="shrink-0">
-              <Switch
-                id="switch-notificar-motorista-parcelas"
-                checked={configuracoes?.notificar_motorista_parcelas ?? true}
-                loading={updatingKey === "notificar_motorista_parcelas"}
-                onCheckedChange={() =>
-                  handleToggle(
-                    "notificar_motorista_parcelas",
-                    configuracoes?.notificar_motorista_parcelas ?? true
-                  )
-                }
-              />
+              <div className="shrink-0">
+                <Switch
+                  id="switch-notificar-motorista-parcelas"
+                  checked={configuracoes?.notificar_motorista_parcelas ?? true}
+                  loading={updatingKey === "notificar_motorista_parcelas"}
+                  onCheckedChange={() =>
+                    handleToggle(
+                      "notificar_motorista_parcelas",
+                      configuracoes?.notificar_motorista_parcelas ?? true
+                    )
+                  }
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Item 2: Aniversários */}
           <div className="flex items-center justify-between gap-3 pt-3.5">

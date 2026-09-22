@@ -74,7 +74,7 @@ export async function pollPaymentConfirmation({
   }
 
   return {
-    confirmed: lastStatus === SubscriptionInvoiceStatus.PAID,
+    confirmed: false,
     attempts,
     finalStatus: lastStatus,
   };

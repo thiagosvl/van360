@@ -47,6 +47,7 @@ export function usePassageirosViewModel() {
     openPassageiroFormDialog,
     openQuickStartPassageiroDialog,
     openFirstChargeDialog,
+    openOnboardingSuccessDialog,
   } = useLayout();
 
   const { user } = useSession();
@@ -332,7 +333,12 @@ export function usePassageirosViewModel() {
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro) => {
         if (passageiro && isFirstPassageiro) {
-          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
         } else if (passageiro && !isFirstPassageiro) {
           const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
           const now = getNowBR();
@@ -349,7 +355,7 @@ export function usePassageirosViewModel() {
         }
       },
     });
-  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, navigate, profile?.config_contrato?.usar_contratos]);
+  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, navigate, profile?.config_contrato?.usar_contratos]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -405,6 +411,7 @@ export function usePassageirosViewModel() {
       data_inicio_transporte: convertDateBrToISO(mockPassenger.data_inicio_transporte),
       valor_cobranca: moneyToNumber(mockPassenger.valor_cobranca),
       dia_vencimento: parseInt(mockPassenger.dia_vencimento),
+      ano_letivo: Number(mockPassenger.ano_letivo),
     };
 
     createPassageiro.mutate({

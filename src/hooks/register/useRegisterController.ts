@@ -18,20 +18,25 @@ export interface DuplicateError {
   message: string;
 }
 
+function getReferralCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)van360_referral_code=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export function useRegisterController() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
 
-  // Injetar captura de UTMs e Referrer
   useAttribution();
 
   const [hasRefParam, setHasRefParam] = useState<boolean>(() => {
-    return !!(searchParams.get("ref") || localStorage.getItem("van360_referral_code"));
+    return !!(searchParams.get("ref") || localStorage.getItem("van360_referral_code") || getReferralCookie());
   });
 
   useEffect(() => {
-    const refParam = searchParams.get("ref");
+    const refParam = searchParams.get("ref") || getReferralCookie();
     if (refParam) {
       localStorage.setItem("van360_referral_code", refParam);
       setHasRefParam(true);
@@ -74,7 +79,7 @@ export function useRegisterController() {
     try {
       setLoading(true);
       setDuplicateError(null);
-      const referralCode = localStorage.getItem("van360_referral_code") || undefined;
+      const referralCode = localStorage.getItem("van360_referral_code") || getReferralCookie() || undefined;
       const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
       const cachedPush = await getCachedPushTokenInfo();
 
@@ -100,6 +105,10 @@ export function useRegisterController() {
       if (result?.error) throw new Error(result.error);
 
       localStorage.removeItem("van360_referral_code");
+      if (typeof document !== "undefined") {
+        document.cookie = "van360_referral_code=; Domain=.van360.com.br; Path=/; Max-Age=0";
+        document.cookie = "van360_referral_code=; Path=/; Max-Age=0";
+      }
       clearStoredAttribution();
 
 

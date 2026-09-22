@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InitialLoading } from "@/components/auth/InitialLoading";
@@ -8,7 +7,6 @@ import { openBrowserLink } from "@/utils/browser";
 import { getDriverDisplayName } from "@/utils/formatters";
 import {
   CheckCircle2,
-  Download,
   Loader2,
   PenTool,
   AlertCircle,
@@ -28,7 +26,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 
 export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
-  const [logoFailed, setLogoFailed] = useState(false);
 
   const {
     contrato,
@@ -69,8 +66,6 @@ export default function AssinarContrato() {
   }
 
   const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, unknown>;
-  const rawLogoUrl = contrato.usuario?.logo_url || (dadosContrato.logoCondutorUrl as string | undefined) || undefined;
-  const logoCondutorUrl = !logoFailed ? rawLogoUrl : undefined;
 
   const condutorInfo = contrato.usuario || {
     apelido: (dadosContrato.apelidoCondutor as string | null | undefined) || null,
@@ -82,29 +77,20 @@ export default function AssinarContrato() {
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-between px-6 z-50 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-between px-6 z-50 shadow-lg relative">
           <div className="flex items-center gap-2">
-            {logoCondutorUrl ? (
-              <img
-                src={logoCondutorUrl}
-                alt="Logo do Transporte"
-                className="h-10 w-auto max-w-[130px] object-contain rounded-xs"
-                onError={() => setLogoFailed(true)}
-              />
-            ) : (
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-white/80" />
-                <span className="font-headline font-black text-xs text-white uppercase tracking-tight">
-                  {nomeCondutorExibicao || "Contrato de Transporte"}
-                </span>
-              </div>
-            )}
+            <FileText className="h-5 w-5 text-white/80" />
+            <span className="font-headline font-black text-xs text-white uppercase tracking-tight">
+              {nomeCondutorExibicao || "Contrato de Transporte"}
+            </span>
           </div>
-          <img
-            src="/assets/logo-van360.webp"
-            alt="Van360"
-            className="h-8 w-auto filter brightness-0 invert opacity-80"
-          />
+          <div className="absolute left-1/2 -translate-x-1/2 shrink-0 pointer-events-none">
+            <img
+              src="/assets/logo-van360.webp"
+              alt="Van360"
+              className="h-8 w-auto filter brightness-0 invert opacity-80"
+            />
+          </div>
         </div>
 
         <Card className="w-full max-w-lg border-0 shadow-2xl bg-white rounded-[2.5rem] overflow-hidden mt-12">
@@ -135,7 +121,7 @@ export default function AssinarContrato() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
-      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shadow-lg shrink-0 overflow-hidden">
+      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shadow-lg shrink-0 overflow-hidden relative">
         <div className="flex items-center gap-3 min-w-0">
           <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
@@ -150,21 +136,12 @@ export default function AssinarContrato() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 sm:absolute sm:left-1/2 sm:-translate-x-1/2 shrink-0">
-          {logoCondutorUrl ? (
-            <img
-              src={logoCondutorUrl}
-              alt="Logo do Transporte"
-              className="h-8 sm:h-10 w-auto max-w-[120px] object-contain rounded-xs"
-              onError={() => setLogoFailed(true)}
-            />
-          ) : (
-            <img
-              src="/assets/logo-van360.webp"
-              alt="Van360"
-              className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90"
-            />
-          )}
+        <div className="absolute left-1/2 -translate-x-1/2 shrink-0 pointer-events-none">
+          <img
+            src="/assets/logo-van360.webp"
+            alt="Van360"
+            className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90"
+          />
         </div>
       </header>
 
@@ -198,17 +175,8 @@ export default function AssinarContrato() {
         </div>
       </main>
 
-      {/* Botões Flutuantes Estilo SmartVan */}
       <div className="fixed bottom-6 left-0 right-0 px-5 sm:px-10 z-50 pointer-events-none w-full">
-        <div className="flex items-center justify-between w-full pointer-events-auto gap-4">
-          <Button
-            onClick={() => openBrowserLink(contrato.minuta_url)}
-            className="bg-emerald-600/90 hover:bg-emerald-700 text-white h-11 sm:h-13 sm:py-8 px-5 sm:px-8 rounded-full shadow-2xl flex items-center gap-2 font-headline font-bold text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0"
-          >
-            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Baixar </span>PDF
-          </Button>
-
+        <div className="flex items-center justify-end w-full pointer-events-auto">
           <Button
             onClick={() => setModalAberto(true)}
             disabled={contrato.status !== ContratoStatus.PENDENTE}

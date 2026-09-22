@@ -1,5 +1,5 @@
 import { FilterDefaults } from "@/types/enums";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getNowBR } from "@/utils/dateUtils";
 
@@ -76,53 +76,75 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const lastSyncedSearchRef = useRef(initialUrlSearch);
 
-  const [selectedStatus, setSelectedStatusState] = useState(() => {
-    return syncWithUrl ? searchParams.get(statusParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
-  });
+  const [localStatus, setLocalStatus] = useState<string>(FilterDefaults.TODOS);
+  const [localEscola, setLocalEscola] = useState<string | undefined>(FilterDefaults.TODAS);
+  const [localVeiculo, setLocalVeiculo] = useState<string | undefined>(FilterDefaults.TODOS);
+  const [localPeriodo, setLocalPeriodo] = useState<string | undefined>(FilterDefaults.TODOS);
+  const [localMes, setLocalMes] = useState<number | undefined>(() => mesParam ? getNowBR().getMonth() + 1 : undefined);
+  const [localAno, setLocalAno] = useState<number | undefined>(() => anoParam ? getNowBR().getFullYear() : undefined);
+  const [localCategoria, setLocalCategoria] = useState<string | undefined>(FilterDefaults.TODAS);
 
-  const [selectedEscola, setSelectedEscolaState] = useState<string | undefined>(
-    () => {
-      if (!escolaParam) return undefined;
-      return syncWithUrl ? searchParams.get(escolaParam) ?? FilterDefaults.TODAS : FilterDefaults.TODAS;
+  const selectedStatus = syncWithUrl
+    ? (searchParams.get(statusParam) ?? FilterDefaults.TODOS)
+    : localStatus;
+
+  const selectedEscola = useMemo(() => {
+    if (!escolaParam) return undefined;
+    if (syncWithUrl) {
+      return searchParams.get(escolaParam) ?? FilterDefaults.TODAS;
     }
-  );
+    return localEscola;
+  }, [escolaParam, syncWithUrl, searchParams, localEscola]);
 
-  const [selectedVeiculo, setSelectedVeiculoState] = useState<
-    string | undefined
-  >(() => {
+  const selectedVeiculo = useMemo(() => {
     if (!veiculoParam) return undefined;
-    return syncWithUrl ? searchParams.get(veiculoParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
-  });
+    if (syncWithUrl) {
+      return searchParams.get(veiculoParam) ?? FilterDefaults.TODOS;
+    }
+    return localVeiculo;
+  }, [veiculoParam, syncWithUrl, searchParams, localVeiculo]);
 
-  const [selectedPeriodo, setSelectedPeriodoState] = useState<
-    string | undefined
-  >(() => {
+  const selectedPeriodo = useMemo(() => {
     if (!periodoParam) return undefined;
-    return syncWithUrl ? searchParams.get(periodoParam) ?? FilterDefaults.TODOS : FilterDefaults.TODOS;
-  });
-
-  const [selectedMes, setSelectedMesState] = useState<number | undefined>(
-    () => {
-      if (!mesParam) return undefined;
-      const val = syncWithUrl ? searchParams.get(mesParam) : null;
-      return val ? parseInt(val) : getNowBR().getMonth() + 1;
+    if (syncWithUrl) {
+      return searchParams.get(periodoParam) ?? FilterDefaults.TODOS;
     }
-  );
+    return localPeriodo;
+  }, [periodoParam, syncWithUrl, searchParams, localPeriodo]);
 
-  const [selectedAno, setSelectedAnoState] = useState<number | undefined>(
-    () => {
-      if (!anoParam) return undefined;
-      const val = syncWithUrl ? searchParams.get(anoParam) : null;
-      return val ? parseInt(val) : getNowBR().getFullYear();
+  const selectedMes = useMemo(() => {
+    if (!mesParam) return undefined;
+    if (syncWithUrl) {
+      const val = searchParams.get(mesParam);
+      if (val) {
+        const parsed = parseInt(val, 10);
+        return !isNaN(parsed) ? parsed : getNowBR().getMonth() + 1;
+      }
+      return getNowBR().getMonth() + 1;
     }
-  );
+    return localMes;
+  }, [mesParam, syncWithUrl, searchParams, localMes]);
 
-  const [selectedCategoria, setSelectedCategoriaState] = useState<
-    string | undefined
-  >(() => {
+  const selectedAno = useMemo(() => {
+    if (!anoParam) return undefined;
+    if (syncWithUrl) {
+      const val = searchParams.get(anoParam);
+      if (val) {
+        const parsed = parseInt(val, 10);
+        return !isNaN(parsed) ? parsed : getNowBR().getFullYear();
+      }
+      return getNowBR().getFullYear();
+    }
+    return localAno;
+  }, [anoParam, syncWithUrl, searchParams, localAno]);
+
+  const selectedCategoria = useMemo(() => {
     if (!categoriaParam) return undefined;
-    return syncWithUrl ? searchParams.get(categoriaParam) ?? FilterDefaults.TODAS : FilterDefaults.TODAS;
-  });
+    if (syncWithUrl) {
+      return searchParams.get(categoriaParam) ?? FilterDefaults.TODAS;
+    }
+    return localCategoria;
+  }, [categoriaParam, syncWithUrl, searchParams, localCategoria]);
 
   useEffect(() => {
     const trimmed = searchTerm.trim();
@@ -148,13 +170,24 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     return () => clearTimeout(timer);
   }, [searchTerm, minSearchLength, debounceMs, syncWithUrl, searchParam, setSearchParams]);
 
+  useEffect(() => {
+    if (!syncWithUrl) return;
+
+    const urlSearch = searchParams.get(searchParam) ?? "";
+    if (urlSearch !== lastSyncedSearchRef.current) {
+      lastSyncedSearchRef.current = urlSearch;
+      setSearchTermState(urlSearch);
+      const trimmed = urlSearch.trim();
+      setDebouncedSearchTermState(trimmed.length >= minSearchLength ? trimmed : "");
+    }
+  }, [searchParams, syncWithUrl, searchParam, minSearchLength]);
+
   const setSearchTerm = useCallback((value: string) => {
     setSearchTermState(value);
   }, []);
 
   const setSelectedStatus = useCallback(
     (value: string) => {
-      setSelectedStatusState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -165,6 +198,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalStatus(value);
       }
     },
     [syncWithUrl, statusParam, setSearchParams]
@@ -173,7 +208,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedEscola = useCallback(
     (value: string) => {
       if (!escolaParam) return;
-      setSelectedEscolaState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -184,6 +218,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalEscola(value);
       }
     },
     [syncWithUrl, escolaParam, setSearchParams]
@@ -192,7 +228,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedVeiculo = useCallback(
     (value: string) => {
       if (!veiculoParam) return;
-      setSelectedVeiculoState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -203,6 +238,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalVeiculo(value);
       }
     },
     [syncWithUrl, veiculoParam, setSearchParams]
@@ -211,7 +248,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedPeriodo = useCallback(
     (value: string) => {
       if (!periodoParam) return;
-      setSelectedPeriodoState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -222,6 +258,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalPeriodo(value);
       }
     },
     [syncWithUrl, periodoParam, setSearchParams]
@@ -230,13 +268,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedMes = useCallback(
     (value: number) => {
       if (!mesParam) return;
-      setSelectedMesState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
           newParams.set(mesParam, value.toString());
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalMes(value);
       }
     },
     [syncWithUrl, mesParam, setSearchParams]
@@ -245,13 +284,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedAno = useCallback(
     (value: number) => {
       if (!anoParam) return;
-      setSelectedAnoState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
           newParams.set(anoParam, value.toString());
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalAno(value);
       }
     },
     [syncWithUrl, anoParam, setSearchParams]
@@ -260,7 +300,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedCategoria = useCallback(
     (value: string) => {
       if (!categoriaParam) return;
-      setSelectedCategoriaState(value);
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -271,101 +310,12 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
           return newParams;
         }, { replace: true });
+      } else {
+        setLocalCategoria(value);
       }
     },
     [syncWithUrl, categoriaParam, setSearchParams]
   );
-
-  const clearFilters = useCallback(() => {
-    setSearchTermState("");
-    setDebouncedSearchTermState("");
-    lastSyncedSearchRef.current = "";
-    setSelectedStatusState(FilterDefaults.TODOS);
-    if (selectedEscola !== undefined) setSelectedEscolaState(FilterDefaults.TODAS);
-    if (selectedVeiculo !== undefined) setSelectedVeiculoState(FilterDefaults.TODOS);
-    if (selectedPeriodo !== undefined) setSelectedPeriodoState(FilterDefaults.TODOS);
-    if (selectedMes !== undefined) setSelectedMesState(getNowBR().getMonth() + 1);
-    if (selectedAno !== undefined) setSelectedAnoState(getNowBR().getFullYear());
-    if (selectedCategoria !== undefined) setSelectedCategoriaState(FilterDefaults.TODAS);
-
-    if (syncWithUrl) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.delete(searchParam);
-        newParams.delete(statusParam);
-        if (escolaParam) newParams.delete(escolaParam);
-        if (veiculoParam) newParams.delete(veiculoParam);
-        if (periodoParam) newParams.delete(periodoParam);
-        if (mesParam) newParams.delete(mesParam);
-        if (anoParam) newParams.delete(anoParam);
-        if (categoriaParam) newParams.delete(categoriaParam);
-        return newParams;
-      }, { replace: true });
-    }
-  }, [
-    syncWithUrl,
-    searchParam,
-    statusParam,
-    escolaParam,
-    veiculoParam,
-    periodoParam,
-    mesParam,
-    anoParam,
-    categoriaParam,
-    setSearchParams,
-    selectedEscola,
-    selectedVeiculo,
-    selectedPeriodo,
-    selectedMes,
-    selectedAno,
-    selectedCategoria,
-  ]);
-
-  useEffect(() => {
-    if (!syncWithUrl) return;
-
-    const urlSearch = searchParams.get(searchParam) ?? "";
-    const urlStatus = searchParams.get(statusParam) ?? FilterDefaults.TODOS;
-    const urlEscola = escolaParam ? searchParams.get(escolaParam) ?? FilterDefaults.TODAS : undefined;
-    const urlVeiculo = veiculoParam ? searchParams.get(veiculoParam) ?? FilterDefaults.TODOS : undefined;
-    const urlPeriodo = periodoParam ? searchParams.get(periodoParam) ?? FilterDefaults.TODOS : undefined;
-    const urlMes = mesParam ? searchParams.get(mesParam) : undefined;
-    const urlAno = anoParam ? searchParams.get(anoParam) : undefined;
-    const urlCategoria = categoriaParam ? searchParams.get(categoriaParam) ?? FilterDefaults.TODAS : undefined;
-
-    if (urlSearch !== lastSyncedSearchRef.current) {
-      lastSyncedSearchRef.current = urlSearch;
-      setSearchTermState(urlSearch);
-      const trimmed = urlSearch.trim();
-      setDebouncedSearchTermState(trimmed.length >= minSearchLength ? trimmed : "");
-    }
-    if (urlStatus !== selectedStatus) setSelectedStatusState(urlStatus);
-    if (escolaParam && urlEscola !== selectedEscola) setSelectedEscolaState(urlEscola);
-    if (veiculoParam && urlVeiculo !== selectedVeiculo) setSelectedVeiculoState(urlVeiculo);
-    if (periodoParam && urlPeriodo !== selectedPeriodo) setSelectedPeriodoState(urlPeriodo);
-    if (mesParam && urlMes && parseInt(urlMes) !== selectedMes) setSelectedMesState(parseInt(urlMes));
-    if (anoParam && urlAno && parseInt(urlAno) !== selectedAno) setSelectedAnoState(parseInt(urlAno));
-    if (categoriaParam && urlCategoria !== selectedCategoria) setSelectedCategoriaState(urlCategoria);
-  }, [
-    searchParams,
-    syncWithUrl,
-    searchParam,
-    statusParam,
-    escolaParam,
-    veiculoParam,
-    periodoParam,
-    mesParam,
-    anoParam,
-    categoriaParam,
-    minSearchLength,
-    selectedStatus,
-    selectedEscola,
-    selectedVeiculo,
-    selectedPeriodo,
-    selectedMes,
-    selectedAno,
-    selectedCategoria,
-  ]);
 
   const setFilters = useCallback(
     (newFilters: {
@@ -385,61 +335,63 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         setDebouncedSearchTermState(effective);
         lastSyncedSearchRef.current = effective;
       }
-      if (newFilters.status !== undefined) setSelectedStatusState(newFilters.status);
-      if (newFilters.escola !== undefined && escolaParam) setSelectedEscolaState(newFilters.escola);
-      if (newFilters.veiculo !== undefined && veiculoParam) setSelectedVeiculoState(newFilters.veiculo);
-      if (newFilters.periodo !== undefined && periodoParam) setSelectedPeriodoState(newFilters.periodo);
-      if (newFilters.mes !== undefined && mesParam) setSelectedMesState(newFilters.mes);
-      if (newFilters.ano !== undefined && anoParam) setSelectedAnoState(newFilters.ano);
-      if (newFilters.categoria !== undefined && categoriaParam) setSelectedCategoriaState(newFilters.categoria);
 
-      if (syncWithUrl) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-
-          if (newFilters.search !== undefined) {
-            const trimmed = newFilters.search.trim();
-            const effective = trimmed.length >= minSearchLength ? trimmed : "";
-            if (effective) newParams.set(searchParam, effective);
-            else newParams.delete(searchParam);
-          }
-
-          if (newFilters.status !== undefined) {
-            if (newFilters.status && newFilters.status !== FilterDefaults.TODOS) newParams.set(statusParam, newFilters.status);
-            else newParams.delete(statusParam);
-          }
-
-          if (newFilters.escola !== undefined && escolaParam) {
-            if (newFilters.escola && newFilters.escola !== FilterDefaults.TODAS) newParams.set(escolaParam, newFilters.escola);
-            else newParams.delete(escolaParam);
-          }
-
-          if (newFilters.veiculo !== undefined && veiculoParam) {
-            if (newFilters.veiculo && newFilters.veiculo !== FilterDefaults.TODOS) newParams.set(veiculoParam, newFilters.veiculo);
-            else newParams.delete(veiculoParam);
-          }
-
-          if (newFilters.periodo !== undefined && periodoParam) {
-            if (newFilters.periodo && newFilters.periodo !== FilterDefaults.TODOS) newParams.set(periodoParam, newFilters.periodo);
-            else newParams.delete(periodoParam);
-          }
-
-          if (newFilters.mes !== undefined && mesParam) {
-            newParams.set(mesParam, newFilters.mes.toString());
-          }
-
-          if (newFilters.ano !== undefined && anoParam) {
-            newParams.set(anoParam, newFilters.ano.toString());
-          }
-
-          if (newFilters.categoria !== undefined && categoriaParam) {
-            if (newFilters.categoria && newFilters.categoria !== FilterDefaults.TODAS) newParams.set(categoriaParam, newFilters.categoria);
-            else newParams.delete(categoriaParam);
-          }
-
-          return newParams;
-        }, { replace: true });
+      if (!syncWithUrl) {
+        if (newFilters.status !== undefined) setLocalStatus(newFilters.status);
+        if (newFilters.escola !== undefined && escolaParam) setLocalEscola(newFilters.escola);
+        if (newFilters.veiculo !== undefined && veiculoParam) setLocalVeiculo(newFilters.veiculo);
+        if (newFilters.periodo !== undefined && periodoParam) setLocalPeriodo(newFilters.periodo);
+        if (newFilters.mes !== undefined && mesParam) setLocalMes(newFilters.mes);
+        if (newFilters.ano !== undefined && anoParam) setLocalAno(newFilters.ano);
+        if (newFilters.categoria !== undefined && categoriaParam) setLocalCategoria(newFilters.categoria);
+        return;
       }
+
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+
+        if (newFilters.search !== undefined) {
+          const trimmed = newFilters.search.trim();
+          const effective = trimmed.length >= minSearchLength ? trimmed : "";
+          if (effective) newParams.set(searchParam, effective);
+          else newParams.delete(searchParam);
+        }
+
+        if (newFilters.status !== undefined) {
+          if (newFilters.status && newFilters.status !== FilterDefaults.TODOS) newParams.set(statusParam, newFilters.status);
+          else newParams.delete(statusParam);
+        }
+
+        if (newFilters.escola !== undefined && escolaParam) {
+          if (newFilters.escola && newFilters.escola !== FilterDefaults.TODAS) newParams.set(escolaParam, newFilters.escola);
+          else newParams.delete(escolaParam);
+        }
+
+        if (newFilters.veiculo !== undefined && veiculoParam) {
+          if (newFilters.veiculo && newFilters.veiculo !== FilterDefaults.TODOS) newParams.set(veiculoParam, newFilters.veiculo);
+          else newParams.delete(veiculoParam);
+        }
+
+        if (newFilters.periodo !== undefined && periodoParam) {
+          if (newFilters.periodo && newFilters.periodo !== FilterDefaults.TODOS) newParams.set(periodoParam, newFilters.periodo);
+          else newParams.delete(periodoParam);
+        }
+
+        if (newFilters.mes !== undefined && mesParam) {
+          newParams.set(mesParam, newFilters.mes.toString());
+        }
+
+        if (newFilters.ano !== undefined && anoParam) {
+          newParams.set(anoParam, newFilters.ano.toString());
+        }
+
+        if (newFilters.categoria !== undefined && categoriaParam) {
+          if (newFilters.categoria && newFilters.categoria !== FilterDefaults.TODAS) newParams.set(categoriaParam, newFilters.categoria);
+          else newParams.delete(categoriaParam);
+        }
+
+        return newParams;
+      }, { replace: true });
     },
     [
       syncWithUrl,
@@ -455,6 +407,47 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       setSearchParams,
     ]
   );
+
+  const clearFilters = useCallback(() => {
+    setSearchTermState("");
+    setDebouncedSearchTermState("");
+    lastSyncedSearchRef.current = "";
+
+    if (!syncWithUrl) {
+      setLocalStatus(FilterDefaults.TODOS);
+      if (escolaParam) setLocalEscola(FilterDefaults.TODAS);
+      if (veiculoParam) setLocalVeiculo(FilterDefaults.TODOS);
+      if (periodoParam) setLocalPeriodo(FilterDefaults.TODOS);
+      if (mesParam) setLocalMes(getNowBR().getMonth() + 1);
+      if (anoParam) setLocalAno(getNowBR().getFullYear());
+      if (categoriaParam) setLocalCategoria(FilterDefaults.TODAS);
+      return;
+    }
+
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.delete(searchParam);
+      newParams.delete(statusParam);
+      if (escolaParam) newParams.delete(escolaParam);
+      if (veiculoParam) newParams.delete(veiculoParam);
+      if (periodoParam) newParams.delete(periodoParam);
+      if (mesParam) newParams.delete(mesParam);
+      if (anoParam) newParams.delete(anoParam);
+      if (categoriaParam) newParams.delete(categoriaParam);
+      return newParams;
+    }, { replace: true });
+  }, [
+    syncWithUrl,
+    searchParam,
+    statusParam,
+    escolaParam,
+    veiculoParam,
+    periodoParam,
+    mesParam,
+    anoParam,
+    categoriaParam,
+    setSearchParams,
+  ]);
 
   const hasActiveFilters =
     !!searchTerm.trim() ||

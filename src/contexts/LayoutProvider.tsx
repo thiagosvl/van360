@@ -1,4 +1,5 @@
 import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
+import { ExcluirContaDialog } from "@/components/dialogs/ExcluirContaDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
@@ -37,6 +38,11 @@ import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDia
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
 import { AdminConfigureReferralDialog } from "@/components/dialogs/AdminConfigureReferralDialog";
 import { VideoStoriesDialog } from "@/components/dialogs/VideoStoriesDialog";
+import { WhatsAppCobrancaPreviewDialog } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
+import { WhatsAppContratoPreviewDialog } from "@/components/dialogs/WhatsAppContratoPreviewDialog";
+import { ReciboPreviewDialog } from "@/components/dialogs/ReciboPreviewDialog";
+import { ShowcaseTransporteEscolarDialog } from "@/components/dialogs/ShowcaseTransporteEscolarDialog";
+import { OnboardingSuccessDialog } from "@/components/dialogs/OnboardingSuccessDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -55,6 +61,10 @@ import {
   OpenAdminConfigureReferralDialogProps,
   OpenAdminConfirmBroadcastDialogProps,
   OpenVideoStoriesDialogProps,
+  OpenWhatsAppCobrancaPreviewDialogProps,
+  OpenWhatsAppContratoPreviewDialogProps,
+  OpenReciboPreviewDialogProps,
+  OpenOnboardingSuccessDialogProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { Loader2 } from "lucide-react";
@@ -67,6 +77,7 @@ import { ROUTES } from "@/constants/routes";
 import { supabase } from "@/integrations/supabase/client";
 import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutContext,
   OpenCobrancaDeleteDialogProps,
@@ -85,6 +96,7 @@ import {
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
   const [pageTitle, setPageTitle] = useState("Carregando...");
   const [pageSubtitle, setPageSubtitle] = useState("Por favor, aguarde.");
 
@@ -275,6 +287,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
   const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
   const [personalizarMenuDialogOpen, setPersonalizarMenuDialogOpen] = useState(false);
+  const [excluirContaDialogOpen, setExcluirContaDialogOpen] = useState(false);
   const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
     open: boolean;
     onSuccess?: (userId: string) => void;
@@ -311,6 +324,23 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenVideoStoriesDialogProps;
   }>({ open: false });
+  const [whatsAppCobrancaPreviewDialogState, setWhatsAppCobrancaPreviewDialogState] = useState<{
+    open: boolean;
+    props?: OpenWhatsAppCobrancaPreviewDialogProps;
+  }>({ open: false });
+  const [whatsAppContratoPreviewDialogState, setWhatsAppContratoPreviewDialogState] = useState<{
+    open: boolean;
+    props?: OpenWhatsAppContratoPreviewDialogProps;
+  }>({ open: false });
+  const [reciboPreviewDialogState, setReciboPreviewDialogState] = useState<{
+    open: boolean;
+    props?: OpenReciboPreviewDialogProps;
+  }>({ open: false });
+  const [onboardingSuccessDialogState, setOnboardingSuccessDialogState] = useState<{
+    open: boolean;
+    props?: OpenOnboardingSuccessDialogProps;
+  }>({ open: false });
+  const [showcaseTransporteEscolarOpen, setShowcaseTransporteEscolarOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
   const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
@@ -545,6 +575,26 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openWhatsAppCobrancaPreviewDialog = (props?: OpenWhatsAppCobrancaPreviewDialogProps) => {
+    setWhatsAppCobrancaPreviewDialogState({ open: true, props });
+  };
+
+  const openWhatsAppContratoPreviewDialog = (props?: OpenWhatsAppContratoPreviewDialogProps) => {
+    setWhatsAppContratoPreviewDialogState({ open: true, props });
+  };
+
+  const openReciboPreviewDialog = (props?: OpenReciboPreviewDialogProps) => {
+    setReciboPreviewDialogState({ open: true, props });
+  };
+
+  const openOnboardingSuccessDialog = (props: OpenOnboardingSuccessDialogProps) => {
+    setOnboardingSuccessDialogState({ open: true, props });
+  };
+
+  const openShowcaseTransporteEscolarDialog = () => {
+    setShowcaseTransporteEscolarOpen(true);
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -594,10 +644,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarPixDialog: () => setEditarPixDialogOpen(true),
+        openWhatsAppCobrancaPreviewDialog,
+        openWhatsAppContratoPreviewDialog,
+        openReciboPreviewDialog,
+        openShowcaseTransporteEscolarDialog,
+        openOnboardingSuccessDialog,
         openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
         openReferAndEarnDialog: () => setReferAndEarnDialogOpen(true),
         openPersonalizarMenuDialog: () => setPersonalizarMenuDialogOpen(true),
         closePersonalizarMenuDialog: () => safeCloseDialog(() => setPersonalizarMenuDialogOpen(false)),
+        openExcluirContaDialog: () => setExcluirContaDialogOpen(true),
+        closeExcluirContaDialog: () => safeCloseDialog(() => setExcluirContaDialogOpen(false)),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isGlobalLoading,
@@ -940,6 +997,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             })
           }
           passageiro={firstChargeDialogState.props.passageiro}
+          isFirstPassageiro={firstChargeDialogState.props.isFirstPassageiro}
         />
       )}
 
@@ -965,6 +1023,55 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {whatsAppCobrancaPreviewDialogState.open && (
+        <WhatsAppCobrancaPreviewDialog
+          isOpen={whatsAppCobrancaPreviewDialogState.open}
+          onClose={() => safeCloseDialog(() => setWhatsAppCobrancaPreviewDialogState({ open: false }))}
+          driverName={whatsAppCobrancaPreviewDialogState.props?.driverName}
+          passageiroNome={whatsAppCobrancaPreviewDialogState.props?.passageiroNome}
+          userChavePix={whatsAppCobrancaPreviewDialogState.props?.userChavePix}
+          showPixSetupAction={whatsAppCobrancaPreviewDialogState.props?.showPixSetupAction}
+        />
+      )}
+
+      {whatsAppContratoPreviewDialogState.open && (
+        <WhatsAppContratoPreviewDialog
+          isOpen={whatsAppContratoPreviewDialogState.open}
+          onClose={() => safeCloseDialog(() => setWhatsAppContratoPreviewDialogState({ open: false }))}
+          driverName={whatsAppContratoPreviewDialogState.props?.driverName}
+          passageiroNome={whatsAppContratoPreviewDialogState.props?.passageiroNome}
+        />
+      )}
+
+      {reciboPreviewDialogState.open && (
+        <ReciboPreviewDialog
+          isOpen={reciboPreviewDialogState.open}
+          onClose={() => safeCloseDialog(() => setReciboPreviewDialogState({ open: false }))}
+          driverName={reciboPreviewDialogState.props?.driverName}
+          passageiroNome={reciboPreviewDialogState.props?.passageiroNome}
+        />
+      )}
+
+      {showcaseTransporteEscolarOpen && (
+        <ShowcaseTransporteEscolarDialog
+          isOpen={showcaseTransporteEscolarOpen}
+          onClose={() => safeCloseDialog(() => setShowcaseTransporteEscolarOpen(false))}
+          onNavigateToRegister={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
+        />
+      )}
+
+      {onboardingSuccessDialogState.open && onboardingSuccessDialogState.props && (
+        <OnboardingSuccessDialog
+          isOpen={onboardingSuccessDialogState.open}
+          onClose={() => safeCloseDialog(() => setOnboardingSuccessDialogState({ open: false }))}
+          onNavigateToPassageiro={onboardingSuccessDialogState.props.onNavigateToPassageiro}
+          passageiroNome={onboardingSuccessDialogState.props.passageiroNome}
+          onOpenWhatsAppPreview={() => openWhatsAppCobrancaPreviewDialog({ showPixSetupAction: false, passageiroNome: onboardingSuccessDialogState.props?.passageiroNome })}
+          onOpenContratoPreview={() => openWhatsAppContratoPreviewDialog({ passageiroNome: onboardingSuccessDialogState.props?.passageiroNome })}
+          onOpenReciboPreview={() => openReciboPreviewDialog({ passageiroNome: onboardingSuccessDialogState.props?.passageiroNome })}
+        />
+      )}
+
       {acquisitionChannelDialogOpen && (
         <AcquisitionChannelDialog
           isOpen={acquisitionChannelDialogOpen}
@@ -983,6 +1090,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <PersonalizarMenuDialog
           isOpen={personalizarMenuDialogOpen}
           onClose={() => safeCloseDialog(() => setPersonalizarMenuDialogOpen(false))}
+        />
+      )}
+
+      {excluirContaDialogOpen && (
+        <ExcluirContaDialog
+          open={excluirContaDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => setExcluirContaDialogOpen(false));
+            } else {
+              setExcluirContaDialogOpen(true);
+            }
+          }}
         />
       )}
 
@@ -1122,6 +1242,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={() => safeCloseDialog(() => setGerarContratoValidadorDialogState({ open: false }))}
           passageiroId={gerarContratoValidadorDialogState.props.passageiroId}
+          initialPassageiro={gerarContratoValidadorDialogState.props.initialPassageiro}
           onSuccess={gerarContratoValidadorDialogState.props.onSuccess}
         />
       )}

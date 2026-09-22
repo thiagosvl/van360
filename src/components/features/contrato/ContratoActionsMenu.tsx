@@ -17,7 +17,7 @@ interface ContratoActionsMenuProps {
   onDownload?: (item: ContratoListItem) => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
-  onGerarContrato?: (passageiroId: string) => void;
+  onGerarContrato?: (passageiroId: string, item?: ContratoListItem) => void;
   onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
   onVisualizarLink?: (token: string) => void;
   onVisualizarFinal?: (url: string) => void;

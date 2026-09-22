@@ -8,11 +8,13 @@ export function usePassageiro(
   options?: {
     enabled?: boolean;
     onError?: (error: unknown) => void;
+    initialData?: Passageiro | null;
   }
 ) {
   const query = useQuery({
     queryKey: ["passageiro", passageiroId],
     enabled: (options?.enabled ?? true) && Boolean(passageiroId),
+    initialData: options?.initialData,
     queryFn: async () => {
       if (!passageiroId) return null;
       const data = await passageiroApi.getPassageiro(passageiroId);

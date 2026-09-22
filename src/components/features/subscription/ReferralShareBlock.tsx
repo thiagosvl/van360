@@ -98,7 +98,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
           ) : (
             <>
               <Copy className={cn("w-4 h-4 mr-1", darkTheme ? "text-[#0b1a2e]" : "text-emerald-700")} />
-              Copiar Link
+              Copiar
             </>
           )}
         </Button>

@@ -129,7 +129,7 @@ export default function PassengerFormDialog({
         if (isManualScrollRef.current) return;
 
         const containerRect = container.getBoundingClientRect();
-        let currentSection = EDIT_TABS[0].id;
+        let currentSection: string = EDIT_TABS[0].id;
 
         for (const tab of EDIT_TABS) {
           const el = container.querySelector(`#${tab.id}`) as HTMLElement | null;

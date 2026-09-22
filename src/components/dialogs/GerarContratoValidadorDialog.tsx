@@ -21,11 +21,13 @@ import { parseLocalDate, getStartOfDayBR } from "@/utils/dateUtils";
 import { useGerarContratoValidadorViewModel } from "@/hooks/ui/useGerarContratoValidadorViewModel";
 
 import { cpfMask } from "@/utils/masks";
+import { Passageiro } from "@/types/passageiro";
 
 interface GerarContratoValidadorDialogProps {
   isOpen: boolean;
   onClose: () => void;
   passageiroId: string | null;
+  initialPassageiro?: Passageiro;
   onSuccess?: (passageiroId: string, bypassed?: boolean) => void;
 }
 
@@ -33,6 +35,7 @@ export function GerarContratoValidadorDialog({
   isOpen,
   onClose,
   passageiroId,
+  initialPassageiro,
   onSuccess,
 }: GerarContratoValidadorDialogProps) {
   const {
@@ -52,8 +55,31 @@ export function GerarContratoValidadorDialog({
     isOpen,
     onClose,
     passageiroId,
+    initialPassageiro,
     onSuccess,
   });
+
+  if (isOpen && (isChecking || isLoadingPassageiro) && !passageiro) {
+    return (
+      <BaseDialog
+        open={isOpen}
+        onOpenChange={onClose}
+        description="Verificando dados para o contrato..."
+        maxWidth="sm"
+      >
+        <BaseDialog.Header
+          title="Validando contrato"
+          onClose={onClose}
+        />
+        <BaseDialog.Body>
+          <div className="flex flex-col items-center justify-center py-10 gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-[#1a3a5c]" />
+            <p className="text-xs text-slate-500 font-medium">Carregando informações...</p>
+          </div>
+        </BaseDialog.Body>
+      </BaseDialog>
+    );
+  }
 
   if (isChecking && isOpen) {
     return null;

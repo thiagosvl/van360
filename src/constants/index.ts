@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
   PENDING_UPDATE: "pendingUpdate",
   BOTTOM_NAV_PREFERENCES: "van360:mobile_bottom_nav",
   GUIDE_PASSAGEIROS_DISMISSED: "van360_guide_dismissed_passageiros",
+  PENDING_DEEP_LINK: "van360_pending_deep_link",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */

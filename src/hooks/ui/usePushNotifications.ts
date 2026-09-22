@@ -10,12 +10,64 @@ import { useSession } from '../business/useSession';
 import { useResponsavelAuth } from '@/contexts/ResponsavelAuthContext';
 import { responsavelApi } from '@/services/api/responsavel.api';
 
+import { normalizeNotificationRoute, savePendingDeepLink } from '@/utils/deepLink';
+
 export const getCachedPushTokenInfo = async (): Promise<{ token: string; platform: string } | null> => {
   const token = localStorage.getItem('van360_fcm_token');
   if (!token) return null;
   const platform = localStorage.getItem('van360_fcm_platform') || 'android';
   return { token, platform };
 };
+
+export function resolveNotificationRoute(
+  data?: Record<string, unknown>,
+  isResponsavel = false
+): string {
+  if (!data) {
+    return isResponsavel ? ROUTES.PRIVATE.RESPONSAVEL.HOME : ROUTES.PRIVATE.MOTORISTA.HOME;
+  }
+
+  const explicitUrl = (data.targetUrl || data.url || data.link || data.checkoutUrl || data.contractUrl) as string | undefined;
+  if (explicitUrl && typeof explicitUrl === 'string') {
+    return normalizeNotificationRoute(explicitUrl);
+  }
+
+  const action = data.action as PushNotificationAction | undefined;
+  switch (action) {
+    case PushNotificationAction.OPEN_HOME:
+      return ROUTES.PRIVATE.MOTORISTA.HOME;
+    case PushNotificationAction.OPEN_SUBSCRIPTION:
+      return ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION;
+    case PushNotificationAction.OPEN_CONTRACTS:
+      return ROUTES.PRIVATE.MOTORISTA.CONTRACTS;
+    case PushNotificationAction.OPEN_ROUTE:
+      return isResponsavel ? ROUTES.PRIVATE.RESPONSAVEL.HOME : ROUTES.PRIVATE.MOTORISTA.ROUTES;
+    case PushNotificationAction.OPEN_TEAM:
+      return ROUTES.PRIVATE.MOTORISTA.TEAM;
+    case PushNotificationAction.OPEN_BILLING:
+      return `${ROUTES.PRIVATE.MOTORISTA.BILLING}?tab=${CobrancaTab.ARECEBER}`;
+    case PushNotificationAction.OPEN_PASSENGERS:
+      return ROUTES.PRIVATE.MOTORISTA.PASSENGERS;
+    case PushNotificationAction.OPEN_PASSENGER_REQUESTS:
+      return `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`;
+    case PushNotificationAction.OPEN_SCHOOLS:
+      return ROUTES.PRIVATE.MOTORISTA.SCHOOLS;
+    case PushNotificationAction.OPEN_VEHICLES:
+      return ROUTES.PRIVATE.MOTORISTA.VEHICLES;
+    case PushNotificationAction.OPEN_EXPENSES:
+      return ROUTES.PRIVATE.MOTORISTA.EXPENSES;
+    case PushNotificationAction.OPEN_REPORTS:
+      return ROUTES.PRIVATE.MOTORISTA.REPORTS;
+    case PushNotificationAction.OPEN_SETTINGS:
+      return ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
+    case PushNotificationAction.OPEN_BIRTHDAYS:
+      return ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS;
+    case PushNotificationAction.OPEN_TRACKING:
+      return isResponsavel ? ROUTES.PRIVATE.RESPONSAVEL.HOME : ROUTES.PRIVATE.MOTORISTA.ROUTES;
+    default:
+      return isResponsavel ? ROUTES.PRIVATE.RESPONSAVEL.HOME : ROUTES.PRIVATE.MOTORISTA.HOME;
+  }
+}
 
 export const usePushNotifications = () => {
   const navigate = useNavigate();
@@ -34,40 +86,10 @@ export const usePushNotifications = () => {
         const actionHandle = await PushNotifications.addListener(
           'pushNotificationActionPerformed',
           (notification) => {
-            const data = notification.notification.data;
-            const action = data?.action;
-            if (!action) return;
-
-            switch (action) {
-              case PushNotificationAction.OPEN_HOME: navigate(ROUTES.PRIVATE.MOTORISTA.HOME); break;
-              case PushNotificationAction.OPEN_SUBSCRIPTION: navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION); break;
-              case PushNotificationAction.OPEN_CONTRACTS: navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACTS); break;
-              case PushNotificationAction.OPEN_ROUTE:
-                if (isResponsavelAuth) {
-                  navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
-                } else {
-                  navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
-                }
-                break;
-              case PushNotificationAction.OPEN_TEAM: navigate(ROUTES.PRIVATE.MOTORISTA.TEAM); break;
-              case PushNotificationAction.OPEN_BILLING: navigate(`${ROUTES.PRIVATE.MOTORISTA.BILLING}?tab=${CobrancaTab.ARECEBER}`); break;
-              case PushNotificationAction.OPEN_PASSENGERS: navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS); break;
-              case PushNotificationAction.OPEN_PASSENGER_REQUESTS: navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`); break;
-              case PushNotificationAction.OPEN_SCHOOLS: navigate(ROUTES.PRIVATE.MOTORISTA.SCHOOLS); break;
-              case PushNotificationAction.OPEN_VEHICLES: navigate(ROUTES.PRIVATE.MOTORISTA.VEHICLES); break;
-              case PushNotificationAction.OPEN_EXPENSES: navigate(ROUTES.PRIVATE.MOTORISTA.EXPENSES); break;
-              case PushNotificationAction.OPEN_REPORTS: navigate(ROUTES.PRIVATE.MOTORISTA.REPORTS); break;
-              case PushNotificationAction.OPEN_SETTINGS: navigate(ROUTES.PRIVATE.MOTORISTA.ACCOUNT); break;
-              case PushNotificationAction.OPEN_BIRTHDAYS: navigate(ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS); break;
-              case PushNotificationAction.OPEN_TRACKING:
-                if (isResponsavelAuth) {
-                  navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
-                } else {
-                  navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
-                }
-                break;
-              default: navigate(ROUTES.PRIVATE.MOTORISTA.HOME); break;
-            }
+            const data = notification.notification.data as Record<string, unknown> | undefined;
+            const targetRoute = resolveNotificationRoute(data, isResponsavelAuth);
+            savePendingDeepLink(targetRoute);
+            navigate(targetRoute);
           }
         );
         handles.push(actionHandle);
@@ -89,7 +111,7 @@ export const usePushNotifications = () => {
     return () => {
       handles.forEach((h) => h.remove());
     };
-  }, [navigate]);
+  }, [navigate, isResponsavelAuth]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;

@@ -49,7 +49,7 @@ interface ContratosListProps {
   onDownload?: (item: ContratoListItem) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
-  onGerarContrato: (passageiroId: string) => void;
+  onGerarContrato: (passageiroId: string, item?: ContratoListItem) => void;
   onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
   onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink: (token: string) => void;
@@ -69,7 +69,7 @@ interface ContratoMobileCardProps {
   onDownload?: (item: ContratoListItem) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
-  onGerarContrato: (passageiroId: string) => void;
+  onGerarContrato: (passageiroId: string, item?: ContratoListItem) => void;
   onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
   onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink: (token: string) => void;
@@ -105,7 +105,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onDownload,
     onExcluir,
     onSubstituir,
-    onGerarContrato,
+    onGerarContrato: (pId) => onGerarContrato(pId, item),
     onCompletarCadastro,
     onImportarContrato,
     onVisualizarLink,
@@ -319,10 +319,10 @@ export const ContratosList = memo(function ContratosList({
                             size="sm"
                             onClick={() => actions.onCompletarCadastro?.(passId, item)}
                             disabled={isDesativado}
-                            className="h-8 px-2.5 rounded-lg border-amber-200 hover:border-amber-300 hover:bg-amber-50 text-amber-700 text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
                             title="Completar dados e gerar contrato"
                           >
-                            <User className="w-3.5 h-3.5 text-amber-600" />
+                            <User className="w-3.5 h-3.5 text-[#1a3a5c]" />
                             <span>Completar e Gerar</span>
                           </Button>
                         ) : actions.onGerarContrato ? (
@@ -330,7 +330,7 @@ export const ContratosList = memo(function ContratosList({
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => actions.onGerarContrato?.(passId)}
+                            onClick={() => actions.onGerarContrato?.(passId, item)}
                             disabled={isDesativado}
                             className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
                             title="Gerar contrato"

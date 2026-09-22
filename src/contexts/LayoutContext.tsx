@@ -134,6 +134,7 @@ export interface OpenAnnualReceiptDialogProps {
 
 export interface OpenFirstChargeDialogProps {
   passageiro: Passageiro;
+  isFirstPassageiro?: boolean;
   onSuccess?: () => void;
 }
 
@@ -144,6 +145,7 @@ export interface OpenContractSetupDialogProps {
 
 export interface OpenGerarContratoValidadorDialogProps {
   passageiroId: string;
+  initialPassageiro?: Passageiro;
   onSuccess: (passageiroId: string, bypassed?: boolean) => void;
 }
 
@@ -246,6 +248,28 @@ export interface OpenVideoStoriesDialogProps {
   loop?: boolean;
 }
 
+export interface OpenWhatsAppCobrancaPreviewDialogProps {
+  driverName?: string;
+  passageiroNome?: string;
+  userChavePix?: string | null;
+  showPixSetupAction?: boolean;
+}
+
+export interface OpenWhatsAppContratoPreviewDialogProps {
+  driverName?: string;
+  passageiroNome?: string;
+}
+
+export interface OpenReciboPreviewDialogProps {
+  driverName?: string;
+  passageiroNome?: string;
+}
+
+export interface OpenOnboardingSuccessDialogProps {
+  onNavigateToPassageiro: () => void;
+  passageiroNome?: string;
+}
+
 export interface OpenAdminConfirmBroadcastDialogProps {
   publicoDescricao: string;
   totalEligivel: number;
@@ -309,8 +333,15 @@ export interface LayoutContextType {
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
   openEditarPixDialog: () => void;
+  openWhatsAppCobrancaPreviewDialog: (props?: OpenWhatsAppCobrancaPreviewDialogProps) => void;
+  openWhatsAppContratoPreviewDialog: (props?: OpenWhatsAppContratoPreviewDialogProps) => void;
+  openReciboPreviewDialog: (props?: OpenReciboPreviewDialogProps) => void;
+  openShowcaseTransporteEscolarDialog: () => void;
+  openOnboardingSuccessDialog: (props: OpenOnboardingSuccessDialogProps) => void;
   openAcquisitionChannelDialog: () => void;
   openReferAndEarnDialog: () => void;
+  openExcluirContaDialog: () => void;
+  closeExcluirContaDialog: () => void;
 
   // Mobile Menu
   isMobileMenuOpen: boolean;

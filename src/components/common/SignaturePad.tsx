@@ -113,7 +113,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
               onEnd={handleEnd}
               canvasProps={{
                 className: "w-full h-full",
-                style: { cursor: SIGNATURE_CURSOR },
+                style: { cursor: SIGNATURE_CURSOR, touchAction: "none" },
               }}
               backgroundColor="transparent"
             />

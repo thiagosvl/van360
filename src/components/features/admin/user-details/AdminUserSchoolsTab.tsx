@@ -101,7 +101,10 @@ export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
                         {e.nome.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-slate-100 truncate leading-tight">
+                        <h4
+                          className="text-xs font-bold text-slate-100 line-clamp-2 break-words leading-tight"
+                          title={e.nome}
+                        >
                           {e.nome}
                         </h4>
                         {e.contato_nome && (

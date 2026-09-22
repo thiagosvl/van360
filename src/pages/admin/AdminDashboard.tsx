@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import {
   useAdminStats,
   useAdminLogs,
-  useAdminUsersLatestActivity,
   useAdminUsersRadarStats,
   useAdminFinancialStats,
   useAdminDemographicsStats,
@@ -18,6 +17,7 @@ import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financia
 import { AdminAgeDemographicsChart } from "@/components/features/admin/users/AdminAgeDemographicsChart";
 import { AdminUserGrowthFunnel } from "@/components/features/admin/users/AdminUserGrowthFunnel";
 import { AdminGeographicSection } from "@/components/features/admin/users/AdminGeographicSection";
+import { AdminAcquisitionReport } from "@/components/features/admin/AdminAcquisitionReport";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,6 +58,7 @@ import {
   AlertTriangle,
   ArrowRight,
   RefreshCw,
+  TrendingUp,
 } from "lucide-react";
 import {
   Card,
@@ -109,11 +110,6 @@ export default function AdminDashboard() {
   const { data: logsData, isLoading: isLoadingLogs } = useAdminLogs({ limit: 10 });
 
   const { data: radarStats, isLoading: isLoadingRadarStats } = useAdminUsersRadarStats("active_trial");
-  const { data: topRiskData, isLoading: isLoadingTopRisk } = useAdminUsersLatestActivity({
-    sort: "inactive_first",
-    page: 1,
-    limit: 3,
-  });
 
 
 
@@ -245,6 +241,12 @@ export default function AdminDashboard() {
                     <span>Usuários</span>
                   </span>
                 </SelectItem>
+                <SelectItem value="aquisicao" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-pink-400" />
+                    <span>Aquisição & Leads</span>
+                  </span>
+                </SelectItem>
                 <SelectItem value="operacional" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
                   <span className="flex items-center gap-2">
                     <Activity className="h-4 w-4 text-amber-400" />
@@ -300,6 +302,13 @@ export default function AdminDashboard() {
               >
                 <Users className="h-4 w-4 text-purple-300" />
                 <span>Usuários</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="aquisicao"
+                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-5 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <TrendingUp className="h-4 w-4 text-pink-300" />
+                <span>Aquisição & Leads</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financeiro"
@@ -411,9 +420,6 @@ export default function AdminDashboard() {
                     <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
                       RADAR DE ENGAJAMENTO
                     </CardTitle>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                      Saúde da Base
-                    </span>
                   </div>
 
                   <Button
@@ -531,100 +537,10 @@ export default function AdminDashboard() {
                         </div>
                       )}
 
-                      <div className="pt-2 space-y-2 text-left">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
-                            <span>Atenção Imediata (Mais Inativos)</span>
-                          </span>
-                        </div>
-
-                        {isLoadingTopRisk ? (
-                          <div className="flex justify-center py-6">
-                            <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
-                          </div>
-                        ) : !topRiskData || topRiskData.data.length === 0 ? (
-                          <p className="text-xs text-slate-500 text-center py-4 italic">
-                            Nenhum motorista necessita de atenção no momento.
-                          </p>
-                        ) : (
-                          <div className="space-y-2">
-                            {topRiskData.data.map((item) => {
-                              const cleanPhone = item.telefone?.replace(/\D/g, "");
-                              let badgeBg = "bg-slate-800 text-slate-400 border-slate-700";
-                              let badgeText = `${item.dias_inativo}d sem uso`;
-
-                              if (item.dias_inativo <= 2) {
-                                badgeBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-                                badgeText = `Ativo`;
-                              } else if (item.dias_inativo <= 7) {
-                                badgeBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
-                                badgeText = `${item.dias_inativo}d sem uso`;
-                              } else {
-                                badgeBg = "bg-rose-500/15 text-rose-400 border-rose-500/30";
-                                badgeText = `${item.dias_inativo}d sem uso`;
-                              }
-
-                              return (
-                                <div
-                                  key={item.id}
-                                  className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-3 hover:bg-slate-900 transition-colors"
-                                >
-                                  <div className="min-w-0 flex-1 space-y-0.5 text-left">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <Link
-                                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.id}`}
-                                        className="text-xs font-bold text-white hover:text-blue-400 hover:underline truncate"
-                                      >
-                                        {item.nome}
-                                      </Link>
-                                    </div>
-                                    <p className="text-[11px] text-slate-400 font-mono truncate">
-                                      {phoneMask(item.telefone)}
-                                    </p>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${badgeBg}`}>
-                                      {badgeText}
-                                    </span>
-
-                                    {cleanPhone && (
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => openBrowserLink(`https://wa.me/55${cleanPhone}`)}
-                                        className="h-7 w-7 p-0 rounded-lg border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white"
-                                        title="Chamar no WhatsApp"
-                                      >
-                                        <WhatsAppIcon className="h-3 w-3" />
-                                      </Button>
-                                    )}
-
-                                    <Link to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.id}`}>
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-7 w-7 p-0 rounded-lg bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white"
-                                        title="Ver Carteirinha"
-                                      >
-                                        <Eye className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </Link>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-
                       <Button
                         type="button"
                         onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS_RADAR)}
-                        className="w-full h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
+                        className="w-full h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 pt-0"
                       >
                         <Radio className="h-3.5 w-3.5 animate-pulse" />
                         <span>Ver Todos os Motoristas no Radar Completo</span>
@@ -863,6 +779,11 @@ export default function AdminDashboard() {
               </div>
             </div>
           ) : null}
+        </TabsContent>
+
+        {/* ABA: AQUISIÇÃO & LEADS */}
+        <TabsContent value="aquisicao" className="space-y-6 m-0 outline-none">
+          <AdminAcquisitionReport />
         </TabsContent>
 
         {/* ABA 3: OPERACIONAL */}

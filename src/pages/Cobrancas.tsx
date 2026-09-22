@@ -81,11 +81,7 @@ export default function Cobrancas() {
   if (busca) {
     statusLabel = currentCount === 1 ? "ENCONTRADA" : "ENCONTRADAS";
   } else {
-    if (activeTab === CobrancaTab.ARECEBER) {
-      statusLabel = currentCount === 1 ? "PARCELAS" : "PARCELAS";
-    } else {
-      statusLabel = currentCount === 1 ? "PARCELAS" : "PARCELAS";
-    }
+    statusLabel = "PARCELAS";
   }
 
   return (

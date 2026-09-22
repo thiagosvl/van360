@@ -5,6 +5,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/config/permissions";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
@@ -218,10 +219,12 @@ export const Conta = memo(function Conta() {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                    Alterar Dados ou Logotipo
+                    {isSubConta ? "Dados Cadastrais" : "Dados Cadastrais e Logotipo"}
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Seus dados cadastrais, logotipo da van e informações de contato
+                    {isSubConta
+                      ? "Atualize seus dados pessoais e informações de contato"
+                      : "Atualize seus dados pessoais, logotipo da van e informações de contato"}
                   </p>
                 </div>
               </div>
@@ -251,7 +254,7 @@ export const Conta = memo(function Conta() {
             </button>
 
             {/* Opção 3: Assinatura do App (Gestor) */}
-            {can("assinatura.gerenciar") && (
+            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && (
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
@@ -297,7 +300,9 @@ export const Conta = memo(function Conta() {
                     Minhas Notificações
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular
+                    {isSubConta
+                      ? "Lembretes de aniversariantes e avisos operacionais no seu celular"
+                      : "Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular"}
                   </p>
                 </div>
               </div>

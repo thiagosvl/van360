@@ -38,6 +38,7 @@ export function useCreateRoute() {
     onSuccess: (data: any) => {
       markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"] });
       if (data?.id) {
         queryClient.setQueryData(["route-detail", data.id], data);
       }
@@ -62,6 +63,7 @@ export function useUpdateRoute() {
     onSuccess: (data, variables) => {
       markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"] });
       if (data) {
         queryClient.setQueryData(["route-detail", variables.id], data);
       } else {
@@ -91,6 +93,7 @@ export function useDeleteRoute(usuarioId?: string) {
       markLocalMutation();
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro-rotas"] });
       toast.success("Rota excluída com sucesso!");
     },
     onError: (error: any) => {

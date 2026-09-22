@@ -1,5 +1,5 @@
 import { useLayout } from "@/contexts/LayoutContext";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, KeyRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ interface AdminNavbarProps {
 
 export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
   const { user } = useSession();
-  const { pageTitle } = useLayout();
+  const { pageTitle, openAlterarSenhaDialog } = useLayout();
 
   const handleLogout = async () => {
     try {
@@ -68,10 +68,17 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
             <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase text-slate-400 tracking-wider">Conta Admin</DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-slate-800" />
             <DropdownMenuItem
+              className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-slate-200 hover:text-white focus:bg-slate-800/80 focus:text-white cursor-pointer"
+              onClick={openAlterarSenhaDialog}
+            >
+              <KeyRound className="h-4 w-4 text-slate-400" /> Trocar Senha
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-slate-800" />
+            <DropdownMenuItem
               className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-red-400 focus:bg-red-500/10 focus:text-red-300 cursor-pointer"
               onClick={handleLogout}
             >
-              <LogOut className="h-4 w-4" /> Sair do Painel
+              <LogOut className="h-4 w-4" /> Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

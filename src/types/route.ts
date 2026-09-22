@@ -57,6 +57,7 @@ export interface Route {
   id: string;
   usuario_id: string;
   nome: string;
+  periodo?: import("./enums").PassageiroPeriodo | null;
   veiculo_id?: string | null;
   escola_fixa_id?: string | null;
   numero_passageiros?: number;

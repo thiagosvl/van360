@@ -4,10 +4,12 @@ import confetti from "canvas-confetti";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { SecondaryKPICard } from "@/components/features/home/SecondaryKPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
+import { SmartAppBanner } from "@/components/features/app/SmartAppBanner";
 import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
+import { DemonstracoesWhatsAppCard } from "@/components/features/home/DemonstracoesWhatsAppCard";
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
@@ -28,7 +30,7 @@ import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePrivacy } from "@/contexts/PrivacyContext";
 import { isMotoristaTitular } from "@/utils/userUtils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Banner } from "@/components/ui/Banner";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -60,6 +62,24 @@ const Home = () => {
   } = useDashboardViewModel();
 
   const { openAcquisitionChannelDialog } = useLayout();
+
+  const [isDismissedQuickReg, setIsDismissedQuickReg] = useState(() => {
+    return localStorage.getItem("van360:dismiss:quick-registration-home") === "true";
+  });
+
+  const handleDismissQuickReg = () => {
+    setIsDismissedQuickReg(true);
+    localStorage.setItem("van360:dismiss:quick-registration-home", "true");
+  };
+
+  const [isDismissedDemonstracoes, setIsDismissedDemonstracoes] = useState(() => {
+    return localStorage.getItem("van360:dismiss:demonstracoes-home") === "true";
+  });
+
+  const handleDismissDemonstracoes = () => {
+    setIsDismissedDemonstracoes(true);
+    localStorage.setItem("van360:dismiss:demonstracoes-home", "true");
+  };
 
   const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
 
@@ -162,19 +182,20 @@ const Home = () => {
                   </h1>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={toggleHideValues}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100/60 transition-colors rounded-xl focus:outline-hidden active:scale-95 cursor-pointer shrink-0"
-                  title={hideValues ? "Mostrar valores" : "Ocultar valores"}
-                  aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
-                >
-                  {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
-                </button>
+                {!isSubConta && (
+                  <button
+                    type="button"
+                    onClick={toggleHideValues}
+                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100/60 transition-colors rounded-xl focus:outline-hidden active:scale-95 cursor-pointer shrink-0"
+                    title={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                    aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
+                  >
+                    {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+                  </button>
+                )}
               </div>
             )}
 
-            {/* Banner de Carência (SaaS) */}
             {!isSubConta && isPastDue && (
               <PastDueBanner
                 onRegularize={() => {
@@ -191,37 +212,26 @@ const Home = () => {
               />
             )}
 
-            {!isSubConta && (
-              contadores.passageirosSolicitacoes > 0 ? (
-                <section className="px-1">
-                  <Banner
-                    variant="info"
-                    icon={<UserPlus className="w-5 h-5" />}
-                    title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
-                    description={
-                      contadores.passageirosSolicitacoes === 1
-                        ? "Clique para ver e revisar o cadastro agora."
-                        : "Clique para ver e revisar os cadastros agora."
-                    }
-                    onClick={() =>
-                      navigateTo(
-                        `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
-                      )
-                    }
-                  />
-                </section>
-              ) : !onboarding.showOnboarding && contadores.passageirosAtivos < 10 ? (
-                <section className="px-1">
-                  <QuickRegistrationLink
-                    profile={profile}
-                    pendingCount={contadores.passageirosSolicitacoes}
-                    className="mb-0"
-                  />
-                </section>
-              ) : null
+            {!isSubConta && contadores.passageirosSolicitacoes > 0 && (
+              <section className="px-1">
+                <Banner
+                  variant="info"
+                  icon={<UserPlus className="w-5 h-5" />}
+                  title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
+                  description={
+                    contadores.passageirosSolicitacoes === 1
+                      ? "Clique para ver e revisar o cadastro agora."
+                      : "Clique para ver e revisar os cadastros agora."
+                  }
+                  onClick={() =>
+                    navigateTo(
+                      `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
+                    )
+                  }
+                />
+              </section>
             )}
 
-            {/* Onboarding - Primeiros Passos */}
             {!isSubConta && onboarding.showOnboarding && (
               <section className="px-1">
                 <QuickStartCard
@@ -232,7 +242,6 @@ const Home = () => {
               </section>
             )}
 
-            {/* Notificação de Parcelas pendentes */}
             {!isSubConta && !onboarding.showOnboarding && (financeiro?.countAtrasos || 0) > 0 && (
               <section className="px-1">
                 <Banner
@@ -244,7 +253,6 @@ const Home = () => {
               </section>
             )}
 
-            {/* Painel Financeiro e KPIs */}
             <div className="px-1 relative">
               <div
                 className={cn(
@@ -302,6 +310,26 @@ const Home = () => {
                 </div>
               )}
             </div>
+
+            {!isSubConta && <SmartAppBanner />}
+
+            {!isSubConta && isTrial && !isDismissedDemonstracoes && (
+              <DemonstracoesWhatsAppCard
+                profile={profile}
+                onDismiss={handleDismissDemonstracoes}
+              />
+            )}
+
+            {!isSubConta && !onboarding.showOnboarding && contadores.passageirosSolicitacoes === 0 && contadores.passageirosAtivos < 10 && !isDismissedQuickReg && (
+              <section className="px-1">
+                <QuickRegistrationLink
+                  profile={profile}
+                  pendingCount={contadores.passageirosSolicitacoes}
+                  onDismiss={handleDismissQuickReg}
+                  className="mb-0"
+                />
+              </section>
+            )}
           </div>
 
 
@@ -311,7 +339,7 @@ const Home = () => {
             onRegistrarGasto={handleOpenGastoDialog}
           />
 
-          {!isSubConta && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
+          {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
             <section className="px-1">
               <TrialBanner
                 daysLeft={trialDaysLeft}

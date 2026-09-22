@@ -1,4 +1,4 @@
-import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
+import { AniversariantesResponse, Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { moneyToNumber } from "@/utils/masks";
 import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
@@ -103,7 +103,7 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  getAniversariantes: (mes: number): Promise<Passageiro[]> =>
+  getAniversariantes: (mes: number): Promise<AniversariantesResponse> =>
     apiClient
       .get(`${endpointBase}/aniversariantes`, { params: { mes } })
       .then(res => res.data),

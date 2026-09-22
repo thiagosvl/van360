@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adminUserApi,
   type ListUsersParams,
+  type ListAcquisitionStatsParams,
   type ListUsersLatestActivityParams,
   type UpdateUserPayload,
   type UpdateSubscriptionPayload,
@@ -21,6 +22,15 @@ export function useAdminStats() {
     queryFn: adminUserApi.getStats,
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminAcquisitionStats(params?: ListAcquisitionStatsParams) {
+  return useQuery({
+    queryKey: ["admin", "stats", "acquisition", params],
+    queryFn: () => adminUserApi.getAcquisitionStats(params),
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
   });
 }

@@ -5,8 +5,9 @@ import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CobrancaStatus } from "@/types/enums";
 
-export function useCreateCobranca() {
+export function useCreateCobranca(options?: { showToast?: boolean }) {
   const queryClient = useQueryClient();
+  const showToast = options?.showToast ?? true;
 
   return useMutation({
     mutationFn: (data: CreateCobrancaDTO) => cobrancaApi.createCobranca(data),
@@ -16,11 +17,13 @@ export function useCreateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
-      toast.success(
-        variables.status === CobrancaStatus.PAGO
-          ? "cobranca.sucesso.pagamentoRegistrado"
-          : "cobranca.sucesso.criada"
-      );
+      if (showToast) {
+        toast.success(
+          variables.status === CobrancaStatus.PAGO
+            ? "cobranca.sucesso.pagamentoRegistrado"
+            : "cobranca.sucesso.criada"
+        );
+      }
     },
     onError: (error: any) => {
       const isDuplicate =

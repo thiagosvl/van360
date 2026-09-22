@@ -24,6 +24,7 @@ import {
   usePrePassageiros,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import {
@@ -48,6 +49,7 @@ interface PrePassageirosProps {
   profile?: Usuario | null;
   searchTerm?: string;
   prePassageiros?: PrePassageiro[];
+  countPassageiros?: number;
   isLoading?: boolean;
 }
 
@@ -56,6 +58,7 @@ export default function PrePassageiros({
   profile: initialProfile,
   searchTerm = "",
   prePassageiros: prePassageirosProp,
+  countPassageiros: countPassageirosProp,
   isLoading: isLoadingProp,
 }: PrePassageirosProps) {
   const {
@@ -66,6 +69,10 @@ export default function PrePassageiros({
   } = useLayout();
 
   const { profile } = useProfile();
+  const { data: resumo } = useUsuarioResumo(profile?.id);
+
+  const totalPassageiros = countPassageirosProp ?? (resumo?.contadores?.passageiros?.ativos ?? resumo?.contadores?.passageiros?.total ?? 0);
+  const isFirstPassageiro = totalPassageiros === 0;
 
   const deletePrePassageiro = useDeletePrePassageiro();
 
@@ -93,7 +100,10 @@ export default function PrePassageiros({
       onSuccess: (passageiro) => {
         if (onFinalizeNewPrePassageiro) onFinalizeNewPrePassageiro();
         if (passageiro) {
-          openFirstChargeDialog({ passageiro });
+          openFirstChargeDialog({
+            passageiro,
+            isFirstPassageiro,
+          });
         }
       },
     });
@@ -217,11 +227,6 @@ export default function PrePassageiros({
                             <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                               {formatShortName(prePassageiro.nome, true)}
                             </p>
-                            {prePassageiro.ano_letivo && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                                {prePassageiro.ano_letivo}
-                              </span>
-                            )}
                           </div>
                           <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                             {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
@@ -337,11 +342,6 @@ export default function PrePassageiros({
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
                           {formatShortName(prePassageiro.nome, true)}
                         </p>
-                        {prePassageiro.ano_letivo && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                            {prePassageiro.ano_letivo}
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">

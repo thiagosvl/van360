@@ -189,7 +189,9 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 
-      toast.success("Aluno cadastrado com sucesso!");
+      if (!isOnboarding) {
+        toast.success("Aluno cadastrado com sucesso!");
+      }
 
       if (onSuccess) {
         onSuccess(response.data, keepOpen);

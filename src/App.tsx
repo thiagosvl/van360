@@ -21,7 +21,7 @@ import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { NativeUpdateDialog } from "@/components/dialogs/NativeUpdateDialog";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes, Outlet, useParams } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, Outlet, useParams, useLocation } from "react-router-dom";
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
@@ -58,6 +58,10 @@ const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
 const AssinarRedirect = () => {
   const { token } = useParams<{ token: string }>();
   return <Navigate to={ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", token || "")} replace />;
+};
+const PassageirosRedirect = () => {
+  const { search } = useLocation();
+  return <Navigate to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}${search}`} replace />;
 };
 const Cobrancas = lazyLoad(() => import("./pages/Cobrancas"));
 const Escolas = lazyLoad(() => import("./pages/Escolas"));
@@ -133,6 +137,7 @@ const App = () => {
 
         const pendingUpdate = getPendingUpdate();
         if (pendingUpdate && pendingUpdate.version !== currentVersion) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
           localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
           try {
             await CapacitorUpdater.set({ id: pendingUpdate.id });
@@ -447,6 +452,8 @@ const App = () => {
 
                       <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
                         <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
+                        <Route path="/passageiros" element={<PassageirosRedirect />} />
+                        <Route path="/passageiros/*" element={<PassageirosRedirect />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
                         <Route
                           path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH}

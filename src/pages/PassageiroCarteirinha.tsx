@@ -26,9 +26,6 @@ import { CarteirinhaAusencias } from "@/components/features/carteirinha/Carteiri
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
-import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
-import { IncompletePassengerBanner } from "@/components/features/passageiro/IncompletePassengerBanner";
-import { isCadastroPassageiroIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarClock, FileText, User, Users, Wallet } from "lucide-react";
@@ -47,6 +44,7 @@ import {
   useUpdatePassageiro
 } from "@/hooks";
 import { useCreateContrato, useSubstituirContrato, useDeleteContrato } from "@/hooks/api/useContratos";
+import { usePassageiroRotas } from "@/hooks/api/useRoutes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { CobrancaStatus, ContratoStatus, PassageiroFormModes } from "@/types/enums";
@@ -61,11 +59,13 @@ import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
+import { obterUrlDocumentoContrato } from "@/utils/domain";
 
 const currentYear = getNowBR().getFullYear().toString();
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { PERMISSIONS } from "@/config/permissions";
 import { cn } from "@/lib/utils";
 
 export default function PassageiroCarteirinha() {
@@ -87,16 +87,24 @@ export default function PassageiroCarteirinha() {
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
-  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
+  const canViewFinancials =
+    can(PERMISSIONS.FINANCEIRO_VISUALIZAR) ||
+    can(PERMISSIONS.COBRANCAS_GERENCIAR) ||
+    can(PERMISSIONS.PASSAGEIROS_COBRANCA_VISUALIZAR) ||
+    can(PERMISSIONS.PASSAGEIROS_GERENCIAR);
+  const canManageContracts = can(PERMISSIONS.CONTRATOS_GERENCIAR) && !isSubConta;
   const [isDeleting, setIsDeleting] = useState(false);
   const isDeletedRef = useRef(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const validTabs = useMemo(() => {
-    return canViewFinancials
-      ? ["parcelas", "dados-pessoais", "responsaveis", "contrato", "ausencias"]
-      : ["dados-pessoais", "responsaveis", "contrato", "ausencias"];
-  }, [canViewFinancials]);
+    const tabs: string[] = [];
+    if (canViewFinancials) tabs.push("parcelas");
+    tabs.push("dados-pessoais", "responsaveis");
+    if (canManageContracts) tabs.push("contrato");
+    tabs.push("ausencias");
+    return tabs;
+  }, [canViewFinancials, canManageContracts]);
 
   const urlTab = searchParams.get("tab");
   const defaultTab = canViewFinancials ? "parcelas" : "dados-pessoais";
@@ -182,6 +190,13 @@ export default function PassageiroCarteirinha() {
   });
 
   const passageiro = passageiroData as Passageiro;
+
+  const {
+    data: rotasPassageiro = [],
+    isLoading: isRotasLoading,
+  } = usePassageiroRotas(passageiro_id || "");
+
+  const temRotas = (rotasPassageiro || []).length > 0;
 
   const totalPassageiros = summary?.contadores?.passageiros?.total ?? 0;
 
@@ -750,6 +765,7 @@ export default function PassageiroCarteirinha() {
           <CarteirinhaResponsaveis
             passageiro={passageiro}
             onEditClick={handleEditClick}
+            hideNotificacoesRota={!temRotas}
             onRefresh={() => {
               refetchPassageiro();
             }}
@@ -757,22 +773,28 @@ export default function PassageiroCarteirinha() {
         </Suspense>
       </TabsContent>
 
-      <TabsContent value="contrato" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
-        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-          <CarteirinhaContrato
-            passageiro={passageiro}
-            contratosAtivos={infoProps.contratosAtivos}
-            onContractAction={infoProps.onContractAction}
-            onDeleteContrato={handleDeleteContrato}
-            onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-            onEditClick={handleEditClick}
-          />
-        </Suspense>
-      </TabsContent>
+      {canManageContracts && (
+        <TabsContent value="contrato" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+          <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+            <CarteirinhaContrato
+              passageiro={passageiro}
+              contratosAtivos={infoProps.contratosAtivos}
+              onContractAction={infoProps.onContractAction}
+              onDeleteContrato={handleDeleteContrato}
+              onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+              onEditClick={handleEditClick}
+            />
+          </Suspense>
+        </TabsContent>
+      )}
 
       <TabsContent value="ausencias" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
         <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-          <CarteirinhaAusencias passageiro={passageiro} />
+          <CarteirinhaAusencias
+            passageiro={passageiro}
+            temRotas={temRotas}
+            isRotasLoading={isRotasLoading}
+          />
         </Suspense>
       </TabsContent>
     </>
@@ -781,15 +803,8 @@ export default function PassageiroCarteirinha() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div>
-          <div className="space-y-6">
-            {isCadastroPassageiroIncompleto(passageiro) ? (
-              <IncompletePassengerBanner onEdit={handleEditClick} />
-            ) : !isSubConta && !profile?.chave_pix && totalPassageiros > 1 ? (
-              <PixNudgeBanner hasPix={false} />
-            ) : null}
-
-            {isMobile ? (
+        <div className="space-y-6">
+          {isMobile ? (
               <>
                 <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
                   <CarteirinhaHeader
@@ -808,8 +823,11 @@ export default function PassageiroCarteirinha() {
                     <TabsList
                       ref={tabListRef}
                       className={cn(
-                        "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px]",
-                        canViewFinancials ? "md:grid md:grid-cols-5" : "md:grid md:grid-cols-4"
+                        "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px] md:grid",
+                        validTabs.length === 5 && "md:grid-cols-5",
+                        validTabs.length === 4 && "md:grid-cols-4",
+                        validTabs.length === 3 && "md:grid-cols-3",
+                        validTabs.length === 2 && "md:grid-cols-2"
                       )}
                     >
                       {canViewFinancials && (
@@ -832,12 +850,14 @@ export default function PassageiroCarteirinha() {
                       >
                         Responsáveis
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="contrato"
-                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                      >
-                        Contrato
-                      </TabsTrigger>
+                      {canManageContracts && (
+                        <TabsTrigger
+                          value="contrato"
+                          className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        >
+                          Contrato
+                        </TabsTrigger>
+                      )}
                       <TabsTrigger
                         value="ausencias"
                         className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
@@ -891,13 +911,15 @@ export default function PassageiroCarteirinha() {
                           <Users className="h-4 w-4 shrink-0 text-slate-400" />
                           <span>Responsáveis</span>
                         </TabsTrigger>
-                        <TabsTrigger
-                          value="contrato"
-                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
-                        >
-                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
-                          <span>Contrato</span>
-                        </TabsTrigger>
+                        {canManageContracts && (
+                          <TabsTrigger
+                            value="contrato"
+                            className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                          >
+                            <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span>Contrato</span>
+                          </TabsTrigger>
+                        )}
                         <TabsTrigger
                           value="ausencias"
                           className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
@@ -915,7 +937,6 @@ export default function PassageiroCarteirinha() {
                 </div>
               </Tabs>
             )}
-          </div>
         </div>
       </PullToRefreshWrapper>
     </>

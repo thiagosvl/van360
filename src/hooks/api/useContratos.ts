@@ -3,8 +3,9 @@ import { contratoApi } from "@/services/api/contrato.api";
 import { Contrato, CreateContratoDTO, ImportContratoDTO } from "@/types/contract";
 import { ContractMultaTipo } from "@/types/enums";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { getMessage } from "@/constants/messages";
 import { toast } from "@/utils/notifications/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface UseContratosOptions {
   enabled?: boolean;
@@ -21,6 +22,7 @@ export function useContratos(
       return data;
     },
     enabled: options?.enabled !== false,
+    placeholderData: keepPreviousData,
     staleTime: 3000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,

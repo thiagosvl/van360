@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePassageiroAusencias, useRemoverAusenciaMutation } from "@/hooks/api/useRoutes";
+import { usePassageiroAusencias, useRemoverAusenciaMutation, usePassageiroRotas } from "@/hooks/api/useRoutes";
 import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
@@ -10,18 +10,28 @@ import { Passageiro } from "@/types/passageiro";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Banner } from "@/components/ui/Banner";
 
 interface CarteirinhaAusenciasProps {
   passageiro: Passageiro;
+  temRotas?: boolean;
+  isRotasLoading?: boolean;
 }
 
-export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) {
+export function CarteirinhaAusencias({
+  passageiro,
+  temRotas,
+  isRotasLoading,
+}: CarteirinhaAusenciasProps) {
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const passageiroId = passageiro.id || "";
   const { data: ausenciasList = [], isLoading } = usePassageiroAusencias(passageiroId);
+  const fallbackRotasQuery = usePassageiroRotas(temRotas === undefined ? passageiroId : "");
+  const hasRotas = temRotas !== undefined ? temRotas : (fallbackRotasQuery.data || []).length > 0;
+  const isRotasChecking = isRotasLoading !== undefined ? isRotasLoading : (temRotas === undefined ? fallbackRotasQuery.isLoading : false);
   const removerAusenciaMutation = useRemoverAusenciaMutation();
 
   const todayStr = useMemo(() => {
@@ -77,14 +87,26 @@ export function CarteirinhaAusencias({ passageiro }: CarteirinhaAusenciasProps) 
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setIsAddDialogOpen(true)}
+          disabled={!hasRotas || isRotasChecking}
+          title={!hasRotas ? "Aluno não possui rota vinculada" : undefined}
+          onClick={() => {
+            if (!hasRotas) return;
+            setIsAddDialogOpen(true);
+          }}
           className={cn(
-            "h-8 rounded-lg border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow cursor-pointer"
+            "h-8 rounded-lg border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           )}
         >
           <Plus className="w-3 h-3" /> Registrar
         </Button>
       </div>
+
+      {!isRotasChecking && !hasRotas && (
+        <Banner
+          variant="warning"
+          description="Este aluno não está vinculado a nenhuma rota, portanto não é possível registrar ausências."
+        />
+      )}
 
       {/* Conteúdo */}
       {isLoading ? (

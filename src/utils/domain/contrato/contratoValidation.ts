@@ -1,4 +1,4 @@
-import { Profile } from "@/types/usuario";
+import { Usuario } from "@/types/usuario";
 
 export enum StatusConfiguracaoContrato {
   /** O usuário nunca cadastrou a assinatura digital nem configurou as regras iniciais */
@@ -13,7 +13,7 @@ export enum StatusConfiguracaoContrato {
  * Retorna o estado atual da funcionalidade de contratos para a conta do usuário.
  */
 export function obterStatusConfiguracaoContrato(
-  profile?: Partial<Profile> | null
+  profile?: Partial<Usuario> | null
 ): StatusConfiguracaoContrato {
   const isConfigurado = !!profile?.assinatura_digital_url;
   const isAtivo = !!profile?.config_contrato?.usar_contratos;

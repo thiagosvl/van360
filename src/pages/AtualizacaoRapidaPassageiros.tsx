@@ -13,8 +13,12 @@ import { AtualizacaoRapidaStickyBar } from "@/components/features/passageiro/atu
 import { DataTableFilterSelect } from "@/components/features/common/DataTableFilterSelect";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { PERMISSIONS } from "@/config/permissions";
 
 export default function AtualizacaoRapidaPassageiros() {
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -45,6 +49,10 @@ export default function AtualizacaoRapidaPassageiros() {
     business,
     saveChanges,
   } = useAtualizacaoRapidaViewModel();
+
+  if (!can(PERMISSIONS.PASSAGEIROS_GERENCIAR)) {
+    return <AccessRestrictedState moduleName="Edição em Lote" />;
+  }
 
   const activeDropdownCount =
     (selectedEscola !== FilterDefaults.TODAS ? 1 : 0) +

@@ -68,6 +68,9 @@ export interface AdminUserListItem {
   created_at: string;
   data_nascimento: string | null;
   logo_url: string | null;
+  canal_aquisicao?: string | null;
+  dispositivo_cadastro?: string | null;
+  metadados_cadastro?: MetadadosCadastroData | null;
   assinaturas: Array<{
     id: string;
     status: string;
@@ -392,6 +395,59 @@ export interface ListUsersParams {
   search?: string;
   status?: string;
   tipo?: string;
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+export interface ListAcquisitionStatsParams {
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+export interface CanalAquisicaoAgrupadoItem {
+  origem: string;
+  categoria: "meta_ads" | "google_ads" | "tiktok_ads" | "play_store" | "site_organico" | "indicacao" | "direto";
+  quantidade: number;
+  porcentagem: number;
+  em_trial: number;
+  ativos_pagantes: number;
+  taxa_conversao: number;
+}
+
+export interface CampanhaAquisicaoItem {
+  nome: string;
+  origem: string;
+  criativo?: string;
+  conjunto?: string;
+  quantidade: number;
+  em_trial: number;
+  ativos_pagantes: number;
+  taxa_conversao: number;
+}
+
+export interface DispositivoAquisicaoItem {
+  dispositivo: string;
+  label: string;
+  quantidade: number;
+  porcentagem: number;
+}
+
+export interface AdminAcquisitionStatsResponse {
+  periodo: {
+    data_inicio?: string;
+    data_fim?: string;
+  };
+  resumo: {
+    total_leads: number;
+    em_trial: number;
+    ativos_pagantes: number;
+    taxa_conversao: number;
+    com_alunos_cadastrados: number;
+  };
+  canais: CanalAquisicaoAgrupadoItem[];
+  campanhas: CampanhaAquisicaoItem[];
+  dispositivos: DispositivoAquisicaoItem[];
+  canais_autodeclarados: Record<string, number>;
 }
 
 export interface CreateUserPayload {
@@ -544,6 +600,9 @@ const BASE = "/admin";
 export const adminUserApi = {
   getStats: () =>
     apiClient.get<AdminDashboardStats>(`${BASE}/dashboard`).then(r => r.data),
+
+  getAcquisitionStats: (params?: ListAcquisitionStatsParams) =>
+    apiClient.get<AdminAcquisitionStatsResponse>(`${BASE}/stats/acquisition`, { params }).then(r => r.data),
 
   getVencimentosPorDia: () =>
     apiClient.get<VencimentosPassageirosResponse>(`${BASE}/vencimentos-por-dia`).then(r => r.data),

@@ -113,7 +113,8 @@ import { dateMask as maskDate } from "@/utils/masks";
 import { toPersistenceString, getNowBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
-import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
+import { CanalAquisicaoLabels, resolveOrigemAtribuicao } from "@/utils/acquisition-channel.utils";
+import { AcquisitionBadge } from "@/components/ui/AcquisitionBadge";
 import { DispositivoCadastroLabels } from "@/utils/dispositivo-cadastro.utils";
 import { Banner } from "@/components/ui/Banner";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -535,7 +536,7 @@ export default function AdminUserDetails() {
       userPhone: data.user.telefone,
       userApelido: data.user.apelido || undefined,
       userChavePix: data.user.chave_pix || undefined,
-      userTipoChavePix: data.user.tipo_chave_pix || undefined,
+      userTipoChavePix: data.user.chave_pix_tipo || undefined,
     });
   };
 
@@ -1258,32 +1259,19 @@ export default function AdminUserDetails() {
                     )}
                   </div>
 
-                  {data.user.metadados_cadastro && (data.user.metadados_cadastro.utm || data.user.metadados_cadastro.referrer) && (
-                    <div>
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                        Origem / Atribuição (UTMs)
-                      </span>
-                      <span className="font-mono text-xs text-slate-300 block">
-                        {data.user.metadados_cadastro.utm?.source ? (
-                          <>
-                            <span className="text-blue-400 font-bold">{data.user.metadados_cadastro.utm.source}</span>
-                            {data.user.metadados_cadastro.utm.medium && (
-                              <span className="text-slate-400"> / {data.user.metadados_cadastro.utm.medium}</span>
-                            )}
-                            {data.user.metadados_cadastro.utm.campaign && (
-                              <span className="text-slate-500"> ({data.user.metadados_cadastro.utm.campaign})</span>
-                            )}
-                          </>
-                        ) : data.user.metadados_cadastro.referrer ? (
-                          <span className="text-slate-400 truncate max-w-[200px] block" title={data.user.metadados_cadastro.referrer}>
-                            {data.user.metadados_cadastro.referrer}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </span>
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">
+                      Origem / Atribuição (UTMs)
+                    </span>
+                    <AcquisitionBadge
+                      origem={resolveOrigemAtribuicao(
+                        data.user.metadados_cadastro as Record<string, unknown> | null,
+                        data.user.dispositivo_cadastro,
+                        data.user.canal_aquisicao
+                      )}
+                      showDetail
+                    />
+                  </div>
 
                   <div>
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">

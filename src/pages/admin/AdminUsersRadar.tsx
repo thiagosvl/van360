@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Radio,
@@ -49,7 +49,8 @@ export default function AdminUsersRadar() {
     setPageTitle("Radar de Usuários");
   }, [setPageTitle]);
 
-  const { data: statsData, isLoading: isLoadingStats } = useAdminUsersRadarStats(subscriptionStatus);
+  const { data: trialStats, isLoading: isLoadingTrialStats } = useAdminUsersRadarStats("TRIAL");
+  const { data: activeStats, isLoading: isLoadingActiveStats } = useAdminUsersRadarStats("ACTIVE");
 
   const { data: radarResponse, isLoading: isLoadingRadar, isFetching: isFetchingRadar } = useAdminUsersLatestActivity({
     search: search.trim() || undefined,
@@ -85,80 +86,183 @@ export default function AdminUsersRadar() {
         description="Acompanhe a atividade recente e a saúde operacional de cada motorista. Identifique rapidamente usuários em risco de inatividade para suporte preventivo."
       />
 
-      {/* TOP KPIS */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <AdminKpiCard
-          title="TOTAL MONITORADOS"
-          value={isLoadingStats ? "..." : (statsData?.totalMotoristas ?? 0)}
-          subtext={subscriptionStatus === "active_trial" ? "Ativos & Em Teste" : "Filtro selecionado"}
-          cardBorder="border-blue-500/40 shadow-blue-500/10"
-          iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
-          icon={<Users className="h-5 w-5" />}
-          onClick={() => {
-            setHealthStatus("all");
-            setPage(1);
-          }}
-          className={healthStatus === "all" ? "ring-2 ring-blue-500" : ""}
-        />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
+              Trial (Em Avaliação)
+            </span>
+            <span className="text-xs text-slate-400 font-medium">
+              Motoristas no período de testes
+            </span>
+          </div>
 
-        <AdminKpiCard
-          title="ATIVOS RECENTES"
-          value={isLoadingStats ? "..." : (statsData?.totalAtivos ?? 0)}
-          subtext="Uso nos últimos 2 dias"
-          cardBorder="border-emerald-500/40 shadow-emerald-500/10"
-          iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-          icon={<CheckCircle2 className="h-5 w-5" />}
-          onClick={() => {
-            setHealthStatus("active");
-            setPage(1);
-          }}
-          className={healthStatus === "active" ? "ring-2 ring-emerald-500" : ""}
-        />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <AdminKpiCard
+              title="TOTAL EM TRIAL"
+              value={isLoadingTrialStats ? "..." : (trialStats?.totalMotoristas ?? 0)}
+              subtext="Motoristas em teste"
+              cardBorder="border-sky-500/40 shadow-sky-500/10"
+              iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
+              icon={<Users className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("TRIAL");
+                setHealthStatus("all");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "TRIAL" && healthStatus === "all" ? "ring-2 ring-sky-500" : ""}
+            />
 
-        <AdminKpiCard
-          title="EM ALERTA"
-          value={isLoadingStats ? "..." : (statsData?.totalAlerta ?? 0)}
-          subtext="3 a 7 dias sem uso"
-          cardBorder="border-amber-500/40 shadow-amber-500/10"
-          iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
-          icon={<AlertTriangle className="h-5 w-5" />}
-          onClick={() => {
-            setHealthStatus("alert");
-            setPage(1);
-          }}
-          className={healthStatus === "alert" ? "ring-2 ring-amber-500" : ""}
-        />
+            <AdminKpiCard
+              title="ATIVOS RECENTES"
+              value={isLoadingTrialStats ? "..." : (trialStats?.totalAtivos ?? 0)}
+              subtext="Uso nos últimos 2 dias"
+              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
+              iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              icon={<CheckCircle2 className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("TRIAL");
+                setHealthStatus("active");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "TRIAL" && healthStatus === "active" ? "ring-2 ring-emerald-500" : ""}
+            />
 
-        <AdminKpiCard
-          title="EM RISCO CRÍTICO"
-          value={isLoadingStats ? "..." : (statsData?.totalEmRisco ?? 0)}
-          subtext="Mais de 7 dias sem uso"
-          cardBorder="border-rose-500/40 shadow-rose-500/10"
-          iconBg="bg-rose-500/10 text-rose-400 border-rose-500/20"
-          icon={<ShieldAlert className="h-5 w-5" />}
-          onClick={() => {
-            setHealthStatus("risk");
-            setPage(1);
-          }}
-          className={healthStatus === "risk" ? "ring-2 ring-rose-500" : ""}
-        />
+            <AdminKpiCard
+              title="EM ALERTA"
+              value={isLoadingTrialStats ? "..." : (trialStats?.totalAlerta ?? 0)}
+              subtext="3 a 7 dias sem uso"
+              cardBorder="border-amber-500/40 shadow-amber-500/10"
+              iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
+              icon={<AlertTriangle className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("TRIAL");
+                setHealthStatus("alert");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "TRIAL" && healthStatus === "alert" ? "ring-2 ring-amber-500" : ""}
+            />
 
-        <AdminKpiCard
-          title="SEM ATIVIDADE"
-          value={isLoadingStats ? "..." : (statsData?.totalSemAtividade ?? 0)}
-          subtext="Nunca executaram ação"
-          cardBorder="border-slate-700/80 shadow-slate-900/50"
-          iconBg="bg-slate-800 text-slate-400 border-slate-700"
-          icon={<Clock className="h-5 w-5" />}
-          onClick={() => {
-            setHealthStatus("inactive");
-            setPage(1);
-          }}
-          className={healthStatus === "inactive" ? "ring-2 ring-slate-400" : ""}
-        />
+            <AdminKpiCard
+              title="EM RISCO CRÍTICO"
+              value={isLoadingTrialStats ? "..." : (trialStats?.totalEmRisco ?? 0)}
+              subtext="Mais de 7 dias sem uso"
+              cardBorder="border-rose-500/40 shadow-rose-500/10"
+              iconBg="bg-rose-500/10 text-rose-400 border-rose-500/20"
+              icon={<ShieldAlert className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("TRIAL");
+                setHealthStatus("risk");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "TRIAL" && healthStatus === "risk" ? "ring-2 ring-rose-500" : ""}
+            />
+
+            <AdminKpiCard
+              title="SEM ATIVIDADE"
+              value={isLoadingTrialStats ? "..." : (trialStats?.totalSemAtividade ?? 0)}
+              subtext="Nunca executaram ação"
+              cardBorder="border-slate-700/80 shadow-slate-900/50"
+              iconBg="bg-slate-800 text-slate-400 border-slate-700"
+              icon={<Clock className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("TRIAL");
+                setHealthStatus("inactive");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "TRIAL" && healthStatus === "inactive" ? "ring-2 ring-slate-400" : ""}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              Assinantes (Pagantes)
+            </span>
+            <span className="text-xs text-slate-400 font-medium">
+              Motoristas com assinatura ativa
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <AdminKpiCard
+              title="TOTAL ASSINANTES"
+              value={isLoadingActiveStats ? "..." : (activeStats?.totalMotoristas ?? 0)}
+              subtext="Motoristas pagantes"
+              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
+              iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              icon={<Users className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("ACTIVE");
+                setHealthStatus("all");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "ACTIVE" && healthStatus === "all" ? "ring-2 ring-emerald-500" : ""}
+            />
+
+            <AdminKpiCard
+              title="ATIVOS RECENTES"
+              value={isLoadingActiveStats ? "..." : (activeStats?.totalAtivos ?? 0)}
+              subtext="Uso nos últimos 2 dias"
+              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
+              iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              icon={<CheckCircle2 className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("ACTIVE");
+                setHealthStatus("active");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "ACTIVE" && healthStatus === "active" ? "ring-2 ring-emerald-500" : ""}
+            />
+
+            <AdminKpiCard
+              title="EM ALERTA"
+              value={isLoadingActiveStats ? "..." : (activeStats?.totalAlerta ?? 0)}
+              subtext="3 a 7 dias sem uso"
+              cardBorder="border-amber-500/40 shadow-amber-500/10"
+              iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
+              icon={<AlertTriangle className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("ACTIVE");
+                setHealthStatus("alert");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "ACTIVE" && healthStatus === "alert" ? "ring-2 ring-amber-500" : ""}
+            />
+
+            <AdminKpiCard
+              title="EM RISCO CRÍTICO"
+              value={isLoadingActiveStats ? "..." : (activeStats?.totalEmRisco ?? 0)}
+              subtext="Mais de 7 dias sem uso"
+              cardBorder="border-rose-500/40 shadow-rose-500/10"
+              iconBg="bg-rose-500/10 text-rose-400 border-rose-500/20"
+              icon={<ShieldAlert className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("ACTIVE");
+                setHealthStatus("risk");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "ACTIVE" && healthStatus === "risk" ? "ring-2 ring-rose-500" : ""}
+            />
+
+            <AdminKpiCard
+              title="SEM ATIVIDADE"
+              value={isLoadingActiveStats ? "..." : (activeStats?.totalSemAtividade ?? 0)}
+              subtext="Nunca executaram ação"
+              cardBorder="border-slate-700/80 shadow-slate-900/50"
+              iconBg="bg-slate-800 text-slate-400 border-slate-700"
+              icon={<Clock className="h-5 w-5" />}
+              onClick={() => {
+                setSubscriptionStatus("ACTIVE");
+                setHealthStatus("inactive");
+                setPage(1);
+              }}
+              className={subscriptionStatus === "ACTIVE" && healthStatus === "inactive" ? "ring-2 ring-slate-400" : ""}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* PAINEL PRINCIPAL DE FILTROS E LISTAGEM */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="pb-3 border-b border-slate-800/80 bg-slate-900/40">
           <div className="flex items-center justify-between">
@@ -208,7 +312,6 @@ export default function AdminUsersRadar() {
         </CardHeader>
 
         <CardContent className="pt-4 space-y-4">
-          {/* BARRA DE FILTROS */}
           <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 ${!isMobileFiltersOpen ? "hidden md:grid" : ""}`}>
             <div className="space-y-1.5 text-left">
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -301,7 +404,6 @@ export default function AdminUsersRadar() {
             </div>
           </div>
 
-          {/* LISTAGEM DE MOTORISTAS */}
           {isLoadingRadar ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-3">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -321,7 +423,6 @@ export default function AdminUsersRadar() {
             </div>
           )}
 
-          {/* PAGINAÇÃO */}
           {!isLoadingRadar && total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-slate-800 gap-4">
               <p className="text-xs font-semibold text-slate-400">

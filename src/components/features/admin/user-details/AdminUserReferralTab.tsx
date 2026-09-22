@@ -57,8 +57,8 @@ export function AdminUserReferralTab({
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
-  const linkBase = window.location.origin;
-  const referralLink = referralSummary?.referralLink || `${linkBase}/cadastro?ref=${user.id}`;
+  const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || "https://van360.com.br";
+  const referralLink = referralSummary?.referralLink || `${siteUrl}/?ref=${user.id}`;
 
   const total = referralSummary?.total ?? 0;
   const completed = referralSummary?.completed ?? 0;

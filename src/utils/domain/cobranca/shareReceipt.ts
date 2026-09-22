@@ -113,7 +113,15 @@ export async function shareReceiptFile(data: ShareReceiptData) {
       }
     }
 
-    openBrowserLink(url);
+    const blobUrl = window.URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = blobUrl;
+    downloadLink.download = filename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    window.URL.revokeObjectURL(blobUrl);
+    toast.success("Recibo baixado no computador.");
   } catch (error) {
     if (isShareCancelError(error)) {
       return;

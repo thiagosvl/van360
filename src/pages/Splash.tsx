@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ROUTES } from "@/constants/routes";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Bus, ChevronRight, LogIn, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, Bus, ChevronRight, Info, LogIn, Sparkles, Users } from "lucide-react";
+import { useLayout } from "@/contexts/LayoutContext";
 
 
 function SplashIllustration({
@@ -32,6 +33,7 @@ export default function Splash() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { openShowcaseTransporteEscolarDialog } = useLayout();
 
   const getInitialStep = (): "profile" | "motorista" => {
     if (
@@ -204,9 +206,6 @@ export default function Splash() {
                     <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
                       Já tenho uma conta
                     </span>
-                    <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
-                      Entrar com CPF ou CNPJ
-                    </p>
                   </div>
                 </div>
                 <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ml-1">
@@ -236,6 +235,19 @@ export default function Splash() {
                 <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ml-1">
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </div>
+              </button>
+
+              {/* Opção 3: Veja o que o app faz */}
+              <button
+                type="button"
+                onClick={openShowcaseTransporteEscolarDialog}
+                className="w-full text-center py-2.5 px-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/90 border border-slate-200/60 active:scale-[0.98] outline-none transition-all flex items-center justify-center gap-2 cursor-pointer select-none text-[#1a3a5c] group"
+              >
+                <Info className="w-4 h-4 text-[#15469C] group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-xs sm:text-[13px] text-[#1a3a5c]">
+                  Veja o que o app faz
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>

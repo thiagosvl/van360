@@ -28,9 +28,7 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
       const containerWidth = container.clientWidth;
       const activeTabWidth = activeTab.offsetWidth;
 
-      // Posição visual desejada da borda esquerda da aba ativa para centralizá-la no container
       const desiredLeft = (containerWidth - activeTabWidth) / 2;
-      // Posição visual atual da borda esquerda da aba ativa em relação ao container
       const currentLeft = activeTabRect.left - containerRect.left;
 
       const diff = currentLeft - desiredLeft;
@@ -53,7 +51,6 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
 
   return (
     <div className="w-full flex items-center gap-2 max-w-full overflow-hidden py-1 select-none">
-      {/* Seletor de Ano em Pílula */}
       {showYear && (
         <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-full px-2.5 py-1 shadow-sm shrink-0 h-8">
           <button
@@ -86,7 +83,6 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
         </div>
       )}
 
-      {/* Listagem dos Meses */}
       <div
         ref={scrollContainerRef}
         className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden h-auto pb-0.5 w-full scroll-smooth"

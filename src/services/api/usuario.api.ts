@@ -52,4 +52,7 @@ export const usuarioApi = {
   atualizarCanalAquisicao: (usuarioId: string, canal_aquisicao: string) => 
     apiClient.patch(`${endpointBase}/${usuarioId}/canal-aquisicao`, { canal_aquisicao }).then(res => res.data),
 
+  excluirMinhaConta: () =>
+    apiClient.delete(`${endpointBase}/minha-conta`).then((res) => res.data),
+
 };

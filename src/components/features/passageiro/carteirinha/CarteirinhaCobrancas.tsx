@@ -56,7 +56,8 @@ interface CarteirinhaCobrancasProps {
   limiteCobrancasMobile?: number;
 }
 
-import { CobrancaStatus } from "@/types/enums";
+import { Banner } from "@/components/ui/Banner";
+import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
 import { useCallback, useMemo } from "react";
 
 export const CarteirinhaCobrancas = ({
@@ -79,7 +80,7 @@ export const CarteirinhaCobrancas = ({
   const currentYear = now.getFullYear();
   const selectedYear = Number(yearFilter) || currentYear;
 
-  const { openAnnualReceiptDialog } = useLayout();
+  const { openAnnualReceiptDialog, openPassageiroFormDialog } = useLayout();
   const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
     passageiro,
     selectedYear,
@@ -350,10 +351,19 @@ export const CarteirinhaCobrancas = ({
       </div>
 
       {!passageiro.isento && isIncomplete && (
-        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60 text-amber-900 text-[11px] leading-tight">
-          <Info className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-          <span>Conclua o cadastro para que as parcelas exibam corretamente o valor e o dia de vencimento.</span>
-        </div>
+        <Banner
+          variant="info"
+          title="Defina o valor da mensalidade"
+          description="Toque para preencher os valores das parcelas deste aluno."
+          onClick={() =>
+            openPassageiroFormDialog({
+              mode: PassageiroFormModes.EDIT,
+              editingPassageiro: passageiro,
+              onSuccess: onActionSuccess,
+            })
+          }
+          className="p-3 sm:p-3.5 mb-4"
+        />
       )}
 
       <div className="space-y-3">
@@ -485,7 +495,10 @@ const CobrancaItemPassageiro = forwardRef<
     : undefined;
 
   const actions = useCobrancaActions({
-    cobranca,
+    cobranca: {
+      ...cobranca,
+      passageiro: cobranca.passageiro || passageiro,
+    },
     onVerCobranca: () => { },
     onVerCarteirinha: undefined,
     onEditarCobranca: isCancelada ? undefined : () => onEditCobranca(cobranca),

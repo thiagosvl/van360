@@ -288,26 +288,65 @@ export function useContratosViewModel() {
     });
   }, [openConfirmationDialog, substituirMutation, closeConfirmationDialog]);
 
-  const handleGerarContrato = useCallback((passageiroId: string) => {
+  const handleGerarContrato = useCallback((passageiroId: string, item?: ContratoListItem) => {
+    const rawPassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
+
+    if (rawPassageiro) {
+      queryClient.setQueryData(["passageiro", passageiroId], (old: unknown) => old || rawPassageiro);
+    }
+
+    const hasNomeResp = !!(rawPassageiro?.responsavel_principal?.nome);
+    const hasCpf = !!(rawPassageiro?.responsavel_principal?.cpf);
+    const hasInicio = !!(rawPassageiro?.data_inicio_transporte);
+    const hasFim = !!(rawPassageiro?.data_fim_transporte);
+
+    if (rawPassageiro && hasNomeResp && hasCpf && hasInicio && hasFim) {
+      const firstName = rawPassageiro.nome?.trim().split(" ")[0] || "o aluno";
+      openConfirmationDialog({
+        title: "Gerar Contrato?",
+        description: `Deseja gerar o contrato para ${firstName}? O responsável receberá o link para assinatura.`,
+        confirmText: "Gerar",
+        onConfirm: async () => {
+          await createMutation.mutateAsync({
+            passageiroId,
+            valorMensal: Number(rawPassageiro.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
+            diaVencimento: Number(rawPassageiro.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
+          });
+          safeCloseDialog(closeConfirmationDialog);
+        }
+      });
+      return;
+    }
+
     openGerarContratoValidadorDialog({
       passageiroId,
+      initialPassageiro: rawPassageiro,
       onSuccess: (id, bypassed) => {
         if (bypassed) {
+          const firstName = rawPassageiro?.nome?.trim().split(" ")[0] || "o aluno";
           openConfirmationDialog({
             title: "Gerar Contrato?",
-            description: "Deseja gerar o contrato? O responsável receberá o link para assinatura.",
+            description: `Deseja gerar o contrato para ${firstName}? O responsável receberá o link para assinatura.`,
             confirmText: "Gerar",
             onConfirm: async () => {
-              await createMutation.mutateAsync({ passageiroId: id });
+              await createMutation.mutateAsync({
+                passageiroId: id,
+                valorMensal: Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
+                diaVencimento: Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
+              });
               safeCloseDialog(closeConfirmationDialog);
             }
           });
         } else {
-          createMutation.mutateAsync({ passageiroId: id });
+          createMutation.mutateAsync({
+            passageiroId: id,
+            valorMensal: Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
+            diaVencimento: Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
+          });
         }
       }
     });
-  }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog]);
+  }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog, queryClient]);
 
   const handleCompletarCadastro = useCallback((passageiroId: string, item?: ContratoListItem) => {
     const passageiroData = ((item?.passageiro || item) as unknown as Passageiro) || ({ id: passageiroId } as Passageiro);

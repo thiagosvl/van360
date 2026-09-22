@@ -16,8 +16,16 @@ export function collectClientRegistrationMetadata(
   const isBrowser = typeof window !== "undefined";
 
   const rawReferrer = isBrowser && document.referrer ? document.referrer : undefined;
-  const isExternalReferrer = Boolean(rawReferrer && !rawReferrer.startsWith(window.location.origin));
-  const finalReferrer = attribution?.referrer || (isExternalReferrer ? rawReferrer : undefined);
+  const isInternalReferrer = Boolean(
+    rawReferrer && (
+      rawReferrer.startsWith(window.location.origin) ||
+      rawReferrer.includes("app.van360.com.br") ||
+      rawReferrer.includes("localhost") ||
+      rawReferrer.includes("capacitor://")
+    )
+  );
+  const cleanReferrer = isInternalReferrer ? undefined : rawReferrer;
+  const finalReferrer = attribution?.referrer || cleanReferrer;
 
   const metadados_cadastro: Record<string, unknown> = {
     screen: isBrowser && window.screen ? `${window.screen.width}x${window.screen.height}` : undefined,

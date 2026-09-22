@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { useLayout } from "@/contexts/LayoutContext";
 import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { cpfCnpjMask, phoneMask, dateMask as maskDate } from "@/utils/masks";
@@ -20,7 +22,7 @@ import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Loader2, Mail, User } from "lucide-react";
+import { Calendar, Loader2, Mail, Trash2, User } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -80,6 +82,8 @@ type FormData = z.infer<typeof basicSchema>;
 
 export const PerfilTab = React.memo(function PerfilTab() {
   const { user } = useSession();
+  const { isSubConta } = usePermissions();
+  const { openExcluirContaDialog } = useLayout();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
 
   const [initialSnapshot, setInitialSnapshot] = React.useState<{
@@ -247,7 +251,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
         </div>
       </div>
 
-      {profile?.id && (
+      {!isSubConta && profile?.id && (
         <div className="space-y-3 pb-6 border-b border-slate-100">
           <div>
             <h3 className="text-sm font-bold text-[#1a3a5c]">
@@ -490,6 +494,27 @@ export const PerfilTab = React.memo(function PerfilTab() {
           </div>
         </form>
       </Form>
+
+      {!isSubConta && (
+        <div className="mt-8 pt-6 border-t border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-rose-50/60 border border-rose-100">
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-rose-950">Excluir conta</h4>
+              <p className="text-xs text-rose-800/80 leading-relaxed max-w-md">
+                Ao excluir sua conta, todos os seus dados cadastrais, rotas, alunos e registros serão permanentemente apagados.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={openExcluirContaDialog}
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-rose-700 bg-white border border-rose-200 hover:bg-rose-100/60 hover:text-rose-800 transition-colors shrink-0 shadow-xs flex items-center justify-center gap-2"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              Excluir minha conta
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

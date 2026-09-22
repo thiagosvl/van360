@@ -24,10 +24,10 @@ export const TrialBanner = ({ daysLeft, onSubscribe, className }: TrialBannerPro
 
   const badgeConfig = isLastDay
     ? {
-      pulseBg: "bg-rose-500",
-      pingBg: "bg-rose-400",
+      pulseBg: "bg-blue-500",
+      pingBg: "bg-blue-400",
       text: "Último dia de teste",
-      styles: "bg-rose-50 text-rose-700 border-rose-200/80",
+      styles: "bg-blue-50 text-blue-700 border-blue-200/80",
     }
     : isSingleDay
       ? {
@@ -44,31 +44,31 @@ export const TrialBanner = ({ daysLeft, onSubscribe, className }: TrialBannerPro
       };
 
   const title = isLastDay
-    ? "Hoje é seu último dia de teste grátis!"
+    ? "Continue usando o Van360 sem interrupções"
     : isSingleDay
-      ? "Seu teste gratuito encerra amanhã!"
-      : "Gostando do app Van360?";
+      ? "Garanta o plano ideal para a sua rotina"
+      : "Gostando da facilidade do Van360?";
 
   const description = isLastDay
-    ? "Seu teste termina hoje. Assine agora para manter o controle dos seus alunos e cobranças ativo sem travar."
+    ? "Escolha seu plano e mantenha suas cobranças no WhatsApp, contratos digitais e controle de alunos sempre ativos."
     : isSingleDay
-      ? "Aproveite as últimas horas de teste. Escolha seu plano agora para não perder o acesso às funcionalidades."
-      : `O seu teste grátis é válido por mais ${daysLeft} dias. Escolha seu plano e garanta tudo o que o Van360 resolve na sua van:`;
-
-  const buttonText = isLastDay
-    ? "Assinar Agora"
-    : isSingleDay
-      ? "Garantir Assinatura"
-      : "Escolher Meu Plano";
+      ? "Mantenha suas cobranças automáticas e o controle de alunos funcionando sem pausas no seu dia a dia."
+      : "Conheça nossos planos e garanta que sua van continue com cobranças automáticas, contratos sem papel e total controle financeiro.";
 
   return (
     <div
       className={cn(
-        "relative rounded-2xl bg-gradient-to-br from-white via-white to-amber-50/25 p-5 sm:p-6 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-300",
+        "relative rounded-2xl bg-gradient-to-br from-white via-white p-5 sm:p-6 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-300",
+        isLastDay ? "to-blue-50/20" : "to-amber-50/25",
         className
       )}
     >
-      <div className="absolute right-0 top-0 w-36 h-36 bg-amber-200/15 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10" />
+      <div
+        className={cn(
+          "absolute right-0 top-0 w-36 h-36 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10",
+          isLastDay ? "bg-blue-200/15" : "bg-amber-200/15"
+        )}
+      />
 
       <div className="relative z-10 space-y-4">
         <div className="space-y-2">
@@ -91,32 +91,40 @@ export const TrialBanner = ({ daysLeft, onSubscribe, className }: TrialBannerPro
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 border-t border-slate-100/90">
-          {BENEFICIOS_TRIAL.map((benefit, index) => (
-            <div key={index} className="flex items-start gap-2.5 text-[11px] sm:text-xs text-slate-700">
-              <div className="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-                <Check className="w-2 h-2 stroke-[3]" />
-              </div>
-              <span className="leading-snug">{benefit}</span>
-            </div>
-          ))}
-        </div>
-
         {onSubscribe && (
-          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100/90">
-            <p className="text-[11px] sm:text-xs text-slate-400 font-medium">
-              Seus dados ficam seguros • Suporte no WhatsApp
-            </p>
+          <div className="pt-1">
             <Button
               type="button"
               onClick={onSubscribe}
               className="w-full sm:w-auto h-11 px-6 rounded-xl bg-[#1a3a5c] hover:bg-[#142e4a] text-white font-headline font-bold text-sm shadow-md shadow-[#1a3a5c]/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>{buttonText}</span>
+              <span>Ver Planos</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         )}
+
+        <div className="border-t border-slate-100/90 pt-3.5 space-y-2.5">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Tudo o que resolvemos para você:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+            {BENEFICIOS_TRIAL.map((benefit, index) => (
+              <div key={index} className="flex items-start gap-2.5 text-[11px] sm:text-xs text-slate-700">
+                <div className="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-2 h-2 stroke-[3]" />
+                </div>
+                <span className="leading-snug">{benefit}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-slate-100/90 pt-2.5">
+          <p className="text-[11px] sm:text-xs text-slate-400 font-medium">
+            Seus dados ficam seguros • Suporte no WhatsApp
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ export interface UtmParams {
   fbclid?: string;
   wbraid?: string;
   gbraid?: string;
+  ttclid?: string;
 }
 
 export interface AttributionData {
@@ -50,14 +51,23 @@ export function useAttribution(): void {
     const fbclid = urlParams.get("fbclid");
     const wbraid = urlParams.get("wbraid");
     const gbraid = urlParams.get("gbraid");
+    const ttclid = urlParams.get("ttclid");
 
     const hasUtm = Boolean(
-      utmSource || utmMedium || utmCampaign || utmContent || utmTerm || gclid || fbclid || wbraid || gbraid
+      utmSource || utmMedium || utmCampaign || utmContent || utmTerm || gclid || fbclid || wbraid || gbraid || ttclid
     );
     const rawReferrer = document.referrer || undefined;
-    const isExternalReferrer = Boolean(rawReferrer && !rawReferrer.startsWith(window.location.origin));
+    const isInternalReferrer = Boolean(
+      rawReferrer && (
+        rawReferrer.startsWith(window.location.origin) ||
+        rawReferrer.includes("app.van360.com.br") ||
+        rawReferrer.includes("localhost") ||
+        rawReferrer.includes("capacitor://")
+      )
+    );
+    const validRawReferrer = isInternalReferrer ? undefined : rawReferrer;
 
-    if (hasUtm || rawReferrer) {
+    if (hasUtm || validRawReferrer) {
       const existing = getStoredAttribution() || {};
 
       const utm: UtmParams = {
@@ -70,6 +80,7 @@ export function useAttribution(): void {
         fbclid: fbclid || existing.utm?.fbclid,
         wbraid: wbraid || existing.utm?.wbraid,
         gbraid: gbraid || existing.utm?.gbraid,
+        ttclid: ttclid || existing.utm?.ttclid,
       };
 
       Object.keys(utm).forEach((key) => {
@@ -77,7 +88,7 @@ export function useAttribution(): void {
         if (!utm[k]) delete utm[k];
       });
 
-      const referrer = isExternalReferrer ? rawReferrer : (existing.referrer || (rawReferrer ? rawReferrer : undefined));
+      const referrer = validRawReferrer || existing.referrer;
 
       const updated: AttributionData = {
         utm: Object.keys(utm).length > 0 ? utm : undefined,

@@ -7,6 +7,8 @@ import { InitialLoading } from "./InitialLoading";
 import { UserType } from "@/types/enums";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 
+import { consumePendingDeepLink } from "@/utils/deepLink";
+
 export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const { session, loading: sessionLoading } = useSession();
   const { profile, isLoading: profileLoading } = useProfile(session?.user?.id);
@@ -58,6 +60,11 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (isResponsavelAuth && isAtAuthPath) {
+    const pendingDeepLink = consumePendingDeepLink();
+    if (pendingDeepLink) {
+      return <Navigate to={pendingDeepLink} replace />;
+    }
+
     const targetResponsavelPath = passageiroSelecionado
       ? ROUTES.PRIVATE.RESPONSAVEL.HOME
       : passageiros.length === 1
@@ -68,17 +75,20 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (session && isAtAuthPath) {
+    const pendingDeepLink = consumePendingDeepLink();
     const locationState = location.state as { from?: string } | null;
 
     const defaultMotoristaPath = isSubscriptionBlocked
       ? ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION
       : ROUTES.PRIVATE.MOTORISTA.HOME;
 
-    const targetPath = locationState?.from 
-      ? locationState.from 
-      : userRole === UserType.ADMIN
-        ? ROUTES.PRIVATE.ADMIN.DASHBOARD
-        : defaultMotoristaPath;
+    const targetPath = pendingDeepLink
+      ? pendingDeepLink
+      : locationState?.from 
+        ? locationState.from 
+        : userRole === UserType.ADMIN
+          ? ROUTES.PRIVATE.ADMIN.DASHBOARD
+          : defaultMotoristaPath;
 
     return <Navigate to={targetPath} replace />;
   }
@@ -88,7 +98,9 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!session && !isResponsavelAuth && !isPublic) {
-    return <Navigate to={ROUTES.PUBLIC.LOGIN} state={{ from: location.pathname + location.search }} replace />;
+    const pendingDeepLink = consumePendingDeepLink();
+    const targetFrom = pendingDeepLink || (location.pathname + location.search);
+    return <Navigate to={ROUTES.PUBLIC.LOGIN} state={{ from: targetFrom }} replace />;
   }
 
   return <>{children}</>;

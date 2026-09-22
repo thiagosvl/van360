@@ -22,6 +22,7 @@ export function useDashboardViewModel() {
     openGastoFormDialog,
     openFirstChargeDialog,
     openSaaSCheckoutDialog,
+    openOnboardingSuccessDialog,
   } = useLayout();
 
   const { loading: isSessionLoading } = useSession();
@@ -118,11 +119,16 @@ export function useDashboardViewModel() {
             navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
           }
         } else if (passageiro && isFirstPassageiro) {
-          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, queryClient, onboarding.showOnboarding, contadores, navigate]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, queryClient, onboarding.showOnboarding, contadores, navigate]);
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({

@@ -9,7 +9,7 @@ import {
   Car,
   Rocket,
   ChartArea,
-  User,
+  Route,
   LucideIcon,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
@@ -24,13 +24,13 @@ interface AcessoRapidoProps {
 enum AcessoRapidoItemKey {
   CADASTRAR_ALUNO = "cadastrar_aluno",
   REGISTRAR_GASTO = "registrar_gasto",
+  ROTAS = "rotas",
   EQUIPE = "equipe",
   GASTOS = "gastos",
   CONTRATOS = "contratos",
   RELATORIOS = "relatorios",
   ESCOLAS = "escolas",
   VEICULOS = "veiculos",
-  CONTA = "conta",
   ASSINATURA = "assinatura",
 }
 
@@ -64,13 +64,6 @@ export const AcessoRapido = ({
           to: ROUTES.PRIVATE.MOTORISTA.TEAM,
           show: can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES),
         },
-        {
-          id: AcessoRapidoItemKey.CONTA,
-          label: "Conta",
-          icon: User,
-          to: ROUTES.PRIVATE.MOTORISTA.ACCOUNT,
-          show: true,
-        },
       ].filter((item) => item.show);
     }
 
@@ -92,18 +85,11 @@ export const AcessoRapido = ({
         isAction: true,
       },
       {
-        id: AcessoRapidoItemKey.CONTRATOS,
-        label: "Contratos",
-        icon: FileText,
-        to: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
-        show: can(PERMISSIONS.CONTRATOS_GERENCIAR),
-      },
-      {
-        id: AcessoRapidoItemKey.GASTOS,
-        label: "Gastos",
-        icon: TrendingDown,
-        to: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
-        show: can(PERMISSIONS.GASTOS_VISUALIZAR),
+        id: AcessoRapidoItemKey.ROTAS,
+        label: "Rotas",
+        icon: Route,
+        to: ROUTES.PRIVATE.MOTORISTA.ROUTES,
+        show: can(PERMISSIONS.ROTAS_VISUALIZAR),
       },
       {
         id: AcessoRapidoItemKey.RELATORIOS,
@@ -113,18 +99,18 @@ export const AcessoRapido = ({
         show: can(PERMISSIONS.RELATORIOS_VISUALIZAR),
       },
       {
-        id: AcessoRapidoItemKey.EQUIPE,
-        label: "Minha Equipe",
-        icon: Users2,
-        to: ROUTES.PRIVATE.MOTORISTA.TEAM,
-        show: can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES),
+        id: AcessoRapidoItemKey.GASTOS,
+        label: "Gastos",
+        icon: TrendingDown,
+        to: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
+        show: can(PERMISSIONS.GASTOS_VISUALIZAR),
       },
       {
-        id: AcessoRapidoItemKey.ESCOLAS,
-        label: "Escolas",
-        icon: GraduationCap,
-        to: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,
-        show: can(PERMISSIONS.ESCOLAS_GERENCIAR) || can(PERMISSIONS.ESCOLAS_VISUALIZAR),
+        id: AcessoRapidoItemKey.CONTRATOS,
+        label: "Contratos",
+        icon: FileText,
+        to: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
+        show: can(PERMISSIONS.CONTRATOS_GERENCIAR),
       },
       {
         id: AcessoRapidoItemKey.VEICULOS,
@@ -134,11 +120,18 @@ export const AcessoRapido = ({
         show: can(PERMISSIONS.VEICULOS_GERENCIAR),
       },
       {
-        id: AcessoRapidoItemKey.CONTA,
-        label: "Conta",
-        icon: User,
-        to: ROUTES.PRIVATE.MOTORISTA.ACCOUNT,
-        show: true,
+        id: AcessoRapidoItemKey.ESCOLAS,
+        label: "Escolas",
+        icon: GraduationCap,
+        to: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,
+        show: can(PERMISSIONS.ESCOLAS_GERENCIAR) || can(PERMISSIONS.ESCOLAS_VISUALIZAR),
+      },
+      {
+        id: AcessoRapidoItemKey.EQUIPE,
+        label: "Minha Equipe",
+        icon: Users2,
+        to: ROUTES.PRIVATE.MOTORISTA.TEAM,
+        show: can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES),
       },
       {
         id: AcessoRapidoItemKey.ASSINATURA,

@@ -16,9 +16,17 @@ const config: CapacitorConfig = {
       resetWhenUpdate: false,
       appReadyTimeout: 10000,
       responseTimeout: 20,
-      keepUrlPathAfterReload: false,
+      keepUrlPathAfterReload: true,
       disableJSLogging: false,
       shakeMenu: false,
+    },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
+    StatusBar: {
+      overlaysWebView: true,
+      style: 'DARK',
     },
   },
   server: {

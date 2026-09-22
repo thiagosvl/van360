@@ -436,7 +436,7 @@ export const CarteirinhaResponsaveis = ({
                       const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
                       openBrowserLink(`https://wa.me/${formattedPhone}`);
                     }}
-                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20b858] text-white shadow-xs shrink-0 border-none flex items-center justify-center transition-all cursor-pointer"
+                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20b858] text-white shadow-xs shrink-0 border-none flex md:hidden items-center justify-center transition-all cursor-pointer"
                     title="Abrir no WhatsApp"
                   >
                     <WhatsAppIcon className="w-3.5 h-3.5" />

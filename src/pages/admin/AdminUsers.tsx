@@ -17,6 +17,7 @@ import {
   Infinity as InfinityIcon,
   XCircle,
   CalendarOff,
+  Calendar,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,8 @@ import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { ROUTES } from "@/constants/routes";
 import { useDebounce } from "@/hooks/ui/useDebounce";
 import { cn } from "@/lib/utils";
+import { resolveOrigemAtribuicao } from "@/utils/acquisition-channel.utils";
+import { AcquisitionBadge } from "@/components/ui/AcquisitionBadge";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
@@ -44,6 +47,8 @@ export default function AdminUsers() {
   const { openAdminCreateUserDialog, setPageTitle } = useLayout();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
   const [page, setPage] = useState(1);
   const limit = 20;
 
@@ -56,6 +61,8 @@ export default function AdminUsers() {
     search: debouncedSearch || undefined,
     status: statusFilter || undefined,
     tipo: UserType.MOTORISTA,
+    data_inicio: dataInicio ? `${dataInicio}T00:00:00` : undefined,
+    data_fim: dataFim ? `${dataFim}T23:59:59` : undefined,
   });
 
   useEffect(() => {
@@ -184,6 +191,48 @@ export default function AdminUsers() {
             </div>
           </div>
 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 text-xs">
+            <div className="flex items-center gap-2 text-slate-400">
+              <Calendar className="h-4 w-4 text-blue-400 shrink-0" />
+              <span className="font-bold">Cadastrados entre:</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => {
+                  setDataInicio(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+              />
+              <span className="text-slate-500 font-bold">até</span>
+              <Input
+                type="date"
+                value={dataFim}
+                onChange={(e) => {
+                  setDataFim(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+              />
+              {(dataInicio || dataFim) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDataInicio("");
+                    setDataFim("");
+                    setPage(1);
+                  }}
+                  className="h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
+                >
+                  Limpar Datas
+                </Button>
+              )}
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -207,6 +256,7 @@ export default function AdminUsers() {
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Nome</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">Telefone</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden lg:table-cell">Cadastro</th>
+                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden xl:table-cell">Origem</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
@@ -253,6 +303,15 @@ export default function AdminUsers() {
                             <span className="text-xs text-slate-400 block">
                               {new Date(user.created_at).toLocaleDateString("pt-BR")}
                             </span>
+                          </td>
+                          <td className="py-4 hidden xl:table-cell">
+                            <AcquisitionBadge
+                              origem={resolveOrigemAtribuicao(
+                                user.metadados_cadastro as Record<string, unknown> | null,
+                                user.dispositivo_cadastro,
+                                user.canal_aquisicao
+                              )}
+                            />
                           </td>
                           <td className="py-4">
                             <span className="text-xs font-bold text-slate-200">
@@ -329,6 +388,17 @@ export default function AdminUsers() {
                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Cadastro</span>
                           <span className="font-semibold text-slate-200">{dateFormatted}</span>
                         </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Origem</span>
+                        <AcquisitionBadge
+                          origem={resolveOrigemAtribuicao(
+                            user.metadados_cadastro as Record<string, unknown> | null,
+                            user.dispositivo_cadastro,
+                            user.canal_aquisicao
+                          )}
+                        />
                       </div>
 
                       <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-4">

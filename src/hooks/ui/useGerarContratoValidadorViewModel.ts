@@ -40,6 +40,7 @@ export interface UseGerarContratoValidadorViewModelProps {
   isOpen: boolean;
   onClose: () => void;
   passageiroId: string | null;
+  initialPassageiro?: Passageiro;
   onSuccess: (passageiroId: string, bypassed?: boolean) => void;
 }
 
@@ -47,9 +48,13 @@ export function useGerarContratoValidadorViewModel({
   isOpen,
   onClose,
   passageiroId,
+  initialPassageiro,
   onSuccess,
 }: UseGerarContratoValidadorViewModelProps) {
-  const { data: passageiro, isLoading: isLoadingPassageiro, isFetching: isFetchingPassageiro } = usePassageiro(passageiroId || "", { enabled: isOpen && !!passageiroId });
+  const { data: passageiro, isLoading: isLoadingPassageiro, isFetching: isFetchingPassageiro } = usePassageiro(passageiroId || "", {
+    enabled: isOpen && !!passageiroId,
+    initialData: initialPassageiro,
+  });
 
   const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
   const [openCalendarFim, setOpenCalendarFim] = useState(false);

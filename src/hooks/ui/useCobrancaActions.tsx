@@ -206,6 +206,7 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
   const { openComplementarPagamentoDialog } = useLayout();
+  const { trackActivity } = useActivityTracker();
   const {
     cobranca,
     onVerCarteirinha,

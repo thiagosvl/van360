@@ -55,7 +55,7 @@ export const openBrowserLink = async (url: string) => {
  * inteligentes para Web (Desktop/Mobile) e App Nativo (Capacitor/Android).
  */
 export const openExternalNavigation = (
-  app: NavigationApp | "maps" | "waze",
+  app: NavigationApp | `${NavigationApp}`,
   address: string,
   lat?: number,
   lng?: number
@@ -65,13 +65,13 @@ export const openExternalNavigation = (
   const isNative = Capacitor.isNativePlatform();
   let url = "";
 
-  if (app === NavigationApp.GOOGLE_MAPS || app === "maps") {
+  if (app === NavigationApp.GOOGLE_MAPS) {
     if (lat && lng) {
       url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
     } else {
       url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
     }
-  } else if (app === NavigationApp.WAZE || app === "waze") {
+  } else if (app === NavigationApp.WAZE) {
     if (lat && lng) {
       url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
     } else {
