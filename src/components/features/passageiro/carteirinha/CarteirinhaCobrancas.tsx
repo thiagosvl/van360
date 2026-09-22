@@ -104,8 +104,9 @@ export const CarteirinhaCobrancas = ({
       receiptUrl: reciboAnual.recibo_url,
       ano: selectedYear,
       alunoNome: passageiro?.nome || "Aluno",
+      passageiroId: passageiro?.id,
     });
-  }, [openAnnualReceiptDialog, reciboAnual?.recibo_url, selectedYear, passageiro?.nome]);
+  }, [openAnnualReceiptDialog, reciboAnual?.recibo_url, selectedYear, passageiro?.nome, passageiro?.id]);
 
   const displayCobrancas = useMemo(() => {
     const list = [...cobrancas];

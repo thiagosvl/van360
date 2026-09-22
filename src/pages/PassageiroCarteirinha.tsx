@@ -584,6 +584,10 @@ export default function PassageiroCarteirinha() {
     onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
       receiptUrl: url,
       cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
+      cobrancaId: cobranca.id,
+      mes: cobranca.mes,
+      ano: cobranca.ano,
+      passageiroId: cobranca.passageiro_id || passageiro.id,
     }),
   };
 

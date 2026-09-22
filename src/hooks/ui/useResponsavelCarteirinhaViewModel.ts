@@ -64,7 +64,11 @@ export function useResponsavelCarteirinhaViewModel() {
     if (openReceiptDialog && reciboUrl) {
       openReceiptDialog({
         receiptUrl: reciboUrl,
-        cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano}`
+        cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano}`,
+        cobrancaId: cobranca.id,
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+        passageiroId: passageiroSelecionado?.id || carteirinha?.id,
       });
     } else if (reciboUrl) {
       openBrowserLink(reciboUrl);

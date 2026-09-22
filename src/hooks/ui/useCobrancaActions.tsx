@@ -8,9 +8,10 @@ import {
   useSession,
   safeCloseDialog,
 } from "@/hooks";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
+import { useActivityTracker } from "@/hooks/business/useActivityTracker";
 import {
   disableEditarCobranca,
   disableExcluirCobranca,
@@ -53,6 +54,8 @@ export function useCobrancaOperations({
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
   } = useLayout();
+
+  const { trackActivity } = useActivityTracker();
 
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const desfazerPagamento = useDesfazerPagamento();
@@ -348,11 +351,22 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     }
 
     const handleShareDirect = async () => {
+      trackActivity(AtividadeAcao.RECIBO_MENSAL_COMPARTILHADO, {
+        entidadeTipo: AtividadeEntidadeTipo.COBRANCA,
+        entidadeId: cobranca.id,
+        meta: {
+          mes: cobranca.mes,
+          ano: cobranca.ano,
+          passageiro_id: cobranca.passageiro_id,
+          origem: "drawer",
+        },
+      });
+
       await shareReceiptFile({
         url: cobranca.recibo_url!,
         filename: `recibo-${cobranca.mes}-${cobranca.ano}.png`.toLowerCase(),
         title: "Recibo Van360",
-        text: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${(cobranca as any).passageiro?.nome || ""}`,
+        text: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${cobranca.passageiro?.nome || ""}`,
       });
     };
 

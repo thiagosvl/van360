@@ -119,12 +119,17 @@ export interface OpenComplementarPagamentoDialogProps {
 export interface OpenReceiptDialogProps {
   receiptUrl: string;
   cobrancaDescricao?: string;
+  cobrancaId?: string;
+  mes?: number;
+  ano?: number;
+  passageiroId?: string;
 }
 
 export interface OpenAnnualReceiptDialogProps {
   receiptUrl: string;
   ano: number;
   alunoNome?: string;
+  passageiroId?: string;
 }
 
 export interface OpenFirstChargeDialogProps {

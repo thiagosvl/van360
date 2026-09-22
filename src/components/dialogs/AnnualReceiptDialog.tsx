@@ -4,6 +4,8 @@ import { isMobilePlatform } from "@/utils/detectPlatform";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { useCallback, useEffect, useState } from "react";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useActivityTracker } from "@/hooks/business/useActivityTracker";
+import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 
 interface AnnualReceiptDialogProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface AnnualReceiptDialogProps {
   receiptUrl: string | null;
   ano: number;
   alunoNome?: string;
+  passageiroId?: string;
 }
 
 export const AnnualReceiptDialog = ({
@@ -19,8 +22,10 @@ export const AnnualReceiptDialog = ({
   receiptUrl,
   ano,
   alunoNome = "Aluno",
+  passageiroId,
 }: AnnualReceiptDialogProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const { trackActivity } = useActivityTracker();
 
   useEffect(() => {
     if (isOpen && receiptUrl) {
@@ -53,13 +58,23 @@ export const AnnualReceiptDialog = ({
 
   const handleShare = useCallback(async () => {
     if (!receiptUrl) return;
+
+    trackActivity(AtividadeAcao.RECIBO_ANUAL_COMPARTILHADO, {
+      entidadeTipo: AtividadeEntidadeTipo.PASSAGEIRO,
+      entidadeId: passageiroId,
+      meta: {
+        ano,
+        origem: "dialog",
+      },
+    });
+
     await shareReceiptFile({
       url: receiptUrl,
       filename: `recibo-anual-${ano}.png`,
       title: "Recibo Anual - Van360",
       text: `Olá! Segue o Recibo Anual de Pagamento referente ao ano letivo de ${ano} do aluno ${alunoNome}.`,
     });
-  }, [receiptUrl, ano, alunoNome]);
+  }, [receiptUrl, ano, alunoNome, trackActivity, passageiroId]);
 
   if (!receiptUrl) return null;
 

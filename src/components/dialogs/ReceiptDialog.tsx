@@ -4,12 +4,18 @@ import { isMobilePlatform } from "@/utils/detectPlatform";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { useCallback, useState } from "react";
 import { getNowBR } from "@/utils/dateUtils";
+import { useActivityTracker } from "@/hooks/business/useActivityTracker";
+import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 
 interface ReceiptDialogProps {
   isOpen: boolean;
   onClose: () => void;
   receiptUrl: string | null;
   cobrancaDescricao?: string;
+  cobrancaId?: string;
+  mes?: number;
+  ano?: number;
+  passageiroId?: string;
 }
 
 export const ReceiptDialog = ({
@@ -17,8 +23,13 @@ export const ReceiptDialog = ({
   onClose,
   receiptUrl,
   cobrancaDescricao = "Recibo de Pagamento",
+  cobrancaId,
+  mes,
+  ano,
+  passageiroId,
 }: ReceiptDialogProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const { trackActivity } = useActivityTracker();
 
   const handleDownload = useCallback(async () => {
     if (!receiptUrl) return;
@@ -40,13 +51,24 @@ export const ReceiptDialog = ({
   }, [receiptUrl]);
 
   const handleShare = useCallback(async () => {
+    trackActivity(AtividadeAcao.RECIBO_MENSAL_COMPARTILHADO, {
+      entidadeTipo: AtividadeEntidadeTipo.COBRANCA,
+      entidadeId: cobrancaId,
+      meta: {
+        mes,
+        ano,
+        passageiro_id: passageiroId,
+        origem: "dialog",
+      },
+    });
+
     await shareReceiptFile({
       url: receiptUrl!,
       filename: "recibo.png",
       title: "Recibo Van360",
       text: cobrancaDescricao,
     });
-  }, [receiptUrl, cobrancaDescricao]);
+  }, [receiptUrl, cobrancaDescricao, trackActivity, cobrancaId, mes, ano, passageiroId]);
 
   if (!receiptUrl) return null;
 

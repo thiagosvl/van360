@@ -1011,6 +1011,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setReceiptDialogState({ open: false }))}
           receiptUrl={receiptDialogState.props.receiptUrl}
           cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
+          cobrancaId={receiptDialogState.props.cobrancaId}
+          mes={receiptDialogState.props.mes}
+          ano={receiptDialogState.props.ano}
+          passageiroId={receiptDialogState.props.passageiroId}
         />
       )}
 
@@ -1021,6 +1025,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           receiptUrl={annualReceiptDialogState.props.receiptUrl}
           ano={annualReceiptDialogState.props.ano}
           alunoNome={annualReceiptDialogState.props.alunoNome}
+          passageiroId={annualReceiptDialogState.props.passageiroId}
         />
       )}
 
