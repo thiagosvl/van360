@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import { getNowBR } from "@/utils/dateUtils";
 import { useActivityTracker } from "@/hooks/business/useActivityTracker";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -30,6 +31,10 @@ export const ReceiptDialog = ({
 }: ReceiptDialogProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const { trackActivity } = useActivityTracker();
+
+  const handleSafeClose = useCallback(() => {
+    safeCloseDialog(onClose);
+  }, [onClose]);
 
   const handleDownload = useCallback(async () => {
     if (!receiptUrl) return;
@@ -75,11 +80,11 @@ export const ReceiptDialog = ({
   const isMobile = isMobilePlatform();
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} className="max-w-xl">
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleSafeClose()} className="max-w-xl">
       <BaseDialog.Header
         title="Recibo de Pagamento"
         icon={<ReceiptText className="h-5 w-5" />}
-        onClose={onClose}
+        onClose={handleSafeClose}
       />
 
       <BaseDialog.Body className="p-4 sm:p-6 bg-slate-50/30">

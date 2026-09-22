@@ -106,7 +106,7 @@ export function QuickRegistrationLink({
           onClick={handleShareWhatsApp}
           disabled={isSharingWhatsApp}
           className={cn(
-            "h-11 px-4 bg-[#25D366] hover:bg-[#20b858] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shadow-green-200/50 flex-1 md:hidden justify-center items-center gap-2 active:scale-95 cursor-pointer",
+            "h-11 px-4 bg-[#25D366] hover:bg-[#20b858] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shadow-green-200/50 flex-1 flex md:hidden justify-center items-center gap-2 active:scale-95 cursor-pointer",
             isSharingWhatsApp && "opacity-75 cursor-not-allowed pointer-events-none"
           )}
         >
