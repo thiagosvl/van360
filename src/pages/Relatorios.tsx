@@ -7,8 +7,8 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import {
   EntradasSkeleton,
   OperacionalSkeleton,
-  RelatoriosSkeleton,
   SaidasSkeleton,
+  VisaoGeralSkeleton,
 } from "@/components/skeletons/RelatoriosSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,17 +42,11 @@ export default function Relatorios() {
     return <AccessRestrictedState moduleName="Relatórios Financeiros" />;
   }
 
-  if (isLoading) {
-    return <RelatoriosSkeleton activeTab={activeTab} />;
-  }
-
   return (
     <PullToRefreshWrapper onRefresh={refreshAll}>
       <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
-        {/* Header & Navigation */}
         <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
 
-        {/* Vehicle Filter */}
         {veiculosList.length > 0 && (
           <div className="relative z-10 w-full px-1">
             <div className="flex flex-col">
@@ -81,7 +75,6 @@ export default function Relatorios() {
           </div>
         )}
 
-        {/* Main Content */}
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
@@ -117,7 +110,7 @@ export default function Relatorios() {
           </div>
 
           <TabsContent value={RelatorioTab.VISAO_GERAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0 transform-gpu will-change-transform">
-            <RelatoriosVisaoGeral dados={dados.visaoGeral} />
+            {isLoading ? <VisaoGeralSkeleton /> : <RelatoriosVisaoGeral dados={dados.visaoGeral} />}
           </TabsContent>
 
           <TabsContent value={RelatorioTab.ENTRADAS} className="mt-0 focus-visible:outline-none focus-visible:ring-0 transform-gpu will-change-transform">

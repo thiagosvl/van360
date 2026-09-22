@@ -182,10 +182,9 @@ export function useRelatoriosViewModel() {
     dados,
     veiculosList: veiculosData?.list || [],
     
-    // Status
     isLoading: isLoadingSummary,
-    isLoadingEntradas: shouldFetchEntradas && (isLoadingCobrancas || isLoadingPassageiros),
-    isLoadingSaidas: shouldFetchSaidas && (isLoadingGastos || isLoadingVeiculos),
-    isLoadingOperacional: shouldFetchOperacional && (isLoadingPassageiros || isLoadingEscolas || isLoadingVeiculos),
+    isLoadingEntradas: shouldFetchEntradas && (isLoadingCobrancas || isLoadingPassageiros || isLoadingSummary),
+    isLoadingSaidas: shouldFetchSaidas && (isLoadingGastos || isLoadingVeiculos || isLoadingSummary),
+    isLoadingOperacional: shouldFetchOperacional && (isLoadingPassageiros || isLoadingEscolas || isLoadingVeiculos || isLoadingSummary),
   };
 }
