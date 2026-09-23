@@ -220,8 +220,8 @@ const Home = () => {
                   title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Solicitação Pendente" : "Solicitações Pendentes"}`}
                   description={
                     contadores.passageirosSolicitacoes === 1
-                      ? "Clique para ver e revisar o cadastro agora."
-                      : "Clique para ver e revisar os cadastros agora."
+                      ? "Clique para ver e revisar a solicitação agora."
+                      : "Clique para ver e revisar as solicitações agora."
                   }
                   onClick={() =>
                     navigateTo(
