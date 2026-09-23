@@ -217,7 +217,7 @@ const Home = () => {
                 <Banner
                   variant="info"
                   icon={<UserPlus className="w-5 h-5" />}
-                  title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Cadastro Pendente" : "Cadastros Pendentes"}`}
+                  title={`${contadores.passageirosSolicitacoes} ${contadores.passageirosSolicitacoes === 1 ? "Solicitação Pendente" : "Solicitações Pendentes"}`}
                   description={
                     contadores.passageirosSolicitacoes === 1
                       ? "Clique para ver e revisar o cadastro agora."
