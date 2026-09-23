@@ -15,6 +15,8 @@ import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
 export default function Cobrancas() {
   const { can } = usePermissions();
 
@@ -85,7 +87,8 @@ export default function Cobrancas() {
   }
 
   return (
-    <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+    <>
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         {!profile?.chave_pix && (
           <PixNudgeBanner hasPix={false} />
@@ -205,5 +208,17 @@ export default function Cobrancas() {
         </Tabs>
       </div>
     </PullToRefreshWrapper>
+
+    {hasValidTutorialVideos(TUTORIALS_CONFIG.parcelas) && (
+      <VideoCommerce
+        previewUrl={TUTORIALS_CONFIG.parcelas.previewUrl || TUTORIALS_CONFIG.parcelas.videos[0]?.url || ""}
+        videosData={[...TUTORIALS_CONFIG.parcelas.videos]}
+        tooltipText={TUTORIALS_CONFIG.parcelas.tooltipText}
+        positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+        requireScrollOnMobile={false}
+        storageKey={STORAGE_KEYS.GUIDE_COBRANCAS_DISMISSED}
+      />
+    )}
+  </>
   );
 }

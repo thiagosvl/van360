@@ -18,6 +18,8 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { RelatorioTab, FilterDefaults } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
 
 export default function Relatorios() {
   const { can } = usePermissions();
@@ -43,7 +45,8 @@ export default function Relatorios() {
   }
 
   return (
-    <PullToRefreshWrapper onRefresh={refreshAll}>
+    <>
+      <PullToRefreshWrapper onRefresh={refreshAll}>
       <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
 
@@ -127,5 +130,17 @@ export default function Relatorios() {
         </Tabs>
       </div>
     </PullToRefreshWrapper>
+
+    {hasValidTutorialVideos(TUTORIALS_CONFIG.relatorios) && (
+      <VideoCommerce
+        previewUrl={TUTORIALS_CONFIG.relatorios.previewUrl || TUTORIALS_CONFIG.relatorios.videos[0]?.url || ""}
+        videosData={[...TUTORIALS_CONFIG.relatorios.videos]}
+        tooltipText={TUTORIALS_CONFIG.relatorios.tooltipText}
+        positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+        requireScrollOnMobile={false}
+        storageKey={STORAGE_KEYS.GUIDE_RELATORIOS_DISMISSED}
+      />
+    )}
+  </>
   );
 }

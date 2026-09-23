@@ -10,6 +10,8 @@ import { useContratosViewModel, safeCloseDialog } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
 
 const Contratos = () => {
   const { can } = usePermissions();
@@ -163,6 +165,19 @@ const Contratos = () => {
         pdfUrl={pdfUrl}
         title="Prévia do Contrato"
       />
+
+      {hasValidTutorialVideos(TUTORIALS_CONFIG.contratos) && (
+        <VideoCommerce
+          previewUrl={TUTORIALS_CONFIG.contratos.previewUrl || TUTORIALS_CONFIG.contratos.videos[0]?.url || ""}
+          videosData={[...TUTORIALS_CONFIG.contratos.videos]}
+          tooltipText={TUTORIALS_CONFIG.contratos.tooltipText}
+          ctaText={TUTORIALS_CONFIG.contratos.ctaText}
+          onCtaClick={handleOpenContractSetup}
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          requireScrollOnMobile={false}
+          storageKey={STORAGE_KEYS.GUIDE_CONTRATOS_DISMISSED}
+        />
+      )}
     </>
   );
 };

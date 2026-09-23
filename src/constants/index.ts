@@ -16,6 +16,11 @@ export const STORAGE_KEYS = {
   PENDING_UPDATE: "pendingUpdate",
   BOTTOM_NAV_PREFERENCES: "van360:mobile_bottom_nav",
   GUIDE_PASSAGEIROS_DISMISSED: "van360_guide_dismissed_passageiros",
+  GUIDE_GASTOS_DISMISSED: "van360_guide_dismissed_gastos",
+  GUIDE_RELATORIOS_DISMISSED: "van360_guide_dismissed_relatorios",
+  GUIDE_COBRANCAS_DISMISSED: "van360_guide_dismissed_cobrancas",
+  GUIDE_CONTRATOS_DISMISSED: "van360_guide_dismissed_contratos",
+  GUIDE_CARTEIRINHA_DISMISSED: "van360_guide_dismissed_carteirinha",
   PENDING_DEEP_LINK: "van360_pending_deep_link",
 } as const;
 
@@ -27,3 +32,4 @@ export function getWhatsAppUrl(message = "Olá, preciso de ajuda com o Van360") 
 export const BUCKET_LOGOS = "logos" as const;
 
 export * from "./navigation";
+export * from "./tutorials";

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useLayout, VideoStoryItem } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
-import { TRIAL_DURATION_DAYS } from "@/constants";
 
 export interface FloatingVideoBubbleProps {
   previewUrl: string;
@@ -37,9 +36,9 @@ export function FloatingVideoBubble({
   fullUrl,
   tooltipText = "Veja como funciona",
   positionClasses = "fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40",
-  showCta = true,
-  ctaText = `Testar grátis por ${TRIAL_DURATION_DAYS} dias`,
-  ctaLink = "/cadastro",
+  showCta,
+  ctaText,
+  ctaLink,
   loop = true,
   requireScrollOnMobile = true,
   title,
@@ -141,12 +140,14 @@ export function FloatingVideoBubble({
   const handleOpen = () => {
     if (isDragging.current || rawList.length === 0) return;
 
+    const hasCta = showCta ?? Boolean(ctaText || ctaLink || onCtaClick);
+
     openVideoStoriesDialog({
       videos: rawList,
       title,
       ctaText,
       ctaLink,
-      showCta,
+      showCta: hasCta,
       loop,
       onCtaClick,
     });

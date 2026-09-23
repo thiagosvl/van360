@@ -1,4 +1,4 @@
-const PREPOSICOES_NOME = new Set(["de", "da", "do", "dos", "das", "e"]);
+export const PREPOSICOES_NOME = new Set(["de", "da", "do", "dos", "das", "e"]);
 
 export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
   if (!fullName) return "";

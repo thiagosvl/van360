@@ -1,4 +1,5 @@
 import { ContratoStatus } from "@/types/enums";
+import { PREPOSICOES_NOME } from "@/utils/formatters";
 
 export interface ContratoDocumentoLike {
   status?: string | ContratoStatus | null;
@@ -52,7 +53,7 @@ export function gerarNomeArquivoContrato(
     return `contrato-${anoFinal}.pdf`;
   }
 
-  const preposicoes = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const preposicoes = PREPOSICOES_NOME;
   const partes = nomePassageiro
     .trim()
     .normalize("NFD")
