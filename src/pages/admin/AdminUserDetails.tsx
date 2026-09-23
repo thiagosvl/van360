@@ -725,7 +725,7 @@ export default function AdminUserDetails() {
               className={cn(
                 "h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 shadow-inner overflow-hidden",
                 data.user.logo_url
-                  ? "bg-white border border-white/20 p-1"
+                  ? "bg-white border border-white/20 p-0.5"
                   : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
               )}
             >

@@ -34,3 +34,6 @@ tests-e2e
 *.sw?
 
 documentacoes
+
+# TypeScript build cache
+*.tsbuildinfo

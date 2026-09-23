@@ -38,7 +38,7 @@ const NEXT_STEPS: NextStepItem[] = [
   {
     id: "cobranca_automatica",
     title: "Cobrança Automática",
-    description: "Cobramos os pais automaticamente pelo WhatsApp sem você precisar fazer nada.",
+    description: "Enviamos lembretes aos pais automaticamente pelo WhatsApp sem você precisar fazer nada.",
     icon: BellRing,
     actionType: "preview_cobranca",
     actionLabel: "Ver exemplo",

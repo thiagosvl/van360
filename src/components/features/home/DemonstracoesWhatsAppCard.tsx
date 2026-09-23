@@ -72,7 +72,7 @@ export function DemonstracoesWhatsAppCard({
     <section className="px-1">
       <div
         className={cn(
-          "bg-white rounded-2xl shadow-xs border border-slate-100 relative p-4 sm:p-5 transition-all duration-300 animate-in fade-in slide-in-from-top-2",
+          "bg-white rounded-2xl shadow-xs border border-slate-200/80 relative p-4 sm:p-5 transition-all duration-300 animate-in fade-in slide-in-from-top-2",
           className
         )}
       >
@@ -87,33 +87,38 @@ export function DemonstracoesWhatsAppCard({
         </button>
 
         <div className="mb-3.5">
-          <div className="flex items-center gap-2">
-            <WhatsAppIcon className="w-5 h-5 text-emerald-600 shrink-0" />
-            <h3 className="font-bold text-[#1a3a5c] text-[15px] sm:text-[16px] tracking-tight leading-tight">
-              Chega de cobrar os pais! Deixa com a gente.
-            </h3>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#008069] text-white text-[10.5px] font-bold tracking-wide uppercase shadow-xs mb-2.5">
+            <WhatsAppIcon className="w-3.5 h-3.5 text-white" />
+            <span>Demonstrações Interativas</span>
           </div>
+
+          <h3 className="font-bold text-[#1a3a5c] text-[16px] sm:text-[17px] tracking-tight leading-tight">
+            Veja o que seus clientes recebem no WhatsApp
+          </h3>
           <p className="text-xs text-slate-500 font-normal mt-1 leading-snug">
-            Você não precisa mais cobrar os pais um por um. O Van360 faz isso automático.
+            Toque em cada modelo para ver a mensagem real enviada aos pais.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+        <div
+          className="flex overflow-x-auto scrollbar-none pb-2 pt-0.5 gap-2.5 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0 snap-x snap-mandatory"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {items.map((item) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.id}
-                className="group bg-slate-50/70 hover:bg-emerald-50/20 border border-slate-100 hover:border-emerald-100/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between transition-all"
+                className="w-[210px] shrink-0 sm:w-auto snap-start group bg-white border border-slate-200/90 hover:border-emerald-200/90 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between shadow-2xs hover:shadow-xs transition-all"
               >
                 <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Icon className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-slate-800 text-[13px] leading-tight">
+                    <h4 className="font-bold text-slate-800 text-[13px] min-[360px]:text-[13.5px] leading-tight">
                       {item.title}
-                    </span>
+                    </h4>
                   </div>
                   <p className="text-[11.5px] text-slate-500 leading-snug mb-3">
                     {item.description}
@@ -123,10 +128,9 @@ export function DemonstracoesWhatsAppCard({
                 <button
                   type="button"
                   onClick={item.action}
-                  className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-white hover:bg-emerald-50/60 text-slate-700 hover:text-emerald-700 border border-slate-200/80 hover:border-emerald-200 text-[11px] font-semibold transition-all shadow-2xs hover:shadow-xs active:scale-98 cursor-pointer mt-auto"
+                  className="w-full inline-flex items-center justify-center py-1.5 px-3 rounded-lg bg-white hover:bg-emerald-50/70 text-emerald-700 border border-emerald-600/80 hover:border-emerald-600 text-[11.5px] font-bold transition-all shadow-2xs active:scale-98 cursor-pointer mt-auto"
                 >
-                  <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
-                  <span>Ver exemplo</span>
+                  <span>Ver demonstração</span>
                 </button>
               </div>
             );

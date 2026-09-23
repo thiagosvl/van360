@@ -275,7 +275,7 @@ export default function AdminUsers() {
                           <td className="py-4">
                             <div className="flex items-center gap-3">
                               {user.logo_url?.trim() && (
-                                <div className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                                <div className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                                   <img
                                     src={user.logo_url}
                                     alt={user.nome}
@@ -356,7 +356,7 @@ export default function AdminUsers() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           {user.logo_url?.trim() && (
-                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                               <img
                                 src={user.logo_url}
                                 alt={user.nome}

@@ -159,13 +159,13 @@ export function ShowcaseTransporteEscolarDialog({
                   className="group bg-white border border-slate-200/80 hover:border-emerald-200/90 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between shadow-2xs hover:shadow-xs transition-all"
                 >
                   <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <Icon className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4" />
                       </div>
-                      <span className="font-bold text-slate-800 text-[13px] leading-tight">
+                      <h4 className="font-bold text-slate-800 text-[13px] min-[360px]:text-[13.5px] leading-tight">
                         {item.title}
-                      </span>
+                      </h4>
                     </div>
                     <p className="text-[11.5px] text-slate-600 leading-snug mb-3">
                       {item.description}
@@ -175,9 +175,8 @@ export function ShowcaseTransporteEscolarDialog({
                   <button
                     type="button"
                     onClick={item.action}
-                    className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-emerald-50/70 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 text-[11px] font-bold transition-all active:scale-98 cursor-pointer mt-auto"
+                    className="w-full inline-flex items-center justify-center py-1.5 px-3 rounded-lg bg-white hover:bg-emerald-50/70 text-emerald-700 border border-emerald-600/80 hover:border-emerald-600 text-[11.5px] font-bold transition-all shadow-2xs active:scale-98 cursor-pointer mt-auto"
                   >
-                    <Eye className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Ver demonstração</span>
                   </button>
                 </div>
