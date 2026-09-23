@@ -105,7 +105,7 @@ export function FinancialDashboardCard({
 
           {/* Pendente */}
           <div className="flex flex-col items-end">
-            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">Pendente</span>
+            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">A receber</span>
             <span className={cn(getDynamicFontSize(pendente), "font-bold text-slate-800 tracking-tight leading-none")}>
               {formatPrivateCurrency(pendente)}
             </span>
