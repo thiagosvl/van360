@@ -10,7 +10,7 @@ import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useActivityTracker } from "@/hooks/business/useActivityTracker";
+import { useAppOpenTracker } from "@/hooks/business/useAppOpenTracker";
 import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
@@ -32,13 +32,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
-  const { trackAppOpen } = useActivityTracker();
-
-  useEffect(() => {
-    if (user?.id) {
-      trackAppOpen(user.id);
-    }
-  }, [user?.id, trackAppOpen]);
+  useAppOpenTracker(user?.id);
 
   const displayName = profile?.apelido || formatFirstName(profile?.nome);
   const statusLabel = formatUserRoleLabel(profile?.tipo);
@@ -140,7 +134,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
             className={cn(
               "h-12 w-12 rounded-full flex items-center justify-center shadow-sm shrink-0 overflow-hidden",
               profile?.logo_url
-                ? "bg-white border border-white/10 p-0.5"
+                ? "bg-white border border-white/10 p-[3px]"
                 : "bg-white/10 border border-white/5 p-2"
             )}
           >

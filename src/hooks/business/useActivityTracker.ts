@@ -31,7 +31,7 @@ export function useActivityTracker() {
     historicoApi.registrarEvento(payload).catch(() => { });
   }, []);
 
-  const trackAppOpen = useCallback((usuarioId?: string) => {
+  const trackAppOpen = useCallback(async (usuarioId?: string) => {
     if (!usuarioId || isImpersonating()) return;
 
     try {
@@ -45,8 +45,6 @@ export function useActivityTracker() {
         }
       }
 
-      localStorage.setItem(STORAGE_KEY_LAST_APP_OPEN, now.toString());
-
       const dispositivo = getDispositivoCadastro();
 
       const payload: RegistrarEventoDTO = {
@@ -58,7 +56,8 @@ export function useActivityTracker() {
         },
       };
 
-      historicoApi.registrarEvento(payload).catch(() => { });
+      await historicoApi.registrarEvento(payload);
+      localStorage.setItem(STORAGE_KEY_LAST_APP_OPEN, Date.now().toString());
     } catch {
       return;
     }

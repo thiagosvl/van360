@@ -245,9 +245,6 @@ export const PerfilTab = React.memo(function PerfilTab() {
           <h2 className="text-base font-bold text-[#1a3a5c]">
             Dados Cadastrais
           </h2>
-          <p className="text-xs text-slate-500">
-            Mantenha suas informações pessoais e de contato atualizadas no aplicativo.
-          </p>
         </div>
       </div>
 
@@ -497,7 +494,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
 
       {!isSubConta && (
         <div className="mt-8 pt-6 border-t border-slate-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-rose-50/60 border border-rose-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-rose-50/30 border border-rose-100">
             <div className="space-y-1">
               <h4 className="text-sm font-bold text-rose-950">Excluir conta</h4>
               <p className="text-xs text-rose-800/80 leading-relaxed max-w-md">
@@ -507,7 +504,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
             <button
               type="button"
               onClick={openExcluirContaDialog}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-rose-700 bg-white border border-rose-200 hover:bg-rose-100/60 hover:text-rose-800 transition-colors shrink-0 shadow-xs flex items-center justify-center gap-2"
+              className="px-4 py-2.5 rounded-lg text-xs font-bold text-rose-700 bg-white border border-rose-200 hover:bg-rose-100/60 hover:text-rose-800 transition-colors shrink-0 shadow-xs flex items-center justify-center gap-2"
             >
               <Trash2 className="w-4 h-4 text-rose-600" />
               Excluir minha conta

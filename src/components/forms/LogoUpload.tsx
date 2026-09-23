@@ -154,13 +154,13 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
               </div>
             </div>
           ) : (
-            <div className="relative p-3 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-center overflow-hidden">
+            <div className="relative p-2.5 sm:p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-center overflow-hidden">
               {isLoading && (
                 <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex items-center justify-center z-10">
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 </div>
               )}
-              <div className="h-12 sm:h-14 max-w-[240px] flex items-center justify-center">
+              <div className="h-24 sm:h-28 max-w-[280px] w-full flex items-center justify-center">
                 <img
                   src={currentLogoUrl}
                   alt="Logotipo do transporte"

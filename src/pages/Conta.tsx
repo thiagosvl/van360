@@ -9,8 +9,9 @@ import { PERMISSIONS } from "@/config/permissions";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
-import { formatShortName, formatUserRoleLabel } from "@/utils/formatters";
+import { formatShortName } from "@/utils/formatters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileAvatarUpload } from "@/components/features/configuracoes/ProfileAvatarUpload";
 import { NotificacoesPaisTab } from "@/components/features/configuracoes/NotificacoesPaisTab";
 import { MinhasNotificacoesTab } from "@/components/features/configuracoes/MinhasNotificacoesTab";
 import { RastreamentoTab } from "@/components/features/configuracoes/RastreamentoTab";
@@ -42,7 +43,7 @@ export const Conta = memo(function Conta() {
 
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
+  const { profile, isLoading: isLoadingProfile, refreshProfile } = useProfile(user?.id);
   const { can, isSubConta } = usePermissions();
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
 
@@ -55,7 +56,6 @@ export const Conta = memo(function Conta() {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const displayName = profile?.apelido || formatShortName(profile?.nome, true);
-  const roleLabel = formatUserRoleLabel(profile?.tipo);
 
   const userInitials = useMemo(() => {
     if (!profile?.nome) return "U";
@@ -163,28 +163,19 @@ export const Conta = memo(function Conta() {
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex items-center gap-4">
-          <div
-            className={cn(
-              "h-16 w-16 sm:h-18 sm:w-18 rounded-full border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0 shadow-xs select-none overflow-hidden",
-              profile?.logo_url ? "bg-white" : "bg-slate-100"
-            )}
-          >
-            {isLoadingProfile ? (
-              <Skeleton className="h-full w-full rounded-full" />
-            ) : profile?.logo_url ? (
-              <img
-                src={profile.logo_url}
-                alt={displayName}
-                className="h-full w-full object-contain p-1.5"
-              />
-            ) : (
-              <span>{userInitials}</span>
-            )}
-          </div>
+          <ProfileAvatarUpload
+            userId={profile?.id}
+            logoUrl={profile?.logo_url}
+            displayName={displayName}
+            userInitials={userInitials}
+            isLoading={isLoadingProfile}
+            canEdit={!isSubConta && !!profile?.id}
+            onLogoUpdated={refreshProfile}
+          />
 
-          <div className="min-w-0 space-y-1">
+          <div className="min-w-0 space-y-0.5">
             <p className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Bem-vindo,
+              Bem-vindo(a),
             </p>
             {isLoadingProfile ? (
               <Skeleton className="h-6 w-40" />
@@ -193,11 +184,6 @@ export const Conta = memo(function Conta() {
                 {displayName}
               </h1>
             )}
-            <div className="pt-0.5">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
-                {roleLabel}
-              </span>
-            </div>
           </div>
         </div>
 
