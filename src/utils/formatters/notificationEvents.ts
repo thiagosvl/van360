@@ -89,6 +89,7 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
   [NotificationEventEnum.MOTORISTA_CONTRATO_ASSINADO]: { title: "Contrato Assinado pelo Responsável", category: NotificationCategoryEnum.CONTRATO, icon: FileCheck, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
 
   [NotificationEventEnum.MOTORISTA_RESUMO_SEMANAL_PARCELAS]: { title: "Resumo Semanal das Parcelas", category: NotificationCategoryEnum.MOTORISTA, icon: BarChart2, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
+  [NotificationEventEnum.MOTORISTA_COBRANCAS_HOJE]: { title: "Parcelas Vencendo Hoje", category: NotificationCategoryEnum.MOTORISTA, icon: BarChart2, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
   [NotificationEventEnum.MOTORISTA_ANIVERSARIANTES_SEMANA]: { title: "Aniversariantes da Semana", category: NotificationCategoryEnum.MOTORISTA, icon: Gift, iconBg: "bg-pink-500/10 border-pink-500/20", iconColor: "text-pink-400" },
   [NotificationEventEnum.MOTORISTA_TESTE_BOAS_VINDAS]: { title: "Boas-vindas ao App", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
   [NotificationEventEnum.MOTORISTA_TESTE_ENCERRADO]: { title: "Período de Teste Encerrado", category: NotificationCategoryEnum.MOTORISTA, icon: Clock, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },

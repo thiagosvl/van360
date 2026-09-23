@@ -3,14 +3,14 @@ import {
   Bell,
   Send,
   CheckCircle2,
-  AlertTriangle,
   Smartphone,
   Mail,
   MessageSquare,
   User,
-  Radio,
 } from "lucide-react";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
+import { Banner } from "@/components/ui/Banner";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useDispatchDriverNotificationAdmin } from "@/hooks/api/adminHooks";
 import { phoneMask } from "@/utils/masks";
 import { NotificationEventEnum } from "@/types/enums";
@@ -42,6 +42,15 @@ const NOTIFICATION_EVENTS: NotificationEventConfig[] = [
     id: NotificationEventEnum.MOTORISTA_RESUMO_SEMANAL_PARCELAS,
     title: "Resumo Semanal das Parcelas",
     description: "Calcula e consolida cobranças atrasadas e a vencer nos próximos 7 dias para envio direto ao app.",
+    channels: [
+      { type: "push", label: "Push no Celular" },
+    ],
+    category: "Operacional",
+  },
+  {
+    id: NotificationEventEnum.MOTORISTA_COBRANCAS_HOJE,
+    title: "Alerta de Parcelas Vencendo Hoje",
+    description: "Verifica as parcelas escolares que vencem hoje (ou notifica que está em dia / ativação se não tem alunos cadastrados).",
     channels: [
       { type: "push", label: "Push no Celular" },
     ],
@@ -134,7 +143,7 @@ export default function AdminDispatchNotificationDialog({
         id: userId,
         data: { evento: selectedEventId },
       });
-      onClose();
+      safeCloseDialog(onClose);
     } catch {
       // erro tratado no onError do hook
     }
@@ -146,7 +155,7 @@ export default function AdminDispatchNotificationDialog({
     <AdminBaseDialog
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open) safeCloseDialog(onClose);
       }}
       maxWidth="xl"
       description="Diálogo de teste e disparo manual de notificações para motorista"
@@ -155,12 +164,11 @@ export default function AdminDispatchNotificationDialog({
         title="Disparar Notificação de Teste"
         subtitle="Selecione um evento operacional para testar o envio em tempo real."
         icon={<Bell className="h-5 w-5 text-blue-400" />}
-        onClose={onClose}
+        onClose={() => safeCloseDialog(onClose)}
       />
 
       <AdminBaseDialog.Body>
         <div className="space-y-5 py-1">
-          {/* Card do Destinatário no Tema Dark */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="h-11 w-11 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-black text-base shrink-0 shadow-sm">
@@ -180,7 +188,6 @@ export default function AdminDispatchNotificationDialog({
             </span>
           </div>
 
-          {/* Lista de Seleção de Eventos */}
           <div className="space-y-3">
             <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block px-0.5">
               Selecione o Evento Operacional
@@ -238,13 +245,12 @@ export default function AdminDispatchNotificationDialog({
             </div>
           </div>
 
-          {/* Banner de Aviso de Dados Reais */}
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3.5 flex items-start gap-3">
-            <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-200/90 leading-relaxed font-medium">
-              O disparo consulta a base de dados real do motorista. Se não houver cobranças pendentes ou aniversariantes para a semana atual, o sistema avisará informando a ausência de dados.
-            </p>
-          </div>
+          <Banner
+            variant="warning"
+            className="bg-amber-500/10 border-amber-500/20 text-amber-200"
+            contentClassName="text-xs text-amber-200/90 font-medium"
+            description="O disparo consulta a base de dados real do motorista. Se não houver cobranças pendentes ou aniversariantes para a semana atual, o sistema avisará informando a ausência de dados."
+          />
         </div>
       </AdminBaseDialog.Body>
 
@@ -252,7 +258,7 @@ export default function AdminDispatchNotificationDialog({
         <AdminBaseDialog.Action
           label="Cancelar"
           variant="secondary"
-          onClick={onClose}
+          onClick={() => safeCloseDialog(onClose)}
           disabled={dispatchMutation.isPending}
         />
         <AdminBaseDialog.Action
@@ -267,5 +273,3 @@ export default function AdminDispatchNotificationDialog({
     </AdminBaseDialog>
   );
 }
-
-
