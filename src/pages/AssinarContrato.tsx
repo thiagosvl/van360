@@ -77,32 +77,7 @@ export default function AssinarContrato() {
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="fixed top-0 left-0 right-0 h-14 sm:h-16 bg-[#1a3a5c] flex items-center justify-between px-4 sm:px-6 z-50 shadow-lg relative">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
-            <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
-              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-headline font-black text-xs sm:text-sm text-white uppercase tracking-tight leading-none mb-1 truncate">
-                Contrato de Transporte
-              </h3>
-              {nomeCondutorExibicao && (
-                <p className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider leading-none truncate">
-                  {nomeCondutorExibicao}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="shrink-0 flex items-center sm:absolute sm:left-1/2 sm:-translate-x-1/2 pointer-events-none">
-            <img
-              src="/assets/logo-van360.webp"
-              alt="Van360"
-              className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90"
-            />
-          </div>
-        </div>
-
-        <Card className="w-full max-w-lg border-0 shadow-2xl bg-white rounded-[2.5rem] overflow-hidden mt-12">
+        <Card className="w-full max-w-lg border-0 shadow-2xl bg-white rounded-[2.5rem] overflow-hidden">
           <CardHeader className="text-center pb-2 pt-12 px-10">
             <div className="mx-auto bg-emerald-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-8">
               <CheckCircle2 className="h-10 w-10 text-emerald-500" />
