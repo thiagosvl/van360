@@ -47,7 +47,7 @@ export function WhatsAppCobrancaPreviewDialog({
       maxWidth="md"
     >
       <BaseDialog.Header
-        title="Lembrete de cobrança"
+        title="Cobrança Automática"
         subtitle="Exemplo de mensagem enviada aos pais"
         icon={<WhatsAppIcon className="w-5 h-5 text-emerald-600" />}
         onClose={() => safeCloseDialog(onClose)}

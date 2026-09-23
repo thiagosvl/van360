@@ -46,23 +46,23 @@ export function DemonstracoesWhatsAppCard({
 
   const items = [
     {
-      id: "cobranca",
-      title: "Lembrete com Pix",
-      description: "Mensagem amigável enviada aos pais com valor e botão para copiar o código Pix.",
+      id: "cobranca_automatica",
+      title: "Cobrança Automática",
+      description: "Cobramos os pais automaticamente pelo WhatsApp sem você precisar fazer nada.",
       icon: BellRing,
       action: handleOpenCobranca,
     },
     {
-      id: "recibo",
-      title: "Recibo no WhatsApp",
-      description: "Comprovante digital com seu logo enviado com um toque logo após receber.",
+      id: "recibos",
+      title: "Recibos no WhatsApp",
+      description: "Envie o comprovante digital aos pais com um toque.",
       icon: Receipt,
       action: handleOpenRecibo,
     },
     {
-      id: "contrato",
-      title: "Contrato Digital",
-      description: "Link direto para os pais assinarem online pelo celular com validade jurídica.",
+      id: "contratos",
+      title: "Contratos Digitais",
+      description: "Gere contratos com assinatura online pelo celular e validade jurídica.",
       icon: FileText,
       action: handleOpenContrato,
     },
@@ -90,11 +90,11 @@ export function DemonstracoesWhatsAppCard({
           <div className="flex items-center gap-2">
             <WhatsAppIcon className="w-5 h-5 text-emerald-600 shrink-0" />
             <h3 className="font-bold text-[#1a3a5c] text-[15px] sm:text-[16px] tracking-tight leading-tight">
-              Veja o que os pais recebem
+              Chega de cobrar os pais! Deixa com a gente.
             </h3>
           </div>
           <p className="text-xs text-slate-500 font-normal mt-1 leading-snug">
-            Mensagens automáticas, recibos e contratos enviados pelo WhatsApp.
+            Você não precisa mais cobrar os pais um por um. O Van360 faz isso automático.
           </p>
         </div>
 

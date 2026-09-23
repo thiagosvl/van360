@@ -242,6 +242,13 @@ const Home = () => {
               </section>
             )}
 
+            {!isSubConta && onboarding.showOnboarding && isTrial && !isDismissedDemonstracoes && (
+              <DemonstracoesWhatsAppCard
+                profile={profile}
+                onDismiss={handleDismissDemonstracoes}
+              />
+            )}
+
             {!isSubConta && !onboarding.showOnboarding && (financeiro?.countAtrasos || 0) > 0 && (
               <section className="px-1">
                 <Banner
@@ -313,7 +320,7 @@ const Home = () => {
 
             {!isSubConta && <SmartAppBanner />}
 
-            {!isSubConta && isTrial && !isDismissedDemonstracoes && (
+            {!isSubConta && !onboarding.showOnboarding && isTrial && !isDismissedDemonstracoes && (
               <DemonstracoesWhatsAppCard
                 profile={profile}
                 onDismiss={handleDismissDemonstracoes}
