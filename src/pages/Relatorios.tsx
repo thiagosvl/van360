@@ -19,10 +19,12 @@ import { RelatorioTab, FilterDefaults } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
-import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Relatorios() {
   const { can } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("relatorios");
   const {
     mes,
     ano,
@@ -131,11 +133,11 @@ export default function Relatorios() {
       </div>
     </PullToRefreshWrapper>
 
-    {hasValidTutorialVideos(TUTORIALS_CONFIG.relatorios) && (
+    {shouldShowTutorial && (
       <VideoCommerce
-        previewUrl={TUTORIALS_CONFIG.relatorios.previewUrl || TUTORIALS_CONFIG.relatorios.videos[0]?.url || ""}
-        videosData={[...TUTORIALS_CONFIG.relatorios.videos]}
-        tooltipText={TUTORIALS_CONFIG.relatorios.tooltipText}
+        previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+        videosData={[...tutorialConfig.videos]}
+        tooltipText={tutorialConfig.tooltipText}
         positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
         requireScrollOnMobile={false}
         storageKey={STORAGE_KEYS.GUIDE_RELATORIOS_DISMISSED}

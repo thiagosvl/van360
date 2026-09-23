@@ -108,3 +108,5 @@ export const TUTORIALS_CONFIG = {
     ],
   },
 } as const satisfies Record<string, ScreenTutorialConfig>;
+
+export type ScreenTutorialKey = keyof typeof TUTORIALS_CONFIG;

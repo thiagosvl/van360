@@ -8,8 +8,9 @@ import {
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
-import { BASE_DOMAIN, STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
+import { BASE_DOMAIN, STORAGE_KEYS } from "@/constants";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 
@@ -72,6 +73,7 @@ import { cn } from "@/lib/utils";
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
   const { can, isSubConta } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("carteirinha");
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const {
@@ -941,11 +943,11 @@ export default function PassageiroCarteirinha() {
         </div>
       </PullToRefreshWrapper>
 
-      {hasValidTutorialVideos(TUTORIALS_CONFIG.carteirinha) && (
+      {shouldShowTutorial && (
         <VideoCommerce
-          previewUrl={TUTORIALS_CONFIG.carteirinha.previewUrl || TUTORIALS_CONFIG.carteirinha.videos[0]?.url || ""}
-          videosData={[...TUTORIALS_CONFIG.carteirinha.videos]}
-          tooltipText={TUTORIALS_CONFIG.carteirinha.tooltipText}
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
           positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_CARTEIRINHA_DISMISSED}

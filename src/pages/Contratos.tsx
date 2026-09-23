@@ -11,11 +11,13 @@ import { ContratoTab } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
-import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 const Contratos = () => {
   const { can } = usePermissions();
   const canManage = can("contratos.gerenciar");
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("contratos");
 
   const {
     activeTab,
@@ -166,12 +168,12 @@ const Contratos = () => {
         title="Prévia do Contrato"
       />
 
-      {hasValidTutorialVideos(TUTORIALS_CONFIG.contratos) && (
+      {shouldShowTutorial && (
         <VideoCommerce
-          previewUrl={TUTORIALS_CONFIG.contratos.previewUrl || TUTORIALS_CONFIG.contratos.videos[0]?.url || ""}
-          videosData={[...TUTORIALS_CONFIG.contratos.videos]}
-          tooltipText={TUTORIALS_CONFIG.contratos.tooltipText}
-          ctaText={TUTORIALS_CONFIG.contratos.ctaText}
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          ctaText={tutorialConfig.ctaText}
           onCtaClick={handleOpenContractSetup}
           positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
           requireScrollOnMobile={false}

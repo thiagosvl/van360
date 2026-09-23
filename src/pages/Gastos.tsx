@@ -17,10 +17,12 @@ import {
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
-import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Gastos() {
   const { can, isMonitor } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("gastos");
 
   const {
     mesFilter,
@@ -175,12 +177,12 @@ export default function Gastos() {
       </div>
     </PullToRefreshWrapper>
 
-    {hasValidTutorialVideos(TUTORIALS_CONFIG.gastos) && (
+    {shouldShowTutorial && (
       <VideoCommerce
-        previewUrl={TUTORIALS_CONFIG.gastos.previewUrl || TUTORIALS_CONFIG.gastos.videos[0]?.url || ""}
-        videosData={[...TUTORIALS_CONFIG.gastos.videos]}
-        tooltipText={TUTORIALS_CONFIG.gastos.tooltipText}
-        ctaText={can("gastos.criar") ? TUTORIALS_CONFIG.gastos.ctaText : undefined}
+        previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+        videosData={[...tutorialConfig.videos]}
+        tooltipText={tutorialConfig.tooltipText}
+        ctaText={can("gastos.criar") ? tutorialConfig.ctaText : undefined}
         onCtaClick={can("gastos.criar") ? () => handleOpenForm() : undefined}
         positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
         requireScrollOnMobile={false}

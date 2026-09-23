@@ -1,8 +1,11 @@
-﻿import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
+import { useSubscriptionStatus } from "@/hooks/api/useSubscription";
+import { useSession } from "@/hooks/business/useSession";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 
 export function useSubscriptionAccess(userId?: string) {
-  const { subscription, isLoading, isError, refetch } = useSubscriptionStatus(userId);
+  const { user } = useSession();
+  const effectiveUserId = userId || user?.id;
+  const { subscription, isLoading, isError, refetch } = useSubscriptionStatus(effectiveUserId);
 
   return {
     subscription,

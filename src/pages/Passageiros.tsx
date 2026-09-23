@@ -17,11 +17,13 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useSession } from "@/hooks/business/useSession";
-import { STORAGE_KEYS, TUTORIALS_CONFIG, hasValidTutorialVideos } from "@/constants";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Passageiros() {
   const { user } = useSession();
   const { isSubConta, can } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("alunos");
 
   const [isDismissedAlunos, setIsDismissedAlunos] = useState(() => {
     return localStorage.getItem("van360:dismiss:quick-registration-alunos") === "true";
@@ -329,12 +331,12 @@ export default function Passageiros() {
         </div>
       </PullToRefreshWrapper>
 
-      {hasValidTutorialVideos(TUTORIALS_CONFIG.alunos) && (
+      {shouldShowTutorial && (
         <VideoCommerce
-          previewUrl={TUTORIALS_CONFIG.alunos.previewUrl || TUTORIALS_CONFIG.alunos.videos[0]?.url || ""}
-          videosData={[...TUTORIALS_CONFIG.alunos.videos]}
-          tooltipText={TUTORIALS_CONFIG.alunos.tooltipText}
-          ctaText={TUTORIALS_CONFIG.alunos.ctaText}
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          ctaText={tutorialConfig.ctaText}
           onCtaClick={handleOpenNewDialog}
           positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
           requireScrollOnMobile={false}
