@@ -77,18 +77,27 @@ export default function AssinarContrato() {
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-between px-6 z-50 shadow-lg relative">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-white/80" />
-            <span className="font-headline font-black text-xs text-white uppercase tracking-tight">
-              {nomeCondutorExibicao || "Contrato de Transporte"}
-            </span>
+        <div className="fixed top-0 left-0 right-0 h-14 sm:h-16 bg-[#1a3a5c] flex items-center justify-between px-4 sm:px-6 z-50 shadow-lg relative">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+            <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-headline font-black text-xs sm:text-sm text-white uppercase tracking-tight leading-none mb-1 truncate">
+                Contrato de Transporte
+              </h3>
+              {nomeCondutorExibicao && (
+                <p className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider leading-none truncate">
+                  {nomeCondutorExibicao}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="absolute left-1/2 -translate-x-1/2 shrink-0 pointer-events-none">
+          <div className="shrink-0 flex items-center sm:absolute sm:left-1/2 sm:-translate-x-1/2 pointer-events-none">
             <img
               src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-8 w-auto filter brightness-0 invert opacity-80"
+              className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90"
             />
           </div>
         </div>
@@ -121,26 +130,28 @@ export default function AssinarContrato() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
-      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shadow-lg shrink-0 overflow-hidden relative">
-        <div className="flex items-center gap-3 min-w-0">
+      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 shadow-lg shrink-0 relative">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
           <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1 truncate max-w-[170px] sm:max-w-xs">
-              {nomeCondutorExibicao || "Contrato de Transporte"}
-            </h3>
-            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+            <h3 className="font-headline font-black text-xs sm:text-sm text-white uppercase tracking-tight leading-none mb-1 truncate">
               Contrato de Transporte
-            </p>
+            </h3>
+            {nomeCondutorExibicao && (
+              <p className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider leading-none truncate">
+                {nomeCondutorExibicao}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 shrink-0 pointer-events-none">
+        <div className="shrink-0 flex items-center sm:absolute sm:left-1/2 sm:-translate-x-1/2 pointer-events-none">
           <img
             src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90"
+            className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90"
           />
         </div>
       </header>
@@ -175,20 +186,20 @@ export default function AssinarContrato() {
         </div>
       </main>
 
-      <div className="fixed bottom-6 left-0 right-0 px-5 sm:px-10 z-50 pointer-events-none w-full">
-        <div className="flex items-center justify-end w-full pointer-events-auto">
+      <div className="fixed bottom-6 left-0 right-0 px-4 sm:px-6 z-50 pointer-events-none w-full flex justify-center">
+        <div className="pointer-events-auto flex justify-center">
           <Button
             onClick={() => setModalAberto(true)}
             disabled={contrato.status !== ContratoStatus.PENDENTE}
             className={cn(
-              "h-11 sm:h-13 px-8 sm:px-12 sm:py-8 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 font-headline font-bold text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0",
+              "h-14 sm:h-16 px-8 sm:px-10 rounded-full shadow-2xl flex items-center gap-2.5 sm:gap-3 font-headline font-black text-sm sm:text-base uppercase tracking-wider transition-all active:scale-95 border-0",
               contrato.status === ContratoStatus.PENDENTE
-                ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white"
+                ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white shadow-[#1a3a5c]/30"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
             )}
           >
-            <PenTool className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            Assinar
+            <PenTool className="h-4 w-4 sm:h-5 sm:w-5" />
+            Assinar contrato
           </Button>
         </div>
       </div>
