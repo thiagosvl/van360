@@ -86,6 +86,7 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
 
   [NotificationEventEnum.PASSAGEIRO_CONTRATO_DISPONIVEL]: { title: "Contrato para Assinatura", category: NotificationCategoryEnum.CONTRATO, icon: FileText, iconBg: "bg-purple-500/10 border-purple-500/20", iconColor: "text-purple-400" },
   [NotificationEventEnum.PASSAGEIRO_CONTRATO_ASSINADO]: { title: "Contrato Assinado", category: NotificationCategoryEnum.CONTRATO, icon: FileCheck, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
+  [NotificationEventEnum.PASSAGEIRO_RENOVACAO_DISPONIVEL]: { title: "Renovação Disponível", category: NotificationCategoryEnum.CONTRATO, icon: Sparkles, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
   [NotificationEventEnum.MOTORISTA_CONTRATO_ASSINADO]: { title: "Contrato Assinado pelo Responsável", category: NotificationCategoryEnum.CONTRATO, icon: FileCheck, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
 
   [NotificationEventEnum.MOTORISTA_RESUMO_SEMANAL_PARCELAS]: { title: "Resumo Semanal das Parcelas", category: NotificationCategoryEnum.MOTORISTA, icon: BarChart2, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },

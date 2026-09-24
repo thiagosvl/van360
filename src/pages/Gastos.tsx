@@ -179,6 +179,7 @@ export default function Gastos() {
 
     {shouldShowTutorial && (
       <VideoCommerce
+        screenName="gastos"
         previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
         videosData={[...tutorialConfig.videos]}
         tooltipText={tutorialConfig.tooltipText}

@@ -135,6 +135,7 @@ export default function Relatorios() {
 
     {shouldShowTutorial && (
       <VideoCommerce
+        screenName="relatorios"
         previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
         videosData={[...tutorialConfig.videos]}
         tooltipText={tutorialConfig.tooltipText}

@@ -81,9 +81,9 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-32 min-w-[115px]">Valor</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[80px]">Vencimento</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-30 min-w-[96px]">Período</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28 min-w-[80px]">Turma</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[70px]">Sala</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-36 min-w-[110px]">Professor(a)</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28 min-w-[80px]">Turma</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -236,6 +236,15 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
 
                   <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
                     <Input
+                      value={effectiveTurma}
+                      onChange={(e) => onUpdateField(pId, "turma", e.target.value || null, p)}
+                      placeholder="Ex: 3º B"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[75px]"
+                    />
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <Input
                       value={effectiveSala}
                       onChange={(e) => onUpdateField(pId, "sala", e.target.value || null, p)}
                       placeholder="Ex: 12"
@@ -249,15 +258,6 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                       onChange={(e) => onUpdateField(pId, "nome_professor", e.target.value || null, p)}
                       placeholder="Ex: Cláudia"
                       className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[100px]"
-                    />
-                  </td>
-
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <Input
-                      value={effectiveTurma}
-                      onChange={(e) => onUpdateField(pId, "turma", e.target.value || null, p)}
-                      placeholder="Ex: 3º B"
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[75px]"
                     />
                   </td>
                 </tr>

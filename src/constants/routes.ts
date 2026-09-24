@@ -11,6 +11,7 @@ export const ROUTES = {
     IMPERSONATE_BRIDGE: "/impersonate-bridge",
     SIGN_CONTRACT: "/assinar/:token",
     SIGN_CONTRACT_DUPLICATE: "/assinar/assinar/:token",
+    CONFIRM_RENEWAL: "/renovacao/:token",
   },
   PRIVATE: {
     RESPONSAVEL: {

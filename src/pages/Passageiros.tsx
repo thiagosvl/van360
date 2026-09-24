@@ -333,6 +333,7 @@ export default function Passageiros() {
 
       {shouldShowTutorial && (
         <VideoCommerce
+          screenName="alunos"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
           videosData={[...tutorialConfig.videos]}
           tooltipText={tutorialConfig.tooltipText}

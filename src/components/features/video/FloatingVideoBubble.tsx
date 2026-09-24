@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useLayout, VideoStoryItem } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
+import { useActivityTracker } from "@/hooks/business/useActivityTracker";
+import { AtividadeAcao } from "@/types/enums";
 
 export interface FloatingVideoBubbleProps {
   previewUrl: string;
@@ -26,6 +28,7 @@ export interface FloatingVideoBubbleProps {
   confirmDialogDescription?: string;
   confirmDialogConfirmText?: string;
   confirmDialogCancelText?: string;
+  screenName?: string;
 }
 
 export function FloatingVideoBubble({
@@ -50,8 +53,11 @@ export function FloatingVideoBubble({
   confirmDialogDescription = "Este conteúdo em vídeo não será mais exibido nesta tela.",
   confirmDialogConfirmText = "Ocultar",
   confirmDialogCancelText = "Cancelar",
+  screenName,
 }: FloatingVideoBubbleProps) {
   const { openVideoStoriesDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { trackActivity } = useActivityTracker();
+  const lastClickTimeRef = useRef<number>(0);
   const rawList = videosData || (videos.length > 0 ? videos : (videoUrls.length > 0 ? videoUrls : (fullUrl ? [fullUrl] : [])));
 
   const dismissButtonRef = useCallback((node: HTMLButtonElement | null) => {
@@ -139,6 +145,23 @@ export function FloatingVideoBubble({
 
   const handleOpen = () => {
     if (isDragging.current || rawList.length === 0) return;
+
+    const now = Date.now();
+    if (now - lastClickTimeRef.current > 500) {
+      lastClickTimeRef.current = now;
+
+      const screenLabel = screenName || "geral";
+      const firstVideo = rawList[0];
+      const videoTitle = title || (typeof firstVideo === "object" ? firstVideo.title : undefined);
+
+      trackActivity(AtividadeAcao.FLOATING_BUTTON_CLICADO, {
+        meta: {
+          tela: screenLabel,
+          titulo: videoTitle,
+          total_videos: rawList.length,
+        },
+      });
+    }
 
     const hasCta = showCta ?? Boolean(ctaText || ctaLink || onCtaClick);
 

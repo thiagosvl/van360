@@ -213,6 +213,7 @@ export default function Cobrancas() {
 
     {shouldShowTutorial && (
       <VideoCommerce
+        screenName="parcelas"
         previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
         videosData={[...tutorialConfig.videos]}
         tooltipText={tutorialConfig.tooltipText}

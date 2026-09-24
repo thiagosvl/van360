@@ -22,6 +22,7 @@ export const STORAGE_KEYS = {
   GUIDE_CONTRATOS_DISMISSED: "van360_guide_dismissed_contratos",
   GUIDE_CARTEIRINHA_DISMISSED: "van360_guide_dismissed_carteirinha",
   PENDING_DEEP_LINK: "van360_pending_deep_link",
+  ACQUISITION_CHANNEL_DISMISSED_DATE: "van360:acquisition_channel_dismissed_date",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */

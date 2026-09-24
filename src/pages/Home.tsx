@@ -32,6 +32,7 @@ import { usePrivacy } from "@/contexts/PrivacyContext";
 import { isMotoristaTitular } from "@/utils/userUtils";
 import { useEffect, useState } from "react";
 import { Banner } from "@/components/ui/Banner";
+import { STORAGE_KEYS } from "@/constants";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
@@ -119,7 +120,16 @@ const Home = () => {
   useEffect(() => {
     if (isLoading || !profile) return;
 
-    const shouldAskChannel = isMotoristaTitular(profile) && !profile.canal_aquisicao && daysSinceCreation >= 3;
+    let isDismissedToday = false;
+    try {
+      const dismissedDate = localStorage.getItem(STORAGE_KEYS.ACQUISITION_CHANNEL_DISMISSED_DATE);
+      const today = new Date().toISOString().slice(0, 10);
+      isDismissedToday = dismissedDate === today;
+    } catch {
+      // noop
+    }
+
+    const shouldAskChannel = isMotoristaTitular(profile) && !profile.canal_aquisicao && daysSinceCreation >= 3 && !isDismissedToday;
 
     if (shouldAskChannel) {
       openAcquisitionChannelDialog();

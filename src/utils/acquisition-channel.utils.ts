@@ -6,15 +6,16 @@ export interface CanalAquisicaoItemConfig {
 }
 
 export const CANAL_AQUISICAO_CONFIG: Record<CanalAquisicao | "NAO_INFORMADO", CanalAquisicaoItemConfig> = {
-  [CanalAquisicao.PLAY_STORE]: { label: "Play Store (Android)", color: "#34A853" },
-  [CanalAquisicao.APP_STORE]: { label: "App Store (iPhone/iOS)", color: "#007AFF" },
+  [CanalAquisicao.PLAY_STORE]: { label: "Loja do Android (Play Store)", color: "#34A853" },
+  [CanalAquisicao.APP_STORE]: { label: "Loja do iPhone (App Store)", color: "#007AFF" },
   [CanalAquisicao.INDICACAO]: { label: "Indicação", color: "#10B981" },
   [CanalAquisicao.INSTAGRAM]: { label: "Instagram", color: "#E1306C" },
-  [CanalAquisicao.GOOGLE]: { label: "Google / Busca", color: "#4285F4" },
+  [CanalAquisicao.GOOGLE]: { label: "Google", color: "#4285F4" },
   [CanalAquisicao.FACEBOOK]: { label: "Facebook", color: "#1877F2" },
   [CanalAquisicao.TIKTOK]: { label: "TikTok", color: "#0F172A" },
   [CanalAquisicao.YOUTUBE]: { label: "YouTube", color: "#EF4444" },
   [CanalAquisicao.PANFLETO]: { label: "Panfleto", color: "#F59E0B" },
+  [CanalAquisicao.IA]: { label: "IA (ChatGPT, Gemini, etc.)", color: "#8B5CF6" },
   [CanalAquisicao.OUTROS]: { label: "Outros", color: "#6366F1" },
   NAO_INFORMADO: { label: "Não informado", color: "#94A3B8" },
 };
@@ -29,8 +30,23 @@ export const CanalAquisicaoLabels: Record<CanalAquisicao, string> = {
   [CanalAquisicao.TIKTOK]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.TIKTOK].label,
   [CanalAquisicao.YOUTUBE]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.YOUTUBE].label,
   [CanalAquisicao.GOOGLE]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.GOOGLE].label,
+  [CanalAquisicao.IA]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.IA].label,
   [CanalAquisicao.OUTROS]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.OUTROS].label,
 };
+
+export const CANAL_AQUISICAO_ORDERED_OPTIONS: CanalAquisicao[] = [
+  CanalAquisicao.INSTAGRAM,
+  CanalAquisicao.INDICACAO,
+  CanalAquisicao.PLAY_STORE,
+  CanalAquisicao.APP_STORE,
+  CanalAquisicao.GOOGLE,
+  CanalAquisicao.FACEBOOK,
+  CanalAquisicao.TIKTOK,
+  CanalAquisicao.PANFLETO,
+  CanalAquisicao.YOUTUBE,
+  CanalAquisicao.IA,
+  CanalAquisicao.OUTROS,
+];
 
 export const ORIGEM_ATRIBUICAO_LABELS = {
   INSTAGRAM_ADS: "Instagram Ads",

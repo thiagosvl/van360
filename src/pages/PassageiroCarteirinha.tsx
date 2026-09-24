@@ -945,6 +945,7 @@ export default function PassageiroCarteirinha() {
 
       {shouldShowTutorial && (
         <VideoCommerce
+          screenName="carteirinha"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
           videosData={[...tutorialConfig.videos]}
           tooltipText={tutorialConfig.tooltipText}

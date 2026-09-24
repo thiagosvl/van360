@@ -170,6 +170,7 @@ const Contratos = () => {
 
       {shouldShowTutorial && (
         <VideoCommerce
+          screenName="contratos"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
           videosData={[...tutorialConfig.videos]}
           tooltipText={tutorialConfig.tooltipText}
