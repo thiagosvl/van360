@@ -43,6 +43,7 @@ import { WhatsAppContratoPreviewDialog } from "@/components/dialogs/WhatsAppCont
 import { ReciboPreviewDialog } from "@/components/dialogs/ReciboPreviewDialog";
 import { ShowcaseTransporteEscolarDialog } from "@/components/dialogs/ShowcaseTransporteEscolarDialog";
 import { OnboardingSuccessDialog } from "@/components/dialogs/OnboardingSuccessDialog";
+import { ImageFullscreenDialog } from "@/components/dialogs/ImageFullscreenDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -60,6 +61,7 @@ import {
   OpenAdminVencimentoDetalhesDialogProps,
   OpenAdminConfigureReferralDialogProps,
   OpenAdminConfirmBroadcastDialogProps,
+  OpenImageFullscreenProps,
   OpenVideoStoriesDialogProps,
   OpenWhatsAppCobrancaPreviewDialogProps,
   OpenWhatsAppContratoPreviewDialogProps,
@@ -320,6 +322,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenAdminConfirmBroadcastDialogProps;
   }>({ open: false });
+  const [imageFullscreenDialogState, setImageFullscreenDialogState] = useState<{
+    open: boolean;
+    props?: OpenImageFullscreenProps;
+  }>({ open: false });
   const [videoStoriesDialogState, setVideoStoriesDialogState] = useState<{
     open: boolean;
     props?: OpenVideoStoriesDialogProps;
@@ -557,6 +563,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setAdminConfirmBroadcastDialogState({ open: false }));
   };
 
+  const openImageFullscreen = (props: OpenImageFullscreenProps) => {
+    setImageFullscreenDialogState({ open: true, props });
+  };
+
+  const closeImageFullscreen = () => {
+    safeCloseDialog(() => setImageFullscreenDialogState({ open: false }));
+  };
+
   const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
     setGerarContratoValidadorDialogState({ open: true, props });
   };
@@ -635,6 +649,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminConfigureReferralDialog,
         openAdminConfirmBroadcastDialog,
         closeAdminConfirmBroadcastDialog,
+        openImageFullscreen,
+        closeImageFullscreen,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
         openVideoStoriesDialog,
@@ -1234,6 +1250,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           notificationMessage={adminConfirmBroadcastDialogState.props.notificationMessage}
           onConfirm={adminConfirmBroadcastDialogState.props.onConfirm}
           isSubmitting={adminConfirmBroadcastDialogState.props.isSubmitting}
+        />
+      )}
+
+      {imageFullscreenDialogState.open && imageFullscreenDialogState.props && (
+        <ImageFullscreenDialog
+          isOpen={true}
+          onClose={closeImageFullscreen}
+          imageUrl={imageFullscreenDialogState.props.imageUrl}
+          alt={imageFullscreenDialogState.props.alt}
         />
       )}
 

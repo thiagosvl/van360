@@ -281,6 +281,11 @@ export interface OpenAdminConfirmBroadcastDialogProps {
   isSubmitting?: boolean;
 }
 
+export interface OpenImageFullscreenProps {
+  imageUrl: string;
+  alt?: string;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -320,6 +325,8 @@ export interface LayoutContextType {
   openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
   openAdminConfirmBroadcastDialog: (props: OpenAdminConfirmBroadcastDialogProps) => void;
   closeAdminConfirmBroadcastDialog: () => void;
+  openImageFullscreen: (props: OpenImageFullscreenProps) => void;
+  closeImageFullscreen: () => void;
 
   isFirstChargeDialogOpen: boolean;
 

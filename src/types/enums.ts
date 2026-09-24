@@ -342,6 +342,16 @@ export enum DispositivoCadastro {
   WEB_DESKTOP = "WEB_DESKTOP",
 }
 
+export enum AtribuicaoCategoria {
+  META_ADS = "meta_ads",
+  GOOGLE_ADS = "google_ads",
+  TIKTOK_ADS = "tiktok_ads",
+  PLAY_STORE = "play_store",
+  SITE_ORGANICO = "site_organico",
+  INDICACAO = "indicacao",
+  DIRETO = "direto",
+}
+
 
 export enum BlogPostStatus {
   DRAFT = "draft",

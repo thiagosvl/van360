@@ -173,7 +173,7 @@ export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminDriverCobrancaDemoDialog, openAdminConfigureReferralDialog, setPageTitle } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminDriverCobrancaDemoDialog, openAdminConfigureReferralDialog, openImageFullscreen, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
   const deleteInvoiceMutation = useDeleteInvoiceAdmin(id);
@@ -722,10 +722,17 @@ export default function AdminUserDetails() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start md:items-center gap-4 min-w-0 pr-10 md:pr-0">
             <div
+              role={data.user.logo_url ? "button" : undefined}
+              tabIndex={data.user.logo_url ? 0 : undefined}
+              onClick={
+                data.user.logo_url
+                  ? () => openImageFullscreen({ imageUrl: data.user.logo_url!, alt: data.user.nome })
+                  : undefined
+              }
               className={cn(
                 "h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 shadow-inner overflow-hidden",
                 data.user.logo_url
-                  ? "bg-white border border-white/20 p-0.5"
+                  ? "bg-white border border-white/20 p-0.5 cursor-pointer"
                   : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
               )}
             >

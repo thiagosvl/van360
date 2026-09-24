@@ -1,4 +1,4 @@
-import { CanalAquisicao } from "@/types/enums";
+import { CanalAquisicao, AtribuicaoCategoria } from "@/types/enums";
 
 export interface CanalAquisicaoItemConfig {
   label: string;
@@ -32,11 +32,41 @@ export const CanalAquisicaoLabels: Record<CanalAquisicao, string> = {
   [CanalAquisicao.OUTROS]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.OUTROS].label,
 };
 
+export const ORIGEM_ATRIBUICAO_LABELS = {
+  INSTAGRAM_ADS: "Instagram Ads",
+  FACEBOOK_ADS: "Facebook Ads",
+  GOOGLE_ADS: "Google Ads",
+  TIKTOK_ADS: "TikTok Ads",
+  PLAY_STORE: "Play Store",
+  APP_STORE: "App Store",
+  INDICACAO: "Indicação",
+  BLOG: "Blog Van360",
+  SITE_INSTITUCIONAL: "Site Institucional",
+  INSTAGRAM_ORGANICO: "Instagram",
+  FACEBOOK_ORGANICO: "Facebook",
+  GOOGLE_ORGANICO: "Google",
+  DIRETO: "Direto / Orgânico",
+} as const;
+
+export const CAMPANHA_FALLBACK_LABELS = {
+  META_ADS: "Meta Ads",
+  CAMPANHA_GOOGLE: "Campanha Google",
+  CAMPANHA_TIKTOK: "Campanha TikTok",
+  APP_ANDROID: "App Nativo Android",
+  APP_IOS: "App Nativo iOS",
+  OUTRO_MOTORISTA: "Outro Motorista",
+  ORGANICO: "Orgânico",
+  DIRETO: "Direto",
+  LINK_BIO: "Orgânico / Link Bio",
+  BUSCA_ORGANICA: "Busca Orgânica",
+  SEM_UTMS: "Sem UTMs",
+} as const;
+
 export interface ResolvedOrigemAtribuicao {
   label: string;
   detalhe?: string;
-  corBadge: string;
-  categoria: "meta_ads" | "google_ads" | "tiktok_ads" | "play_store" | "site_organico" | "indicacao" | "direto";
+  corBadge?: string;
+  categoria: AtribuicaoCategoria;
 }
 
 export function resolveOrigemAtribuicao(
@@ -65,107 +95,95 @@ export function resolveOrigemAtribuicao(
 
   if (source === "ig" || (source === "lp" && fbclid) || source === "instagram") {
     return {
-      label: "Instagram Ads",
-      detalhe: content || campaign || "Meta Ads",
-      corBadge: "bg-pink-500/10 text-pink-400 border-pink-500/20",
-      categoria: "meta_ads",
+      label: ORIGEM_ATRIBUICAO_LABELS.INSTAGRAM_ADS,
+      detalhe: content || campaign || CAMPANHA_FALLBACK_LABELS.META_ADS,
+      categoria: AtribuicaoCategoria.META_ADS,
     };
   }
 
   if (source === "fb" || source === "facebook" || fbclid) {
     return {
-      label: "Facebook Ads",
-      detalhe: content || campaign || "Meta Ads",
-      corBadge: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      categoria: "meta_ads",
+      label: ORIGEM_ATRIBUICAO_LABELS.FACEBOOK_ADS,
+      detalhe: content || campaign || CAMPANHA_FALLBACK_LABELS.META_ADS,
+      categoria: AtribuicaoCategoria.META_ADS,
     };
   }
 
   if (source === "google" || gclid || gbraid) {
     return {
-      label: "Google Ads",
-      detalhe: campaign || "Campanha Google",
-      corBadge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      categoria: "google_ads",
+      label: ORIGEM_ATRIBUICAO_LABELS.GOOGLE_ADS,
+      detalhe: campaign || CAMPANHA_FALLBACK_LABELS.CAMPANHA_GOOGLE,
+      categoria: AtribuicaoCategoria.GOOGLE_ADS,
     };
   }
 
   if (source === "tiktok" || ttclid) {
     return {
-      label: "TikTok Ads",
-      detalhe: campaign || "Campanha TikTok",
-      corBadge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-      categoria: "tiktok_ads",
+      label: ORIGEM_ATRIBUICAO_LABELS.TIKTOK_ADS,
+      detalhe: campaign || CAMPANHA_FALLBACK_LABELS.CAMPANHA_TIKTOK,
+      categoria: AtribuicaoCategoria.TIKTOK_ADS,
     };
   }
 
   if (dispUpper === "APP_ANDROID") {
     return {
-      label: "Play Store",
-      detalhe: "App Nativo Android",
-      corBadge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      categoria: "play_store",
+      label: ORIGEM_ATRIBUICAO_LABELS.PLAY_STORE,
+      detalhe: CAMPANHA_FALLBACK_LABELS.APP_ANDROID,
+      categoria: AtribuicaoCategoria.PLAY_STORE,
     };
   }
 
   if (dispUpper === "APP_IOS") {
     return {
-      label: "App Store",
-      detalhe: "App Nativo iOS",
-      corBadge: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-      categoria: "play_store",
+      label: ORIGEM_ATRIBUICAO_LABELS.APP_STORE,
+      detalhe: CAMPANHA_FALLBACK_LABELS.APP_IOS,
+      categoria: AtribuicaoCategoria.PLAY_STORE,
     };
   }
 
   if (canalAuto === CanalAquisicao.INDICACAO) {
     return {
-      label: "Indicação",
-      detalhe: "Outro Motorista",
-      corBadge: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-      categoria: "indicacao",
+      label: ORIGEM_ATRIBUICAO_LABELS.INDICACAO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.OUTRO_MOTORISTA,
+      categoria: AtribuicaoCategoria.INDICACAO,
     };
   }
 
   if (source === "blog" || cleanReferrer?.includes("van360.com.br/blog")) {
     return {
-      label: "Blog Van360",
-      detalhe: "Orgânico",
-      corBadge: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-      categoria: "site_organico",
+      label: ORIGEM_ATRIBUICAO_LABELS.BLOG,
+      detalhe: CAMPANHA_FALLBACK_LABELS.ORGANICO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
     };
   }
 
   if (source === "lp" || cleanReferrer?.includes("van360.com.br")) {
     return {
-      label: "Site Institucional",
-      detalhe: "Direto",
-      corBadge: "bg-slate-500/10 text-slate-300 border-slate-500/20",
-      categoria: "site_organico",
+      label: ORIGEM_ATRIBUICAO_LABELS.SITE_INSTITUCIONAL,
+      detalhe: CAMPANHA_FALLBACK_LABELS.DIRETO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
     };
   }
 
   if (cleanReferrer?.includes("instagram.com")) {
     return {
-      label: "Instagram",
-      detalhe: "Orgânico / Link Bio",
-      corBadge: "bg-pink-500/10 text-pink-400 border-pink-500/20",
-      categoria: "site_organico",
+      label: ORIGEM_ATRIBUICAO_LABELS.INSTAGRAM_ORGANICO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.LINK_BIO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
     };
   }
 
   if (cleanReferrer?.includes("google.")) {
     return {
-      label: "Google",
-      detalhe: "Busca Orgânica",
-      corBadge: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      categoria: "site_organico",
+      label: ORIGEM_ATRIBUICAO_LABELS.GOOGLE_ORGANICO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.BUSCA_ORGANICA,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
     };
   }
 
   return {
-    label: "Direto / Orgânico",
-    detalhe: "Sem UTMs",
-    corBadge: "bg-slate-800 text-slate-400 border-slate-700",
-    categoria: "direto",
+    label: ORIGEM_ATRIBUICAO_LABELS.DIRETO,
+    detalhe: CAMPANHA_FALLBACK_LABELS.SEM_UTMS,
+    categoria: AtribuicaoCategoria.DIRETO,
   };
 }

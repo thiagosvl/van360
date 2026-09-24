@@ -92,7 +92,9 @@ export function useAtualizacaoRapidaViewModel() {
       if (term) {
         const matchesName = p.nome.toLowerCase().includes(term);
         const matchesTurma = p.turma ? p.turma.toLowerCase().includes(term) : false;
-        if (!matchesName && !matchesTurma) return false;
+        const matchesSala = p.sala ? p.sala.toLowerCase().includes(term) : false;
+        const matchesProfessor = p.nome_professor ? p.nome_professor.toLowerCase().includes(term) : false;
+        if (!matchesName && !matchesTurma && !matchesSala && !matchesProfessor) return false;
       }
 
       const effectiveEscolaId = business.getEffectiveValue(p, "escola_id");

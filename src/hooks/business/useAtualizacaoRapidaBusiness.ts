@@ -2,7 +2,16 @@ import { useCallback, useMemo, useState } from "react";
 import { Passageiro } from "@/types/passageiro";
 import { PassageiroBatchUpdateItem } from "@/services/api/passageiro.api";
 
-type EditableField = "escola_id" | "veiculo_id" | "turma" | "periodo" | "valor_cobranca" | "dia_vencimento" | "ativo";
+type EditableField =
+  | "escola_id"
+  | "veiculo_id"
+  | "turma"
+  | "sala"
+  | "nome_professor"
+  | "periodo"
+  | "valor_cobranca"
+  | "dia_vencimento"
+  | "ativo";
 
 function isFieldValueEqual(
   originalValue: unknown,
@@ -16,7 +25,8 @@ function isFieldValueEqual(
   }
   return (
     originalValue === newValue ||
-    (newValue === null && (originalValue === null || originalValue === undefined || originalValue === ""))
+    (newValue === null && (originalValue === null || originalValue === undefined || originalValue === "")) ||
+    (newValue === "" && (originalValue === null || originalValue === undefined || originalValue === ""))
   );
 }
 

@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus, DispositivoCadastro } from "@/types/enums";
+import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus, DispositivoCadastro, AtribuicaoCategoria } from "@/types/enums";
 import { MetadadosCadastroData } from "@/types/usuario";
 
 export interface AdminDashboardStats {
@@ -406,7 +406,7 @@ export interface ListAcquisitionStatsParams {
 
 export interface CanalAquisicaoAgrupadoItem {
   origem: string;
-  categoria: "meta_ads" | "google_ads" | "tiktok_ads" | "play_store" | "site_organico" | "indicacao" | "direto";
+  categoria: AtribuicaoCategoria;
   quantidade: number;
   porcentagem: number;
   em_trial: number;
@@ -517,6 +517,52 @@ export interface MotoristasLatestActivityResponse {
   limit: number;
 }
 
+export interface MotoristaDailyPulseItem {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  telefone: string | null;
+  email: string | null;
+  cadastrado_em: string;
+  tipo_usuario_dia: "novo" | "recorrente";
+  reengajou_no_dia: boolean;
+  total_atividades_dia: number;
+  primeiro_acesso_dia: string;
+  ultimo_acesso_dia: string;
+  ultima_acao_dia: string | null;
+  ultima_descricao_dia: string | null;
+  assinatura_status: string | null;
+  assinatura_vencimento: string | null;
+  is_vitalicio: boolean;
+}
+
+export interface ListUsersDailyPulseParams {
+  date?: string;
+  search?: string;
+  tipoUsuario?: "all" | "novo" | "recorrente";
+  subscriptionStatus?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface MotoristasDailyPulseResponse {
+  data: MotoristaDailyPulseItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface MotoristasDailyPulseStats {
+  totalAcessosUnicos: number;
+  totalRecorrentes: number;
+  totalNovos: number;
+  totalNovosReengajados: number;
+  totalTrial: number;
+  totalAtivos: number;
+  totalVitalicios: number;
+  totalVencidosExpirados: number;
+}
+
 export interface VencimentoDiaItem {
   dia: number;
   quantidade: number;
@@ -621,6 +667,12 @@ export const adminUserApi = {
 
   getUsersRadarStats: (subscriptionStatus: string = "active_trial") =>
     apiClient.get<MotoristasRadarStats>(`${BASE}/users/latest-activity/stats`, { params: { subscriptionStatus } }).then(r => r.data),
+
+  getUsersDailyPulse: (params?: ListUsersDailyPulseParams) =>
+    apiClient.get<MotoristasDailyPulseResponse>(`${BASE}/users/daily-pulse`, { params }).then(r => r.data),
+
+  getUsersDailyPulseStats: (date?: string) =>
+    apiClient.get<MotoristasDailyPulseStats>(`${BASE}/users/daily-pulse/stats`, { params: { date } }).then(r => r.data),
 
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),

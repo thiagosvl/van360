@@ -4,6 +4,7 @@ import {
   type ListUsersParams,
   type ListAcquisitionStatsParams,
   type ListUsersLatestActivityParams,
+  type ListUsersDailyPulseParams,
   type UpdateUserPayload,
   type UpdateSubscriptionPayload,
   type DispatchDriverNotificationPayload,
@@ -35,23 +36,47 @@ export function useAdminAcquisitionStats(params?: ListAcquisitionStatsParams) {
   });
 }
 
-export function useAdminUsersLatestActivity(params?: ListUsersLatestActivityParams) {
+export function useAdminUsersLatestActivity(params?: ListUsersLatestActivityParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["admin", "users", "latest-activity", params],
     queryFn: () => adminUserApi.getUsersLatestActivity(params),
     staleTime: 30 * 1000,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
+    enabled: options?.enabled,
   });
 }
 
-export function useAdminUsersRadarStats(subscriptionStatus: string = "active_trial") {
+export function useAdminUsersRadarStats(subscriptionStatus: string = "active_trial", options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["admin", "users", "radar-stats", subscriptionStatus],
     queryFn: () => adminUserApi.getUsersRadarStats(subscriptionStatus),
     staleTime: 30 * 1000,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
+
+export function useAdminUsersDailyPulse(params?: ListUsersDailyPulseParams, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", "daily-pulse", params],
+    queryFn: () => adminUserApi.getUsersDailyPulse(params),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
+
+export function useAdminUsersDailyPulseStats(date?: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", "daily-pulse-stats", date],
+    queryFn: () => adminUserApi.getUsersDailyPulseStats(date),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
   });
 }
 

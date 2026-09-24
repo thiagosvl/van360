@@ -116,7 +116,7 @@ export default function AtualizacaoRapidaPassageiros() {
             </div>
             <Input
               type="search"
-              placeholder="Buscar por aluno ou turma..."
+              placeholder="Buscar por aluno, turma, sala, professor..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-white border border-gray-100/50 h-12 md:h-14 pl-11 pr-10 rounded-2xl shadow-sm font-medium text-sm md:text-base text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"

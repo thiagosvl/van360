@@ -8,11 +8,11 @@ import { isMotoristaTitular } from "@/utils/userUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Megaphone } from "lucide-react";
-import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useProfile } from "@/hooks/business/useProfile";
+import { safeCloseDialog } from "@/hooks";
 
 interface AcquisitionChannelDialogProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
   const handleSubmit = async (data: FormData) => {
     try {
       if (!profile?.id || !isTitular) {
-        onClose();
+        safeCloseDialog(onClose);
         return;
       }
       await usuarioApi.atualizarCanalAquisicao(profile.id, data.canal_aquisicao);
@@ -48,7 +48,7 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
         description: "Sua resposta nos ajuda a melhorar.",
       });
       await refreshProfile();
-      onClose();
+      safeCloseDialog(onClose);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar a resposta.";
       toast.error("Erro ao salvar", { description: errorMessage });
@@ -72,7 +72,6 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
       <BaseDialog.Header
         title="Como você conheceu o Van360?"
         icon={<Megaphone className="w-5 h-5" />}
-      // onClose={onClose} // Removido para não ter botão de fechar (X)
       />
       <BaseDialog.Body>
         <div className="mb-6 mt-2 text-sm text-slate-600">

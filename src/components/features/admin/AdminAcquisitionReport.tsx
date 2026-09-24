@@ -20,18 +20,18 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { CANAL_AQUISICAO_CONFIG } from "@/utils/acquisition-channel.utils";
-import type { CanalAquisicao } from "@/types/enums";
+import { CanalAquisicao, AtribuicaoCategoria } from "@/types/enums";
 
 type PeriodPreset = "7d" | "15d" | "30d" | "mes_atual" | "mes_anterior" | "tudo" | "custom";
 
-const CATEGORIA_COLORS: Record<string, string> = {
-  meta_ads: "#E1306C",
-  google_ads: "#F59E0B",
-  tiktok_ads: "#06B6D4",
-  play_store: "#10B981",
-  site_organico: "#6366F1",
-  indicacao: "#A855F7",
-  direto: "#64748B",
+const CATEGORIA_COLORS: Record<AtribuicaoCategoria, string> = {
+  [AtribuicaoCategoria.META_ADS]: "#E1306C",
+  [AtribuicaoCategoria.GOOGLE_ADS]: "#F59E0B",
+  [AtribuicaoCategoria.TIKTOK_ADS]: "#06B6D4",
+  [AtribuicaoCategoria.PLAY_STORE]: "#10B981",
+  [AtribuicaoCategoria.SITE_ORGANICO]: "#6366F1",
+  [AtribuicaoCategoria.INDICACAO]: "#A855F7",
+  [AtribuicaoCategoria.DIRETO]: "#64748B",
 };
 
 interface TooltipPayloadItem {

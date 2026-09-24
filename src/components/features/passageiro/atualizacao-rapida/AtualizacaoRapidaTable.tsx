@@ -15,6 +15,8 @@ export type AtualizacaoRapidaEditableField =
   | "escola_id"
   | "veiculo_id"
   | "turma"
+  | "sala"
+  | "nome_professor"
   | "periodo"
   | "valor_cobranca"
   | "dia_vencimento"
@@ -56,7 +58,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
   return (
     <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs min-w-[650px] sm:min-w-[880px]">
+        <table className="w-full text-left border-collapse text-xs min-w-[850px] sm:min-w-[1100px]">
           <thead>
             <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <th className="py-2 sm:py-3 px-2 sm:px-3 w-10 sm:w-12 text-center">
@@ -76,10 +78,12 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
               <th className="py-2 sm:py-3 px-2 sm:px-3 w-28 sm:min-w-[200px]">Aluno</th>
               <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[160px]">Veículo</th>
               <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[170px]">Escola</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-32">Período</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28">Turma</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-32 min-w-[115px]">Valor</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28">Vencimento</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[80px]">Vencimento</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-30 min-w-[96px]">Período</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[70px]">Sala</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-36 min-w-[110px]">Professor(a)</th>
+              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28 min-w-[80px]">Turma</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -91,11 +95,13 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
               const effectiveEscolaId = String(getEffectiveValue(p, "escola_id") || "");
               const effectiveVeiculoId = String(getEffectiveValue(p, "veiculo_id") || "");
               const effectivePeriodo = String(getEffectiveValue(p, "periodo") || "none");
-              const effectiveTurma = String(getEffectiveValue(p, "turma") || "");
               const rawValor = getEffectiveValue(p, "valor_cobranca");
               const effectiveValor = rawValor !== null && rawValor !== undefined && rawValor !== "" ? Number(rawValor) : undefined;
               const rawVencimento = getEffectiveValue(p, "dia_vencimento");
               const effectiveVencimento = rawVencimento !== null && rawVencimento !== undefined && rawVencimento !== "" ? String(rawVencimento) : "none";
+              const effectiveSala = String(getEffectiveValue(p, "sala") || "");
+              const effectiveProfessor = String(getEffectiveValue(p, "nome_professor") || "");
+              const effectiveTurma = String(getEffectiveValue(p, "turma") || "");
 
               return (
                 <tr
@@ -181,33 +187,6 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                   </td>
 
                   <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <div className="relative">
-                      <select
-                        value={effectivePeriodo}
-                        onChange={(e) => onUpdateField(pId, "periodo", e.target.value === "none" ? null : e.target.value, p)}
-                        className="w-full h-7 sm:h-8 pl-1.5 pr-5 sm:pl-2 sm:pr-6 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
-                      >
-                        <option value="none">Nenhum</option>
-                        {periodos.map((per) => (
-                          <option key={per.value} value={per.value}>
-                            {per.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
-                  </td>
-
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <Input
-                      value={effectiveTurma}
-                      onChange={(e) => onUpdateField(pId, "turma", e.target.value || null, p)}
-                      placeholder="Ex: 3º B"
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200"
-                    />
-                  </td>
-
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
                     <Input
                       value={effectiveValor !== undefined && effectiveValor !== null ? moneyMask(effectiveValor) : ""}
                       onChange={(e) => {
@@ -235,6 +214,51 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                       </select>
                       <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <div className="relative min-w-[92px]">
+                      <select
+                        value={effectivePeriodo}
+                        onChange={(e) => onUpdateField(pId, "periodo", e.target.value === "none" ? null : e.target.value, p)}
+                        className="w-full h-7 sm:h-8 pl-1.5 pr-4 sm:pl-2 sm:pr-4 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
+                      >
+                        <option value="none">Nenhum</option>
+                        {periodos.map((per) => (
+                          <option key={per.value} value={per.value}>
+                            {per.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <Input
+                      value={effectiveSala}
+                      onChange={(e) => onUpdateField(pId, "sala", e.target.value || null, p)}
+                      placeholder="Ex: 12"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[65px]"
+                    />
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <Input
+                      value={effectiveProfessor}
+                      onChange={(e) => onUpdateField(pId, "nome_professor", e.target.value || null, p)}
+                      placeholder="Ex: Cláudia"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[100px]"
+                    />
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <Input
+                      value={effectiveTurma}
+                      onChange={(e) => onUpdateField(pId, "turma", e.target.value || null, p)}
+                      placeholder="Ex: 3º B"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[75px]"
+                    />
                   </td>
                 </tr>
               );

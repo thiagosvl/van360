@@ -18,6 +18,8 @@ export interface PassageiroBatchUpdateItem {
   escola_id?: string | null;
   veiculo_id?: string | null;
   turma?: string | null;
+  sala?: string | null;
+  nome_professor?: string | null;
   periodo?: string | null;
   valor_cobranca?: number | null;
   dia_vencimento?: number | null;

@@ -23,6 +23,7 @@ import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { cn } from "@/lib/utils";
 import { Banner } from "@/components/ui/Banner";
 import { isImpersonating } from "@/utils/impersonate";
+import { isMotoristaTitular } from "@/utils/userUtils";
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
@@ -32,7 +33,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
-  useAppOpenTracker(user?.id);
+  useAppOpenTracker(isMotoristaTitular(profile) ? user?.id : undefined);
 
   const displayName = profile?.apelido || formatFirstName(profile?.nome);
   const statusLabel = formatUserRoleLabel(profile?.tipo);
