@@ -277,7 +277,7 @@ export function usePassageirosViewModel() {
       openConfirmationDialog({
         title: "Excluir aluno?",
         description:
-          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados do aluno",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {

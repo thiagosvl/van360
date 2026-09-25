@@ -15,7 +15,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Tio Rodrigo & Tia Paula",
     role: "Curitiba, PR • 110 alunos",
     quote:
-      "Na saída da escola, poder fazer a chamada pelo app é muito mais prático do que no papel. Em um minuto já sei certinho quem embarcou.",
+      "Desde o mês passado já reduzi a inadimplência de 3 pais. Foram quase 700 reais que talvez eu nem fosse receber, mas o app cobrou os pais sozinho.",
     rating: "5/5",
     logo: "/assets/depoimentos/tio-rodrigo-tia-paula.png",
   },
@@ -23,7 +23,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Rota Alegre Transporte Escolar",
     role: "Brasília, DF • 260 alunos",
     quote:
-      "Desde o mês passado já reduzi a inadimplência de 3 pais. Foram quase 700 reais que talvez eu nem fosse receber, mas o app cobrou os pais sozinho.",
+      "Na saída da escola, poder fazer a chamada pelo app é muito mais prático do que no papel. Em um minuto já sei certinho quem embarcou.",
     rating: "5/5",
     logo: "/assets/depoimentos/rota-alegre-transporte-escolar.png",
   },

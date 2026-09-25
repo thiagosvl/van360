@@ -309,7 +309,7 @@ export default function PassageiroCarteirinha() {
                         diaVencimento: Number(updatedPassageiro.dia_vencimento) || undefined,
                       });
                     }
-                  } catch {}
+                  } catch { }
                 },
               });
             }, 100);
@@ -638,7 +638,7 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: "Excluir aluno?",
         description:
-          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados do aluno",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -823,138 +823,138 @@ export default function PassageiroCarteirinha() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
           {isMobile ? (
-              <>
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                  <CarteirinhaHeader
-                    passageiro={passageiro}
-                    temCobrancasVencidas={temCobrancasVencidas}
-                    onToggleClick={handleToggleClick}
-                    onEditClick={handleEditClick}
-                    onDeleteClick={infoProps.onDeleteClick}
-                    onEnviarWhatsApp={handleEnviarWhatsApp}
-                    onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
-                  />
-                </Suspense>
+            <>
+              <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                <CarteirinhaHeader
+                  passageiro={passageiro}
+                  temCobrancasVencidas={temCobrancasVencidas}
+                  onToggleClick={handleToggleClick}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={infoProps.onDeleteClick}
+                  onEnviarWhatsApp={handleEnviarWhatsApp}
+                  onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
+                />
+              </Suspense>
 
-                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                  <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
-                    <TabsList
-                      ref={tabListRef}
-                      className={cn(
-                        "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px] md:grid",
-                        validTabs.length === 5 && "md:grid-cols-5",
-                        validTabs.length === 4 && "md:grid-cols-4",
-                        validTabs.length === 3 && "md:grid-cols-3",
-                        validTabs.length === 2 && "md:grid-cols-2"
-                      )}
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
+                  <TabsList
+                    ref={tabListRef}
+                    className={cn(
+                      "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px] md:grid",
+                      validTabs.length === 5 && "md:grid-cols-5",
+                      validTabs.length === 4 && "md:grid-cols-4",
+                      validTabs.length === 3 && "md:grid-cols-3",
+                      validTabs.length === 2 && "md:grid-cols-2"
+                    )}
+                  >
+                    {canViewFinancials && (
+                      <TabsTrigger
+                        value="parcelas"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Parcelas
+                      </TabsTrigger>
+                    )}
+                    <TabsTrigger
+                      value="dados-pessoais"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
+                      Dados Pessoais
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="responsaveis"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                    >
+                      Responsáveis
+                    </TabsTrigger>
+                    {canManageContracts && (
+                      <TabsTrigger
+                        value="contrato"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Contrato
+                      </TabsTrigger>
+                    )}
+                    <TabsTrigger
+                      value="ausencias"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                    >
+                      Ausências
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                {renderTabContents("mt-5")}
+              </Tabs>
+            </>
+          ) : (
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <div className="grid grid-cols-12 gap-8 items-start">
+                <div className="col-span-4 space-y-6 sticky top-6">
+                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                    <CarteirinhaHeader
+                      passageiro={passageiro}
+                      temCobrancasVencidas={temCobrancasVencidas}
+                      onToggleClick={handleToggleClick}
+                      onEditClick={handleEditClick}
+                      onDeleteClick={infoProps.onDeleteClick}
+                      onEnviarWhatsApp={handleEnviarWhatsApp}
+                      onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
+                    />
+                  </Suspense>
+
+                  <div className="bg-slate-200/50 p-2 rounded-[2rem] shadow-xs">
+                    <TabsList className="flex flex-col w-full bg-transparent p-0 gap-1 h-auto">
                       {canViewFinancials && (
                         <TabsTrigger
                           value="parcelas"
-                          className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
                         >
-                          Parcelas
+                          <Wallet className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Parcelas</span>
                         </TabsTrigger>
                       )}
                       <TabsTrigger
                         value="dados-pessoais"
-                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
                       >
-                        Dados Pessoais
+                        <User className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span>Dados Pessoais</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="responsaveis"
-                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
                       >
-                        Responsáveis
+                        <Users className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span>Responsáveis</span>
                       </TabsTrigger>
                       {canManageContracts && (
                         <TabsTrigger
                           value="contrato"
-                          className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
                         >
-                          Contrato
+                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Contrato</span>
                         </TabsTrigger>
                       )}
                       <TabsTrigger
                         value="ausencias"
-                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
                       >
-                        Ausências
+                        <CalendarClock className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span>Ausências</span>
                       </TabsTrigger>
                     </TabsList>
                   </div>
-
-                  {renderTabContents("mt-5")}
-                </Tabs>
-              </>
-            ) : (
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="grid grid-cols-12 gap-8 items-start">
-                  <div className="col-span-4 space-y-6 sticky top-6">
-                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                      <CarteirinhaHeader
-                        passageiro={passageiro}
-                        temCobrancasVencidas={temCobrancasVencidas}
-                        onToggleClick={handleToggleClick}
-                        onEditClick={handleEditClick}
-                        onDeleteClick={infoProps.onDeleteClick}
-                        onEnviarWhatsApp={handleEnviarWhatsApp}
-                        onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
-                      />
-                    </Suspense>
-
-                    <div className="bg-slate-200/50 p-2 rounded-[2rem] shadow-xs">
-                      <TabsList className="flex flex-col w-full bg-transparent p-0 gap-1 h-auto">
-                        {canViewFinancials && (
-                          <TabsTrigger
-                            value="parcelas"
-                            className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
-                          >
-                            <Wallet className="h-4 w-4 shrink-0 text-slate-400" />
-                            <span>Parcelas</span>
-                          </TabsTrigger>
-                        )}
-                        <TabsTrigger
-                          value="dados-pessoais"
-                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
-                        >
-                          <User className="h-4 w-4 shrink-0 text-slate-400" />
-                          <span>Dados Pessoais</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="responsaveis"
-                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
-                        >
-                          <Users className="h-4 w-4 shrink-0 text-slate-400" />
-                          <span>Responsáveis</span>
-                        </TabsTrigger>
-                        {canManageContracts && (
-                          <TabsTrigger
-                            value="contrato"
-                            className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
-                          >
-                            <FileText className="h-4 w-4 shrink-0 text-slate-400" />
-                            <span>Contrato</span>
-                          </TabsTrigger>
-                        )}
-                        <TabsTrigger
-                          value="ausencias"
-                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
-                        >
-                          <CalendarClock className="h-4 w-4 shrink-0 text-slate-400" />
-                          <span>Ausências</span>
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
-                  </div>
-
-                  <div className="col-span-8 space-y-6">
-                    {renderTabContents()}
-                  </div>
                 </div>
-              </Tabs>
-            )}
+
+                <div className="col-span-8 space-y-6">
+                  {renderTabContents()}
+                </div>
+              </div>
+            </Tabs>
+          )}
         </div>
       </PullToRefreshWrapper>
 

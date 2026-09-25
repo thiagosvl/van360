@@ -194,7 +194,7 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
         <Button
           onClick={onRegister}
           disabled={isRegisterDisabled}
-          className="flex-1 md:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs md:text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
+          className="flex-1 md:flex-initial bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95"
         >
           <Plus className="h-4 w-4 mr-1.5 shrink-0" />
           <span>Cadastrar</span>
