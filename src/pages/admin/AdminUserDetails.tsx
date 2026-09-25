@@ -2190,7 +2190,7 @@ export default function AdminUserDetails() {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-slate-800">
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Criação</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
@@ -2206,7 +2206,7 @@ export default function AdminUserDetails() {
                           .map((f) => (
                             <tr key={f.id} className="border-b border-slate-800/60 hover:bg-slate-800/50 transition-colors">
                               <td className="py-4 text-xs font-semibold text-slate-200">
-                                {formatDate(f.created_at)}
+                                {formatDateTime(f.created_at)}
                               </td>
                               <td className="py-4 text-xs text-slate-400 font-medium">
                                 {f.planos?.nome || "—"}
@@ -2221,7 +2221,7 @@ export default function AdminUserDetails() {
                                 {formatDate(f.data_vencimento)}
                               </td>
                               <td className="py-4 text-xs text-slate-400">
-                                {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                                {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
                               </td>
                               <td className="py-4 text-center">
                                 <InvoiceStatusBadge status={f.status} />
@@ -2252,7 +2252,7 @@ export default function AdminUserDetails() {
                         <div key={f.id} className="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/60 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                              {formatDate(f.created_at)}
+                              Criada em {formatDateTime(f.created_at)}
                             </span>
                             <div className="flex items-center gap-1.5">
                               <InvoiceStatusBadge status={f.status} />
@@ -2290,7 +2290,7 @@ export default function AdminUserDetails() {
                             <div className="text-right">
                               <span className="font-semibold text-slate-400 block uppercase tracking-wider">Pagamento</span>
                               <span className="font-bold text-slate-200">
-                                {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                                {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
                               </span>
                             </div>
                           </div>

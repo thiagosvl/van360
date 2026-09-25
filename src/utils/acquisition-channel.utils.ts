@@ -122,6 +122,7 @@ export function resolveOrigemAtribuicao(
       label: ORIGEM_ATRIBUICAO_LABELS.FACEBOOK_ADS,
       detalhe: content || campaign || CAMPANHA_FALLBACK_LABELS.META_ADS,
       categoria: AtribuicaoCategoria.META_ADS,
+      corBadge: "bg-[#1877F2]/15 text-[#1877F2] border-[#1877F2]/30",
     };
   }
 
@@ -178,6 +179,7 @@ export function resolveOrigemAtribuicao(
       label: ORIGEM_ATRIBUICAO_LABELS.SITE_INSTITUCIONAL,
       detalhe: CAMPANHA_FALLBACK_LABELS.DIRETO,
       categoria: AtribuicaoCategoria.SITE_ORGANICO,
+      corBadge: "bg-slate-200/10 text-slate-200 border-slate-300/20",
     };
   }
 
@@ -186,6 +188,15 @@ export function resolveOrigemAtribuicao(
       label: ORIGEM_ATRIBUICAO_LABELS.INSTAGRAM_ORGANICO,
       detalhe: CAMPANHA_FALLBACK_LABELS.LINK_BIO,
       categoria: AtribuicaoCategoria.SITE_ORGANICO,
+    };
+  }
+
+  if (cleanReferrer?.includes("facebook.com")) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.FACEBOOK_ORGANICO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.ORGANICO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
+      corBadge: "bg-[#1877F2]/15 text-[#1877F2] border-[#1877F2]/30",
     };
   }
 

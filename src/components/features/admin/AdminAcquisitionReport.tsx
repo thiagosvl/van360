@@ -29,7 +29,7 @@ const CATEGORIA_COLORS: Record<AtribuicaoCategoria, string> = {
   [AtribuicaoCategoria.GOOGLE_ADS]: "#F59E0B",
   [AtribuicaoCategoria.TIKTOK_ADS]: "#06B6D4",
   [AtribuicaoCategoria.PLAY_STORE]: "#10B981",
-  [AtribuicaoCategoria.SITE_ORGANICO]: "#6366F1",
+  [AtribuicaoCategoria.SITE_ORGANICO]: "#94A3B8",
   [AtribuicaoCategoria.INDICACAO]: "#A855F7",
   [AtribuicaoCategoria.DIRETO]: "#64748B",
 };
