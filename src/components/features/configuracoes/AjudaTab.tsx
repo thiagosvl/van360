@@ -214,7 +214,7 @@ export const AjudaTab = memo(function AjudaTab() {
         <WhatsAppSupportButton
           size="lg"
           title="Falar com Suporte"
-          subtitle="Atendimento rápido para tirar dúvidas da sua operação"
+          subtitle="Atendimento rápido para tirar dúvidas sobre o app"
           message="Olá, preciso de ajuda com o Van360"
         />
       </div>

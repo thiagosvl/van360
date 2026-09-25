@@ -18,6 +18,7 @@ import { RastreamentoTab } from "@/components/features/configuracoes/Rastreament
 import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
 import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
+import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
 import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { toast } from "sonner";
@@ -186,6 +187,12 @@ export const Conta = memo(function Conta() {
             )}
           </div>
         </div>
+
+        <WhatsAppSupportButton
+          title="Falar com Suporte"
+          subtitle="Atendimento rápido para tirar dúvidas sobre o app"
+          message="Olá, preciso de suporte com o Van360"
+        />
 
         {/* Grupo 1: Conta e acesso */}
         <div className="space-y-2">

@@ -13,19 +13,11 @@ export interface Testimonial {
 export const TESTIMONIALS: Testimonial[] = [
   {
     name: "Tio Rodrigo & Tia Paula",
-    role: "Curitiba, PR • 110 alunos",
+    role: "Curitiba, PR • 260 alunos",
     quote:
       "Desde o mês passado já reduzi a inadimplência de 3 pais. Foram quase 700 reais que talvez eu nem fosse receber, mas o app cobrou os pais sozinho.",
     rating: "5/5",
     logo: "/assets/depoimentos/tio-rodrigo-tia-paula.png",
-  },
-  {
-    name: "Rota Alegre Transporte Escolar",
-    role: "Brasília, DF • 260 alunos",
-    quote:
-      "Na saída da escola, poder fazer a chamada pelo app é muito mais prático do que no papel. Em um minuto já sei certinho quem embarcou.",
-    rating: "5/5",
-    logo: "/assets/depoimentos/rota-alegre-transporte-escolar.png",
   },
   {
     name: "Tio Beto",
@@ -50,6 +42,14 @@ export const TESTIMONIALS: Testimonial[] = [
       "O suporte é rápido de verdade e o melhor é não precisar mais ficar cobrando os pais. O app avisa todo mundo certinho no WhatsApp.",
     rating: "5/5",
     logo: "/assets/depoimentos/tia-lu-kids.png",
+  },
+  {
+    name: "Rota Alegre Transporte Escolar",
+    role: "Brasília, DF • 110 alunos",
+    quote:
+      "Na saída da escola, poder fazer a chamada pelo app é muito mais prático do que no papel. Em um minuto já sei certinho quem embarcou.",
+    rating: "5/5",
+    logo: "/assets/depoimentos/rota-alegre-transporte-escolar.png",
   },
 ];
 
