@@ -5,8 +5,9 @@ import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { useCallback, useState } from "react";
 import { getNowBR } from "@/utils/dateUtils";
 import { useActivityTracker } from "@/hooks/business/useActivityTracker";
-import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
+import { AtividadeAcao, AtividadeEntidadeTipo, PassageiroGenero } from "@/types/enums";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -17,6 +18,9 @@ interface ReceiptDialogProps {
   mes?: number;
   ano?: number;
   passageiroId?: string;
+  nomePassageiro?: string;
+  nomeResponsavel?: string | null;
+  generoPassageiro?: PassageiroGenero | string | null;
 }
 
 export const ReceiptDialog = ({
@@ -28,6 +32,9 @@ export const ReceiptDialog = ({
   mes,
   ano,
   passageiroId,
+  nomePassageiro,
+  nomeResponsavel,
+  generoPassageiro,
 }: ReceiptDialogProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const { trackActivity } = useActivityTracker();
@@ -67,13 +74,35 @@ export const ReceiptDialog = ({
       },
     });
 
+    const shareText =
+      nomePassageiro && mes && ano
+        ? buildReciboWhatsAppMessage({
+            nomeResponsavel,
+            nomePassageiro,
+            generoPassageiro,
+            mes,
+            ano,
+          })
+        : cobrancaDescricao || "Recibo de Pagamento";
+
     await shareReceiptFile({
       url: receiptUrl!,
       filename: "recibo.png",
       title: "Recibo Van360",
-      text: cobrancaDescricao,
+      text: shareText,
     });
-  }, [receiptUrl, cobrancaDescricao, trackActivity, cobrancaId, mes, ano, passageiroId]);
+  }, [
+    receiptUrl,
+    cobrancaDescricao,
+    trackActivity,
+    cobrancaId,
+    mes,
+    ano,
+    passageiroId,
+    nomePassageiro,
+    nomeResponsavel,
+    generoPassageiro,
+  ]);
 
   if (!receiptUrl) return null;
 

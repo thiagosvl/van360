@@ -1,5 +1,5 @@
 import { Cobranca } from "@/types/cobranca";
-import { PassageiroFormModes, SubscriptionIdentifer } from "@/types/enums";
+import { PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
@@ -8,6 +8,7 @@ import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
 import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
+import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 import {
   createContext,
   useContext,
@@ -123,6 +124,9 @@ export interface OpenReceiptDialogProps {
   mes?: number;
   ano?: number;
   passageiroId?: string;
+  nomePassageiro?: string;
+  nomeResponsavel?: string | null;
+  generoPassageiro?: PassageiroGenero | string | null;
 }
 
 export interface OpenAnnualReceiptDialogProps {
@@ -265,6 +269,12 @@ export interface OpenReciboPreviewDialogProps {
   passageiroNome?: string;
 }
 
+export interface OpenWhatsAppShowcaseDialogProps {
+  initialTab?: ShowcaseTabType;
+  driverName?: string;
+  passageiroNome?: string;
+}
+
 export interface OpenOnboardingSuccessDialogProps {
   onNavigateToPassageiro: () => void;
   passageiroNome?: string;
@@ -343,6 +353,7 @@ export interface LayoutContextType {
   openWhatsAppCobrancaPreviewDialog: (props?: OpenWhatsAppCobrancaPreviewDialogProps) => void;
   openWhatsAppContratoPreviewDialog: (props?: OpenWhatsAppContratoPreviewDialogProps) => void;
   openReciboPreviewDialog: (props?: OpenReciboPreviewDialogProps) => void;
+  openWhatsAppShowcaseDialog: (props?: OpenWhatsAppShowcaseDialogProps) => void;
   openShowcaseTransporteEscolarDialog: () => void;
   openOnboardingSuccessDialog: (props: OpenOnboardingSuccessDialogProps) => void;
   openAcquisitionChannelDialog: () => void;

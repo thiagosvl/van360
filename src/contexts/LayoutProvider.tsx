@@ -41,6 +41,7 @@ import { VideoStoriesDialog } from "@/components/dialogs/VideoStoriesDialog";
 import { WhatsAppCobrancaPreviewDialog } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
 import { WhatsAppContratoPreviewDialog } from "@/components/dialogs/WhatsAppContratoPreviewDialog";
 import { ReciboPreviewDialog } from "@/components/dialogs/ReciboPreviewDialog";
+import { WhatsAppShowcaseDialog } from "@/components/dialogs/WhatsAppShowcaseDialog";
 import { ShowcaseTransporteEscolarDialog } from "@/components/dialogs/ShowcaseTransporteEscolarDialog";
 import { OnboardingSuccessDialog } from "@/components/dialogs/OnboardingSuccessDialog";
 import { ImageFullscreenDialog } from "@/components/dialogs/ImageFullscreenDialog";
@@ -66,6 +67,7 @@ import {
   OpenWhatsAppCobrancaPreviewDialogProps,
   OpenWhatsAppContratoPreviewDialogProps,
   OpenReciboPreviewDialogProps,
+  OpenWhatsAppShowcaseDialogProps,
   OpenOnboardingSuccessDialogProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
@@ -342,6 +344,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenReciboPreviewDialogProps;
   }>({ open: false });
+  const [whatsAppShowcaseDialogState, setWhatsAppShowcaseDialogState] = useState<{
+    open: boolean;
+    props?: OpenWhatsAppShowcaseDialogProps;
+  }>({ open: false });
   const [onboardingSuccessDialogState, setOnboardingSuccessDialogState] = useState<{
     open: boolean;
     props?: OpenOnboardingSuccessDialogProps;
@@ -601,6 +607,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setReciboPreviewDialogState({ open: true, props });
   };
 
+  const openWhatsAppShowcaseDialog = (props?: OpenWhatsAppShowcaseDialogProps) => {
+    setWhatsAppShowcaseDialogState({ open: true, props });
+  };
+
   const openOnboardingSuccessDialog = (props: OpenOnboardingSuccessDialogProps) => {
     setOnboardingSuccessDialogState({ open: true, props });
   };
@@ -663,6 +673,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openWhatsAppCobrancaPreviewDialog,
         openWhatsAppContratoPreviewDialog,
         openReciboPreviewDialog,
+        openWhatsAppShowcaseDialog,
         openShowcaseTransporteEscolarDialog,
         openOnboardingSuccessDialog,
         openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
@@ -1068,6 +1079,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {whatsAppShowcaseDialogState.open && (
+        <WhatsAppShowcaseDialog
+          isOpen={whatsAppShowcaseDialogState.open}
+          onClose={() => safeCloseDialog(() => setWhatsAppShowcaseDialogState({ open: false }))}
+          initialTab={whatsAppShowcaseDialogState.props?.initialTab}
+          driverName={whatsAppShowcaseDialogState.props?.driverName}
+          passageiroNome={whatsAppShowcaseDialogState.props?.passageiroNome}
+        />
+      )}
+
       {showcaseTransporteEscolarOpen && (
         <ShowcaseTransporteEscolarDialog
           isOpen={showcaseTransporteEscolarOpen}
@@ -1082,9 +1103,30 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setOnboardingSuccessDialogState({ open: false }))}
           onNavigateToPassageiro={onboardingSuccessDialogState.props.onNavigateToPassageiro}
           passageiroNome={onboardingSuccessDialogState.props.passageiroNome}
-          onOpenWhatsAppPreview={() => openWhatsAppCobrancaPreviewDialog({ showPixSetupAction: false, passageiroNome: onboardingSuccessDialogState.props?.passageiroNome })}
-          onOpenContratoPreview={() => openWhatsAppContratoPreviewDialog({ passageiroNome: onboardingSuccessDialogState.props?.passageiroNome })}
-          onOpenReciboPreview={() => openReciboPreviewDialog({ passageiroNome: onboardingSuccessDialogState.props?.passageiroNome })}
+          onOpenShowcase={(tab) =>
+            openWhatsAppShowcaseDialog({
+              initialTab: tab,
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+          onOpenWhatsAppPreview={() =>
+            openWhatsAppShowcaseDialog({
+              initialTab: "cobranca",
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+          onOpenContratoPreview={() =>
+            openWhatsAppShowcaseDialog({
+              initialTab: "contrato",
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+          onOpenReciboPreview={() =>
+            openWhatsAppShowcaseDialog({
+              initialTab: "recibo",
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
         />
       )}
 
@@ -1151,6 +1193,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           mes={receiptDialogState.props.mes}
           ano={receiptDialogState.props.ano}
           passageiroId={receiptDialogState.props.passageiroId}
+          nomePassageiro={receiptDialogState.props.nomePassageiro}
+          nomeResponsavel={receiptDialogState.props.nomeResponsavel}
+          generoPassageiro={receiptDialogState.props.generoPassageiro}
         />
       )}
 

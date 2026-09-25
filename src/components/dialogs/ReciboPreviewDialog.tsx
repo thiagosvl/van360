@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { getDriverDisplayName } from "@/utils/formatters/user";
 import { formatShortName } from "@/utils/formatters/name";
+import { getStudentPreposition } from "@/utils/formatters";
 import { Receipt } from "lucide-react";
 
 export interface ReciboPreviewDialogProps {
@@ -174,7 +175,7 @@ export function ReciboPreviewDialog({
 
               <div className="px-1.5 pt-1.5 pb-0.5 flex items-end justify-between gap-1.5 text-[#111b21]">
                 <span className="text-[10px] min-[360px]:text-[10.5px] font-normal leading-tight truncate">
-                  Recibo de Set/26 - {studentFirstName}
+                  Segue o recibo {getStudentPreposition(undefined, studentFirstName)} {studentFirstName} referente a Set/26
                 </span>
                 <div className="flex items-center gap-0.5 shrink-0 text-[9px] text-[#667781] select-none ml-auto">
                   <span>16:37</span>

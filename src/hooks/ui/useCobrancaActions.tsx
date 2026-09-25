@@ -34,6 +34,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { isMobilePlatform } from "@/utils/detectPlatform";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 import { useCallback, useMemo } from "react";
 
 export interface UseCobrancaOperationsProps {
@@ -363,11 +364,19 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         },
       });
 
+      const messageText = buildReciboWhatsAppMessage({
+        nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
+        nomePassageiro: cobranca.passageiro?.nome || "",
+        generoPassageiro: cobranca.passageiro?.genero,
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+      });
+
       await shareReceiptFile({
         url: cobranca.recibo_url!,
         filename: `recibo-${cobranca.mes}-${cobranca.ano}.png`.toLowerCase(),
         title: "Recibo Van360",
-        text: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${cobranca.passageiro?.nome || ""}`,
+        text: messageText,
       });
     };
 

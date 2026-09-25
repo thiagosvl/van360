@@ -330,13 +330,6 @@ const Home = () => {
 
             {!isSubConta && <SmartAppBanner />}
 
-            {!isSubConta && !onboarding.showOnboarding && isTrial && !isDismissedDemonstracoes && (
-              <DemonstracoesWhatsAppCard
-                profile={profile}
-                onDismiss={handleDismissDemonstracoes}
-              />
-            )}
-
             {!isSubConta && !onboarding.showOnboarding && contadores.passageirosSolicitacoes === 0 && contadores.passageirosAtivos < 10 && !isDismissedQuickReg && (
               <section className="px-1">
                 <QuickRegistrationLink
@@ -349,6 +342,13 @@ const Home = () => {
             )}
           </div>
 
+          {!isSubConta && !onboarding.showOnboarding && isTrial && !isDismissedDemonstracoes && (
+            <DemonstracoesWhatsAppCard
+              profile={profile}
+              onDismiss={handleDismissDemonstracoes}
+            />
+          )}
+
 
           {/* Acessos Rápidos */}
           <AcessoRapido
@@ -358,6 +358,9 @@ const Home = () => {
 
           {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
             <section className="px-1">
+              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                Assinatura do Van360
+              </h2>
               <TrialBanner
                 daysLeft={trialDaysLeft}
                 onSubscribe={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}

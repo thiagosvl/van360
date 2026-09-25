@@ -19,6 +19,7 @@ import {
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -212,6 +213,8 @@ export function useCobrancaForm({
       createCobranca.mutate(payload, {
         onSuccess: async (createdCobranca?: Cobranca) => {
           const nomeAluno = passageiroNome || cobranca?.passageiro?.nome || createdCobranca?.passageiro?.nome || "";
+          const nomeResp = cobranca?.passageiro?.responsavel_principal?.nome || createdCobranca?.passageiro?.responsavel_principal?.nome;
+          const generoAluno = cobranca?.passageiro?.genero || createdCobranca?.passageiro?.genero;
           const shouldShare = data.foi_pago && data.enviar_recibo_whatsapp_manual && createdCobranca?.recibo_url;
           const reciboUrl = createdCobranca?.recibo_url;
           const cobrancaMes = createdCobranca?.mes;
@@ -220,12 +223,20 @@ export function useCobrancaForm({
           onSuccess?.();
           form.reset();
 
-          if (shouldShare && reciboUrl) {
+          if (shouldShare && reciboUrl && cobrancaMes && cobrancaAno) {
+            const messageText = buildReciboWhatsAppMessage({
+              nomeResponsavel: nomeResp,
+              nomePassageiro: nomeAluno,
+              generoPassageiro: generoAluno,
+              mes: Number(cobrancaMes),
+              ano: Number(cobrancaAno),
+            });
+
             await shareReceiptFile({
               url: reciboUrl,
-              filename: `recibo-${cobrancaMes || ""}-${cobrancaAno || ""}.png`.toLowerCase(),
+              filename: `recibo-${cobrancaMes}-${cobrancaAno}.png`.toLowerCase(),
               title: "Recibo Van360",
-              text: `Recibo de ${cobrancaMes}/${cobrancaAno} - ${nomeAluno}`.trim(),
+              text: messageText,
             });
           }
         },
@@ -251,6 +262,8 @@ export function useCobrancaForm({
         createCobranca.mutate(createPayload, {
           onSuccess: async (createdCobranca?: Cobranca) => {
             const nomeAluno = passageiroNome || cobranca?.passageiro?.nome || createdCobranca?.passageiro?.nome || "";
+            const nomeResp = cobranca?.passageiro?.responsavel_principal?.nome || createdCobranca?.passageiro?.responsavel_principal?.nome;
+            const generoAluno = cobranca?.passageiro?.genero || createdCobranca?.passageiro?.genero;
             const shouldShare = data.foi_pago && data.enviar_recibo_whatsapp_manual && createdCobranca?.recibo_url;
             const reciboUrl = createdCobranca?.recibo_url;
             const cobrancaMes = createdCobranca?.mes;
@@ -259,12 +272,20 @@ export function useCobrancaForm({
             onSuccess?.();
             form.reset();
 
-            if (shouldShare && reciboUrl) {
+            if (shouldShare && reciboUrl && cobrancaMes && cobrancaAno) {
+              const messageText = buildReciboWhatsAppMessage({
+                nomeResponsavel: nomeResp,
+                nomePassageiro: nomeAluno,
+                generoPassageiro: generoAluno,
+                mes: Number(cobrancaMes),
+                ano: Number(cobrancaAno),
+              });
+
               await shareReceiptFile({
                 url: reciboUrl,
-                filename: `recibo-${cobrancaMes || ""}-${cobrancaAno || ""}.png`.toLowerCase(),
+                filename: `recibo-${cobrancaMes}-${cobrancaAno}.png`.toLowerCase(),
                 title: "Recibo Van360",
-                text: `Recibo de ${cobrancaMes}/${cobrancaAno} - ${nomeAluno}`.trim(),
+                text: messageText,
               });
             }
           },

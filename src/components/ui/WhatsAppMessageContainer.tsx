@@ -47,20 +47,19 @@ export function WhatsAppMessageContainer({
   return (
     <div
       className={cn(
-        "w-full relative rounded-2xl bg-[#efeae2] p-2.5 min-[360px]:p-4 sm:p-5 border border-slate-200/80 shadow-inner overflow-hidden flex flex-col items-center",
+        "w-full max-w-[310px] xl:max-w-[320px] mx-auto sm:mx-0 xl:mx-auto relative rounded-[24px] bg-[#efeae2] p-2.5 min-[360px]:p-3 border border-slate-200/90 shadow-inner overflow-hidden flex flex-col items-start min-h-[350px] xl:min-h-[440px] justify-start",
         className
       )}
     >
       <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        className="absolute inset-0 pointer-events-none bg-cover bg-center"
         style={{
-          backgroundImage: "radial-gradient(#000000 0.75px, transparent 0.75px)",
-          backgroundSize: "12px 12px",
+          backgroundImage: "url('/assets/whatsapp-wallpaper.png')",
         }}
       />
 
       <div
-        className="relative max-w-[340px] w-full bg-white rounded-r-[7.5px] rounded-b-[7.5px] rounded-tl-none shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] text-[#111b21]"
+        className="relative w-full max-w-[258px] xl:max-w-[276px] bg-white rounded-r-[7.5px] rounded-b-[7.5px] rounded-tl-none shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] text-[#111b21] ml-1.5"
         style={{
           fontFamily:
             "Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif",
@@ -83,20 +82,20 @@ export function WhatsAppMessageContainer({
           />
         </svg>
 
-        <div className="px-3 pt-2 pb-1.5 min-[360px]:px-3.5 min-[360px]:pt-2.5 min-[360px]:pb-2 space-y-2 min-[360px]:space-y-3">
-          <p className="font-bold text-[#111b21] text-[13px] min-[360px]:text-[14.2px] leading-tight">
+        <div className="px-3 pt-2 pb-1.5 min-[360px]:px-3 min-[360px]:pt-2 min-[360px]:pb-1.5 space-y-1.5 min-[360px]:space-y-2">
+          <p className="font-bold text-[#111b21] text-[12px] min-[360px]:text-[13px] leading-tight">
             Transporte Escolar · {driverName}
           </p>
 
-          <div className="space-y-2 min-[360px]:space-y-3 text-[#111b21] text-[13px] min-[360px]:text-[14.2px] leading-[17.5px] min-[360px]:leading-[19px]">
+          <div className="space-y-1.5 min-[360px]:space-y-2 text-[#111b21] text-[11.5px] min-[360px]:text-[12.5px] leading-[15.5px] min-[360px]:leading-[17px]">
             {children}
           </div>
 
-          <div className="flex items-end justify-between gap-3 pt-0.5 text-[10px] min-[360px]:text-[11px] text-[#667781] leading-tight">
-            <span className="max-w-[210px]">
-              Mensagem automática via Van360 · Não responda.
+          <div className="flex items-end justify-between gap-2 pt-0.5 text-[9.5px] min-[360px]:text-[10px] text-[#667781] leading-tight">
+            <span className="truncate">
+              Mensagem via Van360 · Não responda.
             </span>
-            <span className="shrink-0 text-[10px] min-[360px]:text-[11px] text-[#667781] select-none">
+            <span className="shrink-0 text-[9.5px] min-[360px]:text-[10px] text-[#667781] select-none">
               {time}
             </span>
           </div>
@@ -106,7 +105,7 @@ export function WhatsAppMessageContainer({
       </div>
 
       {footerNote && (
-        <div className="text-[11px] min-[360px]:text-xs text-slate-500 text-center mt-2 min-[360px]:mt-3 px-1 min-[360px]:px-2 leading-snug min-[360px]:leading-relaxed">
+        <div className="text-[11px] min-[360px]:text-xs text-slate-500 text-center mt-2 min-[360px]:mt-2.5 px-1 min-[360px]:px-2 leading-snug">
           {footerNote}
         </div>
       )}

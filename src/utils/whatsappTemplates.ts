@@ -1,7 +1,14 @@
 import { BASE_DOMAIN, TRIAL_DURATION_DAYS } from "@/constants";
 import { TipoChavePix, TIPOS_CHAVE_PIX_LABEL } from "@/types/pix";
+import { PassageiroGenero } from "@/types/enums";
 import { PLAY_STORE_URL } from "@/utils/detectPlatform";
-import { formatDateToBR, formatFirstName, formatShortName } from "@/utils/formatters";
+import {
+  formatDateToBR,
+  formatFirstName,
+  formatShortName,
+  getMesAbreviado,
+  getStudentPreposition,
+} from "@/utils/formatters";
 
 export interface CobrancaWhatsAppParams {
   telefoneResponsavel: string;
@@ -27,6 +34,15 @@ export interface ResponsavelAppInviteParams {
   nomePassageiro: string;
   appAndroidLink?: string;
   webLoginLink?: string;
+}
+
+export interface ReciboWhatsAppParams {
+  telefoneResponsavel?: string | null;
+  nomeResponsavel?: string | null;
+  nomePassageiro: string;
+  generoPassageiro?: PassageiroGenero | string | null;
+  mes: number;
+  ano: number;
 }
 
 export function cleanWhatsAppPhone(phone?: string | null): string {
@@ -186,5 +202,29 @@ export function buildResponsavelAppInviteMessage(params: ResponsavelAppInvitePar
 
 export function buildResponsavelAppInviteUrl(params: ResponsavelAppInviteParams): string {
   const mensagem = buildResponsavelAppInviteMessage(params);
+  return buildWhatsAppUrl(params.telefoneResponsavel, mensagem);
+}
+
+export function buildReciboWhatsAppMessage(params: ReciboWhatsAppParams): string {
+  const primeiroNomeResp = params.nomeResponsavel ? formatFirstName(params.nomeResponsavel) : "";
+  const nomeAluno = formatShortName(params.nomePassageiro, true);
+  const prep = getStudentPreposition(params.generoPassageiro, params.nomePassageiro);
+  const mesAbreviado = getMesAbreviado(params.mes);
+  const anoAbreviado = String(params.ano).slice(-2);
+  const periodo = `${mesAbreviado}/${anoAbreviado}`;
+
+  const saudacao = primeiroNomeResp ? `Olá, ${primeiroNomeResp}! Tudo bem? 🚐` : "Olá! Tudo bem? 🚐";
+
+  return [
+    saudacao,
+    "",
+    `Segue o recibo ${prep} *${nomeAluno}* referente a *${periodo}*.`,
+    "",
+    "Agradecemos a confiança em nosso serviço!",
+  ].join("\n");
+}
+
+export function buildReciboWhatsAppUrl(params: ReciboWhatsAppParams): string {
+  const mensagem = buildReciboWhatsAppMessage(params);
   return buildWhatsAppUrl(params.telefoneResponsavel, mensagem);
 }

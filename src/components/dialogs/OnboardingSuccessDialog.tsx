@@ -23,6 +23,7 @@ import {
   LucideProps,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 
 interface NextStepItem {
   id: string;
@@ -45,7 +46,7 @@ const NEXT_STEPS: NextStepItem[] = [
   },
   {
     id: "recibos",
-    title: "Recibos no WhatsApp",
+    title: "Recibos",
     description: "Envie o comprovante digital aos pais com um toque.",
     icon: Receipt,
     actionType: "preview_recibo",
@@ -53,7 +54,7 @@ const NEXT_STEPS: NextStepItem[] = [
   },
   {
     id: "contratos",
-    title: "Contratos Digitais",
+    title: "Contratos",
     description: "Gere contratos com assinatura online pelo celular e validade jurídica.",
     icon: FileText,
     actionType: "preview_contrato",
@@ -122,6 +123,7 @@ export interface OnboardingSuccessDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateToPassageiro: () => void;
+  onOpenShowcase?: (tab: ShowcaseTabType) => void;
   onOpenWhatsAppPreview?: () => void;
   onOpenContratoPreview?: () => void;
   onOpenReciboPreview?: () => void;
@@ -132,6 +134,7 @@ export function OnboardingSuccessDialog({
   isOpen,
   onClose,
   onNavigateToPassageiro,
+  onOpenShowcase,
   onOpenWhatsAppPreview,
   onOpenContratoPreview,
   onOpenReciboPreview,
@@ -190,12 +193,24 @@ export function OnboardingSuccessDialog({
   };
 
   const handleItemClick = (step: NextStepItem) => {
-    if (step.actionType === "preview_cobranca" && onOpenWhatsAppPreview) {
-      onOpenWhatsAppPreview();
-    } else if (step.actionType === "preview_recibo" && onOpenReciboPreview) {
-      onOpenReciboPreview();
-    } else if (step.actionType === "preview_contrato" && onOpenContratoPreview) {
-      onOpenContratoPreview();
+    if (step.actionType === "preview_cobranca") {
+      if (onOpenShowcase) {
+        onOpenShowcase("cobranca");
+      } else if (onOpenWhatsAppPreview) {
+        onOpenWhatsAppPreview();
+      }
+    } else if (step.actionType === "preview_recibo") {
+      if (onOpenShowcase) {
+        onOpenShowcase("recibo");
+      } else if (onOpenReciboPreview) {
+        onOpenReciboPreview();
+      }
+    } else if (step.actionType === "preview_contrato") {
+      if (onOpenShowcase) {
+        onOpenShowcase("contrato");
+      } else if (onOpenContratoPreview) {
+        onOpenContratoPreview();
+      }
     } else if (step.actionType === "navigate" && step.route) {
       safeCloseDialog(() => {
         onClose();

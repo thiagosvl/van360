@@ -10,6 +10,7 @@ import { getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { parseCurrencyToNumber } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 
 import { safeCloseDialog } from "@/hooks";
 
@@ -76,11 +77,19 @@ export function useManualPaymentViewModel({
           if (data.enviar_recibo_whatsapp_manual && updatedCobranca?.recibo_url) {
             const mes = updatedCobranca.mes;
             const ano = updatedCobranca.ano;
+            const text = buildReciboWhatsAppMessage({
+              nomeResponsavel: updatedCobranca.passageiro?.responsavel_principal?.nome,
+              nomePassageiro: passageiroNome || updatedCobranca.passageiro?.nome || "",
+              generoPassageiro: updatedCobranca.passageiro?.genero,
+              mes: Number(mes),
+              ano: Number(ano),
+            });
+
             await shareReceiptFile({
               url: updatedCobranca.recibo_url,
               filename: `recibo-${mes || ""}-${ano || ""}.png`.toLowerCase(),
               title: "Recibo Van360",
-              text: `Recibo de ${mes}/${ano} - ${passageiroNome || ""}`.trim(),
+              text,
             });
           }
         },

@@ -108,7 +108,7 @@ export default function Splash() {
             <img
               src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-10 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-9 [@media(max-height:580px)]:!h-7"
+              className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8"
             />
 
             <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
@@ -177,7 +177,7 @@ export default function Splash() {
             <img
               src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-10 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-9 [@media(max-height:580px)]:!h-7"
+              className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8"
             />
 
             <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">

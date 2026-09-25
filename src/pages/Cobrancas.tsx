@@ -18,6 +18,7 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useTutorialsConfig } from "@/hooks";
 import { STORAGE_KEYS } from "@/constants";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 export default function Cobrancas() {
   const { can } = usePermissions();
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("parcelas");
@@ -68,14 +69,24 @@ export default function Cobrancas() {
     onEditarCobranca: handleEditCobrancaClick,
     onRegistrarPagamento: openPaymentDialog,
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
-      receiptUrl: url,
-      cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${cobranca.passageiro?.nome || ""}`,
-      cobrancaId: cobranca.id,
-      mes: cobranca.mes,
-      ano: cobranca.ano,
-      passageiroId: cobranca.passageiro_id,
-    }),
+    onVerRecibo: (url: string, cobranca: Cobranca) =>
+      openReceiptDialog({
+        receiptUrl: url,
+        cobrancaDescricao: buildReciboWhatsAppMessage({
+          nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
+          nomePassageiro: cobranca.passageiro?.nome || "",
+          generoPassageiro: cobranca.passageiro?.genero,
+          mes: cobranca.mes,
+          ano: cobranca.ano,
+        }),
+        cobrancaId: cobranca.id,
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+        passageiroId: cobranca.passageiro_id,
+        nomePassageiro: cobranca.passageiro?.nome,
+        nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
+        generoPassageiro: cobranca.passageiro?.genero,
+      }),
     onActionSuccess: () => { },
   };
 

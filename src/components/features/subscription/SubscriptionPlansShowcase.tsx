@@ -38,43 +38,49 @@ interface Testimonial {
   role: string;
   quote: string;
   rating: string;
+  logo?: string;
 }
 
 const testimonials: Testimonial[] = [
   {
-    name: "Tio Marcos",
-    role: "Transporte Escolar na Zona Sul de SP • 67 alunos",
-    quote:
-      "Desde o mês passado já reduzi a inadimplência de 3 pais. Foram quase 700 reais que talvez eu nem fosse receber, mas o app cobrou os pais sozinho.",
-    rating: "5/5",
-  },
-  {
-    name: "Tia Cláudia",
-    role: "Transporte Escolar em Belo Horizonte/MG • 54 alunos",
-    quote:
-      "Os pais assinam o contrato direto pelo link no celular. Agora não preciso mais imprimir e levar o contrato de porta em porta dos pais.",
-    rating: "5/5",
-  },
-  {
-    name: "Tio Roberto",
-    role: "Transporte Escolar em Curitiba/PR • 112 alunos",
+    name: "Tio Rodrigo & Tia Paula",
+    role: "Curitiba, PR • 110 alunos",
     quote:
       "Na saída da escola, poder fazer a chamada pelo app é muito mais prático do que no papel. Em um minuto já sei certinho quem embarcou.",
     rating: "5/5",
+    logo: "/assets/depoimentos/tio-rodrigo-tia-paula.png",
   },
   {
-    name: "Tia Valéria",
-    role: "Transporte Escolar na Zona Norte do RJ • 51 alunos",
+    name: "Rota Alegre Transporte Escolar",
+    role: "Brasília, DF • 260 alunos",
+    quote:
+      "Desde o mês passado já reduzi a inadimplência de 3 pais. Foram quase 700 reais que talvez eu nem fosse receber, mas o app cobrou os pais sozinho.",
+    rating: "5/5",
+    logo: "/assets/depoimentos/rota-alegre-transporte-escolar.png",
+  },
+  {
+    name: "Tio Beto",
+    role: "São Paulo, SP • 60 alunos",
+    quote:
+      "Os pais assinam o contrato direto pelo link no celular. Agora não preciso mais imprimir e levar o contrato de porta em porta dos pais.",
+    rating: "5/5",
+    logo: "/assets/depoimentos/tio-beto.png",
+  },
+  {
+    name: "Escolar Tio Saulo",
+    role: "Belo Horizonte, MG • 320 alunos",
     quote:
       "Deixei minhas planilhas de lado de vez. O app me mostra na hora quem já pagou o mês e quem está pendente com total clareza.",
     rating: "5/5",
+    logo: "/assets/depoimentos/escolar-tio-saulo.png",
   },
   {
-    name: "Tio Anderson",
-    role: "Transporte Escolar em Brasília/DF • 63 alunos",
+    name: "Tia Lu Kids",
+    role: "Rio de Janeiro, RJ • 90 alunos",
     quote:
       "O suporte é rápido de verdade e o melhor é não precisar mais ficar cobrando os pais. O app avisa todo mundo certinho no WhatsApp.",
     rating: "5/5",
+    logo: "/assets/depoimentos/tia-lu-kids.png",
   },
 ];
 
@@ -643,8 +649,17 @@ export function SubscriptionPlansShowcase({
             </p>
 
             <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 text-[#002444] flex items-center justify-center shrink-0 shadow-xs">
-                <Smile className="w-5 h-5 text-[#002444]" />
+              <div className="w-11 h-11 rounded-full bg-slate-50 border border-slate-200/80 text-[#002444] flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                {testimonials[activeTestimonialIdx].logo ? (
+                  <img
+                    src={testimonials[activeTestimonialIdx].logo}
+                    alt={testimonials[activeTestimonialIdx].name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <Smile className="w-5 h-5 text-[#002444]" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <h5 className="text-xs sm:text-sm font-bold text-[#002444]">

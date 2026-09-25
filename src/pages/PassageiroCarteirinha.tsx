@@ -54,6 +54,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
 import { toast } from "@/utils/notifications/toast";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 
 import { Cobranca } from "@/types/cobranca";
 
@@ -599,14 +600,28 @@ export default function PassageiroCarteirinha() {
     onDesfazerPagamento: handleDesfazerClick,
     onExcluirCobranca: handleExcluirCobranca,
     onToggleClick: handleToggleClick,
-    onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
-      receiptUrl: url,
-      cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
-      cobrancaId: cobranca.id,
-      mes: cobranca.mes,
-      ano: cobranca.ano,
-      passageiroId: cobranca.passageiro_id || passageiro.id,
-    }),
+    onVerRecibo: (url: string, cobranca: Cobranca) =>
+      openReceiptDialog({
+        receiptUrl: url,
+        cobrancaDescricao: buildReciboWhatsAppMessage({
+          nomeResponsavel:
+            passageiro.responsavel_principal?.nome ||
+            cobranca.passageiro?.responsavel_principal?.nome,
+          nomePassageiro: passageiro.nome,
+          generoPassageiro: passageiro.genero || cobranca.passageiro?.genero,
+          mes: cobranca.mes,
+          ano: cobranca.ano,
+        }),
+        cobrancaId: cobranca.id,
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+        passageiroId: cobranca.passageiro_id || passageiro.id,
+        nomePassageiro: passageiro.nome,
+        nomeResponsavel:
+          passageiro.responsavel_principal?.nome ||
+          cobranca.passageiro?.responsavel_principal?.nome,
+        generoPassageiro: passageiro.genero || cobranca.passageiro?.genero,
+      }),
   };
 
   const infoProps = {

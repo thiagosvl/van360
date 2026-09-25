@@ -4,6 +4,7 @@ import {
   PassageiroModalidade,
 } from "@/types/enums";
 import { getNowBR, parseLocalDate } from "../dateUtils";
+import { formatFirstName } from "./name";
 
 export const formatModalidade = (modalidade: string) => {
   switch (modalidade) {
@@ -83,3 +84,20 @@ export const parentescos = Object.values(ParentescoResponsavel).map((value) => (
   value,
   label: formatParentesco(value),
 }));
+
+export const getStudentPreposition = (
+  genero?: PassageiroGenero | string | null,
+  nome?: string
+): string => {
+  const g = typeof genero === "string" ? genero.toUpperCase() : genero;
+  if (g === PassageiroGenero.FEMININO || g === "FEMININO") return "da";
+  if (g === PassageiroGenero.MASCULINO || g === "MASCULINO") return "do";
+
+  if (nome) {
+    const firstName = formatFirstName(nome).trim().toLowerCase();
+    if (firstName.endsWith("a")) return "da";
+    if (firstName.endsWith("o")) return "do";
+  }
+
+  return "do(a)";
+};
