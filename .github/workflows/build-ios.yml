@@ -11,16 +11,18 @@ on:
 jobs:
   build-and-upload-ios:
     name: Compilar e Subir para a Apple
-    runs-on: macos-15
+    runs-on: macos-latest
     timeout-minutes: 60
 
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Selecionar Xcode 16 e Preparar SDK
+      - name: Selecionar o Xcode Mais Recente
         run: |
-          LATEST_XCODE=$(find /Applications -maxdepth 1 -name 'Xcode_16*.app' | sort -V | tail -n 1)
+          echo "Xcodes disponíveis no runner:"
+          ls -d /Applications/Xcode* || true
+          LATEST_XCODE=$(find /Applications -maxdepth 1 -name 'Xcode*.app' | sort -V | tail -n 1)
           if [ -n "$LATEST_XCODE" ]; then
             echo "Selecionando: $LATEST_XCODE"
             sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
