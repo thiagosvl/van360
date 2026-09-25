@@ -550,7 +550,7 @@ export function SubscriptionPlansShowcase({
                 className="relative rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
               >
                 <span>Plano Anual</span>
-                <span className="absolute -top-3 right-2 sm:right-1 px-2.5 py-0.5 rounded-full bg-[#002444] text-white text-[8px] font-black uppercase tracking-tight shadow-xs whitespace-nowrap flex items-center gap-1">
+                <span className="absolute -top-3 right-2 sm:right-1 px-2.5 py-0.5 rounded-full bg-[#002444] text-white text-[8px] font-light uppercase tracking-tight shadow-xs whitespace-nowrap flex items-center gap-1">
                   mais popular
                 </span>
               </TabsTrigger>
