@@ -46,7 +46,7 @@ export function ShowcaseTransporteEscolarDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-white text-slate-800 p-4 min-[360px]:p-5 sm:p-6 overflow-y-auto animate-in fade-in duration-200 pt-6 pb-28 sm:pb-32">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-white text-slate-800 px-4 min-[360px]:px-5 sm:px-6 overflow-y-auto animate-in fade-in duration-200 pt-[calc(var(--safe-area-top,0px)+1.25rem)] pb-8">
       <div className="w-full max-w-sm sm:max-w-md mx-auto flex flex-col items-center">
         <div className="flex items-start justify-between gap-3 mb-4 w-full">
           <div className="min-w-0 flex-1 pr-4">
@@ -68,9 +68,11 @@ export function ShowcaseTransporteEscolarDialog({
         <WhatsAppShowcaseEmulator driverName="Tio da Van" layoutMode="tabs" className="w-full" />
 
         <QuemUsaRecomendaCard className="mt-6" />
+
+        <div className="w-full h-[calc(var(--safe-area-bottom,0px)+6.5rem)] shrink-0 pointer-events-none" aria-hidden="true" />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-40">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-3 pb-[calc(var(--safe-area-bottom,0px)+0.75rem)] bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-40">
         <div className="w-full max-w-sm sm:max-w-md mx-auto">
           <Button
             type="button"

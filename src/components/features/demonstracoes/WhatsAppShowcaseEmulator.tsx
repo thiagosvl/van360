@@ -73,18 +73,18 @@ function CobrancaShowcaseContent({
       <Tabs
         value={pixMode}
         onValueChange={(val) => onPixModeChange(val as "com_pix" | "sem_pix")}
-        className="w-full max-w-[280px] min-[360px]:max-w-[300px] xl:max-w-[320px] mt-3 mx-auto sm:mx-0 xl:mx-auto"
+        className="w-full max-w-[260px] min-[360px]:max-w-[280px] xl:max-w-[300px] mt-2.5 mx-auto sm:mx-0 xl:mx-auto"
       >
-        <TabsList className="grid grid-cols-2 w-full bg-slate-100 p-1 rounded-xl h-8 min-[360px]:h-9 border border-slate-200/80">
+        <TabsList className="grid grid-cols-2 w-full bg-transparent p-0 h-auto gap-1 border-0">
           <TabsTrigger
             value="com_pix"
-            className="text-xs font-bold py-1 rounded-lg transition-all data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-xs cursor-pointer"
+            className="text-[11.5px] min-[360px]:text-xs font-medium py-1 px-2.5 rounded-lg transition-all text-slate-500 hover:text-slate-700 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-700 data-[state=active]:font-semibold data-[state=active]:shadow-none border border-transparent data-[state=active]:border-slate-200/70 cursor-pointer"
           >
             Com Chave Pix
           </TabsTrigger>
           <TabsTrigger
             value="sem_pix"
-            className="text-xs font-bold py-1 rounded-lg transition-all data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-xs cursor-pointer"
+            className="text-[11.5px] min-[360px]:text-xs font-medium py-1 px-2.5 rounded-lg transition-all text-slate-500 hover:text-slate-700 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-700 data-[state=active]:font-semibold data-[state=active]:shadow-none border border-transparent data-[state=active]:border-slate-200/70 cursor-pointer"
           >
             Sem Chave Pix
           </TabsTrigger>
