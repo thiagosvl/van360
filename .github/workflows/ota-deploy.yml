@@ -82,18 +82,26 @@ jobs:
           echo "[INFO] Mensagem do Commit: $COMMIT_MESSAGE"
           echo "[INFO] Force Update set to: $FORCE_UPDATE_VALUE"
 
-          # 3. Construir o payload e enviar a requisição
+          # 3. Construir o payload e enviar a requisição para Android e iOS
           PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-${VERSION}.zip"
           curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "platform": "android",
-              "latest_version": "'${VERSION}'",
-              "url_zip": "'${PUBLIC_URL}'",
-              "force_update": '${FORCE_UPDATE_VALUE}'
-            }'
+            -d '[
+              {
+                "platform": "android",
+                "latest_version": "'${VERSION}'",
+                "url_zip": "'${PUBLIC_URL}'",
+                "force_update": '${FORCE_UPDATE_VALUE}'
+              },
+              {
+                "platform": "ios",
+                "latest_version": "'${VERSION}'",
+                "url_zip": "'${PUBLIC_URL}'",
+                "force_update": '${FORCE_UPDATE_VALUE}'
+              }
+            ]'
 
       - name: Limpar versões antigas (manter apenas as 3 mais recentes)
         env:
