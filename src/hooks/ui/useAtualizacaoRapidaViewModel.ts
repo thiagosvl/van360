@@ -24,6 +24,7 @@ export function useAtualizacaoRapidaViewModel() {
   const [selectedEscola, setSelectedEscola] = useState<string>(FilterDefaults.TODAS);
   const [selectedVeiculo, setSelectedVeiculo] = useState<string>(FilterDefaults.TODOS);
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>(FilterDefaults.TODOS);
+  const [apenasSemValor, setApenasSemValor] = useState<boolean>(false);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -91,10 +92,13 @@ export function useAtualizacaoRapidaViewModel() {
 
       if (term) {
         const matchesName = p.nome.toLowerCase().includes(term);
-        const matchesTurma = p.turma ? p.turma.toLowerCase().includes(term) : false;
-        const matchesSala = p.sala ? p.sala.toLowerCase().includes(term) : false;
-        const matchesProfessor = p.nome_professor ? p.nome_professor.toLowerCase().includes(term) : false;
-        if (!matchesName && !matchesTurma && !matchesSala && !matchesProfessor) return false;
+        const matchesRespPrincipal = p.responsavel_principal?.nome
+          ? p.responsavel_principal.nome.toLowerCase().includes(term)
+          : false;
+        const matchesResponsaveis = p.responsaveis
+          ? p.responsaveis.some((r) => r.nome?.toLowerCase().includes(term))
+          : false;
+        if (!matchesName && !matchesRespPrincipal && !matchesResponsaveis) return false;
       }
 
       const effectiveEscolaId = business.getEffectiveValue(p, "escola_id");
@@ -112,6 +116,12 @@ export function useAtualizacaoRapidaViewModel() {
         return false;
       }
 
+      if (apenasSemValor) {
+        const effectiveValor = business.getEffectiveValue(p, "valor_cobranca");
+        const hasValor = effectiveValor !== null && effectiveValor !== undefined && Number(effectiveValor) > 0;
+        if (hasValor) return false;
+      }
+
       return true;
     });
   }, [
@@ -120,8 +130,16 @@ export function useAtualizacaoRapidaViewModel() {
     selectedEscola,
     selectedVeiculo,
     selectedPeriodo,
+    apenasSemValor,
     business,
   ]);
+
+  const totalSemValor = useMemo(() => {
+    return passageiros.filter((p) => {
+      const effectiveValor = business.getEffectiveValue(p, "valor_cobranca");
+      return !effectiveValor || Number(effectiveValor) <= 0;
+    }).length;
+  }, [passageiros, business]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -159,13 +177,15 @@ export function useAtualizacaoRapidaViewModel() {
     setSelectedEscola(FilterDefaults.TODAS);
     setSelectedVeiculo(FilterDefaults.TODOS);
     setSelectedPeriodo(FilterDefaults.TODOS);
+    setApenasSemValor(false);
   }, []);
 
   const hasActiveFilters = Boolean(
     searchTerm.trim() ||
     selectedEscola !== FilterDefaults.TODAS ||
     selectedVeiculo !== FilterDefaults.TODOS ||
-    selectedPeriodo !== FilterDefaults.TODOS
+    selectedPeriodo !== FilterDefaults.TODOS ||
+    apenasSemValor
   );
 
   const saveChanges = useCallback(async () => {
@@ -220,6 +240,9 @@ export function useAtualizacaoRapidaViewModel() {
     setSelectedVeiculo,
     selectedPeriodo,
     setSelectedPeriodo,
+    apenasSemValor,
+    setApenasSemValor,
+    totalSemValor,
     clearFilters,
     hasActiveFilters,
     escolas,

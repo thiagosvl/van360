@@ -6,7 +6,7 @@ interface RouteConfigSkeletonProps {
 
 export function RouteConfigSkeleton({ count = 4 }: RouteConfigSkeletonProps) {
   return (
-    <div className="space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto px-4">
+    <div className="space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto w-full">
       {/* Card de Configuração de Rota Skeleton */}
       <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center justify-between gap-4">
         <div className="space-y-2 flex-1 min-w-0">

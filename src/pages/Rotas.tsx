@@ -4,7 +4,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Banner } from "@/components/ui/Banner";
 import { RotasSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import { UserMinus, Plus } from "lucide-react";
+import { UserPlus, Plus } from "lucide-react";
 import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { RotasToolbar } from "@/components/features/rotas/RotasToolbar";
@@ -59,7 +59,7 @@ export default function Rotas() {
 
   return (
     <PullToRefreshWrapper onRefresh={vm.handleRefresh}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+      <div className="min-h-screen bg-surface max-w-2xl mx-auto space-y-6 pb-24">
         {/* Banner de Rota Ativa */}
         {execucoesAtivas.length > 0 && (
           <Banner
@@ -125,16 +125,17 @@ export default function Rotas() {
               <Button
                 variant="outline"
                 onClick={() => setIsAusenciaDialogOpen(true)}
-                className="flex-1 border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-2.5 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <UserMinus className="h-4 w-4 text-rose-500 shrink-0" />
-                <span>Registrar Ausência</span>
+                <UserPlus className="h-4 w-4 text-rose-500 shrink-0" />
+                <span className="hidden sm:inline">Registrar Ausência</span>
+                <span className="sm:hidden">Ausência</span>
               </Button>
 
               {vm.can("rotas.criar_editar") && (
                 <Button
                   onClick={vm.handleOpenCreateRouteDialog}
-                  className="flex-1 border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-2.5 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="h-4 w-4 shrink-0" />
                   <span>Nova Rota</span>

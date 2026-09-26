@@ -250,7 +250,7 @@ export function ChamadaRapidaDialog({
           onClick={() => safeCloseDialog(() => onOpenChange(false))}
         />
         <BaseDialog.Action
-          label="Salvar"
+          label="Confirmar"
           variant="primary"
           onClick={handleConfirmar}
         />

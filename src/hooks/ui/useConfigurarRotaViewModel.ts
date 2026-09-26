@@ -80,6 +80,7 @@ export function useConfigurarRotaViewModel() {
   const [itinerario, setItinerario] = useState<ItineraryItem[]>([]);
   const [reordenarSheetTargetItem, setReordenarSheetTargetItem] = useState<ItineraryItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [filtroEscolaId, setFiltroEscolaId] = useState<string>("TODAS");
   const [editingInlinePassageiroId, setEditingInlinePassageiroId] = useState<string | null>(null);
   const [shouldAutoAddPassageiro, setShouldAutoAddPassageiro] = useState(false);
   const [insertTarget, setInsertTarget] = useState<"top" | "bottom" | number>("bottom");
@@ -96,33 +97,27 @@ export function useConfigurarRotaViewModel() {
     return gerarErrosPorNo(itinerario);
   }, [itinerario, gerarErrosPorNo]);
 
-  const errosItinerario = useMemo(() => {
-    const list: string[] = [];
-    if (!podeExibirErros) return list;
-    if (!isRotaPronta && msgErroRota) {
-      list.push(msgErroRota);
-    }
-    return list;
-  }, [podeExibirErros, isRotaPronta, msgErroRota]);
-
   const avisosItinerario = useMemo(() => {
     const list: string[] = [];
-    if (itinerario.length > 0 && !temEscola) {
-      list.push("Adicione ao menos 1 escola para concluir o itinerário.");
-    }
-    if (itinerario.length > 0 && !temPassageiro) {
-      list.push("Adicione ao menos 1 aluno para concluir o itinerário.");
+    if (!podeExibirErros) return list;
+    const values = Object.values(errosPorNo);
+    for (const val of values) {
+      if (val && !list.includes(val)) {
+        list.push(val);
+      }
     }
     return list;
-  }, [itinerario, temEscola, temPassageiro]);
+  }, [podeExibirErros, errosPorNo]);
+
+  const errosItinerario = useMemo(() => {
+    return [];
+  }, []);
 
   const isFormValid = useMemo(() => {
     if (!formData.nome.trim()) return false;
-    if (itinerario.length < 2) return false;
-    if (!isRotaPronta) return false;
-    if (Object.keys(errosPorNo).length > 0) return false;
+    if (itinerario.length < 1) return false;
     return true;
-  }, [formData.nome, itinerario, isRotaPronta, errosPorNo]);
+  }, [formData.nome, itinerario.length]);
 
   // Preenchimento de estado via location.state (se originado da pré-configuração)
   useEffect(() => {
@@ -305,7 +300,7 @@ export function useConfigurarRotaViewModel() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {
-      toast.error("Preencha todos os campos obrigatórios e garanta que o itinerário está válido.");
+      toast.error("Informe o nome da rota e adicione ao menos 1 parada.");
       return;
     }
 
@@ -405,6 +400,8 @@ export function useConfigurarRotaViewModel() {
     avisosItinerario,
     isDialogOpen,
     setIsDialogOpen,
+    filtroEscolaId,
+    setFiltroEscolaId,
     insertTarget,
     editingInlinePassageiroId,
     setEditingInlinePassageiroId,

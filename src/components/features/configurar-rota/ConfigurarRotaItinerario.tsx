@@ -8,6 +8,7 @@ interface ConfigurarRotaItinerarioProps {
   itinerario: any[];
   errosPorNo: Record<string, string>;
   listBottomRef: React.RefObject<HTMLDivElement | null>;
+  showTopAddButton?: boolean;
   onToggleSentido: (index: number) => void;
   onMove: (index: number, direction: "up" | "down") => void;
   onRemove: (index: number) => void;
@@ -20,6 +21,7 @@ export function ConfigurarRotaItinerario({
   itinerario,
   errosPorNo,
   listBottomRef,
+  showTopAddButton,
   onToggleSentido,
   onMove,
   onRemove,
@@ -27,15 +29,26 @@ export function ConfigurarRotaItinerario({
   onOpenReordenarSheet,
   onOpenModalParadaGeral,
 }: ConfigurarRotaItinerarioProps) {
+  const shouldShowTopButton = showTopAddButton !== undefined ? showTopAddButton : itinerario.length >= 3;
+
   return (
     <div id="itinerario-container" className="bg-transparent scroll-mt-24 animate-in fade-in duration-300">
       <div className="flex items-center justify-between px-1 mb-2">
         <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-          Itinerário
+          {itinerario.length === 1 ? "1 parada" : `${itinerario.length} paradas`}
         </h2>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-          {itinerario.length} paradas
-        </span>
+        {shouldShowTopButton && (
+          <Button
+            type="button"
+            size="sm"
+            onClick={onOpenModalParadaGeral}
+            className="h-7 px-2.5 rounded-lg bg-[#1a3a5c] hover:bg-[#16314f] text-white font-bold text-xs shadow-2xs flex items-center gap-1 cursor-pointer transition-all active:scale-95 animate-in fade-in duration-200"
+            title="Adicionar Parada no Final"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Adicionar Parada</span>
+          </Button>
+        )}
       </div>
 
       <div className="relative pl-10 sm:pl-11">

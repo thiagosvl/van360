@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function RotasSkeleton() {
   return (
-    <div className="w-full max-w-full overflow-hidden space-y-6 text-left animate-in fade-in duration-200">
+    <div className="w-full max-w-2xl mx-auto overflow-hidden space-y-6 text-left animate-in fade-in duration-200">
       {/* Container das Tabs (Segmented Control) */}
       <div className="bg-slate-200/50 p-1 rounded-[1.25rem] w-full">
         <div className="grid grid-cols-2 gap-1 min-h-[40px] w-full">

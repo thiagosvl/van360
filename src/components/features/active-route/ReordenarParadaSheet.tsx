@@ -7,10 +7,9 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { MapPin, ChevronUp, ChevronDown, AlertTriangle, Loader2 } from "lucide-react";
+import { MapPin, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { RouteNodeType, ExecucaoParada } from "@/types/route";
 import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
-import { validarItinerarioPronto } from "@/utils/domain/route/routeRules";
 import { cn } from "@/lib/utils";
 
 interface ReordenarParadaSheetProps {
@@ -108,32 +107,25 @@ export function ReordenarParadaSheet({
       const [removed] = tempPendentes.splice(currentIndex, 1);
       tempPendentes.splice(targetIdx, 0, removed);
 
-      const isValid = isConfig || validarItinerarioPronto(
-        execucaoTipo,
-        [...(paradasConcluidas || []), ...tempPendentes]
-      ).isPronto;
-
-      if (isValid) {
-        if (targetIdx === 0) {
-          if (isConfig) {
-            labelText = "Primeira parada da rota";
-            subtextStr = "Início do trajeto";
-          } else {
-            labelText = "Próxima parada";
-            subtextStr = "Será a parada atual a ser atendida";
-          }
+      if (targetIdx === 0) {
+        if (isConfig) {
+          labelText = "Primeira parada da rota";
+          subtextStr = "Início do trajeto";
         } else {
-          const prevItem = tempPendentes[targetIdx - 1];
-          const info = getNodeDisplayInfo(prevItem, escolasList);
-          labelText = `Depois de ${info.name}`;
-          subtextStr = info.subtext;
+          labelText = "Próxima parada";
+          subtextStr = "Será a parada atual a ser atendida";
         }
-        result.push({ targetIndex: targetIdx, label: labelText, subtext: subtextStr });
+      } else {
+        const prevItem = tempPendentes[targetIdx - 1];
+        const info = getNodeDisplayInfo(prevItem, escolasList);
+        labelText = `Depois de ${info.name}`;
+        subtextStr = info.subtext;
       }
+      result.push({ targetIndex: targetIdx, label: labelText, subtext: subtextStr });
     }
 
     return result;
-  }, [paradaTarget, currentIndex, totalPendentes, isConfig, execucaoTipo, paradasConcluidas, validarMovimentoPermitido, escolasList]);
+  }, [paradaTarget, currentIndex, totalPendentes, isConfig, escolasList]);
 
   useEffect(() => {
     if (isOpen && currentIndex !== -1) {
@@ -160,8 +152,6 @@ export function ReordenarParadaSheet({
   const targetNome = targetInfo.name;
 
   const alternativePointsCount = validInsertionPoints.length;
-  const hasNoAlternativePositions = !isConfig && alternativePointsCount === 0;
-
   const isSamePositionOrNull = selectedTargetIndex === null;
 
   const handleConfirm = async () => {
@@ -197,20 +187,10 @@ export function ReordenarParadaSheet({
               Escolha a nova posição:
             </h3>
 
-            {hasNoAlternativePositions && (
-              <div className="bg-amber-50/90 border border-amber-200/90 rounded-xl p-3 my-1 flex items-start gap-2.5 text-xs text-amber-900 text-left shadow-2xs">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <strong className="font-bold block text-amber-950">
-                    Reordenação restrita pelas regras da rota
-                  </strong>
-                  <p className="text-[11px] text-amber-800 leading-snug">
-                    {paradaTarget?.tipo_no === RouteNodeType.ESCOLA
-                      ? "Esta escola não pode ser movida para baixo pois todos os alunos no sentido Voltando (Desembarque) devem ser entregues obrigatoriamente após a escola."
-                      : "Esta parada não pode ser movida para outras posições devido às regras de sentido (Indo / Voltando)."}
-                  </p>
-                </div>
-              </div>
+            {alternativePointsCount === 0 && (
+              <p className="text-xs text-slate-400 font-medium text-center py-4">
+                Não há outras paradas para reordenar.
+              </p>
             )}
 
             <div className="relative">

@@ -312,7 +312,7 @@ export default function RouteExecutionPage() {
 
   return (
     <PullToRefreshWrapper onRefresh={refetch}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+      <div className="min-h-screen bg-surface max-w-2xl mx-auto space-y-6 pb-24">
         {isRouteActive && !Capacitor.isNativePlatform() && (
           <Banner
             variant="warning"

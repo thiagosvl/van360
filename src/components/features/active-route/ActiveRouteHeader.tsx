@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
-import { XCircle, UserMinus, Route, Loader2, Play, AlertTriangle, Edit, Users } from "lucide-react";
+import { XCircle, UserPlus, Route, Loader2, Play, Edit, Users, Bus, MapPin, School, Trash2, CheckCircle2, ChevronRight } from "lucide-react";
 import { RouteExecution, RouteExecutionStatus } from "@/types/route";
 import { cn } from "@/lib/utils";
 
@@ -20,10 +20,15 @@ interface ActiveRouteHeaderProps {
   temAlunosVolta?: boolean;
   chamadaRealizada?: boolean;
   resumoChamada?: { presentes: number; total: number } | null;
+  totalAlunos?: number;
+  totalEscolas?: number;
+  totalAlunosVolta?: number;
   onOpenAusenciaDialog: () => void;
   onOpenChamadaRapida?: () => void;
   onCancel: () => void;
   onEditRoute: () => void;
+  onDeleteRoute?: () => void;
+  isDeletingRoute?: boolean;
   onIniciarRota: () => void;
 }
 
@@ -43,30 +48,182 @@ export function ActiveRouteHeader({
   temAlunosVolta = false,
   chamadaRealizada = false,
   resumoChamada = null,
+  totalAlunos = 0,
+  totalEscolas = 0,
+  totalAlunosVolta = 0,
   onOpenAusenciaDialog,
   onOpenChamadaRapida,
   onCancel,
   onEditRoute,
+  onDeleteRoute,
+  isDeletingRoute = false,
   onIniciarRota
 }: ActiveRouteHeaderProps) {
   const paradasCountDisplay = todasParadasCount || totalStops;
+  const veiculo = execucao?.rota?.veiculo;
+  const veiculoDisplay = veiculo?.modelo
+    ? `${veiculo.modelo}${veiculo.placa ? ` (${veiculo.placa})` : ""}`
+    : veiculo?.placa || null;
 
   return (
     <>
       {isPreview ? (
-        <div className="bg-white border border-slate-200 p-3.5 sm:p-4 rounded-2xl shadow-xs space-y-3.5 text-left">
-          <div className="flex items-center justify-between gap-2 w-full">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-headline font-extrabold text-[#1a3a5c] tracking-tight leading-snug break-words">
+        <div className="bg-white border border-slate-200 p-3.5 sm:p-5 rounded-2xl shadow-xs space-y-3.5 sm:space-y-4 text-left">
+          <div className="flex items-start justify-between gap-2.5 w-full">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <h2 className="text-base sm:text-xl font-headline font-black text-[#1a3a5c] tracking-tight leading-snug break-words">
                 {execucao?.rota?.nome}
               </h2>
+
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-[10px] sm:text-[11px] font-semibold text-slate-500">
+                {veiculoDisplay && (
+                  <span className="inline-flex items-center gap-1 bg-slate-100/90 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60">
+                    <Bus className="w-3 h-3 text-[#1a3a5c] shrink-0" />
+                    <span className="truncate max-w-[120px] sm:max-w-none">{veiculoDisplay}</span>
+                  </span>
+                )}
+                {totalEscolas > 0 ? (
+                  <span className="inline-flex items-center gap-1 bg-slate-100/90 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60">
+                    <School className="w-3 h-3 text-[#1a3a5c] shrink-0" />
+                    <span>{totalEscolas === 1 ? "1 escola" : `${totalEscolas} escolas`}</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 bg-slate-100/90 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60">
+                    <MapPin className="w-3 h-3 text-[#1a3a5c] shrink-0" />
+                    <span>{paradasCountDisplay === 1 ? "1 parada" : `${paradasCountDisplay} paradas`}</span>
+                  </span>
+                )}
+                {totalAlunos > 0 && (
+                  <span className="inline-flex items-center gap-1 bg-slate-100/90 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60">
+                    <Users className="w-3 h-3 text-[#1a3a5c] shrink-0" />
+                    <span>{totalAlunos === 1 ? "1 aluno" : `${totalAlunos} alunos`}</span>
+                  </span>
+                )}
+              </div>
             </div>
-            <span className="text-xs font-medium text-slate-500 shrink-0">
-              {paradasCountDisplay === 1 ? "1 parada" : `${paradasCountDisplay} paradas`}
-            </span>
+
+            <div className="flex items-center gap-1 shrink-0">
+              {can("rotas.criar_editar") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onEditRoute}
+                  className="h-8 px-2 sm:px-2.5 rounded-lg border-slate-200 text-slate-600 hover:text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all flex items-center gap-1.5"
+                  title="Configurar itinerário da rota"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Editar</span>
+                </Button>
+              )}
+
+              {can("rotas.excluir") && onDeleteRoute && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onDeleteRoute}
+                  disabled={isDeletingRoute}
+                  className="h-8 px-2 sm:px-2.5 rounded-lg border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all flex items-center gap-1.5"
+                  title="Excluir esta rota"
+                >
+                  {isDeletingRoute ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  <span className="hidden sm:inline">Excluir</span>
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 pt-0.5">
+          {temAlunosVolta && onOpenChamadaRapida && (
+            <div
+              onClick={onOpenChamadaRapida}
+              className={cn(
+                "p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 shadow-2xs group active:scale-[0.99]",
+                chamadaRealizada
+                  ? "bg-emerald-50/70 border-emerald-200/80 hover:bg-emerald-50"
+                  : "bg-[#1a3a5c]/5 border-[#1a3a5c]/15 hover:bg-[#1a3a5c]/10"
+              )}
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-colors",
+                    chamadaRealizada
+                      ? "bg-emerald-600 text-white"
+                      : "bg-white text-[#1a3a5c] border border-slate-200/80"
+                  )}
+                >
+                  {chamadaRealizada ? (
+                    <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
+                  ) : (
+                    <Users className="w-4.5 h-4.5 stroke-[2.2]" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={cn(
+                        "text-xs sm:text-sm font-bold leading-tight",
+                        chamadaRealizada ? "text-emerald-900" : "text-[#1a3a5c]"
+                      )}
+                    >
+                      {chamadaRealizada ? "Chamada Concluída" : "Chamada de Embarque"}
+                    </span>
+                  </div>
+                  <p
+                    className={cn(
+                      "text-[11px] font-medium leading-snug mt-0.5 line-clamp-1",
+                      chamadaRealizada ? "text-emerald-700" : "text-slate-500"
+                    )}
+                  >
+                    {chamadaRealizada && resumoChamada
+                      ? `${resumoChamada.presentes} de ${resumoChamada.total} alunos presentes`
+                      : totalAlunosVolta > 0
+                        ? `Conferir ${totalAlunosVolta} ${totalAlunosVolta === 1 ? "aluno" : "alunos"} antes de sair`
+                        : "Conferir alunos antes de iniciar o trajeto"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "hidden sm:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all",
+                    chamadaRealizada
+                      ? "bg-emerald-600 text-white shadow-2xs group-hover:bg-emerald-700"
+                      : "bg-[#1a3a5c] text-white shadow-2xs group-hover:bg-[#16314f]"
+                  )}
+                >
+                  <span>{chamadaRealizada ? "Editar" : "Fazer Chamada"}</span>
+                </span>
+                <ChevronRight className={cn(
+                  "w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5",
+                  chamadaRealizada ? "text-emerald-700" : "text-[#1a3a5c]"
+                )} />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 pt-0.5">
+            {execucao?.rota_id && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onOpenAusenciaDialog}
+                className="h-11 sm:h-12 px-2.5 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 shrink-0"
+                title="Registrar falta antecipada de um aluno"
+              >
+                <UserPlus className="w-4 h-4 text-rose-500 shrink-0" />
+                <span className="hidden sm:inline">Registrar Ausência</span>
+                <span className="sm:hidden">Ausência</span>
+              </Button>
+            )}
+
             {can("rotas.iniciar_encerrar") && (
               <>
                 {isVehicleOccupied ? (
@@ -78,73 +235,23 @@ export function ActiveRouteHeader({
                         Veículo em execução na rota <strong className="font-bold text-amber-950">{occupiedRouteName || "outra rota"}</strong>
                       </span>
                     }
-                    className="p-3 rounded-lg border border-amber-200/90 shadow-2xs"
+                    className="p-3 rounded-xl border border-amber-200/90 shadow-2xs flex-1"
                   />
                 ) : (
                   <Button
                     onClick={onIniciarRota}
                     disabled={isLoading || isAnyActionBusy || iniciarMutation?.isPending}
-                    className="h-14 w-full rounded-lg font-extrabold text-base flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-[0.98] cursor-pointer transition-all border-none"
+                    className="flex-1 h-11 sm:h-12 rounded-xl font-headline font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 active:scale-[0.98] cursor-pointer transition-all border-none tracking-wide uppercase"
                   >
                     {iniciarMutation?.isPending ? (
-                      <Loader2 className="w-5.5 h-5.5 animate-spin shrink-0" />
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                     ) : (
-                      <Play className="w-5.5 h-5.5 shrink-0 fill-white text-white" />
+                      <Play className="w-4 h-4 shrink-0 fill-white text-white" />
                     )}
                     <span>INICIAR ROTA</span>
                   </Button>
                 )}
               </>
-            )}
-
-            {execucao?.rota_id && (
-              <div className="flex items-center gap-2 w-full pt-0.5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onOpenAusenciaDialog}
-                  className="flex-1 min-w-0 h-9.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 px-2.5"
-                  title="Registrar ausência antecipada de um aluno"
-                >
-                  <UserMinus className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                  <span className="truncate">Registrar Ausência</span>
-                </Button>
-
-                {can("rotas.criar_editar") && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onEditRoute}
-                    className="h-9.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 px-3"
-                    title="Configurar itinerário e alunos"
-                  >
-                    <Edit className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />
-                    <span>Editar</span>
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {temAlunosVolta && onOpenChamadaRapida && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onOpenChamadaRapida}
-                className={cn(
-                  "w-full h-10 rounded-lg font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2",
-                  chamadaRealizada
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100/80"
-                    : "border-[#1a3a5c]/25 bg-white text-[#1a3a5c] hover:bg-[#1a3a5c]/5"
-                )}
-                title={chamadaRealizada ? "Editar chamada de embarque realizada hoje" : "Realizar conferência de chamada dos alunos"}
-              >
-                <Users className={cn("w-4 h-4 shrink-0", chamadaRealizada ? "text-emerald-700" : "text-[#1a3a5c]")} />
-                {chamadaRealizada ? (
-                  <span>Chamada Realizada • Editar</span>
-                ) : (
-                  <span>Fazer Chamada de Embarque</span>
-                )}
-              </Button>
             )}
           </div>
         </div>

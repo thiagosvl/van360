@@ -43,7 +43,7 @@ export function ReciboPreviewDialog({
       maxWidth="md"
     >
       <BaseDialog.Header
-        title="Recibo digital"
+        title="Recibos aos pais"
         subtitle="Modelo do comprovante enviado aos pais"
         icon={<Receipt className="w-5 h-5 text-emerald-600" />}
         onClose={() => safeCloseDialog(onClose)}

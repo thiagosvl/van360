@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
@@ -18,11 +18,13 @@ import { ReordenarParadaSheet } from "./ReordenarParadaSheet";
 import { ChamadaEscolaDialog } from "@/components/dialogs/ChamadaEscolaDialog";
 import ConfirmStartRouteDialog from "@/components/dialogs/ConfirmStartRouteDialog";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
-import { useProcessarChamadaEscola } from "@/hooks/api/useRouteMutations";
+import { useProcessarChamadaEscola, useDeleteRoute } from "@/hooks/api/useRouteMutations";
 import { formatarEnderecoParcialRota } from "@/utils/formatters/address";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ChamadaRapidaDialog, EscolaChamadaItem } from "@/components/dialogs/ChamadaRapidaDialog";
 import { obterChamadaRapida, salvarChamadaRapida, limparChamadasRapidasObsoletas } from "@/utils/domain/route/routeStorage.utils";
+import { useActivityTracker } from "@/hooks/business/useActivityTracker";
+import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 
 const TAB_DEFAULT = "default";
 const TAB_PRINCIPAL = "principal";
@@ -71,6 +73,7 @@ export function ActiveRouteExecutionView({
   onShowSuccess
 }: ActiveRouteExecutionViewProps) {
   const navigate = useNavigate();
+  const { trackActivity } = useActivityTracker();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { validarMovimentoPermitido, validarItinerarioPronto, getAlunosEscolaPorPosicao } = useRouteRules();
   const [selectedRespTab, setSelectedRespTab] = useState<string>(TAB_DEFAULT);
@@ -99,6 +102,7 @@ export function ActiveRouteExecutionView({
   const [isConfirmStartDialogOpen, setIsConfirmStartDialogOpen] = useState(false);
   const [reordenarSheetTarget, setReordenarSheetTarget] = useState<ExecucaoParada | null>(null);
   const chamadaEscolaMutation = useProcessarChamadaEscola();
+  const deleteRouteMutation = useDeleteRoute();
   const [selectedPreviewTabs, setSelectedPreviewTabs] = useState<Record<string, string>>({});
   const [selectedDialogRespTab, setSelectedDialogRespTab] = useState<string>(TAB_PRINCIPAL);
   const [addressDialogData, setAddressDialogData] = useState<{
@@ -314,12 +318,58 @@ export function ActiveRouteExecutionView({
     setIsChamadaRapidaOpen(true);
   };
 
+  const [searchParams] = useSearchParams();
+  const openChamadaParam = searchParams.get("openChamada") === "true";
+  const hasAutoOpenedChamadaRef = useRef(false);
+
+  useEffect(() => {
+    if (isPreview && openChamadaParam && escolasComAlunosVolta.length > 0 && !hasAutoOpenedChamadaRef.current) {
+      hasAutoOpenedChamadaRef.current = true;
+      handleOpenChamadaRapida();
+    }
+  }, [isPreview, openChamadaParam, escolasComAlunosVolta.length]);
+
+  const totalAlunos = useMemo(() => {
+    return todasParadas.filter((p) => p.tipo_no === RouteNodeType.PASSAGEIRO).length;
+  }, [todasParadas]);
+
+  const totalAlunosVolta = useMemo(() => {
+    return escolasComAlunosVolta.reduce((acc, esc) => acc + esc.alunos.length, 0);
+  }, [escolasComAlunosVolta]);
+
+  const totalEscolas = useMemo(() => {
+    const escolasIds = new Set<string>();
+    todasParadas.forEach((p) => {
+      if (p.tipo_no === RouteNodeType.ESCOLA) {
+        const id = p.escola_id || p.escola?.id || p.id;
+        if (id) escolasIds.add(id);
+      }
+    });
+    return escolasIds.size;
+  }, [todasParadas]);
+
   const handleSalvarChamadaRapida = (statusMap: Record<string, RouteStopStatus>) => {
     if (!execucao?.rota_id) return;
     salvarChamadaRapida(execucao.rota_id, statusMap);
     setChamadaRapidaSavedMap(statusMap);
     setIsChamadaRapidaOpen(false);
     toast.success("Chamada rápida salva com sucesso!");
+
+    const statusValores = Object.values(statusMap);
+    const totalPresentes = statusValores.filter(s => s === RouteStopStatus.EMBARCADO).length;
+    const totalAusentes = statusValores.filter(s => s === RouteStopStatus.AUSENTE).length;
+
+    trackActivity(AtividadeAcao.CHAMADA_RAPIDA_CONFIRMADA, {
+      entidadeTipo: AtividadeEntidadeTipo.ROTA,
+      entidadeId: execucao.rota_id,
+      meta: {
+        rota_id: execucao.rota_id,
+        rota_nome: execucao.rota?.nome,
+        total_alunos: statusValores.length,
+        total_presentes: totalPresentes,
+        total_ausentes: totalAusentes,
+      },
+    });
   };
 
   const onCancel = () => {
@@ -334,6 +384,28 @@ export function ActiveRouteExecutionView({
           navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
         });
       }
+    });
+  };
+
+  const handleDeleteRoute = () => {
+    if (!execucao?.rota_id) return;
+    openConfirmationDialog({
+      title: "Excluir Rota",
+      description: `Tem certeza que deseja excluir a rota "${execucao.rota?.nome || ""}"? Esta ação não poderá ser desfeita.`,
+      confirmText: "Excluir Rota",
+      cancelText: "Cancelar",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteRouteMutation.mutateAsync(execucao.rota_id);
+          safeCloseDialog(closeConfirmationDialog);
+          toast.success("Rota excluída com sucesso.");
+          navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+        } catch (error: any) {
+          safeCloseDialog(closeConfirmationDialog);
+          toast.error(error.message || "Erro ao excluir rota.");
+        }
+      },
     });
   };
 
@@ -573,10 +645,15 @@ export function ActiveRouteExecutionView({
         temAlunosVolta={escolasComAlunosVolta.length > 0}
         chamadaRealizada={chamadaRealizada}
         resumoChamada={resumoChamada}
+        totalAlunos={totalAlunos}
+        totalEscolas={totalEscolas}
+        totalAlunosVolta={totalAlunosVolta}
         onOpenAusenciaDialog={() => setIsAusenciaDialogOpen(true)}
         onOpenChamadaRapida={handleOpenChamadaRapida}
         onCancel={onCancel}
         onEditRoute={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
+        onDeleteRoute={handleDeleteRoute}
+        isDeletingRoute={deleteRouteMutation.isPending}
         onIniciarRota={() => {
           if (!isVehicleOccupied && iniciarMutation && execucao?.rota_id) {
             setIsConfirmStartDialogOpen(true);

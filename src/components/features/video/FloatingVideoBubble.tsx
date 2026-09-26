@@ -85,12 +85,26 @@ export function FloatingVideoBubble({
   const hasShownTooltip = useRef(false);
 
   useEffect(() => {
-    if (isVisible && !hasShownTooltip.current) {
-      const timer = setTimeout(() => {
+    if (!isVisible) {
+      setShowTooltip(false);
+      return;
+    }
+
+    if (!hasShownTooltip.current) {
+      hasShownTooltip.current = true;
+
+      const openTimer = setTimeout(() => {
         setShowTooltip(true);
-        hasShownTooltip.current = true;
-      }, 100);
-      return () => clearTimeout(timer);
+      }, 400);
+
+      const hideTimer = setTimeout(() => {
+        setShowTooltip(false);
+      }, 5400);
+
+      return () => {
+        clearTimeout(openTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [isVisible]);
 
