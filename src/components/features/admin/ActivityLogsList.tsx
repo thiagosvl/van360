@@ -85,7 +85,10 @@ export function ActivityLogsList({
     <>
       <div className="space-y-3">
         {latestLog && (
-          <div className="p-4 rounded-2xl bg-blue-950/30 border-2 border-blue-500/60 shadow-lg shadow-blue-500/10 relative space-y-3">
+          <div
+            key={latestLog.id}
+            className="p-4 rounded-2xl bg-blue-950/30 border-2 border-blue-500/60 shadow-lg shadow-blue-500/10 relative space-y-3 animate-in fade-in slide-in-from-top-3 duration-500 transition-all"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1 min-w-0 flex-1">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2 break-words">

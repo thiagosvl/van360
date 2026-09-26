@@ -7,6 +7,7 @@ import {
   useAdminUsersRadarStats,
   useAdminFinancialStats,
   useAdminDemographicsStats,
+  useAdminRealtimeLogs,
 } from "@/hooks/api/adminHooks";
 import { AdminFinancialKpis } from "@/components/features/admin/financial/AdminFinancialKpis";
 import { AdminRevenueProjectionChart } from "@/components/features/admin/financial/AdminRevenueProjectionChart";
@@ -159,6 +160,8 @@ export default function AdminDashboard() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "geral";
+
+  const { isConnected: isRealtimeConnected } = useAdminRealtimeLogs();
 
   const handleTabChange = (val: string) => {
     setSearchParams((prev) => {
@@ -394,9 +397,17 @@ export default function AdminDashboard() {
             <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] flex flex-col justify-between">
               <div>
                 <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-                  <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-                    ÚLTIMAS ATIVIDADES
-                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
+                      ÚLTIMAS ATIVIDADES
+                    </CardTitle>
+                    {isRealtimeConnected && (
+                      <span className="relative flex h-2 w-2" title="Tempo real ativo">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -407,7 +418,7 @@ export default function AdminDashboard() {
                   </Button>
                 </CardHeader>
                 <CardContent className="p-6 pt-2 space-y-3">
-                  <ActivityLogsList logs={logsList} isLoading={isLoadingLogs} highlightFirst={true} />
+                  <ActivityLogsList logs={logsList} isLoading={isLoadingLogs && !logsData} highlightFirst={true} />
                 </CardContent>
               </div>
             </Card>

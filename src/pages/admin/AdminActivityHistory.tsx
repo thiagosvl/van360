@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Filter, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAdminLogs } from "@/hooks/api/adminHooks";
+import { useAdminLogs, useAdminRealtimeLogs } from "@/hooks/api/adminHooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { getNowBR, toPersistenceString, addDays } from "@/utils/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +34,11 @@ export default function AdminActivityHistory() {
     search_cpf: "",
   });
 
-  const { data: logsData, isFetching: isFetchingLogs } = useAdminLogs(
+  const { isConnected } = useAdminRealtimeLogs({
+    enabled: logsPage === 1,
+  });
+
+  const { data: logsData, isFetching: isFetchingLogs, isLoading: isLoadingLogs } = useAdminLogs(
     {
       page: logsPage,
       limit: parseInt(limit),
@@ -53,9 +57,33 @@ export default function AdminActivityHistory() {
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="pb-2 border-b border-slate-800/80 bg-slate-900/40">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-              Histórico de Atividades
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                Histórico de Atividades
+              </CardTitle>
+              {logsPage === 1 && (
+                <div
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-colors ${
+                    isConnected
+                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                      : "bg-slate-800/60 border-slate-700/60 text-slate-400"
+                  }`}
+                  title={isConnected ? "Conectado em tempo real" : "Conectando ao tempo real..."}
+                >
+                  <span className="relative flex h-2 w-2">
+                    {isConnected && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    )}
+                    <span
+                      className={`relative inline-flex rounded-full h-2 w-2 ${
+                        isConnected ? "bg-emerald-500" : "bg-slate-500"
+                      }`}
+                    />
+                  </span>
+                  <span>{isConnected ? "Ao Vivo" : "Sincronizando"}</span>
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -146,11 +174,11 @@ export default function AdminActivityHistory() {
 
           <ActivityLogsList
             logs={logsData?.data || []}
-            isLoading={isFetchingLogs}
+            isLoading={isLoadingLogs && !logsData}
             highlightFirst={logsPage === 1}
           />
 
-          {!isFetchingLogs && logsData && logsData.total > 0 && (
+          {logsData && logsData.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
               <p className="text-xs font-semibold text-slate-400">
                 Página {logsData.page} de {Math.max(1, Math.ceil(logsData.total / logsData.limit))} ({logsData.total} logs)

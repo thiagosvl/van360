@@ -32,5 +32,6 @@ export function useAdminLogs(
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: options?.refetchOnWindowFocus ?? "always",
+    placeholderData: (previousData) => previousData,
   });
 }

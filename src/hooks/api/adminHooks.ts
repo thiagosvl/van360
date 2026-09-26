@@ -8,3 +8,4 @@ export * from "./admin/useAdminNotificationHooks";
 export * from "./admin/useAdminCalculatorHooks";
 export * from "./admin/useAdminVencimentosHooks";
 export * from "./admin/useAdminFinancialHooks";
+export * from "./admin/useAdminRealtimeLogs";
