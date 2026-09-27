@@ -328,15 +328,23 @@ export function usePassageirosViewModel() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
+    let createdCountInSession = 0;
     const isFirstPassageiro = (countPassageiros || 0) === 0;
+
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro, keepOpen) => {
-        if (!passageiro || keepOpen) {
+        if (!passageiro) {
           return;
         }
 
-        if (isFirstPassageiro) {
+        createdCountInSession += 1;
+
+        if (keepOpen) {
+          return;
+        }
+
+        if (isFirstPassageiro && createdCountInSession === 1) {
           openOnboardingSuccessDialog({
             passageiroNome: passageiro.nome,
             onNavigateToPassageiro: () => {
