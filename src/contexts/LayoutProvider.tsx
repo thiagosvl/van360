@@ -33,6 +33,7 @@ import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { AnnualReceiptDialog } from "@/components/dialogs/AnnualReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
+import { PassageiroFinanceiroDialog } from "@/components/dialogs/PassageiroFinanceiroDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
@@ -51,6 +52,7 @@ import {
   OpenReceiptDialogProps,
   OpenAnnualReceiptDialogProps,
   OpenQuickStartPassageiroProps,
+  OpenPassageiroFinanceiroProps,
   OpenGerarContratoValidadorDialogProps,
   OpenImportarContratoDialogProps,
   OpenResponsavelFormProps,
@@ -154,6 +156,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [quickStartPassageiroState, setQuickStartPassageiroState] = useState<{
     open: boolean;
     props?: OpenQuickStartPassageiroProps;
+  }>({
+    open: false,
+  });
+
+  const [passageiroFinanceiroDialogState, setPassageiroFinanceiroDialogState] = useState<{
+    open: boolean;
+    props?: OpenPassageiroFinanceiroProps;
   }>({
     open: false,
   });
@@ -424,6 +433,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openPassageiroFinanceiroDialog = (props: OpenPassageiroFinanceiroProps) => {
+    setPassageiroFinanceiroDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closePassageiroFinanceiroDialog = () => {
+    safeCloseDialog(() => setPassageiroFinanceiroDialogState({ open: false }));
+  };
+
   const openGastoFormDialog = (props?: OpenGastoFormProps) => {
     setGastoFormDialogState({
       open: true,
@@ -635,6 +655,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openPassageiroFormDialog,
         openRouteFormDialog,
         openQuickStartPassageiroDialog,
+        openPassageiroFinanceiroDialog,
+        closePassageiroFinanceiroDialog,
         openGastoFormDialog,
         openGerenciarCategoriasDialog,
         openResponsavelFormDialog,
@@ -829,6 +851,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onSuccess={quickStartPassageiroState.props?.onSuccess}
           isOnboarding={quickStartPassageiroState.props?.isOnboarding}
           usuarioId={profile?.id}
+        />
+      )}
+
+      {passageiroFinanceiroDialogState.open && passageiroFinanceiroDialogState.props && (
+        <PassageiroFinanceiroDialog
+          isOpen={true}
+          onClose={closePassageiroFinanceiroDialog}
+          passageiro={passageiroFinanceiroDialogState.props.passageiro}
+          onSuccess={passageiroFinanceiroDialogState.props.onSuccess}
         />
       )}
 

@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useLayout } from "@/contexts/LayoutContext";
 import { ContratoStatus, TipoResponsavel } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
@@ -373,6 +374,7 @@ export const CarteirinhaDadosPessoais = ({
   | "onEnviarWhatsApp"
   | "onEditClick"
 >) => {
+  const { openPassageiroFinanceiroDialog } = useLayout();
   const { can } = usePermissions();
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const respPrincipal =
@@ -418,7 +420,50 @@ export const CarteirinhaDadosPessoais = ({
 
   return (
     <div className="space-y-6 text-left">
-      {/* 1. Bloco: Escola */}
+      {canViewFinancials && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openPassageiroFinanceiroDialog({ passageiro })}
+              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Editar</span>
+            </Button>
+          </div>
+          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <InfoField
+                icon={<Wallet className="h-3.5 w-3.5" />}
+                label="Valor da parcela"
+                value={valorCobrancaTexto}
+              />
+              <InfoField
+                icon={<Clock className="h-3.5 w-3.5" />}
+                label="Dia de vencimento"
+                value={diaVencimentoTexto}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Início das cobranças"
+                value={inicioCobrancaTexto}
+              />
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Término das cobranças"
+                value={fimCobrancaTexto}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-3">
         <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
@@ -455,7 +500,6 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* 2. Bloco: Transporte */}
       <div className="space-y-3">
         <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
@@ -532,40 +576,6 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* 3. Bloco: Parcelas */}
-      {canViewFinancials && (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
-          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <InfoField
-                icon={<Wallet className="h-3.5 w-3.5" />}
-                label="Valor da parcela"
-                value={valorCobrancaTexto}
-              />
-              <InfoField
-                icon={<Clock className="h-3.5 w-3.5" />}
-                label="Dia de vencimento"
-                value={diaVencimentoTexto}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-              <InfoField
-                icon={<CalendarClock className="h-3.5 w-3.5" />}
-                label="Início das cobranças"
-                value={inicioCobrancaTexto}
-              />
-              <InfoField
-                icon={<CalendarClock className="h-3.5 w-3.5" />}
-                label="Término das cobranças"
-                value={fimCobrancaTexto}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Bloco: Outros Dados */}
       <div className="space-y-3">
         <h3 className="text-base font-bold text-[#16314f]">Outros Dados</h3>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">

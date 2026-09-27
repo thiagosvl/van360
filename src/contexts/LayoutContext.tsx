@@ -43,8 +43,13 @@ export interface OpenPassageiroFormProps {
 }
 
 export interface OpenQuickStartPassageiroProps {
-  onSuccess?: (passageiro?: Passageiro) => void;
+  onSuccess?: (passageiro?: Passageiro, keepOpen?: boolean) => void;
   isOnboarding?: boolean;
+}
+
+export interface OpenPassageiroFinanceiroProps {
+  passageiro: Passageiro;
+  onSuccess?: () => void;
 }
 
 export interface OpenGastoFormProps {
@@ -311,6 +316,8 @@ export interface LayoutContextType {
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
   openRouteFormDialog: (props: OpenRouteFormProps) => void;
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
+  openPassageiroFinanceiroDialog: (props: OpenPassageiroFinanceiroProps) => void;
+  closePassageiroFinanceiroDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;

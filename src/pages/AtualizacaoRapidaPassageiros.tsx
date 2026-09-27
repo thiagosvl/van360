@@ -36,6 +36,9 @@ export default function AtualizacaoRapidaPassageiros() {
     setSelectedVeiculo,
     selectedPeriodo,
     setSelectedPeriodo,
+    apenasSemValor,
+    setApenasSemValor,
+    totalSemValor,
     clearFilters,
     hasActiveFilters,
     escolas,
@@ -116,7 +119,7 @@ export default function AtualizacaoRapidaPassageiros() {
             </div>
             <Input
               type="search"
-              placeholder="Buscar por aluno, turma, sala, professor..."
+              placeholder="Pesquisar..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-white border border-gray-100/50 h-12 md:h-14 pl-11 pr-10 rounded-2xl shadow-sm font-medium text-sm md:text-base text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
@@ -190,8 +193,31 @@ export default function AtualizacaoRapidaPassageiros() {
           />
         </div>
 
-        {hasActiveFilters && (
-          <div className="flex justify-end pt-0.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          {totalSemValor > 0 ? (
+            <button
+              type="button"
+              onClick={() => setApenasSemValor(!apenasSemValor)}
+              className={cn(
+                "h-7 px-3 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border shrink-0",
+                apenasSemValor
+                  ? "bg-amber-500 text-white border-amber-500 shadow-2xs"
+                  : "bg-amber-50/80 text-amber-800 border-amber-200/80 hover:bg-amber-100/80"
+              )}
+            >
+              <span>Sem valor definido</span>
+              <span className={cn(
+                "px-1.5 py-0.2 rounded-full text-[10px] font-extrabold",
+                apenasSemValor ? "bg-amber-600 text-white" : "bg-amber-200 text-amber-900"
+              )}>
+                {totalSemValor}
+              </span>
+            </button>
+          ) : (
+            <div />
+          )}
+
+          {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
@@ -201,8 +227,8 @@ export default function AtualizacaoRapidaPassageiros() {
               <RotateCcw className="w-3 h-3 mr-1" />
               Limpar Filtros
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {isLoading ? (

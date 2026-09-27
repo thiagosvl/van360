@@ -102,33 +102,41 @@ export function useDashboardViewModel() {
     const isFirstPassageiro = onboarding.showOnboarding || ((contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageiros ?? 0) === 0);
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
-      onSuccess: (passageiro) => {
+      onSuccess: (passageiro, keepOpen) => {
         queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
         queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-        if (passageiro && !isFirstPassageiro) {
-          const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
-          const now = getNowBR();
-          const hasPayment = !passageiro.isento && shouldGeneratePassengerProjection({
-            passageiro,
-            targetMonth: now.getMonth() + 1,
-            targetYear: now.getFullYear(),
-          });
-          if (hasPayment || hasContractConfig) {
-            openFirstChargeDialog({ passageiro });
-          } else {
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-          }
-        } else if (passageiro && isFirstPassageiro) {
+
+        if (!passageiro || keepOpen) {
+          return;
+        }
+
+        if (isFirstPassageiro) {
           openOnboardingSuccessDialog({
             passageiroNome: passageiro.nome,
             onNavigateToPassageiro: () => {
               navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
             },
           });
+          return;
+        }
+
+        const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
+        const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+        const now = getNowBR();
+        const hasPayment = hasFinancialInfo && shouldGeneratePassengerProjection({
+          passageiro,
+          targetMonth: now.getMonth() + 1,
+          targetYear: now.getFullYear(),
+        });
+
+        if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
+          openFirstChargeDialog({ passageiro });
+        } else {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, queryClient, onboarding.showOnboarding, contadores, navigate]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, queryClient, onboarding.showOnboarding, contadores, navigate, profile?.config_contrato?.usar_contratos]);
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({

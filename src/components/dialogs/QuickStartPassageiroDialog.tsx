@@ -13,25 +13,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
-import { MoneyInput, PhoneInput } from "@/components/forms";
-import { Switch } from "@/components/ui/switch";
-import { Car, Rocket, School, User, CalendarDays, Wand2, DollarSign, Zap, FileText, Loader2, ShieldCheck } from "lucide-react";
+import { Car, Rocket, School, User, CalendarDays, Wand2, Zap, FileText, Loader2 } from "lucide-react";
 import { useEscolasWithFilters, useVeiculosWithFilters, usePassageiroFormViewModel, useProfile } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Passageiro } from "@/types/passageiro";
+import { Usuario } from "@/types/usuario";
+import { Escola } from "@/types/escola";
+import { Veiculo } from "@/types/veiculo";
 import {
   formatarPlacaExibicao,
   getDefaultAnoLetivo,
   getAnoLetivoOptions,
-  getAnoCobrancaFimOptions,
-  getAnoCobrancaInicioOptions,
-  isCobrancaRetroativa,
-  COBRANCA_BANNER_MESSAGES,
 } from "@/utils/domain";
-import { monthOptions } from "@/utils/dateUtils";
 import { PassageiroFormModes } from "@/types/enums";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormResponsavel } from "../features/passageiro/form/PassageiroFormResponsavel";
@@ -41,7 +38,7 @@ import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFo
 interface QuickStartPassageiroDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: (passageiro?: Passageiro) => void;
+  onSuccess?: (passageiro?: Passageiro, keepOpen?: boolean) => void;
   usuarioId?: string;
   isOnboarding?: boolean;
 }
@@ -54,33 +51,31 @@ export function QuickStartPassageiroDialog({
   isOnboarding,
 }: QuickStartPassageiroDialogProps) {
   const [activeTab, setActiveTab] = useState<"rapido" | "completo">("rapido");
+  const [keepOpen, setKeepOpen] = useState(false);
+  const createdCountRef = useRef(0);
+  const lastCreatedPassageiroRef = useRef<Passageiro | null>(null);
   const { profile } = useProfile(usuarioId);
 
   useEffect(() => {
     if (isOpen) {
       setActiveTab("rapido");
+      setKeepOpen(false);
+      createdCountRef.current = 0;
+      lastCreatedPassageiroRef.current = null;
     }
   }, [isOpen]);
 
   const { form, isSubmitting, handleSubmit, onFormError, handleFillMock } = usePassageiroQuickStartForm({
-    onSuccess: (passageiro, keepOpen) => {
-      onSuccess?.(passageiro);
-      if (keepOpen) {
-        form.reset({
-          nome: "",
-          responsavel_principal: {
-            nome: "",
-            telefone: "",
-          },
-          valor_cobranca: "",
-          dia_vencimento: "",
-          escola_id: form.getValues("escola_id"),
-          veiculo_id: form.getValues("veiculo_id"),
-          mes_inicio_cobranca: "",
-          mes_fim_cobranca: "",
-        });
-      } else {
+    onSuccess: (passageiro, wasKeepOpen) => {
+      createdCountRef.current += 1;
+      if (passageiro) {
+        lastCreatedPassageiroRef.current = passageiro;
+      }
+      onSuccess?.(passageiro, wasKeepOpen);
+      if (!wasKeepOpen) {
         onClose();
+      } else {
+        setKeepOpen(false);
       }
     },
     usuarioId,
@@ -93,10 +88,11 @@ export function QuickStartPassageiroDialog({
     editingPassageiro: null,
     mode: PassageiroFormModes.CREATE,
     onSuccess: (createdPassageiro) => {
-      onSuccess?.(createdPassageiro);
+      createdCountRef.current += 1;
+      onSuccess?.(createdPassageiro, false);
       onClose();
     },
-    profile: profile || (usuarioId ? ({ id: usuarioId } as any) : null),
+    profile: profile || (usuarioId ? ({ id: usuarioId } as Partial<Usuario> as Usuario) : null),
   });
 
   const handleTabChange = (newTab: "rapido" | "completo") => {
@@ -109,19 +105,9 @@ export function QuickStartPassageiroDialog({
       fullFormViewModel.form.reset({
         ...fullValues,
         nome: quickValues.nome || fullValues.nome,
-        responsavel_principal: {
-          nome: quickValues.responsavel_principal?.nome || fullValues.responsavel_principal?.nome || "",
-          telefone: quickValues.responsavel_principal?.telefone || fullValues.responsavel_principal?.telefone || "",
-          cpf: fullValues.responsavel_principal?.cpf || "",
-          email: fullValues.responsavel_principal?.email || "",
-          parentesco: fullValues.responsavel_principal?.parentesco || "",
-        },
         escola_id: quickValues.escola_id || fullValues.escola_id,
         veiculo_id: quickValues.veiculo_id || fullValues.veiculo_id,
-        valor_cobranca: quickValues.valor_cobranca || fullValues.valor_cobranca,
-        dia_vencimento: quickValues.dia_vencimento || fullValues.dia_vencimento,
-        mes_inicio_cobranca: quickValues.mes_inicio_cobranca || fullValues.mes_inicio_cobranca,
-        mes_fim_cobranca: quickValues.mes_fim_cobranca || fullValues.mes_fim_cobranca,
+        ano_letivo: quickValues.ano_letivo || fullValues.ano_letivo,
       });
     } else if (newTab === "rapido") {
       const fullValues = fullFormViewModel.form.getValues();
@@ -130,16 +116,9 @@ export function QuickStartPassageiroDialog({
       form.reset({
         ...quickValues,
         nome: fullValues.nome || quickValues.nome,
-        responsavel_principal: {
-          nome: fullValues.responsavel_principal?.nome || quickValues.responsavel_principal?.nome || "",
-          telefone: fullValues.responsavel_principal?.telefone || quickValues.responsavel_principal?.telefone || "",
-        },
         escola_id: fullValues.escola_id || quickValues.escola_id,
         veiculo_id: fullValues.veiculo_id || quickValues.veiculo_id,
-        valor_cobranca: fullValues.valor_cobranca || quickValues.valor_cobranca,
-        dia_vencimento: fullValues.dia_vencimento || quickValues.dia_vencimento,
-        mes_inicio_cobranca: fullValues.mes_inicio_cobranca || quickValues.mes_inicio_cobranca,
-        mes_fim_cobranca: fullValues.mes_fim_cobranca || quickValues.mes_fim_cobranca,
+        ano_letivo: fullValues.ano_letivo || quickValues.ano_letivo || getDefaultAnoLetivo(),
       });
     }
 
@@ -150,50 +129,51 @@ export function QuickStartPassageiroDialog({
   const { data: veiculosList = [] } = useVeiculosWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/veiculo").Veiculo[] };
   const { openEscolaFormDialog, openVeiculoFormDialog } = useLayout();
 
+  const [newVeiculo, setNewVeiculo] = useState<Veiculo | null>(null);
+  const [newEscola, setNewEscola] = useState<Escola | null>(null);
+
+  const veiculosDisplay = useMemo(() => {
+    if (!newVeiculo) return veiculosList;
+    const exists = veiculosList.find((v) => v.id === newVeiculo.id);
+    if (exists) return veiculosList;
+    return [...veiculosList, newVeiculo];
+  }, [veiculosList, newVeiculo]);
+
+  const escolasDisplay = useMemo(() => {
+    if (!newEscola) return escolasList;
+    const exists = escolasList.find((e) => e.id === newEscola.id);
+    if (exists) return escolasList;
+    return [...escolasList, newEscola];
+  }, [escolasList, newEscola]);
+
+  useEffect(() => {
+    const currentId = form.getValues("veiculo_id");
+    if (newVeiculo && newVeiculo.id && currentId !== newVeiculo.id) {
+      form.setValue("veiculo_id", newVeiculo.id, { shouldValidate: true });
+    }
+  }, [newVeiculo, form]);
+
+  useEffect(() => {
+    const currentId = form.getValues("escola_id");
+    if (newEscola && newEscola.id && currentId !== newEscola.id) {
+      form.setValue("escola_id", newEscola.id, { shouldValidate: true });
+    }
+  }, [newEscola, form]);
+
   useEffect(() => {
     if (isOpen) {
       form.reset({
         ano_letivo: getDefaultAnoLetivo(),
         nome: "",
-        responsavel_principal: {
-          nome: "",
-          telefone: "",
-        },
-        valor_cobranca: "",
-        dia_vencimento: "",
         escola_id: escolasList?.length === 1 ? escolasList[0].id : "",
         veiculo_id: veiculosList?.length === 1 ? veiculosList[0].id : "",
-        mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
-        mes_fim_cobranca: "12",
-        ano_inicio_cobranca: new Date().getFullYear().toString(),
-        ano_fim_cobranca: new Date().getFullYear().toString(),
       });
+      setNewEscola(null);
+      setNewVeiculo(null);
     }
-  }, [isOpen, form, isOnboarding]);
+  }, [isOpen]);
 
-  const anoLetivo = form.watch("ano_letivo");
-  const mesInicio = form.watch("mes_inicio_cobranca");
-  const mesFim = form.watch("mes_fim_cobranca");
-  const anoInicio = form.watch("ano_inicio_cobranca");
-  const anoFim = form.watch("ano_fim_cobranca");
-
-  const currentYear = new Date().getFullYear();
   const anoLetivoOptions = getAnoLetivoOptions();
-  const anoInicioOptions = getAnoCobrancaInicioOptions(anoLetivo || anoInicio);
-  const anoFimOptions = getAnoCobrancaFimOptions(anoInicio);
-
-  useEffect(() => {
-    if (anoLetivo) {
-      form.setValue("ano_inicio_cobranca", anoLetivo);
-      form.setValue("ano_fim_cobranca", anoLetivo);
-      if (parseInt(anoLetivo, 10) > currentYear) {
-        form.setValue("mes_inicio_cobranca", "");
-        form.setValue("mes_fim_cobranca", "");
-      }
-    }
-  }, [anoLetivo, form, currentYear]);
-
-  const isRetroativo = useMemo(() => isCobrancaRetroativa(mesInicio, anoInicio), [mesInicio, anoInicio]);
 
   useEffect(() => {
     if (isOpen && escolasList?.length === 1 && !form.getValues("escola_id")) {
@@ -207,19 +187,26 @@ export function QuickStartPassageiroDialog({
     }
   }, [isOpen, veiculosList, form]);
 
-  const showTabs = !isOnboarding;
+  const handleCloseDialog = () => {
+    if (isOnboarding && createdCountRef.current > 0 && lastCreatedPassageiroRef.current) {
+      onSuccess?.(lastCreatedPassageiroRef.current, false);
+    }
+    onClose();
+  };
+
+  const showTabs = !isOnboarding || createdCountRef.current > 0;
   const isCompleto = showTabs && activeTab === "completo";
 
   return (
     <BaseDialog
       open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={(open) => !open && handleCloseDialog()}
       maxWidth={isCompleto ? "2xl" : "2xl"}
     >
       <BaseDialog.Header
         title="Cadastro de Aluno"
         icon={<Rocket className="w-5 h-5" />}
-        onClose={onClose}
+        onClose={handleCloseDialog}
         leftAction={isDevEnv() && (
           <Button
             type="button"
@@ -310,202 +297,92 @@ export function QuickStartPassageiroDialog({
         ) : (
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((data) => handleSubmit(data, false), onFormError)}
-              className={cn("pb-6", isOnboarding ? "space-y-4" : "space-y-8")}
+              onSubmit={form.handleSubmit((data) => handleSubmit(data, keepOpen), onFormError)}
+              className="pb-6 space-y-4"
             >
-              {!isOnboarding && (
-                <Banner
-                  variant="info"
-                  description="Seus dados estão 100% seguros e privados. Ficam salvos apenas para a organização da sua van."
-                  className="mb-4"
-                />
-              )}
-
-              <div className={cn(!isOnboarding && "space-y-5")}>
-                {!isOnboarding && (
-                  <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-                      <User className="w-5 h-5" />
-                    </div>
-                    Identificação
-                  </div>
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Nome do Aluno <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Input
+                          placeholder="Digite o nome completo"
+                          {...field}
+                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
 
-                <div className={cn(!isOnboarding && "space-y-4")}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Nome do Aluno <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <Input
-                                placeholder="Digite o nome completo"
-                                {...field}
-                                className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                                aria-invalid={!!fieldState.error}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="ano_letivo"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Ano Letivo <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || undefined}>
-                            <FormControl>
-                              <div className="relative">
-                                <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                                <SelectTrigger
-                                  className={cn(
-                                    "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                    fieldState.error && "border-red-500",
-                                  )}
-                                  aria-invalid={!!fieldState.error}
-                                >
-                                  <SelectValue placeholder="Selecione o ano" />
-                                </SelectTrigger>
-                              </div>
-                            </FormControl>
-                            <SelectContent>
-                              {anoLetivoOptions.map((y) => (
-                                <SelectItem key={y} value={y}>
-                                  {y}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {!isOnboarding && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="responsavel_principal.nome"
-                        render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Nome do Responsável <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                                <Input
-                                  placeholder="Ex: Maria Silva"
-                                  {...field}
-                                  className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                                  aria-invalid={!!fieldState.error}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="responsavel_principal.telefone"
-                        render={({ field }) => (
-                          <PhoneInput
-                            field={field}
-                            label="Telefone do Responsável"
-                            required
-                            labelClassName="text-slate-700 font-semibold ml-1"
-                            inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                          />
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {!isOnboarding && <hr className="border-slate-100" />}
-
-              <div className={cn(!isOnboarding && "space-y-5")}>
-                {!isOnboarding && (
-                  <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-                      <Car className="w-5 h-5" />
-                    </div>
-                    Veículo e Escola
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="escola_id"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Escola <span className="text-red-600">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={(val) => {
-                            if (val === "add-new-school") {
-                              openEscolaFormDialog({
-                                onSuccess: (escola) => {
-                                  if (escola?.id) {
-                                    form.setValue("escola_id", escola.id, { shouldValidate: true });
-                                  }
-                                }
-                              });
-                            } else {
-                              field.onChange(val);
+              <FormField
+                control={form.control}
+                name="escola_id"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Escola <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={(val) => {
+                        if (val === "add-new-school") {
+                          openEscolaFormDialog({
+                            allowBatchCreation: false,
+                            onSuccess: (escola) => {
+                              if (escola?.id) {
+                                setNewEscola(escola);
+                                form.setValue("escola_id", escola.id, { shouldValidate: true });
+                              }
                             }
-                          }}
-                          value={field.value || ""}
+                          });
+                        } else {
+                          field.onChange(val);
+                        }
+                      }}
+                      value={field.value || ""}
+                    >
+                      <FormControl>
+                        <div className="relative">
+                          <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                              fieldState.error && "border-red-500"
+                            )}
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <SelectValue placeholder="Selecione a escola" />
+                          </SelectTrigger>
+                        </div>
+                      </FormControl>
+                      <SelectContent>
+                        {escolasDisplay.map((e) => (
+                          <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                        ))}
+                        <SelectItem
+                          value="add-new-school"
+                          className="font-semibold text-[#1a3a5c] cursor-pointer"
                         >
-                          <FormControl>
-                            <div className="relative">
-                              <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500"
-                                )}
-                                aria-invalid={!!fieldState.error}
-                              >
-                                <SelectValue placeholder="Selecione" />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent>
-                            {escolasList.map((e) => (
-                              <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
-                            ))}
-                            <SelectItem
-                              value="add-new-school"
-                              className="font-semibold text-[#1a3a5c] cursor-pointer"
-                            >
-                              + Cadastrar Escola
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          + Cadastrar Escola
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <div className="grid grid-cols-5 gap-3">
+                <div className="col-span-3">
                   <FormField
                     control={form.control}
                     name="veiculo_id"
@@ -518,8 +395,10 @@ export function QuickStartPassageiroDialog({
                           onValueChange={(val) => {
                             if (val === "add-new-vehicle") {
                               openVeiculoFormDialog({
+                                allowBatchCreation: false,
                                 onSuccess: (veiculo) => {
                                   if (veiculo?.id) {
+                                    setNewVeiculo(veiculo);
                                     form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
                                   }
                                 }
@@ -545,7 +424,7 @@ export function QuickStartPassageiroDialog({
                             </div>
                           </FormControl>
                           <SelectContent>
-                            {veiculosList.map((v) => (
+                            {veiculosDisplay.map((v) => (
                               <SelectItem key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</SelectItem>
                             ))}
                             <SelectItem
@@ -561,288 +440,65 @@ export function QuickStartPassageiroDialog({
                     )}
                   />
                 </div>
+
+                <div className="col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="ano_letivo"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                          Ano Letivo <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
+                          <FormControl>
+                            <div className="relative">
+                              <CalendarDays className="absolute left-3.5 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                              <SelectTrigger
+                                className={cn(
+                                  "pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
+                                  fieldState.error && "border-red-500",
+                                )}
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue placeholder="Ano" />
+                              </SelectTrigger>
+                            </div>
+                          </FormControl>
+                          <SelectContent>
+                            {anoLetivoOptions.map((y) => (
+                              <SelectItem key={y} value={y}>
+                                {y}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              {!isOnboarding && (
-                <>
-                  <hr className="border-slate-100" />
-
-                  <section className="space-y-5">
-                    <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-                        <DollarSign className="w-5 h-5" />
-                      </div>
-                      Parcelas
-                    </div>
-
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="isento"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-4 shadow-sm">
-                            <div className="space-y-0.5 pr-4">
-                              <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
-                                Aluno Isento
-                              </FormLabel>
-                              <div className="text-xs text-slate-500 font-normal leading-relaxed">
-                                Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.
-                              </div>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={!!field.value}
-                                onCheckedChange={field.onChange}
-                                className="data-[state=checked]:bg-[#1a3a5c]"
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      {!form.watch("isento") && (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="valor_cobranca"
-                              render={({ field }) => (
-                                <MoneyInput
-                                  field={field}
-                                  label="Valor"
-                                  required
-                                  labelClassName="text-slate-700 font-semibold ml-1"
-                                  inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
-                                />
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="dia_vencimento"
-                              render={({ field, fieldState }) => (
-                                <FormItem>
-                                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                                    Dia do Vencimento <span className="text-red-600">*</span>
-                                  </FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                      <div className="relative">
-                                        <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                        <SelectTrigger
-                                          className={cn(
-                                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                            fieldState.error && "border-red-500",
-                                          )}
-                                          aria-invalid={!!fieldState.error}
-                                        >
-                                          <SelectValue placeholder="Selecione o dia" />
-                                        </SelectTrigger>
-                                      </div>
-                                    </FormControl>
-                                    <SelectContent className="max-h-60 overflow-y-auto">
-                                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                                        <SelectItem key={day} value={day.toString()}>
-                                          Dia {day}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="col-span-2">
-                                <FormField
-                                  control={form.control}
-                                  name="mes_inicio_cobranca"
-                                  render={({ field, fieldState }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                                        Início da Cobrança <span className="text-red-600">*</span>
-                                      </FormLabel>
-                                      <Select
-                                        onValueChange={(val) => {
-                                          field.onChange(val);
-                                          form.trigger("mes_fim_cobranca");
-                                        }}
-                                        value={field.value}
-                                      >
-                                        <FormControl>
-                                          <div className="relative">
-                                            <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                            <SelectTrigger
-                                              className={cn(
-                                                "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                                fieldState.error && "border-red-500",
-                                              )}
-                                              aria-invalid={!!fieldState.error}
-                                            >
-                                              <SelectValue placeholder="Mês" />
-                                            </SelectTrigger>
-                                          </div>
-                                        </FormControl>
-                                        <SelectContent className="max-h-60 overflow-y-auto">
-                                          {monthOptions.map((m) => (
-                                            <SelectItem key={m.value} value={m.value}>
-                                              {m.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                              <div className="col-span-1">
-                                <FormField
-                                  control={form.control}
-                                  name="ano_inicio_cobranca"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                                        Ano <span className="text-red-600">*</span>
-                                      </FormLabel>
-                                      <Select
-                                        onValueChange={(val) => {
-                                          field.onChange(val);
-                                          form.setValue("ano_fim_cobranca", val);
-                                          if (parseInt(val, 10) > currentYear) {
-                                            form.setValue("mes_inicio_cobranca", "");
-                                            form.setValue("mes_fim_cobranca", "");
-                                          }
-                                          form.trigger("mes_fim_cobranca");
-                                        }}
-                                        value={field.value || (anoInicioOptions[0] || "")}
-                                      >
-                                        <FormControl>
-                                          <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                                            <SelectValue placeholder="Ano" />
-                                          </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                          {anoInicioOptions.map((y) => (
-                                            <SelectItem key={y} value={y}>
-                                              {y}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="col-span-2">
-                                <FormField
-                                  control={form.control}
-                                  name="mes_fim_cobranca"
-                                  render={({ field, fieldState }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                                        Término da Cobrança <span className="text-red-600">*</span>
-                                      </FormLabel>
-                                      <Select
-                                        onValueChange={(val) => {
-                                          field.onChange(val);
-                                          form.trigger("mes_fim_cobranca");
-                                        }}
-                                        value={field.value}
-                                      >
-                                        <FormControl>
-                                          <div className="relative">
-                                            <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                            <SelectTrigger
-                                              className={cn(
-                                                "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                                fieldState.error && "border-red-500",
-                                              )}
-                                              aria-invalid={!!fieldState.error}
-                                            >
-                                              <SelectValue placeholder="Mês" />
-                                            </SelectTrigger>
-                                          </div>
-                                        </FormControl>
-                                        <SelectContent className="max-h-60 overflow-y-auto">
-                                          {monthOptions.map((m) => (
-                                            <SelectItem key={m.value} value={m.value}>
-                                              {m.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                              <div className="col-span-1">
-                                <FormField
-                                  control={form.control}
-                                  name="ano_fim_cobranca"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                                        Ano <span className="text-red-600">*</span>
-                                      </FormLabel>
-                                      <Select
-                                        onValueChange={(val) => {
-                                          field.onChange(val);
-                                          form.trigger("mes_fim_cobranca");
-                                        }}
-                                        value={field.value || (anoFimOptions[0] || "")}
-                                      >
-                                        <FormControl>
-                                          <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                                            <SelectValue placeholder="Ano" />
-                                          </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                          {anoFimOptions.map((y) => (
-                                            <SelectItem key={y} value={y}>
-                                              {y}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <Banner
-                            variant={isRetroativo ? "warning" : "info"}
-                            description={
-                              isRetroativo
-                                ? COBRANCA_BANNER_MESSAGES.RETROATIVA
-                                : COBRANCA_BANNER_MESSAGES.PADRAO
-                            }
-                            className="mt-3 w-full"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                </>
-              )}
-
-              {isOnboarding && (
-                <Banner
-                  variant="info"
-                  description="Esses são apenas os dados essenciais. Você poderá completar o cadastro depois acessando a carteirinha digital."
+              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                <Checkbox
+                  id="keepOpenPassageiro"
+                  checked={keepOpen}
+                  onCheckedChange={(checked) => setKeepOpen(checked as boolean)}
+                  className="h-5 w-5 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
                 />
-              )}
+                <label
+                  htmlFor="keepOpenPassageiro"
+                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                >
+                  Cadastrar outro em seguida
+                </label>
+              </div>
+
+              <Banner
+                variant="info"
+                description="Valor da parcela, vencimento e responsáveis podem ser preenchidos depois na carteirinha do aluno."
+              />
             </form>
           </Form>
         )}
@@ -851,16 +507,16 @@ export function QuickStartPassageiroDialog({
       <BaseDialog.Footer>
         <BaseDialog.Action
           variant="secondary"
-          label="Cancelar"
-          onClick={onClose}
+          label={createdCountRef.current > 0 ? "Concluir" : "Cancelar"}
+          onClick={handleCloseDialog}
           disabled={isCompleto ? fullFormViewModel.isSubmitting : isSubmitting}
         />
         <BaseDialog.Action
-          label="Cadastrar"
+          label="Confirmar"
           onClick={
             isCompleto
               ? fullFormViewModel.form.handleSubmit(fullFormViewModel.handleSubmit, fullFormViewModel.onFormError)
-              : form.handleSubmit((data) => handleSubmit(data, false), onFormError)
+              : form.handleSubmit((data) => handleSubmit(data, keepOpen), onFormError)
           }
           isLoading={isCompleto ? fullFormViewModel.isSubmitting : isSubmitting}
         />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/hooks/business/useSession";
 import { useEscolas } from "@/hooks/api/useEscolas";
@@ -24,7 +25,28 @@ export function useAtualizacaoRapidaViewModel() {
   const [selectedEscola, setSelectedEscola] = useState<string>(FilterDefaults.TODAS);
   const [selectedVeiculo, setSelectedVeiculo] = useState<string>(FilterDefaults.TODOS);
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>(FilterDefaults.TODOS);
-  const [apenasSemValor, setApenasSemValor] = useState<boolean>(false);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSemValor = searchParams.get("semValor") === "true";
+  const [apenasSemValor, setApenasSemValorState] = useState<boolean>(initialSemValor);
+
+  const setApenasSemValor = useCallback((val: boolean) => {
+    setApenasSemValorState(val);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (val) {
+        next.set("semValor", "true");
+      } else {
+        next.delete("semValor");
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  useEffect(() => {
+    const isParamActive = searchParams.get("semValor") === "true";
+    setApenasSemValorState(isParamActive);
+  }, [searchParams]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -178,7 +200,7 @@ export function useAtualizacaoRapidaViewModel() {
     setSelectedVeiculo(FilterDefaults.TODOS);
     setSelectedPeriodo(FilterDefaults.TODOS);
     setApenasSemValor(false);
-  }, []);
+  }, [setApenasSemValor]);
 
   const hasActiveFilters = Boolean(
     searchTerm.trim() ||

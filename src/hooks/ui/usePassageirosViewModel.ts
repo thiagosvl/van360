@@ -331,27 +331,34 @@ export function usePassageirosViewModel() {
     const isFirstPassageiro = (countPassageiros || 0) === 0;
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
-      onSuccess: (passageiro) => {
-        if (passageiro && isFirstPassageiro) {
+      onSuccess: (passageiro, keepOpen) => {
+        if (!passageiro || keepOpen) {
+          return;
+        }
+
+        if (isFirstPassageiro) {
           openOnboardingSuccessDialog({
             passageiroNome: passageiro.nome,
             onNavigateToPassageiro: () => {
               navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
             },
           });
-        } else if (passageiro && !isFirstPassageiro) {
-          const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
-          const now = getNowBR();
-          const hasPayment = !passageiro.isento && shouldGeneratePassengerProjection({
-            passageiro,
-            targetMonth: now.getMonth() + 1,
-            targetYear: now.getFullYear(),
-          });
-          if (hasPayment || hasContractConfig) {
-            openFirstChargeDialog({ passageiro });
-          } else {
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-          }
+          return;
+        }
+
+        const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
+        const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+        const now = getNowBR();
+        const hasPayment = hasFinancialInfo && shouldGeneratePassengerProjection({
+          passageiro,
+          targetMonth: now.getMonth() + 1,
+          targetYear: now.getFullYear(),
+        });
+
+        if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
+          openFirstChargeDialog({ passageiro });
+        } else {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }
       },
     });

@@ -4,7 +4,7 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 import { periodos } from "@/utils/formatters/periodo";
-import { formatShortName } from "@/utils/formatters/name";
+import { formatShortName, formatFirstName } from "@/utils/formatters/name";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { ExternalLink, ChevronDown } from "lucide-react";
 import { memo } from "react";
@@ -76,10 +76,10 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                 )}
               </th>
               <th className="py-2 sm:py-3 px-2 sm:px-3 w-28 sm:min-w-[200px]">Aluno</th>
-              <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[160px]">Veículo</th>
-              <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[170px]">Escola</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-32 min-w-[115px]">Valor</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[80px]">Vencimento</th>
+              <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[160px]">Veículo</th>
+              <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[170px]">Escola</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-30 min-w-[96px]">Período</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28 min-w-[80px]">Turma</th>
               <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[70px]">Sala</th>
@@ -128,9 +128,11 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                   <td className="py-1.5 sm:py-2.5 px-2 sm:px-3">
                     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                       <div className="min-w-0">
-                        <span className="font-bold text-slate-900 block leading-tight text-xs sm:text-xs">
-                          <span className="sm:hidden">{formatShortName(p.nome, true)}</span>
-                          <span className="hidden sm:inline">{p.nome}</span>
+                        <span className="font-bold text-slate-900 block leading-tight text-xs">
+                          {formatShortName(p.nome, true)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium block truncate leading-tight">
+                          {p.responsavel_principal?.nome ? formatFirstName(p.responsavel_principal.nome) : "Sem responsável"}
                         </span>
                         {dirty && (
                           <span className="text-[9px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.2 rounded mt-0.5 inline-block">
@@ -147,6 +149,36 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </Link>
+                    </div>
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <Input
+                      value={effectiveValor !== undefined && effectiveValor !== null ? moneyMask(effectiveValor) : ""}
+                      onChange={(e) => {
+                        const formatted = moneyMask(e.target.value);
+                        const numeric = moneyToNumber(formatted);
+                        onUpdateField(pId, "valor_cobranca", numeric > 0 ? numeric : null, p);
+                      }}
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-slate-800 min-w-[100px] w-full"
+                    />
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                    <div className="relative">
+                      <select
+                        value={effectiveVencimento}
+                        onChange={(e) => onUpdateField(pId, "dia_vencimento", e.target.value === "none" ? null : Number(e.target.value), p)}
+                        className="w-full h-7 sm:h-8 pl-1.5 pr-5 sm:pl-2 sm:pr-6 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
+                      >
+                        <option value="none">Nenhum</option>
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                          <option key={d} value={String(d)}>
+                            Dia {d}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                   </td>
 
@@ -179,36 +211,6 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                         {(escolas || []).map((e) => (
                           <option key={e.id} value={e.id}>
                             {e.nome}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
-                  </td>
-
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <Input
-                      value={effectiveValor !== undefined && effectiveValor !== null ? moneyMask(effectiveValor) : ""}
-                      onChange={(e) => {
-                        const formatted = moneyMask(e.target.value);
-                        const numeric = moneyToNumber(formatted);
-                        onUpdateField(pId, "valor_cobranca", numeric > 0 ? numeric : null, p);
-                      }}
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-slate-800 min-w-[100px] w-full"
-                    />
-                  </td>
-
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <div className="relative">
-                      <select
-                        value={effectiveVencimento}
-                        onChange={(e) => onUpdateField(pId, "dia_vencimento", e.target.value === "none" ? null : Number(e.target.value), p)}
-                        className="w-full h-7 sm:h-8 pl-1.5 pr-5 sm:pl-2 sm:pr-6 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
-                      >
-                        <option value="none">Nenhum</option>
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                          <option key={d} value={String(d)}>
-                            Dia {d}
                           </option>
                         ))}
                       </select>

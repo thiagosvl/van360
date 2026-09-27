@@ -80,7 +80,7 @@ export const CarteirinhaCobrancas = ({
   const currentYear = now.getFullYear();
   const selectedYear = Number(yearFilter) || currentYear;
 
-  const { openAnnualReceiptDialog, openPassageiroFormDialog } = useLayout();
+  const { openAnnualReceiptDialog, openPassageiroFormDialog, openPassageiroFinanceiroDialog } = useLayout();
   const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
     passageiro,
     selectedYear,
@@ -334,7 +334,7 @@ export const CarteirinhaCobrancas = ({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
-            {displayCobrancas.length} {displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}
+            {`${displayCobrancas.length} ${displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}`}
           </span>
         </div>
 
@@ -353,15 +353,17 @@ export const CarteirinhaCobrancas = ({
       {!passageiro.isento && isIncomplete && (
         <Banner
           variant="info"
-          title="Informe o valor e dia do vencimento"
-          description="Toque para preencher os valores das parcelas deste aluno."
-          onClick={() =>
-            openPassageiroFormDialog({
-              mode: PassageiroFormModes.EDIT,
-              editingPassageiro: passageiro,
-              onSuccess: onActionSuccess,
-            })
-          }
+          title="Configurar parcelas"
+          description="Esta lista é uma prévia do ano. Preencha o valor e o vencimento para exibir corretamente e ativar as cobranças."
+          action={{
+            label: "Configurar parcelas",
+            onClick: () =>
+              openPassageiroFinanceiroDialog({
+                passageiro,
+                onSuccess: onActionSuccess,
+              }),
+            className: "h-9 px-4 text-xs font-semibold shrink-0",
+          }}
           className="p-3 sm:p-3.5 mb-4"
         />
       )}
@@ -464,6 +466,7 @@ const CobrancaItemPassageiro = forwardRef<
   onVerRecibo,
   onActionSuccess,
 }, ref) => {
+  const { openPassageiroFinanceiroDialog } = useLayout();
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const isCancelada = cobranca.status === CobrancaStatus.CANCELADA;
   const isPaid = !isCancelada && cobranca.status === CobrancaStatus.PAGO;
@@ -494,6 +497,10 @@ const CobrancaItemPassageiro = forwardRef<
     }))
     : undefined;
 
+  const handleIncompleteClick = () => {
+    openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess });
+  };
+
   const actions = useCobrancaActions({
     cobranca: {
       ...cobranca,
@@ -501,9 +508,13 @@ const CobrancaItemPassageiro = forwardRef<
     },
     onVerCobranca: () => { },
     onVerCarteirinha: undefined,
-    onEditarCobranca: isCancelada ? undefined : () => onEditCobranca(cobranca),
+    onEditarCobranca: isCancelada
+      ? undefined
+      : cobranca.isProjection && isIncomplete
+        ? handleIncompleteClick
+        : () => onEditCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
-      ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
+      ? (isIncomplete ? handleIncompleteClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
       : isCancelada
         ? undefined
         : () => onRegistrarPagamento(cobranca),
@@ -530,12 +541,13 @@ const CobrancaItemPassageiro = forwardRef<
     >
       <MobileActionItem
         actions={actions}
-        onClickItem={undefined}
+        onClickItem={cobranca.isProjection && isIncomplete ? handleIncompleteClick : undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
         hideTriggerOnDesktop
       >
         <div
+          onClick={cobranca.isProjection && isIncomplete ? handleIncompleteClick : undefined}
           className={cn(
             "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50 relative",
             cobranca.isProjection && "cursor-pointer"
@@ -609,9 +621,13 @@ const CobrancaItemPassageiro = forwardRef<
               <CobrancaActionsMenu
                 cobranca={cobranca}
                 onVerCarteirinha={undefined}
-                onEditarCobranca={isCancelada ? undefined : () => onEditCobranca(cobranca)}
+                onEditarCobranca={isCancelada
+                  ? undefined
+                  : cobranca.isProjection && isIncomplete
+                    ? handleIncompleteClick
+                    : () => onEditCobranca(cobranca)}
                 onRegistrarPagamento={cobranca.isProjection
-                  ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
+                  ? (isIncomplete ? handleIncompleteClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
                   : isCancelada
                     ? undefined
                     : () => onRegistrarPagamento(cobranca)}
