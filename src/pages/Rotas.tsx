@@ -4,8 +4,8 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Banner } from "@/components/ui/Banner";
 import { RotasSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Plus } from "lucide-react";
-import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
+import { Plus, CalendarDays } from "lucide-react";
+import { ProximasAusenciasDialog } from "@/components/dialogs/ProximasAusenciasDialog";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { RotasToolbar } from "@/components/features/rotas/RotasToolbar";
 import { RotasList } from "@/components/features/rotas/RotasList";
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 export default function Rotas() {
   const vm = useRotasViewModel();
   const { setPageTitle } = useLayout();
-  const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
+  const [isProximasAusenciasOpen, setIsProximasAusenciasOpen] = useState(false);
   const [selectedVeiculoFilter, setSelectedVeiculoFilter] = useState<string>("TODOS");
 
   useEffect(() => {
@@ -124,20 +124,19 @@ export default function Rotas() {
             <div className="flex items-center gap-2 w-full">
               <Button
                 variant="outline"
-                onClick={() => setIsAusenciaDialogOpen(true)}
-                className="flex-1 border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-2.5 sm:px-4 shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                onClick={() => setIsProximasAusenciasOpen(true)}
+                className="flex-1 border border-slate-200/90 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
               >
-                <UserPlus className="h-4 w-4 text-rose-500 shrink-0" />
-                <span className="hidden sm:inline">Registrar Ausência</span>
-                <span className="sm:hidden">Ausência</span>
+                <CalendarDays className="h-4.5 w-4.5 text-amber-500 shrink-0" />
+                <span>Ausências</span>
               </Button>
 
               {vm.can("rotas.criar_editar") && (
                 <Button
                   onClick={vm.handleOpenCreateRouteDialog}
-                  className="flex-1 border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm h-11 sm:h-12 rounded-xl sm:rounded-2xl px-2.5 sm:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Plus className="h-4 w-4 shrink-0" />
+                  <Plus className="h-4.5 w-4.5 shrink-0" />
                   <span>Nova Rota</span>
                 </Button>
               )}
@@ -166,9 +165,9 @@ export default function Rotas() {
         </Tabs>
       </div>
 
-      <RegistrarAusenciaDialog
-        isOpen={isAusenciaDialogOpen}
-        onClose={() => setIsAusenciaDialogOpen(false)}
+      <ProximasAusenciasDialog
+        open={isProximasAusenciasOpen}
+        onOpenChange={setIsProximasAusenciasOpen}
       />
     </PullToRefreshWrapper>
   );

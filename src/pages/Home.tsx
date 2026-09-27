@@ -12,6 +12,7 @@ import { QuickRegistrationLink } from "@/components/features/passageiro/QuickReg
 import { DemonstracoesWhatsAppCard } from "@/components/features/home/DemonstracoesWhatsAppCard";
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
+import { STORAGE_KEYS } from "@/constants";
 import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionIdentifer, UserType, AppPermissionStatus, PermissionRescueType } from "@/types/enums";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,6 @@ import { usePrivacy } from "@/contexts/PrivacyContext";
 import { isMotoristaTitular } from "@/utils/userUtils";
 import { useEffect, useState } from "react";
 import { Banner } from "@/components/ui/Banner";
-import { STORAGE_KEYS } from "@/constants";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
@@ -65,28 +65,28 @@ const Home = () => {
   const { openAcquisitionChannelDialog } = useLayout();
 
   const [isDismissedQuickReg, setIsDismissedQuickReg] = useState(() => {
-    return localStorage.getItem("van360:dismiss:quick-registration-home") === "true";
+    return localStorage.getItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_HOME) === "true";
   });
 
   const handleDismissQuickReg = () => {
     setIsDismissedQuickReg(true);
-    localStorage.setItem("van360:dismiss:quick-registration-home", "true");
+    localStorage.setItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_HOME, "true");
   };
 
   const [isDismissedDemonstracoes, setIsDismissedDemonstracoes] = useState(() => {
-    return localStorage.getItem("van360:dismiss:demonstracoes-home") === "true";
+    return localStorage.getItem(STORAGE_KEYS.DISMISS_DEMONSTRACOES_HOME) === "true";
   });
 
   const handleDismissDemonstracoes = () => {
     setIsDismissedDemonstracoes(true);
-    localStorage.setItem("van360:dismiss:demonstracoes-home", "true");
+    localStorage.setItem(STORAGE_KEYS.DISMISS_DEMONSTRACOES_HOME, "true");
   };
 
   const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
 
   useEffect(() => {
-    if (sessionStorage.getItem("van360_just_registered") === "true") {
-      sessionStorage.removeItem("van360_just_registered");
+    if (sessionStorage.getItem(STORAGE_KEYS.JUST_REGISTERED) === "true") {
+      sessionStorage.removeItem(STORAGE_KEYS.JUST_REGISTERED);
 
       const duration = 0.4 * 1000;
       const end = Date.now() + duration;

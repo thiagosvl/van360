@@ -17,6 +17,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
@@ -136,7 +137,11 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   return (
     <MobileActionItem
       actions={actions}
-      onClickItem={undefined}
+      onClickItem={
+        cobranca?.isProjection && isPassageiroIncompleto(cobranca.passageiro)
+          ? () => onOpenCreateForProjection?.(cobranca)
+          : undefined
+      }
       className="bg-transparent"
       renderHeader={renderHeader}
     >
@@ -213,12 +218,36 @@ export function CobrancasList({
 }: CobrancasListProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { openCobrancaFormDialog } = useLayout();
+  const {
+    openCobrancaFormDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openPassageiroFinanceiroDialog,
+  } = useLayout();
 
   const [openedCobranca, setOpenedCobranca] = useState<Cobranca | null>(null);
   const isPendingTab = activeTab === CobrancaTab.ARECEBER;
 
   const handleOpenCreateForProjection = (cobranca: Cobranca) => {
+    if (isPassageiroIncompleto(cobranca.passageiro)) {
+      openConfirmationDialog({
+        title: "Valor da parcela não configurado",
+        description:
+          "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+        confirmText: "Configurar agora",
+        cancelText: "Fazer depois",
+        onConfirm: () => {
+          safeCloseDialog(closeConfirmationDialog);
+          setTimeout(() => {
+            if (cobranca.passageiro) {
+              openPassageiroFinanceiroDialog({ passageiro: cobranca.passageiro });
+            }
+          }, 100);
+        },
+      });
+      return;
+    }
+
     openCobrancaFormDialog({
       passageiroId: cobranca.passageiro_id,
       passageiroNome: formatShortName(cobranca.passageiro?.nome, true),

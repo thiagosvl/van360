@@ -54,15 +54,14 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
 import { toast } from "@/utils/notifications/toast";
-import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
+import { buildReciboWhatsAppMessage, buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 
 import { Cobranca } from "@/types/cobranca";
 
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
-import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
-import { obterUrlDocumentoContrato } from "@/utils/domain";
+import { obterUrlDocumentoContrato, isPassageiroIncompleto } from "@/utils/domain";
 
 const currentYear = getNowBR().getFullYear().toString();
 
@@ -88,6 +87,7 @@ export default function PassageiroCarteirinha() {
     openManualPaymentDialog,
     openReceiptDialog,
     openGerarContratoValidadorDialog,
+    openPassageiroFinanceiroDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -298,15 +298,18 @@ export default function PassageiroCarteirinha() {
             setTimeout(() => {
               openGerarContratoValidadorDialog({
                 passageiroId: updatedPassageiro.id!,
-                onSuccess: async (id) => {
+                onSuccess: async (id, _bypassed, updatedValues) => {
+                  const valorMensal = updatedValues?.valorMensal ?? (updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined);
+                  const diaVencimento = updatedValues?.diaVencimento ?? (updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined);
+
                   try {
                     if (updatedPassageiro.contrato_id) {
                       await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
                     } else {
                       await createContrato.mutateAsync({
                         passageiroId: id,
-                        valorMensal: Number(updatedPassageiro.valor_cobranca) || undefined,
-                        diaVencimento: Number(updatedPassageiro.dia_vencimento) || undefined,
+                        valorMensal,
+                        diaVencimento,
                       });
                     }
                   } catch { }
@@ -594,6 +597,25 @@ export default function PassageiroCarteirinha() {
       });
     },
     onRegistrarPagamento: (cobranca: Cobranca) => {
+      const targetPassageiro = cobranca.passageiro || passageiro;
+      if (cobranca.isProjection && isPassageiroIncompleto(targetPassageiro)) {
+        openConfirmationDialog({
+          title: "Valor da parcela não configurado",
+          description:
+            "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+          confirmText: "Configurar agora",
+          cancelText: "Fazer depois",
+          onConfirm: () => {
+            safeCloseDialog(closeConfirmationDialog);
+            setTimeout(() => {
+              if (targetPassageiro) {
+                openPassageiroFinanceiroDialog({ passageiro: targetPassageiro });
+              }
+            }, 100);
+          },
+        });
+        return;
+      }
       openPaymentDialog(cobranca);
     },
     onToggleLembretes: handleToggleLembretes,
@@ -704,7 +726,10 @@ export default function PassageiroCarteirinha() {
       } else {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
-          onSuccess: (id, bypassed) => {
+          onSuccess: (id, bypassed, updatedValues) => {
+            const valorMensal = updatedValues?.valorMensal ?? (passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined);
+            const diaVencimento = updatedValues?.diaVencimento ?? (passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined);
+
             if (bypassed) {
               openConfirmationDialog({
                 title: "Gerar contrato?",
@@ -714,8 +739,8 @@ export default function PassageiroCarteirinha() {
                   try {
                     await createContrato.mutateAsync({
                       passageiroId: id,
-                      valorMensal: passageiro.valor_cobranca,
-                      diaVencimento: passageiro.dia_vencimento
+                      valorMensal,
+                      diaVencimento,
                     });
                     safeCloseDialog(closeConfirmationDialog);
                   } catch (error) {
@@ -726,11 +751,11 @@ export default function PassageiroCarteirinha() {
             } else {
               createContrato.mutateAsync({
                 passageiroId: id,
-                valorMensal: passageiro.valor_cobranca,
-                diaVencimento: passageiro.dia_vencimento
+                valorMensal,
+                diaVencimento,
               });
             }
-          }
+          },
         });
       }
     },

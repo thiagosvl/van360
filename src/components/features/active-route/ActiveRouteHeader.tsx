@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
-import { XCircle, UserPlus, Route, Loader2, Play, Edit, Users, Bus, MapPin, School, Trash2, CheckCircle2, ChevronRight } from "lucide-react";
+import { XCircle, Route, Loader2, Play, Edit, Users, Bus, MapPin, School, Trash2, CheckCircle2, ChevronRight, CalendarDays } from "lucide-react";
 import { RouteExecution, RouteExecutionStatus } from "@/types/route";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ interface ActiveRouteHeaderProps {
   totalAlunos?: number;
   totalEscolas?: number;
   totalAlunosVolta?: number;
-  onOpenAusenciaDialog: () => void;
+  onOpenProximasAusencias?: () => void;
   onOpenChamadaRapida?: () => void;
   onCancel: () => void;
   onEditRoute: () => void;
@@ -51,7 +51,7 @@ export function ActiveRouteHeader({
   totalAlunos = 0,
   totalEscolas = 0,
   totalAlunosVolta = 0,
-  onOpenAusenciaDialog,
+  onOpenProximasAusencias,
   onOpenChamadaRapida,
   onCancel,
   onEditRoute,
@@ -210,17 +210,16 @@ export function ActiveRouteHeader({
           )}
 
           <div className="flex items-center gap-2 pt-0.5">
-            {execucao?.rota_id && (
+            {execucao?.rota_id && onOpenProximasAusencias && (
               <Button
                 type="button"
                 variant="outline"
-                onClick={onOpenAusenciaDialog}
-                className="h-11 sm:h-12 px-2.5 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 shrink-0"
-                title="Registrar falta antecipada de um aluno"
+                onClick={onOpenProximasAusencias}
+                className="h-12 md:h-14 px-4 md:px-5 rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm shadow-xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0"
+                title="Ver e registrar ausências desta rota"
               >
-                <UserPlus className="w-4 h-4 text-rose-500 shrink-0" />
-                <span className="hidden sm:inline">Registrar Ausência</span>
-                <span className="sm:hidden">Ausência</span>
+                <CalendarDays className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+                <span>Ausências</span>
               </Button>
             )}
 
@@ -241,12 +240,12 @@ export function ActiveRouteHeader({
                   <Button
                     onClick={onIniciarRota}
                     disabled={isLoading || isAnyActionBusy || iniciarMutation?.isPending}
-                    className="flex-1 h-11 sm:h-12 rounded-xl font-headline font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 active:scale-[0.98] cursor-pointer transition-all border-none tracking-wide uppercase"
+                    className="flex-1 h-12 md:h-14 rounded-2xl font-headline font-black text-sm md:text-base flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 active:scale-[0.98] cursor-pointer transition-all border-none tracking-wide uppercase px-4 md:px-6"
                   >
                     {iniciarMutation?.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      <Loader2 className="w-4.5 h-4.5 animate-spin shrink-0" />
                     ) : (
-                      <Play className="w-4 h-4 shrink-0 fill-white text-white" />
+                      <Play className="w-4.5 h-4.5 shrink-0 fill-white text-white" />
                     )}
                     <span>INICIAR ROTA</span>
                   </Button>

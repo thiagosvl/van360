@@ -3,8 +3,8 @@ import { historicoApi, RegistrarEventoDTO } from "@/services/api/historico.api";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { getDispositivoCadastro } from "@/utils/detectPlatform";
 import { isImpersonating } from "@/utils/impersonate";
+import { STORAGE_KEYS } from "@/constants";
 
-const STORAGE_KEY_LAST_APP_OPEN = "van360_last_app_open_timestamp";
 const APP_OPEN_THROTTLE_MS = 15 * 60 * 1000;
 
 export interface TrackActivityOptions {
@@ -36,7 +36,7 @@ export function useActivityTracker() {
 
     try {
       const now = Date.now();
-      const lastRecorded = localStorage.getItem(STORAGE_KEY_LAST_APP_OPEN);
+      const lastRecorded = localStorage.getItem(STORAGE_KEYS.LAST_APP_OPEN_TIMESTAMP);
 
       if (lastRecorded) {
         const lastTimestamp = parseInt(lastRecorded, 10);
@@ -44,6 +44,8 @@ export function useActivityTracker() {
           return;
         }
       }
+
+      localStorage.setItem(STORAGE_KEYS.LAST_APP_OPEN_TIMESTAMP, now.toString());
 
       const dispositivo = getDispositivoCadastro();
 
@@ -57,7 +59,6 @@ export function useActivityTracker() {
       };
 
       await historicoApi.registrarEvento(payload);
-      localStorage.setItem(STORAGE_KEY_LAST_APP_OPEN, Date.now().toString());
     } catch {
       return;
     }

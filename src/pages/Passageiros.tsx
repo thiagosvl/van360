@@ -26,12 +26,12 @@ export default function Passageiros() {
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("alunos");
 
   const [isDismissedAlunos, setIsDismissedAlunos] = useState(() => {
-    return localStorage.getItem("van360:dismiss:quick-registration-alunos") === "true";
+    return localStorage.getItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_ALUNOS) === "true";
   });
 
   const handleDismissAlunos = () => {
     setIsDismissedAlunos(true);
-    localStorage.setItem("van360:dismiss:quick-registration-alunos", "true");
+    localStorage.setItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_ALUNOS, "true");
   };
   const {
     profile,

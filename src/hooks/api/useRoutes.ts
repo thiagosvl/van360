@@ -97,4 +97,28 @@ export function usePassageiroRotas(passageiroId: string) {
   });
 }
 
+export function useProximasAusencias(params?: { rotaId?: string; enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["route-ausencias-futuras", params?.rotaId],
+    queryFn: () => routeApi.listAusenciasFuturas({ rotaId: params?.rotaId }),
+    enabled: params?.enabled !== undefined ? params.enabled : true,
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useBuscarAlunos(params: { search: string; rotaId?: string; enabled?: boolean }) {
+  const searchTerm = params.search.trim();
+  const isEnabled = (params.enabled !== undefined ? params.enabled : true) && searchTerm.length >= 3;
+
+  return useQuery({
+    queryKey: ["route-alunos-buscar", searchTerm, params.rotaId],
+    queryFn: () => routeApi.buscarAlunos({ search: searchTerm, rotaId: params.rotaId }),
+    enabled: isEnabled,
+    staleTime: 1000 * 60,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export type { AusenciaFuturaItem, AlunoBuscaItem } from "@/services/api/route.api";
 export { useRegistrarAusenciaMutation, useRemoverAusenciaMutation } from "./useRouteMutations";

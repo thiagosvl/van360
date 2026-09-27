@@ -321,7 +321,10 @@ export function useContratosViewModel() {
     openGerarContratoValidadorDialog({
       passageiroId,
       initialPassageiro: rawPassageiro,
-      onSuccess: (id, bypassed) => {
+      onSuccess: (id, bypassed, updatedValues) => {
+        const valorMensal = updatedValues?.valorMensal ?? (Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined);
+        const diaVencimento = updatedValues?.diaVencimento ?? (Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined);
+
         if (bypassed) {
           const firstName = rawPassageiro?.nome?.trim().split(" ")[0] || "o aluno";
           openConfirmationDialog({
@@ -331,8 +334,8 @@ export function useContratosViewModel() {
             onConfirm: async () => {
               await createMutation.mutateAsync({
                 passageiroId: id,
-                valorMensal: Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
-                diaVencimento: Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
+                valorMensal,
+                diaVencimento,
               });
               safeCloseDialog(closeConfirmationDialog);
             }
@@ -340,8 +343,8 @@ export function useContratosViewModel() {
         } else {
           createMutation.mutateAsync({
             passageiroId: id,
-            valorMensal: Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
-            diaVencimento: Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
+            valorMensal,
+            diaVencimento,
           });
         }
       }
@@ -349,21 +352,8 @@ export function useContratosViewModel() {
   }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog, queryClient]);
 
   const handleCompletarCadastro = useCallback((passageiroId: string, item?: ContratoListItem) => {
-    const passageiroData = ((item?.passageiro || item) as unknown as Passageiro) || ({ id: passageiroId } as Passageiro);
-
-    openPassageiroFormDialog({
-      mode: PassageiroFormModes.EDIT,
-      editingPassageiro: passageiroData,
-      onSuccess: (updated) => {
-        if (updated) {
-          queryClient.setQueryData(["passageiro", passageiroId], updated);
-        }
-        refetchContratos();
-        refetchKPIs();
-        handleGerarContrato(passageiroId);
-      }
-    });
-  }, [openPassageiroFormDialog, queryClient, refetchContratos, refetchKPIs, handleGerarContrato]);
+    handleGerarContrato(passageiroId, item);
+  }, [handleGerarContrato]);
 
   const handleOpenImportarContrato = useCallback((passageiroId?: string, passageiro?: Passageiro | ContratoListItem) => {
     openImportarContratoDialog({

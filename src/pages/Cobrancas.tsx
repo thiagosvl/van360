@@ -17,9 +17,10 @@ import { Banner } from "@/components/ui/Banner";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
-import { useTutorialsConfig } from "@/hooks";
+import { useTutorialsConfig, safeCloseDialog } from "@/hooks";
 import { STORAGE_KEYS } from "@/constants";
 import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
+import { isPassageiroIncompleto } from "@/utils/domain";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 export default function Cobrancas() {
@@ -55,7 +56,12 @@ export default function Cobrancas() {
     openPaymentDialog,
   } = useCobrancasViewModel();
 
-  const { openReceiptDialog } = useLayout();
+  const {
+    openReceiptDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openPassageiroFinanceiroDialog,
+  } = useLayout();
   const navigate = useNavigate();
   const { profile } = useProfile();
 
@@ -80,7 +86,27 @@ export default function Cobrancas() {
   const actionProps = {
     onVerCarteirinha: navigateToPassageiro,
     onEditarCobranca: handleEditCobrancaClick,
-    onRegistrarPagamento: openPaymentDialog,
+    onRegistrarPagamento: (cobranca: Cobranca) => {
+      if (cobranca.isProjection && isPassageiroIncompleto(cobranca.passageiro)) {
+        openConfirmationDialog({
+          title: "Valor da parcela não configurado",
+          description:
+            "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+          confirmText: "Configurar agora",
+          cancelText: "Fazer depois",
+          onConfirm: () => {
+            safeCloseDialog(closeConfirmationDialog);
+            setTimeout(() => {
+              if (cobranca.passageiro) {
+                openPassageiroFinanceiroDialog({ passageiro: cobranca.passageiro });
+              }
+            }, 100);
+          },
+        });
+        return;
+      }
+      openPaymentDialog(cobranca);
+    },
     onExcluirCobranca: handleDeleteCobrancaClick,
     onVerRecibo: (url: string, cobranca: Cobranca) =>
       openReceiptDialog({

@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { STORAGE_KEYS } from "@/constants";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { RegistrarPayloadDTO } from "@/services/api/usuario.api";
@@ -32,13 +33,13 @@ export function useRegisterController() {
   useAttribution();
 
   const [hasRefParam, setHasRefParam] = useState<boolean>(() => {
-    return !!(searchParams.get("ref") || localStorage.getItem("van360_referral_code") || getReferralCookie());
+    return !!(searchParams.get("ref") || localStorage.getItem(STORAGE_KEYS.REFERRAL_CODE) || getReferralCookie());
   });
 
   useEffect(() => {
     const refParam = searchParams.get("ref") || getReferralCookie();
     if (refParam) {
-      localStorage.setItem("van360_referral_code", refParam);
+      localStorage.setItem(STORAGE_KEYS.REFERRAL_CODE, refParam);
       setHasRefParam(true);
     }
   }, [searchParams]);
@@ -79,7 +80,7 @@ export function useRegisterController() {
     try {
       setLoading(true);
       setDuplicateError(null);
-      const referralCode = localStorage.getItem("van360_referral_code") || getReferralCookie() || undefined;
+      const referralCode = localStorage.getItem(STORAGE_KEYS.REFERRAL_CODE) || getReferralCookie() || undefined;
       const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
       const cachedPush = await getCachedPushTokenInfo();
 

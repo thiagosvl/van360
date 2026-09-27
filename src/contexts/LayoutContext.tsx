@@ -48,7 +48,17 @@ export interface OpenQuickStartPassageiroProps {
 }
 
 export interface OpenPassageiroFinanceiroProps {
-  passageiro: Passageiro;
+  passageiro: Passageiro | Partial<Passageiro>;
+  onSuccess?: () => void;
+}
+
+export interface OpenPassageiroEscolaProps {
+  passageiro: Passageiro | Partial<Passageiro>;
+  onSuccess?: () => void;
+}
+
+export interface OpenPassageiroTransporteProps {
+  passageiro: Passageiro | Partial<Passageiro>;
   onSuccess?: () => void;
 }
 
@@ -155,7 +165,11 @@ export interface OpenContractSetupDialogProps {
 export interface OpenGerarContratoValidadorDialogProps {
   passageiroId: string;
   initialPassageiro?: Passageiro;
-  onSuccess: (passageiroId: string, bypassed?: boolean) => void;
+  onSuccess: (
+    passageiroId: string,
+    bypassed?: boolean,
+    updatedValues?: { valorMensal?: number; diaVencimento?: number }
+  ) => void;
 }
 
 export interface OpenImportarContratoDialogProps {
@@ -318,6 +332,10 @@ export interface LayoutContextType {
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
   openPassageiroFinanceiroDialog: (props: OpenPassageiroFinanceiroProps) => void;
   closePassageiroFinanceiroDialog: () => void;
+  openPassageiroEscolaDialog: (props: OpenPassageiroEscolaProps) => void;
+  closePassageiroEscolaDialog: () => void;
+  openPassageiroTransporteDialog: (props: OpenPassageiroTransporteProps) => void;
+  closePassageiroTransporteDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;

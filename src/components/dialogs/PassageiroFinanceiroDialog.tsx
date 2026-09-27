@@ -1,6 +1,7 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { MoneyInput } from "@/components/forms";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -19,12 +20,13 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { CalendarDays, DollarSign } from "lucide-react";
+import { CalendarDays, DollarSign, Phone, User } from "lucide-react";
 import { monthOptions, getNowBR } from "@/utils/dateUtils";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { phoneMask } from "@/utils/masks";
 import {
   getAnoCobrancaFimOptions,
   getAnoCobrancaInicioOptions,
@@ -45,6 +47,9 @@ const passageiroFinanceiroSchema = z
     ano_inicio_cobranca: z.string().optional(),
     mes_fim_cobranca: z.string().optional(),
     ano_fim_cobranca: z.string().optional(),
+    enviar_notificacoes: z.boolean().default(false),
+    nome_responsavel: z.string().optional(),
+    telefone_responsavel: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.isento) {
@@ -77,6 +82,23 @@ const passageiroFinanceiroSchema = z
           path: ["mes_fim_cobranca"],
         });
       }
+      if (data.enviar_notificacoes) {
+        if (!data.nome_responsavel || data.nome_responsavel.trim().length < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Informe o nome do responsável",
+            path: ["nome_responsavel"],
+          });
+        }
+        const digits = data.telefone_responsavel ? data.telefone_responsavel.replace(/\D/g, "") : "";
+        if (digits.length < 10 || digits.length > 11) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Informe um WhatsApp válido com DDD",
+            path: ["telefone_responsavel"],
+          });
+        }
+      }
     }
   });
 
@@ -99,7 +121,7 @@ const getYearFromDate = (dateStr?: string | null) => {
 export interface PassageiroFinanceiroDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  passageiro: Passageiro | null;
+  passageiro: Passageiro | Partial<Passageiro> | null;
   onSuccess?: () => void;
 }
 
@@ -126,6 +148,9 @@ export function PassageiroFinanceiroDialog({
       ano_inicio_cobranca: defaultAnoLetivo,
       mes_fim_cobranca: "12",
       ano_fim_cobranca: defaultAnoLetivo,
+      enviar_notificacoes: false,
+      nome_responsavel: "",
+      telefone_responsavel: "",
     },
   });
 
@@ -135,6 +160,9 @@ export function PassageiroFinanceiroDialog({
       const inicioAno = getYearFromDate(passageiro.data_inicio_cobranca);
       const fimMes = getMonthFromDate(passageiro.data_fim_cobranca);
       const fimAno = getYearFromDate(passageiro.data_fim_cobranca);
+      const resp = passageiro.responsavel_principal;
+      const temTelefoneResp = Boolean(resp?.telefone);
+      const enviarNotif = passageiro.enviar_notificacoes !== false && temTelefoneResp;
 
       form.reset({
         isento: !!passageiro.isento,
@@ -144,6 +172,9 @@ export function PassageiroFinanceiroDialog({
         ano_inicio_cobranca: inicioAno || defaultAnoLetivo,
         mes_fim_cobranca: fimMes || "12",
         ano_fim_cobranca: fimAno || defaultAnoLetivo,
+        enviar_notificacoes: enviarNotif,
+        nome_responsavel: resp?.nome || "",
+        telefone_responsavel: resp?.telefone ? phoneMask(resp.telefone) : "",
       });
     }
   }, [isOpen, passageiro, defaultAnoLetivo, form, currentMonthStr]);
@@ -167,7 +198,7 @@ export function PassageiroFinanceiroDialog({
     const anoIni = data.ano_inicio_cobranca || defaultAnoLetivo;
     const anoTerm = data.ano_fim_cobranca || anoIni;
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       isento: data.isento,
       valor_cobranca: data.isento ? null : (data.valor_cobranca ? Number(data.valor_cobranca) : null),
       dia_vencimento: data.isento ? null : (data.dia_vencimento ? Number(data.dia_vencimento) : null),
@@ -177,7 +208,15 @@ export function PassageiroFinanceiroDialog({
       data_fim_cobranca: data.isento || !data.mes_fim_cobranca
         ? null
         : `${anoTerm}-${String(data.mes_fim_cobranca).padStart(2, "0")}-01`,
+      enviar_notificacoes: data.isento ? false : data.enviar_notificacoes,
     };
+
+    if (!data.isento && data.enviar_notificacoes && data.telefone_responsavel) {
+      payload.responsavel_principal = {
+        nome: data.nome_responsavel?.trim(),
+        telefone: data.telefone_responsavel.replace(/\D/g, ""),
+      };
+    }
 
     try {
       await updatePassageiro.mutateAsync({
@@ -456,6 +495,95 @@ export function PassageiroFinanceiroDialog({
                     description={COBRANCA_BANNER_MESSAGES.RETROATIVA}
                     className="mt-2 w-full"
                   />
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="enviar_notificacoes"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs">
+                      <div className="space-y-0.5 pr-4">
+                        <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
+                          Cobranças automáticas no WhatsApp
+                        </FormLabel>
+                        <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                          Envia lembretes antes do vencimento e avisos de pagamento pelo WhatsApp.
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          aria-label="Ativar cobranças automáticas no WhatsApp"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("enviar_notificacoes") && (
+                  <div className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3 animate-in fade-in duration-200">
+                    <FormField
+                      control={form.control}
+                      name="nome_responsavel"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Nome do Responsável <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
+                              <Input
+                                {...field}
+                                placeholder="Nome completo do responsável"
+                                className={cn(
+                                  "pl-10 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
+                                  fieldState.error && "border-red-500"
+                                )}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="telefone_responsavel"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            WhatsApp do Responsável <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                                placeholder="(11) 99999-9999"
+                                type="tel"
+                                className={cn(
+                                  "pl-10 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm font-medium",
+                                  fieldState.error && "border-red-500"
+                                )}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Banner
+                      variant="info"
+                      description="Se você não tiver essas informações agora, não se preocupe: você pode desativar essa opção e cadastrar o responsável depois."
+                      className="mt-1 p-2.5 sm:p-3 text-xs"
+                    />
+                  </div>
                 )}
               </div>
             )}

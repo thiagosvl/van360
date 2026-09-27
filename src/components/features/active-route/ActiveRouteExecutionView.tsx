@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
-import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -22,6 +21,7 @@ import { useProcessarChamadaEscola, useDeleteRoute } from "@/hooks/api/useRouteM
 import { formatarEnderecoParcialRota } from "@/utils/formatters/address";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ChamadaRapidaDialog, EscolaChamadaItem } from "@/components/dialogs/ChamadaRapidaDialog";
+import { ProximasAusenciasDialog } from "@/components/dialogs/ProximasAusenciasDialog";
 import { obterChamadaRapida, salvarChamadaRapida, limparChamadasRapidasObsoletas } from "@/utils/domain/route/routeStorage.utils";
 import { useActivityTracker } from "@/hooks/business/useActivityTracker";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
@@ -95,7 +95,7 @@ export function ActiveRouteExecutionView({
       return () => clearTimeout(timer);
     }
   }, [paradaAtual?.id, isPreview]);
-  const [isAusenciaDialogOpen, setIsAusenciaDialogOpen] = useState(false);
+  const [isProximasAusenciasOpen, setIsProximasAusenciasOpen] = useState(false);
   const [isChamadaDialogOpen, setIsChamadaDialogOpen] = useState(false);
   const [isChamadaRapidaOpen, setIsChamadaRapidaOpen] = useState(false);
   const [chamadaRapidaSavedMap, setChamadaRapidaSavedMap] = useState<Record<string, RouteStopStatus> | null>(null);
@@ -648,7 +648,7 @@ export function ActiveRouteExecutionView({
         totalAlunos={totalAlunos}
         totalEscolas={totalEscolas}
         totalAlunosVolta={totalAlunosVolta}
-        onOpenAusenciaDialog={() => setIsAusenciaDialogOpen(true)}
+        onOpenProximasAusencias={() => setIsProximasAusenciasOpen(true)}
         onOpenChamadaRapida={handleOpenChamadaRapida}
         onCancel={onCancel}
         onEditRoute={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_EDIT.replace(":id", execucao.rota_id))}
@@ -774,12 +774,6 @@ export function ActiveRouteExecutionView({
         onConfirmChamada={handleConfirmChamadaEscola}
       />
 
-      <RegistrarAusenciaDialog
-        isOpen={isAusenciaDialogOpen}
-        onClose={() => setIsAusenciaDialogOpen(false)}
-        lockedRotaId={execucao?.rota_id}
-      />
-
       <AddressDetailsDialog
         addressDialogData={addressDialogData}
         onClose={() => setAddressDialogData(prev => ({ ...prev, open: false }))}
@@ -826,6 +820,15 @@ export function ActiveRouteExecutionView({
           escolas={escolasComAlunosVolta}
           initialStatusMap={chamadaRapidaSavedMap || undefined}
           onSalvar={handleSalvarChamadaRapida}
+        />
+      )}
+
+      {isPreview && execucao?.rota_id && (
+        <ProximasAusenciasDialog
+          open={isProximasAusenciasOpen}
+          onOpenChange={setIsProximasAusenciasOpen}
+          lockedRotaId={execucao.rota_id}
+          lockedRotaNome={execucao.rota?.nome}
         />
       )}
     </div>

@@ -38,6 +38,7 @@ import { useReciboAnualElegibilidade } from "@/hooks/business/useReciboAnualEleg
 import { useReciboAnual } from "@/hooks/api/useReciboAnual";
 import { CarteirinhaReciboAnualCard } from "./CarteirinhaReciboAnualCard";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -466,7 +467,11 @@ const CobrancaItemPassageiro = forwardRef<
   onVerRecibo,
   onActionSuccess,
 }, ref) => {
-  const { openPassageiroFinanceiroDialog } = useLayout();
+  const {
+    openPassageiroFinanceiroDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+  } = useLayout();
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const isCancelada = cobranca.status === CobrancaStatus.CANCELADA;
   const isPaid = !isCancelada && cobranca.status === CobrancaStatus.PAGO;
@@ -501,6 +506,22 @@ const CobrancaItemPassageiro = forwardRef<
     openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess });
   };
 
+  const handleIncompletePaymentClick = () => {
+    openConfirmationDialog({
+      title: "Valor da parcela não configurado",
+      description:
+        "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+      confirmText: "Configurar agora",
+      cancelText: "Fazer depois",
+      onConfirm: () => {
+        safeCloseDialog(closeConfirmationDialog);
+        setTimeout(() => {
+          openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess });
+        }, 100);
+      },
+    });
+  };
+
   const actions = useCobrancaActions({
     cobranca: {
       ...cobranca,
@@ -514,7 +535,7 @@ const CobrancaItemPassageiro = forwardRef<
         ? handleIncompleteClick
         : () => onEditCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
-      ? (isIncomplete ? handleIncompleteClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
+      ? (isIncomplete ? handleIncompletePaymentClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
       : isCancelada
         ? undefined
         : () => onRegistrarPagamento(cobranca),
@@ -541,13 +562,13 @@ const CobrancaItemPassageiro = forwardRef<
     >
       <MobileActionItem
         actions={actions}
-        onClickItem={cobranca.isProjection && isIncomplete ? handleIncompleteClick : undefined}
+        onClickItem={cobranca.isProjection && isIncomplete ? handleIncompletePaymentClick : undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
         hideTriggerOnDesktop
       >
         <div
-          onClick={cobranca.isProjection && isIncomplete ? handleIncompleteClick : undefined}
+          onClick={cobranca.isProjection && isIncomplete ? handleIncompletePaymentClick : undefined}
           className={cn(
             "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50 relative",
             cobranca.isProjection && "cursor-pointer"
@@ -627,7 +648,7 @@ const CobrancaItemPassageiro = forwardRef<
                     ? handleIncompleteClick
                     : () => onEditCobranca(cobranca)}
                 onRegistrarPagamento={cobranca.isProjection
-                  ? (isIncomplete ? handleIncompleteClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
+                  ? (isIncomplete ? handleIncompletePaymentClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
                   : isCancelada
                     ? undefined
                     : () => onRegistrarPagamento(cobranca)}

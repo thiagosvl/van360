@@ -71,6 +71,9 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
 
       if (keepOpen) {
         toast.success("Aluno cadastrado com sucesso!");

@@ -1,10 +1,10 @@
-import { BASE_DOMAIN } from "@/constants";
+import { BASE_DOMAIN, STORAGE_KEYS } from "@/constants";
 import { clearImpersonating } from "@/utils/impersonate";
 
 export const clearAppSession = () => {
     clearImpersonating();
 
-    const savedCpf = localStorage.getItem("van360_saved_cpf");
+    const savedCpf = localStorage.getItem(STORAGE_KEYS.SAVED_CPF);
 
     const keys = Object.keys(localStorage);
     keys.forEach((key) => {
@@ -19,7 +19,7 @@ export const clearAppSession = () => {
     });
 
     if (savedCpf) {
-        localStorage.setItem("van360_saved_cpf", savedCpf);
+        localStorage.setItem(STORAGE_KEYS.SAVED_CPF, savedCpf);
     }
 };
 

@@ -1,35 +1,43 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback } from "react";
 import { Capacitor, PluginListenerHandle } from "@capacitor/core";
 import { App, AppState } from "@capacitor/app";
 import { historicoApi, RegistrarEventoDTO } from "@/services/api/historico.api";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { getDispositivoCadastro } from "@/utils/detectPlatform";
 import { isImpersonating } from "@/utils/impersonate";
+import { STORAGE_KEYS } from "@/constants";
 
-const STORAGE_KEY_LAST_APP_OPEN = "van360_last_app_open_timestamp";
 const APP_OPEN_THROTTLE_MS = 15 * 60 * 1000;
 
-export function useAppOpenTracker(usuarioId?: string) {
-  const isExecutingRef = useRef(false);
+let lastTrackedTimestamp = 0;
+let isCurrentlyTracking = false;
 
+export function useAppOpenTracker(usuarioId?: string) {
   const track = useCallback(async () => {
-    if (!usuarioId || isImpersonating() || isExecutingRef.current) {
+    if (!usuarioId || isImpersonating() || isCurrentlyTracking) {
       return;
     }
 
-    try {
-      const now = Date.now();
-      const lastRecorded = localStorage.getItem(STORAGE_KEY_LAST_APP_OPEN);
+    const now = Date.now();
 
-      if (lastRecorded) {
-        const lastTimestamp = parseInt(lastRecorded, 10);
-        if (!isNaN(lastTimestamp) && now - lastTimestamp < APP_OPEN_THROTTLE_MS) {
-          return;
-        }
+    if (now - lastTrackedTimestamp < APP_OPEN_THROTTLE_MS) {
+      return;
+    }
+
+    const lastRecorded = localStorage.getItem(STORAGE_KEYS.LAST_APP_OPEN_TIMESTAMP);
+    if (lastRecorded) {
+      const lastTimestamp = parseInt(lastRecorded, 10);
+      if (!isNaN(lastTimestamp) && now - lastTimestamp < APP_OPEN_THROTTLE_MS) {
+        lastTrackedTimestamp = Math.max(lastTrackedTimestamp, lastTimestamp);
+        return;
       }
+    }
 
-      isExecutingRef.current = true;
+    isCurrentlyTracking = true;
+    lastTrackedTimestamp = now;
+    localStorage.setItem(STORAGE_KEYS.LAST_APP_OPEN_TIMESTAMP, now.toString());
 
+    try {
       const payload: RegistrarEventoDTO = {
         acao: AtividadeAcao.APP_ABERTO,
         entidade_tipo: AtividadeEntidadeTipo.USUARIO,
@@ -40,11 +48,10 @@ export function useAppOpenTracker(usuarioId?: string) {
       };
 
       await historicoApi.registrarEvento(payload);
-      localStorage.setItem(STORAGE_KEY_LAST_APP_OPEN, Date.now().toString());
     } catch {
       return;
     } finally {
-      isExecutingRef.current = false;
+      isCurrentlyTracking = false;
     }
   }, [usuarioId]);
 
@@ -54,6 +61,7 @@ export function useAppOpenTracker(usuarioId?: string) {
     void track();
 
     let appListenerHandle: PluginListenerHandle | null = null;
+    let removeVisibilityListener: (() => void) | null = null;
 
     if (Capacitor.isNativePlatform()) {
       App.addListener("appStateChange", (state: AppState) => {
@@ -63,19 +71,22 @@ export function useAppOpenTracker(usuarioId?: string) {
       }).then((handle) => {
         appListenerHandle = handle;
       });
+    } else {
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "visible") {
+          void track();
+        }
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      removeVisibilityListener = () => {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
     }
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void track();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       appListenerHandle?.remove();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      removeVisibilityListener?.();
     };
   }, [usuarioId, track]);
 }

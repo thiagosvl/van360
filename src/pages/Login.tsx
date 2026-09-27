@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
+import { STORAGE_KEYS } from "@/constants";
 import { cpfCnpjSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -167,7 +168,7 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    const savedCpf = localStorage.getItem("van360_saved_cpf");
+    const savedCpf = localStorage.getItem(STORAGE_KEYS.SAVED_CPF);
     if (savedCpf) {
       formMotorista.setValue("cpfcnpj", savedCpf);
       setRememberMe(true);
@@ -215,9 +216,9 @@ export default function Login() {
       }
 
       if (rememberMe) {
-        localStorage.setItem("van360_saved_cpf", data.cpfcnpj);
+        localStorage.setItem(STORAGE_KEYS.SAVED_CPF, data.cpfcnpj);
       } else {
-        localStorage.removeItem("van360_saved_cpf");
+        localStorage.removeItem(STORAGE_KEYS.SAVED_CPF);
       }
 
       await new Promise((resolve) => setTimeout(resolve, 800));

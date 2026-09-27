@@ -374,8 +374,13 @@ export const CarteirinhaDadosPessoais = ({
   | "onEnviarWhatsApp"
   | "onEditClick"
 >) => {
-  const { openPassageiroFinanceiroDialog } = useLayout();
+  const {
+    openPassageiroFinanceiroDialog,
+    openPassageiroEscolaDialog,
+    openPassageiroTransporteDialog,
+  } = useLayout();
   const { can } = usePermissions();
+  const canManage = can("passageiros.gerenciar");
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const respPrincipal =
     passageiro.responsavel_principal ||
@@ -465,7 +470,21 @@ export const CarteirinhaDadosPessoais = ({
       )}
 
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
+          {canManage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openPassageiroEscolaDialog({ passageiro })}
+              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </div>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
           <InfoField
             icon={<GraduationCap className="h-3.5 w-3.5" />}
@@ -501,7 +520,21 @@ export const CarteirinhaDadosPessoais = ({
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
+          {canManage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openPassageiroTransporteDialog({ passageiro })}
+              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </div>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <InfoField
