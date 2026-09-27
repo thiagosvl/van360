@@ -103,9 +103,6 @@ export function useDashboardViewModel() {
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro, keepOpen) => {
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-
         if (!passageiro || keepOpen) {
           return;
         }

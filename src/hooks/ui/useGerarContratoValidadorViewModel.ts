@@ -2,7 +2,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
-import { cpfMask, phoneMask } from "@/utils/masks";
+import { parseCurrencyToNumber } from "@/utils/formatters";
+import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
 import { parseLocalDate, getNowBR } from "@/utils/dateUtils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Passageiro } from "@/types/passageiro";
@@ -77,12 +78,12 @@ export function useGerarContratoValidadorViewModel({
   const needsResponsavelGroup = needsNomeResp || needsTelefoneResp || needsCpfResp;
 
   const needsValor = useMemo(() => {
-    return !passageiro?.valor_cobranca || Number(passageiro.valor_cobranca) <= 0;
-  }, [passageiro?.valor_cobranca]);
+    return !passageiro?.isento && (!passageiro?.valor_cobranca || Number(passageiro.valor_cobranca) <= 0);
+  }, [passageiro?.isento, passageiro?.valor_cobranca]);
 
   const needsVencimento = useMemo(() => {
-    return !passageiro?.dia_vencimento;
-  }, [passageiro?.dia_vencimento]);
+    return !passageiro?.isento && !passageiro?.dia_vencimento;
+  }, [passageiro?.isento, passageiro?.dia_vencimento]);
 
   const needsFinanceiroGroup = needsValor || needsVencimento;
 
@@ -135,8 +136,8 @@ export function useGerarContratoValidadorViewModel({
       }
 
       if (needsValor) {
-        const valNum = Number(data.valor_cobranca);
-        if (!data.valor_cobranca || isNaN(valNum) || valNum <= 0) {
+        const valNum = parseCurrencyToNumber(data.valor_cobranca);
+        if (!data.valor_cobranca || valNum <= 0) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Informe o valor da parcela",
@@ -266,7 +267,7 @@ export function useGerarContratoValidadorViewModel({
       telefone_responsavel: resp?.telefone ? phoneMask(resp.telefone) : "",
       cpf_responsavel: resp?.cpf ? cpfMask(resp.cpf) : "",
       parentesco_responsavel: resp?.parentesco || ParentescoResponsavel.MAE,
-      valor_cobranca: passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : "",
+      valor_cobranca: passageiro.valor_cobranca ? moneyMask(passageiro.valor_cobranca) : "",
       dia_vencimento: passageiro.dia_vencimento ? passageiro.dia_vencimento.toString() : "10",
       periodo: (passageiro.periodo as PassageiroPeriodo) || PassageiroPeriodo.MANHA,
       data_inicio_transporte: suggestedInicio,
@@ -308,7 +309,7 @@ export function useGerarContratoValidadorViewModel({
       }
 
       if (needsValor && data.valor_cobranca) {
-        payload.valor_cobranca = Number(data.valor_cobranca);
+        payload.valor_cobranca = parseCurrencyToNumber(data.valor_cobranca);
       }
 
       if (needsVencimento && data.dia_vencimento) {
@@ -343,7 +344,7 @@ export function useGerarContratoValidadorViewModel({
 
       const updatedValues = {
         valorMensal: (needsValor && data.valor_cobranca)
-          ? Number(data.valor_cobranca)
+          ? parseCurrencyToNumber(data.valor_cobranca)
           : Number(passageiro.valor_cobranca) || undefined,
         diaVencimento: (needsVencimento && data.dia_vencimento)
           ? Number(data.dia_vencimento)

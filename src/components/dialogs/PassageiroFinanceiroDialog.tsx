@@ -22,11 +22,12 @@ import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { CalendarDays, DollarSign, Phone, User } from "lucide-react";
 import { monthOptions, getNowBR } from "@/utils/dateUtils";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { phoneMask } from "@/utils/masks";
+import { phoneMask, moneyMask } from "@/utils/masks";
+import { parseCurrencyToNumber } from "@/utils/formatters";
 import {
   getAnoCobrancaFimOptions,
   getAnoCobrancaInicioOptions,
@@ -53,8 +54,8 @@ const passageiroFinanceiroSchema = z
   })
   .superRefine((data, ctx) => {
     if (!data.isento) {
-      const valNum = Number(data.valor_cobranca);
-      if (!data.valor_cobranca || isNaN(valNum) || valNum <= 0) {
+      const valNum = parseCurrencyToNumber(data.valor_cobranca);
+      if (!data.valor_cobranca || valNum <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Informe o valor da parcela",
@@ -137,6 +138,7 @@ export function PassageiroFinanceiroDialog({
   const currentYear = now.getFullYear();
   const defaultAnoLetivo = passageiro?.ano_letivo ? passageiro.ano_letivo.toString() : getDefaultAnoLetivo();
   const currentMonthStr = useMemo(() => (getNowBR().getMonth() + 1).toString(), []);
+  const responsavelFieldsRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<PassageiroFinanceiroFormData>({
     resolver: zodResolver(passageiroFinanceiroSchema),
@@ -166,7 +168,7 @@ export function PassageiroFinanceiroDialog({
 
       form.reset({
         isento: !!passageiro.isento,
-        valor_cobranca: passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : "",
+        valor_cobranca: passageiro.valor_cobranca ? moneyMask(passageiro.valor_cobranca) : "",
         dia_vencimento: passageiro.dia_vencimento ? passageiro.dia_vencimento.toString() : "",
         mes_inicio_cobranca: inicioMes || currentMonthStr,
         ano_inicio_cobranca: inicioAno || defaultAnoLetivo,
@@ -200,7 +202,7 @@ export function PassageiroFinanceiroDialog({
 
     const payload: Record<string, unknown> = {
       isento: data.isento,
-      valor_cobranca: data.isento ? null : (data.valor_cobranca ? Number(data.valor_cobranca) : null),
+      valor_cobranca: data.isento ? null : (data.valor_cobranca ? parseCurrencyToNumber(data.valor_cobranca) : null),
       dia_vencimento: data.isento ? null : (data.dia_vencimento ? Number(data.dia_vencimento) : null),
       data_inicio_cobranca: data.isento || !data.mes_inicio_cobranca
         ? null
@@ -507,13 +509,23 @@ export function PassageiroFinanceiroDialog({
                           Cobranças automáticas no WhatsApp
                         </FormLabel>
                         <div className="text-xs text-slate-500 font-normal leading-relaxed">
-                          Envia lembretes antes do vencimento e avisos de pagamento pelo WhatsApp.
+                          Enviaremos lembretes de cobrança diretamente no WhatsApp do responsável.
                         </div>
                       </div>
                       <FormControl>
                         <Switch
                           checked={field.value}
-                          onCheckedChange={field.onChange}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              setTimeout(() => {
+                                responsavelFieldsRef.current?.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "end",
+                                });
+                              }, 100);
+                            }
+                          }}
                           aria-label="Ativar cobranças automáticas no WhatsApp"
                         />
                       </FormControl>
@@ -522,7 +534,10 @@ export function PassageiroFinanceiroDialog({
                 />
 
                 {form.watch("enviar_notificacoes") && (
-                  <div className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3 animate-in fade-in duration-200">
+                  <div
+                    ref={responsavelFieldsRef}
+                    className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3 animate-in fade-in duration-200"
+                  >
                     <FormField
                       control={form.control}
                       name="nome_responsavel"
