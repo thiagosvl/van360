@@ -99,15 +99,23 @@ export function useDashboardViewModel() {
   };
 
   const handleOpenPassageiroDialog = useCallback(() => {
-    const isFirstPassageiro = onboarding.showOnboarding || ((contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageiros ?? 0) === 0);
+    let createdCountInSession = 0;
+    const isFirstPassageiro = (contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageiros ?? 0) === 0;
+
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro, keepOpen) => {
-        if (!passageiro || keepOpen) {
+        if (!passageiro) {
           return;
         }
 
-        if (isFirstPassageiro) {
+        createdCountInSession += 1;
+
+        if (keepOpen) {
+          return;
+        }
+
+        if (isFirstPassageiro && createdCountInSession === 1) {
           openOnboardingSuccessDialog({
             passageiroNome: passageiro.nome,
             onNavigateToPassageiro: () => {
@@ -133,7 +141,7 @@ export function useDashboardViewModel() {
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, queryClient, onboarding.showOnboarding, contadores, navigate, profile?.config_contrato?.usar_contratos]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, contadores, navigate, profile?.config_contrato?.usar_contratos]);
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({
