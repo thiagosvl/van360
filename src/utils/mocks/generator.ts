@@ -95,7 +95,7 @@ const escolas = [
     complemento: "",
   },
   {
-    nome: "Escola Municipal Menino Jesus De Praga",
+    nome: "Menino Jesus De Praga",
     cep: "01310-100",
     logradouro: "Avenida Paulista",
     numero: "1578",
@@ -461,7 +461,7 @@ export const mockGenerator = {
         id: generateUUID(),
         nome: generateName(),
         telefone: "(11) 95118-6951",
-        cpf: generateCPF(),
+        cpf: '395.423.918-38',
         email: "thiago-svl@hotmail.com",
         parentesco: randomEnum(ParentescoResponsavel),
         ...address,

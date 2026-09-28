@@ -9,3 +9,4 @@ export * from "./admin/useAdminCalculatorHooks";
 export * from "./admin/useAdminVencimentosHooks";
 export * from "./admin/useAdminFinancialHooks";
 export * from "./admin/useAdminRealtimeLogs";
+export * from "./admin/useAdminReferrals";

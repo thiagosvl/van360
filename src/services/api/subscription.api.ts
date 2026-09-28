@@ -31,6 +31,8 @@ export const subscriptionApi = {
     zipcode?: string;
     city?: string;
     state?: string;
+    holderDocument?: string;
+    holderName?: string;
   }) =>
     apiClient.post(`${endpointBase}/checkout`, { ...data }).then((res) => res.data),
 

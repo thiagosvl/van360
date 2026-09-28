@@ -57,6 +57,8 @@ export default function Rotas() {
     return vm.rotas.filter((r: any) => r.veiculo_id === selectedVeiculoFilter);
   })();
 
+  const hasRotas = rotasExibidas.length > 0;
+
   return (
     <PullToRefreshWrapper onRefresh={vm.handleRefresh}>
       <div className="min-h-screen bg-surface max-w-2xl mx-auto space-y-6 pb-24">
@@ -124,8 +126,9 @@ export default function Rotas() {
             <div className="flex items-center gap-2 w-full">
               <Button
                 variant="outline"
+                disabled={!hasRotas}
                 onClick={() => setIsProximasAusenciasOpen(true)}
-                className="flex-1 border border-slate-200/90 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 border border-slate-200/90 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
               >
                 <CalendarDays className="h-4.5 w-4.5 text-amber-500 shrink-0" />
                 <span>Ausências</span>

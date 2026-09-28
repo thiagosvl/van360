@@ -67,6 +67,11 @@ const basicSchema = z.object({
       return idadeReal >= 18 && idadeReal <= 100;
     }, "Você deve ser maior de 18 anos"),
   razao_social: z.string().optional(),
+  cpf_responsavel: z.string().optional().refine((val) => {
+    if (!val || val.trim() === "") return true;
+    const clean = val.replace(/\D/g, "");
+    return clean.length === 11;
+  }, "CPF do responsável deve ter 11 dígitos"),
 }).superRefine((data, ctx) => {
   const isCnpj = data.cpfcnpj.replace(/\D/g, "").length > 11;
   if (isCnpj && (!data.razao_social || data.razao_social.trim() === "")) {
@@ -99,6 +104,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       nome: "",
       apelido: "",
       cpfcnpj: "",
+      cpf_responsavel: "",
       razao_social: "",
       telefone: "",
       email: "",
@@ -126,6 +132,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       const formattedCpfCnpj = cpfCnpjMask(profile.cpfcnpj) || "";
       const profileEmail = profile.email || "";
       const profileRazaoSocial = profile.razao_social || "";
+      const profileCpfResp = profile.cpf_responsavel ? cpfCnpjMask(profile.cpf_responsavel) : "";
 
       setInitialSnapshot({
         cpfcnpj: formattedCpfCnpj,
@@ -135,6 +142,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       form.reset({
         nome: profile.nome || "",
         razao_social: profileRazaoSocial,
+        cpf_responsavel: profileCpfResp,
         apelido: profile.apelido || "",
         cpfcnpj: formattedCpfCnpj,
         telefone: profile.telefone ? phoneMask(profile.telefone) : "",
@@ -159,6 +167,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       prevIsCnpjRef.current = isCnpj;
       return;
     }
+
     if (prevIsCnpjRef.current !== isCnpj) {
       if (isCnpj) {
         const savedRazao = profile?.razao_social || "";
@@ -176,6 +185,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       const nome = cleanString(data.nome, true);
       const isCnpjSubmit = data.cpfcnpj.replace(/\D/g, "").length > 11;
       const razao_social = isCnpjSubmit ? (cleanString(data.razao_social || "", true) || null) : null;
+      const cpf_responsavel = isCnpjSubmit ? (data.cpf_responsavel ? data.cpf_responsavel.replace(/\D/g, "") : null) : null;
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");
       const data_nascimento = data.data_nascimento;
@@ -185,6 +195,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       await usuarioApi.atualizarUsuario(profile.id, {
         nome,
         razao_social,
+        cpf_responsavel,
         apelido,
         telefone,
         data_nascimento,
@@ -195,6 +206,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       await refreshProfile();
 
       const formattedCpfCnpj = cpfCnpjMask(cpfcnpj) || "";
+      const formattedCpfResp = cpf_responsavel ? cpfCnpjMask(cpf_responsavel) : "";
       setInitialSnapshot({
         cpfcnpj: formattedCpfCnpj,
         email,
@@ -203,6 +215,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
       form.reset({
         ...data,
         cpfcnpj: formattedCpfCnpj,
+        cpf_responsavel: formattedCpfResp,
         telefone: phoneMask(data.telefone),
         razao_social: razao_social || "",
       });
@@ -340,43 +353,74 @@ export const PerfilTab = React.memo(function PerfilTab() {
             )}
           </div>
 
-          {/* 2. Razao Social (Exibido apenas se for CNPJ, posicionado abaixo do CNPJ e antes do Nome) */}
+          {/* 2. Razao Social e CPF do Responsável (Exibido apenas se for CNPJ, posicionado abaixo do CNPJ e antes do Nome) */}
           {isCnpj && (
-            <FormField
-              control={form.control}
-              name="razao_social"
-              render={({ field, fieldState, formState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Razão Social <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        placeholder="Digite a razão social"
-                        {...field}
-                        value={field.value || ""}
-                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                        aria-invalid={
-                          !!fieldState.error ||
-                          ((!field.value || field.value.trim() === "") &&
-                            Object.keys(formState.errors).length > 0)
-                        }
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                  {(!field.value || field.value.trim() === "") &&
-                    Object.keys(formState.errors).length > 0 &&
-                    !fieldState.error && (
-                      <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">
-                        Razão social é obrigatória para CNPJ
-                      </p>
-                    )}
-                </FormItem>
-              )}
-            />
+            <>
+              <FormField
+                control={form.control}
+                name="razao_social"
+                render={({ field, fieldState, formState }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Razão Social <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          placeholder="Digite a razão social"
+                          {...field}
+                          value={field.value || ""}
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                          aria-invalid={
+                            !!fieldState.error ||
+                            ((!field.value || field.value.trim() === "") &&
+                              Object.keys(formState.errors).length > 0)
+                          }
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                    {(!field.value || field.value.trim() === "") &&
+                      Object.keys(formState.errors).length > 0 &&
+                      !fieldState.error && (
+                        <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">
+                          Razão social é obrigatória para CNPJ
+                        </p>
+                      )}
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cpf_responsavel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      CPF do Responsável / Titular <span className="text-slate-400 font-normal text-xs">(opcional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          placeholder="000.000.000-00"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
+                          maxLength={14}
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                    <p className="text-[0.75rem] text-slate-500 ml-1">
+                      Utilizado para identificação do titular em pagamentos e cartões pessoais.
+                    </p>
+                  </FormItem>
+                )}
+              />
+            </>
           )}
 
           {/* 3. Nome Completo e Apelido */}

@@ -22,6 +22,8 @@ export interface CreditCardData {
   state: string;
   installments?: number;
   installmentOption?: InstallmentOption | null;
+  holderType?: "PF" | "PJ";
+  holderDocument?: string;
 }
 
 interface CreditCardFormProps {
@@ -29,13 +31,25 @@ interface CreditCardFormProps {
   initialBirthDate?: string;
   cardError?: string | null;
   totalPrice?: number;
+  userDocument?: string;
+  initialHolderDocument?: string;
 }
 
-export default function CreditCardForm({ onChange, initialBirthDate, cardError, totalPrice }: CreditCardFormProps) {
+export default function CreditCardForm({
+  onChange,
+  initialBirthDate,
+  cardError,
+  totalPrice,
+  userDocument,
+  initialHolderDocument
+}: CreditCardFormProps) {
   const { getInstallments } = usePaymentProvider();
   const [installmentsList, setInstallmentsList] = useState<InstallmentOption[]>([]);
   const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
   const [loadingInstallments, setLoadingInstallments] = useState(false);
+
+  const cleanUserDoc = (userDocument || "").replace(/\D/g, "");
+  const isUserCnpj = cleanUserDoc.length > 11;
 
   const formattedInitialBirth = (() => {
     if (!initialBirthDate) return "";
@@ -50,6 +64,22 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError, 
     return clean;
   })();
 
+  const formatCpf = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
+  };
+
+  const initialHolderType: "PF" | "PJ" = isUserCnpj ? "PF" : "PF";
+  const defaultHolderDoc = isUserCnpj
+    ? (initialHolderDocument ? formatCpf(initialHolderDocument) : "")
+    : formatCpf(cleanUserDoc);
+
+  const [holderType, setHolderType] = useState<"PF" | "PJ">(initialHolderType);
+  const [maskedHolderDoc, setMaskedHolderDoc] = useState(defaultHolderDoc);
+
   const [formData, setFormData] = useState<CreditCardData>({
     number: "",
     name: "",
@@ -62,7 +92,9 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError, 
     neighborhood: "",
     city: "",
     state: "",
-    installments: 1
+    installments: 1,
+    holderType: initialHolderType,
+    holderDocument: isUserCnpj ? (initialHolderDocument?.replace(/\D/g, "") || "") : cleanUserDoc
   });
 
   const [maskedNumber, setMaskedNumber] = useState("");
@@ -187,19 +219,61 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError, 
     setFormData(prev => ({ ...prev, [field]: finalValue }));
   };
 
+  const handleHolderTypeChange = (type: "PF" | "PJ") => {
+    setHolderType(type);
+    if (type === "PJ") {
+      setFormData(prev => ({ ...prev, holderType: "PJ", holderDocument: cleanUserDoc }));
+    } else {
+      const doc = maskedHolderDoc.replace(/\D/g, "");
+      setFormData(prev => ({ ...prev, holderType: "PF", holderDocument: doc }));
+    }
+  };
+
+  const handleHolderDocChange = (val: string) => {
+    const formatted = formatCpf(val);
+    setMaskedHolderDoc(formatted);
+    setFormData(prev => ({ ...prev, holderDocument: formatted.replace(/\D/g, "") }));
+  };
+
   useEffect(() => {
+    const isDocValid = !isUserCnpj || (
+      holderType === "PJ"
+        ? true
+        : ((formData.holderDocument?.replace(/\D/g, "").length || 0) === 11)
+    );
+
     const isComplete =
       formData.number.length >= 13 &&
       formData.name.length >= 3 &&
       formData.expiry.length === 5 &&
-      formData.cvv.length >= 3;
+      formData.cvv.length >= 3 &&
+      isDocValid;
 
     if (isComplete) {
       onChange(formData);
     } else {
       onChange(null);
     }
-  }, [formData, onChange]);
+  }, [formData, isUserCnpj, holderType, onChange]);
+
+  useEffect(() => {
+    if (cleanUserDoc) {
+      const isCnpj = cleanUserDoc.length > 11;
+      const docFormatted = isCnpj
+        ? (initialHolderDocument ? formatCpf(initialHolderDocument) : "")
+        : formatCpf(cleanUserDoc);
+
+      setMaskedHolderDoc(prev => (prev ? prev : docFormatted));
+      setFormData(prev => {
+        if (prev.holderDocument) return prev;
+        return {
+          ...prev,
+          holderType: isCnpj ? prev.holderType : "PF",
+          holderDocument: isCnpj ? (initialHolderDocument?.replace(/\D/g, "") || "") : cleanUserDoc
+        };
+      });
+    }
+  }, [cleanUserDoc, initialHolderDocument]);
 
   useEffect(() => {
     if (initialBirthDate) {
@@ -314,6 +388,60 @@ export default function CreditCardForm({ onChange, initialBirthDate, cardError, 
               onChange={(e) => handleChange("name", e.target.value.toUpperCase())}
             />
           </div>
+
+          {isUserCnpj && (
+            <div className="space-y-2 p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 animate-in fade-in duration-300">
+              <label className={labelStyles}>Titularidade do Cartão</label>
+              <div className="flex gap-1.5 p-1 bg-[#e0e3e5] rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => handleHolderTypeChange("PF")}
+                  className={cn(
+                    "flex-1 py-2 px-3 text-xs font-bold rounded-md transition-all text-center",
+                    holderType === "PF"
+                      ? "bg-white text-[#002444] shadow-sm"
+                      : "text-[#545f73] hover:text-[#002444]"
+                  )}
+                >
+                  Cartão Pessoal (CPF)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleHolderTypeChange("PJ")}
+                  className={cn(
+                    "flex-1 py-2 px-3 text-xs font-bold rounded-md transition-all text-center",
+                    holderType === "PJ"
+                      ? "bg-white text-[#002444] shadow-sm"
+                      : "text-[#545f73] hover:text-[#002444]"
+                  )}
+                >
+                  Cartão da Empresa (CNPJ)
+                </button>
+              </div>
+
+              {holderType === "PF" ? (
+                <div className="space-y-1 pt-1.5 animate-in fade-in duration-200">
+                  <label className="text-[11px] font-bold text-[#545f73] uppercase tracking-wider">
+                    CPF do Titular do Cartão
+                  </label>
+                  <input
+                    className={inputStyles}
+                    placeholder="000.000.000-00"
+                    value={maskedHolderDoc}
+                    onChange={(e) => handleHolderDocChange(e.target.value)}
+                    maxLength={14}
+                  />
+                  <p className="text-[10px] text-[#73777f] font-normal leading-tight">
+                    Informe o CPF de quem é dono deste cartão (você, sócio ou cônjuge).
+                  </p>
+                </div>
+              ) : (
+                <div className="pt-1 text-[11px] text-[#545f73] leading-relaxed animate-in fade-in duration-200">
+                  Usando CNPJ da sua conta: <strong className="text-[#002444]">{cleanUserDoc.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</strong>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">

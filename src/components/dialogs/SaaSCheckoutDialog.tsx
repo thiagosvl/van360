@@ -555,7 +555,14 @@ export function SaaSCheckoutDialog({ plans = [], initialPlanId, isOpen, onClose,
 
         {hasNewCardFlow && (
           <div className={cn("p-6 space-y-4", step !== 3 && "hidden")}>
-            <CreditCardForm onChange={setCardData} initialBirthDate={profile?.data_nascimento} cardError={cardError} totalPrice={totalPrice} />
+            <CreditCardForm
+              onChange={setCardData}
+              initialBirthDate={profile?.data_nascimento}
+              cardError={cardError}
+              totalPrice={totalPrice}
+              userDocument={profile?.cpfcnpj}
+              initialHolderDocument={profile?.cpf_responsavel}
+            />
 
             <div className="pt-2 border-t border-slate-100 space-y-1">
               <div className="flex justify-between items-center text-xs text-[#545f73]">

@@ -36,6 +36,8 @@ import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassa
 import { PassageiroFinanceiroDialog } from "@/components/dialogs/PassageiroFinanceiroDialog";
 import { PassageiroEscolaDialog } from "@/components/dialogs/PassageiroEscolaDialog";
 import { PassageiroTransporteDialog } from "@/components/dialogs/PassageiroTransporteDialog";
+import { RegistrarAusenciaDialog } from "@/components/dialogs/RegistrarAusenciaDialog";
+import { RevisarSolicitacaoDialog } from "@/components/dialogs/RevisarSolicitacaoDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
@@ -57,6 +59,7 @@ import {
   OpenPassageiroFinanceiroProps,
   OpenPassageiroEscolaProps,
   OpenPassageiroTransporteProps,
+  OpenRegistrarAusenciaProps,
   OpenGerarContratoValidadorDialogProps,
   OpenImportarContratoDialogProps,
   OpenResponsavelFormProps,
@@ -101,6 +104,7 @@ import {
   OpenManualPaymentDialogProps,
   OpenComplementarPagamentoDialogProps,
   OpenPassageiroFormProps,
+  OpenRevisarSolicitacaoProps,
   OpenVeiculoFormProps,
   OpenRouteFormProps,
 } from "./LayoutContext";
@@ -157,6 +161,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [revisarSolicitacaoDialogState, setRevisarSolicitacaoDialogState] = useState<{
+    open: boolean;
+    props?: OpenRevisarSolicitacaoProps;
+  }>({
+    open: false,
+  });
+
   const [quickStartPassageiroState, setQuickStartPassageiroState] = useState<{
     open: boolean;
     props?: OpenQuickStartPassageiroProps;
@@ -181,6 +192,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [passageiroTransporteDialogState, setPassageiroTransporteDialogState] = useState<{
     open: boolean;
     props?: OpenPassageiroTransporteProps;
+  }>({
+    open: false,
+  });
+
+  const [registrarAusenciaDialogState, setRegistrarAusenciaDialogState] = useState<{
+    open: boolean;
+    props?: OpenRegistrarAusenciaProps;
   }>({
     open: false,
   });
@@ -444,6 +462,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openRevisarSolicitacaoDialog = (props: OpenRevisarSolicitacaoProps) => {
+    setRevisarSolicitacaoDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeRevisarSolicitacaoDialog = () => {
+    safeCloseDialog(() =>
+      setRevisarSolicitacaoDialogState((prev) => ({ ...prev, open: false }))
+    );
+  };
+
   const openQuickStartPassageiroDialog = (props?: OpenQuickStartPassageiroProps) => {
     setQuickStartPassageiroState({
       open: true,
@@ -482,6 +513,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const closePassageiroTransporteDialog = () => {
     safeCloseDialog(() => setPassageiroTransporteDialogState({ open: false }));
+  };
+
+  const openRegistrarAusenciaDialog = (props?: OpenRegistrarAusenciaProps) => {
+    setRegistrarAusenciaDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeRegistrarAusenciaDialog = () => {
+    safeCloseDialog(() => setRegistrarAusenciaDialogState({ open: false }));
   };
 
   const openGastoFormDialog = (props?: OpenGastoFormProps) => {
@@ -693,6 +735,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openEscolaFormDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
+        openRevisarSolicitacaoDialog,
+        closeRevisarSolicitacaoDialog,
         openRouteFormDialog,
         openQuickStartPassageiroDialog,
         openPassageiroFinanceiroDialog,
@@ -701,6 +745,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closePassageiroEscolaDialog,
         openPassageiroTransporteDialog,
         closePassageiroTransporteDialog,
+        openRegistrarAusenciaDialog,
+        closeRegistrarAusenciaDialog,
         openGastoFormDialog,
         openGerenciarCategoriasDialog,
         openResponsavelFormDialog,
@@ -888,6 +934,27 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {revisarSolicitacaoDialogState.open && (
+        <RevisarSolicitacaoDialog
+          isOpen={true}
+          prePassageiro={revisarSolicitacaoDialogState.props?.prePassageiro || null}
+          onSuccess={(passageiro) => {
+            const innerOnSuccess = revisarSolicitacaoDialogState.props?.onSuccess;
+            if (innerOnSuccess) {
+              innerOnSuccess(passageiro);
+            }
+            safeCloseDialog(() =>
+              setRevisarSolicitacaoDialogState((prev) => ({ ...prev, open: false }))
+            );
+          }}
+          onClose={() => {
+            safeCloseDialog(() =>
+              setRevisarSolicitacaoDialogState((prev) => ({ ...prev, open: false }))
+            );
+          }}
+        />
+      )}
+
       {quickStartPassageiroState.open && (
         <QuickStartPassageiroDialog
           isOpen={true}
@@ -922,6 +989,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={closePassageiroTransporteDialog}
           passageiro={passageiroTransporteDialogState.props.passageiro}
           onSuccess={passageiroTransporteDialogState.props.onSuccess}
+        />
+      )}
+
+      {registrarAusenciaDialogState.open && (
+        <RegistrarAusenciaDialog
+          isOpen={true}
+          onClose={closeRegistrarAusenciaDialog}
+          lockedRotaId={registrarAusenciaDialogState.props?.lockedRotaId}
+          lockedPassageiro={registrarAusenciaDialogState.props?.lockedPassageiro}
         />
       )}
 
@@ -1113,11 +1189,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() =>
             safeCloseDialog(() => {
               setFirstChargeDialogState((prev) => ({ ...prev, open: false }));
-              firstChargeDialogState.props?.onSuccess?.();
             })
           }
           passageiro={firstChargeDialogState.props.passageiro}
           isFirstPassageiro={firstChargeDialogState.props.isFirstPassageiro}
+          onSuccess={firstChargeDialogState.props.onSuccess}
         />
       )}
 

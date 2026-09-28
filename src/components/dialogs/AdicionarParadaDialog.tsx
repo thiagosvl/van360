@@ -145,7 +145,7 @@ export function AdicionarParadaDialog({
                       : "bg-slate-100 text-slate-600 border-slate-200/70 hover:bg-slate-200/80"
                   )}
                 >
-                  Todas ({passageirosDisponiveis.length})
+                  Todas
                 </button>
                 {escolasComContagem.map((esc) => {
                   const isSelected = effectiveEscolaId === esc.id;
@@ -161,7 +161,7 @@ export function AdicionarParadaDialog({
                           : "bg-slate-100 text-slate-600 border-slate-200/70 hover:bg-slate-200/80"
                       )}
                     >
-                      <span className="truncate max-w-[130px]">{esc.nome}</span>
+                      <span className="">{esc.nome}</span>
                       <span
                         className={cn(
                           "text-[9px] px-1 py-0.2 rounded-full font-semibold",
@@ -255,7 +255,7 @@ export function AdicionarParadaDialog({
                           </div>
                         )}
                         <div className="flex items-center gap-2 mt-1 text-left flex-wrap">
-                          <div className="flex items-center gap-1 text-[11px] font-semibold text-amber-700">
+                          <div className="flex items-center gap-1 text-[11px] font-base text-amber-700">
                             <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
                             <span>Sem endereço</span>
                           </div>

@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePassageiroAusencias, useRemoverAusenciaMutation, usePassageiroRotas } from "@/hooks/api/useRoutes";
-import RegistrarAusenciaDialog from "@/components/dialogs/RegistrarAusenciaDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { toast } from "@/utils/notifications/toast";
@@ -23,8 +22,7 @@ export function CarteirinhaAusencias({
   temRotas,
   isRotasLoading,
 }: CarteirinhaAusenciasProps) {
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { openConfirmationDialog, closeConfirmationDialog, openRegistrarAusenciaDialog } = useLayout();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const passageiroId = passageiro.id || "";
@@ -91,7 +89,9 @@ export function CarteirinhaAusencias({
           title={!hasRotas ? "Aluno não possui rota vinculada" : undefined}
           onClick={() => {
             if (!hasRotas) return;
-            setIsAddDialogOpen(true);
+            openRegistrarAusenciaDialog({
+              lockedPassageiro: { id: passageiroId, nome: passageiro.nome },
+            });
           }}
           className={cn(
             "h-8 rounded-lg border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
@@ -165,15 +165,6 @@ export function CarteirinhaAusencias({
             );
           })}
         </div>
-      )}
-
-      {/* Diálogo de Inclusão com lockedPassageiro */}
-      {isAddDialogOpen && (
-        <RegistrarAusenciaDialog
-          isOpen={isAddDialogOpen}
-          onClose={() => setIsAddDialogOpen(false)}
-          lockedPassageiro={{ id: passageiroId, nome: passageiro.nome }}
-        />
       )}
     </div>
   );

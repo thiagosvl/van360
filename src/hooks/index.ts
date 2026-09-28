@@ -22,6 +22,7 @@ export { useRelatoriosViewModel } from "./ui/useRelatoriosViewModel";
 export { useContratosViewModel } from "./ui/useContratosViewModel";
 export { useAssinarContratoViewModel } from "./ui/useAssinarContratoViewModel";
 export { usePassageiroFormViewModel } from "./ui/usePassageiroFormViewModel";
+export { useRevisarSolicitacaoViewModel } from "./ui/useRevisarSolicitacaoViewModel";
 export { usePassageiroFormDadosCadastraisViewModel } from "./ui/usePassageiroFormDadosCadastraisViewModel";
 export { useConfigurarRotaViewModel } from "./ui/useConfigurarRotaViewModel";
 export { useRotasViewModel } from "./ui/useRotasViewModel";

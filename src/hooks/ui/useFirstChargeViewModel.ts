@@ -20,11 +20,18 @@ interface FirstChargeViewModelProps {
   onClose: () => void;
   isOpen: boolean;
   isFirstPassageiro?: boolean;
+  onSuccess?: (passageiro?: Passageiro) => void;
 }
 
 export type FirstChargeStep = "CONTRACT_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
 
-export function useFirstChargeViewModel({ passageiro, onClose, isOpen, isFirstPassageiro = false }: FirstChargeViewModelProps) {
+export function useFirstChargeViewModel({
+  passageiro,
+  onClose,
+  isOpen,
+  isFirstPassageiro = false,
+  onSuccess,
+}: FirstChargeViewModelProps) {
   const { profile } = useProfile();
   const showContractStep = !!profile?.config_contrato?.usar_contratos;
 
@@ -53,18 +60,22 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen, isFirstPa
   useEffect(() => {
     if (isOpen && !showContractStep && !showPaymentStep) {
       safeCloseDialog(onClose);
-      if (isFirstPassageiro && passageiro) {
-        openOnboardingSuccessDialog({
-          passageiroNome: passageiro.nome,
-          onNavigateToPassageiro: () => {
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-          },
-        });
-      } else if (passageiro?.id) {
-        navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+      if (onSuccess) {
+        onSuccess(passageiro);
+      } else {
+        if (isFirstPassageiro && passageiro) {
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
+        } else if (passageiro?.id) {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+        }
       }
     }
-  }, [isOpen, showContractStep, showPaymentStep, onClose, passageiro, isFirstPassageiro, openOnboardingSuccessDialog, navigate]);
+  }, [isOpen, showContractStep, showPaymentStep, onClose, passageiro, isFirstPassageiro, openOnboardingSuccessDialog, navigate, onSuccess]);
 
   const handleBack = useCallback(() => {
     if (step === "PAYMENT_STATUS") {
@@ -135,22 +146,26 @@ export function useFirstChargeViewModel({ passageiro, onClose, isOpen, isFirstPa
         });
       }
       safeCloseDialog(onClose);
-      if (isFirstPassageiro && passageiro) {
-        openOnboardingSuccessDialog({
-          passageiroNome: passageiro.nome,
-          onNavigateToPassageiro: () => {
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-          },
-        });
-      } else if (passageiro?.id) {
-        navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+      if (onSuccess) {
+        onSuccess(passageiro);
+      } else {
+        if (isFirstPassageiro && passageiro) {
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
+        } else if (passageiro?.id) {
+          navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+        }
       }
     } catch (error) {
       console.error("Falha ao finalizar fluxo:", error);
     } finally {
       setIsGeneratingContract(false);
     }
-  }, [passageiro, isFirstPassageiro, wantsContract, submitCobranca, openGerarContratoValidadorDialog, openOnboardingSuccessDialog, createContrato, onClose, navigate]);
+  }, [passageiro, isFirstPassageiro, wantsContract, submitCobranca, openGerarContratoValidadorDialog, openOnboardingSuccessDialog, createContrato, onClose, navigate, onSuccess]);
 
   const handleNext = useCallback(async () => {
     if (step === "CONTRACT_CHECK") {

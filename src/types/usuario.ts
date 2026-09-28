@@ -22,6 +22,7 @@ export interface Usuario {
   razao_social?: string;
   apelido?: string;
   cpfcnpj: string;
+  cpf_responsavel?: string;
   email: string;
   telefone: string;
   data_nascimento?: string;

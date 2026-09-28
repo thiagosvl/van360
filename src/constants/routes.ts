@@ -29,6 +29,7 @@ export const ROUTES = {
       LOGIN_ATTEMPTS: "/admin/tentativas-login",
       ACTIVITY_HISTORY: "/admin/atividades",
       USERS_RADAR: "/admin/radar",
+      REFERRALS: "/admin/indicacoes",
       NOTIFICATIONS: "/admin/notificacoes",
       EVOLUTION_INSTANCES: "/admin/evolution",
       BLOG: "/admin/blog",

@@ -42,6 +42,11 @@ export interface OpenPassageiroFormProps {
   prePassageiro?: PrePassageiro | null;
 }
 
+export interface OpenRevisarSolicitacaoProps {
+  prePassageiro: PrePassageiro;
+  onSuccess?: (passageiro: Passageiro) => void;
+}
+
 export interface OpenQuickStartPassageiroProps {
   onSuccess?: (passageiro?: Passageiro, keepOpen?: boolean) => void;
   isOnboarding?: boolean;
@@ -154,7 +159,7 @@ export interface OpenAnnualReceiptDialogProps {
 export interface OpenFirstChargeDialogProps {
   passageiro: Passageiro;
   isFirstPassageiro?: boolean;
-  onSuccess?: () => void;
+  onSuccess?: (passageiro?: Passageiro) => void;
 }
 
 export interface OpenContractSetupDialogProps {
@@ -176,6 +181,11 @@ export interface OpenImportarContratoDialogProps {
   passageiroId?: string;
   passageiro?: Passageiro;
   onSuccess?: () => void;
+}
+
+export interface OpenRegistrarAusenciaProps {
+  lockedRotaId?: string;
+  lockedPassageiro?: { id: string; nome: string };
 }
 
 export interface OpenPixPaymentDialogProps {
@@ -328,6 +338,8 @@ export interface LayoutContextType {
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
+  openRevisarSolicitacaoDialog: (props: OpenRevisarSolicitacaoProps) => void;
+  closeRevisarSolicitacaoDialog: () => void;
   openRouteFormDialog: (props: OpenRouteFormProps) => void;
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
   openPassageiroFinanceiroDialog: (props: OpenPassageiroFinanceiroProps) => void;
@@ -336,6 +348,8 @@ export interface LayoutContextType {
   closePassageiroEscolaDialog: () => void;
   openPassageiroTransporteDialog: (props: OpenPassageiroTransporteProps) => void;
   closePassageiroTransporteDialog: () => void;
+  openRegistrarAusenciaDialog: (props?: OpenRegistrarAusenciaProps) => void;
+  closeRegistrarAusenciaDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;

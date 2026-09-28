@@ -1,8 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
@@ -15,7 +13,7 @@ import { routeApi } from "@/services/api/route.api";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { parseLocalDate, getShortWeekDayBR, getNowBR, toPersistenceString } from "@/utils/dateUtils";
-import { formatShortName, getInitials } from "@/utils/formatters/name";
+import { formatShortName, getInitials, formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { toast } from "@/utils/notifications/toast";
 import { Calendar, CalendarCheck2, Bus, User, UserPlus, ChevronDown, Loader2, Search, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -38,6 +36,9 @@ interface AlunoAusenciaNode {
   rotaId: string;
   rotaNome: string;
   dataAusencia: string;
+  turma?: string | null;
+  escolaNome?: string | null;
+  responsavelNome?: string | null;
 }
 
 interface RotaGroupInDia {
@@ -98,6 +99,22 @@ export function ProximasAusenciasDialog({
   const [isLoadingRotasAluno, setIsLoadingRotasAluno] = useState(false);
   const [formDataAusencia, setFormDataAusencia] = useState("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const alunoSearchContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        alunoSearchContainerRef.current &&
+        !alunoSearchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -220,6 +237,9 @@ export function ProximasAusenciasDialog({
       rotaId: item.rota?.id || "",
       rotaNome: item.rota?.nome || "Rota",
       dataAusencia: item.data_ausencia,
+      turma: item.passageiro?.turma || null,
+      escolaNome: item.passageiro?.escola_nome || null,
+      responsavelNome: item.passageiro?.responsavel_nome || null,
     }));
   }, [ausencias]);
 
@@ -306,6 +326,54 @@ export function ProximasAusenciasDialog({
     return resultado;
   }, [parsedItems]);
 
+  const renderAlunoCard = (aluno: AlunoAusenciaNode) => {
+    const respName = aluno.responsavelNome ? formatNomeResponsavelExibicao(aluno.responsavelNome) : null;
+
+    return (
+      <div
+        key={aluno.id}
+        className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs flex items-center gap-3 transition-all"
+      >
+        <Avatar className="w-8 h-8 shrink-0 border border-slate-200/60">
+          <AvatarFallback className="text-[10px] font-bold bg-[#1a3a5c]/10 text-[#1a3a5c]">
+            {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
+              {formatShortName(aluno.nome, true)}
+            </span>
+            {aluno.turma && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 shrink-0">
+                {aluno.turma}
+              </span>
+            )}
+          </div>
+
+          {(respName || aluno.escolaNome) && (
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium truncate mt-0.5">
+              {respName && (
+                <>
+                  <span className="truncate text-slate-500">
+                    {respName}
+                  </span>
+                  {aluno.escolaNome && <span className="text-slate-300">•</span>}
+                </>
+              )}
+              {aluno.escolaNome && (
+                <span className="truncate text-slate-400">
+                  {aluno.escolaNome}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const handleClose = () => {
     safeCloseDialog(() => onOpenChange(false));
   };
@@ -375,98 +443,112 @@ export function ProximasAusenciasDialog({
 
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-slate-700">Aluno</Label>
-                <Popover
-                  open={isDropdownOpen}
-                  onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}
-                >
-                  <PopoverAnchor asChild>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Digite o nome..."
-                        value={searchAluno}
-                        onChange={(e) => {
-                          setSearchAluno(e.target.value);
-                          if (alunoSelecionado && e.target.value !== alunoSelecionado.nome) {
-                            setAlunoSelecionado(null);
-                            setFormPassageiroId("");
-                          }
-                          setIsDropdownOpen(true);
-                        }}
-                        onFocus={() => {
-                          setIsDropdownOpen(true);
-                        }}
-                        className={cn(
-                          "w-full h-10 pl-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] placeholder:text-slate-400 placeholder:font-normal transition-colors",
-                          formErrors.passageiroId && "border-red-500"
-                        )}
-                      />
-                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                        {isLoadingAlunos || isLoadingRotasAluno ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
-                        ) : alunoSelecionado ? (
-                          <button
-                            type="button"
-                            onClick={handleClearAluno}
-                            className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        ) : (
-                          <Search className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                        )}
-                      </div>
-                    </div>
-                  </PopoverAnchor>
-
-                  <PopoverContent
-                    className="w-[var(--radix-popover-trigger-width)] p-1 bg-white border border-slate-200 rounded-xl shadow-lg z-[9999] max-h-52 overflow-y-auto"
-                    align="start"
-                    side="bottom"
-                    sideOffset={4}
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                  >
-                    {searchAluno.trim().length < 3 ? (
-                      <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
-                        Digite pelo menos 3 letras para buscar...
-                      </div>
-                    ) : isLoadingAlunos ? (
-                      <div className="p-3 text-[11px] text-slate-500 text-center flex items-center justify-center gap-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
-                        <span>Buscando alunos...</span>
-                      </div>
-                    ) : alunosEncontrados.length === 0 ? (
-                      <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
-                        Nenhum aluno encontrado{activeRotaIdForSearch ? " nesta rota" : ""}.
-                      </div>
-                    ) : (
-                      alunosEncontrados.map((aluno) => {
-                        const isSelected = aluno.id === formPassageiroId;
-                        return (
-                          <button
-                            key={aluno.id}
-                            type="button"
-                            onClick={() => handleSelectAluno(aluno)}
-                            className={cn(
-                              "w-full text-left px-3 py-2.5 text-xs rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between gap-2 cursor-pointer",
-                              isSelected && "bg-slate-100 font-bold text-[#1a3a5c]"
-                            )}
-                          >
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                              <span className="truncate font-semibold">{formatShortName(aluno.nome, true)}</span>
-                              {aluno.turma && (
-                                <span className="text-[11px] text-slate-400 font-normal shrink-0">
-                                  • {aluno.turma}
-                                </span>
-                              )}
-                            </div>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />}
-                          </button>
-                        );
-                      })
+                <div ref={alunoSearchContainerRef} className="relative">
+                  <input
+                    type="text"
+                    placeholder="Digite o nome..."
+                    value={searchAluno}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSearchAluno(val);
+                      if (alunoSelecionado && val !== alunoSelecionado.nome) {
+                        setAlunoSelecionado(null);
+                        setFormPassageiroId("");
+                      }
+                      setIsDropdownOpen(val.trim().length > 0);
+                    }}
+                    onFocus={() => {
+                      if (!alunoSelecionado && searchAluno.trim().length > 0) {
+                        setIsDropdownOpen(true);
+                      }
+                    }}
+                    className={cn(
+                      "w-full h-10 pl-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] placeholder:text-slate-400 placeholder:font-normal transition-colors",
+                      formErrors.passageiroId && "border-red-500"
                     )}
-                  </PopoverContent>
-                </Popover>
+                  />
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {isLoadingAlunos || isLoadingRotasAluno ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                    ) : alunoSelecionado ? (
+                      <button
+                        type="button"
+                        onClick={handleClearAluno}
+                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <Search className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                    )}
+                  </div>
+
+                  {isDropdownOpen && !alunoSelecionado && searchAluno.trim().length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {searchAluno.trim().length < 3 ? (
+                        <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
+                          Digite pelo menos 3 letras para buscar...
+                        </div>
+                      ) : isLoadingAlunos ? (
+                        <div className="p-3 text-[11px] text-slate-500 text-center flex items-center justify-center gap-2">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                          <span>Buscando alunos...</span>
+                        </div>
+                      ) : alunosEncontrados.length === 0 ? (
+                        <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
+                          Nenhum aluno encontrado{activeRotaIdForSearch ? " nesta rota" : ""}.
+                        </div>
+                      ) : (
+                        alunosEncontrados.map((aluno) => {
+                          const isSelected = aluno.id === formPassageiroId;
+                          const respName = aluno.responsavel_nome ? formatNomeResponsavelExibicao(aluno.responsavel_nome) : null;
+
+                          return (
+                            <button
+                              key={aluno.id}
+                              type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleSelectAluno(aluno);
+                              }}
+                              className={cn(
+                                "w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between gap-2 cursor-pointer",
+                                isSelected && "bg-slate-100 font-bold text-[#1a3a5c]"
+                              )}
+                            >
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="truncate font-semibold text-slate-800">
+                                    {formatShortName(aluno.nome, true)}
+                                  </span>
+                                  {aluno.turma && (
+                                    <span className="text-[10px] text-slate-500 font-medium px-1.5 py-0.2 rounded bg-slate-100 border border-slate-200/50 shrink-0">
+                                      {aluno.turma}
+                                    </span>
+                                  )}
+                                </div>
+                                {(respName || aluno.escola_nome) && (
+                                  <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                    {respName && (
+                                      <>
+                                        <span className="text-slate-500 truncate">{respName}</span>
+                                        {aluno.escola_nome && <span className="text-slate-300">•</span>}
+                                      </>
+                                    )}
+                                    {aluno.escola_nome && (
+                                      <span className="truncate text-slate-400">{aluno.escola_nome}</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
                 {formErrors.passageiroId && <p className="text-[11px] text-red-500">{formErrors.passageiroId}</p>}
               </div>
 
@@ -573,21 +655,7 @@ export function ProximasAusenciasDialog({
                   </div>
 
                   <div className="relative pl-3.5 ml-1 border-l-2 border-slate-200/80 space-y-1.5">
-                    {grupoDia.rotas.flatMap((r) => r.alunos).map((aluno) => (
-                      <div
-                        key={aluno.id}
-                        className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs flex items-center gap-2.5 transition-all"
-                      >
-                        <Avatar className="w-7 h-7 shrink-0 border border-slate-200/60">
-                          <AvatarFallback className="text-[10px] font-bold bg-[#1a3a5c]/10 text-[#1a3a5c]">
-                            {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
-                          {formatShortName(aluno.nome, true)}
-                        </span>
-                      </div>
-                    ))}
+                    {grupoDia.rotas.flatMap((r) => r.alunos).map(renderAlunoCard)}
                   </div>
                 </div>
               ))}
@@ -614,21 +682,7 @@ export function ProximasAusenciasDialog({
                         </div>
 
                         <div className="space-y-1.5 pl-2">
-                          {rota.alunos.map((aluno) => (
-                            <div
-                              key={aluno.id}
-                              className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs flex items-center gap-2.5 transition-all"
-                            >
-                              <Avatar className="w-7 h-7 shrink-0 border border-slate-200/60">
-                                <AvatarFallback className="text-[10px] font-bold bg-[#1a3a5c]/10 text-[#1a3a5c]">
-                                  {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
-                                {formatShortName(aluno.nome, true)}
-                              </span>
-                            </div>
-                          ))}
+                          {rota.alunos.map(renderAlunoCard)}
                         </div>
                       </div>
                     ))}
@@ -658,21 +712,7 @@ export function ProximasAusenciasDialog({
                         </div>
 
                         <div className="space-y-1.5 pl-2">
-                          {dia.alunos.map((aluno) => (
-                            <div
-                              key={aluno.id}
-                              className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs flex items-center gap-2.5 transition-all"
-                            >
-                              <Avatar className="w-7 h-7 shrink-0 border border-slate-200/60">
-                                <AvatarFallback className="text-[10px] font-bold bg-[#1a3a5c]/10 text-[#1a3a5c]">
-                                  {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
-                                {formatShortName(aluno.nome, true)}
-                              </span>
-                            </div>
-                          ))}
+                          {dia.alunos.map(renderAlunoCard)}
                         </div>
                       </div>
                     ))}

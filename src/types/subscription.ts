@@ -128,6 +128,8 @@ export interface PaymentMethod {
   expire_year: string;
   is_default: boolean;
   created_at: string;
+  holder_name?: string | null;
+  holder_document?: string | null;
 }
 
 export interface PixPaymentData {

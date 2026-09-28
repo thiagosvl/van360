@@ -748,10 +748,59 @@ export const adminUserApi = {
       alunoTeste?: string;
       valor?: number;
     }>(`${BASE}/users/${id}/dispatch-cobranca-demo`).then(r => r.data),
+
+  listReferrals: (params?: ListReferralsParams) =>
+    apiClient.get<ListReferralsResponse>(`${BASE}/referrals`, { params }).then(r => r.data),
 };
 
 export interface ImpersonateUserResponse {
   tokenHash: string;
   impersonateUrl: string;
+}
+
+export interface ListReferralsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: IndicacaoStatus;
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+export interface ReferralUserSummary {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  logo_url?: string | null;
+  assinatura_status?: string | null;
+  assinatura_data_vencimento?: string | null;
+}
+
+export interface ReferralItem {
+  id: string;
+  status: IndicacaoStatus;
+  created_at: string;
+  updated_at: string | null;
+  fatura_origem_id: string | null;
+  indicador: ReferralUserSummary | null;
+  indicado: ReferralUserSummary | null;
+}
+
+export interface ReferralsStats {
+  total: number;
+  concluidas: number;
+  pendentes: number;
+  taxaConversao: number;
+  diasBonusConcedidos: number;
+}
+
+export interface ListReferralsResponse {
+  data: ReferralItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  stats: ReferralsStats;
 }
 

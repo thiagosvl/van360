@@ -42,6 +42,8 @@ import {
   Users2
 } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import { Usuario } from "@/types/usuario";
 
 interface PrePassageirosProps {
@@ -61,10 +63,12 @@ export default function PrePassageiros({
   countPassageiros: countPassageirosProp,
   isLoading: isLoadingProp,
 }: PrePassageirosProps) {
+  const navigate = useNavigate();
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
-    openPassageiroFormDialog,
+    openRevisarSolicitacaoDialog,
+    openOnboardingSuccessDialog,
     openFirstChargeDialog,
   } = useLayout();
 
@@ -94,17 +98,42 @@ export default function PrePassageiros({
   const loading = isLoadingProp !== undefined ? isLoadingProp : isPrePassageirosQueryLoading;
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
-    openPassageiroFormDialog({
-      mode: PassageiroFormModes.FINALIZE,
+    openRevisarSolicitacaoDialog({
       prePassageiro,
       onSuccess: (passageiro) => {
         if (onFinalizeNewPrePassageiro) onFinalizeNewPrePassageiro();
-        if (passageiro) {
-          openFirstChargeDialog({
-            passageiro,
-            isFirstPassageiro,
+        if (!passageiro) return;
+
+        if (isFirstPassageiro) {
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
           });
+          return;
         }
+
+        openFirstChargeDialog({
+          passageiro,
+          onSuccess: (p) => {
+            const finalPassageiro = p || passageiro;
+            openConfirmationDialog({
+              title: "Aluno cadastrado com sucesso!",
+              description: `${finalPassageiro.nome} agora faz parte dos seus alunos ativos. O que você deseja fazer agora?`,
+              cancelText: "Continuar aqui",
+              confirmText: "Ir para Carteirinha",
+              variant: "default",
+              onCancel: () => {
+                safeCloseDialog(closeConfirmationDialog);
+              },
+              onConfirm: () => {
+                safeCloseDialog(closeConfirmationDialog);
+                navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", finalPassageiro.id));
+              },
+            });
+          },
+        });
       },
     });
   };

@@ -286,7 +286,7 @@ export default function EscolaFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome da Escola <span className="text-red-600">*</span>
+                      Nome / Apelido da Escola <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -294,7 +294,6 @@ export default function EscolaFormDialog({
                         <Input
                           {...field}
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
-                          placeholder="Ex: Escola Municipal..."
                           aria-invalid={!!fieldState.error}
                         />
                       </div>

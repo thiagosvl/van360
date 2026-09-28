@@ -218,6 +218,14 @@ export function useSaaSCheckoutViewModel({
 
           if (!birthForApi) throw new Error("Data de nascimento inválida. Use o formato dd/mm/aaaa.");
 
+          const isUserCnpj = (profile?.cpfcnpj?.replace(/\D/g, "").length || 0) > 11;
+          const chosenHolderDoc = cardData.holderDocument?.replace(/\D/g, "")
+            || (isUserCnpj ? profile?.cpf_responsavel?.replace(/\D/g, "") : profile?.cpfcnpj?.replace(/\D/g, ""))
+            || profile?.cpfcnpj?.replace(/\D/g, "")
+            || "";
+
+          const chosenHolderName = cardData.name?.trim().toUpperCase() || "";
+
           paymentToken = await generatePaymentToken({
             brand: cardBrand,
             number: cardNumber,
@@ -225,8 +233,8 @@ export function useSaaSCheckoutViewModel({
             expireMonth: expiryMonth?.trim(),
             expireYear: expiryYear?.trim(),
             reuse: true,
-            holderName: cardData.name,
-            holderDocument: profile?.cpfcnpj?.replace(/\D/g, ""),
+            holderName: chosenHolderName,
+            holderDocument: chosenHolderDoc,
           });
 
           cardInfo = {
@@ -242,7 +250,9 @@ export function useSaaSCheckoutViewModel({
             neighborhood: cardData.neighborhood,
             zipcode: cardData.zipcode,
             city: cardData.city,
-            state: cardData.state
+            state: cardData.state,
+            holderDocument: chosenHolderDoc,
+            holderName: chosenHolderName,
           };
         }
       }

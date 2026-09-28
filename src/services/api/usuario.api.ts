@@ -41,6 +41,7 @@ export const usuarioApi = {
     config_contrato?: any;
     data_nascimento?: string;
     cpfcnpj?: string;
+    cpf_responsavel?: string | null;
     email?: string;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),
 

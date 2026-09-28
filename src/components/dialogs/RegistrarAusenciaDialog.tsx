@@ -26,7 +26,7 @@ export interface RegistrarAusenciaDialogProps {
   lockedPassageiro?: { id: string; nome: string };
 }
 
-export default function RegistrarAusenciaDialog({
+export function RegistrarAusenciaDialog({
   isOpen,
   onClose,
   lockedRotaId,
@@ -404,3 +404,5 @@ export default function RegistrarAusenciaDialog({
     </BaseDialog>
   );
 }
+
+export default RegistrarAusenciaDialog;

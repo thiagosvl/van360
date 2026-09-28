@@ -723,6 +723,15 @@ export default function AdminDashboard() {
                   Métricas de aquisição e conversão via convite entre motoristas
                 </p>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(ROUTES.PRIVATE.ADMIN.REFERRALS)}
+                className="h-8 px-3 rounded-xl border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-bold gap-1.5 self-start sm:self-auto"
+              >
+                <span>Ver Listagem Completa</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
             </CardHeader>
             <CardContent className="p-6 pt-4">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

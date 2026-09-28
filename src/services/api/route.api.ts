@@ -150,6 +150,8 @@ export interface AlunoBuscaItem {
   id: string;
   nome: string;
   turma?: string | null;
+  escola_nome?: string | null;
+  responsavel_nome?: string | null;
 }
 
 export interface AusenciaFuturaItem {
@@ -160,6 +162,9 @@ export interface AusenciaFuturaItem {
   passageiro: {
     id: string;
     nome: string;
+    turma?: string | null;
+    escola_nome?: string | null;
+    responsavel_nome?: string | null;
   };
   rota: {
     id: string;

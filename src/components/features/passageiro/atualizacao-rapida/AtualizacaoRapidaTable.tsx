@@ -154,13 +154,25 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
 
                   <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
                     <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="R$ 0,00"
                       value={effectiveValor !== undefined && effectiveValor !== null ? moneyMask(effectiveValor) : ""}
+                      onKeyDown={(e) => {
+                        if (e.ctrlKey || e.metaKey) return;
+                        if (
+                          !/[0-9]/.test(e.key) &&
+                          !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"].includes(e.key)
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                       onChange={(e) => {
                         const formatted = moneyMask(e.target.value);
                         const numeric = moneyToNumber(formatted);
                         onUpdateField(pId, "valor_cobranca", numeric > 0 ? numeric : null, p);
                       }}
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-slate-800 min-w-[100px] w-full"
+                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-slate-800 min-w-[100px] w-full"
                     />
                   </td>
 

@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
+  Share2,
   Settings,
   ChevronRight,
   Calculator,
@@ -40,6 +41,11 @@ const adminNavItems = [
     title: "Radar de Usuários",
     href: ROUTES.PRIVATE.ADMIN.USERS_RADAR,
     icon: Radio,
+  },
+  {
+    title: "Indicações",
+    href: ROUTES.PRIVATE.ADMIN.REFERRALS,
+    icon: Share2,
   },
   {
     title: "Configurações",

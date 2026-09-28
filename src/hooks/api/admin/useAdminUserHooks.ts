@@ -336,6 +336,7 @@ export function useSetUserReferralAdmin() {
     onSuccess: (_, variables) => {
       toast.success("Indicação atribuída com sucesso!");
       qc.invalidateQueries({ queryKey: ["admin", "users", variables.id] });
+      qc.invalidateQueries({ queryKey: ["admin", "referrals"] });
       qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: (err: unknown) => {
@@ -353,6 +354,7 @@ export function useRemoveUserReferralAdmin() {
     onSuccess: (_, id) => {
       toast.success("Vínculo de indicação removido com sucesso!");
       qc.invalidateQueries({ queryKey: ["admin", "users", id] });
+      qc.invalidateQueries({ queryKey: ["admin", "referrals"] });
       qc.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
     onError: (err: unknown) => {

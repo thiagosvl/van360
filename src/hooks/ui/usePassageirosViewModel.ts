@@ -364,7 +364,12 @@ export function usePassageirosViewModel() {
         });
 
         if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
-          openFirstChargeDialog({ passageiro });
+          openFirstChargeDialog({
+            passageiro,
+            onSuccess: (p) => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", (p || passageiro).id));
+            },
+          });
         } else {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }
