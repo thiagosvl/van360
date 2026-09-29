@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Filter, RefreshCw, ChevronLeft, ChevronRight, Users, Activity } from "lucide-react";
+import { Filter, RefreshCw, ChevronLeft, ChevronRight, Users, Activity, Sparkles, ShieldCheck, RotateCcw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAdminLogs, useAdminLogsByUser, useAdminRealtimeLogs } from "@/hooks/api/adminHooks";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -289,6 +289,54 @@ export default function AdminActivityHistory() {
 
           {activeTab === "by_user" ? (
             <>
+              {usersData && usersData.total > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 text-left space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                      <Users className="h-3.5 w-3.5 text-blue-400" />
+                      <span>Usuários Ativos</span>
+                    </div>
+                    <div className="text-xl font-headline font-black text-white">
+                      {usersData.total}
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-medium">No período filtrado</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-sky-950/20 border border-sky-500/30 text-left space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400">
+                      <Sparkles className="h-3.5 w-3.5 text-sky-400" />
+                      <span>Em Trial</span>
+                    </div>
+                    <div className="text-xl font-headline font-black text-sky-200">
+                      {usersData.total_trial ?? 0}
+                    </div>
+                    <p className="text-[10px] text-sky-400/70 font-medium">Foco de conversão</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-left space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Assinantes</span>
+                    </div>
+                    <div className="text-xl font-headline font-black text-emerald-200">
+                      {usersData.total_ativos ?? 0}
+                    </div>
+                    <p className="text-[10px] text-emerald-400/70 font-medium">Assinatura ativa</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 text-left space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                      <RotateCcw className="h-3.5 w-3.5 text-purple-400" />
+                      <span>Recorrentes</span>
+                    </div>
+                    <div className="text-xl font-headline font-black text-white">
+                      {usersData.total_recorrentes ?? 0}
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-medium">Cadastrados antes</p>
+                  </div>
+                </div>
+              )}
+
               <ActivityUserGroupList
                 userGroups={usersData?.data || []}
                 isLoading={isLoadingUsers && !usersData}

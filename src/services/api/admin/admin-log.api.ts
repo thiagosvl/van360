@@ -32,6 +32,10 @@ export interface AdminUserGroupLogItem {
   usuario_apelido: string | null;
   usuario_telefone: string | null;
   usuario_email: string | null;
+  usuario_logo_url?: string | null;
+  assinatura_status?: string;
+  tipo_usuario?: string;
+  cadastrado_em?: string | null;
   total_atividades: number;
   primeira_atividade_em: string | null;
   ultima_atividade_em: string | null;
@@ -41,6 +45,9 @@ export interface AdminUserGroupLogItem {
 export interface AdminLogsByUserResponse {
   data: AdminUserGroupLogItem[];
   total: number;
+  total_trial?: number;
+  total_ativos?: number;
+  total_recorrentes?: number;
   page: number;
   limit: number;
 }

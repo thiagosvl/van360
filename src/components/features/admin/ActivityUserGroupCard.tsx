@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
-import { Clock, Eye, FileText, Sparkles, Zap, Flame, ExternalLink } from "lucide-react";
+import { Clock, Eye, FileText, Sparkles, Zap, Flame } from "lucide-react";
 import type { AdminUserGroupLogItem, AdminUserLogItem } from "@/services/api/admin/admin-log.api";
 import { Button } from "@/components/ui/button";
+import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
+import { useLayout } from "@/contexts/LayoutContext";
 import { ROUTES } from "@/constants/routes";
 import { formatRelativeTime } from "@/utils/formatters/date";
 import { formatActivityDescription } from "@/utils/formatters/name";
 import { phoneMask } from "@/utils/masks";
-import { openBrowserLink } from "@/utils/browser";
+import { toast } from "@/utils/notifications/toast";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { getActionBadgeStyle } from "./ActivityLogsList";
 
@@ -23,17 +25,19 @@ export function ActivityUserGroupCard({
   onOpenDetails,
   isFirst = false,
 }: ActivityUserGroupCardProps) {
+  const { openImageFullscreen } = useLayout();
   const displayName = userGroup.usuario_apelido?.trim() || userGroup.usuario_nome?.trim() || "Usuário";
   const fullName = userGroup.usuario_apelido && userGroup.usuario_nome ? userGroup.usuario_nome : null;
   const cleanPhone = userGroup.usuario_telefone?.replace(/\D/g, "");
   const activities = userGroup.ultimas_atividades || [];
   const latestLog = activities.length > 0 ? activities[0] : null;
-  const secondaryLogs = activities.slice(1);
+  const secondaryLogs = activities.slice(1, 3);
 
-  const handleWhatsApp = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!cleanPhone) return;
-    openBrowserLink(`https://wa.me/55${cleanPhone}`);
+  const handleCopyPhone = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!userGroup.usuario_telefone) return;
+    navigator.clipboard.writeText(phoneMask(userGroup.usuario_telefone));
+    toast.success("Telefone copiado!");
   };
 
   const isHighVolume = userGroup.total_atividades >= 50;
@@ -48,9 +52,34 @@ export function ActivityUserGroupCard({
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-blue-600/20 to-blue-400/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-headline font-black text-sm shrink-0">
-            {displayName.slice(0, 2).toUpperCase()}
-          </div>
+          {userGroup.usuario_logo_url?.trim() ? (
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                openImageFullscreen({ imageUrl: userGroup.usuario_logo_url!, alt: displayName });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  openImageFullscreen({ imageUrl: userGroup.usuario_logo_url!, alt: displayName });
+                }
+              }}
+              className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+              title="Visualizar logo"
+            >
+              <img
+                src={userGroup.usuario_logo_url}
+                alt={displayName}
+                className="h-full w-full object-contain"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-blue-600/20 to-blue-400/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-headline font-black text-sm shrink-0">
+              {displayName.slice(0, 2).toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <Link
@@ -59,18 +88,35 @@ export function ActivityUserGroupCard({
               >
                 {displayName}
               </Link>
+
+              {userGroup.assinatura_status && (
+                <SubscriptionStatusBadge
+                  status={userGroup.assinatura_status}
+                  className="text-[10px] px-2 py-0.5 shrink-0"
+                />
+              )}
+
+              {userGroup.tipo_usuario === "novo" && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shrink-0">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  Novo
+                </span>
+              )}
+
               {cleanPhone && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleWhatsApp}
-                  className="h-6 px-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors text-[10px] font-mono flex items-center gap-1"
-                  title="Chamar no WhatsApp"
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleCopyPhone}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") handleCopyPhone();
+                  }}
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[11px] font-mono cursor-pointer select-all shrink-0"
+                  title="Clique para copiar o número"
                 >
-                  <WhatsAppIcon className="h-3 w-3" />
-                  <span className="hidden md:inline">{phoneMask(userGroup.usuario_telefone || "")}</span>
-                </Button>
+                  <WhatsAppIcon className="h-3 w-3 shrink-0" />
+                  <span>{phoneMask(userGroup.usuario_telefone || "")}</span>
+                </div>
               )}
             </div>
             {fullName && (
@@ -197,21 +243,6 @@ export function ActivityUserGroupCard({
           </div>
         ))}
       </div>
-
-      {userGroup.total_atividades > 5 && (
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-800/60 text-xs text-slate-400">
-          <span>Mostrando as 5 atividades mais recentes ({userGroup.total_atividades} no total).</span>
-          <Button
-            type="button"
-            variant="link"
-            size="sm"
-            onClick={() => onOpenDetails(userGroup)}
-            className="h-auto p-0 text-blue-400 hover:text-blue-300 font-bold text-xs"
-          >
-            Ver todas as {userGroup.total_atividades} atividades →
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
