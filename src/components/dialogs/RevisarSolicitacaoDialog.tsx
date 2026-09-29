@@ -193,11 +193,6 @@ export function RevisarSolicitacaoDialog({
       />
 
       <BaseDialog.Body containerRef={bodyRef}>
-        <Banner
-          variant="info"
-          description="Defina as parcelas e selecione o veículo e a escola para aprovar o cadastro. Os dados enviados pelo responsável estão recolhidos abaixo para conferência rápida."
-          className="mb-6"
-        />
 
         <Form {...form}>
           <form id="revisar-solicitacao-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">

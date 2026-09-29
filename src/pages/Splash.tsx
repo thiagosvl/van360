@@ -159,10 +159,10 @@ export default function Splash() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
-                      Responsável
+                      Pai / Responsável
                     </span>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
-                      Acessar a carteirinha do aluno
+                      Acessar a carteirinha do seu filho
                     </p>
                   </div>
                 </div>

@@ -3,10 +3,11 @@ import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalFor
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { InitialLoading } from "@/components/auth/InitialLoading";
-import { CheckCircle2, Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { PassageiroFormDadosCadastrais } from "@/components/features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
+import { PassageiroExternalSuccess } from "@/components/features/passageiro/PassageiroExternalSuccess";
 import { getNowBR } from "@/utils/dateUtils";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { cn } from "@/lib/utils";
@@ -40,32 +41,10 @@ export default function PassageiroExternalForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#e8ecf1] flex items-center justify-center p-6">
-        <div className="max-w-md w-full p-8 text-center bg-slate-50 border border-slate-200 shadow-xl rounded-[2.5rem] relative overflow-hidden">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center border border-green-100">
-              <CheckCircle2 className="h-10 w-10 text-green-500" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-extrabold text-[#1a3a5c] mb-3 tracking-tight">
-            Cadastro Enviado!
-          </h2>
-          <p className="text-slate-500 mb-8 leading-relaxed text-base font-medium">
-            Tudo certo! Os dados do aluno foram enviados com sucesso para {subtitleDestino}.
-          </p>
-          <div className="pt-2 space-y-4">
-            <Button
-              onClick={handleNewCadastro}
-              className="w-full h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold shadow-md transition-all active:scale-[0.98]"
-            >
-              Fazer novo cadastro
-            </Button>
-            <p className="text-xs text-slate-400 font-medium italic">
-              Você já pode fechar esta aba com segurança.
-            </p>
-          </div>
-        </div>
-      </div>
+      <PassageiroExternalSuccess
+        subtitleDestino={subtitleDestino}
+        onNewCadastro={handleNewCadastro}
+      />
     );
   }
 

@@ -1,13 +1,12 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import {
-  detectPlatform,
+  getAppPlatformEligibility,
   isNativeApp,
   PLAY_STORE_URL,
   PLAY_STORE_BADGE_URL,
   APP_STORE_URL,
   APP_STORE_BADGE_URL,
-  APP_AVAILABILITY,
 } from "@/utils/detectPlatform";
 
 interface SmartAppBannerProps {
@@ -17,10 +16,7 @@ interface SmartAppBannerProps {
 export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => {
   if (isNativeApp()) return null;
 
-  const platform = detectPlatform();
-  const isEligibleAndroid = platform === "android-web" && APP_AVAILABILITY.android;
-  const isEligibleIos = platform === "ios-web" && APP_AVAILABILITY.ios;
-  const isEligibleDesktop = platform === "desktop" && APP_AVAILABILITY.android && APP_AVAILABILITY.ios;
+  const { isEligibleAndroid, isEligibleIos, isEligibleDesktop } = getAppPlatformEligibility();
 
   if (!isEligibleAndroid && !isEligibleIos && !isEligibleDesktop) {
     return null;
