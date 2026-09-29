@@ -332,7 +332,7 @@ export default function AdminActivityHistory() {
                     <div className="text-xl font-headline font-black text-white">
                       {usersData.total_recorrentes ?? 0}
                     </div>
-                    <p className="text-[10px] text-slate-500 font-medium">Cadastrados antes</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Não assinantes cadastrados antes</p>
                   </div>
                 </div>
               )}

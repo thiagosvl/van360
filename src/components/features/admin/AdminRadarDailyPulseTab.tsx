@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Users,
@@ -174,7 +174,7 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
           <AdminKpiCard
             title="RECORRENTES (VETERANOS)"
             value={isLoadingStats ? "..." : (stats?.totalRecorrentes ?? 0)}
-            subtext="Cadastrados antes deste dia"
+            subtext="Não assinantes cadastrados antes"
             cardBorder="border-sky-500/40 shadow-sky-500/10"
             iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
             icon={<Repeat className="h-5 w-5" />}
