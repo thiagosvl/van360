@@ -1,10 +1,11 @@
 import { ContractSection } from "@/constants/defaults";
-import { getMessage } from "@/constants/messages";
 import { contratoApi } from "@/services/api/contrato.api";
 import { Contrato, CreateContratoDTO, ImportContratoDTO } from "@/types/contract";
 import { ContractMultaTipo } from "@/types/enums";
+import { getErrorMessage } from "@/utils/errorHandler";
+import { getMessage } from "@/constants/messages";
 import { toast } from "@/utils/notifications/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface UseContratosOptions {
   enabled?: boolean;
@@ -21,8 +22,10 @@ export function useContratos(
       return data;
     },
     enabled: options?.enabled !== false,
+    placeholderData: keepPreviousData,
     staleTime: 3000,
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
     select: (data) => ({
       list: data.data ?? [],
       pagination: data.pagination,
@@ -40,6 +43,7 @@ export function useContratosKPIs(options?: UseContratosOptions) {
     enabled: options?.enabled !== false,
     staleTime: 3000,
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -54,13 +58,10 @@ export function useCreateContrato() {
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["passageiro"] });
-      toast.success("contrato.sucesso.gerado");
+      toast.success("Contrato gerado com sucesso!");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { error?: string } } };
-      const message =
-        err.response?.data?.error || getMessage("contrato.erro.gerar");
-      toast.error(message);
+      toast.error(getErrorMessage(error, "Não foi possível gerar o contrato."));
     },
   });
 }
@@ -79,10 +80,7 @@ export function useImportarContrato() {
       toast.success("Contrato importado com sucesso!");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { error?: string } } };
-      const message =
-        err.response?.data?.error || "Erro ao importar contrato.";
-      toast.error(message);
+      toast.error(getErrorMessage(error, "Erro ao importar contrato."));
     },
   });
 }
@@ -98,13 +96,10 @@ export function useDeleteContrato() {
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["passageiro"] });
-      toast.success("contrato.sucesso.removido");
+      toast.success("Contrato excluído com sucesso!");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { error?: string } } };
-      const message =
-        err.response?.data?.error || getMessage("contrato.erro.excluir");
-      toast.error(message);
+      toast.error(getErrorMessage(error, "Não foi possível excluir o contrato."));
     },
   });
 }
@@ -120,13 +115,10 @@ export function useSubstituirContrato() {
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["passageiro"] });
-      toast.success("contrato.sucesso.substituido");
+      toast.success("Contrato substituído com sucesso!");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { error?: string } } };
-      const message =
-        err.response?.data?.error || getMessage("contrato.erro.substituir");
-      toast.error(message);
+      toast.error(getErrorMessage(error, "Não foi possível substituir o contrato."));
     },
   });
 }
@@ -139,6 +131,7 @@ export interface PreviewConfig {
   jurosAtraso?: { valor: number; tipo: ContractMultaTipo };
   multaRescisao?: { valor: number; tipo: ContractMultaTipo };
   assinaturaCondutorUrl?: string | null;
+  logoCondutorUrl?: string | null;
 }
 
 export function usePreviewContrato() {
@@ -157,4 +150,19 @@ export function usePreviewContrato() {
     },
   });
 }
+
+export function useDownloadContrato() {
+  return useMutation({
+    mutationFn: async (contratoId: string) => {
+      return await contratoApi.downloadContrato(contratoId);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
+      const message =
+        err.response?.data?.error || "Erro ao baixar o contrato.";
+      toast.error(message);
+    },
+  });
+}
+
 

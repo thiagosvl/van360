@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useConfiguracoes } from "@/hooks";
-import { ReceiptText, Navigation, Smartphone, Loader2, Mail, Minus, Plus, CheckCircle2 } from "lucide-react";
+import { ReceiptText, Navigation, Smartphone, Loader2, Mail, Minus, Plus } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 type ConfigKey =
@@ -151,12 +151,14 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
 
         {lembretesPaisAtivos ? (
           <div className="space-y-4">
-            <div className="flex items-start gap-2 bg-slate-50 border border-slate-200/70 rounded-xl p-3 text-[11px] sm:text-xs text-slate-600">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-              <span>
-                Ao registrar o pagamento de uma parcela, os lembretes seguintes <strong>não serão mais enviados</strong>.
-              </span>
-            </div>
+            <Banner
+              variant="info"
+              description={
+                <span>
+                  Ao registrar o pagamento de uma parcela, os lembretes seguintes <strong>não serão mais enviados</strong>.
+                </span>
+              }
+            />
 
             <div className="divide-y divide-slate-100 space-y-3.5 pt-1">
               {/* 1. Lembrete Prévio */}
@@ -222,7 +224,13 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
                       </div>
                     </div>
 
-                    <NotificationChannelsList channels={["app", "email"]} />
+                    <NotificationChannelsList
+                      channels={
+                        configuracoes?.cobranca_aviso_previo_whatsapp_ativo
+                          ? ["whatsapp", "app", "email"]
+                          : ["app", "email"]
+                      }
+                    />
                   </div>
                 )}
               </div>
@@ -352,7 +360,7 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
           <Banner
             variant="warning"
             title="Atenção:"
-            description="O envio automático está desativado. Nenhum lembrete de parcela será enviado para os pais, mesmo que o passageiro esteja com lembretes ativados na carteirinha."
+            description="O envio automático está desativado. Nenhum lembrete de parcela será enviado para os pais, mesmo que o aluno esteja com lembretes ativados na carteirinha."
           />
         )}
       </div>
@@ -388,12 +396,12 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
             <div className="shrink-0">
               <Switch
                 id="switch-notificar-inicio-rota"
-                checked={configuracoes?.notificar_inicio_rota ?? true}
+                checked={configuracoes?.notificar_inicio_rota ?? false}
                 loading={updatingKey === "notificar_inicio_rota"}
                 onCheckedChange={() =>
                   handleToggle(
                     "notificar_inicio_rota",
-                    configuracoes?.notificar_inicio_rota ?? true
+                    configuracoes?.notificar_inicio_rota ?? false
                   )
                 }
               />
@@ -414,12 +422,12 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
             <div className="shrink-0">
               <Switch
                 id="switch-notificar-proxima-parada"
-                checked={configuracoes?.notificar_proxima_parada ?? true}
+                checked={configuracoes?.notificar_proxima_parada ?? false}
                 loading={updatingKey === "notificar_proxima_parada"}
                 onCheckedChange={() =>
                   handleToggle(
                     "notificar_proxima_parada",
-                    configuracoes?.notificar_proxima_parada ?? true
+                    configuracoes?.notificar_proxima_parada ?? false
                   )
                 }
               />
@@ -433,19 +441,19 @@ export const NotificacoesPaisTab = memo(function NotificacoesPaisTab() {
                 Confirmação de embarque e entrega
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
-                Avisa no momento exato em que o passageiro embarca na van ou é entregue.
+                Avisa no momento exato em que o aluno embarca na van ou é entregue.
               </p>
             </div>
 
             <div className="shrink-0">
               <Switch
                 id="switch-notificar-conclusao-parada"
-                checked={configuracoes?.notificar_conclusao_parada ?? true}
+                checked={configuracoes?.notificar_conclusao_parada ?? false}
                 loading={updatingKey === "notificar_conclusao_parada"}
                 onCheckedChange={() =>
                   handleToggle(
                     "notificar_conclusao_parada",
-                    configuracoes?.notificar_conclusao_parada ?? true
+                    configuracoes?.notificar_conclusao_parada ?? false
                   )
                 }
               />

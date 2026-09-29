@@ -1,4 +1,12 @@
-import { RenovacaoMotivoRecusa, RenovacaoReajusteTipo, RenovacaoStatus } from "./enums";
+import { RenovacaoReajusteTipo, RenovacaoStatus } from "./enums";
+
+export interface ListRenovacoesParams {
+  ano_destino?: number;
+  status?: string;
+  escola_id?: string;
+  periodo?: string;
+  search?: string;
+}
 
 export interface RenovacaoKPIs {
   faturamento_atual: number;
@@ -65,10 +73,14 @@ export interface RenovacaoDashboardResponse {
   passageiros: RenovacaoPassageiroItem[];
 }
 
+export type RenovacoesListResponse = RenovacaoDashboardResponse;
+
 export interface ReajusteLotePayload {
   ano_destino: number;
-  tipo: RenovacaoReajusteTipo;
-  valor: number;
+  tipo?: RenovacaoReajusteTipo;
+  tipo_reajuste?: RenovacaoReajusteTipo;
+  valor?: number;
+  valor_reajuste?: number;
   escola_id?: string | null;
   escola_ids?: string[] | null;
   data_inicio_transporte?: string;
@@ -93,9 +105,6 @@ export interface UpdateRenovacaoPayload {
   nova_data_fim_cobranca?: string;
   novo_veiculo_id?: string | null;
   novo_isento?: boolean;
-  motivo_recusa?: RenovacaoMotivoRecusa | null;
-  justificativa_recusa?: string | null;
-  quem_recusou?: "motorista" | "responsavel" | null;
 }
 
 export interface VirarAnoLetivoPayload {

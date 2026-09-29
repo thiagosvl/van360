@@ -38,5 +38,12 @@ export const contratoApi = {
       responseType: 'blob',
     });
     return data;
+  },
+
+  downloadContrato: async (contratoId: string) => {
+    const { data } = await apiClient.get(`/contratos/${contratoId}/download`, {
+      responseType: 'blob',
+    });
+    return data as Blob;
   }
 };

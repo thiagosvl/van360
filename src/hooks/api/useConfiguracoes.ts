@@ -5,6 +5,7 @@ import { toast } from "sonner";
 export interface ConfiguracoesUsuario {
   notificar_pais_cobrancas: boolean;
   cobranca_aviso_previo_ativo: boolean;
+  cobranca_aviso_previo_whatsapp_ativo?: boolean;
   cobranca_dias_aviso_previo: number | null;
   cobranca_vencimento_hoje_ativo: boolean;
   cobranca_atraso_3_dias_ativo: boolean;

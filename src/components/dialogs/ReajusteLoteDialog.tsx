@@ -512,7 +512,7 @@ export function ReajusteLoteDialog({
             label="Aplicar"
             variant="primary"
             type="submit"
-            loading={reajusteMutation.isPending}
+            isLoading={reajusteMutation.isPending}
             disabled={
               reajusteMutation.isPending ||
               selectedEscolaIds.length === 0 ||

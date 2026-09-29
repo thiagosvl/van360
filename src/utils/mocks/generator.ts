@@ -95,7 +95,7 @@ const escolas = [
     complemento: "",
   },
   {
-    nome: "Escola Municipal Menino Jesus De Praga",
+    nome: "Menino Jesus De Praga",
     cep: "01310-100",
     logradouro: "Avenida Paulista",
     numero: "1578",
@@ -369,6 +369,10 @@ export const generateTurma = (): string => {
   return turmas[randomNumber(0, turmas.length - 1)];
 };
 
+export const generateSala = (): string => {
+  const salas = ["Sala 1", "Sala 2", "Sala 3B", "Sala 4", "Sala 12", "Sala 15"];
+  return salas[randomNumber(0, salas.length - 1)];
+};
 
 export const generateProfessor = (): string => {
   return "Claudia";
@@ -447,7 +451,7 @@ export const mockGenerator = {
       ...overrides,
     };
   },
-  passenger: (overrides?: Record<string, unknown>) => {
+  passenger: (overrides?: Partial<{ escola_id: string; veiculo_id: string } & Record<string, unknown>>) => {
     const name = generateName();
     const address = generateAddress();
     return {
@@ -457,11 +461,13 @@ export const mockGenerator = {
         id: generateUUID(),
         nome: generateName(),
         telefone: "(11) 95118-6951",
-        cpf: generateCPF(),
+        cpf: '395.423.918-38',
         email: "thiago-svl@hotmail.com",
         parentesco: randomEnum(ParentescoResponsavel),
         ...address,
       },
+      escola_id: overrides?.escola_id || "",
+      veiculo_id: overrides?.veiculo_id || "",
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
       ativo: true,
@@ -469,12 +475,16 @@ export const mockGenerator = {
 
       // New fields from Schema/Enums
       turma: generateTurma(),
+      sala: generateSala(),
       nome_professor: generateProfessor(),
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),
       data_nascimento: generateDate(2010, 2020), // 4-14 years old
       data_inicio_transporte: generateDate(2024, 2026),
       data_fim_transporte: generateDate(2024, 2026),
+      ano_letivo: new Date().getFullYear().toString(),
+      ano_inicio_cobranca: new Date().getFullYear().toString(),
+      ano_fim_cobranca: new Date().getFullYear().toString(),
       mes_inicio_cobranca: "1",
       mes_fim_cobranca: "12",
 

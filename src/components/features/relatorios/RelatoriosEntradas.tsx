@@ -3,7 +3,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { KPICardVariant } from "@/types/enums";
 import { formatCurrency } from "@/utils/formatters";
-import { Coins, TrendingUp, CreditCard, Wallet } from "lucide-react";
+import { Coins, TrendingUp, CreditCard, Wallet, Calendar } from "lucide-react";
 
 interface RelatoriosEntradasProps {
   dados: {
@@ -17,6 +17,13 @@ interface RelatoriosEntradasProps {
       count?: number;
       percentual: number;
       color: string;
+    }[];
+    vencimentosPorDia?: {
+      dia: number;
+      titulo: string;
+      valor: number;
+      count: number;
+      percentual: number;
     }[];
   };
 }
@@ -57,47 +64,92 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
       </div>
 
       {/* Formas de Pagamento */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
-        <div className="pt-6 px-6 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
-            <CreditCard className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
+          <div className="pt-6 px-6 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+              <CreditCard className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+            </div>
+            <h3 className="text-[13px] font-bold text-slate-800">
+              Formas de Pagamento
+            </h3>
           </div>
-          <h3 className="text-[13px] font-bold text-slate-800">
-            Formas de Pagamento
-          </h3>
-        </div>
-        <div className="p-6 pt-4 space-y-6">
-          <div className="space-y-4">
-            {dados.formasPagamento.map((forma, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-end">
-                  <div className="flex flex-col">
-                    <span className="text-[12px] font-medium text-slate-600">
-                      {forma.metodo}
-                    </span>
-                    <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
-                      {formatCurrency(forma.valor)}
+          <div className="p-6 pt-4 space-y-6">
+            <div className="space-y-4">
+              {dados.formasPagamento.map((forma, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-medium text-slate-600">
+                        {forma.metodo}
+                      </span>
+                      <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                        {formatCurrency(forma.valor)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black text-slate-400 mb-1">
+                      {forma.count !== undefined
+                        ? `${forma.count} ${forma.count === 1 ? "parcela" : "parcelas"} (${Math.round(forma.percentual)}%)`
+                        : `${Math.round(forma.percentual)}%`}
                     </span>
                   </div>
-                  <span className="text-[10px] font-black text-slate-400 mb-1">
-                    {forma.count !== undefined
-                      ? `${forma.count} ${forma.count === 1 ? "parcela" : "parcelas"} (${Math.round(forma.percentual)}%)`
-                      : `${Math.round(forma.percentual)}%`}
-                  </span>
+                  <Progress
+                    value={Math.max(2, forma.percentual)}
+                    className="h-2 bg-slate-50 rounded-full"
+                    indicatorClassName="bg-[#1a3a5c] rounded-full"
+                  />
                 </div>
-                <Progress
-                  value={Math.max(2, forma.percentual)}
-                  className="h-2 bg-slate-50 rounded-full"
-                  indicatorClassName="bg-[#1a3a5c] rounded-full"
-                />
-              </div>
-            ))}
+              ))}
 
-            {dados.formasPagamento.length === 0 && (
-              <div className="text-center py-8 text-slate-500 text-[13px]">
-                Nenhum pagamento registrado no mês selecionado.
-              </div>
-            )}
+              {dados.formasPagamento.length === 0 && (
+                <div className="text-center py-8 text-slate-500 text-[13px]">
+                  Nenhum pagamento registrado no mês selecionado.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
+          <div className="pt-6 px-6 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-100/60 transition-all duration-300">
+              <Calendar className="h-5 w-5 opacity-80" />
+            </div>
+            <h3 className="text-[13px] font-bold text-slate-800">
+              Recebimentos por Dia de Vencimento
+            </h3>
+          </div>
+          <div className="p-6 pt-4 space-y-6">
+            <div className="space-y-4">
+              {dados.vencimentosPorDia && dados.vencimentosPorDia.map((item) => (
+                <div key={item.dia} className="space-y-2">
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-medium text-slate-600">
+                        {item.titulo}
+                      </span>
+                      <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                        {formatCurrency(item.valor)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black text-slate-400 mb-1">
+                      {item.count} {item.count === 1 ? "aluno" : "alunos"} ({Math.round(item.percentual)}%)
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.max(2, item.percentual)}
+                    className="h-2 bg-slate-50 rounded-full"
+                    indicatorClassName="bg-[#1a3a5c] rounded-full"
+                  />
+                </div>
+              ))}
+
+              {(!dados.vencimentosPorDia || dados.vencimentosPorDia.length === 0) && (
+                <div className="text-center py-8 text-slate-500 text-[13px]">
+                  Nenhum vencimento com valor registrado para alunos ativos.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

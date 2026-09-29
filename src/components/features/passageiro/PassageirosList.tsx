@@ -74,11 +74,13 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           <p className="text-[10px] text-gray-500 font-medium opacity-60">
             {schoolName}
           </p>
-          {(passageiro.periodo || passageiro.turma) && (
+          {(passageiro.periodo || passageiro.turma || passageiro.sala) && (
             <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
               {passageiro.periodo && <span>{formatPeriodo(passageiro.periodo)}</span>}
               {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
               {passageiro.turma && <span>{passageiro.turma}</span>}
+              {(passageiro.periodo || passageiro.turma) && passageiro.sala && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
+              {passageiro.sala && <span>Sala {passageiro.sala}</span>}
             </p>
           )}
         </div>
@@ -201,11 +203,13 @@ export function PassageirosList({
                       >
                         {passageiro.escola?.nome}
                       </span>
-                      {(passageiro.periodo || passageiro.turma) && (
+                      {(passageiro.periodo || passageiro.turma || passageiro.sala) && (
                         <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
                           {passageiro.periodo && <span>{formatPeriodo(passageiro.periodo)}</span>}
                           {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
                           {passageiro.turma && <span>{passageiro.turma}</span>}
+                          {(passageiro.periodo || passageiro.turma) && passageiro.sala && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
+                          {passageiro.sala && <span>Sala {passageiro.sala}</span>}
                         </p>
                       )}
                     </div>

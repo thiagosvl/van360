@@ -6,7 +6,7 @@ interface RouteTimelineSkeletonProps {
 
 export function RouteTimelineSkeleton({ count = 4 }: RouteTimelineSkeletonProps) {
   return (
-    <div className="space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto px-4">
+    <div className="space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto w-full">
       {/* Header Card Skeleton */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div className="flex items-center justify-between gap-2">

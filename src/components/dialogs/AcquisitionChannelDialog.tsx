@@ -3,16 +3,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "@/hooks/business/useSession";
 import { CanalAquisicao } from "@/types/enums";
-import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
+import { CanalAquisicaoLabels, CANAL_AQUISICAO_ORDERED_OPTIONS } from "@/utils/acquisition-channel.utils";
 import { isMotoristaTitular } from "@/utils/userUtils";
-import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Megaphone } from "lucide-react";
-import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useProfile } from "@/hooks/business/useProfile";
+import { safeCloseDialog } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { Usuario } from "@/types/usuario";
 
 interface AcquisitionChannelDialogProps {
   isOpen: boolean;
@@ -28,6 +31,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function AcquisitionChannelDialog({ isOpen, onClose }: AcquisitionChannelDialogProps) {
+  const queryClient = useQueryClient();
   const { user } = useSession();
   const { profile, refreshProfile } = useProfile(user?.id);
 
@@ -37,30 +41,36 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
     resolver: zodResolver(formSchema),
   });
 
-  const handleSubmit = async (data: FormData) => {
+  const handleDismiss = () => {
     try {
-      if (!profile?.id || !isTitular) {
-        onClose();
-        return;
-      }
-      await usuarioApi.atualizarCanalAquisicao(profile.id, data.canal_aquisicao);
-      toast.success("Obrigado por responder!", {
-        description: "Sua resposta nos ajuda a melhorar.",
-      });
-      await refreshProfile();
-      onClose();
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar a resposta.";
-      toast.error("Erro ao salvar", { description: errorMessage });
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(STORAGE_KEYS.ACQUISITION_CHANNEL_DISMISSED_DATE, today);
+    } catch {
+      // noop
     }
+    safeCloseDialog(onClose);
   };
 
-  const onFormError = () => {
-    toast.error("validacao.formularioComErros");
+  const handleSubmit = (data: FormData) => {
+    if (profile?.id && isTitular) {
+      queryClient.setQueryData<Usuario>(["profile"], (old) =>
+        old ? { ...old, canal_aquisicao: data.canal_aquisicao } : old
+      );
+
+      usuarioApi
+        .atualizarCanalAquisicao(profile.id, data.canal_aquisicao)
+        .then(() => refreshProfile())
+        .catch(() => {});
+    }
+    safeCloseDialog(onClose);
   };
+
+  const onFormError = () => {};
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) return;
+    if (!open) {
+      handleDismiss();
+    }
   };
 
   if (profile && !isTitular) {
@@ -68,15 +78,15 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
   }
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={handleOpenChange} lockClose>
+    <BaseDialog open={isOpen} onOpenChange={handleOpenChange}>
       <BaseDialog.Header
         title="Como você conheceu o Van360?"
         icon={<Megaphone className="w-5 h-5" />}
-      // onClose={onClose} // Removido para não ter botão de fechar (X)
+        onClose={handleDismiss}
       />
       <BaseDialog.Body>
         <div className="mb-6 mt-2 text-sm text-slate-600">
-          Obrigado por se juntar a nós! Para nos ajudar a melhorar, conta pra gente rapidinho: como você conheceu o aplicativo?
+          Conta pra gente rapidinho: por onde você ouviu falar ou encontrou o aplicativo pela primeira vez?
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-6">
@@ -95,9 +105,9 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.entries(CanalAquisicaoLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
+                      {CANAL_AQUISICAO_ORDERED_OPTIONS.map((channelKey) => (
+                        <SelectItem key={channelKey} value={channelKey}>
+                          {CanalAquisicaoLabels[channelKey]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -111,9 +121,13 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
       </BaseDialog.Body>
       <BaseDialog.Footer>
         <BaseDialog.Action
-          label="Salvar"
+          label="Agora não"
+          variant="outline"
+          onClick={handleDismiss}
+        />
+        <BaseDialog.Action
+          label="Confirmar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
-          isLoading={form.formState.isSubmitting}
         />
       </BaseDialog.Footer>
     </BaseDialog>

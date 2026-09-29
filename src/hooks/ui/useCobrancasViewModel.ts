@@ -4,14 +4,15 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { useCobrancas, useDeleteCobranca, useFilters } from "@/hooks";
-import { CobrancaTab } from "@/types/enums";
+import { useCobrancas, useCreateCobranca, useDeleteCobranca, useFilters } from "@/hooks";
+import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 
 import { getNowBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
+import { normalizeSearchText } from "@/utils/string";
 
 export function useCobrancasViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -29,8 +30,9 @@ export function useCobrancasViewModel() {
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
+  const createCobranca = useCreateCobranca();
   const deleteCobranca = useDeleteCobranca();
-  const isActionLoading = deleteCobranca.isPending;
+  const isActionLoading = deleteCobranca.isPending || createCobranca.isPending;
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -148,11 +150,11 @@ export function useCobrancasViewModel() {
     });
 
     if (debouncedSearchTerm.trim()) {
-      const term = debouncedSearchTerm.toLowerCase();
+      const term = normalizeSearchText(debouncedSearchTerm);
       return sorted.filter(
         (c) =>
-          c.passageiro?.nome?.toLowerCase().includes(term) ||
-          c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
+          normalizeSearchText(c.passageiro?.nome).includes(term) ||
+          normalizeSearchText(c.passageiro?.responsavel_principal?.nome).includes(term)
       );
     }
 
@@ -178,11 +180,11 @@ export function useCobrancasViewModel() {
     });
 
     if (debouncedSearchTerm.trim()) {
-      const term = debouncedSearchTerm.toLowerCase();
+      const term = normalizeSearchText(debouncedSearchTerm);
       return sorted.filter(
         (c) =>
-          c.passageiro?.nome?.toLowerCase().includes(term) ||
-          c.passageiro?.responsavel_principal?.nome?.toLowerCase().includes(term)
+          normalizeSearchText(c.passageiro?.nome).includes(term) ||
+          normalizeSearchText(c.passageiro?.responsavel_principal?.nome).includes(term)
       );
     }
 
@@ -195,9 +197,26 @@ export function useCobrancasViewModel() {
     setPageTitle("Parcelas");
   }, [setPageTitle]);
 
+  const saldoParcialRecebidas = useMemo(() => {
+    return cobrancasRecebidas.reduce((acc, curr) => {
+      const pago = Number(curr.valor_pago ?? curr.valor ?? 0);
+      const total = Number(curr.valor || 0);
+      return acc + (pago < total ? total - pago : 0);
+    }, 0);
+  }, [cobrancasRecebidas]);
+
+  const saldoParcialAtrasadas = useMemo(() => {
+    return cobrancasRecebidas.reduce((acc, curr) => {
+      if (!checkCobrancaEmAtraso(curr.data_vencimento)) return acc;
+      const pago = Number(curr.valor_pago ?? curr.valor ?? 0);
+      const total = Number(curr.valor || 0);
+      return acc + (pago < total ? total - pago : 0);
+    }, 0);
+  }, [cobrancasRecebidas]);
+
   const totalAReceber = useMemo(
-    () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0),
-    [cobrancasAReceber]
+    () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialRecebidas,
+    [cobrancasAReceber, saldoParcialRecebidas]
   );
 
   const totalRecebido = useMemo(
@@ -208,8 +227,8 @@ export function useCobrancasViewModel() {
   const totalAtrasado = useMemo(
     () => cobrancasAReceber
       .filter((c) => checkCobrancaEmAtraso(c.data_vencimento))
-      .reduce((acc, curr) => acc + Number(curr.valor), 0),
-    [cobrancasAReceber]
+      .reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialAtrasadas,
+    [cobrancasAReceber, saldoParcialAtrasadas]
   );
 
   const totalPrevisto = totalAReceber + totalRecebido;
@@ -219,28 +238,37 @@ export function useCobrancasViewModel() {
     (cobranca: Cobranca) => {
       openCobrancaEditDialog({
         cobranca,
-        onSuccess: () => refetchCobrancas(),
       });
     },
-    [openCobrancaEditDialog, refetchCobrancas]
+    [openCobrancaEditDialog]
   );
 
   const handleDeleteCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
         onConfirm: async () => {
-          await deleteCobranca.mutateAsync(cobranca.id);
-          refetchCobrancas();
+          if (cobranca.isProjection) {
+            await createCobranca.mutateAsync({
+              passageiro_id: cobranca.passageiro_id,
+              usuario_id: profile?.id,
+              mes: Number(cobranca.mes),
+              ano: Number(cobranca.ano),
+              valor: Number(cobranca.valor),
+              data_vencimento: cobranca.data_vencimento,
+              status: CobrancaStatus.CANCELADA,
+            });
+          } else {
+            await deleteCobranca.mutateAsync(cobranca.id);
+          }
         },
-        onEdit: () => {
+        onEdit: cobranca.isProjection ? undefined : () => {
           openCobrancaEditDialog({
             cobranca,
-            onSuccess: () => refetchCobrancas(),
           });
         }
       });
     },
-    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas]
+    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, profile?.id]
   );
 
   const openPaymentDialog = useCallback(
@@ -252,12 +280,10 @@ export function useCobrancasViewModel() {
         valorOriginal: Number(cobranca.valor),
         status: cobranca.status,
         dataVencimento: cobranca.data_vencimento,
-        onPaymentRecorded: () => {
-          refetchCobrancas();
-        },
+        observacao: cobranca.observacao,
       });
     },
-    [openManualPaymentDialog, refetchCobrancas]
+    [openManualPaymentDialog]
   );
 
 

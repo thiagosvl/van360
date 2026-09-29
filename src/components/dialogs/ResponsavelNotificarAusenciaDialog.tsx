@@ -12,6 +12,7 @@ import { responsavelApi } from "@/services/api/responsavel.api";
 import { ResponsavelRotaItem } from "@/types/responsavel";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface ResponsavelNotificarAusenciaDialogProps {
   open: boolean;
@@ -59,7 +60,7 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
   }, [open, rotas, rotaId]);
 
   const handleClose = () => {
-    onOpenChange(false);
+    safeCloseDialog(() => onOpenChange(false));
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {

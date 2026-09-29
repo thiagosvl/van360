@@ -66,7 +66,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
       {/* KPIs Secundários */}
       <div className="grid grid-cols-2 gap-4">
         <KPICard
-          label="Custo Médio por Passageiro"
+          label="Custo Médio por Aluno"
           icon={Users}
           variant={KPICardVariant.OUTLINE}
           value={formatCurrency(dados.custoPorPassageiro)}

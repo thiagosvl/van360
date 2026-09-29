@@ -1,7 +1,7 @@
 import { escolaApi } from "@/services/api/escola.api";
 import { FilterDefaults } from "@/types/enums";
 import { Escola } from "@/types/escola";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 export interface UseEscolasFilters {
@@ -37,6 +37,7 @@ export function useEscolas(
   const query = useQuery({
     queryKey,
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,

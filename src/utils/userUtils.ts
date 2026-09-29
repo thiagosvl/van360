@@ -8,7 +8,7 @@ export function isMotoristaTitular(user?: UserLike): boolean {
 }
 
 export function isSubConta(user?: UserLike): boolean {
-  return Boolean(user?.conta_pai_id);
+  return Boolean(user?.conta_pai_id) || user?.tipo === UserType.MOTORISTA_AUXILIAR || user?.tipo === UserType.MONITOR;
 }
 
 export function isMotoristaAuxiliar(user?: UserLike): boolean {

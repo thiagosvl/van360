@@ -19,16 +19,17 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     queryFn: () => routeApi.getExecucao(execucaoId),
     enabled: !isExplicitPreview && !!execucaoId,
     staleTime: 1000 * 30,
-    retry: false,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     refetchInterval: false
   });
 
   const routeQuery = useQuery({
     queryKey: ["route-detail", execucaoId],
     queryFn: () => routeApi.getRoute(execucaoId),
-    enabled: (isExplicitPreview || !!execQuery.isError) && !!execucaoId,
+    enabled: isExplicitPreview && !!execucaoId,
     staleTime: 1000 * 60 * 2,
-    retry: false,
+    retry: 1,
   });
   const stepMutation = useAtualizarParadaStatus();
   const reorderMutation = useReordenarExecucao();
@@ -36,7 +37,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
   const finalizarMutation = useFinalizarExecucao();
   const iniciarMutation = useIniciarRota();
 
-  const isPreview = isExplicitPreview || (!!execQuery.isError && !!routeQuery.data);
+  const isPreview = isExplicitPreview;
 
   let execucao: RouteExecution | undefined = undefined;
   let paradas: RouteExecutionPassenger[] = [];
@@ -87,7 +88,7 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
 
   const isDataLoading = isExplicitPreview
     ? (routeQuery.isLoading || (!!targetVeiculoId && isLoadingActiveVeiculo))
-    : (execQuery.isLoading || (execQuery.isError && (routeQuery.isLoading || (!!targetVeiculoId && isLoadingActiveVeiculo))));
+    : execQuery.isLoading;
   const isStartingRoute = iniciarMutation.isPending;
 
   const refetch = () => {
@@ -159,8 +160,8 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
     isStepping: stepMutation.isPending,
     isFinalizing: finalizarMutation.isPending,
     isReordering: reorderMutation.isPending,
-    isFetching: execQuery.isFetching || routeQuery.isFetching,
-    isError: isExplicitPreview ? routeQuery.isError : (execQuery.isError && routeQuery.isError),
+    isFetching: isExplicitPreview ? routeQuery.isFetching : execQuery.isFetching,
+    isError: isExplicitPreview ? routeQuery.isError : execQuery.isError,
     handleStep,
     handleFinalizarRota,
     handleReordenar,

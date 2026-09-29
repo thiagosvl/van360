@@ -13,7 +13,22 @@ export const STORAGE_KEYS = {
   RESPONSAVEL_TOKEN: "@van360:responsavel_token",
   RESPONSAVEL_PASSAGEIRO_ID: "@van360:responsavel_passageiro_id",
   DISMISS_NATIVE_UPDATE_PROMPT: "van360_dismiss_native_update_prompt",
-  PENDING_UPDATE: "pendingUpdate"
+  PENDING_UPDATE: "pendingUpdate",
+  BOTTOM_NAV_PREFERENCES: "van360:mobile_bottom_nav",
+  GUIDE_PASSAGEIROS_DISMISSED: "van360_guide_dismissed_passageiros",
+  GUIDE_GASTOS_DISMISSED: "van360_guide_dismissed_gastos",
+  GUIDE_RELATORIOS_DISMISSED: "van360_guide_dismissed_relatorios",
+  GUIDE_COBRANCAS_DISMISSED: "van360_guide_dismissed_cobrancas",
+  GUIDE_CONTRATOS_DISMISSED: "van360_guide_dismissed_contratos",
+  GUIDE_CARTEIRINHA_DISMISSED: "van360_guide_dismissed_carteirinha",
+  PENDING_DEEP_LINK: "van360_pending_deep_link",
+  ACQUISITION_CHANNEL_DISMISSED_DATE: "van360:acquisition_channel_dismissed_date",
+  LAST_APP_OPEN_TIMESTAMP: "van360_last_app_open_timestamp",
+  DISMISS_QUICK_REGISTRATION_ALUNOS: "van360:dismiss:quick-registration-alunos",
+  DISMISS_QUICK_REGISTRATION_HOME: "van360:dismiss:quick-registration-home",
+  DISMISS_DEMONSTRACOES_HOME: "van360:dismiss:demonstracoes-home",
+  REFERRAL_CODE: "van360_referral_code",
+  JUST_REGISTERED: "van360_just_registered",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */
@@ -21,4 +36,7 @@ export function getWhatsAppUrl(message = "Olá, preciso de ajuda com o Van360") 
   return `https://wa.me/${WHATSAPP_SUPORTE}?text=${encodeURIComponent(message)}`;
 }
 
+export const BUCKET_LOGOS = "logos" as const;
+
 export * from "./navigation";
+export * from "./tutorials";

@@ -3,6 +3,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Form,
     FormControl,
@@ -68,6 +69,7 @@ export interface CobrancaFormContentProps {
     isSubmitting?: boolean;
     lockFoiPago?: boolean;
     lockMesAno?: boolean;
+    availableMonths?: number[];
 }
 
 export function CobrancaFormContent({
@@ -80,6 +82,7 @@ export function CobrancaFormContent({
     isSubmitting = false,
     lockFoiPago = false,
     lockMesAno = false,
+    availableMonths,
 }: CobrancaFormContentProps) {
     const isPaga = form.watch("foi_pago");
     const mesSelecionado = form.watch("mes");
@@ -173,11 +176,10 @@ export function CobrancaFormContent({
                                     </FormControl>
                                     <SelectContent className="max-h-60">
                                         {(() => {
-                                            const filtered = mode === "create" && !lockFoiPago
-                                                ? meses.filter((m) => Number(m.value) < getNowBR().getMonth() + 1)
+                                            const options = availableMonths && availableMonths.length > 0
+                                                ? meses.filter((m) => availableMonths.includes(Number(m.value)))
                                                 : meses;
-                                            const finalOptions = filtered.length > 0 ? filtered : meses;
-                                            return finalOptions.map((m) => (
+                                            return options.map((m) => (
                                                 <SelectItem key={m.value} value={m.value}>
                                                     {m.label}
                                                 </SelectItem>
@@ -422,12 +424,52 @@ export function CobrancaFormContent({
                             </FormItem>
                         )}
                     />
-                    <Banner
-                        variant="info"
-                        description="O responsável receberá uma notificação no aplicativo e poderá acessar o recibo diretamente pela carteirinha."
+                    <FormField
+                        control={form.control}
+                        name="enviar_recibo_whatsapp_manual"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                                <div className="flex items-center gap-3">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                    </FormControl>
+                                    <div className="flex-1 space-y-1 leading-none">
+                                        <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
+                                            Enviar Recibo no WhatsApp
+                                        </FormLabel>
+                                    </div>
+                                </div>
+                                <FormMessage className="pt-2" />
+                            </FormItem>
+                        )}
                     />
                 </div>
             )}
+
+            <FormField
+                control={form.control}
+                name="observacao"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                        </FormLabel>
+                        <FormControl>
+                            <Textarea
+                                placeholder="Anotações internas sobre esta parcela..."
+                                className="min-h-[70px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                                {...field}
+                                value={field.value || ""}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
             {!hideButtons && (
                 <div className="flex gap-4 pt-4">
@@ -449,7 +491,7 @@ export function CobrancaFormContent({
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                             </>
-                        ) : mode === "create" ? "Regoistrar Parcela" : "Salvar Alterações"}
+                        ) : mode === "create" ? "Registrar Parcela" : "Salvar Alterações"}
                     </Button>
                 </div>
             )}

@@ -18,6 +18,7 @@ import {
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Veiculo } from "@/types/veiculo";
+import { Usuario } from "@/types/usuario";
 import { cn } from "@/lib/utils";
 
 import {

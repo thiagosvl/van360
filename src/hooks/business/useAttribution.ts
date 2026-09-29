@@ -6,6 +6,11 @@ export interface UtmParams {
   campaign?: string;
   content?: string;
   term?: string;
+  gclid?: string;
+  fbclid?: string;
+  wbraid?: string;
+  gbraid?: string;
+  ttclid?: string;
 }
 
 export interface AttributionData {
@@ -29,7 +34,6 @@ export function clearStoredAttribution(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // Ignorar erros em ambiguidades de storage
   }
 }
 
@@ -43,12 +47,27 @@ export function useAttribution(): void {
     const utmCampaign = urlParams.get("utm_campaign");
     const utmContent = urlParams.get("utm_content");
     const utmTerm = urlParams.get("utm_term");
+    const gclid = urlParams.get("gclid");
+    const fbclid = urlParams.get("fbclid");
+    const wbraid = urlParams.get("wbraid");
+    const gbraid = urlParams.get("gbraid");
+    const ttclid = urlParams.get("ttclid");
 
-    const hasUtm = Boolean(utmSource || utmMedium || utmCampaign || utmContent || utmTerm);
+    const hasUtm = Boolean(
+      utmSource || utmMedium || utmCampaign || utmContent || utmTerm || gclid || fbclid || wbraid || gbraid || ttclid
+    );
     const rawReferrer = document.referrer || undefined;
-    const isExternalReferrer = Boolean(rawReferrer && !rawReferrer.startsWith(window.location.origin));
+    const isInternalReferrer = Boolean(
+      rawReferrer && (
+        rawReferrer.startsWith(window.location.origin) ||
+        rawReferrer.includes("app.van360.com.br") ||
+        rawReferrer.includes("localhost") ||
+        rawReferrer.includes("capacitor://")
+      )
+    );
+    const validRawReferrer = isInternalReferrer ? undefined : rawReferrer;
 
-    if (hasUtm || rawReferrer) {
+    if (hasUtm || validRawReferrer) {
       const existing = getStoredAttribution() || {};
 
       const utm: UtmParams = {
@@ -57,15 +76,19 @@ export function useAttribution(): void {
         campaign: utmCampaign || existing.utm?.campaign,
         content: utmContent || existing.utm?.content,
         term: utmTerm || existing.utm?.term,
+        gclid: gclid || existing.utm?.gclid,
+        fbclid: fbclid || existing.utm?.fbclid,
+        wbraid: wbraid || existing.utm?.wbraid,
+        gbraid: gbraid || existing.utm?.gbraid,
+        ttclid: ttclid || existing.utm?.ttclid,
       };
 
-      // Remover chaves undefined
       Object.keys(utm).forEach((key) => {
         const k = key as keyof UtmParams;
         if (!utm[k]) delete utm[k];
       });
 
-      const referrer = isExternalReferrer ? rawReferrer : (existing.referrer || (rawReferrer ? rawReferrer : undefined));
+      const referrer = validRawReferrer || existing.referrer;
 
       const updated: AttributionData = {
         utm: Object.keys(utm).length > 0 ? utm : undefined,
@@ -75,7 +98,6 @@ export function useAttribution(): void {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       } catch {
-        // Ignorar erros em ambiguidades de storage
       }
     }
   }, []);

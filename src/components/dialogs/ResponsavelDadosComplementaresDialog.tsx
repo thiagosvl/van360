@@ -7,16 +7,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { cpfMask } from "@/utils/masks";
-import { isValidCEPFormat } from "@/utils/validators";
+import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { Mail, UserCheck, IdCard, MapPin } from "lucide-react";
 import { responsavelApi } from "@/services/api/responsavel.api";
 import { toast } from "sonner";
-import { cpfCnpjSchema } from "@/schemas/common";
 import { FormEnderecoFields } from "@/components/forms/FormEnderecoFields";
 
 const complementaresSchema = z.object({
-  cpf: cpfCnpjSchema,
-  email: z.string().min(1, "E-mail é obrigatório").email("Digite um endereço de e-mail válido."),
+  cpf: z.string().optional().nullable().or(z.literal("")),
+  email: z.string().optional().nullable().or(z.literal("")),
   cep: z.string().optional().nullable().or(z.literal("")),
   logradouro: z.string().optional().nullable().or(z.literal("")),
   numero: z.string().optional().nullable().or(z.literal("")),
@@ -44,7 +43,7 @@ interface ResponsavelDadosComplementaresDialogProps {
   initialEstado?: string;
   initialReferencia?: string;
   token: string;
-  onSuccess: () => void;
+  onSuccess: () => void | Promise<void>;
 }
 
 export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComplementaresDialogProps> = ({
@@ -65,10 +64,30 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
   onSuccess
 }) => {
   const [loading, setLoading] = React.useState(false);
+
+  const needsCpf = !initialCpf || initialCpf.trim() === "";
+  const needsEmail = !initialEmail || initialEmail.trim() === "";
   const needsAddress = !initialLogradouro || initialLogradouro.trim() === "" || !initialCep || initialCep.trim() === "";
+  const needsPersonalData = needsCpf || needsEmail;
 
   const validationSchema = React.useMemo(() => {
     return complementaresSchema.superRefine((data, ctx) => {
+      if (needsCpf) {
+        if (!data.cpf || !data.cpf.trim()) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "CPF é obrigatório", path: ["cpf"] });
+        } else if (!isValidCPF(data.cpf)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "CPF inválido", path: ["cpf"] });
+        }
+      }
+
+      if (needsEmail) {
+        if (!data.email || !data.email.trim()) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "E-mail é obrigatório", path: ["email"] });
+        } else if (!z.string().email().safeParse(data.email.trim()).success) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Digite um endereço de e-mail válido.", path: ["email"] });
+        }
+      }
+
       if (needsAddress) {
         if (!data.cep || !data.cep.trim()) {
           ctx.addIssue({ code: z.ZodIssueCode.custom, message: "CEP é obrigatório", path: ["cep"] });
@@ -92,7 +111,7 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
         }
       }
     });
-  }, [needsAddress]);
+  }, [needsCpf, needsEmail, needsAddress]);
 
   const form = useForm<ComplementaresFormValues>({
     resolver: zodResolver(validationSchema),
@@ -142,7 +161,9 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
   ]);
 
   const handleSubmit = async (values: ComplementaresFormValues) => {
-    const cleanCpf = values.cpf.replace(/\D/g, "");
+    const cleanCpf = values.cpf ? values.cpf.replace(/\D/g, "") : (initialCpf ? initialCpf.replace(/\D/g, "") : undefined);
+    const emailValue = values.email ? values.email.trim() : (initialEmail ? initialEmail.trim() : undefined);
+
     setLoading(true);
 
     try {
@@ -150,8 +171,8 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
         passageiroId,
         token,
         {
-          cpf: cleanCpf,
-          email: values.email,
+          ...(cleanCpf ? { cpf: cleanCpf } : {}),
+          ...(emailValue ? { email: emailValue } : {}),
           ...(needsAddress ? {
             cep: values.cep ? values.cep.replace(/\D/g, "") : null,
             logradouro: values.logradouro ? values.logradouro.trim() : null,
@@ -164,10 +185,11 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
           } : {})
         }
       );
-      onSuccess();
+      await onSuccess();
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
       toast.error(errorObj.response?.data?.message || "Erro ao salvar dados cadastrais.");
+    } finally {
       setLoading(false);
     }
   };
@@ -183,98 +205,94 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
         <Form {...form}>
           <form id="form-dados-complementares" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 py-2 text-left">
             <Banner
-              variant="info"
-              description={
-                <span>
-                  {needsAddress ? (
-                    <>
-                      Para prosseguir para a carteirinha do(a) <strong>{passageiroNome}</strong>, confirme ou preencha os <strong>seus dados pessoais e endereço de embarque/desembarque</strong>.
-                    </>
-                  ) : (
-                    <>
-                      Para prosseguir para a carteirinha do(a) <strong>{passageiroNome}</strong>, confirme ou preencha os <strong>seus dados pessoais (CPF e E-mail)</strong>.
-                    </>
-                  )}
-                </span>
-              }
+              variant="warning"
+              title="Por favor, complete as informações pendentes do seu cadastro para continuar."
             />
 
-            <section className="space-y-3">
-              <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                  <UserCheck className="w-4.5 h-4.5" />
+            {needsPersonalData && (
+              <section className="space-y-3">
+                <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
+                  <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+                    <UserCheck className="w-4.5 h-4.5" />
+                  </div>
+                  Dados Pessoais
                 </div>
-                Dados Pessoais
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="cpf"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Seu CPF <span className="text-red-600">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <IdCard className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder="000.000.000-00"
-                            onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                            className="pl-12 h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-slate-700 font-medium"
-                            disabled={loading}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-xs text-red-500 font-medium ml-1 mt-1.5" />
-                    </FormItem>
+                <div className={`grid gap-4 ${needsCpf && needsEmail ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+                  {needsCpf && (
+                    <FormField
+                      control={form.control}
+                      name="cpf"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Seu CPF <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <IdCard className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                type="text"
+                                placeholder="000.000.000-00"
+                                onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                                className="pl-12 h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-slate-700 font-medium"
+                                disabled={loading}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-xs text-red-500 font-medium ml-1 mt-1.5" />
+                        </FormItem>
+                      )}
+                    />
                   )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Seu E-mail <span className="text-red-600">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <Input
-                            {...field}
-                            type="email"
-                            placeholder="seu.email@exemplo.com"
-                            className="pl-12 h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-slate-700 font-medium"
-                            disabled={loading}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-xs text-red-500 font-medium ml-1 mt-1.5" />
-                    </FormItem>
+                  {needsEmail && (
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                            Seu E-mail <span className="text-red-600">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                type="email"
+                                placeholder="seu.email@exemplo.com"
+                                className="pl-12 h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-slate-700 font-medium"
+                                disabled={loading}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-xs text-red-500 font-medium ml-1 mt-1.5" />
+                        </FormItem>
+                      )}
+                    />
                   )}
-                />
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
+
+            {needsPersonalData && needsAddress && (
+              <hr className="border-slate-100" />
+            )}
 
             {needsAddress && (
-              <>
-                <hr className="border-slate-100" />
-
-                <section className="space-y-3">
-                  <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                      <MapPin className="w-4.5 h-4.5" />
-                    </div>
-                    Endereço
+              <section className="space-y-3">
+                <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
+                  <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
+                    <MapPin className="w-4.5 h-4.5" />
                   </div>
-                  <FormEnderecoFields required={true} />
-                </section>
-              </>
+                  Endereço
+                </div>
+                <FormEnderecoFields required={true} />
+              </section>
             )}
           </form>
         </Form>

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Receipt, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface SubscriptionInvoicesDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ interface SubscriptionInvoicesDialogProps {
   copiedPixId?: string | null;
   onCopyPix?: (pixCode: string, invoiceId: string) => void;
   onRetryPayment?: (invoice?: SubscriptionInvoice) => void;
+  isExpired?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = [15, 30, 50, 100, 500];
@@ -32,6 +34,7 @@ export function SubscriptionInvoicesDialog({
   copiedPixId,
   onCopyPix,
   onRetryPayment,
+  isExpired,
 }: SubscriptionInvoicesDialogProps) {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(15);
@@ -62,7 +65,7 @@ export function SubscriptionInvoicesDialog({
 
   const handleRetry = useCallback(
     (invoice: SubscriptionInvoice) => {
-      onOpenChange(false);
+      safeCloseDialog(() => onOpenChange(false));
       onRetryPayment?.(invoice);
     },
     [onOpenChange, onRetryPayment]
@@ -71,14 +74,14 @@ export function SubscriptionInvoicesDialog({
   return (
     <BaseDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}
       maxWidth="2xl"
       description="Histórico completo de cobranças e faturas da assinatura"
     >
       <BaseDialog.Header
         title="Histórico de Faturas"
         icon={<Receipt className="w-5 h-5 text-primary" />}
-        onClose={() => onOpenChange(false)}
+        onClose={() => safeCloseDialog(() => onOpenChange(false))}
       />
 
       <BaseDialog.Body className="space-y-3 p-4 sm:p-6 bg-slate-50/50 min-h-[360px] max-h-[60vh] overflow-y-auto">
@@ -115,6 +118,7 @@ export function SubscriptionInvoicesDialog({
                 copiedPixId={copiedPixId}
                 onCopyPix={onCopyPix}
                 onRetryPayment={handleRetry}
+                isExpired={isExpired}
               />
             ))}
           </div>

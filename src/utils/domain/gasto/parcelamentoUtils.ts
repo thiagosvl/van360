@@ -1,4 +1,5 @@
 import { parseLocalDate } from "@/utils/dateUtils";
+import { nomesMesesAbreviado } from "@/utils/formatters/date";
 
 /**
  * Retorna a descrição do gasto formatada dinamicamente para exibição na UI.
@@ -34,11 +35,6 @@ export const obterMesesProjetados = (
 
   const d = typeof dataInicial === 'string' ? parseLocalDate(dataInicial) : dataInicial;
 
-  const nomesMeses = [
-    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-  ];
-
   const mesesProjetados: string[] = [];
 
   const year = d.getFullYear();
@@ -51,7 +47,7 @@ export const obterMesesProjetados = (
     const targetDay = Math.min(day, maxDays);
     targetDate.setDate(targetDay);
 
-    const m = nomesMeses[targetDate.getMonth()];
+    const m = nomesMesesAbreviado[targetDate.getMonth()];
     const y = String(targetDate.getFullYear()).slice(-2);
     mesesProjetados.push(`${m}/${y}`);
   }
@@ -113,13 +109,13 @@ export const obterDetalhesEdicaoParcelas = (
       futuras: eUltimaParcela
         ? null
         : {
-            titulo: ePrimeiraParcela
-              ? `Esta e as próximas parcelas (1 a ${total})`
-              : `Esta e as próximas parcelas (${n} a ${total})`,
-            descricao: ePrimeiraParcela
-              ? `Serão alteradas todas as ${total} parcelas.`
-              : `Serão alteradas ${alteradasFuturas} parcelas. As parcelas anteriores serão mantidas.`,
-          },
+          titulo: ePrimeiraParcela
+            ? `Esta e as próximas parcelas (1 a ${total})`
+            : `Esta e as próximas parcelas (${n} a ${total})`,
+          descricao: ePrimeiraParcela
+            ? `Serão alteradas todas as ${total} parcelas.`
+            : `Serão alteradas ${alteradasFuturas} parcelas. As parcelas anteriores serão mantidas.`,
+        },
       todas: {
         titulo: `Todas as parcelas`,
         descricao: `Altera todas as ${total} parcelas do histórico.`,
@@ -171,13 +167,13 @@ export const obterDetalhesExclusaoParcelas = (
       futuras: eUltimaParcela
         ? null
         : {
-            titulo: ePrimeiraParcela
-              ? `Esta e as próximas parcelas (1 a ${total})`
-              : `Esta e as próximas parcelas (${n} a ${total})`,
-            descricao: ePrimeiraParcela
-              ? `Serão excluídas todas as ${total} parcelas.`
-              : `Serão excluídas ${deletadasFuturas} parcelas. As parcelas anteriores serão mantidas.`,
-          },
+          titulo: ePrimeiraParcela
+            ? `Esta e as próximas parcelas (1 a ${total})`
+            : `Esta e as próximas parcelas (${n} a ${total})`,
+          descricao: ePrimeiraParcela
+            ? `Serão excluídas todas as ${total} parcelas.`
+            : `Serão excluídas ${deletadasFuturas} parcelas. As parcelas anteriores serão mantidas.`,
+        },
       todas: {
         titulo: `Todas as parcelas`,
         descricao: `Remove todas as ${total} parcelas do histórico.`,

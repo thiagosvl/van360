@@ -24,11 +24,11 @@ import {
   usePrePassageiros,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import {
   formatarTelefone,
-  formatFirstName,
   formatRelativeTime,
   formatShortName,
   getInitials,
@@ -42,56 +42,98 @@ import {
   Users2
 } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import { Usuario } from "@/types/usuario";
+
+interface PrePassageirosProps {
+  onFinalizeNewPrePassageiro?: () => Promise<void>;
+  profile?: Usuario | null;
+  searchTerm?: string;
+  prePassageiros?: PrePassageiro[];
+  countPassageiros?: number;
+  isLoading?: boolean;
+}
+
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   profile: initialProfile,
   searchTerm = "",
-}: {
-  onFinalizeNewPrePassageiro?: () => Promise<void>;
-  profile?: any;
-  searchTerm?: string;
-}) {
+  prePassageiros: prePassageirosProp,
+  countPassageiros: countPassageirosProp,
+  isLoading: isLoadingProp,
+}: PrePassageirosProps) {
+  const navigate = useNavigate();
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
-    openPassageiroFormDialog,
+    openRevisarSolicitacaoDialog,
+    openOnboardingSuccessDialog,
     openFirstChargeDialog,
   } = useLayout();
 
   const { profile } = useProfile();
+  const { data: resumo } = useUsuarioResumo(profile?.id);
+
+  const totalPassageiros = countPassageirosProp ?? (resumo?.contadores?.passageiros?.ativos ?? resumo?.contadores?.passageiros?.total ?? 0);
+  const isFirstPassageiro = totalPassageiros === 0;
 
   const deletePrePassageiro = useDeletePrePassageiro();
 
   const {
-    data: prePassageirosData,
-    isLoading: isPrePassageirosLoading,
-    isFetching: isPrePassageirosFetching,
-    refetch: refetchPrePassageiros,
+    data: prePassageirosQueryData,
+    isLoading: isPrePassageirosQueryLoading,
   } = usePrePassageiros(
     {
       usuarioId: profile?.id,
       search: searchTerm || undefined,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !prePassageirosProp && !!profile?.id,
       onError: () => toast.error("erro.carregar"),
     },
   );
 
-  const prePassageiros =
-    (prePassageirosData as PrePassageiro[] | undefined) ?? [];
-
-  const loading = isPrePassageirosLoading;
+  const prePassageiros = prePassageirosProp ?? (prePassageirosQueryData as PrePassageiro[] | undefined) ?? [];
+  const loading = isLoadingProp !== undefined ? isLoadingProp : isPrePassageirosQueryLoading;
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
-    openPassageiroFormDialog({
-      mode: PassageiroFormModes.FINALIZE,
+    openRevisarSolicitacaoDialog({
       prePassageiro,
       onSuccess: (passageiro) => {
         if (onFinalizeNewPrePassageiro) onFinalizeNewPrePassageiro();
-        if (passageiro) {
-          openFirstChargeDialog({ passageiro });
+        if (!passageiro) return;
+
+        if (isFirstPassageiro) {
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
+          return;
         }
+
+        openFirstChargeDialog({
+          passageiro,
+          onSuccess: (p) => {
+            const finalPassageiro = p || passageiro;
+            openConfirmationDialog({
+              title: "Aluno cadastrado com sucesso!",
+              description: `${finalPassageiro.nome} agora faz parte dos seus alunos ativos. O que você deseja fazer agora?`,
+              cancelText: "Continuar aqui",
+              confirmText: "Ir para Carteirinha",
+              variant: "default",
+              onCancel: () => {
+                safeCloseDialog(closeConfirmationDialog);
+              },
+              onConfirm: () => {
+                safeCloseDialog(closeConfirmationDialog);
+                navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", finalPassageiro.id));
+              },
+            });
+          },
+        });
       },
     });
   };
@@ -182,7 +224,7 @@ export default function PrePassageiros({
               <TableHeader className="bg-gray-50/50">
                 <TableRow className="hover:bg-transparent border-b border-gray-100">
                   <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[300px]">
-                    Passageiro
+                    Aluno
                   </TableHead>
                   <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                     WhatsApp
@@ -210,9 +252,11 @@ export default function PrePassageiros({
                           </span>
                         </div>
                         <div className="flex flex-col">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                            {formatShortName(prePassageiro.nome, true)}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                              {formatShortName(prePassageiro.nome, true)}
+                            </p>
+                          </div>
                           <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                             {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
                           </p>
@@ -323,9 +367,11 @@ export default function PrePassageiros({
                     </div>
 
                     <div className="flex-grow min-w-0 pr-10">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                        {formatShortName(prePassageiro.nome, true)}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                          {formatShortName(prePassageiro.nome, true)}
+                        </p>
+                      </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
                           {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}

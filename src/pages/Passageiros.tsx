@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
@@ -9,19 +10,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
-import { Users2 } from "lucide-react";
+import { Users2, SlidersHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
 import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useSession } from "@/hooks/business/useSession";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Passageiros() {
+  const { user } = useSession();
   const { isSubConta, can } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("alunos");
+
+  const [isDismissedAlunos, setIsDismissedAlunos] = useState(() => {
+    return localStorage.getItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_ALUNOS) === "true";
+  });
+
+  const handleDismissAlunos = () => {
+    setIsDismissedAlunos(true);
+    localStorage.setItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_ALUNOS, "true");
+  };
   const {
     profile,
     activeTab,
     handleTabChange,
     countPassageiros,
     countPrePassageiros,
+    prePassageiros,
+    isPrePassageirosLoading: isPrePassageirosListLoading,
     searchTerm,
     setSearchTerm,
     debouncedSearchTerm,
@@ -56,12 +75,14 @@ export default function Passageiros() {
   } = usePassageirosViewModel();
 
   if (!can("passageiros.visualizar")) {
-    return <AccessRestrictedState moduleName="Passageiros" />;
+    return <AccessRestrictedState moduleName="Alunos" />;
   }
 
-  const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
-  const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
-  const sectionCount = isMainTab ? (totalItems || passageiros.length) : countPrePassageiros;
+  const isMainTab = activeTab === PassageiroTab.ALUNOS;
+  const sectionTitle = isMainTab ? "Alunos" : "Solicitações";
+  const sectionCount = isMainTab
+    ? (totalItems || passageiros.length)
+    : (debouncedSearchTerm.trim() || searchTerm.trim() ? prePassageiros.length : countPrePassageiros);
   let countLabel = "";
 
   if (isMainTab) {
@@ -89,10 +110,10 @@ export default function Passageiros() {
               <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
                 <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
                   <TabsTrigger
-                    value={PassageiroTab.PASSAGEIROS}
+                    value={PassageiroTab.ALUNOS}
                     className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                   >
-                    Passageiros
+                    Alunos
                   </TabsTrigger>
                   <TabsTrigger
                     value={PassageiroTab.SOLICITACOES}
@@ -111,11 +132,23 @@ export default function Passageiros() {
 
               <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
                 <div className="space-y-6">
-                  {(isMainTab ? countPassageiros < 10 : true) && can("passageiros.gerenciar") && (
-                    <QuickRegistrationLink
-                      profile={profile}
-                      pendingCount={countPrePassageiros}
-                    />
+                  {can("passageiros.gerenciar") && (
+                    isMainTab ? (
+                      countPassageiros < 10 && !isDismissedAlunos && (
+                        <QuickRegistrationLink
+                          profile={profile}
+                          pendingCount={countPrePassageiros}
+                          onDismiss={handleDismissAlunos}
+                        />
+                      )
+                    ) : (
+                      prePassageiros.length === 0 && (
+                        <QuickRegistrationLink
+                          profile={profile}
+                          pendingCount={countPrePassageiros}
+                        />
+                      )
+                    )
                   )}
 
                   <PassageirosToolbar
@@ -142,10 +175,18 @@ export default function Passageiros() {
                 </div>
 
                 <div className="flex items-center justify-between px-1">
-                  <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                    {/* {sectionTitle} */}
-                  </h2>
-                  {passageiros.length > 0 && (
+                  {isMainTab && can("passageiros.gerenciar") ? (
+                    <Link
+                      to="/alunos/atualizacao-rapida"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-200/60 px-2.5 py-1 rounded-xl transition-all active:scale-95 -ml-1"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Edição em lote</span>
+                    </Link>
+                  ) : (
+                    <div />
+                  )}
+                  {(isMainTab ? passageiros.length > 0 : prePassageiros.length > 0) && (
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                       {sectionCount} {countLabel}
                     </span>
@@ -159,13 +200,13 @@ export default function Passageiros() {
                     ) : passageiros.length === 0 ? (
                       <UnifiedEmptyState
                         icon={Users2}
-                        title="Nenhum passageiro encontrado"
-                        description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Não encontramos nenhum passageiro cadastrado em sua frota."}
+                        title="Nenhum aluno encontrado"
+                        description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos alunos com os filtros selecionados." : "Não encontramos nenhum aluno cadastrado em sua frota."}
                         action={(hasActiveFilters || debouncedSearchTerm.length > 0) ? {
                           label: "Limpar Filtros",
                           onClick: clearFilters
                         } : (can("passageiros.gerenciar") ? {
-                          label: "Cadastrar Passageiro",
+                          label: "Cadastrar Aluno",
                           onClick: handleOpenNewDialog
                         } : undefined)}
                       />
@@ -193,11 +234,23 @@ export default function Passageiros() {
                     )}
                   </>
                 ) : (
-                  <PrePassageiros
-                    onFinalizeNewPrePassageiro={async () => { }}
-                    profile={profile}
-                    searchTerm={debouncedSearchTerm}
-                  />
+                  <div className="space-y-6">
+                    <PrePassageiros
+                      onFinalizeNewPrePassageiro={async () => { }}
+                      profile={profile}
+                      searchTerm={debouncedSearchTerm}
+                      prePassageiros={prePassageiros}
+                      countPassageiros={countPassageiros}
+                      isLoading={isPrePassageirosListLoading}
+                    />
+                    {can("passageiros.gerenciar") && prePassageiros.length > 0 && (
+                      <QuickRegistrationLink
+                        profile={profile}
+                        pendingCount={countPrePassageiros}
+                        className="mb-0"
+                      />
+                    )}
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
@@ -227,7 +280,7 @@ export default function Passageiros() {
 
               <div className="flex items-center justify-between px-1">
                 <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                  Passageiros
+                  Alunos
                 </h2>
                 {passageiros.length > 0 && (
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
@@ -241,13 +294,13 @@ export default function Passageiros() {
               ) : passageiros.length === 0 ? (
                 <UnifiedEmptyState
                   icon={Users2}
-                  title="Nenhum passageiro encontrado"
-                  description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos passageiros com os filtros selecionados." : "Nenhum passageiro cadastrado nesta frota."}
+                  title="Nenhum aluno encontrado"
+                  description={debouncedSearchTerm.length > 0 || hasActiveFilters ? "Não encontramos alunos com os filtros selecionados." : "Nenhum aluno cadastrado nesta frota."}
                   action={(hasActiveFilters || debouncedSearchTerm.length > 0) ? {
                     label: "Limpar Filtros",
                     onClick: clearFilters
                   } : (can("passageiros.gerenciar") ? {
-                    label: "Cadastrar Passageiro",
+                    label: "Cadastrar Aluno",
                     onClick: handleOpenNewDialog
                   } : undefined)}
                 />
@@ -277,6 +330,20 @@ export default function Passageiros() {
           )}
         </div>
       </PullToRefreshWrapper>
+
+      {shouldShowTutorial && (
+        <VideoCommerce
+          screenName="alunos"
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          ctaText={tutorialConfig.ctaText}
+          onCtaClick={handleOpenNewDialog}
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          requireScrollOnMobile={false}
+          storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
+        />
+      )}
     </>
   );
 }

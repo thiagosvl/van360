@@ -8,6 +8,17 @@ export {
   differenceInCalendarDaysBR
 } from "../dateUtils";
 
+export const nomesMesesAbreviado = [
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+  "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+];
+
+export const nomesMesesCompleto = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
+
 /**
  * Converte para string YYYY-MM-DD (persistência).
  */
@@ -28,6 +39,7 @@ export const formatDate = (date: string | Date): Date => {
 export const formatDateToBR = (date: string | Date): string => {
   return formatSafeBrazilianDate(date);
 };
+export const formatDateBR = formatDateToBR;
 
 /**
  * Formata para MM/YYYY (mês e ano).
@@ -53,11 +65,20 @@ export const formatMonthYearToBR = (date?: string | Date | null): string => {
   return `${month}/${year}`;
 };
 
+export const formatMonthYearAbbr = (date?: string | Date | null): string => {
+  if (!date) return "-";
+  const parsed = parseLocalDate(date);
+  if (isNaN(parsed.getTime())) return "-";
+  const m = nomesMesesCompleto[parsed.getMonth()];
+  const y = String(parsed.getFullYear()).slice(-2);
+  return `${m}/${y}`;
+};
+
 /**
  * Formata para data e opcionalmente hora.
  */
 export const formatDateTimeToBR = (
-  date: string | Date,
+  date?: string | Date | null,
   options: { includeTime?: boolean } = {}
 ): string => {
   if (!date) return "-";
@@ -87,6 +108,11 @@ export const getMesNome = (mes: number) => {
     timeZone: 'America/Sao_Paulo'
   });
   return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+};
+
+export const getMesAbreviado = (mes: number): string => {
+  const index = Number(mes) - 1;
+  return nomesMesesAbreviado[index] || "";
 };
 
 /**
@@ -140,7 +166,11 @@ export const formatDiasAtraso = (dataVencimento: string): string => {
  * Converte DD/MM/YYYY para YYYY-MM-DD.
  */
 export const convertDateBrToISO = (dateBr: string): string => {
-  if (!dateBr || dateBr.length !== 10) return "";
-  const [day, month, year] = dateBr.split("/");
-  return `${year}-${month}-${day}`;
+  if (!dateBr) return "";
+  const clean = dateBr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+  if (!clean.includes("/")) return clean;
+  const [day, month, year] = clean.split("/");
+  if (!day || !month || !year) return clean;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };

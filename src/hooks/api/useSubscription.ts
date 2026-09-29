@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { subscriptionApi } from "@/services/api/subscription.api";
 import {
   Subscription,
-  SaaSPlan,
   ReferralData,
   SubscriptionInvoice,
   PaymentMethod,
@@ -122,12 +121,13 @@ export const useSubscriptionPlans = (options?: { enabled?: boolean }) => {
     queryKey: ["subscription-plans"],
     queryFn: () => subscriptionApi.getPlans(),
     enabled: options?.enabled ?? true,
-    staleTime: 0, // Sempre re-busca para garantir preços atualizados (útil no alt-tab)
+    staleTime: 0,
   });
 
   return {
     plans: query.data?.plans,
     isPromotionActive: query.data?.isPromotionActive ?? false,
+    pricing: query.data?.pricingSummary,
     isLoading: query.isLoading,
     refetch: query.refetch,
   };

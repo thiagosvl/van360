@@ -22,14 +22,20 @@ import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
 import { AppPermissionStatus, PermissionRescueType, UserType } from "@/types/enums";
 
+import { useLayoutSafe } from "@/contexts/LayoutContext";
+
 export const ResponsavelCarteirinhaBase: React.FC = () => {
   const navigate = useNavigate();
   const { pushStatus, requestPushPermission } = useAppPermissions();
+  const layoutContext = useLayoutSafe();
+  const setPageTitle = layoutContext?.setPageTitle;
+
   const {
     token,
     passageiroId,
     passageiros,
     carteirinha,
+    responsavelLogado,
     isLoading,
     error,
     activeTab,
@@ -43,6 +49,13 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
     refetch,
     refetchPassageiros
   } = useResponsavelCarteirinhaViewModel();
+
+  React.useEffect(() => {
+    if (setPageTitle) {
+      setPageTitle("Carteirinha Digital");
+    }
+    document.title = "Carteirinha Digital | Van360";
+  }, [setPageTitle, nomeExibicao]);
 
   React.useEffect(() => {
     if (pushStatus === AppPermissionStatus.PROMPT) {
@@ -94,7 +107,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                 className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/80 px-3 py-1.5 text-xs font-semibold text-[#1a3a5c] hover:bg-blue-100 transition-all cursor-pointer"
               >
                 <ArrowLeftRight className="h-3.5 w-3.5 text-[#1a3a5c]" />
-                <span className="hidden sm:inline">Trocar Passageiro</span>
+                <span className="hidden sm:inline">Trocar Aluno</span>
               </button>
             )}
 
@@ -122,7 +135,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
             </div>
           ) : error || !carteirinha ? (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600 text-sm font-medium text-center">
-              Erro ao carregar os dados do passageiro. Tente atualizar a página.
+              Erro ao carregar os dados do aluno. Tente atualizar a página.
             </div>
           ) : (
             <>
@@ -148,7 +161,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                     <TabsTrigger
                       value="ausencias"
                       disabled={(carteirinha.rotas || []).length === 0}
-                      title={(carteirinha.rotas || []).length === 0 ? "Passageiro não possui rota atribuída" : undefined}
+                      title={(carteirinha.rotas || []).length === 0 ? "Aluno não possui rota atribuída" : undefined}
                       className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
                     >
                       Ausências
@@ -162,7 +175,7 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                     <TabsTrigger
                       value="contrato"
                       disabled={!carteirinha.contrato}
-                      title={!carteirinha.contrato ? "Passageiro não possui contrato" : undefined}
+                      title={!carteirinha.contrato ? "Aluno não possui contrato" : undefined}
                       className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
                     >
                       Contrato
@@ -210,16 +223,16 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
           open={isMissingComplementares}
           passageiroId={passageiroId}
           passageiroNome={nomeExibicao}
-          initialCpf={carteirinha?.responsavel_principal?.cpf || ""}
-          initialEmail={carteirinha?.responsavel_principal?.email || ""}
-          initialCep={carteirinha?.responsavel_principal?.cep || ""}
-          initialLogradouro={carteirinha?.responsavel_principal?.logradouro || ""}
-          initialNumero={carteirinha?.responsavel_principal?.numero || ""}
-          initialComplemento={carteirinha?.responsavel_principal?.complemento || ""}
-          initialBairro={carteirinha?.responsavel_principal?.bairro || ""}
-          initialCidade={carteirinha?.responsavel_principal?.cidade || ""}
-          initialEstado={carteirinha?.responsavel_principal?.estado || ""}
-          initialReferencia={carteirinha?.responsavel_principal?.referencia || ""}
+          initialCpf={responsavelLogado?.cpf || ""}
+          initialEmail={responsavelLogado?.email || ""}
+          initialCep={responsavelLogado?.cep || ""}
+          initialLogradouro={responsavelLogado?.logradouro || ""}
+          initialNumero={responsavelLogado?.numero || ""}
+          initialComplemento={responsavelLogado?.complemento || ""}
+          initialBairro={responsavelLogado?.bairro || ""}
+          initialCidade={responsavelLogado?.cidade || ""}
+          initialEstado={responsavelLogado?.estado || ""}
+          initialReferencia={responsavelLogado?.referencia || ""}
           token={token}
           onSuccess={async () => {
             await Promise.all([refetch(), refetchPassageiros()]);

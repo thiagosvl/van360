@@ -18,11 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Banner } from "@/components/ui/Banner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
+import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
+import { Cobranca } from "@/types/cobranca";
 import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
 import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
@@ -38,7 +41,8 @@ export interface ManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded: (updatedCobranca?: CobrancaDTO | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
+  observacao?: string | null;
+  onPaymentRecorded: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
 }
 
 export default function ManualPaymentDialog({
@@ -50,6 +54,7 @@ export default function ManualPaymentDialog({
   valorOriginal,
   status,
   dataVencimento,
+  observacao,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
   const { form, openCalendar, setOpenCalendar, handleSubmit, onFormError, isPending } = useManualPaymentViewModel({
@@ -57,6 +62,8 @@ export default function ManualPaymentDialog({
     onClose,
     cobrancaId,
     valorOriginal,
+    passageiroNome,
+    observacao,
     onPaymentRecorded,
   });
 
@@ -211,15 +218,55 @@ export default function ManualPaymentDialog({
               )}
             />
 
-            <Banner
-              variant="info"
-              description="O responsável receberá uma notificação no aplicativo e poderá acessar o recibo diretamente pela carteirinha."
+            <FormField
+              control={form.control}
+              name="enviar_recibo_whatsapp_manual"
+              render={({ field }) => (
+                <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                  <div className="flex items-center gap-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <div className="flex-1 space-y-1 leading-none">
+                      <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
+                        Enviar Recibo no WhatsApp
+                      </FormLabel>
+                    </div>
+                  </div>
+                  <FormMessage className="pt-2" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="observacao"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                    Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder=""
+                      className="min-h-[60px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </form>
         </Form>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={isPending} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={() => safeCloseDialog(onClose)} disabled={isPending} />
         <BaseDialog.Action label="Registrar" onClick={form.handleSubmit(handleSubmit, onFormError)} isLoading={isPending} />
       </BaseDialog.Footer>
     </BaseDialog>

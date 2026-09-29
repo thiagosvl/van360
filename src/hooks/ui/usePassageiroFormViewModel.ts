@@ -21,6 +21,7 @@ import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { isSamePerson } from "@/utils/person";
 
 interface UsePassageiroFormViewModelProps {
   isOpen: boolean;
@@ -48,6 +49,7 @@ export function usePassageiroFormViewModel({
   
   const searchedTermsSet = useRef<Set<string>>(new Set());
   const isFillingMockRef = useRef<boolean>(false);
+  const prevAnoLetivoRef = useRef<string | null>(null);
 
   const { data: fullPassageiro, isLoading: isLoadingFullPassageiro } = usePassageiro(
     editingPassageiro?.id || "",
@@ -93,13 +95,14 @@ export function usePassageiroFormViewModel({
   useEffect(() => {
     if (!isOpen) {
       searchedTermsSet.current.clear();
+      prevAnoLetivoRef.current = null;
     }
   }, [isOpen]);
 
   const handleSearchResponsavel = useCallback(async (term: string) => {
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const pureTerm = term.replace(/\D/g, "");
-    if (pureTerm.length !== 11 || !profile?.id) return;
+    if ((pureTerm.length < 10 || pureTerm.length > 11) || !profile?.id) return;
     if (searchedTermsSet.current.has(pureTerm)) return;
 
     try {
@@ -114,12 +117,22 @@ export function usePassageiroFormViewModel({
           searchedTermsSet.current.add(responsavel.telefone.replace(/\D/g, ""));
         }
 
+        const currentName = form.getValues("responsavel_principal.nome");
+        if (currentName && !isSamePerson(currentName, responsavel.nome)) {
+          form.setError("responsavel_principal.telefone", {
+            type: "manual",
+            message: "Este telefone já está cadastrado para outro responsável",
+          });
+          return;
+        }
+
         if (responsavel.nome) {
           form.setValue("responsavel_principal.nome", responsavel.nome, { shouldValidate: true });
         }
         if (responsavel.telefone) {
           form.setValue("responsavel_principal.telefone", phoneMask(responsavel.telefone), { shouldValidate: true });
         }
+        form.clearErrors("responsavel_principal.telefone");
         if (responsavel.cpf) {
           form.setValue("responsavel_principal.cpf", cpfMask(responsavel.cpf), { shouldValidate: true });
         }
@@ -176,10 +189,37 @@ export function usePassageiroFormViewModel({
   useEffect(() => {
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const purePhone = telefoneResponsavelValue?.replace(/\D/g, "");
-    if (purePhone && purePhone.length === 11) {
+    if (purePhone && (purePhone.length === 10 || purePhone.length === 11)) {
       handleSearchResponsavel(purePhone);
     }
   }, [telefoneResponsavelValue, handleSearchResponsavel, mode]);
+
+  const anoLetivoValue = form.watch("ano_letivo");
+
+  useEffect(() => {
+    if (!anoLetivoValue) return;
+
+    if (mode === PassageiroFormModes.EDIT) {
+      if (prevAnoLetivoRef.current === null) {
+        prevAnoLetivoRef.current = anoLetivoValue;
+        return;
+      }
+      if (prevAnoLetivoRef.current === anoLetivoValue) {
+        return;
+      }
+    }
+
+    prevAnoLetivoRef.current = anoLetivoValue;
+    const currentYear = new Date().getFullYear();
+    const selectedAno = anoLetivoValue;
+    form.setValue("ano_inicio_cobranca", selectedAno);
+    form.setValue("ano_fim_cobranca", selectedAno);
+
+    if (parseInt(selectedAno, 10) > currentYear && mode !== PassageiroFormModes.EDIT) {
+      form.setValue("mes_inicio_cobranca", "");
+      form.setValue("mes_fim_cobranca", "");
+    }
+  }, [anoLetivoValue, form, mode]);
 
   const handleFillMock = useCallback(() => {
     const currentValues = form.getValues();
@@ -215,7 +255,7 @@ export function usePassageiroFormViewModel({
   }, [form, escolasData, veiculosData, setOpenAccordionItems]);
 
   const onFormError = useCallback(() => {
-    toast.error("validacao.formularioComErros");
+    toast.error("Por favor, verifique os campos destacados em vermelho.");
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -256,21 +296,31 @@ export function usePassageiroFormViewModel({
       ? convertDateBrToISO(purePayload.data_inicio_transporte)
       : null;
 
-    purePayload.data_fim_transporte = typeof purePayload.data_fim_transporte === "string" && purePayload.data_fim_transporte
-      ? convertDateBrToISO(purePayload.data_fim_transporte)
+    purePayload.horario_entrada = typeof purePayload.horario_entrada === "string" && purePayload.horario_entrada.trim()
+      ? purePayload.horario_entrada.trim()
       : null;
 
-    const anoLetivo = Number(data.ano_letivo) || new Date().getFullYear();
+    purePayload.horario_saida = typeof purePayload.horario_saida === "string" && purePayload.horario_saida.trim()
+      ? purePayload.horario_saida.trim()
+      : null;
 
-    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${anoLetivo}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
-    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${anoLetivo}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
+    const currentYear = new Date().getFullYear();
+    const anoInicio = data.ano_inicio_cobranca || currentYear.toString();
+    const anoFim = data.ano_fim_cobranca || anoInicio;
+    const anoLetivoNum = parseInt(data.ano_letivo || anoInicio, 10);
+
+    purePayload.data_inicio_cobranca = data.mes_inicio_cobranca ? `${anoInicio}-${String(data.mes_inicio_cobranca).padStart(2, '0')}-01` : null;
+    purePayload.data_fim_cobranca = data.mes_fim_cobranca ? `${anoFim}-${String(data.mes_fim_cobranca).padStart(2, '0')}-01` : null;
+
     delete purePayload.mes_inicio_cobranca;
     delete purePayload.mes_fim_cobranca;
+    delete purePayload.ano_inicio_cobranca;
+    delete purePayload.ano_fim_cobranca;
 
     if (mode === PassageiroFormModes.EDIT) {
       delete purePayload.ano_letivo;
     } else {
-      purePayload.ano_letivo = anoLetivo;
+      purePayload.ano_letivo = anoLetivoNum;
     }
 
     purePayload.genero = purePayload.genero || null;
@@ -290,42 +340,84 @@ export function usePassageiroFormViewModel({
         let hasCriticalContractChanges = false;
 
         if (isEdit && editingPassageiro && isContractActive) {
-          const normalizeForCompare = (val: unknown) => {
+          const normalizeText = (val: unknown) => {
             if (val === null || val === undefined) return "";
             return String(val).trim().toLowerCase();
           };
 
-          const checkStringChange = (formVal: unknown, dbVal: unknown) => {
-            return normalizeForCompare(formVal) !== normalizeForCompare(dbVal);
+          const checkTextChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeText(formVal) !== normalizeText(dbVal);
           };
 
+          const normalizeDigits = (val: unknown) => {
+            if (val === null || val === undefined) return "";
+            return String(val).replace(/\D/g, "");
+          };
+
+          const checkDigitsChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeDigits(formVal) !== normalizeDigits(dbVal);
+          };
+
+          const normalizeDate = (val: unknown) => {
+            if (!val) return "";
+            const str = String(val).trim();
+            if (str.includes("/")) {
+              const parts = str.split("/");
+              if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return str.slice(0, 10);
+          };
+
+          const checkDateChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeDate(formVal) !== normalizeDate(dbVal);
+          };
+
+          const normalizeTime = (val: unknown) => {
+            if (!val) return "";
+            return String(val).trim().slice(0, 5);
+          };
+
+          const checkTimeChange = (formVal: unknown, dbVal: unknown) => {
+            return normalizeTime(formVal) !== normalizeTime(dbVal);
+          };
+
+          const isIsento = !!purePayload.isento;
+          const isIsentoAtual = !!editingPassageiro.isento;
           const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca as string | number | null | undefined);
-          const vencimentoForm = Number(purePayload.dia_vencimento);
-          
+          const vencimentoForm = Number(purePayload.dia_vencimento || 0);
           const valorAtual = Number(editingPassageiro.valor_cobranca || 0);
           const vencimentoAtual = Number(editingPassageiro.dia_vencimento || 0);
 
-          hasCriticalContractChanges =
+          const hasFinancialChanges = isIsento !== isIsentoAtual || (!isIsento && (
             Math.abs(valorForm - valorAtual) > 0.01 ||
-            vencimentoForm !== vencimentoAtual ||
-            checkStringChange(purePayload.nome, editingPassageiro.nome) ||
-            checkStringChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
-            checkStringChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
-            checkStringChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
-            checkStringChange(purePayload.escola_id, editingPassageiro.escola_id) ||
-            checkStringChange(purePayload.periodo, editingPassageiro.periodo) ||
-            checkStringChange(purePayload.modalidade, editingPassageiro.modalidade) ||
-            checkStringChange(purePayload.turma, editingPassageiro.turma) ||
-            checkStringChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
-            checkStringChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
-            checkStringChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
-            checkStringChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
-            checkStringChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
-            checkStringChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
-            checkStringChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||
-            checkStringChange(data.responsavel_principal?.cidade, editingPassageiro.responsavel_principal?.cidade) ||
-            checkStringChange(data.responsavel_principal?.estado, editingPassageiro.responsavel_principal?.estado) ||
-            checkStringChange(data.responsavel_principal?.cep, editingPassageiro.responsavel_principal?.cep);
+            vencimentoForm !== vencimentoAtual
+          ));
+
+          hasCriticalContractChanges =
+            hasFinancialChanges ||
+            checkTextChange(purePayload.nome, editingPassageiro.nome) ||
+            checkTextChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
+            checkTextChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
+            checkDigitsChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
+            checkDigitsChange(data.responsavel_principal?.telefone, editingPassageiro.responsavel_principal?.telefone) ||
+            checkTextChange(purePayload.escola_id, editingPassageiro.escola_id) ||
+            checkTextChange(purePayload.periodo, editingPassageiro.periodo) ||
+            checkTextChange(purePayload.modalidade, editingPassageiro.modalidade) ||
+            checkTextChange(purePayload.turma, editingPassageiro.turma) ||
+            checkTextChange(purePayload.sala, editingPassageiro.sala) ||
+            checkTextChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
+            checkDateChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
+            checkDateChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
+            checkTimeChange(purePayload.horario_entrada, editingPassageiro.horario_entrada) ||
+            checkTimeChange(purePayload.horario_saida, editingPassageiro.horario_saida) ||
+            checkDateChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
+            checkDateChange(purePayload.data_fim_cobranca, editingPassageiro.data_fim_cobranca) ||
+            checkTextChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
+            checkTextChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
+            checkTextChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||
+            checkTextChange(data.responsavel_principal?.cidade, editingPassageiro.responsavel_principal?.cidade) ||
+            checkTextChange(data.responsavel_principal?.estado, editingPassageiro.responsavel_principal?.estado) ||
+            checkDigitsChange(data.responsavel_principal?.cep, editingPassageiro.responsavel_principal?.cep);
         }
 
         onSuccess(responseData, {
@@ -336,10 +428,11 @@ export function usePassageiroFormViewModel({
       },
       onError: (err: unknown) => {
         const msg = getErrorMessage(err);
-        if (msg && msg.toLowerCase().includes("telefone")) {
+        const status = (err as any)?.response?.status;
+        if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("responsável") || status === 409)) {
           form.setError("responsavel_principal.telefone", {
             type: "manual",
-            message: msg,
+            message: msg.toLowerCase().includes("outro responsável") ? "Este telefone já está cadastrado para outro responsável" : msg.replace(/ no sistema/gi, ""),
           });
           setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
         } else if (msg && msg.toLowerCase().includes("cpf")) {
@@ -349,6 +442,9 @@ export function usePassageiroFormViewModel({
           });
           setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
         }
+        toast.error("Erro ao salvar aluno", {
+          description: msg ? msg.replace(/ no sistema/gi, "") : "Verifique os dados e tente novamente",
+        });
       },
     };
 
@@ -362,7 +458,10 @@ export function usePassageiroFormViewModel({
           },
         },
         {
-          onSuccess: (res) => commonOptions.onSuccess(res.passageiro),
+          onSuccess: (res) => {
+            const passageiro = (res as any)?.passageiro || res;
+            commonOptions.onSuccess(passageiro);
+          },
           onError: commonOptions.onError,
         }
       );
@@ -374,6 +473,7 @@ export function usePassageiroFormViewModel({
         },
         {
           onSuccess: commonOptions.onSuccess,
+          onError: commonOptions.onError,
         }
       );
     } else {

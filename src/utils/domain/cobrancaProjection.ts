@@ -116,31 +116,61 @@ export interface AvailableRetroactiveMonthsParams {
  * 1. Janela retroativa: Sempre de Janeiro (mês 1) até o mês anterior ao atual (currentMonth - 1).
  * 2. Exclusão: Ignora meses que já possuem cobrança real gravada no banco de dados.
  */
+import { CobrancaStatus } from "@/types/enums";
+
 export function getAvailableRetroactiveMonths({
   passageiro,
   cobrancas = [],
+  driverCreatedAt,
   currentMonth,
+  currentYear,
 }: AvailableRetroactiveMonthsParams): number[] {
   if (!passageiro || passageiro.isento === true) return [];
 
-  const startMonth = 1; // Janeiro
-  const endMonth = currentMonth - 1; // Mês anterior ao atual
-
-  if (startMonth > endMonth) {
-    return []; // Em Janeiro (mês 1), não há meses retroativos no ano
-  }
-
-  // Filtrar meses do passado que já possuem cobrança real gravada no banco
-  const existingMesesSet = new Set(
-    cobrancas.filter((c) => !c.isProjection).map((c) => c.mes)
+  const existingActiveMesesSet = new Set(
+    cobrancas.filter((c) => !c.isProjection && c.status !== CobrancaStatus.CANCELADA).map((c) => c.mes)
   );
 
   const available: number[] = [];
+
+  const inicioStr = passageiro.data_inicio_cobranca || passageiro.created_at || driverCreatedAt;
+  const inicio = parseMonthYearFromDateString(inicioStr);
+
+  let startMonth = 1;
+  if (inicio) {
+    if (inicio.year > currentYear) {
+      startMonth = 13;
+    } else if (inicio.year === currentYear) {
+      startMonth = Math.max(1, inicio.month);
+    }
+  }
+
+  let endMonth = currentMonth - 1;
+  if (passageiro.data_fim_cobranca) {
+    const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
+    if (fim) {
+      if (fim.year < currentYear) {
+        endMonth = 0;
+      } else if (fim.year === currentYear) {
+        endMonth = Math.min(currentMonth - 1, fim.month);
+      }
+    }
+  }
+
+  // 1. Meses passados dentro da vigência sem cobrança ativa
   for (let m = startMonth; m <= endMonth; m++) {
-    if (!existingMesesSet.has(m)) {
+    if (!existingActiveMesesSet.has(m)) {
       available.push(m);
     }
   }
 
-  return available;
+  // 2. Meses do ano atual com cobrança cancelada (para permitir revigoração)
+  for (let m = 1; m <= 12; m++) {
+    const isCancelada = cobrancas.some((c) => !c.isProjection && c.mes === m && c.status === CobrancaStatus.CANCELADA);
+    if (isCancelada && !available.includes(m)) {
+      available.push(m);
+    }
+  }
+
+  return available.sort((a, b) => a - b);
 }

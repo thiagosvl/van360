@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { KeyRound } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Banner } from "@/components/ui/Banner";
 
@@ -10,7 +10,7 @@ interface PixNudgeBannerProps {
 const STORAGE_KEY = "van360_dismissed_pix_banner";
 
 export const PixNudgeBanner = ({ hasPix }: PixNudgeBannerProps) => {
-  const { openEditarPixDialog } = useLayout();
+  const { openWhatsAppCobrancaPreviewDialog } = useLayout();
   const [isDismissed, setIsDismissed] = useState(true);
 
   useEffect(() => {
@@ -31,15 +31,13 @@ export const PixNudgeBanner = ({ hasPix }: PixNudgeBannerProps) => {
   return (
     <Banner
       variant="info"
-      icon={<KeyRound className="h-5 w-5" />}
-      title="Facilite o pagamento para os pais"
-      description="Cadastre sua chave Pix. Ela será enviada automaticamente junto com os lembretes de cobrança no WhatsApp dos responsáveis."
-      action={{
-        label: "Configurar Chave Pix",
-        onClick: openEditarPixDialog,
-      }}
+      icon={<WhatsAppIcon className="h-5 w-5 text-emerald-600" />}
+      title="Veja o que os pais recebem no WhatsApp"
+      description="Toque para ver como a mensagem de cobrança chega para os pais."
+      onClick={() => openWhatsAppCobrancaPreviewDialog({ showPixSetupAction: true })}
       onDismiss={handleDismiss}
-      className="mb-6"
+      dismissPosition="floating"
+      className="mb-4 cursor-pointer"
     />
   );
 };

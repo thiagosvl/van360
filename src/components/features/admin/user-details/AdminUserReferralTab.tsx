@@ -1,10 +1,26 @@
 import { useState } from "react";
-import { Share2, CheckCircle2, Gift, UserPlus, Copy, Check } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import {
+  Share2,
+  CheckCircle2,
+  Gift,
+  UserPlus,
+  Copy,
+  Check,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { toast } from "sonner";
+import { openBrowserLink, copyToClipboard } from "@/utils/browser";
+import { buildReferralShareMessage, buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { cn } from "@/lib/utils";
+import { phoneMask } from "@/utils/masks";
+import { IndicacaoStatus } from "@/types/enums";
+import { formatSafeBrazilianDate } from "@/utils/dateUtils";
 
 interface AdminUserReferralTabProps {
   user: {
@@ -20,14 +36,29 @@ interface AdminUserReferralTabProps {
     referralLink?: string;
     bonusDays?: number;
   };
+  referredUsers?: Array<{
+    id: string;
+    status: IndicacaoStatus;
+    created_at: string;
+    indicado: {
+      id: string;
+      nome: string;
+      telefone: string;
+      email: string;
+    } | null;
+  }>;
 }
 
-export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferralTabProps) {
-  const [copied, setCopied] = useState(false);
+export function AdminUserReferralTab({
+  user,
+  referralSummary,
+  referredUsers = [],
+}: AdminUserReferralTabProps) {
+  const [copiedMessage, setCopiedMessage] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
-  // Link derivado ou fallback
-  const linkBase = window.location.origin;
-  const referralLink = referralSummary?.referralLink || `${linkBase}/cadastro?ref=${user.id}`;
+  const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || "https://van360.com.br";
+  const referralLink = referralSummary?.referralLink || `${siteUrl}/?ref=${user.id}`;
 
   const total = referralSummary?.total ?? 0;
   const completed = referralSummary?.completed ?? 0;
@@ -35,24 +66,58 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
   const taxaConversao = total > 0 ? Math.round((completed / total) * 100) : 0;
   const diasBonusConcedidos = completed * 30;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    toast.success("Link de indicação copiado com sucesso!");
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyMessage = async () => {
+    const message = buildReferralShareMessage(referralLink);
+    const success = await copyToClipboard(message);
+    if (success) {
+      setCopiedMessage(true);
+      toast.success("Mensagem completa de indicação copiada!");
+      setTimeout(() => setCopiedMessage(false), 2000);
+    } else {
+      toast.error("Não foi possível copiar a mensagem.");
+    }
+  };
+
+  const handleCopyOnlyUrl = async () => {
+    const success = await copyToClipboard(referralLink);
+    if (success) {
+      setCopiedUrl(true);
+      toast.success("Link copiado com sucesso!");
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } else {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const message = buildReferralShareMessage(referralLink);
+    const url = buildWhatsAppUrl(null, message);
+    openBrowserLink(url);
+  };
+
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return "—";
+    try {
+      return new Date(dateString).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return "—";
+    }
   };
 
   return (
     <div className="space-y-6 text-left">
-      {/* CARD 1: LINK DE INDICAÇÃO E AÇÃO DE CÓPIA */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="p-6 pb-2">
           <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
             <Share2 className="h-4 w-4 text-purple-400" />
-            LINK DE INDICAÇÃO DO MOTORISTA
+            LINK DE INDICAÇÃO DESTE MOTORISTA
           </CardTitle>
           <p className="text-[11px] font-medium text-slate-400 mt-1">
-            Link exclusivo do motorista para cópia rápida pelo administrador.
+            Link exclusivo do motorista para cópia rápida e envio pelo WhatsApp.
           </p>
         </CardHeader>
         <CardContent className="p-6 pt-4 space-y-4">
@@ -66,27 +131,40 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCopy}
+                onClick={handleCopyOnlyUrl}
                 className="absolute right-1 top-1 bottom-1 h-9 w-9 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="Copiar link"
+                title="Copiar apenas o link"
               >
-                {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copiedUrl ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
 
             <Button
-              onClick={handleCopy}
-              className="w-full sm:w-auto h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-colors shadow-lg shadow-blue-600/20"
+              onClick={handleShareWhatsApp}
+              className="w-full sm:w-auto h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20b858] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer shadow-lg shadow-green-900/20 active:scale-95"
             >
-              {copied ? (
+              <WhatsAppIcon className="h-4 w-4 fill-current" />
+              <span>WhatsApp</span>
+            </Button>
+
+            <Button
+              onClick={handleCopyMessage}
+              className={cn(
+                "w-full sm:w-auto h-11 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer active:scale-95 shadow-lg",
+                copiedMessage
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
+              )}
+            >
+              {copiedMessage ? (
                 <>
-                  <Check className="h-4 w-4" />
+                  <Check className="h-4 w-4 text-emerald-400" />
                   <span>Copiado!</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  <span>Copiar Link</span>
+                  <span>Copiar Mensagem</span>
                 </>
               )}
             </Button>
@@ -94,17 +172,16 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
         </CardContent>
       </Card>
 
-      {/* CARD 2: KPIS INDIVIDUAIS DO MOTORISTA */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="p-6 pb-2">
           <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-            MÉTRICAS DE INDICAÇÃO DESTE MOTORISTA
+            MÉTRICAS DE INDICAÇÕES FEITAS POR ESTE MOTORISTA
           </CardTitle>
           <p className="text-[11px] font-medium text-slate-400 mt-1">
             Resumo de conversões e bônus acumulados por {user.nome}
           </p>
         </CardHeader>
-        <CardContent className="p-6 pt-4">
+        <CardContent className="p-6 pt-4 space-y-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <AdminKpiCard
               title="CADASTROS VIA INDICAÇÃO"
@@ -138,7 +215,7 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
               value={`${diasBonusConcedidos} Dias`}
               subtext={
                 diasBonusConcedidos === 0
-                  ? "0 meses grátis aos indicadores"
+                  ? "0 meses grátis acumulados"
                   : `~${Math.round(diasBonusConcedidos / 30)} meses grátis ao motorista`
               }
               cardBorder="border-amber-500/40 shadow-amber-500/10"
@@ -146,6 +223,55 @@ export function AdminUserReferralTab({ user, referralSummary }: AdminUserReferra
               icon={<Gift className="h-5 w-5" />}
             />
           </div>
+
+          {referredUsers.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-slate-800/80">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                Motoristas Indicados por Ele ({referredUsers.length})
+              </h4>
+              <div className="grid gap-2">
+                {referredUsers.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-between text-xs"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      {item.indicado?.id ? (
+                        <Link
+                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado.id}`}
+                          className="font-bold text-white hover:text-blue-400 hover:underline transition-colors truncate block"
+                        >
+                          {item.indicado.nome}
+                        </Link>
+                      ) : (
+                        <p className="font-bold text-white truncate">
+                          {item.indicado?.nome || "Motorista Indicado"}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                        {item.indicado?.telefone && (
+                          <span className="font-mono">{phoneMask(item.indicado.telefone)}</span>
+                        )}
+                        <span>•</span>
+                        <span>{formatSafeBrazilianDate(item.created_at)}</span>
+                      </div>
+                    </div>
+                    <div>
+                      {item.status === IndicacaoStatus.COMPLETED ? (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Convertido
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          Em Teste
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

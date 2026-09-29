@@ -5,6 +5,7 @@ export const registerSchema = z.object({
   nome: z.string()
     .min(2, "Deve ter pelo menos 2 caracteres")
     .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
+  apelido: z.string().max(50, "Máximo 50 caracteres").optional(),
   razao_social: z.string().optional(),
   cpfcnpj: cpfCnpjSchema,
   email: emailSchema.min(1, "Campo obrigatório"),

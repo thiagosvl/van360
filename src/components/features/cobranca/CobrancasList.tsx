@@ -17,6 +17,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
@@ -25,8 +26,8 @@ import {
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
-import { DollarSign, Wallet, CalendarClock, History } from "lucide-react";
-import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
+import { DollarSign, Wallet, CalendarClock, History, MessageSquare } from "lucide-react";
+import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
 import { memo, useState } from "react";
 import { CobrancaSummary } from "./CobrancaSummary";
@@ -109,11 +110,11 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     cobranca,
     onVerCobranca: () => { },
     onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
-    onEditarCobranca: cobranca?.isProjection ? undefined : () => onEditarCobranca(cobranca),
+    onEditarCobranca: () => onEditarCobranca(cobranca),
     onRegistrarPagamento: cobranca?.isProjection
       ? () => onOpenCreateForProjection?.(cobranca)
       : () => onRegistrarPagamento(cobranca),
-    onExcluirCobranca: cobranca?.isProjection ? undefined : () => onExcluirCobranca(cobranca),
+    onExcluirCobranca: () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: cobranca?.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined),
     onVerRecibo: cobranca?.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
     onEnviarCobranca: cobranca?.isProjection ? undefined : onEnviarCobranca,
@@ -122,6 +123,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
   const vencDia = getVencimentoDia(cobranca);
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
+  const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
   const shortName = formatShortName(cobranca?.passageiro?.nome, true);
@@ -135,7 +137,11 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   return (
     <MobileActionItem
       actions={actions}
-      onClickItem={undefined}
+      onClickItem={
+        cobranca?.isProjection && isPassageiroIncompleto(cobranca.passageiro)
+          ? () => onOpenCreateForProjection?.(cobranca)
+          : undefined
+      }
       className="bg-transparent"
       renderHeader={renderHeader}
     >
@@ -153,9 +159,14 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
         </div>
 
         <div className="flex-grow min-w-0 pr-[88px] sm:pr-24">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-            {shortName}
-          </p>
+          <div className="flex items-center gap-1 min-w-0">
+            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+              {shortName}
+            </p>
+            {cobranca.observacao?.trim() && (
+              <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+            )}
+          </div>
           <div className="flex flex-col min-w-0 mt-0.5">
             <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
               {firstNomeResponsavel}
@@ -172,14 +183,20 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
               })
               : "R$ --"}
           </p>
-          <StatusBadge
-            status={cobranca?.status}
-            dataVencimento={cobranca?.data_vencimento}
-            className={cn(
-              "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-              statusColor
-            )}
-          />
+          {isParcial ? (
+            <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
+              Parcial
+            </span>
+          ) : (
+            <StatusBadge
+              status={cobranca?.status}
+              dataVencimento={cobranca?.data_vencimento}
+              className={cn(
+                "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                statusColor
+              )}
+            />
+          )}
         </div>
       </div>
     </MobileActionItem>
@@ -201,12 +218,36 @@ export function CobrancasList({
 }: CobrancasListProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { openCobrancaFormDialog } = useLayout();
+  const {
+    openCobrancaFormDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openPassageiroFinanceiroDialog,
+  } = useLayout();
 
   const [openedCobranca, setOpenedCobranca] = useState<Cobranca | null>(null);
   const isPendingTab = activeTab === CobrancaTab.ARECEBER;
 
   const handleOpenCreateForProjection = (cobranca: Cobranca) => {
+    if (isPassageiroIncompleto(cobranca.passageiro)) {
+      openConfirmationDialog({
+        title: "Valor da parcela não configurado",
+        description:
+          "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+        confirmText: "Configurar agora",
+        cancelText: "Fazer depois",
+        onConfirm: () => {
+          safeCloseDialog(closeConfirmationDialog);
+          setTimeout(() => {
+            if (cobranca.passageiro) {
+              openPassageiroFinanceiroDialog({ passageiro: cobranca.passageiro });
+            }
+          }, 100);
+        },
+      });
+      return;
+    }
+
     openCobrancaFormDialog({
       passageiroId: cobranca.passageiro_id,
       passageiroNome: formatShortName(cobranca.passageiro?.nome, true),
@@ -239,7 +280,7 @@ export function CobrancasList({
         <UnifiedEmptyState
           icon={CalendarClock}
           title="Geração Automática de Parcelas"
-          description={`As parcelas de ${nomeMes}/${anoFilter || 2026} serão geradas automaticamente na virada do mês. Todos os passageiros ativos serão cobrados normalmente.`}
+          description={`As parcelas de ${nomeMes}/${anoFilter || 2026} serão geradas automaticamente na virada do mês. Todos os alunos ativos serão cobrados normalmente.`}
         />
       );
     }
@@ -249,7 +290,7 @@ export function CobrancasList({
         <UnifiedEmptyState
           icon={History}
           title="Sem parcelas neste período"
-          description="Seu cadastro ou contratos de passageiros iniciaram a partir de Julho/2026. Não há histórico de cobranças anteriores a este período."
+          description="Seu cadastro ou contratos de alunos iniciaram a partir de Julho/2026. Não há histórico de cobranças anteriores a este período."
         />
       );
     }
@@ -299,9 +340,14 @@ export function CobrancasList({
               {getVencimentoDia(cobranca)}
             </div>
             <div className="flex flex-col">
-              <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                {formatShortName(cobranca?.passageiro?.nome, true)}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                  {formatShortName(cobranca?.passageiro?.nome, true)}
+                </p>
+                {cobranca.observacao?.trim() && (
+                  <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+                )}
+              </div>
               <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                 {formatNomeResponsavelExibicao(cobranca?.passageiro?.responsavel_principal?.nome)}
               </p>
@@ -320,10 +366,16 @@ export function CobrancasList({
         </TableCell>
 
         <TableCell className="px-6 py-4 text-center">
-          <StatusBadge
-            status={cobranca?.status}
-            dataVencimento={cobranca?.data_vencimento}
-          />
+          {cobranca?.status === CobrancaStatus.PAGO && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor) ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/60">
+              Parcial
+            </span>
+          ) : (
+            <StatusBadge
+              status={cobranca?.status}
+              dataVencimento={cobranca?.data_vencimento}
+            />
+          )}
         </TableCell>
 
         <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
@@ -331,7 +383,9 @@ export function CobrancasList({
             cobranca={cobranca}
             onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
             onEditarCobranca={() => props.onEditarCobranca(cobranca)}
-            onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
+            onRegistrarPagamento={cobranca.isProjection
+              ? () => handleOpenCreateForProjection(cobranca)
+              : () => props.onRegistrarPagamento(cobranca)}
             onActionSuccess={props.onActionSuccess}
             onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
             onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
@@ -375,7 +429,7 @@ export function CobrancasList({
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-b border-gray-100/80">
                 <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  Passageiro
+                  Aluno
                 </TableHead>
                 <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   Valor
@@ -450,7 +504,7 @@ function ActionSheetWrapper({
     cobranca,
     onVerCobranca: () => { },
     onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id),
-    onEditarCobranca: cobranca.isProjection ? undefined : () => props.onEditarCobranca(cobranca),
+    onEditarCobranca: () => props.onEditarCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
       ? () => onOpenCreateForProjection(cobranca)
       : () => props.onRegistrarPagamento(cobranca),

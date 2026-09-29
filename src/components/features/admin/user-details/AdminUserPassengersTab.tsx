@@ -2,9 +2,12 @@ import { useState, useMemo } from "react";
 import { AdminUserPassengerItem } from "@/services/api/admin.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
+import { AdminDriverVencimentosTabela } from "@/components/features/admin/user-details/AdminDriverVencimentosTabela";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { StatusFilter } from "@/types/enums";
+import { useLayout } from "@/contexts/LayoutContext";
 import {
   Search,
   Users,
@@ -12,23 +15,43 @@ import {
   AlertCircle,
   DollarSign,
   X,
+  Bell,
+  Send,
 } from "lucide-react";
 import { phoneMask } from "@/utils/masks";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatShortName } from "@/utils/formatters/name";
-import { openBrowserLink } from "@/utils/browser";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdminUserPassengersTabProps {
   passageiros: AdminUserPassengerItem[];
+  userId?: string;
+  motoristaNome?: string;
 }
 
 const getValorMensalidade = (p: AdminUserPassengerItem) => {
-  const val = p.valor_cobranca ?? p.valor_mensalidade;
+  const val = p.valor_cobranca;
   return val ? Number(val) : 0;
 };
 
-export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabProps) {
+const getMotivoBloqueio = (p: AdminUserPassengerItem): string => {
+  if (p.motivo_bloqueio) return p.motivo_bloqueio;
+  if (!p.ativo) return "Aluno inativo";
+  if (p.enviar_notificacoes === false) return "Notificações desativadas para o aluno";
+  const resp = p.responsavel_principal;
+  if (!resp || (!resp.telefone && !resp.email)) return "Responsável sem contato cadastrado";
+  const valor = getValorMensalidade(p);
+  if (valor <= 0) return "Valor da mensalidade não informado";
+  if (!p.dia_vencimento || Number(p.dia_vencimento) <= 0) return "Dia de vencimento não informado";
+  if (!p.cobranca_mes_atual) return "Parcela do mês atual não gerada";
+  if (p.cobranca_mes_atual.status === "PAGO") return "Parcela do mês já foi paga";
+  if (p.cobranca_mes_atual.status === "CANCELADA") return "Parcela do mês cancelada";
+  return "Lembrete indisponível para este aluno";
+};
+
+export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: AdminUserPassengersTabProps) {
+  const { openAdminPassengerNotificationsDialog, openAdminPassengerSendCobrancaDialog } = useLayout();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(StatusFilter.ALL);
 
@@ -62,19 +85,11 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
     });
   }, [passageiros, search, statusFilter]);
 
-  const handleOpenWhatsApp = (phone: string, nomeResp?: string | null, nomeAluno?: string | null) => {
-    const cleanPhone = phone.replace(/\D/g, "");
-    if (!cleanPhone) return;
-    const msg = `Olá${nomeResp ? ` ${nomeResp.split(" ")[0]}` : ""}! 👋 Entrei em contato sobre o cadastro do passageiro ${nomeAluno || ""}.`;
-    const targetUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(msg)}`;
-    openBrowserLink(targetUrl);
-  };
-
   return (
     <div className="space-y-6 text-left">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
-          title="PASSAGEIROS ATIVOS"
+          title="ALUNOS ATIVOS"
           value={ativosCount}
           subtext={`${inativosCount} ${inativosCount === 1 ? "inativo" : "inativos"}`}
           cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.ACTIVE
@@ -109,13 +124,15 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
         />
       </div>
 
+      <AdminDriverVencimentosTabela passageiros={passageiros} />
+
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1 text-left">
               <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <Users className="h-4 w-4 text-blue-400" />
-                Listagem de Passageiros
+                Listagem de Alunos
                 {search.trim() || statusFilter !== StatusFilter.ALL ? (
                   <span>({filtered.length} de {totalPassageiros})</span>
                 ) : (
@@ -196,11 +213,11 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
             <div className="p-8">
               <AdminEmptyState
                 icon={Users}
-                title="Nenhum passageiro encontrado"
+                title="Nenhum aluno encontrado"
                 description={
                   search || statusFilter !== StatusFilter.ALL
                     ? "Nenhum aluno corresponde à busca ou filtro selecionado."
-                    : "O motorista ainda não possui alunos/passageiros cadastrados."
+                    : "O motorista ainda não possui alunos cadastrados."
                 }
               />
             </div>
@@ -210,12 +227,10 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800/80 bg-slate-900/70 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                      <th className="py-3.5 px-6">Passageiro</th>
-                      <th className="py-3.5 px-4">Responsável</th>
+                      <th className="py-3.5 px-6">Aluno / Responsável</th>
                       <th className="py-3.5 px-4">Escola / Turno</th>
                       <th className="py-3.5 px-4">Mensalidade</th>
-                      <th className="py-3.5 px-4">Vencimento</th>
-                      <th className="py-3.5 px-6 text-right">Status</th>
+                      <th className="py-3.5 px-6 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-xs">
@@ -228,37 +243,38 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                         <tr key={p.id} className="hover:bg-slate-800/30 transition-colors group">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center font-black text-xs border border-blue-500/20 shrink-0">
+                              <div
+                                title={p.ativo ? "Aluno Ativo" : "Aluno Inativo"}
+                                className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-colors ${
+                                  p.ativo
+                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                    : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                }`}
+                              >
                                 {p.nome.charAt(0).toUpperCase()}
                               </div>
                               <div className="min-w-0">
                                 <p className="font-headline font-bold text-slate-100 truncate group-hover:text-blue-400 transition-colors">
                                   {p.nome}
                                 </p>
-                                {(p.serie_ano || p.turma) && (
-                                  <p className="text-[10px] text-slate-400 font-medium">
-                                    {p.serie_ano ? `${p.serie_ano}` : ""}{p.turma ? ` — Turma ${p.turma}` : ""}
-                                  </p>
-                                )}
+                                <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-slate-400 font-medium mt-0.5">
+                                  {p.responsavel_principal?.nome ? (
+                                    <span>
+                                      Resp: <strong className="text-slate-300 font-semibold">{formatShortName(p.responsavel_principal.nome, true)}</strong>
+                                      {p.responsavel_principal.telefone ? ` (${phoneMask(p.responsavel_principal.telefone)})` : ""}
+                                    </span>
+                                  ) : (
+                                    <span className="italic text-slate-500">Sem resp. cadastrado</span>
+                                  )}
+                                  {(p.serie_ano || p.turma) && (
+                                    <>
+                                      <span className="text-slate-600">•</span>
+                                      <span>{p.serie_ano ? `${p.serie_ano}` : ""}{p.turma ? ` — Turma ${p.turma}` : ""}</span>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </td>
-
-                          <td className="py-4 px-4">
-                            {p.responsavel_principal?.nome ? (
-                              <div>
-                                <p className="font-medium text-slate-300 truncate">
-                                  {formatShortName(p.responsavel_principal.nome, true)}
-                                </p>
-                                {p.responsavel_principal.telefone && (
-                                  <p className="text-[10px] text-slate-400 font-medium font-mono">
-                                    {phoneMask(p.responsavel_principal.telefone)}
-                                  </p>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-slate-500 italic text-[11px]">—</span>
-                            )}
                           </td>
 
                           <td className="py-4 px-4">
@@ -275,27 +291,84 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                           </td>
 
                           <td className="py-4 px-4">
-                            {hasValor ? (
-                              <span className="font-medium text-slate-300">
-                                {formatCurrency(valor)}
-                              </span>
-                            ) : (
-                              <span className="text-slate-500 italic text-[11px]">—</span>
-                            )}
-                          </td>
-
-                          <td className="py-4 px-4">
-                            {hasValidVencimento ? (
-                              <span className="font-medium text-slate-300">
-                                Dia {p.dia_vencimento}
-                              </span>
-                            ) : (
-                              <span className="text-slate-500 italic text-[11px]">—</span>
-                            )}
+                            <div>
+                              {hasValor ? (
+                                <span className="font-semibold text-slate-200 block">
+                                  {formatCurrency(valor)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-500 italic text-[11px] block">—</span>
+                              )}
+                              {hasValidVencimento && (
+                                <span className="text-[10px] text-slate-400 font-medium block">
+                                  Venc. dia {p.dia_vencimento}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="py-4 px-6 text-right">
-                            <ActiveStatusBadge active={p.ativo} />
+                            <div className="flex items-center justify-end gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className={`inline-flex ${!p.pode_cobrar ? "cursor-not-allowed" : ""}`}
+                                    title={
+                                      !p.pode_cobrar
+                                        ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                        : "Forçar envio do lembrete de cobrança para o responsável"
+                                    }
+                                  >
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      disabled={!p.pode_cobrar}
+                                      onClick={() =>
+                                        openAdminPassengerSendCobrancaDialog({
+                                          userId: userId || "",
+                                          passageiro: p,
+                                          motoristaNome,
+                                        })
+                                      }
+                                      className={`h-8 rounded-xl border text-xs font-bold flex items-center gap-1.5 px-3 transition-all ${
+                                        p.pode_cobrar
+                                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 hover:border-emerald-500/50 shadow-sm shadow-emerald-500/10"
+                                          : "bg-slate-900/40 border-slate-800/60 text-slate-500 opacity-40"
+                                      }`}
+                                    >
+                                      <Send className="h-3.5 w-3.5" />
+                                      <span className="hidden sm:inline">Lembrete</span>
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="bg-slate-900 border-slate-800 text-slate-200 text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
+                                >
+                                  {!p.pode_cobrar && (
+                                    <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                                  )}
+                                  <span>
+                                    {!p.pode_cobrar
+                                      ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                      : "Forçar envio do lembrete de cobrança para o responsável"}
+                                  </span>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openAdminPassengerNotificationsDialog({ passageiroId: p.id, passageiroNome: p.nome })}
+                                title="Ver histórico de notificações"
+                                className="h-8 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 text-xs font-bold flex items-center gap-1.5 px-3 transition-all"
+                              >
+                                <Bell className="h-3.5 w-3.5 text-blue-400" />
+                                <span className="hidden sm:inline">Notificações</span>
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -317,15 +390,26 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                     >
                       <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center font-black text-sm border border-blue-500/20 shrink-0">
+                          <div
+                            className={`h-10 w-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
+                              p.ativo
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                            }`}
+                          >
                             {p.nome.charAt(0).toUpperCase()}
                           </div>
                           <div>
                             <h4 className="text-xs font-headline font-bold text-slate-100 leading-tight">
                               {p.nome}
                             </h4>
-                            {(p.serie_ano || p.turma) && (
+                            {p.responsavel_principal?.nome && (
                               <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                Resp: {formatShortName(p.responsavel_principal.nome, true)}
+                              </p>
+                            )}
+                            {(p.serie_ano || p.turma) && (
+                              <p className="text-[10px] text-slate-500 font-medium mt-0.5">
                                 {p.serie_ano ? `${p.serie_ano}` : ""}{p.turma ? ` — Turma ${p.turma}` : ""}
                               </p>
                             )}
@@ -376,6 +460,67 @@ export function AdminUserPassengersTab({ passageiros }: AdminUserPassengersTabPr
                               <span className="text-slate-500 italic text-[10px] block text-right">—</span>
                             )}
                           </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-800/60 grid grid-cols-2 gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className={`w-full inline-flex ${!p.pode_cobrar ? "cursor-not-allowed" : ""}`}
+                                title={
+                                  !p.pode_cobrar
+                                    ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                    : "Forçar envio do lembrete de cobrança para o responsável"
+                                }
+                              >
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={!p.pode_cobrar}
+                                  onClick={() =>
+                                    openAdminPassengerSendCobrancaDialog({
+                                      userId: userId || "",
+                                      passageiro: p,
+                                      motoristaNome,
+                                    })
+                                  }
+                                  className={`w-full h-8 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                    p.pode_cobrar
+                                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                                      : "bg-slate-800/40 border-slate-800/60 text-slate-500 opacity-40"
+                                  }`}
+                                >
+                                  <Send className="h-3.5 w-3.5" />
+                                  <span>Lembrete</span>
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              className="bg-slate-900 border-slate-800 text-slate-200 text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
+                            >
+                              {!p.pode_cobrar && (
+                                <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                              )}
+                              <span>
+                                {!p.pode_cobrar
+                                  ? `Lembrete indisponível: ${getMotivoBloqueio(p)}`
+                                  : "Forçar envio do lembrete de cobrança para o responsável"}
+                              </span>
+                            </TooltipContent>
+                          </Tooltip>
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openAdminPassengerNotificationsDialog({ passageiroId: p.id, passageiroNome: p.nome })}
+                            className="w-full h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:text-blue-400 hover:bg-slate-700/60 text-[11px] font-bold flex items-center justify-center gap-1.5"
+                          >
+                            <Bell className="h-3.5 w-3.5 text-blue-400" />
+                            <span>Notificações</span>
+                          </Button>
                         </div>
                       </div>
                     </div>

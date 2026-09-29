@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { DriverContractConfigStatus, WhatsappStatus } from "@/types/enums";
+import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus, DispositivoCadastro, AtribuicaoCategoria } from "@/types/enums";
 import { MetadadosCadastroData } from "@/types/usuario";
 
 export interface AdminDashboardStats {
@@ -67,6 +67,10 @@ export interface AdminUserListItem {
   tipo: string;
   created_at: string;
   data_nascimento: string | null;
+  logo_url: string | null;
+  canal_aquisicao?: string | null;
+  dispositivo_cadastro?: string | null;
+  metadados_cadastro?: MetadadosCadastroData | null;
   assinaturas: Array<{
     id: string;
     status: string;
@@ -110,12 +114,24 @@ export interface AdminUserPassengerItem {
   bairro: string | null;
   cidade: string | null;
   valor_cobranca?: number | null;
-  valor_mensalidade?: number | null;
   dia_vencimento?: number | null;
   ativo: boolean;
   escolas?: { nome: string } | null;
   veiculos?: { modelo: string; placa: string } | null;
   created_at: string;
+  cobranca_mes_atual?: {
+    id: string;
+    mes: number;
+    ano: number;
+    valor: number;
+    status: string;
+    data_vencimento: string;
+    data_envio_ultima_notificacao: string | null;
+    desativar_lembretes: boolean;
+  } | null;
+  enviar_notificacoes?: boolean;
+  pode_cobrar?: boolean;
+  motivo_bloqueio?: string | null;
 }
 
 export interface AdminUserPendingRequestItem {
@@ -134,6 +150,8 @@ export interface AdminUserPendingRequestItem {
   cidade: string | null;
   escolas?: { nome: string } | null;
   created_at: string;
+  dispositivo_cadastro?: string | null;
+  metadados_cadastro?: Record<string, unknown> | null;
 }
 
 export interface AdminUserVehicleItem {
@@ -173,6 +191,7 @@ export interface AdminUserContractItem {
   usuario_id: string;
   passageiro_id: string;
   status: string;
+  provider?: ContratoProvider | string | null;
   minuta_url?: string | null;
   contrato_final_url?: string | null;
   valor_total?: number | null;
@@ -191,7 +210,42 @@ export interface AdminUserContractItem {
   } | null;
 }
 
-export interface AdminUserDetailsResponse {
+export interface AdminUserReferralData {
+  referralSummary?: {
+    total: number;
+    completed: number;
+    pending: number;
+    referralCode: string;
+    referralLink: string;
+    bonusDays: number;
+    discountPct: number;
+    hasActiveDiscount: boolean;
+    hasIndicator: boolean;
+  };
+  indicador?: {
+    id: string;
+    nome: string;
+    telefone: string;
+    email: string;
+    cpfcnpj?: string | null;
+    status: IndicacaoStatus;
+    created_at: string;
+    fatura_origem_id?: string | null;
+  } | null;
+  referredUsers?: Array<{
+    id: string;
+    status: IndicacaoStatus;
+    created_at: string;
+    indicado: {
+      id: string;
+      nome: string;
+      telefone: string;
+      email: string;
+    } | null;
+  }>;
+}
+
+export interface AdminUserDetailsResponse extends AdminUserReferralData {
   user: {
     id: string;
     nome: string;
@@ -205,6 +259,7 @@ export interface AdminUserDetailsResponse {
     created_at: string;
     updated_at: string;
     data_nascimento: string | null;
+    logo_url?: string | null;
     chave_pix?: string | null;
     chave_pix_tipo?: string | null;
     canal_aquisicao?: string | null;
@@ -236,22 +291,28 @@ export interface AdminUserDetailsResponse {
     valorTotalContratos?: number;
     statusConfiguracaoContrato?: DriverContractConfigStatus;
   };
-  referralSummary?: {
-    total: number;
-    completed: number;
-    pending: number;
-    referralCode: string;
-    referralLink: string;
-    bonusDays: number;
-    discountPct: number;
-    hasActiveDiscount: boolean;
-    hasIndicator: boolean;
-  };
   passageiros?: AdminUserPassengerItem[];
   prePassageiros?: AdminUserPendingRequestItem[];
   veiculos?: AdminUserVehicleItem[];
   escolas?: AdminUserSchoolItem[];
   contratos?: AdminUserContractItem[];
+  dispositivos?: {
+    total: number;
+    itens: Array<{
+      id: string;
+      plataforma: string;
+      criado_em: string | null;
+      atualizado_em: string | null;
+    }>;
+  };
+  ultimo_acesso?: {
+    data_hora: string;
+    dispositivo: DispositivoCadastro;
+    por_dispositivo: Array<{
+      dispositivo: DispositivoCadastro;
+      data_hora: string;
+    }>;
+  } | null;
   assinatura: {
     id: string;
     usuario_id: string;
@@ -297,6 +358,11 @@ export interface AdminUserDetailsResponse {
     valor_promocional: number | null;
     ativo: boolean;
   }>;
+  configuracoes?: {
+    cobranca_aviso_previo_whatsapp_ativo?: boolean;
+    cobranca_aviso_previo_ativo?: boolean;
+    cobranca_dias_aviso_previo?: number | null;
+  } | null;
 }
 
 export interface UpdateUserPayload {
@@ -308,6 +374,7 @@ export interface UpdateUserPayload {
   cpfcnpj?: string;
   ativo?: boolean;
   data_nascimento?: string | null;
+  cobranca_aviso_previo_whatsapp_ativo?: boolean;
 }
 
 export interface UpdateSubscriptionPayload {
@@ -327,6 +394,61 @@ export interface ListUsersParams {
   limit?: number;
   search?: string;
   status?: string;
+  tipo?: string;
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+export interface ListAcquisitionStatsParams {
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+export interface CanalAquisicaoAgrupadoItem {
+  origem: string;
+  categoria: AtribuicaoCategoria;
+  quantidade: number;
+  porcentagem: number;
+  em_trial: number;
+  ativos_pagantes: number;
+  taxa_conversao: number;
+}
+
+export interface CampanhaAquisicaoItem {
+  nome: string;
+  origem: string;
+  criativo?: string;
+  conjunto?: string;
+  quantidade: number;
+  em_trial: number;
+  ativos_pagantes: number;
+  taxa_conversao: number;
+}
+
+export interface DispositivoAquisicaoItem {
+  dispositivo: string;
+  label: string;
+  quantidade: number;
+  porcentagem: number;
+}
+
+export interface AdminAcquisitionStatsResponse {
+  periodo: {
+    data_inicio?: string;
+    data_fim?: string;
+  };
+  resumo: {
+    total_leads: number;
+    em_trial: number;
+    ativos_pagantes: number;
+    vitalicios?: number;
+    taxa_conversao: number;
+    com_alunos_cadastrados: number;
+  };
+  canais: CanalAquisicaoAgrupadoItem[];
+  campanhas: CampanhaAquisicaoItem[];
+  dispositivos: DispositivoAquisicaoItem[];
+  canais_autodeclarados: Record<string, number>;
 }
 
 export interface CreateUserPayload {
@@ -344,17 +466,234 @@ export interface CreateUserResponse {
   email: string;
 }
 
+export interface DispatchDriverNotificationPayload {
+  evento: string;
+}
+
+export interface DispatchDriverNotificationResponse {
+  success?: boolean;
+  sent?: boolean;
+  processed?: boolean;
+  message?: string;
+  result?: unknown;
+}
+
+export interface MotoristaLatestActivityItem {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  telefone: string;
+  email: string;
+  cadastrado_em: string;
+  ultima_acao: string | null;
+  ultima_descricao: string | null;
+  ultima_atividade_at: string | null;
+  assinatura_status: string | null;
+  assinatura_vencimento: string | null;
+  dias_inativo: number;
+}
+
+export interface ListUsersLatestActivityParams {
+  search?: string;
+  sort?: "inactive_first" | "recent_first" | "oldest_first" | "newest_first" | "name_asc";
+  page?: number;
+  limit?: number;
+  healthStatus?: "all" | "active" | "alert" | "risk" | "inactive";
+  subscriptionStatus?: string;
+}
+
+export interface MotoristasRadarStats {
+  totalMotoristas: number;
+  totalAtivos: number;
+  totalAlerta: number;
+  totalEmRisco: number;
+  totalSemAtividade: number;
+}
+
+export interface MotoristasLatestActivityResponse {
+  data: MotoristaLatestActivityItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface MotoristaDailyPulseItem {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  telefone: string | null;
+  email: string | null;
+  cadastrado_em: string;
+  tipo_usuario_dia: "novo" | "recorrente";
+  reengajou_no_dia: boolean;
+  total_atividades_dia: number;
+  primeiro_acesso_dia: string;
+  ultimo_acesso_dia: string;
+  ultima_acao_dia: string | null;
+  ultima_descricao_dia: string | null;
+  assinatura_status: string | null;
+  assinatura_vencimento: string | null;
+  is_vitalicio: boolean;
+}
+
+export interface ListUsersDailyPulseParams {
+  date?: string;
+  search?: string;
+  tipoUsuario?: "all" | "novo" | "recorrente";
+  subscriptionStatus?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface MotoristasDailyPulseResponse {
+  data: MotoristaDailyPulseItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface MotoristasDailyPulseStats {
+  totalAcessosUnicos: number;
+  totalRecorrentes: number;
+  totalNovos: number;
+  totalNovosReengajados: number;
+  totalTrial: number;
+  totalAtivos: number;
+  totalVitalicios: number;
+  totalVencidosExpirados: number;
+}
+
+export interface VencimentoDiaItem {
+  dia: number;
+  quantidade: number;
+  isHoje: boolean;
+  percentual: number;
+}
+
+export interface VencimentosPassageirosResponse {
+  totalPassageirosAtivosComVencimento: number;
+  vencimentosHoje: number;
+  diaComPico: { dia: number; quantidade: number } | null;
+  diaAtual: number;
+  dias: VencimentoDiaItem[];
+}
+
+export interface CanaisNotificacaoResumo {
+  waba: number;
+  resend: number;
+  firebase: number;
+  custoEstimadoWabaBrl: number;
+}
+
+export interface CarteiraDiaResumo {
+  dia: number;
+  totalAlunos: number;
+  faturasPagas: number;
+  faturasPendentes: number;
+  faturasNaoGeradas?: number;
+  valorPrevistoTotal: number;
+  valorPagoTotal: number;
+  valorPendenteTotal: number;
+  canaisDisponiveis: CanaisNotificacaoResumo;
+  diagnostico: {
+    comTelefoneValido: number;
+    comEmailValido: number;
+    semResponsavelPrincipal: number;
+    semContato: number;
+    notificacoesDesativadasMotorista: number;
+    lembretesDesativadosAluno: number;
+  };
+}
+
+export interface ReguaItemResumo {
+  titulo: string;
+  descricao: string;
+  totalFaturas: number;
+  canais: CanaisNotificacaoResumo;
+}
+
+export interface DisparosHojeResumo {
+  totalFaturasHoje: number;
+  totalNotificacoesPrevistas?: number;
+  totalJaEnviadasHoje: number;
+  totalAguardandoEnvioHoje: number;
+  canaisConsolidados: CanaisNotificacaoResumo;
+  reguas: {
+    vencendoHoje: ReguaItemResumo;
+    avisoPrevio: ReguaItemResumo;
+    atraso3Dias: ReguaItemResumo;
+    atraso5Dias: ReguaItemResumo;
+    atraso7Dias: ReguaItemResumo;
+    atrasados?: ReguaItemResumo;
+  };
+}
+
+export type DisparosDiaResumo = DisparosHojeResumo;
+
+export interface VencimentoDetalhesResponse {
+  dia: number;
+  isHoje: boolean;
+  isPassado?: boolean;
+  isFuturo?: boolean;
+  mes: number;
+  ano: number;
+  carteira: CarteiraDiaResumo;
+  disparosHoje: DisparosHojeResumo | null;
+  disparosDia?: DisparosDiaResumo | null;
+}
+
 const BASE = "/admin";
 
 export const adminUserApi = {
   getStats: () =>
     apiClient.get<AdminDashboardStats>(`${BASE}/dashboard`).then(r => r.data),
 
+  getAcquisitionStats: (params?: ListAcquisitionStatsParams) =>
+    apiClient.get<AdminAcquisitionStatsResponse>(`${BASE}/stats/acquisition`, { params }).then(r => r.data),
+
+  getVencimentosPorDia: () =>
+    apiClient.get<VencimentosPassageirosResponse>(`${BASE}/vencimentos-por-dia`).then(r => r.data),
+
+  getVencimentoDetalhes: (dia: number, mes?: number, ano?: number) =>
+    apiClient.get<VencimentoDetalhesResponse>(`${BASE}/vencimentos-por-dia/${dia}/detalhes`, {
+      params: { mes, ano },
+    }).then(r => r.data),
+
   getUsers: (params?: ListUsersParams) =>
     apiClient.get<AdminUserListResponse>(`${BASE}/users`, { params }).then(r => r.data),
 
+  getUsersLatestActivity: (params?: ListUsersLatestActivityParams) =>
+    apiClient.get<MotoristasLatestActivityResponse>(`${BASE}/users/latest-activity`, { params }).then(r => r.data),
+
+  getUsersRadarStats: (subscriptionStatus: string = "active_trial") =>
+    apiClient.get<MotoristasRadarStats>(`${BASE}/users/latest-activity/stats`, { params: { subscriptionStatus } }).then(r => r.data),
+
+  getUsersDailyPulse: (params?: ListUsersDailyPulseParams) =>
+    apiClient.get<MotoristasDailyPulseResponse>(`${BASE}/users/daily-pulse`, { params }).then(r => r.data),
+
+  getUsersDailyPulseStats: (date?: string) =>
+    apiClient.get<MotoristasDailyPulseStats>(`${BASE}/users/daily-pulse/stats`, { params: { date } }).then(r => r.data),
+
   getUserDetails: (id: string) =>
     apiClient.get<AdminUserDetailsResponse>(`${BASE}/users/${id}`).then(r => r.data),
+
+  getUserContratos: (id: string) =>
+    apiClient.get<AdminUserContractItem[]>(`${BASE}/users/${id}/contratos`).then(r => r.data),
+
+  getUserPassageiros: (id: string) =>
+    apiClient.get<AdminUserPassengerItem[]>(`${BASE}/users/${id}/passageiros`).then(r => r.data),
+
+  getUserPrePassageiros: (id: string) =>
+    apiClient.get<AdminUserPendingRequestItem[]>(`${BASE}/users/${id}/pre-passageiros`).then(r => r.data),
+
+  getUserVeiculos: (id: string) =>
+    apiClient.get<AdminUserVehicleItem[]>(`${BASE}/users/${id}/veiculos`).then(r => r.data),
+
+  getUserEscolas: (id: string) =>
+    apiClient.get<AdminUserSchoolItem[]>(`${BASE}/users/${id}/escolas`).then(r => r.data),
+
+  getUserReferral: (id: string) =>
+    apiClient.get<AdminUserReferralData>(`${BASE}/users/${id}/referral`).then(r => r.data),
 
   updateUser: (id: string, data: UpdateUserPayload) =>
     apiClient.patch(`${BASE}/users/${id}`, data).then(r => r.data),
@@ -370,4 +709,98 @@ export const adminUserApi = {
 
   deleteUser: (id: string) =>
     apiClient.delete(`${BASE}/users/${id}`).then(r => r.data),
+
+  dispatchNotification: (id: string, data: DispatchDriverNotificationPayload) =>
+    apiClient.post<DispatchDriverNotificationResponse>(`${BASE}/users/${id}/dispatch-notification`, data).then(r => r.data),
+
+  setReferral: (id: string, indicadorId: string) =>
+    apiClient.put<{ success: boolean }>(`${BASE}/users/${id}/referral`, { indicadorId }).then(r => r.data),
+
+  removeReferral: (id: string) =>
+    apiClient.delete<{ success: boolean }>(`${BASE}/users/${id}/referral`).then(r => r.data),
+
+  impersonateUser: (id: string) =>
+    apiClient.post<ImpersonateUserResponse>(`${BASE}/users/${id}/impersonate`).then(r => r.data),
+
+  deleteInvoice: (id: string) =>
+    apiClient.delete<{ success: boolean; message: string }>(`${BASE}/invoices/${id}`).then(r => r.data),
+
+  dispatchPassengerCobranca: (passengerId: string, payload?: { cobrancaId?: string; force?: boolean }) =>
+    apiClient.post<{
+      success: boolean;
+      message: string;
+      evento: string;
+      destinatario?: string;
+      cobranca?: {
+        id: string;
+        valor: number;
+        data_vencimento: string;
+        mes: number;
+        ano: number;
+      };
+    }>(`${BASE}/passengers/${passengerId}/dispatch-cobranca`, payload).then(r => r.data),
+
+  dispatchDriverCobrancaDemo: (id: string) =>
+    apiClient.post<{
+      success: boolean;
+      message: string;
+      destinatario?: string;
+      alunoTeste?: string;
+      valor?: number;
+    }>(`${BASE}/users/${id}/dispatch-cobranca-demo`).then(r => r.data),
+
+  listReferrals: (params?: ListReferralsParams) =>
+    apiClient.get<ListReferralsResponse>(`${BASE}/referrals`, { params }).then(r => r.data),
 };
+
+export interface ImpersonateUserResponse {
+  tokenHash: string;
+  impersonateUrl: string;
+}
+
+export interface ListReferralsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: IndicacaoStatus;
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+export interface ReferralUserSummary {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  logo_url?: string | null;
+  assinatura_status?: string | null;
+  assinatura_data_vencimento?: string | null;
+}
+
+export interface ReferralItem {
+  id: string;
+  status: IndicacaoStatus;
+  created_at: string;
+  updated_at: string | null;
+  fatura_origem_id: string | null;
+  indicador: ReferralUserSummary | null;
+  indicado: ReferralUserSummary | null;
+}
+
+export interface ReferralsStats {
+  total: number;
+  concluidas: number;
+  pendentes: number;
+  taxaConversao: number;
+  diasBonusConcedidos: number;
+}
+
+export interface ListReferralsResponse {
+  data: ReferralItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  stats: ReferralsStats;
+}
+

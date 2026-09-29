@@ -113,7 +113,7 @@ export function useRelatoriosViewModel() {
 
   const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
     passageirosFilters,
-    { enabled: !!usuarioId && shouldFetchOperacional && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
+    { enabled: !!usuarioId && (shouldFetchOperacional || shouldFetchEntradas) && (can("passageiros.visualizar") || can("passageiros.gerenciar")) }
   );
 
   const userQueryFilters = useMemo(
@@ -133,10 +133,12 @@ export function useRelatoriosViewModel() {
 
   // 4. Data Processing (Calculations)
   const dados = useRelatoriosCalculations({
+    mes,
+    ano,
     financeiro: systemSummary?.financeiro,
     cobrancasData: shouldFetchEntradas ? cobrancasData : undefined,
     gastosData: shouldFetchSaidas ? gastosData : undefined,
-    passageirosData: shouldFetchOperacional ? passageirosData : undefined,
+    passageirosData: (shouldFetchOperacional || shouldFetchEntradas) ? passageirosData : undefined,
     escolasData: shouldFetchOperacional ? escolasData : undefined,
     veiculosData: (shouldFetchOperacional || shouldFetchSaidas) ? veiculosData : undefined,
     profile,
@@ -146,7 +148,7 @@ export function useRelatoriosViewModel() {
 
   const refreshAll = useCallback(async () => {
     const promises: Promise<any>[] = [refetchSummary()];
-    if (shouldFetchEntradas) promises.push(refetchCobrancas());
+    if (shouldFetchEntradas) promises.push(refetchCobrancas(), refetchPassageiros());
     if (shouldFetchSaidas) promises.push(refetchGastos(), refetchVeiculos());
     if (shouldFetchOperacional) promises.push(refetchPassageiros(), refetchEscolas(), refetchVeiculos());
     
@@ -180,10 +182,9 @@ export function useRelatoriosViewModel() {
     dados,
     veiculosList: veiculosData?.list || [],
     
-    // Status
     isLoading: isLoadingSummary,
-    isLoadingEntradas: shouldFetchEntradas && isLoadingCobrancas,
-    isLoadingSaidas: shouldFetchSaidas && (isLoadingGastos || isLoadingVeiculos),
-    isLoadingOperacional: shouldFetchOperacional && (isLoadingPassageiros || isLoadingEscolas || isLoadingVeiculos),
+    isLoadingEntradas: shouldFetchEntradas && (isLoadingCobrancas || isLoadingPassageiros || isLoadingSummary),
+    isLoadingSaidas: shouldFetchSaidas && (isLoadingGastos || isLoadingVeiculos || isLoadingSummary),
+    isLoadingOperacional: shouldFetchOperacional && (isLoadingPassageiros || isLoadingEscolas || isLoadingVeiculos || isLoadingSummary),
   };
 }

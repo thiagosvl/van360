@@ -14,8 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -26,7 +24,7 @@ import { usuarioApi } from "@/services/api/usuario.api";
 import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, Info, Loader2, Save, Percent } from "lucide-react";
+import { CreditCard, Info, Loader2, Save, Percent, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,7 +35,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
 
-  const [naoUsarPix, setNaoUsarPix] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const originalTipoRef = React.useRef<TipoChavePix | null>(null);
   const originalChaveRef = React.useRef<string>("");
@@ -62,8 +60,6 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
       originalTipoRef.current = tipo;
       originalChaveRef.current = chave;
 
-      setNaoUsarPix(false);
-
       if (tipo === TipoChavePix.CPF) chave = cpfMask(chave);
       else if (tipo === TipoChavePix.CNPJ) chave = cnpjMask(chave);
       else if (tipo === TipoChavePix.TELEFONE) chave = phoneMask(chave);
@@ -80,11 +76,10 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
     try {
       if (!profile?.id) return;
 
-      let chave_pix: string | null = data.chave_pix || null;
+      let chave_pix: string | null = data.chave_pix?.trim() || null;
       let tipo_chave_pix: TipoChavePix | null = data.tipo_chave_pix || null;
 
-      // Se o checkbox de desativar estiver marcado ou se a chave estiver em branco
-      if (naoUsarPix || !chave_pix || chave_pix.trim() === "") {
+      if (!chave_pix) {
         chave_pix = null;
         tipo_chave_pix = null;
       }
@@ -103,6 +98,29 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
     }
   };
 
+  const handleRemoverPix = async () => {
+    try {
+      if (!profile?.id) return;
+      setIsRemoving(true);
+      await usuarioApi.atualizarPixUsuario(profile.id, {
+        chave_pix: null,
+        tipo_chave_pix: null,
+      });
+      form.reset({
+        tipo_chave_pix: undefined,
+        chave_pix: "",
+      });
+      toast.success("cadastro.sucesso.perfilAtualizado");
+      await refreshProfile();
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Ocorreu um erro ao remover a chave Pix.";
+      toast.error("cadastro.erro.atualizar", { description: errorMessage });
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   const onFormError = () => {
     toast.error("validacao.formularioComErros");
   };
@@ -117,7 +135,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
 
   return (
     <div className="space-y-6">
-      {/* Card 1: Configuração de Chave PIX */}
+      {/* Card 1: Configuração de Chave Pix */}
       <div className="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-xs space-y-6">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
           <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
@@ -125,10 +143,10 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
           </div>
           <div>
             <h2 className="text-base font-bold text-[#1a3a5c]">
-              Pagamentos & PIX
+              Pagamentos & Pix
             </h2>
             <p className="text-xs text-slate-500">
-              Chave PIX de recebimento e regras de multa e juros das parcelas.
+              Chave Pix de recebimento e regras de multa e juros das parcelas.
             </p>
           </div>
         </div>
@@ -136,7 +154,7 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
         {!profile?.chave_pix && (
           <Banner
             variant="info"
-            description="A chave PIX cadastrada será exibida nos lembretes automáticos de cobrança e na carteirinha digital enviada aos responsáveis."
+            description="A chave Pix cadastrada será exibida nos lembretes automáticos de cobrança enviada aos responsáveis e no app dos pais."
           />
         )}
 
@@ -152,7 +170,6 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
                       Tipo de Chave
                     </FormLabel>
                     <Select
-                      disabled={naoUsarPix}
                       onValueChange={(val) => {
                         const selecionado = (val || null) as TipoChavePix | null;
                         field.onChange(selecionado);
@@ -221,13 +238,12 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
                   return (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Chave PIX
+                        Chave Pix
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Digite sua chave PIX"
+                          placeholder="Digite sua chave Pix"
                           {...field}
-                          disabled={naoUsarPix}
                           value={field.value || ""}
                           type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
                           inputMode={
@@ -261,28 +277,28 @@ export const PagamentosTab = React.memo(function PagamentosTab() {
               />
             </div>
 
-            {/* Checkbox para desativar chave PIX caso o motorista ja tenha cadastrado */}
-            {profile?.chave_pix && (
-              <div className="flex items-center gap-3 pt-2">
-                <Checkbox
-                  id="nao-usar-pix"
-                  checked={naoUsarPix}
-                  onCheckedChange={(checked) => setNaoUsarPix(Boolean(checked))}
-                  className="bg-white shadow-sm rounded-[4px] w-5 h-5 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] flex-shrink-0 border-slate-300"
-                />
-                <Label
-                  htmlFor="nao-usar-pix"
-                  className="text-[13px] sm:text-[14px] text-slate-600 cursor-pointer select-none leading-relaxed font-medium"
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+              {profile?.chave_pix ? (
+                <button
+                  type="button"
+                  onClick={handleRemoverPix}
+                  disabled={form.formState.isSubmitting || isRemoving}
+                  className="h-11 px-4 text-rose-600 hover:bg-rose-50 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
-                  Não utilizar chave PIX nos lembretes enviados
-                </Label>
-              </div>
-            )}
+                  {isRemoving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  Remover Chave Pix
+                </button>
+              ) : (
+                <div />
+              )}
 
-            <div className="flex justify-end pt-3 border-t border-slate-100">
               <button
                 type="submit"
-                disabled={form.formState.isSubmitting}
+                disabled={form.formState.isSubmitting || isRemoving}
                 className="h-11 px-6 bg-[#1a3a5c] text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 {form.formState.isSubmitting ? (

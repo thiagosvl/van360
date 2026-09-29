@@ -120,8 +120,55 @@ export const routeApi = {
       .get(`${endpointBase}/passageiros/${passageiroId}/ausencias`)
       .then(res => res.data),
 
-  listRotasByPassageiro: (passageiroId: string): Promise<any[]> =>
+  listRotasByPassageiro: async (passageiroId: string): Promise<any[]> =>
     apiClient
       .get(`${endpointBase}/passageiros/${passageiroId}/rotas`)
       .then(res => res.data),
+
+  listAusenciasFuturas: (params?: { rotaId?: string; dataInicio?: string }): Promise<AusenciaFuturaItem[]> =>
+    apiClient
+      .get(`${endpointBase}/ausencias/futuras`, {
+        params: {
+          rota_id: params?.rotaId,
+          data_inicio: params?.dataInicio,
+        },
+      })
+      .then(res => res.data),
+
+  buscarAlunos: (params: { search: string; rotaId?: string }): Promise<AlunoBuscaItem[]> =>
+    apiClient
+      .get(`${endpointBase}/alunos/buscar`, {
+        params: {
+          search: params.search,
+          rota_id: params.rotaId,
+        },
+      })
+      .then(res => res.data),
 };
+
+export interface AlunoBuscaItem {
+  id: string;
+  nome: string;
+  turma?: string | null;
+  escola_nome?: string | null;
+  responsavel_nome?: string | null;
+}
+
+export interface AusenciaFuturaItem {
+  id: string;
+  data_ausencia: string;
+  sentido?: string | null;
+  created_at: string;
+  passageiro: {
+    id: string;
+    nome: string;
+    turma?: string | null;
+    escola_nome?: string | null;
+    responsavel_nome?: string | null;
+  };
+  rota: {
+    id: string;
+    nome: string;
+    usuario_id: string;
+  };
+}

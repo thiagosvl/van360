@@ -1,11 +1,14 @@
-import { PassageiroFormModes, SubscriptionIdentifer } from "@/types/enums";
+import { Cobranca } from "@/types/cobranca";
+import { PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
-import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
+import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
+import type { AdminUserPassengerItem } from "@/services/api/admin.api";
+import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 import {
   createContext,
   useContext,
@@ -39,9 +42,29 @@ export interface OpenPassageiroFormProps {
   prePassageiro?: PrePassageiro | null;
 }
 
+export interface OpenRevisarSolicitacaoProps {
+  prePassageiro: PrePassageiro;
+  onSuccess?: (passageiro: Passageiro) => void;
+}
+
 export interface OpenQuickStartPassageiroProps {
-  onSuccess?: (passageiro?: Passageiro) => void;
+  onSuccess?: (passageiro?: Passageiro, keepOpen?: boolean) => void;
   isOnboarding?: boolean;
+}
+
+export interface OpenPassageiroFinanceiroProps {
+  passageiro: Passageiro | Partial<Passageiro>;
+  onSuccess?: () => void;
+}
+
+export interface OpenPassageiroEscolaProps {
+  passageiro: Passageiro | Partial<Passageiro>;
+  onSuccess?: () => void;
+}
+
+export interface OpenPassageiroTransporteProps {
+  passageiro: Passageiro | Partial<Passageiro>;
+  onSuccess?: () => void;
 }
 
 export interface OpenGastoFormProps {
@@ -73,17 +96,18 @@ export interface OpenCobrancaFormProps {
   ano?: number;
   lockFoiPago?: boolean;
   lockMesAno?: boolean;
+  availableMonths?: number[];
   onSuccess?: () => void;
 }
 
 export interface OpenCobrancaEditDialogProps {
   onSuccess?: () => void;
-  cobranca: any; // Using any to avoid complex type issues for now, can be Cobranca
+  cobranca: Cobranca;
 }
 
 export interface OpenCobrancaDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
-  onEdit: () => void;
+  onEdit?: () => void;
   isLoading?: boolean;
 }
 
@@ -96,17 +120,46 @@ export interface OpenManualPaymentDialogProps {
   valorOriginal: number;
   status: string;
   dataVencimento: string;
-  onPaymentRecorded?: (updatedCobranca?: any, dataSent?: RegistrarPagamentoManualDTO) => void;
+  observacao?: string | null;
+  onPaymentRecorded?: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: RegistrarPagamentoManualDTO) => void;
+}
+
+export interface OpenComplementarPagamentoDialogProps {
+  cobrancaId: string;
+  passageiroNome: string;
+  responsavelNome?: string;
+  valorOriginal: number;
+  valorJaPago: number;
+  dataVencimento: string;
+  mes?: number;
+  ano?: number;
+  observacao?: string | null;
+  onPaymentRecorded?: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: ComplementarPagamentoManualDTO) => void;
 }
 
 export interface OpenReceiptDialogProps {
   receiptUrl: string;
   cobrancaDescricao?: string;
+  cobrancaId?: string;
+  mes?: number;
+  ano?: number;
+  passageiroId?: string;
+  nomePassageiro?: string;
+  nomeResponsavel?: string | null;
+  generoPassageiro?: PassageiroGenero | string | null;
+}
+
+export interface OpenAnnualReceiptDialogProps {
+  receiptUrl: string;
+  ano: number;
+  alunoNome?: string;
+  passageiroId?: string;
 }
 
 export interface OpenFirstChargeDialogProps {
   passageiro: Passageiro;
-  onSuccess?: () => void;
+  isFirstPassageiro?: boolean;
+  onSuccess?: (passageiro?: Passageiro) => void;
 }
 
 export interface OpenContractSetupDialogProps {
@@ -116,13 +169,23 @@ export interface OpenContractSetupDialogProps {
 
 export interface OpenGerarContratoValidadorDialogProps {
   passageiroId: string;
-  onSuccess: (passageiroId: string, bypassed?: boolean) => void;
+  initialPassageiro?: Passageiro;
+  onSuccess: (
+    passageiroId: string,
+    bypassed?: boolean,
+    updatedValues?: { valorMensal?: number; diaVencimento?: number }
+  ) => void;
 }
 
 export interface OpenImportarContratoDialogProps {
   passageiroId?: string;
   passageiro?: Passageiro;
   onSuccess?: () => void;
+}
+
+export interface OpenRegistrarAusenciaProps {
+  lockedRotaId?: string;
+  lockedPassageiro?: { id: string; nome: string };
 }
 
 export interface OpenPixPaymentDialogProps {
@@ -138,6 +201,13 @@ export interface OpenSaaSCheckoutDialogProps {
   initialPlanId?: string;
   onSuccess?: () => void;
   forcedPeriod?: SubscriptionIdentifer;
+}
+
+export interface OpenAdminDispatchNotificationDialogProps {
+  userId: string;
+  userName: string;
+  userPhone?: string;
+  userEmail?: string;
 }
 
 export interface OpenResponsavelFormProps {
@@ -160,6 +230,101 @@ export interface OpenRouteFormProps {
   }) => void;
 }
 
+export interface OpenAdminPassengerNotificationsDialogProps {
+  passageiroId: string;
+  passageiroNome: string;
+}
+
+export interface OpenAdminPassengerSendCobrancaDialogProps {
+  userId: string;
+  passageiro: AdminUserPassengerItem;
+  motoristaNome?: string;
+}
+
+export interface OpenAdminDriverCobrancaDemoDialogProps {
+  userId: string;
+  userName: string;
+  userPhone?: string;
+  userApelido?: string;
+  userChavePix?: string;
+  userTipoChavePix?: string;
+}
+
+export interface OpenAdminVencimentoDetalhesDialogProps {
+  dia: number;
+  mes?: number;
+  ano?: number;
+}
+
+export interface OpenAdminConfigureReferralDialogProps {
+  userId: string;
+  userName: string;
+  currentIndicadorId?: string | null;
+  currentIndicadorNome?: string | null;
+  onSuccess?: () => void;
+}
+
+export interface VideoStoryItem {
+  url: string;
+  title?: string;
+}
+
+export interface OpenVideoStoriesDialogProps {
+  videos?: (string | VideoStoryItem)[];
+  videosData?: VideoStoryItem[];
+  videoUrls?: string[];
+  title?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  onCtaClick?: () => void;
+  showCta?: boolean;
+  loop?: boolean;
+}
+
+export interface OpenWhatsAppCobrancaPreviewDialogProps {
+  driverName?: string;
+  passageiroNome?: string;
+  userChavePix?: string | null;
+  showPixSetupAction?: boolean;
+}
+
+export interface OpenWhatsAppContratoPreviewDialogProps {
+  driverName?: string;
+  passageiroNome?: string;
+}
+
+export interface OpenReciboPreviewDialogProps {
+  driverName?: string;
+  passageiroNome?: string;
+}
+
+export interface OpenWhatsAppShowcaseDialogProps {
+  initialTab?: ShowcaseTabType;
+  driverName?: string;
+  passageiroNome?: string;
+}
+
+export interface OpenOnboardingSuccessDialogProps {
+  onNavigateToPassageiro: () => void;
+  passageiroNome?: string;
+}
+
+export interface OpenAdminConfirmBroadcastDialogProps {
+  publicoDescricao: string;
+  totalEligivel: number;
+  totalComPush: number;
+  selectedActionConfig?: { label: string; route: string } | null;
+  notificationTitle: string;
+  notificationMessage: string;
+  onConfirm: () => Promise<void> | void;
+  isSubmitting?: boolean;
+}
+
+export interface OpenImageFullscreenProps {
+  imageUrl: string;
+  alt?: string;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -173,8 +338,18 @@ export interface LayoutContextType {
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
+  openRevisarSolicitacaoDialog: (props: OpenRevisarSolicitacaoProps) => void;
+  closeRevisarSolicitacaoDialog: () => void;
   openRouteFormDialog: (props: OpenRouteFormProps) => void;
   openQuickStartPassageiroDialog: (props?: OpenQuickStartPassageiroProps) => void;
+  openPassageiroFinanceiroDialog: (props: OpenPassageiroFinanceiroProps) => void;
+  closePassageiroFinanceiroDialog: () => void;
+  openPassageiroEscolaDialog: (props: OpenPassageiroEscolaProps) => void;
+  closePassageiroEscolaDialog: () => void;
+  openPassageiroTransporteDialog: (props: OpenPassageiroTransporteProps) => void;
+  closePassageiroTransporteDialog: () => void;
+  openRegistrarAusenciaDialog: (props?: OpenRegistrarAusenciaProps) => void;
+  closeRegistrarAusenciaDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
@@ -182,12 +357,25 @@ export interface LayoutContextType {
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
+  openComplementarPagamentoDialog: (props: OpenComplementarPagamentoDialogProps) => void;
+  closeComplementarPagamentoDialog: () => void;
   openReceiptDialog: (props: OpenReceiptDialogProps) => void;
+  openAnnualReceiptDialog: (props: OpenAnnualReceiptDialogProps) => void;
   openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openPixPaymentDialog: (props: OpenPixPaymentDialogProps) => void;
   openSaaSCheckoutDialog: (props: OpenSaaSCheckoutDialogProps) => void;
   openAdminCreateUserDialog: (onSuccess?: (userId: string) => void) => void;
+  openAdminDispatchNotificationDialog: (props: OpenAdminDispatchNotificationDialogProps) => void;
+  openAdminPassengerNotificationsDialog: (props: OpenAdminPassengerNotificationsDialogProps) => void;
+  openAdminPassengerSendCobrancaDialog: (props: OpenAdminPassengerSendCobrancaDialogProps) => void;
+  openAdminDriverCobrancaDemoDialog: (props: OpenAdminDriverCobrancaDemoDialogProps) => void;
+  openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
+  openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
+  openAdminConfirmBroadcastDialog: (props: OpenAdminConfirmBroadcastDialogProps) => void;
+  closeAdminConfirmBroadcastDialog: () => void;
+  openImageFullscreen: (props: OpenImageFullscreenProps) => void;
+  closeImageFullscreen: () => void;
 
   isFirstChargeDialogOpen: boolean;
 
@@ -195,15 +383,28 @@ export interface LayoutContextType {
   openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;
   openImportarContratoDialog: (props?: OpenImportarContratoDialogProps) => void;
 
+  openVideoStoriesDialog: (props: OpenVideoStoriesDialogProps) => void;
+  closeVideoStoriesDialog: () => void;
+
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
   openEditarPixDialog: () => void;
+  openWhatsAppCobrancaPreviewDialog: (props?: OpenWhatsAppCobrancaPreviewDialogProps) => void;
+  openWhatsAppContratoPreviewDialog: (props?: OpenWhatsAppContratoPreviewDialogProps) => void;
+  openReciboPreviewDialog: (props?: OpenReciboPreviewDialogProps) => void;
+  openWhatsAppShowcaseDialog: (props?: OpenWhatsAppShowcaseDialogProps) => void;
+  openShowcaseTransporteEscolarDialog: () => void;
+  openOnboardingSuccessDialog: (props: OpenOnboardingSuccessDialogProps) => void;
   openAcquisitionChannelDialog: () => void;
   openReferAndEarnDialog: () => void;
+  openExcluirContaDialog: () => void;
+  closeExcluirContaDialog: () => void;
 
   // Mobile Menu
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
+  openPersonalizarMenuDialog: () => void;
+  closePersonalizarMenuDialog: () => void;
 
   // Loading Global
   isGlobalLoading: boolean;

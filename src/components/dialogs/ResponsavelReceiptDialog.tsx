@@ -2,6 +2,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Share2, ReceiptText, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface ResponsavelReceiptDialogProps {
   isOpen: boolean;
@@ -18,6 +19,10 @@ export const ResponsavelReceiptDialog = ({
 }: ResponsavelReceiptDialogProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
 
+  const handleClose = useCallback(() => {
+    safeCloseDialog(onClose);
+  }, [onClose]);
+
   const handleShare = useCallback(async () => {
     if (!receiptUrl) return;
 
@@ -32,11 +37,11 @@ export const ResponsavelReceiptDialog = ({
   if (!receiptUrl) return null;
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} className="max-w-xl">
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} className="max-w-xl">
       <BaseDialog.Header
         title={cobrancaDescricao}
         icon={<ReceiptText className="h-5 w-5" />}
-        onClose={onClose}
+        onClose={handleClose}
       />
 
       <BaseDialog.Body className="p-4 sm:p-6 bg-slate-50/30">

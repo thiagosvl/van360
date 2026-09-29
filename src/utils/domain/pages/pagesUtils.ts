@@ -1,12 +1,12 @@
 import { ComponentType } from "react";
-import { Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Sparkles } from "lucide-react";
+import { LucideProps, Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Sparkles } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
 
 export interface PageItem {
   title: string;
   href: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: ComponentType<LucideProps>;
   permission?: PermissionKey;
 }
 
@@ -17,10 +17,22 @@ const pagesItems: PageItem[] = [
     icon: LayoutDashboard,
   },
   {
-    title: "Renovação Passageiros",
+    title: "Alunos",
+    href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
+    icon: Users,
+    permission: "passageiros.visualizar",
+  },
+  {
+    title: "Renovação Alunos",
     href: ROUTES.PRIVATE.MOTORISTA.RENOVATION,
     icon: Sparkles,
     permission: "renovacoes.gerenciar",
+  },
+  {
+    title: "Parcelas",
+    href: ROUTES.PRIVATE.MOTORISTA.BILLING,
+    icon: BadgeDollarSign,
+    permission: "cobrancas.gerenciar",
   },
   {
     title: "Contratos",
@@ -41,16 +53,10 @@ const pagesItems: PageItem[] = [
     permission: "equipe.gerenciar_monitores",
   },
   {
-    title: "Parcelas",
-    href: ROUTES.PRIVATE.MOTORISTA.BILLING,
-    icon: BadgeDollarSign,
-    permission: "cobrancas.gerenciar",
-  },
-  {
-    title: "Passageiros",
-    href: ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-    icon: Users,
-    permission: "passageiros.visualizar",
+    title: "Gastos",
+    href: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
+    icon: TrendingDown,
+    permission: "gastos.visualizar",
   },
   {
     title: "Escolas",
@@ -63,12 +69,6 @@ const pagesItems: PageItem[] = [
     href: ROUTES.PRIVATE.MOTORISTA.VEHICLES,
     icon: Car,
     permission: "veiculos.gerenciar",
-  },
-  {
-    title: "Gastos",
-    href: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
-    icon: TrendingDown,
-    permission: "gastos.visualizar",
   },
   {
     title: "Relatórios",
@@ -90,23 +90,20 @@ const pagesItems: PageItem[] = [
   },
 ];
 
-const defaultBottomNavHrefs: string[] = [
+import { STORAGE_KEYS } from "@/constants";
+
+export const STORAGE_KEY_BOTTOM_NAV = STORAGE_KEYS.BOTTOM_NAV_PREFERENCES;
+export const BOTTOM_NAV_CHANGE_EVENT = "van360:bottom_nav_change";
+
+export const defaultBottomNavHrefs: string[] = [
   ROUTES.PRIVATE.MOTORISTA.HOME,
   ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
   ROUTES.PRIVATE.MOTORISTA.BILLING,
-  ROUTES.PRIVATE.MOTORISTA.ROUTES,
+  ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
 ];
 
-// Centraliza a configuração dos itens que aparecem no rodapé mobile por perfil
 export function getBottomNavHrefs(isSubConta: boolean, isMotoristaAuxiliar: boolean, isMonitor: boolean): string[] {
-  if (isMonitor) {
-    return [
-      ROUTES.PRIVATE.MOTORISTA.HOME,
-      ROUTES.PRIVATE.MOTORISTA.ROUTES,
-      ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
-    ];
-  }
-  if (isMotoristaAuxiliar) {
+  if (isMonitor || isMotoristaAuxiliar) {
     return [
       ROUTES.PRIVATE.MOTORISTA.HOME,
       ROUTES.PRIVATE.MOTORISTA.ROUTES,

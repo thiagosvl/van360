@@ -28,6 +28,7 @@ interface ContratosToolbarProps {
   activeTab: ContratoTab;
   countPendentes?: number;
   countSemContrato?: number;
+  countAssinados?: number;
   onOpenConfig: () => void;
   onOpenPreview: () => void;
   onImportarContrato?: () => void;
@@ -44,6 +45,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   activeTab,
   countPendentes,
   countSemContrato,
+  countAssinados,
   onOpenConfig,
   onOpenPreview,
   onImportarContrato,
@@ -99,6 +101,24 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger
+              value={ContratoTab.ASSINADOS}
+              className={cn(
+                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
+                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
+                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+              )}
+            >
+              Assinados
+              {countAssinados !== undefined && (
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                  activeTab === ContratoTab.ASSINADOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                )}>
+                  {countAssinados}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -111,7 +131,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             )} />
             <Input
               type="search"
-              placeholder="Buscar por passageiro ou responsável..."
+              placeholder="Buscar por aluno ou responsável..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
@@ -123,10 +143,11 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               <Button
                 type="button"
                 onClick={onImportarContrato}
-                className="h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
+                title="Vincular contrato já assinado ao cadastro de um aluno"
+                className="hidden sm:inline-flex h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
               >
                 <UploadCloud className="w-4 h-4" />
-                <span className="hidden sm:inline">Importar Contrato</span>
+                <span>Importar Contrato Assinado</span>
               </Button>
             )}
 
@@ -150,14 +171,14 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
                   <DropdownMenuItem
                     disabled={isDesativado || isToggling}
                     onClick={onOpenConfig}
                     className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
                   >
                     <FileText className="w-4 h-4 opacity-70" />
-                    Configurar Contrato
+                    Configurar Modelo de Contrato
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
@@ -175,7 +196,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                     className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
                   >
                     {isPreviewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4 opacity-70" />}
-                    Visualizar Modelo PDF
+                    Visualizar Contrato Modelo
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -234,9 +255,36 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                           </div>
                         </div>
                         <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Configurar Contrato</span>
+                          <span className="font-bold text-sm tracking-tight truncate">Configurar Modelo de Contrato</span>
+                          <span className="text-[11px] text-slate-400 font-medium truncate">Cláusulas e regras padrão da sua van</span>
                         </div>
                       </button>
+
+                      {onImportarContrato && (
+                        <button
+                          onClick={() => {
+                            setOpenDrawer(false);
+                            onImportarContrato();
+                          }}
+                          disabled={isDesativado || isToggling}
+                          className={cn(
+                            "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
+                            isDesativado
+                              ? "opacity-40 grayscale pointer-events-none text-slate-400"
+                              : "text-[#1a3a5c] active:bg-slate-50"
+                          )}
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
+                            <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
+                              <UploadCloud />
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-start gap-0.5 overflow-hidden">
+                            <span className="font-bold text-sm tracking-tight truncate">Importar Contrato Assinado</span>
+                            <span className="text-[11px] text-slate-400 font-medium truncate">Vincular documento assinado a um aluno</span>
+                          </div>
+                        </button>
+                      )}
 
                       <button
                         onClick={() => {
@@ -291,7 +339,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
                           </div>
                         </div>
                         <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Visualizar Modelo PDF</span>
+                          <span className="font-bold text-sm tracking-tight truncate">Visualizar Contrato Modelo</span>
                         </div>
                       </button>
 

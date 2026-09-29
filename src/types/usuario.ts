@@ -22,6 +22,7 @@ export interface Usuario {
   razao_social?: string;
   apelido?: string;
   cpfcnpj: string;
+  cpf_responsavel?: string;
   email: string;
   telefone: string;
   data_nascimento?: string;
@@ -52,6 +53,7 @@ export interface Usuario {
 
   // Configurações de contrato
   assinatura_digital_url?: string;
+  logo_url?: string | null;
   config_contrato?: {
     usar_contratos: boolean;
     multa_atraso: { valor: number; tipo: ContractMultaTipo };

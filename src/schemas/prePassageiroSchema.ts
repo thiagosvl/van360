@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
+import { cepSchema, cpfSchema, dateSchema, phoneSchema, timeSchema } from "@/schemas/common";
 import { convertDateBrToISO, parseCurrencyToNumber } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
 
@@ -24,15 +24,19 @@ export const prePassageiroSchema = z.object({
   observacoes: z.string().optional().nullable().or(z.literal("")),
 
   escola_id: z.string().optional().nullable().or(z.literal("")),
-  turma: z.string().min(1, "Campo obrigatório"),
+  turma: z.string().optional().nullable().or(z.literal("")),
+  sala: z.string().optional().nullable().or(z.literal("")),
   nome_professor: z.string().optional().nullable().or(z.literal("")),
   periodo: z.string().min(1, "Campo obrigatório"),
   modalidade: z.string().min(1, "Campo obrigatório"),
+  ano_letivo: z.string({ required_error: "Selecione o ano letivo" }).min(1, "Selecione o ano letivo"),
   data_nascimento: dateSchema(true),
   genero: z.string().min(1, "Campo obrigatório"),
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
   data_inicio_transporte: dateSchema(false, true),
   data_fim_transporte: dateSchema(false, true),
+  horario_entrada: timeSchema,
+  horario_saida: timeSchema,
 
   valor_cobranca: z
     .string()
@@ -41,7 +45,6 @@ export const prePassageiroSchema = z.object({
       message: "O valor deve ser no mínimo R$ 1,00",
     }),
   dia_vencimento: z.string().optional(),
-  ano_letivo: z.string().optional().default(String(new Date().getFullYear())),
   ativo: z.boolean().optional(),
 }).refine(
   (data) => {
@@ -57,6 +60,15 @@ export const prePassageiroSchema = z.object({
   {
     message: "Término deve ser maior que o Início",
     path: ["data_fim_transporte"],
+  }
+).refine(
+  (data) => {
+    if (!data.horario_entrada || !data.horario_saida) return true;
+    return data.horario_saida > data.horario_entrada;
+  },
+  {
+    message: "Horário de saída deve ser maior que o horário de entrada",
+    path: ["horario_saida"],
   }
 );
 

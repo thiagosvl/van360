@@ -7,8 +7,8 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import {
   EntradasSkeleton,
   OperacionalSkeleton,
-  RelatoriosSkeleton,
   SaidasSkeleton,
+  VisaoGeralSkeleton,
 } from "@/components/skeletons/RelatoriosSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,9 +18,13 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { RelatorioTab, FilterDefaults } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Relatorios() {
   const { can } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("relatorios");
   const {
     mes,
     ano,
@@ -42,17 +46,12 @@ export default function Relatorios() {
     return <AccessRestrictedState moduleName="Relatórios Financeiros" />;
   }
 
-  if (isLoading) {
-    return <RelatoriosSkeleton activeTab={activeTab} />;
-  }
-
   return (
-    <PullToRefreshWrapper onRefresh={refreshAll}>
+    <>
+      <PullToRefreshWrapper onRefresh={refreshAll}>
       <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
-        {/* Header & Navigation */}
         <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
 
-        {/* Vehicle Filter */}
         {veiculosList.length > 0 && (
           <div className="relative z-10 w-full px-1">
             <div className="flex flex-col">
@@ -81,7 +80,6 @@ export default function Relatorios() {
           </div>
         )}
 
-        {/* Main Content */}
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
@@ -117,7 +115,7 @@ export default function Relatorios() {
           </div>
 
           <TabsContent value={RelatorioTab.VISAO_GERAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0 transform-gpu will-change-transform">
-            <RelatoriosVisaoGeral dados={dados.visaoGeral} />
+            {isLoading ? <VisaoGeralSkeleton /> : <RelatoriosVisaoGeral dados={dados.visaoGeral} />}
           </TabsContent>
 
           <TabsContent value={RelatorioTab.ENTRADAS} className="mt-0 focus-visible:outline-none focus-visible:ring-0 transform-gpu will-change-transform">
@@ -134,5 +132,18 @@ export default function Relatorios() {
         </Tabs>
       </div>
     </PullToRefreshWrapper>
+
+    {shouldShowTutorial && (
+      <VideoCommerce
+        screenName="relatorios"
+        previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+        videosData={[...tutorialConfig.videos]}
+        tooltipText={tutorialConfig.tooltipText}
+        positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+        requireScrollOnMobile={false}
+        storageKey={STORAGE_KEYS.GUIDE_RELATORIOS_DISMISSED}
+      />
+    )}
+  </>
   );
 }

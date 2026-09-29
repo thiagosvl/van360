@@ -48,18 +48,21 @@ export function useUpdatePassageiro() {
         toast.success("sucesso.atualizar");
       }
 
-      // Invalidações globais
+      if (data && typeof data === "object" && "id" in data && data.id) {
+        queryClient.setQueryData(["passageiro", variables.id], data);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["contratos"] });
       queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
       queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
 
-      // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
       if (variables.data?.escola_id !== undefined) {
         queryClient.invalidateQueries({ queryKey: ["escolas"] });
       }
@@ -75,15 +78,27 @@ export function useDeletePassageiro() {
 
   return useMutation({
     mutationFn: (id: string) => passageiroApi.deletePassageiro(id),
-    onError: (error: any) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ["passageiro", id] });
+      queryClient.setQueryData(["passageiro", id], null);
+    },
+    onError: (error: unknown) => {
       toast.error("passageiro.erro.excluir", {
         description: getErrorMessage(error, "passageiro.erro.excluirDetalhe"),
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
       toast.success("passageiro.sucesso.excluido");
-      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
 
+      if (deletedId) {
+        queryClient.removeQueries({ queryKey: ["passageiro", deletedId] });
+        queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", deletedId] });
+        queryClient.removeQueries({ queryKey: ["passageiro-ausencias", deletedId] });
+        queryClient.removeQueries({ queryKey: ["passageiro-rotas", deletedId] });
+        queryClient.removeQueries({ queryKey: ["available-years", deletedId] });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
@@ -241,4 +256,31 @@ export function useSetPrincipalResponsavel() {
     },
   });
 }
+
+export function useToggleNotificacoesRotaResponsavel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      passageiroId,
+      responsavelId,
+      status,
+    }: {
+      passageiroId: string;
+      responsavelId: string;
+      status?: boolean;
+    }) => passageiroApi.toggleNotificacoesRota(passageiroId, responsavelId, status),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      toast.success("Notificações de rota atualizadas com sucesso!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao alterar notificações de rota", {
+        description: getErrorMessage(error),
+      });
+    },
+  });
+}
+
 

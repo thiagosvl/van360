@@ -1,18 +1,52 @@
-import { useEffect } from "react";
-import { Loader2, Edit, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Settings, Trash2, Info, ChevronDown } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { RouteConfigSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { cn } from "@/lib/utils";
 import { ConfigurarRotaItinerario } from "@/components/features/configurar-rota/ConfigurarRotaItinerario";
 import { AdicionarParadaDialog } from "@/components/dialogs/AdicionarParadaDialog";
 import PassageiroEnderecoFormDialog from "@/components/dialogs/PassageiroEnderecoFormDialog";
 import { ReordenarParadaSheet } from "@/components/features/active-route/ReordenarParadaSheet";
-import { useConfigurarRotaViewModel, ItineraryItem } from "@/hooks/ui/useConfigurarRotaViewModel";
+import { useConfigurarRotaViewModel } from "@/hooks/ui/useConfigurarRotaViewModel";
 import { useLayout } from "@/contexts/LayoutContext";
-import { RouteNodeType, RouteSentido } from "@/types/route";
 import { toast } from "@/utils/notifications/toast";
-import { formatShortName } from "@/utils/formatters";
+
+function PontosDeAtencaoCollapse({ avisos }: { avisos: string[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!avisos || avisos.length === 0) return null;
+
+  return (
+    <div className="border border-blue-200/90 bg-blue-50/70 rounded-xl overflow-hidden shadow-2xs transition-all text-left">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 cursor-pointer hover:bg-blue-100/50 transition-colors select-none"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <Info className="w-4 h-4 text-[#1a3a5c] shrink-0" />
+          <span className="text-xs font-bold text-[#1a3a5c] truncate">
+            {avisos.length === 1 ? "1 sugestão para sua rota" : `${avisos.length} sugestões para sua rota`}
+          </span>
+        </div>
+        <ChevronDown className={cn("w-4 h-4 text-[#1a3a5c]/70 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <div className="border-t border-blue-200/70 p-3 bg-blue-50/40 space-y-2 animate-in fade-in duration-150">
+          {avisos.map((aviso, idx) => (
+            <div key={idx} className="flex items-start gap-2 text-xs text-slate-800 leading-relaxed font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1a3a5c] mt-1.5 shrink-0" />
+              <span className="flex-1 break-words">{aviso}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ConfigurarRota() {
   const vm = useConfigurarRotaViewModel();
@@ -48,25 +82,6 @@ export default function ConfigurarRota() {
     });
   };
 
-  const renderAlertBlock = () => {
-    if (vm.itinerario.length === 0 || (vm.errosItinerario.length === 0 && vm.avisosItinerario.length === 0)) return null;
-
-    return (
-      <div className="space-y-2 mb-4">
-        {vm.errosItinerario.map((err, idx) => (
-          <div key={`err-${idx}`} className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-semibold text-left">
-            ⚠️ {err}
-          </div>
-        ))}
-        {vm.avisosItinerario.map((aviso, idx) => (
-          <div key={`aviso-${idx}`} className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-semibold text-left">
-            ℹ️ {aviso}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
       <form onSubmit={vm.handleSubmit} className="text-left pb-12 max-w-2xl mx-auto relative">
@@ -96,10 +111,11 @@ export default function ConfigurarRota() {
                 variant="outline"
                 size="sm"
                 onClick={handleOpenEditRouteDialog}
-                className="h-8 px-2.5 rounded-lg border-slate-200 text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all"
-                title="Editar Nome/Veículo"
+                className="h-8 px-2.5 rounded-lg border-slate-200 text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all flex items-center gap-1.5"
+                title="Configurar Dados da Rota (Nome e Veículo)"
               >
-                <Edit className="w-3.5 h-3.5" />
+                <Settings className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Configurar</span>
               </Button>
 
               {vm.isEditing && vm.id && vm.can("rotas.excluir") && (
@@ -122,6 +138,8 @@ export default function ConfigurarRota() {
             </div>
           </div>
 
+          <PontosDeAtencaoCollapse avisos={vm.avisosItinerario} />
+
           {/* Seção do Itinerário e Ações */}
           <div className="space-y-5 animate-in fade-in duration-300">
             <ConfigurarRotaItinerario
@@ -136,7 +154,7 @@ export default function ConfigurarRota() {
               onOpenModalParadaGeral={vm.openModalParadaGeral}
             />
 
-            {renderAlertBlock()}
+            <PontosDeAtencaoCollapse avisos={vm.avisosItinerario} />
 
             <Button
               type="submit"
@@ -163,7 +181,10 @@ export default function ConfigurarRota() {
         itinerario={vm.itinerario}
         passageirosList={vm.passageirosList}
         escolasList={vm.escolasList}
+        selectedEscolaId={vm.filtroEscolaId}
+        onSelectEscolaId={vm.setFiltroEscolaId}
         onAddPassageiro={vm.handleAddPassageiro}
+        onOpenCadastrarEndereco={vm.handleOpenCadastrarEndereco}
         onAddEscola={vm.handleAddEscola}
       />
 
@@ -172,49 +193,13 @@ export default function ConfigurarRota() {
           passageiroId={vm.editingInlinePassageiroId}
           nomePassageiro={vm.passageirosList.find((p) => p.id === vm.editingInlinePassageiroId)?.nome || ""}
           isOpen={!!vm.editingInlinePassageiroId}
-          onSuccess={(addressData?: any) => {
-            const targetId = vm.editingInlinePassageiroId;
-            const isAutoAdd = vm.shouldAutoAddPassageiro;
-
-            vm.setIsDialogOpen(false);
+          onSuccess={() => {
             vm.setEditingInlinePassageiroId(null);
             vm.setShouldAutoAddPassageiro(false);
-
-            if (isAutoAdd && targetId) {
-              const pass = vm.passageirosList.find((p) => p.id === targetId);
-              const passName = pass?.nome || "Passageiro";
-
-              const updatedPass = pass ? {
-                ...pass,
-                responsavel_principal: {
-                  ...pass.responsavel_principal,
-                  nome: pass.responsavel_principal?.nome || "",
-                  telefone: pass.responsavel_principal?.telefone || "",
-                  logradouro: addressData?.logradouro || pass.responsavel_principal?.logradouro || "Endereço cadastrado",
-                  numero: addressData?.numero || pass.responsavel_principal?.numero || "",
-                  bairro: addressData?.bairro || pass.responsavel_principal?.bairro || "",
-                  cidade: addressData?.cidade || pass.responsavel_principal?.cidade || "",
-                  estado: addressData?.estado || pass.responsavel_principal?.estado || "",
-                },
-              } : null;
-
-              const newItem: ItineraryItem = {
-                id: `no-pass-${targetId}-${Date.now()}`,
-                tipo_no: RouteNodeType.PASSAGEIRO,
-                passageiro_id: targetId,
-                nome: passName,
-                detalhe: pass?.escola?.nome ? `Escola: ${pass.escola.nome}` : undefined,
-                temEndereco: true,
-                responsaveisAdicionais: (pass as any)?.responsaveis || [],
-                passageiro: updatedPass,
-                sentido: RouteSentido.INDO,
-              };
-
-              vm.setItinerario((prev) => [...prev, newItem]);
-              toast.success(`Endereço salvo e ${formatShortName(passName, true)} adicionado(a) à rota!`);
-            } else {
-              toast.success("Endereço atualizado com sucesso!");
-            }
+            toast.success("Endereço adicionado!", {
+              description: "Agora é só adicionar a parada do aluno ao itinerário.",
+              duration: 3500,
+            });
           }}
           onClose={() => {
             vm.setEditingInlinePassageiroId(null);

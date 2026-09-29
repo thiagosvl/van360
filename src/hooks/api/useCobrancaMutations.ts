@@ -1,12 +1,13 @@
-import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
+import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CobrancaStatus } from "@/types/enums";
 
-export function useCreateCobranca() {
+export function useCreateCobranca(options?: { showToast?: boolean }) {
   const queryClient = useQueryClient();
+  const showToast = options?.showToast ?? true;
 
   return useMutation({
     mutationFn: (data: CreateCobrancaDTO) => cobrancaApi.createCobranca(data),
@@ -16,11 +17,13 @@ export function useCreateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
-      toast.success(
-        variables.status === CobrancaStatus.PAGO
-          ? "cobranca.sucesso.pagamentoRegistrado"
-          : "cobranca.sucesso.criada"
-      );
+      if (showToast) {
+        toast.success(
+          variables.status === CobrancaStatus.PAGO
+            ? "cobranca.sucesso.pagamentoRegistrado"
+            : "cobranca.sucesso.criada"
+        );
+      }
     },
     onError: (error: any) => {
       const isDuplicate =
@@ -57,6 +60,7 @@ export function useUpdateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.atualizada");
     },
@@ -69,15 +73,16 @@ export function useDeleteCobranca() {
   return useMutation({
     mutationFn: (id: string) => cobrancaApi.deleteCobranca(id),
     onError: (error: any) => {
-      toast.error("cobranca.erro.excluir", {
-        description: getErrorMessage(error, "cobranca.erro.excluirDetalhe"),
+      toast.error("cobranca.erro.cancelar", {
+        description: getErrorMessage(error, "cobranca.erro.cancelarDetalhe"),
       });
     },
     onSuccess: (_, id) => {
-      toast.success("cobranca.sucesso.excluida");
+      toast.success("cobranca.sucesso.cancelada");
       
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       
       if (id) {
@@ -98,6 +103,7 @@ export function useDesfazerPagamento() {
     onSuccess: (updatedCobranca, cobrancaId) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
@@ -120,6 +126,30 @@ export function useRegistrarPagamentoManual() {
     onSuccess: (_, { cobrancaId }) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
+      queryClient.invalidateQueries({ queryKey: ["historico"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      toast.success("cobranca.sucesso.pagamentoRegistrado");
+    },
+    onError: (error: any) => {
+      toast.error("cobranca.erro.registrarPagamento", {
+        description: getErrorMessage(error, "cobranca.erro.registrarPagamentoDetalhe"),
+      });
+    },
+  });
+}
+
+export function useComplementarPagamentoManual() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: ComplementarPagamentoManualDTO }) =>
+      cobrancaApi.complementarPagamentoManual(cobrancaId, data),
+    onSuccess: (_, { cobrancaId }) => {
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
       queryClient.invalidateQueries({ queryKey: ["historico"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
@@ -153,6 +183,27 @@ export function useToggleNotificacoesCobranca() {
       toast.error("cobranca.erro.alterarNotificacoes", {
         description: getErrorMessage(error, "cobranca.erro.alterarNotificacoesDetalhe"),
       });
+    },
+  });
+}
+
+export function useRestaurarCobranca() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cobrancaId: string) => cobrancaApi.restaurarCobranca(cobrancaId),
+    onError: (error: any) => {
+      toast.error("cobranca.erro.reativar", {
+        description: getErrorMessage(error, "cobranca.erro.reativarDetalhe"),
+      });
+    },
+    onSuccess: (_, cobrancaId) => {
+      toast.success("cobranca.sucesso.reativada");
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["historico"] });
     },
   });
 }

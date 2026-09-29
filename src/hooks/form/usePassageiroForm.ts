@@ -1,8 +1,6 @@
 import {
-  cepSchema,
-  cpfSchema,
   dateSchema,
-  phoneSchema,
+  timeSchema,
 } from "@/schemas/common";
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -10,7 +8,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
-import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
+import { isValidCPF } from "@/utils/validators";
 import { mapearPrePassageiroParaFormulario } from "@/utils/domain/passageiro/prePassageiroConverter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
@@ -24,8 +22,19 @@ const getMonthFromDate = (dateStr?: string) => {
   return parseInt(parts[1], 10).toString();
 };
 
+const getYearFromDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 1) return "";
+  return parts[0];
+};
+
+import { getDefaultAnoLetivo } from "@/utils/domain";
+export { getDefaultAnoLetivo };
+
 export const passageiroSchema = z
   .object({
+    ano_letivo: z.string().optional().or(z.literal("")),
     escola_id: z.string().min(1, "Campo obrigatório"),
     veiculo_id: z.string().min(1, "Campo obrigatório"),
     nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
@@ -39,12 +48,8 @@ export const passageiroSchema = z
 
     responsavel_principal: z.object({
       nome: z.string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" }).min(2, "Deve ter pelo menos 2 caracteres"),
-      parentesco: z
-        .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
-        .min(1, "Campo obrigatório"),
-      cpf: z
-        .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
-        .min(1, "Campo obrigatório"),
+      parentesco: z.string().optional().nullable().or(z.literal("")),
+      cpf: z.string().optional().nullable().or(z.literal("")),
       telefone: z
         .string({ required_error: "Campo obrigatório", invalid_type_error: "Campo obrigatório" })
         .min(1, "Campo obrigatório"),
@@ -64,18 +69,23 @@ export const passageiroSchema = z
       cep: z.string().optional().nullable().or(z.literal("")),
       referencia: z.string().optional().nullable().or(z.literal("")),
       complemento: z.string().optional().nullable().or(z.literal("")),
+      notificacoes_rota_habilitadas: z.boolean().optional().default(true),
     }),
     turma: z.string().optional().nullable().or(z.literal("")),
+    sala: z.string().optional().nullable().or(z.literal("")),
     nome_professor: z.string().optional().nullable().or(z.literal("")),
 
     isento: z.boolean().optional().default(false),
-    ano_letivo: z.string().optional().default(String(new Date().getFullYear())),
     valor_cobranca: z.string().optional().or(z.literal("")),
     dia_vencimento: z.string().optional().or(z.literal("")),
     data_inicio_transporte: dateSchema(false, true),
     data_fim_transporte: dateSchema(false, true),
+    horario_entrada: timeSchema,
+    horario_saida: timeSchema,
     mes_inicio_cobranca: z.string().optional().or(z.literal("")),
     mes_fim_cobranca: z.string().optional().or(z.literal("")),
+    ano_inicio_cobranca: z.string().optional().or(z.literal("")),
+    ano_fim_cobranca: z.string().optional().or(z.literal("")),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
@@ -113,8 +123,25 @@ export const passageiroSchema = z
           });
         }
       } catch {
-        // Silencioso
       }
+    }
+
+    if (data.horario_entrada && data.horario_saida) {
+      if (data.horario_saida <= data.horario_entrada) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Horário de saída deve ser maior que o horário de entrada",
+          path: ["horario_saida"],
+        });
+      }
+    }
+
+    if (!data.ano_letivo || data.ano_letivo.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Campo obrigatório",
+        path: ["ano_letivo"],
+      });
     }
 
     if (!data.isento) {
@@ -143,6 +170,9 @@ export const passageiroSchema = z
         });
       }
 
+      const anoInicio = data.ano_inicio_cobranca || new Date().getFullYear().toString();
+      const anoFim = data.ano_fim_cobranca || anoInicio;
+
       if (!data.mes_inicio_cobranca || data.mes_inicio_cobranca.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -157,12 +187,16 @@ export const passageiroSchema = z
           message: "Campo obrigatório",
           path: ["mes_fim_cobranca"],
         });
-      } else if (data.mes_inicio_cobranca && parseInt(data.mes_fim_cobranca, 10) < parseInt(data.mes_inicio_cobranca, 10)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Término da cobrança deve ser igual ou posterior ao início",
-          path: ["mes_fim_cobranca"],
-        });
+      } else if (data.mes_inicio_cobranca) {
+        const totalInicio = parseInt(anoInicio, 10) * 12 + parseInt(data.mes_inicio_cobranca, 10);
+        const totalFim = parseInt(anoFim, 10) * 12 + parseInt(data.mes_fim_cobranca, 10);
+        if (totalFim < totalInicio) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Término da cobrança deve ser igual ou posterior ao início",
+            path: ["mes_fim_cobranca"],
+          });
+        }
       }
     }
   });
@@ -195,6 +229,7 @@ export function usePassageiroForm({
     mode: "onChange",
     resolver: zodResolver(passageiroSchema),
     defaultValues: {
+      ano_letivo: getDefaultAnoLetivo(),
       escola_id: "",
       veiculo_id: "",
       nome: "",
@@ -204,14 +239,19 @@ export function usePassageiroForm({
       genero: "",
       observacoes: "",
       turma: "",
+      sala: "",
       nome_professor: "",
       isento: false,
       valor_cobranca: "",
       dia_vencimento: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
-      mes_inicio_cobranca: "",
-      mes_fim_cobranca: "",
+      horario_entrada: "",
+      horario_saida: "",
+      mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+      mes_fim_cobranca: "12",
+      ano_inicio_cobranca: new Date().getFullYear().toString(),
+      ano_fim_cobranca: new Date().getFullYear().toString(),
 
       ativo: true,
     },
@@ -231,6 +271,7 @@ export function usePassageiroForm({
           data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(editingPassageiro.data_nascimento) : "",
           genero: editingPassageiro.genero || "",
           turma: editingPassageiro.turma || "",
+          sala: editingPassageiro.sala || "",
           nome_professor: editingPassageiro.nome_professor || "",
           responsavel_principal: {
             nome: editingPassageiro.responsavel_principal?.nome || "",
@@ -246,6 +287,7 @@ export function usePassageiroForm({
             cep: editingPassageiro.responsavel_principal?.cep ? cepMask(editingPassageiro.responsavel_principal.cep) : "",
             referencia: editingPassageiro.responsavel_principal?.referencia || "",
             complemento: editingPassageiro.responsavel_principal?.complemento || "",
+            notificacoes_rota_habilitadas: editingPassageiro.responsavel_principal?.notificacoes_rota_habilitadas !== false,
           },
           isento: editingPassageiro.isento ?? false,
           valor_cobranca: editingPassageiro.valor_cobranca
@@ -258,12 +300,16 @@ export function usePassageiroForm({
           dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
           data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(editingPassageiro.data_inicio_transporte) : "",
           data_fim_transporte: editingPassageiro.data_fim_transporte ? formatDateToBR(editingPassageiro.data_fim_transporte) : "",
+          horario_entrada: editingPassageiro.horario_entrada || "",
+          horario_saida: editingPassageiro.horario_saida || "",
           mes_inicio_cobranca: getMonthFromDate(editingPassageiro.data_inicio_cobranca) || "",
           mes_fim_cobranca: getMonthFromDate(editingPassageiro.data_fim_cobranca) || "",
+          ano_inicio_cobranca: getYearFromDate(editingPassageiro.data_inicio_cobranca) || new Date().getFullYear().toString(),
+          ano_fim_cobranca: getYearFromDate(editingPassageiro.data_fim_cobranca) || new Date().getFullYear().toString(),
+          ano_letivo: editingPassageiro.ano_letivo?.toString() || getYearFromDate(editingPassageiro.data_inicio_cobranca) || new Date().getFullYear().toString(),
           observacoes: editingPassageiro.observacoes || "",
           escola_id: editingPassageiro.escola_id || "",
           veiculo_id: editingPassageiro.veiculo_id || "",
-          ano_letivo: editingPassageiro.ano_letivo ? String(editingPassageiro.ano_letivo) : String(new Date().getFullYear()),
           ativo: editingPassageiro.ativo,
         });
 
@@ -275,10 +321,16 @@ export function usePassageiroForm({
           "observacoes",
         ]);
       } else if (isFinalizeMode && prePassageiro) {
+        const preData = mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData;
+        const targetAnoLetivo = preData.ano_letivo || getDefaultAnoLetivo();
         form.reset({
-          ...(mapearPrePassageiroParaFormulario(prePassageiro) as PassageiroFormData),
+          ...preData,
+          ano_letivo: targetAnoLetivo,
+          mes_inicio_cobranca: preData.mes_inicio_cobranca || (new Date().getMonth() + 1).toString(),
+          mes_fim_cobranca: preData.mes_fim_cobranca || "12",
+          ano_inicio_cobranca: preData.ano_inicio_cobranca || targetAnoLetivo || new Date().getFullYear().toString(),
+          ano_fim_cobranca: preData.ano_fim_cobranca || targetAnoLetivo || new Date().getFullYear().toString(),
           isento: false,
-          ano_letivo: (prePassageiro as any)?.ano_letivo ? String((prePassageiro as any).ano_letivo) : String(new Date().getFullYear()),
         });
 
         form.trigger([
@@ -302,6 +354,7 @@ export function usePassageiroForm({
         ]);
       } else {
         form.reset({
+          ano_letivo: getDefaultAnoLetivo(),
           escola_id: "",
           veiculo_id: "",
           nome: "",
@@ -311,6 +364,7 @@ export function usePassageiroForm({
           genero: "",
           observacoes: "",
           turma: "",
+          sala: "",
           nome_professor: "",
           responsavel_principal: {
             nome: "",
@@ -326,15 +380,19 @@ export function usePassageiroForm({
             cep: "",
             referencia: "",
             complemento: "",
+            notificacoes_rota_habilitadas: true,
           },
           isento: false,
-          ano_letivo: String(new Date().getFullYear()),
           valor_cobranca: "",
           dia_vencimento: "",
           data_inicio_transporte: "",
           data_fim_transporte: "",
-          mes_inicio_cobranca: "",
-          mes_fim_cobranca: "",
+          horario_entrada: "",
+          horario_saida: "",
+          mes_inicio_cobranca: (new Date().getMonth() + 1).toString(),
+          mes_fim_cobranca: "12",
+          ano_inicio_cobranca: new Date().getFullYear().toString(),
+          ano_fim_cobranca: new Date().getFullYear().toString(),
 
           ativo: true,
         });

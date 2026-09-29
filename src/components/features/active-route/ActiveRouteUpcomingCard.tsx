@@ -30,6 +30,7 @@ interface ActiveRouteUpcomingCardProps {
   onConfirmFalta: (id: string, nome: string) => void;
   getAlunosEscolaPorPosicao: (paradas: any[], index: number) => { desces: any[]; subes: any[] };
   onOpenReordenarSheet?: (parada: any) => void;
+  chamadaRapidaSavedMap?: Record<string, RouteStopStatus> | null;
 }
 
 export function ActiveRouteUpcomingCard({
@@ -54,11 +55,18 @@ export function ActiveRouteUpcomingCard({
   onConfirmFalta,
   getAlunosEscolaPorPosicao,
   onOpenReordenarSheet,
+  chamadaRapidaSavedMap,
 }: ActiveRouteUpcomingCardProps) {
   const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
   const pass = parada.passageiro;
   const responsaveisAdicionais = pass?.responsaveis || [];
   const activeTabForCard = selectedPreviewTabs[parada.id] || TAB_PRINCIPAL;
+
+  const temEnderecoValido = Boolean(
+    isEscolaItem
+      ? parada.escola?.logradouro
+      : (pass?.responsavel_principal?.logradouro || pass?.logradouro || responsaveisAdicionais.some((r: any) => r.logradouro))
+  );
 
   let currentAddressStr = "";
 
@@ -66,13 +74,13 @@ export function ActiveRouteUpcomingCard({
     currentAddressStr = formatarEnderecoParcialRota(parada.escola) || "Endereço da escola";
   } else if (pass) {
     if (activeTabForCard === TAB_PRINCIPAL) {
-      currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.";
+      currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Sem endereço cadastrado";
     } else {
       const respObj = responsaveisAdicionais.find((r: any) => r.id === activeTabForCard);
       if (respObj) {
-        currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.");
+        currentAddressStr = respObj.logradouro ? formatarEnderecoParcialRota(respObj) : (formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Sem endereço cadastrado");
       } else {
-        currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Endereço não cadastrado.";
+        currentAddressStr = formatarEnderecoParcialRota(pass.responsavel_principal || pass) || "Sem endereço cadastrado";
       }
     }
   }
@@ -117,11 +125,12 @@ export function ActiveRouteUpcomingCard({
                 type="button"
                 variant="outline"
                 size="icon"
-                disabled={isAnyActionBusy}
+                disabled={isAnyActionBusy || !temEnderecoValido}
                 onClick={() => {
+                  if (!temEnderecoValido) return;
                   onOpenAddressDialog({
                     open: true,
-                    title: pass?.nome || "Passageiro",
+                    title: pass?.nome || "Aluno",
                     passageiro: pass,
                     escola: null,
                     address: currentAddressStr,
@@ -131,7 +140,7 @@ export function ActiveRouteUpcomingCard({
                   });
                 }}
                 className="h-8 w-8 rounded-lg border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs active:scale-95 transition-all -mt-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Ver endereço e detalhes da parada"
+                title={temEnderecoValido ? "Ver endereço e detalhes da parada" : "Endereço não cadastrado"}
               >
                 <MapPin className="w-4 h-4 text-[#1a3a5c]" />
               </Button>
@@ -143,7 +152,16 @@ export function ActiveRouteUpcomingCard({
             const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
             const descesAtivos = desces.filter(d => d.status !== RouteStopStatus.AUSENTE);
-            const subesAtivos = subes.filter(s => s.status !== RouteStopStatus.AUSENTE);
+            const subesAtivos = subes.filter(s => {
+              if (s.status === RouteStopStatus.AUSENTE || s.is_ausente || s.ausencia_id) return false;
+              if (isPreview && chamadaRapidaSavedMap) {
+                const pid = s.passageiro_id || s.passageiro?.id;
+                if (pid && chamadaRapidaSavedMap[pid] === RouteStopStatus.AUSENTE) {
+                  return false;
+                }
+              }
+              return true;
+            });
 
             return (
               <div className="mt-1 space-y-1 w-full text-left">

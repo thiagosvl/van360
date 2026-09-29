@@ -11,13 +11,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus, ContratoTab } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
-import { Clock, Eye, FileCheck2, FileText, FileX2, Send } from "lucide-react";
+import { Clock, Download, Eye, FileCheck2, FileSignature, FileText, FileX2, Loader2, User, Users } from "lucide-react";
 import { memo } from "react";
+import { ContratoListItem } from "@/types/contract";
+import { Passageiro } from "@/types/passageiro";
+import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 import { ContratoSummary } from "./ContratoSummary";
 
@@ -32,35 +36,42 @@ const getIconConfig = (isAssinado: boolean, isSemContrato: boolean) => {
 };
 
 interface ContratosListProps {
-  data: any[];
+  data: ContratoListItem[];
   isLoading: boolean;
   activeTab: ContratoTab;
   busca: string;
   isDesativado?: boolean;
-  // Ações
+  isDownloading?: string | null;
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onEnviarWhatsApp: (item: any) => void;
+  onEnviarWhatsApp: (item: ContratoListItem) => void;
+  onCompartilharWhatsApp?: (item: ContratoListItem) => void;
+  onDownload?: (item: ContratoListItem) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
-  onGerarContrato: (passageiroId: string) => void;
-  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
+  onGerarContrato: (passageiroId: string, item?: ContratoListItem) => void;
+  onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink: (token: string) => void;
   onVisualizarFinal: (url: string) => void;
 }
 
 interface ContratoMobileCardProps {
-  item: any;
+  item: ContratoListItem;
   index: number;
   activeTab: ContratoTab;
   isDesativado?: boolean;
+  isDownloading?: string | null;
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onEnviarWhatsApp: (item: any) => void;
+  onEnviarWhatsApp: (item: ContratoListItem) => void;
+  onCompartilharWhatsApp?: (item: ContratoListItem) => void;
+  onDownload?: (item: ContratoListItem) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
-  onGerarContrato: (passageiroId: string) => void;
-  onImportarContrato?: (passageiroId: string, passageiro?: any) => void;
+  onGerarContrato: (passageiroId: string, item?: ContratoListItem) => void;
+  onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
+  onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
   onVisualizarLink: (token: string) => void;
   onVisualizarFinal: (url: string) => void;
 }
@@ -72,9 +83,12 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   onVerPassageiro,
   onCopiarLink,
   onEnviarWhatsApp,
+  onCompartilharWhatsApp,
+  onDownload,
   onExcluir,
   onSubstituir,
   onGerarContrato,
+  onCompletarCadastro,
   onImportarContrato,
   onVisualizarLink,
   onVisualizarFinal,
@@ -87,9 +101,12 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onVerPassageiro,
     onCopiarLink,
     onEnviarWhatsApp: () => onEnviarWhatsApp(item),
+    onCompartilharWhatsApp,
+    onDownload,
     onExcluir,
     onSubstituir,
-    onGerarContrato,
+    onGerarContrato: (pId) => onGerarContrato(pId, item),
+    onCompletarCadastro,
     onImportarContrato,
     onVisualizarLink,
     onVisualizarFinal,
@@ -125,7 +142,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
             </p>
             {isImportado && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 shrink-0 border border-blue-100/60">
-                IMPORTADO
+                ASSINADO (IMPORTADO)
               </span>
             )}
           </div>
@@ -149,6 +166,7 @@ export const ContratosList = memo(function ContratosList({
   activeTab,
   busca,
   isDesativado,
+  isDownloading,
   ...actions
 }: ContratosListProps) {
   const getEmptyState = () => {
@@ -157,7 +175,7 @@ export const ContratosList = memo(function ContratosList({
         <UnifiedEmptyState
           icon={FileText}
           title="Nenhum resultado"
-          description="Nenhum contrato ou passageiro encontrado com este filtro."
+          description="Nenhum contrato ou aluno encontrado com este filtro."
         />
       );
     }
@@ -167,14 +185,19 @@ export const ContratosList = memo(function ContratosList({
       { icon: any; title: string; desc: string }
     > = {
       [ContratoTab.PENDENTES]: {
-        icon: Send,
-        title: "Nenhum contrato pendente",
-        desc: "Todos os seus contratos foram assinados!",
+        icon: FileSignature,
+        title: "Sem contratos pendentes",
+        desc: "Todos os contratos gerados já foram assinados pelos responsáveis.",
       },
       [ContratoTab.SEM_CONTRATO]: {
-        icon: FileText,
-        title: "Todos os passageiros com contrato",
-        desc: "Bom trabalho! Tudo organizado.",
+        icon: Users,
+        title: "Todos os alunos com contrato",
+        desc: "Todos os seus alunos ativos já possuem contrato digital emitido ou assinado.",
+      },
+      [ContratoTab.ASSINADOS]: {
+        icon: FileCheck2,
+        title: "Nenhum contrato assinado",
+        desc: "Os contratos assinados digitalmente ou importados aparecerão aqui.",
       },
     };
 
@@ -203,6 +226,7 @@ export const ContratosList = memo(function ContratosList({
           index={index}
           activeTab={activeTab}
           isDesativado={isDesativado}
+          isDownloading={isDownloading}
           {...actions}
         />
       )}
@@ -224,15 +248,24 @@ export const ContratosList = memo(function ContratosList({
           </TableHeader>
           <TableBody>
             {data.map((item) => {
-              const nomePassageiro = item.passageiro?.nome || item.nome;
+              const nomePassageiro = item.passageiro?.nome || item.nome || "";
               const nomeResponsavel = item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome;
 
               const isSemContrato = item.tipo === "passageiro";
               const isImportado = item?.provider === ContratoProvider.IMPORTADO;
               const status = item.status as ContratoStatus | null;
               const isAssinado = status === ContratoStatus.ASSINADO;
+              const isPendente = status === ContratoStatus.PENDENTE;
+              const hasContract = isPendente || isAssinado || !!item?.contrato_id;
+
+              const respObj = item?.responsavel_principal || item?.passageiro?.responsavel_principal;
+              const respNome = respObj?.nome;
+              const respTelefone = respObj?.telefone;
+              const isMissingResponsible = isResponsavelIncompleto(respNome, respTelefone);
+              const passId = (item.tipo === "passageiro" ? item.id : item.passageiro_id) || item.id;
 
               const iconConfig = getIconConfig(isAssinado, isSemContrato);
+              const urlContrato = obterUrlDocumentoContrato(item);
 
               return (
                 <TableRow
@@ -251,7 +284,7 @@ export const ContratosList = memo(function ContratosList({
                           </p>
                           {isImportado && (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                              PDF Importado
+                              Assinado (Importado)
                             </span>
                           )}
                         </div>
@@ -268,7 +301,7 @@ export const ContratosList = memo(function ContratosList({
                         Number(
                           item.dados_contrato?.valorMensal ||
                           item.valor_parcela ||
-                          item.valor_mensal,
+                          item.valor_cobranca,
                         ) || 0
                       ).toLocaleString("pt-BR", {
                         style: "currency",
@@ -277,7 +310,72 @@ export const ContratosList = memo(function ContratosList({
                     </span>
                   </TableCell>
                   <TableCell className="px-8 py-5 text-right">
-                    <div className="flex justify-end pr-2">
+                    <div className="flex items-center justify-end gap-2 pr-2">
+                      {!hasContract && (
+                        isMissingResponsible ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => actions.onCompletarCadastro?.(passId, item)}
+                            disabled={isDesativado}
+                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            title="Completar dados e gerar contrato"
+                          >
+                            <User className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                            <span>Completar e Gerar</span>
+                          </Button>
+                        ) : actions.onGerarContrato ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => actions.onGerarContrato?.(passId, item)}
+                            disabled={isDesativado}
+                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            title="Gerar contrato"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                            <span>Gerar Contrato</span>
+                          </Button>
+                        ) : null
+                      )}
+
+                      {urlContrato && (
+                        <>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => actions.onVisualizarFinal(urlContrato)}
+                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            title="Acessar contrato"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                            <span>Ver Contrato</span>
+                          </Button>
+
+                          {isAssinado && actions.onDownload && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => actions.onDownload?.(item)}
+                              disabled={isDownloading === item.id}
+                              className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                              title="Download do contrato assinado"
+                            >
+                              {isDownloading === item.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
+                              ) : (
+                                <Download className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                              )}
+                              <span>Download</span>
+                            </Button>
+                          )}
+                        </>
+                      )}
+
                       <ContratoActionsMenu
                         item={item}
                         tipo={item.tipo}

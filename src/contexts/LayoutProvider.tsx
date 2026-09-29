@@ -1,9 +1,16 @@
 import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
+import { ExcluirContaDialog } from "@/components/dialogs/ExcluirContaDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
+import AdminDispatchNotificationDialog from "@/components/dialogs/AdminDispatchNotificationDialog";
+import AdminConfirmBroadcastDialog from "@/components/dialogs/AdminConfirmBroadcastDialog";
+import AdminPassengerNotificationsDialog from "@/components/dialogs/AdminPassengerNotificationsDialog";
+import AdminPassengerSendCobrancaDialog from "@/components/dialogs/AdminPassengerSendCobrancaDialog";
+import AdminDriverCobrancaDemoDialog from "@/components/dialogs/AdminDriverCobrancaDemoDialog";
+import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
@@ -12,8 +19,10 @@ import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import GerenciarCategoriasDialog from "@/components/dialogs/GerenciarCategoriasDialog";
 import AcquisitionChannelDialog from "@/components/dialogs/AcquisitionChannelDialog";
 import ReferAndEarnDialog from "@/components/dialogs/ReferAndEarnDialog";
+import PersonalizarMenuDialog from "@/components/dialogs/PersonalizarMenuDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import ComplementarPagamentoDialog from "@/components/dialogs/ComplementarPagamentoDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import ResponsavelFormDialog from "@/components/dialogs/ResponsavelFormDialog";
 
@@ -22,12 +31,56 @@ import RouteFormDialog from "@/components/dialogs/RouteFormDialog";
 import PixPaymentDialog from "@/components/dialogs/PixPaymentDialog";
 import { SaaSCheckoutDialog } from "@/components/dialogs/SaaSCheckoutDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
+import { AnnualReceiptDialog } from "@/components/dialogs/AnnualReceiptDialog";
 import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassageiroDialog";
+import { PassageiroFinanceiroDialog } from "@/components/dialogs/PassageiroFinanceiroDialog";
+import { PassageiroEscolaDialog } from "@/components/dialogs/PassageiroEscolaDialog";
+import { PassageiroTransporteDialog } from "@/components/dialogs/PassageiroTransporteDialog";
+import { RegistrarAusenciaDialog } from "@/components/dialogs/RegistrarAusenciaDialog";
+import { RevisarSolicitacaoDialog } from "@/components/dialogs/RevisarSolicitacaoDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
-import { OpenPixPaymentDialogProps, OpenSaaSCheckoutDialogProps, OpenReceiptDialogProps, OpenQuickStartPassageiroProps, OpenGerarContratoValidadorDialogProps, OpenImportarContratoDialogProps, OpenResponsavelFormProps, OpenDefinirResponsavelPrincipalProps } from "./LayoutContext";
+import { AdminConfigureReferralDialog } from "@/components/dialogs/AdminConfigureReferralDialog";
+import { VideoStoriesDialog } from "@/components/dialogs/VideoStoriesDialog";
+import { WhatsAppCobrancaPreviewDialog } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
+import { WhatsAppContratoPreviewDialog } from "@/components/dialogs/WhatsAppContratoPreviewDialog";
+import { ReciboPreviewDialog } from "@/components/dialogs/ReciboPreviewDialog";
+import { WhatsAppShowcaseDialog } from "@/components/dialogs/WhatsAppShowcaseDialog";
+import { ShowcaseTransporteEscolarDialog } from "@/components/dialogs/ShowcaseTransporteEscolarDialog";
+import { OnboardingSuccessDialog } from "@/components/dialogs/OnboardingSuccessDialog";
+import { ImageFullscreenDialog } from "@/components/dialogs/ImageFullscreenDialog";
+import {
+  OpenPixPaymentDialogProps,
+  OpenSaaSCheckoutDialogProps,
+  OpenReceiptDialogProps,
+  OpenAnnualReceiptDialogProps,
+  OpenQuickStartPassageiroProps,
+  OpenPassageiroFinanceiroProps,
+  OpenPassageiroEscolaProps,
+  OpenPassageiroTransporteProps,
+  OpenRegistrarAusenciaProps,
+  OpenGerarContratoValidadorDialogProps,
+  OpenImportarContratoDialogProps,
+  OpenResponsavelFormProps,
+  OpenDefinirResponsavelPrincipalProps,
+  OpenAdminDispatchNotificationDialogProps,
+  OpenAdminPassengerNotificationsDialogProps,
+  OpenAdminPassengerSendCobrancaDialogProps,
+  OpenAdminDriverCobrancaDemoDialogProps,
+  OpenAdminVencimentoDetalhesDialogProps,
+  OpenAdminConfigureReferralDialogProps,
+  OpenAdminConfirmBroadcastDialogProps,
+  OpenImageFullscreenProps,
+  OpenVideoStoriesDialogProps,
+  OpenWhatsAppCobrancaPreviewDialogProps,
+  OpenWhatsAppContratoPreviewDialogProps,
+  OpenReciboPreviewDialogProps,
+  OpenWhatsAppShowcaseDialogProps,
+  OpenOnboardingSuccessDialogProps,
+} from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
+import { Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Capacitor } from "@capacitor/core";
@@ -37,6 +90,7 @@ import { ROUTES } from "@/constants/routes";
 import { supabase } from "@/integrations/supabase/client";
 import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutContext,
   OpenCobrancaDeleteDialogProps,
@@ -48,12 +102,15 @@ import {
   OpenFirstChargeDialogProps,
   OpenGastoFormProps,
   OpenManualPaymentDialogProps,
+  OpenComplementarPagamentoDialogProps,
   OpenPassageiroFormProps,
+  OpenRevisarSolicitacaoProps,
   OpenVeiculoFormProps,
   OpenRouteFormProps,
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
   const [pageTitle, setPageTitle] = useState("Carregando...");
   const [pageSubtitle, setPageSubtitle] = useState("Por favor, aguarde.");
 
@@ -104,9 +161,44 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [revisarSolicitacaoDialogState, setRevisarSolicitacaoDialogState] = useState<{
+    open: boolean;
+    props?: OpenRevisarSolicitacaoProps;
+  }>({
+    open: false,
+  });
+
   const [quickStartPassageiroState, setQuickStartPassageiroState] = useState<{
     open: boolean;
     props?: OpenQuickStartPassageiroProps;
+  }>({
+    open: false,
+  });
+
+  const [passageiroFinanceiroDialogState, setPassageiroFinanceiroDialogState] = useState<{
+    open: boolean;
+    props?: OpenPassageiroFinanceiroProps;
+  }>({
+    open: false,
+  });
+
+  const [passageiroEscolaDialogState, setPassageiroEscolaDialogState] = useState<{
+    open: boolean;
+    props?: OpenPassageiroEscolaProps;
+  }>({
+    open: false,
+  });
+
+  const [passageiroTransporteDialogState, setPassageiroTransporteDialogState] = useState<{
+    open: boolean;
+    props?: OpenPassageiroTransporteProps;
+  }>({
+    open: false,
+  });
+
+  const [registrarAusenciaDialogState, setRegistrarAusenciaDialogState] = useState<{
+    open: boolean;
+    props?: OpenRegistrarAusenciaProps;
   }>({
     open: false,
   });
@@ -169,9 +261,23 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [complementarPagamentoDialogState, setComplementarPagamentoDialogState] = useState<{
+    open: boolean;
+    props?: OpenComplementarPagamentoDialogProps;
+  }>({
+    open: false,
+  });
+
   const [receiptDialogState, setReceiptDialogState] = useState<{
     open: boolean;
     props?: OpenReceiptDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [annualReceiptDialogState, setAnnualReceiptDialogState] = useState<{
+    open: boolean;
+    props?: OpenAnnualReceiptDialogProps;
   }>({
     open: false,
   });
@@ -229,10 +335,69 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
   const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
+  const [personalizarMenuDialogOpen, setPersonalizarMenuDialogOpen] = useState(false);
+  const [excluirContaDialogOpen, setExcluirContaDialogOpen] = useState(false);
   const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
     open: boolean;
     onSuccess?: (userId: string) => void;
   }>({ open: false });
+  const [adminDispatchNotificationDialogState, setAdminDispatchNotificationDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminDispatchNotificationDialogProps;
+  }>({ open: false });
+  const [adminPassengerNotificationsDialogState, setAdminPassengerNotificationsDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminPassengerNotificationsDialogProps;
+  }>({ open: false });
+  const [adminPassengerSendCobrancaDialogState, setAdminPassengerSendCobrancaDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminPassengerSendCobrancaDialogProps;
+  }>({ open: false });
+  const [adminDriverCobrancaDemoDialogState, setAdminDriverCobrancaDemoDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminDriverCobrancaDemoDialogProps;
+  }>({ open: false });
+  const [adminVencimentoDetalhesDialogState, setAdminVencimentoDetalhesDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminVencimentoDetalhesDialogProps;
+  }>({ open: false });
+  const [adminConfigureReferralDialogState, setAdminConfigureReferralDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminConfigureReferralDialogProps;
+  }>({ open: false });
+  const [adminConfirmBroadcastDialogState, setAdminConfirmBroadcastDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminConfirmBroadcastDialogProps;
+  }>({ open: false });
+  const [imageFullscreenDialogState, setImageFullscreenDialogState] = useState<{
+    open: boolean;
+    props?: OpenImageFullscreenProps;
+  }>({ open: false });
+  const [videoStoriesDialogState, setVideoStoriesDialogState] = useState<{
+    open: boolean;
+    props?: OpenVideoStoriesDialogProps;
+  }>({ open: false });
+  const [whatsAppCobrancaPreviewDialogState, setWhatsAppCobrancaPreviewDialogState] = useState<{
+    open: boolean;
+    props?: OpenWhatsAppCobrancaPreviewDialogProps;
+  }>({ open: false });
+  const [whatsAppContratoPreviewDialogState, setWhatsAppContratoPreviewDialogState] = useState<{
+    open: boolean;
+    props?: OpenWhatsAppContratoPreviewDialogProps;
+  }>({ open: false });
+  const [reciboPreviewDialogState, setReciboPreviewDialogState] = useState<{
+    open: boolean;
+    props?: OpenReciboPreviewDialogProps;
+  }>({ open: false });
+  const [whatsAppShowcaseDialogState, setWhatsAppShowcaseDialogState] = useState<{
+    open: boolean;
+    props?: OpenWhatsAppShowcaseDialogProps;
+  }>({ open: false });
+  const [onboardingSuccessDialogState, setOnboardingSuccessDialogState] = useState<{
+    open: boolean;
+    props?: OpenOnboardingSuccessDialogProps;
+  }>({ open: false });
+  const [showcaseTransporteEscolarOpen, setShowcaseTransporteEscolarOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
   const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
@@ -297,11 +462,68 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openRevisarSolicitacaoDialog = (props: OpenRevisarSolicitacaoProps) => {
+    setRevisarSolicitacaoDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeRevisarSolicitacaoDialog = () => {
+    safeCloseDialog(() =>
+      setRevisarSolicitacaoDialogState((prev) => ({ ...prev, open: false }))
+    );
+  };
+
   const openQuickStartPassageiroDialog = (props?: OpenQuickStartPassageiroProps) => {
     setQuickStartPassageiroState({
       open: true,
       props,
     });
+  };
+
+  const openPassageiroFinanceiroDialog = (props: OpenPassageiroFinanceiroProps) => {
+    setPassageiroFinanceiroDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closePassageiroFinanceiroDialog = () => {
+    safeCloseDialog(() => setPassageiroFinanceiroDialogState({ open: false }));
+  };
+
+  const openPassageiroEscolaDialog = (props: OpenPassageiroEscolaProps) => {
+    setPassageiroEscolaDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closePassageiroEscolaDialog = () => {
+    safeCloseDialog(() => setPassageiroEscolaDialogState({ open: false }));
+  };
+
+  const openPassageiroTransporteDialog = (props: OpenPassageiroTransporteProps) => {
+    setPassageiroTransporteDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closePassageiroTransporteDialog = () => {
+    safeCloseDialog(() => setPassageiroTransporteDialogState({ open: false }));
+  };
+
+  const openRegistrarAusenciaDialog = (props?: OpenRegistrarAusenciaProps) => {
+    setRegistrarAusenciaDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeRegistrarAusenciaDialog = () => {
+    safeCloseDialog(() => setRegistrarAusenciaDialogState({ open: false }));
   };
 
   const openGastoFormDialog = (props?: OpenGastoFormProps) => {
@@ -352,8 +574,28 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openComplementarPagamentoDialog = (props: OpenComplementarPagamentoDialogProps) => {
+    setComplementarPagamentoDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeComplementarPagamentoDialog = () => {
+    safeCloseDialog(() => {
+      setComplementarPagamentoDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   const openReceiptDialog = (props: OpenReceiptDialogProps) => {
     setReceiptDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const openAnnualReceiptDialog = (props: OpenAnnualReceiptDialogProps) => {
+    setAnnualReceiptDialogState({
       open: true,
       props,
     });
@@ -397,12 +639,86 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminCreateUserDialogState({ open: true, onSuccess });
   };
 
+  const openAdminDispatchNotificationDialog = (props: OpenAdminDispatchNotificationDialogProps) => {
+    setAdminDispatchNotificationDialogState({ open: true, props });
+  };
+
+  const openAdminPassengerNotificationsDialog = (props: OpenAdminPassengerNotificationsDialogProps) => {
+    setAdminPassengerNotificationsDialogState({ open: true, props });
+  };
+
+  const openAdminPassengerSendCobrancaDialog = (props: OpenAdminPassengerSendCobrancaDialogProps) => {
+    setAdminPassengerSendCobrancaDialogState({ open: true, props });
+  };
+
+  const openAdminDriverCobrancaDemoDialog = (props: OpenAdminDriverCobrancaDemoDialogProps) => {
+    setAdminDriverCobrancaDemoDialogState({ open: true, props });
+  };
+
+  const openAdminVencimentoDetalhesDialog = (props: OpenAdminVencimentoDetalhesDialogProps) => {
+    setAdminVencimentoDetalhesDialogState({ open: true, props });
+  };
+
+  const openAdminConfigureReferralDialog = (props: OpenAdminConfigureReferralDialogProps) => {
+    setAdminConfigureReferralDialogState({ open: true, props });
+  };
+
+  const openAdminConfirmBroadcastDialog = (props: OpenAdminConfirmBroadcastDialogProps) => {
+    setAdminConfirmBroadcastDialogState({ open: true, props });
+  };
+
+  const closeAdminConfirmBroadcastDialog = () => {
+    safeCloseDialog(() => setAdminConfirmBroadcastDialogState({ open: false }));
+  };
+
+  const openImageFullscreen = (props: OpenImageFullscreenProps) => {
+    setImageFullscreenDialogState({ open: true, props });
+  };
+
+  const closeImageFullscreen = () => {
+    safeCloseDialog(() => setImageFullscreenDialogState({ open: false }));
+  };
+
   const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
     setGerarContratoValidadorDialogState({ open: true, props });
   };
 
   const openImportarContratoDialog = (props?: OpenImportarContratoDialogProps) => {
     setImportarContratoDialogState({ open: true, props });
+  };
+
+  const openVideoStoriesDialog = (props: OpenVideoStoriesDialogProps) => {
+    setVideoStoriesDialogState({ open: true, props });
+  };
+
+  const closeVideoStoriesDialog = () => {
+    safeCloseDialog(() => {
+      setVideoStoriesDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
+  const openWhatsAppCobrancaPreviewDialog = (props?: OpenWhatsAppCobrancaPreviewDialogProps) => {
+    setWhatsAppCobrancaPreviewDialogState({ open: true, props });
+  };
+
+  const openWhatsAppContratoPreviewDialog = (props?: OpenWhatsAppContratoPreviewDialogProps) => {
+    setWhatsAppContratoPreviewDialogState({ open: true, props });
+  };
+
+  const openReciboPreviewDialog = (props?: OpenReciboPreviewDialogProps) => {
+    setReciboPreviewDialogState({ open: true, props });
+  };
+
+  const openWhatsAppShowcaseDialog = (props?: OpenWhatsAppShowcaseDialogProps) => {
+    setWhatsAppShowcaseDialogState({ open: true, props });
+  };
+
+  const openOnboardingSuccessDialog = (props: OpenOnboardingSuccessDialogProps) => {
+    setOnboardingSuccessDialogState({ open: true, props });
+  };
+
+  const openShowcaseTransporteEscolarDialog = () => {
+    setShowcaseTransporteEscolarOpen(true);
   };
 
   return (
@@ -419,8 +735,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openEscolaFormDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
+        openRevisarSolicitacaoDialog,
+        closeRevisarSolicitacaoDialog,
         openRouteFormDialog,
         openQuickStartPassageiroDialog,
+        openPassageiroFinanceiroDialog,
+        closePassageiroFinanceiroDialog,
+        openPassageiroEscolaDialog,
+        closePassageiroEscolaDialog,
+        openPassageiroTransporteDialog,
+        closePassageiroTransporteDialog,
+        openRegistrarAusenciaDialog,
+        closeRegistrarAusenciaDialog,
         openGastoFormDialog,
         openGerenciarCategoriasDialog,
         openResponsavelFormDialog,
@@ -428,21 +754,46 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
         openManualPaymentDialog,
+        openComplementarPagamentoDialog,
+        closeComplementarPagamentoDialog,
         openReceiptDialog,
+        openAnnualReceiptDialog,
         openCobrancaFormDialog,
         openFirstChargeDialog,
         openPixPaymentDialog,
         openSaaSCheckoutDialog,
         openAdminCreateUserDialog,
+        openAdminDispatchNotificationDialog,
+        openAdminPassengerNotificationsDialog,
+        openAdminPassengerSendCobrancaDialog,
+        openAdminDriverCobrancaDemoDialog,
+        openAdminVencimentoDetalhesDialog,
+        openAdminConfigureReferralDialog,
+        openAdminConfirmBroadcastDialog,
+        closeAdminConfirmBroadcastDialog,
+        openImageFullscreen,
+        closeImageFullscreen,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
+        openVideoStoriesDialog,
+        closeVideoStoriesDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarPixDialog: () => setEditarPixDialogOpen(true),
+        openWhatsAppCobrancaPreviewDialog,
+        openWhatsAppContratoPreviewDialog,
+        openReciboPreviewDialog,
+        openWhatsAppShowcaseDialog,
+        openShowcaseTransporteEscolarDialog,
+        openOnboardingSuccessDialog,
         openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
         openReferAndEarnDialog: () => setReferAndEarnDialogOpen(true),
+        openPersonalizarMenuDialog: () => setPersonalizarMenuDialogOpen(true),
+        closePersonalizarMenuDialog: () => safeCloseDialog(() => setPersonalizarMenuDialogOpen(false)),
+        openExcluirContaDialog: () => setExcluirContaDialogOpen(true),
+        closeExcluirContaDialog: () => safeCloseDialog(() => setExcluirContaDialogOpen(false)),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isGlobalLoading,
@@ -583,6 +934,27 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {revisarSolicitacaoDialogState.open && (
+        <RevisarSolicitacaoDialog
+          isOpen={true}
+          prePassageiro={revisarSolicitacaoDialogState.props?.prePassageiro || null}
+          onSuccess={(passageiro) => {
+            const innerOnSuccess = revisarSolicitacaoDialogState.props?.onSuccess;
+            if (innerOnSuccess) {
+              innerOnSuccess(passageiro);
+            }
+            safeCloseDialog(() =>
+              setRevisarSolicitacaoDialogState((prev) => ({ ...prev, open: false }))
+            );
+          }}
+          onClose={() => {
+            safeCloseDialog(() =>
+              setRevisarSolicitacaoDialogState((prev) => ({ ...prev, open: false }))
+            );
+          }}
+        />
+      )}
+
       {quickStartPassageiroState.open && (
         <QuickStartPassageiroDialog
           isOpen={true}
@@ -590,6 +962,42 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onSuccess={quickStartPassageiroState.props?.onSuccess}
           isOnboarding={quickStartPassageiroState.props?.isOnboarding}
           usuarioId={profile?.id}
+        />
+      )}
+
+      {passageiroFinanceiroDialogState.open && passageiroFinanceiroDialogState.props && (
+        <PassageiroFinanceiroDialog
+          isOpen={true}
+          onClose={closePassageiroFinanceiroDialog}
+          passageiro={passageiroFinanceiroDialogState.props.passageiro}
+          onSuccess={passageiroFinanceiroDialogState.props.onSuccess}
+        />
+      )}
+
+      {passageiroEscolaDialogState.open && passageiroEscolaDialogState.props && (
+        <PassageiroEscolaDialog
+          isOpen={true}
+          onClose={closePassageiroEscolaDialog}
+          passageiro={passageiroEscolaDialogState.props.passageiro}
+          onSuccess={passageiroEscolaDialogState.props.onSuccess}
+        />
+      )}
+
+      {passageiroTransporteDialogState.open && passageiroTransporteDialogState.props && (
+        <PassageiroTransporteDialog
+          isOpen={true}
+          onClose={closePassageiroTransporteDialog}
+          passageiro={passageiroTransporteDialogState.props.passageiro}
+          onSuccess={passageiroTransporteDialogState.props.onSuccess}
+        />
+      )}
+
+      {registrarAusenciaDialogState.open && (
+        <RegistrarAusenciaDialog
+          isOpen={true}
+          onClose={closeRegistrarAusenciaDialog}
+          lockedRotaId={registrarAusenciaDialogState.props?.lockedRotaId}
+          lockedPassageiro={registrarAusenciaDialogState.props?.lockedPassageiro}
         />
       )}
 
@@ -690,10 +1098,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               closeCobrancaDeleteDialog();
             }
           }}
-          onEdit={() => {
-            cobrancaDeleteDialogState.props?.onEdit();
-            closeCobrancaDeleteDialog();
-          }}
+          onEdit={
+            cobrancaDeleteDialogState.props?.onEdit
+              ? () => {
+                  cobrancaDeleteDialogState.props?.onEdit?.();
+                  closeCobrancaDeleteDialog();
+                }
+              : undefined
+          }
           isLoading={cobrancaDeleteDialogState.props?.isLoading}
         />
       )}
@@ -712,8 +1124,32 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           valorOriginal={manualPaymentDialogState.props.valorOriginal}
           status={manualPaymentDialogState.props.status}
           dataVencimento={manualPaymentDialogState.props.dataVencimento}
+          observacao={manualPaymentDialogState.props.observacao}
           onPaymentRecorded={(updatedCobranca) => {
             manualPaymentDialogState.props?.onPaymentRecorded?.(updatedCobranca);
+          }}
+        />
+      )}
+
+      {complementarPagamentoDialogState.open && complementarPagamentoDialogState.props && (
+        <ComplementarPagamentoDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setComplementarPagamentoDialogState((prev) => ({ ...prev, open: false })),
+            )
+          }
+          cobrancaId={complementarPagamentoDialogState.props.cobrancaId}
+          passageiroNome={complementarPagamentoDialogState.props.passageiroNome}
+          responsavelNome={complementarPagamentoDialogState.props.responsavelNome}
+          valorOriginal={complementarPagamentoDialogState.props.valorOriginal}
+          valorJaPago={complementarPagamentoDialogState.props.valorJaPago}
+          dataVencimento={complementarPagamentoDialogState.props.dataVencimento}
+          mes={complementarPagamentoDialogState.props.mes}
+          ano={complementarPagamentoDialogState.props.ano}
+          observacao={complementarPagamentoDialogState.props.observacao}
+          onPaymentRecorded={(updatedCobranca, dataSent) => {
+            complementarPagamentoDialogState.props?.onPaymentRecorded?.(updatedCobranca, dataSent);
           }}
         />
       )}
@@ -743,6 +1179,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           ano={cobrancaFormDialogState.props.ano}
           lockFoiPago={cobrancaFormDialogState.props.lockFoiPago}
           lockMesAno={cobrancaFormDialogState.props.lockMesAno}
+          availableMonths={cobrancaFormDialogState.props.availableMonths}
         />
       )}
 
@@ -752,10 +1189,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() =>
             safeCloseDialog(() => {
               setFirstChargeDialogState((prev) => ({ ...prev, open: false }));
-              firstChargeDialogState.props?.onSuccess?.();
             })
           }
           passageiro={firstChargeDialogState.props.passageiro}
+          isFirstPassageiro={firstChargeDialogState.props.isFirstPassageiro}
+          onSuccess={firstChargeDialogState.props.onSuccess}
         />
       )}
 
@@ -781,6 +1219,86 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {whatsAppCobrancaPreviewDialogState.open && (
+        <WhatsAppCobrancaPreviewDialog
+          isOpen={whatsAppCobrancaPreviewDialogState.open}
+          onClose={() => safeCloseDialog(() => setWhatsAppCobrancaPreviewDialogState({ open: false }))}
+          driverName={whatsAppCobrancaPreviewDialogState.props?.driverName}
+          passageiroNome={whatsAppCobrancaPreviewDialogState.props?.passageiroNome}
+          userChavePix={whatsAppCobrancaPreviewDialogState.props?.userChavePix}
+          showPixSetupAction={whatsAppCobrancaPreviewDialogState.props?.showPixSetupAction}
+        />
+      )}
+
+      {whatsAppContratoPreviewDialogState.open && (
+        <WhatsAppContratoPreviewDialog
+          isOpen={whatsAppContratoPreviewDialogState.open}
+          onClose={() => safeCloseDialog(() => setWhatsAppContratoPreviewDialogState({ open: false }))}
+          driverName={whatsAppContratoPreviewDialogState.props?.driverName}
+          passageiroNome={whatsAppContratoPreviewDialogState.props?.passageiroNome}
+        />
+      )}
+
+      {reciboPreviewDialogState.open && (
+        <ReciboPreviewDialog
+          isOpen={reciboPreviewDialogState.open}
+          onClose={() => safeCloseDialog(() => setReciboPreviewDialogState({ open: false }))}
+          driverName={reciboPreviewDialogState.props?.driverName}
+          passageiroNome={reciboPreviewDialogState.props?.passageiroNome}
+        />
+      )}
+
+      {whatsAppShowcaseDialogState.open && (
+        <WhatsAppShowcaseDialog
+          isOpen={whatsAppShowcaseDialogState.open}
+          onClose={() => safeCloseDialog(() => setWhatsAppShowcaseDialogState({ open: false }))}
+          initialTab={whatsAppShowcaseDialogState.props?.initialTab}
+          driverName={whatsAppShowcaseDialogState.props?.driverName}
+          passageiroNome={whatsAppShowcaseDialogState.props?.passageiroNome}
+        />
+      )}
+
+      {showcaseTransporteEscolarOpen && (
+        <ShowcaseTransporteEscolarDialog
+          isOpen={showcaseTransporteEscolarOpen}
+          onClose={() => safeCloseDialog(() => setShowcaseTransporteEscolarOpen(false))}
+          onNavigateToRegister={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
+        />
+      )}
+
+      {onboardingSuccessDialogState.open && onboardingSuccessDialogState.props && (
+        <OnboardingSuccessDialog
+          isOpen={onboardingSuccessDialogState.open}
+          onClose={() => safeCloseDialog(() => setOnboardingSuccessDialogState({ open: false }))}
+          onNavigateToPassageiro={onboardingSuccessDialogState.props.onNavigateToPassageiro}
+          passageiroNome={onboardingSuccessDialogState.props.passageiroNome}
+          onOpenShowcase={(tab) =>
+            openWhatsAppShowcaseDialog({
+              initialTab: tab,
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+          onOpenWhatsAppPreview={() =>
+            openWhatsAppShowcaseDialog({
+              initialTab: "cobranca",
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+          onOpenContratoPreview={() =>
+            openWhatsAppShowcaseDialog({
+              initialTab: "contrato",
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+          onOpenReciboPreview={() =>
+            openWhatsAppShowcaseDialog({
+              initialTab: "recibo",
+              passageiroNome: onboardingSuccessDialogState.props?.passageiroNome,
+            })
+          }
+        />
+      )}
+
       {acquisitionChannelDialogOpen && (
         <AcquisitionChannelDialog
           isOpen={acquisitionChannelDialogOpen}
@@ -792,6 +1310,26 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <ReferAndEarnDialog
           isOpen={referAndEarnDialogOpen}
           onClose={() => safeCloseDialog(() => setReferAndEarnDialogOpen(false))}
+        />
+      )}
+
+      {personalizarMenuDialogOpen && (
+        <PersonalizarMenuDialog
+          isOpen={personalizarMenuDialogOpen}
+          onClose={() => safeCloseDialog(() => setPersonalizarMenuDialogOpen(false))}
+        />
+      )}
+
+      {excluirContaDialogOpen && (
+        <ExcluirContaDialog
+          open={excluirContaDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => setExcluirContaDialogOpen(false));
+            } else {
+              setExcluirContaDialogOpen(true);
+            }
+          }}
         />
       )}
 
@@ -820,6 +1358,24 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setReceiptDialogState({ open: false }))}
           receiptUrl={receiptDialogState.props.receiptUrl}
           cobrancaDescricao={receiptDialogState.props.cobrancaDescricao}
+          cobrancaId={receiptDialogState.props.cobrancaId}
+          mes={receiptDialogState.props.mes}
+          ano={receiptDialogState.props.ano}
+          passageiroId={receiptDialogState.props.passageiroId}
+          nomePassageiro={receiptDialogState.props.nomePassageiro}
+          nomeResponsavel={receiptDialogState.props.nomeResponsavel}
+          generoPassageiro={receiptDialogState.props.generoPassageiro}
+        />
+      )}
+
+      {annualReceiptDialogState.open && annualReceiptDialogState.props && (
+        <AnnualReceiptDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAnnualReceiptDialogState({ open: false }))}
+          receiptUrl={annualReceiptDialogState.props.receiptUrl}
+          ano={annualReceiptDialogState.props.ano}
+          alunoNome={annualReceiptDialogState.props.alunoNome}
+          passageiroId={annualReceiptDialogState.props.passageiroId}
         />
       )}
 
@@ -831,11 +1387,101 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {adminDispatchNotificationDialogState.open && adminDispatchNotificationDialogState.props && (
+        <AdminDispatchNotificationDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAdminDispatchNotificationDialogState({ open: false }))}
+          userId={adminDispatchNotificationDialogState.props.userId}
+          userName={adminDispatchNotificationDialogState.props.userName}
+          userPhone={adminDispatchNotificationDialogState.props.userPhone}
+          userEmail={adminDispatchNotificationDialogState.props.userEmail}
+        />
+      )}
+
+      {adminPassengerNotificationsDialogState.open && adminPassengerNotificationsDialogState.props && (
+        <AdminPassengerNotificationsDialog
+          open={true}
+          onClose={() => safeCloseDialog(() => setAdminPassengerNotificationsDialogState({ open: false }))}
+          passageiroId={adminPassengerNotificationsDialogState.props.passageiroId}
+          passageiroNome={adminPassengerNotificationsDialogState.props.passageiroNome}
+        />
+      )}
+
+      {adminPassengerSendCobrancaDialogState.open && adminPassengerSendCobrancaDialogState.props && (
+        <AdminPassengerSendCobrancaDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAdminPassengerSendCobrancaDialogState({ open: false }))}
+          userId={adminPassengerSendCobrancaDialogState.props.userId}
+          passageiro={adminPassengerSendCobrancaDialogState.props.passageiro}
+          motoristaNome={adminPassengerSendCobrancaDialogState.props.motoristaNome}
+        />
+      )}
+
+      {adminDriverCobrancaDemoDialogState.open && adminDriverCobrancaDemoDialogState.props && (
+        <AdminDriverCobrancaDemoDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAdminDriverCobrancaDemoDialogState({ open: false }))}
+          userId={adminDriverCobrancaDemoDialogState.props.userId}
+          userName={adminDriverCobrancaDemoDialogState.props.userName}
+          userPhone={adminDriverCobrancaDemoDialogState.props.userPhone}
+          userApelido={adminDriverCobrancaDemoDialogState.props.userApelido}
+          userChavePix={adminDriverCobrancaDemoDialogState.props.userChavePix}
+          userTipoChavePix={adminDriverCobrancaDemoDialogState.props.userTipoChavePix}
+        />
+      )}
+
+      {adminVencimentoDetalhesDialogState.open && adminVencimentoDetalhesDialogState.props && (
+        <AdminVencimentoDetalhesDialog
+          open={true}
+          onClose={() => safeCloseDialog(() => setAdminVencimentoDetalhesDialogState({ open: false }))}
+          dia={adminVencimentoDetalhesDialogState.props.dia}
+          mes={adminVencimentoDetalhesDialogState.props.mes}
+          ano={adminVencimentoDetalhesDialogState.props.ano}
+        />
+      )}
+
+      {adminConfigureReferralDialogState.open && adminConfigureReferralDialogState.props && (
+        <AdminConfigureReferralDialog
+          isOpen={true}
+          onClose={() => safeCloseDialog(() => setAdminConfigureReferralDialogState({ open: false }))}
+          userId={adminConfigureReferralDialogState.props.userId}
+          userName={adminConfigureReferralDialogState.props.userName}
+          currentIndicadorId={adminConfigureReferralDialogState.props.currentIndicadorId}
+          currentIndicadorNome={adminConfigureReferralDialogState.props.currentIndicadorNome}
+          onSuccess={adminConfigureReferralDialogState.props.onSuccess}
+        />
+      )}
+
+      {adminConfirmBroadcastDialogState.open && adminConfirmBroadcastDialogState.props && (
+        <AdminConfirmBroadcastDialog
+          isOpen={true}
+          onClose={closeAdminConfirmBroadcastDialog}
+          publicoDescricao={adminConfirmBroadcastDialogState.props.publicoDescricao}
+          totalEligivel={adminConfirmBroadcastDialogState.props.totalEligivel}
+          totalComPush={adminConfirmBroadcastDialogState.props.totalComPush}
+          selectedActionConfig={adminConfirmBroadcastDialogState.props.selectedActionConfig}
+          notificationTitle={adminConfirmBroadcastDialogState.props.notificationTitle}
+          notificationMessage={adminConfirmBroadcastDialogState.props.notificationMessage}
+          onConfirm={adminConfirmBroadcastDialogState.props.onConfirm}
+          isSubmitting={adminConfirmBroadcastDialogState.props.isSubmitting}
+        />
+      )}
+
+      {imageFullscreenDialogState.open && imageFullscreenDialogState.props && (
+        <ImageFullscreenDialog
+          isOpen={true}
+          onClose={closeImageFullscreen}
+          imageUrl={imageFullscreenDialogState.props.imageUrl}
+          alt={imageFullscreenDialogState.props.alt}
+        />
+      )}
+
       {gerarContratoValidadorDialogState.open && gerarContratoValidadorDialogState.props && (
         <GerarContratoValidadorDialog
           isOpen={true}
           onClose={() => safeCloseDialog(() => setGerarContratoValidadorDialogState({ open: false }))}
           passageiroId={gerarContratoValidadorDialogState.props.passageiroId}
+          initialPassageiro={gerarContratoValidadorDialogState.props.initialPassageiro}
           onSuccess={gerarContratoValidadorDialogState.props.onSuccess}
         />
       )}
@@ -848,6 +1494,31 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiro={importarContratoDialogState.props?.passageiro}
           onSuccess={importarContratoDialogState.props?.onSuccess}
         />
+      )}
+
+      {videoStoriesDialogState.open && videoStoriesDialogState.props && (
+        <VideoStoriesDialog
+          open={videoStoriesDialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeVideoStoriesDialog();
+            } else {
+              setVideoStoriesDialogState((prev) => ({ ...prev, open }));
+            }
+          }}
+          {...videoStoriesDialogState.props}
+        />
+      )}
+
+      {isGlobalLoading && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 select-none">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-4 max-w-xs mx-4 text-center border border-slate-100 animate-in zoom-in-95 duration-200">
+            <Loader2 className="w-10 h-10 animate-spin text-[#1a3a5c]" />
+            <p className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">
+              {globalLoadingText || "Salvando..."}
+            </p>
+          </div>
+        </div>
       )}
 
     </LayoutContext.Provider>

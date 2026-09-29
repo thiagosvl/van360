@@ -1,9 +1,9 @@
-import { FileCheck2, Clock, FileX2, Plus, ExternalLink, Wand2, Pencil, CheckCircle2, UploadCloud, Trash2 } from "lucide-react";
+import { FileCheck2, Clock, FileX2, Plus, ExternalLink, Wand2, CheckCircle2, UploadCloud, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { isResponsavelIncompleto, obterStatusConfiguracaoContrato, StatusConfiguracaoContrato } from "@/utils/domain";
+import { obterStatusConfiguracaoContrato, StatusConfiguracaoContrato } from "@/utils/domain";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -37,22 +37,11 @@ export const CarteirinhaContrato = ({
     return null;
   }
 
-  const resp = passageiro.responsavel_principal;
-  const isMissingResponsible = isResponsavelIncompleto(
-    resp?.nome,
-    resp?.telefone
-  );
-
   const statusConfig = obterStatusConfiguracaoContrato(profile);
   const isContratoConfigurado = statusConfig !== StatusConfiguracaoContrato.NAO_CONFIGURADO;
   const isContratoAtivo = statusConfig === StatusConfiguracaoContrato.ATIVO;
 
   const handleNoContractClick = () => {
-    if (isMissingResponsible) {
-      onEditClick?.();
-      return;
-    }
-
     if (!isContratoConfigurado || !isContratoAtivo) {
       openContractSetupDialog({
         forceOpen: true,
@@ -74,7 +63,7 @@ export const CarteirinhaContrato = ({
       return {
         title: isImportado ? "Contrato Importado" : "Contrato Assinado",
         desc: isImportado
-          ? "Documento em PDF importado e arquivado"
+          ? "Documento assinado em papel/PDF anexado à carteirinha do aluno"
           : "Documento oficial assinado eletronicamente",
         color: "bg-slate-50/80 border-slate-100/80 hover:bg-slate-100/50 hover:border-slate-200/80",
         iconColor: isImportado
@@ -99,20 +88,6 @@ export const CarteirinhaContrato = ({
         actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
         actionIcon: WhatsAppIcon,
         onClick: () => onEnviarWhatsApp?.(passageiro),
-      };
-    }
-
-    if (isMissingResponsible) {
-      return {
-        title: "Não possui contrato",
-        desc: "Complete o cadastro do responsável para poder gerar contratos.",
-        color: "bg-amber-50/40 border-amber-100/80",
-        iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/30 shadow-xs",
-        icon: Pencil,
-        actionLabel: "Completar Cadastro",
-        actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
-        actionIcon: Pencil,
-        onClick: handleNoContractClick,
       };
     }
 
@@ -213,7 +188,7 @@ export const CarteirinhaContrato = ({
               className="flex items-center justify-center gap-1.5 w-full py-2 px-4 rounded-lg text-[12px] font-bold text-slate-700 bg-white border border-slate-200/80 hover:bg-slate-50 transition-all duration-200 shadow-xs active:scale-[0.99] shrink-0 cursor-pointer"
             >
               <UploadCloud className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-              <span>Importar Contrato</span>
+              <span>Importar Contrato Assinado (PDF)</span>
             </button>
           )}
 

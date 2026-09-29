@@ -164,14 +164,10 @@ export function MonitorFormDialog({
     if (isDuplicateEmail) {
       form.setError("email", { message: "E-mail já cadastrado." });
       hasFieldError = true;
-    }
-
-    if (isDuplicateCpf) {
+    } else if (isDuplicateCpf) {
       form.setError("cpf", { message: "CPF/CNPJ já cadastrado." });
       hasFieldError = true;
-    }
-
-    if (isDuplicatePhone) {
+    } else if (isDuplicatePhone) {
       form.setError("telefone", { message: "Telefone já cadastrado." });
       hasFieldError = true;
     }
@@ -334,14 +330,14 @@ export function MonitorFormDialog({
                   )}
                 />
 
-                {/* 2. Apelido / Nome de Exibição */}
+                {/* 2. Nome de Exibição / Apelido */}
                 <FormField
                   control={form.control}
                   name="apelido"
                   render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Apelido / Nome de Exibição
+                        Nome de Exibição / Apelido
                       </FormLabel>
                       <FormControl>
                         <div className="relative">

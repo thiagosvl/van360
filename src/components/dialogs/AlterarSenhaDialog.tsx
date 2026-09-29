@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
-import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { apiClient } from "@/services/api/client";
 import { toast } from "@/utils/notifications/toast";
@@ -33,7 +32,6 @@ type FormData = z.infer<typeof schema>;
 
 export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDialogProps) {
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
@@ -43,7 +41,7 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
   });
 
   const handleSubmit = async (data: FormData) => {
-    if (!profile?.cpfcnpj) {
+    if (!user?.id) {
       toast.error("erro.operacao", { description: "Não foi possível identificar o usuário logado." });
       return;
     }

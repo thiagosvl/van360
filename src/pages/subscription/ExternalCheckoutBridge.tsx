@@ -19,7 +19,33 @@ export default function ExternalCheckoutBridge() {
 
   useEffect(() => {
     const handleAuthBridge = async () => {
-      const { accessToken, refreshToken, isValid, targetRoute } = extractCheckoutBridgeParams(searchParams);
+      const tokenHash = searchParams.get("token_hash") || searchParams.get("token");
+      const autoOpen = searchParams.get("auto_open") === "true";
+      const querySuffix = autoOpen ? "?open_checkout=true" : "";
+      const targetRoute = `${ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}${querySuffix}`;
+
+      if (tokenHash) {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "magiclink",
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          navigate(targetRoute, { replace: true });
+          return;
+        } catch (err) {
+          console.error("Erro ao validar token mágico de acesso:", err);
+          toast.error("Link de acesso expirado ou inválido. Faça login manualmente.");
+          navigate(ROUTES.PUBLIC.LOGIN, { replace: true });
+          return;
+        }
+      }
+
+      const { accessToken, refreshToken, isValid } = extractCheckoutBridgeParams(searchParams);
 
       if (!isValid || !accessToken || !refreshToken) {
         toast.error("Sessão expirada ou inválida. Faça login novamente.");

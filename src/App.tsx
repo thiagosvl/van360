@@ -21,15 +21,21 @@ import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { NativeUpdateDialog } from "@/components/dialogs/NativeUpdateDialog";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, Outlet, useParams, useLocation } from "react-router-dom";
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
 import { LayoutProvider } from "@/contexts/LayoutProvider";
+import { useAttribution } from "@/hooks/business/useAttribution";
 
 const PushNotificationController = () => {
   usePushNotifications();
+  return null;
+};
+
+const AttributionController = () => {
+  useAttribution();
   return null;
 };
 
@@ -45,9 +51,18 @@ const Splash = lazyLoad(() => import("./pages/Splash"));
 const Home = lazyLoad(() => import("./pages/Home"));
 
 const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
+const AtualizacaoRapidaPassageiros = lazyLoad(() => import("./pages/AtualizacaoRapidaPassageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
 const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
 const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
+const AssinarRedirect = () => {
+  const { token } = useParams<{ token: string }>();
+  return <Navigate to={ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", token || "")} replace />;
+};
+const PassageirosRedirect = () => {
+  const { search } = useLocation();
+  return <Navigate to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}${search}`} replace />;
+};
 const Cobrancas = lazyLoad(() => import("./pages/Cobrancas"));
 const Escolas = lazyLoad(() => import("./pages/Escolas"));
 const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
@@ -64,6 +79,7 @@ const RouteDetailsPage = lazyLoad(() => import("./pages/RouteDetailsPage"));
 const Aniversariantes = lazyLoad(() => import("./pages/Aniversariantes"));
 const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
 const ExternalCheckoutBridge = lazyLoad(() => import("./pages/subscription/ExternalCheckoutBridge"));
+const ImpersonateBridgePage = lazyLoad(() => import("./pages/admin/ImpersonateBridgePage"));
 const PrivacyPolicy = lazyLoad(() => import("./pages/legal/PrivacyPolicyPage"));
 const TermsOfUse = lazyLoad(() => import("./pages/legal/TermsOfUsePage"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -75,8 +91,30 @@ const AdminSettings = lazyLoad(() => import("./pages/admin/AdminSettings"));
 const AdminCalculator = lazyLoad(() => import("./pages/admin/AdminCalculator"));
 const AdminLoginAttempts = lazyLoad(() => import("./pages/admin/AdminLoginAttempts"));
 const AdminActivityHistory = lazyLoad(() => import("./pages/admin/AdminActivityHistory"));
+const AdminUsersRadar = lazyLoad(() => import("./pages/admin/AdminUsersRadar"));
+const AdminNotificationsHistory = lazyLoad(() => import("./pages/admin/AdminNotificationsHistory"));
 const AdminEvolutionInstances = lazyLoad(() => import("./pages/admin/AdminEvolutionInstances"));
 const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
+const AdminReferrals = lazyLoad(() => import("./pages/admin/AdminReferrals"));
+
+interface PendingOtaUpdate {
+  id: string;
+  version: string;
+}
+
+function getPendingUpdate(): PendingOtaUpdate | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.id === "string" && typeof parsed.version === "string") {
+      return parsed as PendingOtaUpdate;
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
+  }
+  return null;
+}
 
 const App = () => {
   const [updating, setUpdating] = useState(false);
@@ -95,11 +133,23 @@ const App = () => {
       if (isDevEnv()) return;
 
       try {
-        const appInfo = await CapacitorApp.getInfo();
         const current = await CapacitorUpdater.current();
         const currentVersion =
           current?.bundle?.version || current?.native || "builtin";
 
+        const pendingUpdate = getPendingUpdate();
+        if (pendingUpdate && pendingUpdate.version !== currentVersion) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
+          try {
+            await CapacitorUpdater.set({ id: pendingUpdate.id });
+            await CapacitorUpdater.reload();
+            return;
+          } catch {
+          }
+        }
+
+        const appInfo = await CapacitorApp.getInfo();
         const { data } = await apiClient.get("/app/updates", {
           params: {
             platform: Capacitor.getPlatform(),
@@ -142,12 +192,12 @@ const App = () => {
 
         if (!latest_version || currentVersion === latest_version) return;
 
-        const pendingUpdateId = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
-        if (pendingUpdateId && pendingUpdateId === latest_version && !force_update) {
+        if (pendingUpdate && pendingUpdate.version === latest_version && !force_update) {
           return;
         }
 
         if (force_update) {
+          localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
           setUpdating(true);
           setProgress(0);
 
@@ -184,14 +234,14 @@ const App = () => {
             }
           };
 
-          const TIMEOUT_MS = 7000;
+          const TIMEOUT_MS = 15000;
           const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error("OTA timeout limit exceeded")), TIMEOUT_MS);
           });
 
           try {
             await Promise.race([performForceUpdate(), timeoutPromise]);
-          } catch (err) {
+          } catch {
             setUpdating(false);
           }
           return;
@@ -203,11 +253,21 @@ const App = () => {
             url: url_zip,
           });
 
-          await CapacitorUpdater.next({ id: version.id });
-          localStorage.setItem(STORAGE_KEYS.PENDING_UPDATE, version.id);
-        } catch (err) {
+          try {
+            await CapacitorUpdater.next({ id: version.id });
+          } catch {
+          }
+
+          localStorage.setItem(
+            STORAGE_KEYS.PENDING_UPDATE,
+            JSON.stringify({
+              id: version.id,
+              version: latest_version,
+            })
+          );
+        } catch {
         }
-      } catch (err) {
+      } catch {
       }
     };
 
@@ -252,14 +312,16 @@ const App = () => {
     const notifyReady = async () => {
       try {
         const current = await CapacitorUpdater.current();
-        const pending = localStorage.getItem(STORAGE_KEYS.PENDING_UPDATE);
+        const currentVersion =
+          current?.bundle?.version || current?.native || "builtin";
+        const pending = getPendingUpdate();
 
-        if (pending && pending === current?.bundle?.id) {
+        if (pending && (pending.version === currentVersion || pending.id === current?.bundle?.id)) {
           localStorage.removeItem(STORAGE_KEYS.PENDING_UPDATE);
         }
 
         await CapacitorUpdater.notifyAppReady();
-      } catch (err) {
+      } catch {
       }
     };
 
@@ -276,6 +338,7 @@ const App = () => {
               <AppErrorBoundary>
                 <BackButtonController />
                 <PushNotificationController />
+                <AttributionController />
                 <ScrollToTop />
                 <Suspense fallback={<InitialLoading />}>
                   <Routes>
@@ -318,8 +381,18 @@ const App = () => {
                     />
 
                     <Route
-                      path="/assinar/:token"
+                      path={ROUTES.PUBLIC.IMPERSONATE_BRIDGE}
+                      element={<ImpersonateBridgePage />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.SIGN_CONTRACT}
                       element={<AssinarContrato />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.SIGN_CONTRACT_DUPLICATE}
+                      element={<AssinarRedirect />}
                     />
 
                     <Route
@@ -361,6 +434,9 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.ADMIN.CALCULATOR} element={<AdminCalculator />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.LOGIN_ATTEMPTS} element={<AdminLoginAttempts />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY} element={<AdminActivityHistory />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.USERS_RADAR} element={<AdminUsersRadar />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.REFERRALS} element={<AdminReferrals />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.NOTIFICATIONS} element={<AdminNotificationsHistory />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
                     </Route>
@@ -375,10 +451,17 @@ const App = () => {
                       }
                     >
                       <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
+                      <Route path={ROUTES.PRIVATE.MOTORISTA.ACCOUNT} element={<Conta />} />
 
                       <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
                         <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
+                        <Route path="/passageiros" element={<PassageirosRedirect />} />
+                        <Route path="/passageiros/*" element={<PassageirosRedirect />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
+                        <Route
+                          path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH}
+                          element={<AtualizacaoRapidaPassageiros />}
+                        />
                         <Route
                           path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
                           element={<PassageiroCarteirinha />}
@@ -388,7 +471,6 @@ const App = () => {
                         <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
-                        <Route path={ROUTES.PRIVATE.MOTORISTA.ACCOUNT} element={<Conta />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />

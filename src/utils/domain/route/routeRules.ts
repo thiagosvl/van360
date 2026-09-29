@@ -164,8 +164,8 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
 
       const pass = item.passageiro;
       const escolaId = item.escola_id || pass?.escola_id || pass?.escola?.id;
-      const alunoNome = pass?.nome || item.nome || "Passageiro";
-      const primeiroNome = formatShortName(alunoNome);
+      const alunoNome = pass?.nome || item.nome || "Aluno";
+      const nomeAluno = formatShortName(alunoNome, true);
 
       if (!escolaId) continue;
 
@@ -182,7 +182,7 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
         .filter((idx) => idx !== -1);
 
       if (indicesEscola.length === 0) {
-        map[item.id] = `Adicione a parada da escola de ${primeiroNome} no itinerário.`;
+        map[item.id] = `A escola de ${nomeAluno} ainda não está no itinerário. Que tal incluir?`;
         continue;
       }
 
@@ -190,12 +190,12 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
       if (sentido === RouteSentido.INDO) {
         const temEscolaDepois = indicesEscola.some((idxEscola) => idxEscola > i);
         if (!temEscolaDepois) {
-          map[item.id] = `Como ${primeiroNome} está INDO, a parada da escola precisa estar DEPOIS.`;
+          map[item.id] = `Como ${nomeAluno} está indo, faz sentido a parada da escola vir depois da casa.`;
         }
       } else if (sentido === RouteSentido.VOLTANDO) {
         const temEscolaAntes = indicesEscola.some((idxEscola) => idxEscola < i);
         if (!temEscolaAntes) {
-          map[item.id] = `Como ${primeiroNome} está VOLTANDO, a parada da escola precisa estar ANTES.`;
+          map[item.id] = `Como ${nomeAluno} está voltando, faz sentido a parada da escola vir antes da casa.`;
         }
       }
     }
@@ -204,96 +204,41 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
   return map;
 }
 
-/**
- * Valida se a rota está completa e pronta para ser salva/executada
- */
 export function validarItinerarioPronto(
-  tipo: any,
+  _tipo: unknown,
   itinerario: ItineraryNode[]
 ): { isPronto: boolean; errorMsg: string | null } {
   if (itinerario.length === 0) {
     return { isPronto: false, errorMsg: "Adicione paradas para montar a rota." };
   }
 
-  const temPassageiro = itinerario.some((item) => item.tipo_no === RouteNodeType.PASSAGEIRO);
-  if (!temPassageiro) {
-    return { isPronto: false, errorMsg: "Adicione pelo menos um passageiro à rota." };
-  }
-
-  const temEscola = itinerario.some((item) => item.tipo_no === RouteNodeType.ESCOLA);
-  if (!temEscola) {
-    return { isPronto: false, errorMsg: "Adicione pelo menos uma escola à rota." };
-  }
-
   const errosMap = gerarErrosPorNo(itinerario);
   const primeiroErroKey = Object.keys(errosMap)[0];
   if (primeiroErroKey) {
-    return { isPronto: false, errorMsg: errosMap[primeiroErroKey] };
+    return { isPronto: true, errorMsg: errosMap[primeiroErroKey] };
   }
 
   return { isPronto: true, errorMsg: null };
 }
 
-/**
- * Valida se um movimento de reordenação (Up/Down) é permitido.
- * Em modo de configuração ("" ou "config"), permite movimentação física dentro dos limites da lista.
- */
 export function validarMovimentoPermitido(
-  tipo: any,
+  _tipo: unknown,
   index: number,
   direction: "up" | "down",
   itinerario: ItineraryNode[],
-  paradasConcluidas: ItineraryNode[] = []
+  _paradasConcluidas: ItineraryNode[] = []
 ): boolean {
   const targetIndex = direction === "up" ? index - 1 : index + 1;
-  if (targetIndex < 0 || targetIndex >= itinerario.length) return false;
-
-  const isConfigMode = tipo === "" || tipo === "config" || tipo === "CONFIG";
-  if (isConfigMode) return true;
-
-  const simulado = [...itinerario];
-  const temp = simulado[index];
-  simulado[index] = simulado[targetIndex];
-  simulado[targetIndex] = temp;
-
-  const fullItinerario = [...paradasConcluidas, ...simulado];
-  const check = validarItinerarioPronto(tipo, fullItinerario);
-  return check.isPronto;
+  return targetIndex >= 0 && targetIndex < itinerario.length;
 }
 
-/**
- * Verifica se uma parada em um itinerario possui ao menos uma posição alternativa para mover.
- * Em modo de configuração ("" ou "config"), permite reordenar se houver mais de 1 parada pendente.
- */
 export function podeReordenarParada(
-  tipo: any,
-  currentIndex: number,
+  _tipo: unknown,
+  _currentIndex: number,
   totalPendentes: ItineraryNode[],
-  paradasConcluidas: ItineraryNode[] = []
+  _paradasConcluidas: ItineraryNode[] = []
 ): boolean {
-  if (!totalPendentes || totalPendentes.length <= 1) return false;
-
-  const targetItem = totalPendentes[currentIndex];
-  if (!targetItem) return false;
-
-  const isConfigMode = tipo === "" || tipo === "config" || tipo === "CONFIG";
-  if (isConfigMode) return true;
-
-  for (let targetIdx = 0; targetIdx < totalPendentes.length; targetIdx++) {
-    if (targetIdx === currentIndex) continue;
-
-    const tempPendentes = [...totalPendentes];
-    const [removed] = tempPendentes.splice(currentIndex, 1);
-    tempPendentes.splice(targetIdx, 0, removed);
-
-    const fullItinerario = [...paradasConcluidas, ...tempPendentes];
-    const check = validarItinerarioPronto(tipo, fullItinerario);
-    if (check.isPronto) {
-      return true;
-    }
-  }
-
-  return false;
+  return Boolean(totalPendentes && totalPendentes.length > 1);
 }
 
 /**
@@ -318,7 +263,17 @@ export function getAlunosEscolaPorPosicao(todasParadasList: any[], escolaNodeInd
     if (passEscolaId !== escolaId) return false;
     if (node.sentido !== RouteSentido.INDO) return false;
     if (i >= escolaNodeIndex) return false;
-    return true;
+
+    let temOutraParadaDestaMesmaEscolaEntre = false;
+    for (let idx = i + 1; idx < escolaNodeIndex; idx++) {
+      const n = todasParadasList[idx];
+      const nEscolaId = n.escola_id || n.escola?.id;
+      if (n.tipo_no === RouteNodeType.ESCOLA && nEscolaId === escolaId) {
+        temOutraParadaDestaMesmaEscolaEntre = true;
+        break;
+      }
+    }
+    return !temOutraParadaDestaMesmaEscolaEntre;
   });
 
   const subes = todasParadasList.filter((node, i) => {
@@ -326,32 +281,19 @@ export function getAlunosEscolaPorPosicao(todasParadasList: any[], escolaNodeInd
     const passEscolaId = node.passageiro?.escola_id || node.passageiro?.escola?.id || node.escola_id;
     if (passEscolaId !== escolaId) return false;
     if (node.sentido !== RouteSentido.VOLTANDO) return false;
+    if (i <= escolaNodeIndex) return false;
 
-    let ultimaEscolaAntesDeP = -1;
-    for (let idx = i - 1; idx >= 0; idx--) {
-      if (todasParadasList[idx].tipo_no === RouteNodeType.ESCOLA) {
-        ultimaEscolaAntesDeP = idx;
+    let temOutraParadaDestaMesmaEscolaEntre = false;
+    for (let idx = escolaNodeIndex + 1; idx < i; idx++) {
+      const n = todasParadasList[idx];
+      const nEscolaId = n.escola_id || n.escola?.id;
+      if (n.tipo_no === RouteNodeType.ESCOLA && nEscolaId === escolaId) {
+        temOutraParadaDestaMesmaEscolaEntre = true;
         break;
       }
     }
 
-    if (node.status === RouteStopStatus.PENDENTE && i > escolaNodeIndex) {
-      let temEscolaDestaEntrem = false;
-      for (let idx = escolaNodeIndex + 1; idx < i; idx++) {
-        if (todasParadasList[idx].tipo_no === RouteNodeType.ESCOLA) {
-          const eId = todasParadasList[idx].escola_id || todasParadasList[idx].escola?.id;
-          if (eId === escolaId) {
-            temEscolaDestaEntrem = true;
-            break;
-          }
-        }
-      }
-      if (!temEscolaDestaEntrem && ultimaEscolaAntesDeP < escolaNodeIndex) {
-        return true;
-      }
-    }
-
-    return i > escolaNodeIndex && ultimaEscolaAntesDeP === escolaNodeIndex;
+    return !temOutraParadaDestaMesmaEscolaEntre;
   });
 
   return { desces, subes };

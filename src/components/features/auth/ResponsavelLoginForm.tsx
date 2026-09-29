@@ -50,7 +50,7 @@ export const ResponsavelLoginForm: React.FC = () => {
               className="mb-4 p-3 rounded-2xl"
               description={
                 <span>
-                  <strong>Pais e Responsáveis:</strong> digite o número de <strong>WhatsApp</strong> cadastrado pelo motorista para acessar a carteirinha. Não é necessário criar conta prévia.
+                  <strong>Pais e Responsáveis:</strong> digite o número de <strong>WhatsApp</strong> cadastrado pelo motorista para acessar a carteirinha. Não é necessário criar uma conta.
                 </span>
               }
             />

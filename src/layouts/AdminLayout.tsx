@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { AdminNavbar } from "@/components/layout/AdminNavbar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -11,6 +11,14 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const win = window as unknown as { clarity?: (action: string, ...args: unknown[]) => void };
+    if (typeof win.clarity === "function") {
+      win.clarity("stop");
+    }
+  }, []);
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);

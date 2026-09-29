@@ -25,6 +25,7 @@ export interface Responsavel {
   cep?: string | null;
   referencia?: string | null;
   complemento?: string | null;
+  notificacoes_rota_habilitadas?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -66,8 +67,11 @@ export interface Passageiro {
   genero?: PassageiroGenero;
   data_inicio_transporte?: string;
   turma?: string;
+  sala?: string | null;
   nome_professor?: string;
   data_fim_transporte?: string;
+  horario_entrada?: string | null;
+  horario_saida?: string | null;
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
   responsaveis?: PassageiroResponsavel[];
@@ -93,6 +97,7 @@ export interface PassageiroResponsavel {
   cep?: string | null;
   referencia?: string | null;
   complemento?: string | null;
+  notificacoes_rota_habilitadas?: boolean;
   created_at?: string;
   updated_at?: string;
 }

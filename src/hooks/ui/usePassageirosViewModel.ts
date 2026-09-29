@@ -13,25 +13,29 @@ import {
   useEscolas,
   useFilters,
   usePassageiros,
+  usePrePassageiros,
   useToggleAtivoPassageiro,
   useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { buildContratoWhatsAppUrl } from "@/utils/evolution";
+import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
+import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import { convertDateBrToISO } from "@/utils/formatters/date";
-import { moneyToNumber, phoneMask } from "@/utils/masks";
+import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "../business/usePermissions";
+import { getNowBR } from "@/utils/dateUtils";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 export function usePassageirosViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -43,6 +47,7 @@ export function usePassageirosViewModel() {
     openPassageiroFormDialog,
     openQuickStartPassageiroDialog,
     openFirstChargeDialog,
+    openOnboardingSuccessDialog,
   } = useLayout();
 
   const { user } = useSession();
@@ -62,20 +67,20 @@ export function usePassageirosViewModel() {
     if (tabParam && validTabs.includes(tabParam)) {
       return tabParam;
     }
-    return PassageiroTab.PASSAGEIROS;
+    return PassageiroTab.ALUNOS;
   }, [searchParams]);
 
   useEffect(() => {
-    const currentTab = searchParams.get("tab");
+    const currentTab = searchParams.get("tab") as PassageiroTab;
     if (isSubConta && currentTab === PassageiroTab.SOLICITACOES) {
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("tab", PassageiroTab.PASSAGEIROS);
+      newParams.set("tab", PassageiroTab.ALUNOS);
       setSearchParams(newParams, { replace: true });
       return;
     }
-    if (!currentTab || !Object.values(PassageiroTab).includes(currentTab as PassageiroTab)) {
+    if (!currentTab || !Object.values(PassageiroTab).includes(currentTab)) {
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("tab", PassageiroTab.PASSAGEIROS);
+      newParams.set("tab", PassageiroTab.ALUNOS);
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, setSearchParams, isSubConta]);
@@ -173,9 +178,9 @@ export function usePassageirosViewModel() {
 
   const isSubContaInitializingVeiculo = Boolean(
     isSubConta &&
-      profile?.veiculo_id &&
-      !hasInitializedSubContaVeiculo.current &&
-      !searchParams.has("veiculo")
+    profile?.veiculo_id &&
+    !hasInitializedSubContaVeiculo.current &&
+    !searchParams.has("veiculo")
   );
 
   const {
@@ -193,7 +198,27 @@ export function usePassageirosViewModel() {
       }),
   });
 
-  const countPrePassageiros = resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
+  const {
+    data: prePassageirosData,
+    isLoading: isPrePassageirosLoading,
+    isFetching: isPrePassageirosFetching,
+    refetch: refetchPrePassageiros,
+  } = usePrePassageiros(
+    {
+      usuarioId: profile?.id,
+      search: activeTab === PassageiroTab.SOLICITACOES ? debouncedSearchTerm : undefined,
+    },
+    {
+      enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")),
+      onError: () => toast.error("erro.carregar"),
+    }
+  );
+
+  const prePassageiros = (prePassageirosData as PrePassageiro[] | undefined) ?? [];
+  const countPrePassageiros =
+    prePassageirosData && !debouncedSearchTerm
+      ? prePassageirosData.length
+      : (resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0);
   const totalPassageirosResumo = resumo?.contadores.passageiros.total;
 
   const userQueryFilters = useMemo(
@@ -235,7 +260,7 @@ export function usePassageirosViewModel() {
   );
 
   useEffect(() => {
-    setPageTitle("Passageiros");
+    setPageTitle("Alunos");
   }, [setPageTitle]);
 
   useEffect(() => {
@@ -250,9 +275,9 @@ export function usePassageirosViewModel() {
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
       openConfirmationDialog({
-        title: "Excluir passageiro?",
+        title: "Excluir aluno?",
         description:
-          "Tem certeza que deseja excluir este passageiro? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados do aluno.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -273,10 +298,10 @@ export function usePassageirosViewModel() {
       const action = passageiro.ativo ? "desativar" : "ativar";
 
       openConfirmationDialog({
-        title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+        title: action === "ativar" ? "Reativar aluno?" : "Desativar aluno?",
         description: action === "ativar"
-          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
-          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
+          ? "O aluno voltará a aparecer nas listas de alunos ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O aluno será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
@@ -303,23 +328,54 @@ export function usePassageirosViewModel() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
+    let createdCountInSession = 0;
     const isFirstPassageiro = (countPassageiros || 0) === 0;
+
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
-      onSuccess: (passageiro) => {
-        if (passageiro && isFirstPassageiro) {
+      onSuccess: (passageiro, keepOpen) => {
+        if (!passageiro) {
+          return;
+        }
+
+        createdCountInSession += 1;
+
+        if (keepOpen) {
+          return;
+        }
+
+        if (isFirstPassageiro && createdCountInSession === 1) {
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
+          return;
+        }
+
+        const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
+        const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+        const now = getNowBR();
+        const hasPayment = hasFinancialInfo && shouldGeneratePassengerProjection({
+          passageiro,
+          targetMonth: now.getMonth() + 1,
+          targetYear: now.getFullYear(),
+        });
+
+        if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
+          openFirstChargeDialog({
+            passageiro,
+            onSuccess: (p) => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", (p || passageiro).id));
+            },
+          });
+        } else {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-        } else if (passageiro && !isFirstPassageiro) {
-          const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
-          if (!passageiro.isento || hasContractConfig) {
-            openFirstChargeDialog({ passageiro });
-          } else {
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-          }
         }
       },
     });
-  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, navigate, profile?.config_contrato?.usar_contratos]);
+  }, [countPassageiros, openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, navigate, profile?.config_contrato?.usar_contratos]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -375,6 +431,7 @@ export function usePassageirosViewModel() {
       data_inicio_transporte: convertDateBrToISO(mockPassenger.data_inicio_transporte),
       valor_cobranca: moneyToNumber(mockPassenger.valor_cobranca),
       dia_vencimento: parseInt(mockPassenger.dia_vencimento),
+      ano_letivo: Number(mockPassenger.ano_letivo),
     };
 
     createPassageiro.mutate({
@@ -413,7 +470,7 @@ export function usePassageirosViewModel() {
 
       openConfirmationDialog({
         title: "Excluir contrato?",
-        description: "Tem certeza que deseja excluir o contrato deste passageiro? O passageiro voltará para o status pendente.",
+        description: "Tem certeza que deseja excluir o contrato deste aluno? O aluno voltará para o status pendente.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -433,7 +490,7 @@ export function usePassageirosViewModel() {
     (passageiro: Passageiro) => {
       openConfirmationDialog({
         title: "Substituir contrato?",
-        description: "Ao confirmar, o contrato atual será cancelado e um novo com os dados atualizados será gerado para o passageiro. O responsável receberá o link para assinatura. Deseja continuar?",
+        description: "Ao confirmar, o contrato atual será cancelado e um novo com os dados atualizados será gerado para o aluno. O responsável receberá o link para assinatura. Deseja continuar?",
         confirmText: "Substituir",
         cancelText: "Manter atual",
         variant: "warning",
@@ -484,9 +541,10 @@ export function usePassageirosViewModel() {
       refetchPassageiros(),
       refetchEscolas(),
       refetchVeiculos(),
+      refetchPrePassageiros(),
       refreshProfile(),
     ]);
-  }, [refetchPassageiros, refetchEscolas, refetchVeiculos, refreshProfile]);
+  }, [refetchPassageiros, refetchEscolas, refetchVeiculos, refetchPrePassageiros, refreshProfile]);
 
   return {
     profile,
@@ -495,6 +553,10 @@ export function usePassageirosViewModel() {
     handleTabChange,
     countPassageiros,
     countPrePassageiros,
+    prePassageiros,
+    isPrePassageirosLoading,
+    isPrePassageirosFetching,
+    refetchPrePassageiros,
     searchTerm,
     setSearchTerm,
     debouncedSearchTerm,

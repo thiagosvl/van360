@@ -76,6 +76,7 @@ const BaseDialogRoot = ({
 interface BaseDialogHeaderProps {
   title: string
   subtitle?: string
+  subtitleClassName?: string
   icon?: React.ReactNode
   currentStep?: number
   totalSteps?: number
@@ -83,21 +84,27 @@ interface BaseDialogHeaderProps {
   onClose?: () => void
   showSteps?: boolean
   leftAction?: React.ReactNode
+  className?: string
 }
 
 const BaseDialogHeader = ({
   title,
   subtitle,
+  subtitleClassName,
   icon,
   currentStep,
   totalSteps,
   hideCloseButton = false,
   onClose,
   showSteps = false,
-  leftAction
+  leftAction,
+  className
 }: BaseDialogHeaderProps) => {
   return (
-    <div className="p-5 sm:p-6 flex items-center justify-between bg-white border-b border-slate-100/60 shrink-0 pt-[calc(1.25rem+var(--safe-area-top)/2)]">
+    <div className={cn(
+      "p-5 sm:p-6 flex items-center justify-between bg-white border-b border-slate-100/60 shrink-0 pt-[calc(1.25rem+var(--safe-area-top)/2)]",
+      className
+    )}>
       <div className="flex items-center gap-4 min-w-0 flex-1">
         {leftAction ? (
           <div className="shrink-0">{leftAction}</div>
@@ -131,7 +138,7 @@ const BaseDialogHeader = ({
               </div>
             </div>
           ) : subtitle ? (
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mt-0.5 truncate">
+            <p className={cn("text-[11px] text-slate-500 font-normal leading-tight mt-0.5", subtitleClassName)}>
               {subtitle}
             </p>
           ) : null}

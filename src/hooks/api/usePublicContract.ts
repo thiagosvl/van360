@@ -13,6 +13,17 @@ export interface PublicContract {
   contrato_final_url?: string;
   provider: ContratoProvider;
   created_at: string;
+  dados_contrato?: Record<string, unknown> | null;
+  usuario?: {
+    id: string;
+    nome: string;
+    apelido?: string | null;
+    razao_social?: string | null;
+    cpfcnpj?: string | null;
+    telefone?: string | null;
+    email?: string | null;
+    logo_url?: string | null;
+  } | null;
 }
 
 export function useGetPublicContract(token: string) {
@@ -27,21 +38,42 @@ export function useGetPublicContract(token: string) {
   });
 }
 
+export interface SignContractParams {
+  token: string;
+  assinatura: string;
+  metadados: Record<string, unknown>;
+}
+
+export interface SignContractResponse {
+  documentoFinalUrl?: string;
+  contrato_url?: string;
+  assinadoEm?: string;
+}
+
 export function useSignContract() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ token, assinatura, metadados }: { token: string; assinatura: string; metadados: any }) => {
-      const { data } = await apiClient.post(`/contratos/publico/${token}/assinar`, {
+    mutationFn: async ({ token, assinatura, metadados }: SignContractParams) => {
+      const { data } = await apiClient.post<SignContractResponse>(`/contratos/publico/${token}/assinar`, {
         assinatura,
         metadados,
       });
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<PublicContract>(['public-contract', variables.token], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          status: ContratoStatus.ASSINADO,
+          contrato_final_url: data.documentoFinalUrl || data.contrato_url || old.contrato_final_url,
+          contrato_url: data.contrato_url || old.contrato_url,
+        };
+      });
       queryClient.invalidateQueries({ queryKey: ['public-contract', variables.token] });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast.error('contrato.erro.assinar');
     },
   });

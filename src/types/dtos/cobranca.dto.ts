@@ -1,4 +1,4 @@
-import { CobrancaOrigem, CobrancaStatus, CobrancaTipoPagamento } from "../enums";
+import { CobrancaStatus, CobrancaTipoPagamento } from "../enums";
 
 export interface CreateCobrancaDTO {
   passageiro_id: string;
@@ -8,12 +8,13 @@ export interface CreateCobrancaDTO {
   status: CobrancaStatus;
   mes: number;
   ano: number;
-  origem: CobrancaOrigem;
+  ano_letivo?: number;
   tipo_pagamento?: CobrancaTipoPagamento;
   data_pagamento?: string;
   valor_pago?: number;
   pagamento_manual?: boolean;
   desativar_lembretes?: boolean;
+  observacao?: string | null;
 }
 
 export interface UpdateCobrancaDTO {
@@ -25,10 +26,19 @@ export interface UpdateCobrancaDTO {
   valor_pago?: number;
   recibo_url?: string;
   desativar_lembretes?: boolean;
+  observacao?: string | null;
 }
 
 export interface RegistrarPagamentoManualDTO {
   valor_pago: number | string;
   data_pagamento: string;
   tipo_pagamento: CobrancaTipoPagamento;
+  observacao?: string | null;
+}
+
+export interface ComplementarPagamentoManualDTO {
+  valor_adicional: number | string;
+  data_pagamento?: string;
+  tipo_pagamento?: CobrancaTipoPagamento;
+  observacao?: string | null;
 }

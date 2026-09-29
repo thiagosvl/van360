@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useLayout } from "@/contexts/LayoutContext";
 import { ContratoStatus, TipoResponsavel } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
@@ -19,12 +20,10 @@ import {
   formatarEnderecoCompleto,
   formatDateToBR,
   formatMonthYearToBR,
-  formatParentesco,
   formatFirstName,
 } from "@/utils/formatters";
-import { cpfMask, moneyMask, phoneMask } from "@/utils/masks";
+import { moneyMask } from "@/utils/masks";
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
-import { openBrowserLink } from "@/utils/browser";
 import {
   Check,
   Copy,
@@ -35,18 +34,17 @@ import {
   PowerOff,
   Trash2,
   User,
-  UserCheck,
   Bot,
   BotOff,
   MoreHorizontal,
   Wallet,
   Clock,
   BookOpen,
+  DoorClosed,
   Bus,
   Calendar,
   CalendarClock,
   Users,
-  Phone,
 } from "lucide-react";
 import React from "react";
 
@@ -167,31 +165,11 @@ const CarteirinhaTopCard = ({
                 ? "bg-[#f04f64] text-white hover:bg-rose-600"
                 : "bg-emerald-500 text-white hover:bg-emerald-600"
             )}
-            title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
+            title={passageiro.ativo ? "Desativar Aluno" : "Ativar Aluno"}
           >
             {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
           </Button>
         )}
-        <Button
-          size="icon"
-          disabled={isWhatsAppDisabled}
-          onClick={() => {
-            if (isWhatsAppDisabled) return;
-            const formattedPhone = phoneNumbersOnly.startsWith("55") ? phoneNumbersOnly : `55${phoneNumbersOnly}`;
-            openBrowserLink(
-              `https://wa.me/${formattedPhone}`
-            );
-          }}
-          title={isWhatsAppDisabled ? undefined : "Enviar mensagem no WhatsApp"}
-          className={cn(
-            "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
-            isWhatsAppDisabled
-              ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-40 shadow-none hover:bg-slate-300 pointer-events-none"
-              : "bg-[#25D366] text-white hover:bg-[#20b858]"
-          )}
-        >
-          <WhatsAppIcon size={26} className="h-[26px] w-[26px]" />
-        </Button>
         {canManage && (
           <Button
             size="icon"
@@ -267,7 +245,7 @@ const CarteirinhaTopCard = ({
                 className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5 opacity-60" />
-                Excluir passageiro
+                Excluir aluno
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -396,7 +374,13 @@ export const CarteirinhaDadosPessoais = ({
   | "onEnviarWhatsApp"
   | "onEditClick"
 >) => {
+  const {
+    openPassageiroFinanceiroDialog,
+    openPassageiroEscolaDialog,
+    openPassageiroTransporteDialog,
+  } = useLayout();
   const { can } = usePermissions();
+  const canManage = can("passageiros.gerenciar");
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
   const respPrincipal =
     passageiro.responsavel_principal ||
@@ -405,7 +389,7 @@ export const CarteirinhaDadosPessoais = ({
   const enderecoFormatado = respPrincipal?.logradouro
     ? formatarEnderecoCompleto(respPrincipal)
     : formatarEnderecoCompleto(passageiro);
-  const referenciaEmbarque = respPrincipal?.referencia || passageiro.referencia || null;
+  const referenciaEmbarque = respPrincipal?.referencia || null;
   const primeiroNomeResp = formatFirstName(respPrincipal?.nome);
   const isIncomplete = isCadastroPassageiroIncompleto(passageiro);
 
@@ -441,9 +425,66 @@ export const CarteirinhaDadosPessoais = ({
 
   return (
     <div className="space-y-6 text-left">
-      {/* 1. Bloco: Escola */}
+      {canViewFinancials && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openPassageiroFinanceiroDialog({ passageiro })}
+              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Editar</span>
+            </Button>
+          </div>
+          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <InfoField
+                icon={<Wallet className="h-3.5 w-3.5" />}
+                label="Valor da parcela"
+                value={valorCobrancaTexto}
+              />
+              <InfoField
+                icon={<Clock className="h-3.5 w-3.5" />}
+                label="Dia de vencimento"
+                value={diaVencimentoTexto}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Início das cobranças"
+                value={inicioCobrancaTexto}
+              />
+              <InfoField
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                label="Término das cobranças"
+                value={fimCobrancaTexto}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
+          {canManage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openPassageiroEscolaDialog({ passageiro })}
+              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </div>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
           <InfoField
             icon={<GraduationCap className="h-3.5 w-3.5" />}
@@ -463,19 +504,37 @@ export const CarteirinhaDadosPessoais = ({
               value={passageiro.turma}
             />
           </div>
-          <InfoField
-            icon={<User className="h-3.5 w-3.5" />}
-            label="Professor(a)"
-            value={passageiro.nome_professor}
-            fullWidth
-            hasBorder
-          />
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<DoorClosed className="h-3.5 w-3.5" />}
+              label="Sala"
+              value={passageiro.sala}
+            />
+            <InfoField
+              icon={<User className="h-3.5 w-3.5" />}
+              label="Professor(a)"
+              value={passageiro.nome_professor}
+            />
+          </div>
         </div>
       </div>
 
-      {/* 2. Bloco: Transporte */}
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
+          {canManage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openPassageiroTransporteDialog({ passageiro })}
+              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </div>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <InfoField
@@ -499,6 +558,18 @@ export const CarteirinhaDadosPessoais = ({
               icon={<Calendar className="h-3.5 w-3.5" />}
               label="Término do transporte"
               value={fimTransporteTexto}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <InfoField
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Horário de entrada"
+              value={passageiro.horario_entrada}
+            />
+            <InfoField
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Horário de saída"
+              value={passageiro.horario_saida}
             />
           </div>
           <div className="pt-2.5 border-t border-slate-200/50 flex items-start justify-between gap-3">
@@ -538,40 +609,6 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* 3. Bloco: Parcelas */}
-      {canViewFinancials && (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
-          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <InfoField
-                icon={<Wallet className="h-3.5 w-3.5" />}
-                label="Valor da parcela"
-                value={valorCobrancaTexto}
-              />
-              <InfoField
-                icon={<Clock className="h-3.5 w-3.5" />}
-                label="Dia de vencimento"
-                value={diaVencimentoTexto}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
-              <InfoField
-                icon={<CalendarClock className="h-3.5 w-3.5" />}
-                label="Início das cobranças"
-                value={inicioCobrancaTexto}
-              />
-              <InfoField
-                icon={<CalendarClock className="h-3.5 w-3.5" />}
-                label="Término das cobranças"
-                value={fimCobrancaTexto}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Bloco: Outros Dados */}
       <div className="space-y-3">
         <h3 className="text-base font-bold text-[#16314f]">Outros Dados</h3>
         <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">

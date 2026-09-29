@@ -3,6 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useHistoricoByEntidade } from "@/hooks/api/useHistorico";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { formatActivityDescription } from "@/utils/formatters/name";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { format, isSameDay } from "date-fns";
@@ -22,6 +23,10 @@ import {
   CheckCircle2,
   Play,
   XCircle,
+  UserCheck,
+  Bell,
+  UserPlus,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface ActivityTimelineProps {
@@ -80,6 +85,31 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
         icon: <MessageSquare className="w-3.5 h-3.5" />,
         color: "text-green-600 bg-green-50 border-green-100",
       };
+    case AtividadeAcao.RESPONSAVEL_CADASTRADO:
+      return {
+        icon: <UserPlus className="w-3.5 h-3.5" />,
+        color: "text-emerald-600 bg-emerald-50 border-emerald-100",
+      };
+    case AtividadeAcao.RESPONSAVEL_PRINCIPAL:
+      return {
+        icon: <UserCheck className="w-3.5 h-3.5" />,
+        color: "text-indigo-600 bg-indigo-50 border-indigo-100",
+      };
+    case AtividadeAcao.RESPONSAVEL_NOTIFICACAO:
+      return {
+        icon: <Bell className="w-3.5 h-3.5" />,
+        color: "text-cyan-600 bg-cyan-50 border-cyan-100",
+      };
+    case AtividadeAcao.LOGO_ATUALIZADO:
+      return {
+        icon: <ImageIcon className="w-3.5 h-3.5" />,
+        color: "text-blue-600 bg-blue-50 border-blue-100",
+      };
+    case AtividadeAcao.LOGO_REMOVIDO:
+      return {
+        icon: <Trash2 className="w-3.5 h-3.5" />,
+        color: "text-rose-600 bg-rose-50 border-rose-100",
+      };
   }
 
   if (acao.includes("CONCLUIDA") || acao.includes("CONCLUIDO")) {
@@ -125,6 +155,18 @@ const getEntityDotColor = (tipo: AtividadeEntidadeTipo | string) => {
     case AtividadeEntidadeTipo.ROTA: return "bg-teal-500 shadow-teal-200";
     default: return "bg-gray-400 shadow-gray-200";
   }
+};
+
+const formatAuditValue = (campo: string, val: unknown): string => {
+  if (val === null || val === undefined || val === "") return "Vazio";
+  if (typeof val === "boolean") return val ? "Sim" : "Não";
+  if (typeof val === "number" && (campo.includes("valor") || campo.includes("preco"))) {
+    return formatCurrency(val);
+  }
+  if (typeof val === "object") {
+    return JSON.stringify(val);
+  }
+  return String(val);
 };
 
 export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, limit }: ActivityTimelineProps) {
@@ -230,7 +272,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                         </div>
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[13px] font-semibold text-foreground/90 leading-tight">
-                            {atividade.descricao}
+                            {formatActivityDescription(atividade.descricao)}
                           </span>
                           <span className="text-[10px] text-foreground/40 font-medium tracking-tight">
                             {format(parseLocalDate(atividade.created_at), "HH:mm", { locale: ptBR })}
@@ -240,7 +282,13 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                     </div>
 
                     {/* Meta Details */}
-                    {atividade.meta && (atividade.meta.valor || atividade.meta.campos || atividade.meta.motivo || atividade.meta.status) && (
+                    {atividade.meta && (
+                      atividade.meta.valor ||
+                      (atividade.meta.alteracoes && atividade.meta.alteracoes.length > 0) ||
+                      (atividade.meta.campos && atividade.meta.campos.length > 0) ||
+                      atividade.meta.motivo ||
+                      atividade.meta.status
+                    ) && (
                       <div className="mt-1 ml-9 overflow-hidden">
                         <div className="p-2.5 rounded-xl bg-gray-50/50 border border-gray-100/50 space-y-1.5">
                           {atividade.meta.valor && (
@@ -249,7 +297,27 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                               <span className="text-[11px] font-semibold text-foreground/60 leading-none">{formatCurrency(atividade.meta.valor)}</span>
                             </div>
                           )}
-                          {atividade.meta.campos && (
+                          {atividade.meta.alteracoes && atividade.meta.alteracoes.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Alterações</span>
+                              <div className="flex flex-col gap-1">
+                                {atividade.meta.alteracoes.map((alt) => (
+                                  <div key={alt.campo} className="inline-flex flex-wrap items-center gap-1.5 text-[11px] py-0.5">
+                                    <span className="font-semibold text-foreground/80 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50 text-[10px]">
+                                      {alt.campo}
+                                    </span>
+                                    <span className="line-through text-foreground/40 text-[10px]">
+                                      {formatAuditValue(alt.campo, alt.de)}
+                                    </span>
+                                    <span className="text-foreground/40 text-[10px]">➔</span>
+                                    <span className="font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/50 text-[10px]">
+                                      {formatAuditValue(alt.campo, alt.para)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : atividade.meta.campos && atividade.meta.campos.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 items-center">
                               <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Alterações</span>
                               <div className="flex flex-wrap gap-1">
@@ -260,7 +328,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                                 ))}
                               </div>
                             </div>
-                          )}
+                          ) : null}
                           {atividade.meta.motivo && (
                             <div className="flex flex-col gap-0.5">
                               <span className="text-[10px] font-bold text-rose-600 uppercase tracking-tighter">Motivo</span>

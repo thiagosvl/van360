@@ -10,6 +10,13 @@ const getMonthFromDate = (dateStr?: string | null): string => {
   return parseInt(parts[1], 10).toString();
 };
 
+const getYearFromDate = (dateStr?: string | null): string => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 1) return "";
+  return parts[0];
+};
+
 /**
  * Converte e mapeia os dados do pré-cadastro de passageiro para o formulário oficial de cadastro definitivo.
  */
@@ -34,6 +41,7 @@ export function mapearPrePassageiroParaFormulario(pre: PrePassageiro): Partial<P
     periodo: pre.periodo || "",
     modalidade: pre.modalidade || "",
     turma: pre.turma || "",
+    sala: pre.sala || "",
     nome_professor: pre.nome_professor || "",
     data_nascimento: pre.data_nascimento ? formatDateToBR(pre.data_nascimento) : "",
     genero: pre.genero || "",
@@ -46,8 +54,13 @@ export function mapearPrePassageiroParaFormulario(pre: PrePassageiro): Partial<P
     dia_vencimento: pre.dia_vencimento?.toString() || "",
     data_inicio_transporte: pre.data_inicio_transporte ? formatDateToBR(pre.data_inicio_transporte) : "",
     data_fim_transporte: pre.data_fim_transporte ? formatDateToBR(pre.data_fim_transporte) : "",
+    horario_entrada: pre.horario_entrada || "",
+    horario_saida: pre.horario_saida || "",
     mes_inicio_cobranca: pre.data_inicio_cobranca ? getMonthFromDate(pre.data_inicio_cobranca) : "",
     mes_fim_cobranca: pre.data_fim_cobranca ? getMonthFromDate(pre.data_fim_cobranca) : "",
+    ano_letivo: pre.ano_letivo?.toString() || "",
+    ano_inicio_cobranca: pre.data_inicio_cobranca ? getYearFromDate(pre.data_inicio_cobranca) : (pre.ano_letivo?.toString() || ""),
+    ano_fim_cobranca: pre.data_fim_cobranca ? getYearFromDate(pre.data_fim_cobranca) : (pre.ano_letivo?.toString() || ""),
     ativo: true,
   };
 }

@@ -9,11 +9,15 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { ResponsavelReceiptDialog } from "@/components/dialogs/ResponsavelReceiptDialog";
+import { AnnualReceiptDialog } from "@/components/dialogs/AnnualReceiptDialog";
+import { CarteirinhaReciboAnualCard } from "@/components/features/passageiro/carteirinha/CarteirinhaReciboAnualCard";
 import { cn } from "@/lib/utils";
 import { mapearCarteirinhaParaPassageiro } from "@/utils/domain/carteirinhaConverter";
 import { getNowBR } from "@/utils/dateUtils";
-import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
-import { shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
+import { CobrancaStatus } from "@/types/enums";
+import { shouldGeneratePassengerProjection, getSafeDueDateString, parseMonthYearFromDateString } from "@/utils/domain";
+
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface ResponsavelCarteirinhaCobrancasProps {
   carteirinha: ResponsavelCarteirinhaData;
@@ -55,9 +59,40 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
             valor: Number(carteirinha.valor_cobranca || 0),
             status: CobrancaStatus.PENDENTE,
             data_vencimento: dataVenc,
-            origem: CobrancaOrigem.AUTOMATICA,
             isProjection: true,
           });
+        }
+      }
+    }
+
+    if (passageiroConvertido.data_fim_cobranca) {
+      const fim = parseMonthYearFromDateString(passageiroConvertido.data_fim_cobranca);
+      if (fim && fim.year > currentYear) {
+        for (let y = currentYear + 1; y <= fim.year; y++) {
+          const maxM = y === fim.year ? fim.month : 12;
+          const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
+          for (let m = 1; m <= maxM; m++) {
+            if (!dbMonthsFuture.has(m)) {
+              const canGenerate = shouldGeneratePassengerProjection({
+                passageiro: passageiroConvertido,
+                targetMonth: m,
+                targetYear: y,
+              });
+
+              if (canGenerate) {
+                const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, y);
+                list.push({
+                  id: `proj_resp_${carteirinha.id}_${m}_${y}`,
+                  mes: m,
+                  ano: y,
+                  valor: Number(carteirinha.valor_cobranca || 0),
+                  status: CobrancaStatus.PENDENTE,
+                  data_vencimento: dataVenc,
+                  isProjection: true,
+                });
+              }
+            }
+          }
         }
       }
     }
@@ -74,12 +109,20 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
     descricao?: string;
   }>({ open: false, url: null });
 
+  const [annualReceiptOpen, setAnnualReceiptOpen] = useState(false);
+
+  const reciboAnualDoAno = useMemo(() => {
+    return carteirinha.recibos_anuais?.find((r) => r.ano === currentYear) || null;
+  }, [carteirinha.recibos_anuais, currentYear]);
+
   const handleOpenReceiptDialog = (url: string, descricao?: string) => {
     setReceiptDialogState({ open: true, url, descricao });
   };
 
   const handleCloseReceiptDialog = () => {
-    setReceiptDialogState((prev) => ({ ...prev, open: false }));
+    safeCloseDialog(() => {
+      setReceiptDialogState((prev) => ({ ...prev, open: false }));
+    });
   };
 
   const handleShareReceiptDirect = async (receiptUrl: string, descricao: string) => {
@@ -93,6 +136,16 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
   return (
     <div className="space-y-4 text-left">
+      {reciboAnualDoAno && (
+        <CarteirinhaReciboAnualCard
+          ano={currentYear}
+          totalPago={reciboAnualDoAno.total_pago}
+          quantidadeMeses={reciboAnualDoAno.quantidade_meses}
+          reciboUrl={reciboAnualDoAno.recibo_url}
+          onVisualizar={() => setAnnualReceiptOpen(true)}
+        />
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
@@ -105,26 +158,29 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
         {displayCobrancas.length === 0 ? (
           <UnifiedEmptyState
             icon={carteirinha.isento ? ShieldCheck : History}
-            title={carteirinha.isento ? "Passageiro Isento de Parcelas" : "Sem parcelas registradas"}
+            title={carteirinha.isento ? "Aluno Isento de Parcelas" : "Sem parcelas registradas"}
             description={
               carteirinha.isento
-                ? "Este passageiro possui isenção de parcelas cadastrada. Nenhuma cobrança ou parcela é gerada automaticamente."
-                : "Nenhuma parcela foi encontrada para este aluno até o momento."
+                ? "Este aluno possui isenção de parcelas cadastrada. Nenhuma cobrança ou parcela é gerada automaticamente."
+                : "Nenhuma parcela foi encontrada para este ano de exercício."
             }
           />
         ) : (
           displayCobrancas.map((item) => {
-            const isPago = item.status === CobrancaStatus.PAGO;
-            const isAtrasado = !isPago && checkCobrancaEmAtraso(item.data_vencimento);
+            const isCancelada = item.status === CobrancaStatus.CANCELADA;
+            const isPago = !isCancelada && item.status === CobrancaStatus.PAGO;
+            const isAtrasado = !isCancelada && !isPago && checkCobrancaEmAtraso(item.data_vencimento);
             const nomeMes = getMesNome(item.mes);
             const cobrancaDesc = `Recibo de ${item.mes}/${item.ano}`;
             const valorNum = Number(item.valor) || 0;
 
-            const statusColor = isPago
-              ? "bg-emerald-50 text-emerald-600"
-              : isAtrasado
-              ? "bg-red-50 text-red-600"
-              : "bg-amber-50 text-amber-600";
+            const statusColor = isCancelada
+              ? "bg-slate-100 text-slate-600"
+              : isPago
+                ? "bg-emerald-50 text-emerald-600"
+                : isAtrasado
+                  ? "bg-red-50 text-red-600"
+                  : "bg-amber-50 text-amber-600";
 
             const cobrancaObjParaSummary = {
               id: item.id,
@@ -132,43 +188,44 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
               mes: item.mes,
               ano: item.ano,
               valor: valorNum,
-              status: isPago
-                ? CobrancaStatus.PAGO
-                : isAtrasado
-                ? CobrancaStatus.VENCIDO
-                : CobrancaStatus.PENDENTE,
+              status: isCancelada
+                ? CobrancaStatus.CANCELADA
+                : isPago
+                  ? CobrancaStatus.PAGO
+                  : CobrancaStatus.PENDENTE,
               data_vencimento: item.data_vencimento,
               created_at: "",
               updated_at: "",
               usuario_id: "",
-              origem: item.origem || CobrancaOrigem.AUTOMATICA,
               isProjection: item.isProjection,
             };
 
             const hasReceipt = isPago && !!item.recibo_url && !item.isProjection;
 
-            const actions = [
-              {
-                icon: <Eye className="h-4 w-4" />,
-                label: "Ver Recibo",
-                onClick: () => {
-                  if (hasReceipt && item.recibo_url) {
-                    handleOpenReceiptDialog(item.recibo_url, cobrancaDesc);
-                  }
+            const actions = isCancelada
+              ? []
+              : [
+                {
+                  icon: <Eye className="h-4 w-4" />,
+                  label: "Ver Recibo",
+                  onClick: () => {
+                    if (hasReceipt && item.recibo_url) {
+                      handleOpenReceiptDialog(item.recibo_url, cobrancaDesc);
+                    }
+                  },
+                  disabled: !hasReceipt,
                 },
-                disabled: !hasReceipt,
-              },
-              {
-                icon: <Share2 className="h-4 w-4" />,
-                label: "Compartilhar Recibo",
-                onClick: () => {
-                  if (hasReceipt && item.recibo_url) {
-                    handleShareReceiptDirect(item.recibo_url, cobrancaDesc);
-                  }
+                {
+                  icon: <Share2 className="h-4 w-4" />,
+                  label: "Compartilhar Recibo",
+                  onClick: () => {
+                    if (hasReceipt && item.recibo_url) {
+                      handleShareReceiptDirect(item.recibo_url, cobrancaDesc);
+                    }
+                  },
+                  disabled: !hasReceipt,
                 },
-                disabled: !hasReceipt,
-              },
-            ];
+              ];
 
             return (
               <MobileActionItem
@@ -185,14 +242,18 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                   <div
                     className={cn(
                       "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
-                      isPago
-                        ? "bg-emerald-500"
-                        : isAtrasado
-                        ? "bg-red-500"
-                        : "bg-amber-500"
+                      isCancelada
+                        ? "bg-slate-400"
+                        : isPago
+                          ? "bg-emerald-500"
+                          : isAtrasado
+                            ? "bg-red-500"
+                            : "bg-amber-500"
                     )}
                   >
-                    {isPago ? (
+                    {isCancelada ? (
+                      <Clock className="h-4 w-4 text-white" />
+                    ) : isPago ? (
                       <CheckCircle2 className="h-4 w-4 text-white" />
                     ) : isAtrasado ? (
                       <AlertCircle className="h-4 w-4 text-white" />
@@ -204,14 +265,17 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                   <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
                     <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
                       {nomeMes}
+                      {item.ano && item.ano !== currentYear ? `/${item.ano}` : ""}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">
-                        {isPago
+                        {isCancelada
                           ? `Venc. ${formatDateToBR(item.data_vencimento)}`
-                          : isAtrasado
-                          ? formatDiasAtraso(item.data_vencimento)
-                          : `Venc. ${formatDateToBR(item.data_vencimento)}`}
+                          : isPago
+                            ? `Venc. ${formatDateToBR(item.data_vencimento)}`
+                            : isAtrasado
+                              ? formatDiasAtraso(item.data_vencimento)
+                              : `Venc. ${formatDateToBR(item.data_vencimento)}`}
                       </p>
                     </div>
                   </div>
@@ -226,13 +290,13 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                       </p>
                       <StatusBadge
                         status={
-                          isPago
-                            ? CobrancaStatus.PAGO
-                            : isAtrasado
-                            ? CobrancaStatus.VENCIDO
-                            : CobrancaStatus.PENDENTE
+                          isCancelada
+                            ? CobrancaStatus.CANCELADA
+                            : isPago
+                              ? CobrancaStatus.PAGO
+                              : CobrancaStatus.PENDENTE
                         }
-                        dataVencimento={item.data_vencimento}
+                        dataVencimento={isCancelada ? undefined : item.data_vencimento}
                         className={cn(
                           "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
                           statusColor
@@ -253,6 +317,16 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
           onClose={handleCloseReceiptDialog}
           receiptUrl={receiptDialogState.url}
           cobrancaDescricao={receiptDialogState.descricao}
+        />
+      )}
+
+      {reciboAnualDoAno && (
+        <AnnualReceiptDialog
+          isOpen={annualReceiptOpen}
+          onClose={() => safeCloseDialog(() => setAnnualReceiptOpen(false))}
+          receiptUrl={reciboAnualDoAno.recibo_url}
+          ano={currentYear}
+          alunoNome={carteirinha.nome}
         />
       )}
     </div>

@@ -3,13 +3,15 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
+  Share2,
   Settings,
   ChevronRight,
   Calculator,
   ShieldAlert,
   Terminal,
-  MessageSquare,
-  FileText
+  FileText,
+  Bell,
+  Radio,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { isDevEnv } from "@/utils/detectPlatform";
@@ -29,6 +31,21 @@ const adminNavItems = [
     title: "Histórico de Atividades",
     href: ROUTES.PRIVATE.ADMIN.ACTIVITY_HISTORY,
     icon: Terminal,
+  },
+  {
+    title: "Notificações",
+    href: ROUTES.PRIVATE.ADMIN.NOTIFICATIONS,
+    icon: Bell,
+  },
+  {
+    title: "Radar de Usuários",
+    href: ROUTES.PRIVATE.ADMIN.USERS_RADAR,
+    icon: Radio,
+  },
+  {
+    title: "Indicações",
+    href: ROUTES.PRIVATE.ADMIN.REFERRALS,
+    icon: Share2,
   },
   {
     title: "Configurações",

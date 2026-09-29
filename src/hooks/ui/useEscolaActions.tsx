@@ -44,7 +44,7 @@ export function useEscolaActions({
   }
 
   actions.push({
-    label: "Ver Passageiros",
+    label: "Ver Alunos",
     icon: <Users className="h-4 w-4" />,
     onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?escola=${escola.id}`),
     disabled: !escola.passageiros_ativos_count,

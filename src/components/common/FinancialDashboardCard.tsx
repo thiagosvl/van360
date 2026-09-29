@@ -23,7 +23,7 @@ export function FinancialDashboardCard({
 
   const recebidoPercent = totalEsperado > 0 ? (recebido / totalEsperado) * 100 : 0;
   const atrasadoPercent = totalEsperado > 0 && atrasado ? (atrasado / totalEsperado) * 100 : 0;
-  const pendentePercent = totalEsperado > 0 ? ((pendente - (atrasado || 0)) / totalEsperado) * 100 : 0;
+  const pendentePercent = totalEsperado > 0 ? (Math.max(0, pendente - (atrasado || 0)) / totalEsperado) * 100 : 0;
 
   const getDynamicFontSize = (val: number) => {
     const str = formatPrivateCurrency(val);
@@ -105,7 +105,7 @@ export function FinancialDashboardCard({
 
           {/* Pendente */}
           <div className="flex flex-col items-end">
-            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">Pendente</span>
+            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">A receber</span>
             <span className={cn(getDynamicFontSize(pendente), "font-bold text-slate-800 tracking-tight leading-none")}>
               {formatPrivateCurrency(pendente)}
             </span>

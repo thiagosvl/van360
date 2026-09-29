@@ -33,12 +33,16 @@ export const usuarioApi = {
 
   atualizarUsuario: (usuarioId: string, payload: {
     nome?: string;
-    razao_social?: string;
+    razao_social?: string | null;
     apelido?: string;
     telefone?: string;
     assinatura_digital_url?: string;
+    logo_url?: string | null;
     config_contrato?: any;
     data_nascimento?: string;
+    cpfcnpj?: string;
+    cpf_responsavel?: string | null;
+    email?: string;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),
 
   atualizarPixUsuario: (usuarioId: string, payload: {
@@ -48,5 +52,8 @@ export const usuarioApi = {
 
   atualizarCanalAquisicao: (usuarioId: string, canal_aquisicao: string) => 
     apiClient.patch(`${endpointBase}/${usuarioId}/canal-aquisicao`, { canal_aquisicao }).then(res => res.data),
+
+  excluirMinhaConta: () =>
+    apiClient.delete(`${endpointBase}/minha-conta`).then((res) => res.data),
 
 };

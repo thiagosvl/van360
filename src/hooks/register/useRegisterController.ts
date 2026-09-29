@@ -1,20 +1,28 @@
 import { ROUTES } from "@/constants/routes";
+import { STORAGE_KEYS } from "@/constants";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { RegistrarPayloadDTO } from "@/services/api/usuario.api";
 import { sessionManager } from "@/services/sessionManager";
-import { getDispositivoCadastro, isNativeApp } from "@/utils/detectPlatform";
-import { useAttribution, getStoredAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
+import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
+import { useAttribution, clearStoredAttribution } from "@/hooks/business/useAttribution";
 import { getCachedPushTokenInfo } from "@/hooks/ui/usePushNotifications";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { isNativeApp } from "@/utils/detectPlatform";
 
 export interface DuplicateError {
   field: "email" | "cpfcnpj" | "telefone" | "generic";
   message: string;
+}
+
+function getReferralCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)van360_referral_code=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 export function useRegisterController() {
@@ -22,17 +30,16 @@ export function useRegisterController() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
 
-  // Injetar captura de UTMs e Referrer
   useAttribution();
 
   const [hasRefParam, setHasRefParam] = useState<boolean>(() => {
-    return !!(searchParams.get("ref") || localStorage.getItem("van360_referral_code"));
+    return !!(searchParams.get("ref") || localStorage.getItem(STORAGE_KEYS.REFERRAL_CODE) || getReferralCookie());
   });
 
   useEffect(() => {
-    const refParam = searchParams.get("ref");
+    const refParam = searchParams.get("ref") || getReferralCookie();
     if (refParam) {
-      localStorage.setItem("van360_referral_code", refParam);
+      localStorage.setItem(STORAGE_KEYS.REFERRAL_CODE, refParam);
       setHasRefParam(true);
     }
   }, [searchParams]);
@@ -42,6 +49,7 @@ export function useRegisterController() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "",
+      apelido: "",
       cpfcnpj: "",
       razao_social: "",
       email: "",
@@ -59,6 +67,7 @@ export function useRegisterController() {
       cpfcnpj: "395.423.918-38",
       razao_social: "THIAGO BARROS SOLUCOES",
       nome: "Thiago Barros",
+      apelido: "Tio Thiago",
       telefone: "(11) 95118-6951",
       email: "thiago-svl@hotmail.com",
       data_nascimento: "30/06/1997",
@@ -71,14 +80,13 @@ export function useRegisterController() {
     try {
       setLoading(true);
       setDuplicateError(null);
-      const referralCode = localStorage.getItem("van360_referral_code") || undefined;
-      const attribution = getStoredAttribution();
-      const dispositivo_cadastro = getDispositivoCadastro();
-
+      const referralCode = localStorage.getItem(STORAGE_KEYS.REFERRAL_CODE) || getReferralCookie() || undefined;
+      const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
       const cachedPush = await getCachedPushTokenInfo();
 
       const payload: RegistrarPayloadDTO = {
         nome: data.nome,
+        apelido: data.apelido?.trim() || undefined,
         email: data.email,
         senha: data.senha,
         termos_aceitos: data.termos_aceitos,
@@ -91,16 +99,17 @@ export function useRegisterController() {
         dispositivo_cadastro,
         push_token: cachedPush?.token,
         platform: cachedPush?.platform,
-        metadados_cadastro: attribution ? {
-          referrer: attribution.referrer,
-          utm: attribution.utm,
-        } : undefined,
+        metadados_cadastro,
       };
 
       const result = await usuarioApi.registrar(payload);
       if (result?.error) throw new Error(result.error);
 
       localStorage.removeItem("van360_referral_code");
+      if (typeof document !== "undefined") {
+        document.cookie = "van360_referral_code=; Domain=.van360.com.br; Path=/; Max-Age=0";
+        document.cookie = "van360_referral_code=; Path=/; Max-Age=0";
+      }
       clearStoredAttribution();
 
 
@@ -110,13 +119,28 @@ export function useRegisterController() {
       // Apenas em Produção e Apenas no Web (para não sujar métricas com o app nativo)
       const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
 
-      if (typeof window !== "undefined" && import.meta.env.PROD && !isNative) {
-        (window as any).dataLayer = (window as any).dataLayer || [];
-        (window as any).dataLayer.push({
+      const sessionUser = result.session?.user || result.user;
+      const userId = sessionUser?.id;
+
+      if (typeof window !== "undefined" && !isNative) {
+        const win = window as unknown as {
+          dataLayer?: Array<Record<string, unknown>>;
+          fbq?: (...args: unknown[]) => void;
+          clarity?: (action: string, ...args: unknown[]) => void;
+        };
+        win.dataLayer = win.dataLayer || [];
+        win.dataLayer.push({
           event: "generate_lead",
         });
+
+        if (typeof win.fbq === "function" && userId) {
+          win.fbq("track", "Lead", {}, { eventID: `lead_${userId}` });
+        }
+
+        if (typeof win.clarity === "function" && userId) {
+          win.clarity("identify", userId);
+        }
       }
-      const sessionUser = result.session.user || result.user;
 
 
       // Define a flag de recém-cadastrado para disparar os confetes na Home

@@ -27,16 +27,18 @@ import { parentescos } from "@/utils/formatters";
 import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
 import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText, Mail } from "lucide-react";
+import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText, Mail, Bell } from "lucide-react";
 import { useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "sonner";
+import { isSamePerson } from "@/utils/person";
 import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
   useBuscarResponsavel,
+  usePassageiro,
 } from "@/hooks";
 import {
   useAddResponsavelResponsavelMutation,
@@ -56,7 +58,9 @@ const responsavelSchema = z.object({
     }),
   cpf: z
     .string()
-    .min(1, "Campo obrigatório")
+    .optional()
+    .nullable()
+    .or(z.literal(""))
     .refine((val) => !val || isValidCPF(val), {
       message: "CPF inválido",
     }),
@@ -85,6 +89,7 @@ const responsavelSchema = z.object({
   referencia: z.string().optional().nullable().or(z.literal("")),
   complemento: z.string().optional().nullable().or(z.literal("")),
   tornar_principal: z.boolean().optional().default(false),
+  notificacoes_rota_habilitadas: z.boolean().optional().default(true),
 });
 
 type ResponsavelFormData = z.infer<typeof responsavelSchema>;
@@ -125,6 +130,14 @@ export default function ResponsavelFormDialog({
     addResponsavelResponsavel.isPending ||
     updateResponsavelResponsavel.isPending;
 
+  const { data: passageiro } = usePassageiro(passageiroId, {
+    enabled: isOpen && Boolean(passageiroId) && !editingResponsavel,
+  });
+
+  const alunoBairro = passageiro?.responsavel_principal?.bairro || (passageiro as { bairro?: string })?.bairro || "";
+  const alunoCidade = passageiro?.responsavel_principal?.cidade || (passageiro as { cidade?: string })?.cidade || "";
+  const alunoEstado = passageiro?.responsavel_principal?.estado || (passageiro as { estado?: string })?.estado || "";
+
   const searchedTermsSet = useRef<Set<string>>(new Set());
 
   const handleFillMock = () => {
@@ -154,6 +167,7 @@ export default function ResponsavelFormDialog({
       referencia: mockAddress.referencia || "",
       complemento: mockAddress.complemento || "",
       tornar_principal: false,
+      notificacoes_rota_habilitadas: true,
     });
   };
 
@@ -174,6 +188,7 @@ export default function ResponsavelFormDialog({
       referencia: "",
       complemento: "",
       tornar_principal: false,
+      notificacoes_rota_habilitadas: true,
     },
   });
 
@@ -182,7 +197,7 @@ export default function ResponsavelFormDialog({
   const handleSearchResponsavel = useCallback(async (term: string) => {
     if (editingResponsavel || isResponsavelPortal) return;
     const pureTerm = String(term || "").replace(/\D/g, "");
-    if (pureTerm.length !== 11) return;
+    if (pureTerm.length < 10 || pureTerm.length > 11) return;
     if (searchedTermsSet.current.has(pureTerm)) return;
 
     try {
@@ -197,12 +212,22 @@ export default function ResponsavelFormDialog({
           searchedTermsSet.current.add(String(responsavel.telefone).replace(/\D/g, ""));
         }
 
+        const currentName = form.getValues("nome");
+        if (currentName && !isSamePerson(currentName, responsavel.nome)) {
+          form.setError("telefone", {
+            type: "manual",
+            message: "Este telefone já está cadastrado para outro responsável",
+          });
+          return;
+        }
+
         if (responsavel.nome) {
           form.setValue("nome", responsavel.nome, { shouldValidate: true });
         }
         if (responsavel.telefone) {
           form.setValue("telefone", phoneMask(responsavel.telefone), { shouldValidate: true });
         }
+        form.clearErrors("telefone");
         if (responsavel.cpf) {
           form.setValue("cpf", cpfMask(responsavel.cpf), { shouldValidate: true });
         }
@@ -253,6 +278,7 @@ export default function ResponsavelFormDialog({
           referencia: editingResponsavel.referencia || "",
           complemento: editingResponsavel.complemento || "",
           tornar_principal: false,
+          notificacoes_rota_habilitadas: editingResponsavel.notificacoes_rota_habilitadas !== false,
         });
       } else {
         form.reset({
@@ -263,17 +289,32 @@ export default function ResponsavelFormDialog({
           parentesco: "" as ParentescoResponsavel,
           logradouro: "",
           numero: "",
-          bairro: "",
-          cidade: "",
-          estado: "",
+          bairro: alunoBairro,
+          cidade: alunoCidade,
+          estado: alunoEstado,
           cep: "",
           referencia: "",
           complemento: "",
           tornar_principal: false,
+          notificacoes_rota_habilitadas: true,
         });
       }
     }
-  }, [isOpen, editingResponsavel, form]);
+  }, [isOpen, editingResponsavel, form, alunoBairro, alunoCidade, alunoEstado]);
+
+  useEffect(() => {
+    if (isOpen && !editingResponsavel) {
+      if (alunoBairro && !form.getValues("bairro")) {
+        form.setValue("bairro", alunoBairro);
+      }
+      if (alunoCidade && !form.getValues("cidade")) {
+        form.setValue("cidade", alunoCidade);
+      }
+      if (alunoEstado && !form.getValues("estado")) {
+        form.setValue("estado", alunoEstado);
+      }
+    }
+  }, [isOpen, editingResponsavel, alunoBairro, alunoCidade, alunoEstado, form]);
 
   const cpfValue = form.watch("cpf");
   const telefoneValue = form.watch("telefone");
@@ -289,7 +330,7 @@ export default function ResponsavelFormDialog({
   useEffect(() => {
     if (editingResponsavel || isResponsavelPortal) return;
     const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
-    if (purePhone && purePhone.length === 11) {
+    if (purePhone && (purePhone.length === 10 || purePhone.length === 11)) {
       handleSearchResponsavel(purePhone);
     }
   }, [telefoneValue, handleSearchResponsavel, editingResponsavel, isResponsavelPortal]);
@@ -307,7 +348,7 @@ export default function ResponsavelFormDialog({
     const payload = {
       nome: data.nome,
       telefone: String(data.telefone || "").replace(/\D/g, ""),
-      cpf: String(data.cpf || "").replace(/\D/g, ""),
+      cpf: data.cpf && String(data.cpf).replace(/\D/g, "") ? String(data.cpf).replace(/\D/g, "") : null,
       email: data.email || null,
       parentesco: data.parentesco as ParentescoResponsavel,
       logradouro: data.logradouro || null,
@@ -319,6 +360,7 @@ export default function ResponsavelFormDialog({
       referencia: data.referencia || null,
       complemento: data.complemento || null,
       tornar_principal: isAlreadyPrincipal ? undefined : data.tornar_principal,
+      notificacoes_rota_habilitadas: data.notificacoes_rota_habilitadas ?? true,
     };
 
     const successCallback = () => {
@@ -362,17 +404,21 @@ export default function ResponsavelFormDialog({
     } catch (error: unknown) {
       console.error("Erro ao processar responsável:", error);
       const msg = getErrorMessage(error);
-      if (msg && msg.toLowerCase().includes("telefone")) {
+      const status = (error as any)?.response?.status;
+      if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("outro responsável") || status === 409)) {
         form.setError("telefone", {
           type: "manual",
-          message: msg,
+          message: msg.toLowerCase().includes("outro responsável") ? "Este telefone já está cadastrado para outro responsável" : msg.replace(/ no sistema/gi, ""),
         });
       } else if (msg && msg.toLowerCase().includes("cpf")) {
         form.setError("cpf", {
           type: "manual",
-          message: msg,
+          message: msg.replace(/ no sistema/gi, ""),
         });
       }
+      toast.error("Erro ao salvar responsável", {
+        description: msg ? msg.replace(/ no sistema/gi, "") : "Verifique os dados e tente novamente",
+      });
     }
   };
 
@@ -403,7 +449,9 @@ export default function ResponsavelFormDialog({
         <Form {...form}>
           <form
             id="responsavel-adicional-form"
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit, () => {
+              toast.error("Por favor, preencha todos os campos obrigatórios.");
+            })}
             className="space-y-4 mt-2"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -449,11 +497,46 @@ export default function ResponsavelFormDialog({
 
               <FormField
                 control={form.control}
+                name="parentesco"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col space-y-2">
+                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                      Parentesco <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(
+                            "h-12 rounded-xl bg-slate-50 border-slate-200 text-base focus:border-[#1a3a5c]",
+                            fieldState.error && "border-red-500"
+                          )}
+                        >
+                          <SelectValue placeholder="Selecione o parentesco" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {parentescos.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="cpf"
                 render={({ field, fieldState }) => (
                   <FormItem className="flex flex-col space-y-2">
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      CPF <span className="text-red-600">*</span>
+                      CPF
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -500,41 +583,6 @@ export default function ResponsavelFormDialog({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="parentesco"
-                render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Parentesco <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger
-                          className={cn(
-                            "h-12 rounded-xl bg-slate-50 border-slate-200 text-base focus:border-[#1a3a5c]",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          <SelectValue placeholder="Selecione o parentesco" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {parentescos.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <hr className="border-slate-100" />
@@ -544,10 +592,38 @@ export default function ResponsavelFormDialog({
                 <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
                   <MapPin className="w-4.5 h-4.5" />
                 </div>
-                Endereço do Responsável
+                Endereço <span className="font-normal text-xs text-slate-500">(Opcional)</span>
               </div>
               <FormEnderecoFields required={false} />
             </section>
+
+            {!isResponsavelPortal && (
+              <FormField
+                control={form.control}
+                name="notificacoes_rota_habilitadas"
+                render={({ field }) => (
+                  <FormItem className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
+                    <Checkbox
+                      id="notificacoes_rota_habilitadas"
+                      checked={field.value !== false}
+                      onCheckedChange={field.onChange}
+                      className="h-5 w-5 mt-0.5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                    />
+                    <div className="flex-1">
+                      <FormLabel
+                        htmlFor="notificacoes_rota_habilitadas"
+                        className="cursor-pointer font-semibold text-slate-700 m-0 text-sm block"
+                      >
+                        Receber notificações de rota
+                      </FormLabel>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Avisos de embarque, desembarque e van a caminho.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             {!isAlreadyPrincipal && !isResponsavelPortal && (
               <FormField
@@ -564,7 +640,7 @@ export default function ResponsavelFormDialog({
                       />
                       <FormLabel
                         htmlFor="tornar_principal"
-                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 mt-0"
+                        className="flex-1 cursor-pointer font-semibold text-slate-700 m-0 text-sm"
                       >
                         Definir como responsável principal
                       </FormLabel>
@@ -603,7 +679,7 @@ export default function ResponsavelFormDialog({
                             </div>
                             <div>
                               <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Endereço Principal</p>
-                              <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do passageiro.</p>
+                              <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do aluno.</p>
                             </div>
                           </div>
                         </div>

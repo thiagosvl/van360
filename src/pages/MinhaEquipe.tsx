@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/config/permissions";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -39,9 +40,10 @@ import { phoneMask, cpfCnpjMask } from "@/utils/masks";
 import { formatShortName } from "@/utils/formatters/name";
 import { apiClient } from "@/services/api/client";
 import { cn } from "@/lib/utils";
+
 export default function MinhaEquipe() {
   const { can, isGestor } = usePermissions();
-  const hasAccess = can("equipe.gerenciar_monitores") || can("equipe.gerenciar_todos");
+  const hasAccess = can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES) || can(PERMISSIONS.EQUIPE_GERENCIAR_TODOS);
 
   const queryClient = useQueryClient();
   const { user } = useSession();
@@ -49,22 +51,17 @@ export default function MinhaEquipe() {
 
   const [activeTab, setActiveTab] = useState<string>(isGestor ? "motoristas" : "monitores");
 
-  // Modais de Formulário
   const [motoristaDialogOpen, setMotoristaDialogOpen] = useState(false);
   const [editingMotorista, setEditingMotorista] = useState<any | null>(null);
 
   const [monitorDialogOpen, setMonitorDialogOpen] = useState(false);
   const [editingMonitor, setEditingMonitor] = useState<any | null>(null);
 
-  // Modal de Redefinição de Senha
   const [resetPasswordMember, setResetPasswordMember] = useState<any | null>(null);
   const [novaSenhaInput, setNovaSenhaInput] = useState("");
   const [showNovaSenha, setShowNovaSenha] = useState(true);
 
-  // Modal de Confirmação de Status (Ativar / Desativar)
   const [confirmStatusMember, setConfirmStatusMember] = useState<any | null>(null);
-
-  // Modal de Confirmação de Exclusão Física
   const [deleteConfirmMember, setDeleteConfirmMember] = useState<any | null>(null);
 
   const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id });
@@ -76,7 +73,7 @@ export default function MinhaEquipe() {
       const response = await apiClient.get("/motoristas-equipe");
       return response.data?.membros || [];
     },
-    enabled: !!profile?.id,
+    enabled: !!profile?.id && hasAccess,
   });
 
   const motoristasAuxiliares = membros.filter((m: any) => m.tipo === UserType.MOTORISTA_AUXILIAR);

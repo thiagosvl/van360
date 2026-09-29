@@ -22,20 +22,33 @@ import { toast } from "@/utils/notifications/toast";
 import { getMessage } from "@/constants/messages";
 
 import { prePassageiroSchema, PrePassageiroFormData } from "@/schemas/prePassageiroSchema";
+import { useAttribution } from "@/hooks/business/useAttribution";
+import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
 
 export { prePassageiroSchema, type PrePassageiroFormData };
 
+interface PublicMotoristaData {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  logo_url: string | null;
+  display_name?: string | null;
+}
 
 export function usePassageiroExternalForm() {
   useSEO({
     noindex: true,
   });
 
+  useAttribution();
+
   const { motoristaId } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
+  const [motoristaDisplayName, setMotoristaDisplayName] = useState<string>("");
+  const [motoristaLogoUrl, setMotoristaLogoUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
@@ -78,14 +91,17 @@ export function usePassageiroExternalForm() {
       dia_vencimento: "",
       escola_id: "",
       turma: "",
+      sala: "",
       nome_professor: "",
       periodo: "",
       modalidade: "",
+      ano_letivo: String(new Date().getFullYear()),
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
       data_fim_transporte: "",
-      ano_letivo: String(new Date().getFullYear()),
+      horario_entrada: "",
+      horario_saida: "",
     },
     mode: "onBlur",
   });
@@ -97,7 +113,7 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      const { data } = await apiClient.get<any>(`/public/motoristas/${motoristaId}/validate`)
+      const { data } = await apiClient.get<PublicMotoristaData>(`/public/motoristas/${motoristaId}/validate`)
         .catch(() => ({ data: null }));
 
       if (!data) {
@@ -108,7 +124,10 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      setMotoristaApelido((data as any).apelido || formatShortName((data as any).nome, true));
+      const displayName = data.display_name || data.apelido || formatShortName(data.nome, true);
+      setMotoristaApelido(displayName);
+      setMotoristaDisplayName(displayName);
+      setMotoristaLogoUrl(data.logo_url || null);
 
       setLoading(false);
     };
@@ -130,7 +149,7 @@ export function usePassageiroExternalForm() {
     console.log("Valores atuais de form.getValues():", form.getValues());
     console.groupEnd();
 
-    toast.error("validacao.formularioComErros");
+    toast.error("Por favor, verifique os campos destacados em vermelho.");
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -166,6 +185,7 @@ export function usePassageiroExternalForm() {
         dia_vencimento: data.dia_vencimento
           ? parseInt(String(data.dia_vencimento))
           : null,
+        ano_letivo: parseInt(String(data.ano_letivo), 10),
       };
 
       if (payload.data_nascimento) {
@@ -177,13 +197,19 @@ export function usePassageiroExternalForm() {
       if (payload.data_fim_transporte) {
         payload.data_fim_transporte = convertDateBrToISO(payload.data_fim_transporte);
       }
+      payload.horario_entrada = payload.horario_entrada?.trim() || null;
+      payload.horario_saida = payload.horario_saida?.trim() || null;
 
       console.log("📤 [PassageiroExternalForm] Payload enviado para API:", payload);
+
+      const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
 
       await prePassageiroApi.createPrePassageiro({
         ...payload,
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,
         usuario_id: motoristaId,
+        dispositivo_cadastro,
+        metadados_cadastro,
       });
 
       console.log("✅ [PassageiroExternalForm] Cadastro realizado com sucesso!");
@@ -194,14 +220,14 @@ export function usePassageiroExternalForm() {
       console.error("Resposta da API:", error.response?.data);
       console.groupEnd();
 
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "Tente novamente mais tarde.";
+
       if (error.response?.data?.details) {
         const issues = error.response.data.details;
         issues.forEach((issue: any) => {
           const field = issue.path.join('.');
           form.setError(field as any, { type: 'manual', message: issue.message });
         });
-        toast.error("validacao.formularioComErros");
-
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
@@ -210,11 +236,31 @@ export function usePassageiroExternalForm() {
           "observacoes",
         ]);
         window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        toast.error("sistema.erro.enviarDados", {
-          description: error.response?.data?.error || error.message || "Tente novamente mais tarde.",
-        });
       }
+
+      if (
+        errorMsg.toLowerCase().includes("telefone") ||
+        errorMsg.toLowerCase().includes("outro responsável") ||
+        error.response?.status === 409
+      ) {
+        form.setError("telefone_responsavel", {
+          type: "manual",
+          message: errorMsg.toLowerCase().includes("outro responsável")
+            ? "Este telefone já está cadastrado para outro responsável"
+            : errorMsg.replace(/ no sistema/gi, ""),
+        });
+        setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
+      } else if (errorMsg.toLowerCase().includes("cpf")) {
+        form.setError("cpf_responsavel", {
+          type: "manual",
+          message: errorMsg.replace(/ no sistema/gi, ""),
+        });
+        setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
+      }
+
+      toast.error("Erro ao enviar solicitação", {
+        description: errorMsg.replace(/ no sistema/gi, "") || "Verifique os dados e tente novamente",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -226,9 +272,9 @@ export function usePassageiroExternalForm() {
     form.reset({
       nome_responsavel: currentValues.nome_responsavel,
       parentesco_responsavel: currentValues.parentesco_responsavel,
-
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,
+      email_responsavel: currentValues.email_responsavel,
 
       cep: currentValues.cep,
       logradouro: currentValues.logradouro,
@@ -240,10 +286,19 @@ export function usePassageiroExternalForm() {
       complemento: currentValues.complemento,
 
       nome: "",
+      data_nascimento: "",
+      genero: "",
       escola_id: "",
       turma: "",
+      sala: "",
       nome_professor: "",
       periodo: "",
+      modalidade: "",
+      ano_letivo: "",
+      data_inicio_transporte: "",
+      data_fim_transporte: "",
+      horario_entrada: "",
+      horario_saida: "",
       observacoes: "",
 
       valor_cobranca: "",
@@ -284,7 +339,9 @@ export function usePassageiroExternalForm() {
       escola_id: escolaId,
       periodo: mockData.periodo,
       modalidade: mockData.modalidade,
+      ano_letivo: new Date().getFullYear().toString(),
       turma: mockData.turma,
+      sala: mockData.sala || "",
       nome_professor: mockData.nome_professor,
       nome_responsavel: mockData.responsavel_principal.nome,
       telefone_responsavel: mockData.responsavel_principal.telefone,
@@ -302,8 +359,10 @@ export function usePassageiroExternalForm() {
       observacoes: mockData.observacoes,
       valor_cobranca: "",
       dia_vencimento: "",
-      data_inicio_transporte: mockData.data_inicio_transporte,
-      data_fim_transporte: mockData.data_fim_transporte,
+      data_inicio_transporte: "",
+      data_fim_transporte: "",
+      horario_entrada: "07:30",
+      horario_saida: "12:00",
       ativo: true,
     });
 
@@ -320,6 +379,8 @@ export function usePassageiroExternalForm() {
     form,
     loading,
     motoristaApelido,
+    motoristaDisplayName,
+    motoristaLogoUrl,
     submitting,
     success,
     openAccordionItems,

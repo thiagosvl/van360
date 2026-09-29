@@ -5,18 +5,24 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/config/permissions";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
-import { formatFirstName, formatUserRoleLabel } from "@/utils/formatters";
+import { formatShortName } from "@/utils/formatters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileAvatarUpload } from "@/components/features/configuracoes/ProfileAvatarUpload";
 import { NotificacoesPaisTab } from "@/components/features/configuracoes/NotificacoesPaisTab";
 import { MinhasNotificacoesTab } from "@/components/features/configuracoes/MinhasNotificacoesTab";
 import { RastreamentoTab } from "@/components/features/configuracoes/RastreamentoTab";
 import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
 import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
+import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
 import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Bell,
@@ -38,8 +44,10 @@ export const Conta = memo(function Conta() {
 
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
+  const { profile, isLoading: isLoadingProfile, refreshProfile } = useProfile(user?.id);
   const { can, isSubConta } = usePermissions();
+  const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
+
   const {
     openAlterarSenhaDialog,
     openConfirmationDialog,
@@ -48,8 +56,7 @@ export const Conta = memo(function Conta() {
 
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const displayName = profile?.apelido || formatFirstName(profile?.nome) || "Usuário";
-  const roleLabel = formatUserRoleLabel(profile?.tipo);
+  const displayName = profile?.apelido || formatShortName(profile?.nome, true);
 
   const userInitials = useMemo(() => {
     if (!profile?.nome) return "U";
@@ -62,6 +69,14 @@ export const Conta = memo(function Conta() {
 
   const handleSelectTab = (tab: string) => {
     setSearchParams({ tab });
+  };
+
+  const handleSelectFleetTab = (tab: string) => {
+    if (isSubscriptionBlocked) {
+      toast.warning("Acesso suspenso. Reative seu plano para configurar as preferências da frota.");
+      return;
+    }
+    handleSelectTab(tab);
   };
 
   const handleGoBack = () => {
@@ -108,6 +123,25 @@ export const Conta = memo(function Conta() {
   };
 
   const renderCurrentView = () => {
+    if (isSubscriptionBlocked && (tabParam === "notificacoes_pais" || tabParam === "notificacoes" || tabParam === "rastreamento" || tabParam === "pagamentos")) {
+      return (
+        <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center space-y-4 shadow-xs">
+          <Lock className="w-10 h-10 text-slate-400 mx-auto" />
+          <h2 className="text-lg font-bold text-slate-800">Acesso Suspenso</h2>
+          <p className="text-sm text-slate-600 max-w-md mx-auto">
+            Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
+            className="px-6 py-2.5 rounded-xl bg-[#1a3a5c] text-white text-sm font-bold shadow-xs hover:bg-[#152e4a] cursor-pointer"
+          >
+            Ver Assinatura
+          </button>
+        </div>
+      );
+    }
+
     if ((tabParam === "notificacoes_pais" || tabParam === "notificacoes") && !isSubConta) {
       return <NotificacoesPaisTab />;
     }
@@ -129,25 +163,20 @@ export const Conta = memo(function Conta() {
 
     return (
       <div className="space-y-6">
-        {/* Hero Card com Dados do Usuário */}
         <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex items-center gap-4">
-          <div className="h-16 w-16 sm:h-18 sm:w-18 rounded-full bg-slate-100 border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0 shadow-xs select-none">
-            {isLoadingProfile ? (
-              <Skeleton className="h-full w-full rounded-full" />
-            ) : profile?.foto_url ? (
-              <img
-                src={profile.foto_url}
-                alt={displayName}
-                className="h-full w-full object-cover rounded-full"
-              />
-            ) : (
-              <span>{userInitials}</span>
-            )}
-          </div>
+          <ProfileAvatarUpload
+            userId={profile?.id}
+            logoUrl={profile?.logo_url}
+            displayName={displayName}
+            userInitials={userInitials}
+            isLoading={isLoadingProfile}
+            canEdit={!isSubConta && !!profile?.id}
+            onLogoUpdated={refreshProfile}
+          />
 
-          <div className="min-w-0 space-y-1">
+          <div className="min-w-0 space-y-0.5">
             <p className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Bem-vindo (a),
+              Bem-vindo(a),
             </p>
             {isLoadingProfile ? (
               <Skeleton className="h-6 w-40" />
@@ -156,13 +185,14 @@ export const Conta = memo(function Conta() {
                 {displayName}
               </h1>
             )}
-            <div className="pt-0.5">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
-                {roleLabel}
-              </span>
-            </div>
           </div>
         </div>
+
+        <WhatsAppSupportButton
+          title="Falar com Suporte"
+          subtitle="Atendimento rápido para tirar dúvidas sobre o app"
+          message="Olá, preciso de suporte com o Van360"
+        />
 
         {/* Grupo 1: Conta e acesso */}
         <div className="space-y-2">
@@ -182,10 +212,12 @@ export const Conta = memo(function Conta() {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                    Meus dados
+                    {isSubConta ? "Dados Cadastrais" : "Dados Cadastrais e Logotipo"}
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Seus dados cadastrais e informações de contato
+                    {isSubConta
+                      ? "Atualize seus dados pessoais e informações de contato"
+                      : "Atualize seus dados pessoais, logotipo da van e informações de contato"}
                   </p>
                 </div>
               </div>
@@ -214,30 +246,8 @@ export const Conta = memo(function Conta() {
               <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 3: Minhas Notificações (Alertas no celular do motorista) */}
-            <button
-              type="button"
-              onClick={() => handleSelectTab("minhas_notificacoes")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                    Minhas Notificações
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-            </button>
-
-            {/* Opção 4: Assinatura do App (Gestor) */}
-            {can("assinatura.gerenciar") && (
+            {/* Opção 3: Assinatura do App (Gestor) */}
+            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && (
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
@@ -262,25 +272,64 @@ export const Conta = memo(function Conta() {
           </div>
         </div>
 
-        {/* Grupo 2: Preferências da van */}
-        {!isSubConta && (
-          <div className="space-y-2">
-            <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
-              Preferências da van
-            </h2>
-            <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-              {/* Opção 1: Notificações aos Pais */}
+        {/* Grupo 2: Notificações */}
+        <div className="space-y-2">
+          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+            Notificações
+          </h2>
+          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+            {/* Opção 1: Minhas Notificações (Alertas no celular do motorista) */}
+            <button
+              type="button"
+              onClick={() => handleSelectTab("minhas_notificacoes")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Minhas Notificações
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {isSubConta
+                      ? "Lembretes de aniversariantes e avisos operacionais no seu celular"
+                      : "Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular"}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+
+            {/* Opção 2: Notificações aos Pais */}
+            {!isSubConta && (
               <button
                 type="button"
-                onClick={() => handleSelectTab("notificacoes_pais")}
-                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                onClick={() => handleSelectFleetTab("notificacoes_pais")}
+                className={cn(
+                  "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
+                  isSubscriptionBlocked
+                    ? "opacity-50 hover:bg-slate-50/50"
+                    : "hover:bg-slate-50/80"
+                )}
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <div
+                    className={cn(
+                      "h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 transition-colors",
+                      !isSubscriptionBlocked && "group-hover:bg-[#1a3a5c] group-hover:text-white"
+                    )}
+                  >
                     <Bell className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    <h3
+                      className={cn(
+                        "text-sm sm:text-base font-bold text-slate-800 transition-colors",
+                        !isSubscriptionBlocked && "group-hover:text-[#1a3a5c]"
+                      )}
+                    >
                       Notificações aos Pais
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
@@ -288,22 +337,51 @@ export const Conta = memo(function Conta() {
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                {isSubscriptionBlocked ? (
+                  <Lock className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                )}
               </button>
+            )}
+          </div>
+        </div>
 
-              {/* Opção 2: Rastreamento & GPS */}
+        {/* Grupo 3: Preferências da van */}
+        {!isSubConta && (
+          <div className="space-y-2">
+            <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+              Preferências da van
+            </h2>
+            <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+              {/* Opção 1: Rastreamento & GPS */}
               {ENABLE_LIVE_TRACKING && (
                 <button
                   type="button"
-                  onClick={() => handleSelectTab("rastreamento")}
-                  className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                  onClick={() => handleSelectFleetTab("rastreamento")}
+                  className={cn(
+                    "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
+                    isSubscriptionBlocked
+                      ? "opacity-50 hover:bg-slate-50/50"
+                      : "hover:bg-slate-50/80"
+                  )}
                 >
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                    <div
+                      className={cn(
+                        "h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 transition-colors",
+                        !isSubscriptionBlocked && "group-hover:bg-[#1a3a5c] group-hover:text-white"
+                      )}
+                    >
                       <Radio className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                      <h3
+                        className={cn(
+                          "text-sm sm:text-base font-bold text-slate-800 transition-colors",
+                          !isSubscriptionBlocked && "group-hover:text-[#1a3a5c]"
+                        )}
+                      >
                         Rastreamento & GPS
                       </h3>
                       <p className="text-xs text-slate-500 leading-relaxed">
@@ -311,22 +389,41 @@ export const Conta = memo(function Conta() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                  {isSubscriptionBlocked ? (
+                    <Lock className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                  )}
                 </button>
               )}
 
-              {/* Opção 3: Pagamentos & PIX */}
+              {/* Opção 2: Pagamentos & PIX */}
               <button
                 type="button"
-                onClick={() => handleSelectTab("pagamentos")}
-                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                onClick={() => handleSelectFleetTab("pagamentos")}
+                className={cn(
+                  "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
+                  isSubscriptionBlocked
+                    ? "opacity-50 hover:bg-slate-50/50"
+                    : "hover:bg-slate-50/80"
+                )}
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <div
+                    className={cn(
+                      "h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 transition-colors",
+                      !isSubscriptionBlocked && "group-hover:bg-[#1a3a5c] group-hover:text-white"
+                    )}
+                  >
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    <h3
+                      className={cn(
+                        "text-sm sm:text-base font-bold text-slate-800 transition-colors",
+                        !isSubscriptionBlocked && "group-hover:text-[#1a3a5c]"
+                      )}
+                    >
                       Pagamentos & PIX
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
@@ -334,13 +431,17 @@ export const Conta = memo(function Conta() {
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                {isSubscriptionBlocked ? (
+                  <Lock className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                )}
               </button>
             </div>
           </div>
         )}
 
-        {/* Grupo 3: Suporte e sessão */}
+        {/* Grupo 4: Suporte e sessão */}
         <div className="space-y-2">
           <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
             Suporte e sessão

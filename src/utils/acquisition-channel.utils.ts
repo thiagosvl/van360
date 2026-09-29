@@ -1,4 +1,4 @@
-import { CanalAquisicao } from "@/types/enums";
+import { CanalAquisicao, AtribuicaoCategoria } from "@/types/enums";
 
 export interface CanalAquisicaoItemConfig {
   label: string;
@@ -6,15 +6,16 @@ export interface CanalAquisicaoItemConfig {
 }
 
 export const CANAL_AQUISICAO_CONFIG: Record<CanalAquisicao | "NAO_INFORMADO", CanalAquisicaoItemConfig> = {
-  [CanalAquisicao.PLAY_STORE]: { label: "Play Store (Android)", color: "#34A853" },
-  [CanalAquisicao.APP_STORE]: { label: "App Store (iPhone/iOS)", color: "#007AFF" },
+  [CanalAquisicao.PLAY_STORE]: { label: "Loja do Android (Play Store)", color: "#34A853" },
+  [CanalAquisicao.APP_STORE]: { label: "Loja do iPhone (App Store)", color: "#007AFF" },
   [CanalAquisicao.INDICACAO]: { label: "Indicação", color: "#10B981" },
   [CanalAquisicao.INSTAGRAM]: { label: "Instagram", color: "#E1306C" },
-  [CanalAquisicao.GOOGLE]: { label: "Google / Busca", color: "#4285F4" },
+  [CanalAquisicao.GOOGLE]: { label: "Google", color: "#4285F4" },
   [CanalAquisicao.FACEBOOK]: { label: "Facebook", color: "#1877F2" },
   [CanalAquisicao.TIKTOK]: { label: "TikTok", color: "#0F172A" },
   [CanalAquisicao.YOUTUBE]: { label: "YouTube", color: "#EF4444" },
   [CanalAquisicao.PANFLETO]: { label: "Panfleto", color: "#F59E0B" },
+  [CanalAquisicao.IA]: { label: "IA (ChatGPT, Gemini, etc.)", color: "#8B5CF6" },
   [CanalAquisicao.OUTROS]: { label: "Outros", color: "#6366F1" },
   NAO_INFORMADO: { label: "Não informado", color: "#94A3B8" },
 };
@@ -29,5 +30,187 @@ export const CanalAquisicaoLabels: Record<CanalAquisicao, string> = {
   [CanalAquisicao.TIKTOK]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.TIKTOK].label,
   [CanalAquisicao.YOUTUBE]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.YOUTUBE].label,
   [CanalAquisicao.GOOGLE]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.GOOGLE].label,
+  [CanalAquisicao.IA]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.IA].label,
   [CanalAquisicao.OUTROS]: CANAL_AQUISICAO_CONFIG[CanalAquisicao.OUTROS].label,
 };
+
+export const CANAL_AQUISICAO_ORDERED_OPTIONS: CanalAquisicao[] = [
+  CanalAquisicao.INSTAGRAM,
+  CanalAquisicao.INDICACAO,
+  CanalAquisicao.PLAY_STORE,
+  CanalAquisicao.APP_STORE,
+  CanalAquisicao.GOOGLE,
+  CanalAquisicao.FACEBOOK,
+  CanalAquisicao.TIKTOK,
+  CanalAquisicao.PANFLETO,
+  CanalAquisicao.YOUTUBE,
+  CanalAquisicao.IA,
+  CanalAquisicao.OUTROS,
+];
+
+export const ORIGEM_ATRIBUICAO_LABELS = {
+  INSTAGRAM_ADS: "Instagram Ads",
+  FACEBOOK_ADS: "Facebook Ads",
+  GOOGLE_ADS: "Google Ads",
+  TIKTOK_ADS: "TikTok Ads",
+  PLAY_STORE: "Play Store",
+  APP_STORE: "App Store",
+  INDICACAO: "Indicação",
+  BLOG: "Blog Van360",
+  SITE_INSTITUCIONAL: "Site Institucional",
+  INSTAGRAM_ORGANICO: "Instagram",
+  FACEBOOK_ORGANICO: "Facebook",
+  GOOGLE_ORGANICO: "Google",
+  DIRETO: "Direto / Orgânico",
+} as const;
+
+export const CAMPANHA_FALLBACK_LABELS = {
+  META_ADS: "Meta Ads",
+  CAMPANHA_GOOGLE: "Campanha Google",
+  CAMPANHA_TIKTOK: "Campanha TikTok",
+  APP_ANDROID: "App Nativo Android",
+  APP_IOS: "App Nativo iOS",
+  OUTRO_MOTORISTA: "Outro Motorista",
+  ORGANICO: "Orgânico",
+  DIRETO: "Direto",
+  LINK_BIO: "Orgânico / Link Bio",
+  BUSCA_ORGANICA: "Busca Orgânica",
+  SEM_UTMS: "Sem UTMs",
+} as const;
+
+export interface ResolvedOrigemAtribuicao {
+  label: string;
+  detalhe?: string;
+  corBadge?: string;
+  categoria: AtribuicaoCategoria;
+}
+
+export function resolveOrigemAtribuicao(
+  metadados?: Record<string, unknown> | null,
+  dispositivo?: string | null,
+  canalAuto?: string | null
+): ResolvedOrigemAtribuicao {
+  const utm = (metadados?.utm as Record<string, string | undefined> | null) || undefined;
+  const source = utm?.source?.toLowerCase();
+  const fbclid = utm?.fbclid;
+  const gclid = utm?.gclid;
+  const gbraid = utm?.gbraid;
+  const ttclid = utm?.ttclid;
+  const campaign = utm?.campaign;
+  const content = utm?.content;
+  const referrer = typeof metadados?.referrer === "string" ? metadados.referrer : undefined;
+  const isInternalReferrer = Boolean(
+    referrer && (
+      referrer.includes("app.van360.com.br") ||
+      referrer.includes("capacitor://") ||
+      referrer.includes("localhost")
+    )
+  );
+  const cleanReferrer = isInternalReferrer ? undefined : referrer;
+  const dispUpper = dispositivo?.toUpperCase();
+
+  if (source === "ig" || (source === "lp" && fbclid) || source === "instagram") {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.INSTAGRAM_ADS,
+      detalhe: content || campaign || CAMPANHA_FALLBACK_LABELS.META_ADS,
+      categoria: AtribuicaoCategoria.META_ADS,
+    };
+  }
+
+  if (source === "fb" || source === "facebook" || fbclid) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.FACEBOOK_ADS,
+      detalhe: content || campaign || CAMPANHA_FALLBACK_LABELS.META_ADS,
+      categoria: AtribuicaoCategoria.META_ADS,
+      corBadge: "bg-[#1877F2]/15 text-[#1877F2] border-[#1877F2]/30",
+    };
+  }
+
+  if (source === "google" || gclid || gbraid) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.GOOGLE_ADS,
+      detalhe: campaign || CAMPANHA_FALLBACK_LABELS.CAMPANHA_GOOGLE,
+      categoria: AtribuicaoCategoria.GOOGLE_ADS,
+    };
+  }
+
+  if (source === "tiktok" || ttclid) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.TIKTOK_ADS,
+      detalhe: campaign || CAMPANHA_FALLBACK_LABELS.CAMPANHA_TIKTOK,
+      categoria: AtribuicaoCategoria.TIKTOK_ADS,
+    };
+  }
+
+  if (dispUpper === "APP_ANDROID") {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.PLAY_STORE,
+      detalhe: CAMPANHA_FALLBACK_LABELS.APP_ANDROID,
+      categoria: AtribuicaoCategoria.PLAY_STORE,
+    };
+  }
+
+  if (dispUpper === "APP_IOS") {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.APP_STORE,
+      detalhe: CAMPANHA_FALLBACK_LABELS.APP_IOS,
+      categoria: AtribuicaoCategoria.PLAY_STORE,
+    };
+  }
+
+  if (canalAuto === CanalAquisicao.INDICACAO) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.INDICACAO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.OUTRO_MOTORISTA,
+      categoria: AtribuicaoCategoria.INDICACAO,
+    };
+  }
+
+  if (source === "blog" || cleanReferrer?.includes("van360.com.br/blog")) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.BLOG,
+      detalhe: CAMPANHA_FALLBACK_LABELS.ORGANICO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
+    };
+  }
+
+  if (source === "lp" || cleanReferrer?.includes("van360.com.br")) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.SITE_INSTITUCIONAL,
+      detalhe: CAMPANHA_FALLBACK_LABELS.DIRETO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
+      corBadge: "bg-slate-200/10 text-slate-200 border-slate-300/20",
+    };
+  }
+
+  if (cleanReferrer?.includes("instagram.com")) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.INSTAGRAM_ORGANICO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.LINK_BIO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
+    };
+  }
+
+  if (cleanReferrer?.includes("facebook.com")) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.FACEBOOK_ORGANICO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.ORGANICO,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
+      corBadge: "bg-[#1877F2]/15 text-[#1877F2] border-[#1877F2]/30",
+    };
+  }
+
+  if (cleanReferrer?.includes("google.")) {
+    return {
+      label: ORIGEM_ATRIBUICAO_LABELS.GOOGLE_ORGANICO,
+      detalhe: CAMPANHA_FALLBACK_LABELS.BUSCA_ORGANICA,
+      categoria: AtribuicaoCategoria.SITE_ORGANICO,
+    };
+  }
+
+  return {
+    label: ORIGEM_ATRIBUICAO_LABELS.DIRETO,
+    detalhe: CAMPANHA_FALLBACK_LABELS.SEM_UTMS,
+    categoria: AtribuicaoCategoria.DIRETO,
+  };
+}

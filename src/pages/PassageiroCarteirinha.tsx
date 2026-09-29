@@ -8,7 +8,9 @@ import {
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
-import { BASE_DOMAIN } from "@/constants";
+import { BASE_DOMAIN, STORAGE_KEYS } from "@/constants";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 
@@ -26,15 +28,14 @@ import { CarteirinhaAusencias } from "@/components/features/carteirinha/Carteiri
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
-import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
-import { IncompletePassengerBanner } from "@/components/features/passageiro/IncompletePassengerBanner";
-import { isCadastroPassageiroIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarClock, FileText, User, Users, Wallet } from "lucide-react";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog, useCobrancasByPassageiro,
+  useCreateCobranca,
   useDeleteCobranca,
   useDeletePassageiro,
   useDesfazerPagamento,
@@ -45,6 +46,7 @@ import {
   useUpdatePassageiro
 } from "@/hooks";
 import { useCreateContrato, useSubstituirContrato, useDeleteContrato } from "@/hooks/api/useContratos";
+import { usePassageiroRotas } from "@/hooks/api/useRoutes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { CobrancaStatus, ContratoStatus, PassageiroFormModes } from "@/types/enums";
@@ -52,23 +54,26 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
 import { toast } from "@/utils/notifications/toast";
+import { buildReciboWhatsAppMessage, buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 
 import { Cobranca } from "@/types/cobranca";
 
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
-import { buildContratoWhatsAppUrl } from "@/utils/evolution";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
+import { obterUrlDocumentoContrato, isPassageiroIncompleto } from "@/utils/domain";
 
 const currentYear = getNowBR().getFullYear().toString();
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { PERMISSIONS } from "@/config/permissions";
 import { cn } from "@/lib/utils";
 
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
   const { can, isSubConta } = usePermissions();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("carteirinha");
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const {
@@ -82,18 +87,28 @@ export default function PassageiroCarteirinha() {
     openManualPaymentDialog,
     openReceiptDialog,
     openGerarContratoValidadorDialog,
+    openPassageiroFinanceiroDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
-  const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
+  const canViewFinancials =
+    can(PERMISSIONS.FINANCEIRO_VISUALIZAR) ||
+    can(PERMISSIONS.COBRANCAS_GERENCIAR) ||
+    can(PERMISSIONS.PASSAGEIROS_COBRANCA_VISUALIZAR) ||
+    can(PERMISSIONS.PASSAGEIROS_GERENCIAR);
+  const canManageContracts = can(PERMISSIONS.CONTRATOS_GERENCIAR) && !isSubConta;
   const [isDeleting, setIsDeleting] = useState(false);
+  const isDeletedRef = useRef(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const validTabs = useMemo(() => {
-    return canViewFinancials
-      ? ["parcelas", "dados-pessoais", "responsaveis", "contrato", "ausencias"]
-      : ["dados-pessoais", "responsaveis", "contrato", "ausencias"];
-  }, [canViewFinancials]);
+    const tabs: string[] = [];
+    if (canViewFinancials) tabs.push("parcelas");
+    tabs.push("dados-pessoais", "responsaveis");
+    if (canManageContracts) tabs.push("contrato");
+    tabs.push("ausencias");
+    return tabs;
+  }, [canViewFinancials, canManageContracts]);
 
   const urlTab = searchParams.get("tab");
   const defaultTab = canViewFinancials ? "parcelas" : "dados-pessoais";
@@ -115,22 +130,19 @@ export default function PassageiroCarteirinha() {
       updated.set("tab", val);
       return updated;
     });
-    setTimeout(() => {
-      const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-      }
-    }, 50);
   };
 
   useEffect(() => {
     if (activeTab) {
-      setTimeout(() => {
-        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
-        if (activeEl) {
-          activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      const timer = setTimeout(() => {
+        const container = tabListRef.current?.parentElement;
+        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`) as HTMLElement | null;
+        if (container && activeEl) {
+          const left = activeEl.offsetLeft - (container.clientWidth / 2) + (activeEl.clientWidth / 2);
+          container.scrollTo({ left, behavior: "smooth" });
         }
-      }, 100);
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [activeTab]);
 
@@ -138,6 +150,7 @@ export default function PassageiroCarteirinha() {
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
   const updateCobranca = useUpdateCobranca();
+  const createCobranca = useCreateCobranca();
   const deleteCobranca = useDeleteCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
@@ -152,6 +165,7 @@ export default function PassageiroCarteirinha() {
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending ||
+    createCobranca.isPending ||
     updateCobranca.isPending ||
     deleteCobranca.isPending ||
     desfazerPagamento.isPending ||
@@ -176,10 +190,17 @@ export default function PassageiroCarteirinha() {
     error: passageiroError,
     refetch: refetchPassageiro,
   } = usePassageiro(passageiro_id, {
-    enabled: !!passageiro_id,
+    enabled: !!passageiro_id && !isDeleting && !isDeletedRef.current,
   });
 
   const passageiro = passageiroData as Passageiro;
+
+  const {
+    data: rotasPassageiro = [],
+    isLoading: isRotasLoading,
+  } = usePassageiroRotas(passageiro_id || "");
+
+  const temRotas = (rotasPassageiro || []).length > 0;
 
   const totalPassageiros = summary?.contadores?.passageiros?.total ?? 0;
 
@@ -192,7 +213,7 @@ export default function PassageiroCarteirinha() {
     refetch: refetchCobrancas,
     isError: isCobrancasError,
   } = useCobrancasByPassageiro(passageiro_id, yearFilter, {
-    enabled: !!passageiro_id && canViewFinancials,
+    enabled: !!passageiro_id && canViewFinancials && !isDeleting && !isDeletedRef.current,
   });
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
@@ -213,10 +234,7 @@ export default function PassageiroCarteirinha() {
   }, [isCobrancasError]);
 
   useEffect(() => {
-    if (!passageiro_id) return;
-
-    if (isPassageiroLoading) return;
-    if (isDeleting) return;
+    if (!passageiro_id || isDeleting || isDeletedRef.current || isPassageiroLoading) return;
 
     const isNotFoundError =
       isPassageiroError &&
@@ -224,14 +242,6 @@ export default function PassageiroCarteirinha() {
         (passageiroError as any)?.status === 404);
 
     if (isNotFoundError || (!isPassageiroError && !passageiro)) {
-      queryClient.removeQueries({ queryKey: ["passageiro", passageiro_id] });
-      queryClient.removeQueries({
-        queryKey: ["cobrancas-by-passageiro", passageiro_id],
-      });
-      queryClient.removeQueries({
-        queryKey: ["available-years", passageiro_id],
-      });
-
       navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
     }
   }, [
@@ -241,7 +251,6 @@ export default function PassageiroCarteirinha() {
     passageiro,
     passageiro_id,
     navigate,
-    queryClient,
     isDeleting,
   ]);
 
@@ -256,12 +265,20 @@ export default function PassageiroCarteirinha() {
       setPageTitle(`Carteirinha Digital`);
     }
   }, [passageiro, setPageTitle]);
-  const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
+  const handlePassageiroFormSuccess = useCallback((data?: Passageiro | { passageiro?: Passageiro; id?: string }, meta?: { hasCriticalContractChanges?: boolean }) => {
     const hasChanges = meta?.hasCriticalContractChanges === true;
     const usarContratos = !!profile?.config_contrato?.usar_contratos;
 
     if (hasChanges && usarContratos) {
-      const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
+      const rawData: Partial<Passageiro> = data
+        ? ("passageiro" in data && data.passageiro ? data.passageiro : data)
+        : {};
+      const updatedPassageiro: Passageiro = {
+        ...passageiro,
+        ...rawData,
+        status_contrato: rawData.status_contrato ?? passageiro?.status_contrato,
+        contrato_id: rawData.contrato_id ?? passageiro?.contrato_id,
+      } as Passageiro;
 
       setTimeout(() => {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
@@ -272,26 +289,38 @@ export default function PassageiroCarteirinha() {
         openConfirmationDialog({
           title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
           description: hasActiveContract
-            ? `Você alterou dados importantes do passageiro. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
+            ? `Você alterou dados importantes do aluno. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
             : `Deseja gerar um contrato para ${firstName}? O responsável receberá um link para assiná-lo.`,
           confirmText: hasActiveContract ? "Substituir" : "Gerar",
           cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
           onConfirm: async () => {
-            try {
-              if (updatedPassageiro.contrato_id) {
-                await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
-              } else {
-                await createContrato.mutateAsync({ passageiroId: updatedPassageiro.id! });
-              }
-              safeCloseDialog(closeConfirmationDialog);
-            } catch {
-              safeCloseDialog(closeConfirmationDialog);
-            }
+            safeCloseDialog(closeConfirmationDialog);
+            setTimeout(() => {
+              openGerarContratoValidadorDialog({
+                passageiroId: updatedPassageiro.id!,
+                onSuccess: async (id, _bypassed, updatedValues) => {
+                  const valorMensal = updatedValues?.valorMensal ?? (updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined);
+                  const diaVencimento = updatedValues?.diaVencimento ?? (updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined);
+
+                  try {
+                    if (updatedPassageiro.contrato_id) {
+                      await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
+                    } else {
+                      await createContrato.mutateAsync({
+                        passageiroId: id,
+                        valorMensal,
+                        diaVencimento,
+                      });
+                    }
+                  } catch { }
+                },
+              });
+            }, 100);
           },
         });
       }, 300);
     }
-  }, [passageiro, openConfirmationDialog, closeConfirmationDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
+  }, [passageiro, openConfirmationDialog, closeConfirmationDialog, openGerarContratoValidadorDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -357,11 +386,11 @@ export default function PassageiroCarteirinha() {
     const action = statusAtual ? "desativar" : "ativar";
     openConfirmationDialog({
       title:
-        action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+        action === "ativar" ? "Reativar aluno?" : "Desativar aluno?",
       description:
         action === "ativar"
-          ? "O passageiro voltará a aparecer nas listas de passageiros ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
-          : "O passageiro será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
+          ? "O aluno voltará a aparecer nas listas de alunos ativos e novas parcelas serão geradas automaticamente conforme as condições do contrato."
+          : "O aluno será desativado e novas parcelas deixarão de ser geradas automaticamente. Você poderá reativá-lo a qualquer momento.",
       confirmText: action === "ativar" ? "Reativar" : "Desativar",
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
@@ -446,17 +475,28 @@ export default function PassageiroCarteirinha() {
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
         onConfirm: async () => {
-          await deleteCobranca.mutateAsync(cobranca.id);
+          if (cobranca.isProjection) {
+            await createCobranca.mutateAsync({
+              passageiro_id: cobranca.passageiro_id,
+              usuario_id: passageiro?.usuario_id || user?.id,
+              mes: Number(cobranca.mes),
+              ano: Number(cobranca.ano),
+              valor: Number(cobranca.valor),
+              data_vencimento: cobranca.data_vencimento,
+              status: CobrancaStatus.CANCELADA,
+            });
+          } else {
+            await deleteCobranca.mutateAsync(cobranca.id);
+          }
         },
-        onEdit: () => {
+        onEdit: cobranca.isProjection ? undefined : () => {
           openCobrancaEditDialog({
             cobranca,
-            onSuccess: refetchCobrancas,
           });
         }
       });
     },
-    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas]
+    [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, passageiro?.usuario_id, user?.id]
   );
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -467,9 +507,7 @@ export default function PassageiroCarteirinha() {
       valorOriginal: Number(cobranca.valor),
       status: cobranca.status,
       dataVencimento: cobranca.data_vencimento,
-      onPaymentRecorded: () => {
-        refetchCobrancas();
-      },
+      observacao: cobranca.observacao,
     });
   };
 
@@ -477,7 +515,7 @@ export default function PassageiroCarteirinha() {
     const hoje = getStartOfDayBR();
     return cobrancas.some(
       (c) =>
-        c.status !== CobrancaStatus.PAGO && parseLocalDate(c.data_vencimento) < hoje,
+        c.status === CobrancaStatus.PENDENTE && parseLocalDate(c.data_vencimento) < hoje,
     );
   }, [cobrancas]);
 
@@ -485,7 +523,7 @@ export default function PassageiroCarteirinha() {
     if (!passageiro?.contrato_id) return;
     openConfirmationDialog({
       title: "Excluir Contrato?",
-      description: "Tem certeza que deseja excluir o contrato deste passageiro? Esta ação não pode ser desfeita.",
+      description: "Tem certeza que deseja excluir o contrato deste aluno? Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
@@ -500,7 +538,7 @@ export default function PassageiroCarteirinha() {
   }, [passageiro?.contrato_id, openConfirmationDialog, closeConfirmationDialog, deleteContrato]);
 
   if (!can("passageiros.visualizar")) {
-    return <AccessRestrictedState moduleName="Passageiros" />;
+    return <AccessRestrictedState moduleName="Alunos" />;
   }
 
   const isNotFoundError =
@@ -538,7 +576,7 @@ export default function PassageiroCarteirinha() {
     yearFilter,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
-    onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean) => {
+    onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean, availableMonths?: number[]) => {
       if (!passageiro_id) return;
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
@@ -550,26 +588,62 @@ export default function PassageiroCarteirinha() {
         ano,
         lockFoiPago,
         lockMesAno,
-        onSuccess: refetchCobrancas,
+        availableMonths,
       });
     },
     onEditCobranca: (cobranca: Cobranca) => {
       openCobrancaEditDialog({
         cobranca,
-        onSuccess: refetchCobrancas,
       });
     },
     onRegistrarPagamento: (cobranca: Cobranca) => {
+      const targetPassageiro = cobranca.passageiro || passageiro;
+      if (cobranca.isProjection && isPassageiroIncompleto(targetPassageiro)) {
+        openConfirmationDialog({
+          title: "Valor da parcela não configurado",
+          description:
+            "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+          confirmText: "Configurar agora",
+          cancelText: "Fazer depois",
+          onConfirm: () => {
+            safeCloseDialog(closeConfirmationDialog);
+            setTimeout(() => {
+              if (targetPassageiro) {
+                openPassageiroFinanceiroDialog({ passageiro: targetPassageiro });
+              }
+            }, 100);
+          },
+        });
+        return;
+      }
       openPaymentDialog(cobranca);
     },
     onToggleLembretes: handleToggleLembretes,
     onDesfazerPagamento: handleDesfazerClick,
     onExcluirCobranca: handleExcluirCobranca,
     onToggleClick: handleToggleClick,
-    onVerRecibo: (url: string, cobranca: Cobranca) => openReceiptDialog({
-      receiptUrl: url,
-      cobrancaDescricao: `Recibo de ${cobranca.mes}/${cobranca.ano} - ${passageiro.nome}`,
-    }),
+    onVerRecibo: (url: string, cobranca: Cobranca) =>
+      openReceiptDialog({
+        receiptUrl: url,
+        cobrancaDescricao: buildReciboWhatsAppMessage({
+          nomeResponsavel:
+            passageiro.responsavel_principal?.nome ||
+            cobranca.passageiro?.responsavel_principal?.nome,
+          nomePassageiro: passageiro.nome,
+          generoPassageiro: passageiro.genero || cobranca.passageiro?.genero,
+          mes: cobranca.mes,
+          ano: cobranca.ano,
+        }),
+        cobrancaId: cobranca.id,
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+        passageiroId: cobranca.passageiro_id || passageiro.id,
+        nomePassageiro: passageiro.nome,
+        nomeResponsavel:
+          passageiro.responsavel_principal?.nome ||
+          cobranca.passageiro?.responsavel_principal?.nome,
+        generoPassageiro: passageiro.genero || cobranca.passageiro?.genero,
+      }),
   };
 
   const infoProps = {
@@ -584,22 +658,26 @@ export default function PassageiroCarteirinha() {
     contratosAtivos: !!profile?.config_contrato?.usar_contratos,
     onDeleteClick: () =>
       openConfirmationDialog({
-        title: "Excluir passageiro?",
+        title: "Excluir aluno?",
         description:
-          "Tem certeza que deseja excluir este passageiro? Esta ação excluirá permanentemente o cadastro e todos os dados associados (cobranças, contratos, rotas e históricos). Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados do aluno.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
           if (!passageiro_id) return;
           setIsDeleting(true);
           try {
+            isDeletedRef.current = true;
             await deletePassageiro.mutateAsync(passageiro_id);
             safeCloseDialog(closeConfirmationDialog);
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
+            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
           } catch (error) {
+            isDeletedRef.current = false;
             safeCloseDialog(closeConfirmationDialog);
           } finally {
-            setIsDeleting(false);
+            if (!isDeletedRef.current) {
+              setIsDeleting(false);
+            }
           }
         },
       }),
@@ -609,8 +687,8 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: action === "ativar" ? "Ativar notificações?" : "Desativar notificações?",
         description: action === "ativar"
-          ? "O passageiro voltará a receber lembretes e notificações de cobrança."
-          : "O passageiro não receberá mais lembretes e notificações de cobrança.",
+          ? "O responsável do aluno voltará a receber lembretes e notificações de cobrança."
+          : "O responsável do aluno não receberá mais lembretes e notificações de cobrança.",
         confirmText: action === "ativar" ? "Ativar" : "Desativar",
         variant: action === "desativar" ? "warning" : "default",
         onConfirm: async () => {
@@ -648,7 +726,10 @@ export default function PassageiroCarteirinha() {
       } else {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
-          onSuccess: (id, bypassed) => {
+          onSuccess: (id, bypassed, updatedValues) => {
+            const valorMensal = updatedValues?.valorMensal ?? (passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined);
+            const diaVencimento = updatedValues?.diaVencimento ?? (passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined);
+
             if (bypassed) {
               openConfirmationDialog({
                 title: "Gerar contrato?",
@@ -658,8 +739,8 @@ export default function PassageiroCarteirinha() {
                   try {
                     await createContrato.mutateAsync({
                       passageiroId: id,
-                      valorMensal: passageiro.valor_cobranca,
-                      diaVencimento: passageiro.dia_vencimento
+                      valorMensal,
+                      diaVencimento,
                     });
                     safeCloseDialog(closeConfirmationDialog);
                   } catch (error) {
@@ -670,11 +751,11 @@ export default function PassageiroCarteirinha() {
             } else {
               createContrato.mutateAsync({
                 passageiroId: id,
-                valorMensal: passageiro.valor_cobranca,
-                diaVencimento: passageiro.dia_vencimento
+                valorMensal,
+                diaVencimento,
               });
             }
-          }
+          },
         });
       }
     },
@@ -691,138 +772,228 @@ export default function PassageiroCarteirinha() {
     onSave: handleSaveObservacoes,
   };
 
+  const renderTabContents = (extraClassName?: string) => (
+    <>
+      {canViewFinancials && (
+        <TabsContent value="parcelas" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+          <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+            <CarteirinhaCobrancas {...cobrancasProps} />
+          </Suspense>
+        </TabsContent>
+      )}
+
+      <TabsContent value="dados-pessoais" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+          <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
+            <CarteirinhaDadosPessoais
+              passageiro={passageiro}
+              isCopiedEndereco={isCopiedEndereco}
+              isCopiedTelefone={isCopiedTelefone}
+              onCopyToClipboard={handleCopyToClipboard}
+              onContractAction={infoProps.onContractAction}
+              contratosAtivos={infoProps.contratosAtivos}
+              onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+              onEditClick={handleEditClick}
+            />
+          </div>
+        </Suspense>
+
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+          <CarteirinhaObservacoes {...observacoesProps} />
+        </Suspense>
+      </TabsContent>
+
+      <TabsContent value="responsaveis" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+          <CarteirinhaResponsaveis
+            passageiro={passageiro}
+            onEditClick={handleEditClick}
+            hideNotificacoesRota={!temRotas}
+            onRefresh={() => {
+              refetchPassageiro();
+            }}
+          />
+        </Suspense>
+      </TabsContent>
+
+      {canManageContracts && (
+        <TabsContent value="contrato" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+          <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+            <CarteirinhaContrato
+              passageiro={passageiro}
+              contratosAtivos={infoProps.contratosAtivos}
+              onContractAction={infoProps.onContractAction}
+              onDeleteContrato={handleDeleteContrato}
+              onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+              onEditClick={handleEditClick}
+            />
+          </Suspense>
+        </TabsContent>
+      )}
+
+      <TabsContent value="ausencias" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+          <CarteirinhaAusencias
+            passageiro={passageiro}
+            temRotas={temRotas}
+            isRotasLoading={isRotasLoading}
+          />
+        </Suspense>
+      </TabsContent>
+    </>
+  );
+
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div>
-          <div className="space-y-6">
-            {isCadastroPassageiroIncompleto(passageiro) ? (
-              <IncompletePassengerBanner onEdit={handleEditClick} />
-            ) : !isSubConta && !profile?.chave_pix && totalPassageiros > 1 ? (
-              <PixNudgeBanner hasPix={false} />
-            ) : null}
+        <div className="space-y-6">
+          {isMobile ? (
+            <>
+              <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                <CarteirinhaHeader
+                  passageiro={passageiro}
+                  temCobrancasVencidas={temCobrancasVencidas}
+                  onToggleClick={handleToggleClick}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={infoProps.onDeleteClick}
+                  onEnviarWhatsApp={handleEnviarWhatsApp}
+                  onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
+                />
+              </Suspense>
 
-            {/* Header do passageiro (avatar, nome, badges, ações) — sempre visível no topo */}
-            <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-              <CarteirinhaHeader
-                passageiro={passageiro}
-                temCobrancasVencidas={temCobrancasVencidas}
-                onToggleClick={handleToggleClick}
-                onEditClick={handleEditClick}
-                onDeleteClick={infoProps.onDeleteClick}
-                onEnviarWhatsApp={handleEnviarWhatsApp}
-                onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
-              />
-            </Suspense>
-
-            {/* Abas com Scroll Lateral no Mobile e Grid no Desktop */}
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
-                <TabsList
-                  ref={tabListRef}
-                  className={cn(
-                    "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px]",
-                    canViewFinancials ? "md:grid md:grid-cols-5" : "md:grid md:grid-cols-4"
-                  )}
-                >
-                  {canViewFinancials && (
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
+                  <TabsList
+                    ref={tabListRef}
+                    className={cn(
+                      "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px] md:grid",
+                      validTabs.length === 5 && "md:grid-cols-5",
+                      validTabs.length === 4 && "md:grid-cols-4",
+                      validTabs.length === 3 && "md:grid-cols-3",
+                      validTabs.length === 2 && "md:grid-cols-2"
+                    )}
+                  >
+                    {canViewFinancials && (
+                      <TabsTrigger
+                        value="parcelas"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Parcelas
+                      </TabsTrigger>
+                    )}
                     <TabsTrigger
-                      value="parcelas"
+                      value="dados-pessoais"
                       className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
                     >
-                      Parcelas
+                      Dados Pessoais
                     </TabsTrigger>
-                  )}
-                  <TabsTrigger
-                    value="dados-pessoais"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Dados Pessoais
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="responsaveis"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Responsáveis
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="contrato"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Contrato
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="ausencias"
-                    className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
-                  >
-                    Ausências
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+                    <TabsTrigger
+                      value="responsaveis"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                    >
+                      Responsáveis
+                    </TabsTrigger>
+                    {canManageContracts && (
+                      <TabsTrigger
+                        value="contrato"
+                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      >
+                        Contrato
+                      </TabsTrigger>
+                    )}
+                    <TabsTrigger
+                      value="ausencias"
+                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                    >
+                      Ausências
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              {canViewFinancials && (
-                <TabsContent value="parcelas" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                  <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                    <CarteirinhaCobrancas {...cobrancasProps} />
-                  </Suspense>
-                </TabsContent>
-              )}
-
-              <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                  <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
-                    <CarteirinhaDadosPessoais
+                {renderTabContents("mt-5")}
+              </Tabs>
+            </>
+          ) : (
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <div className="grid grid-cols-12 gap-8 items-start">
+                <div className="col-span-4 space-y-6 sticky top-6">
+                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                    <CarteirinhaHeader
                       passageiro={passageiro}
-                      isCopiedEndereco={isCopiedEndereco}
-                      isCopiedTelefone={isCopiedTelefone}
-                      onCopyToClipboard={handleCopyToClipboard}
-                      onContractAction={infoProps.onContractAction}
-                      contratosAtivos={infoProps.contratosAtivos}
-                      onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
+                      temCobrancasVencidas={temCobrancasVencidas}
+                      onToggleClick={handleToggleClick}
                       onEditClick={handleEditClick}
+                      onDeleteClick={infoProps.onDeleteClick}
+                      onEnviarWhatsApp={handleEnviarWhatsApp}
+                      onToggleNotificacoesClick={infoProps.onToggleNotificacoesClick}
                     />
+                  </Suspense>
+
+                  <div className="bg-slate-200/50 p-2 rounded-[2rem] shadow-xs">
+                    <TabsList className="flex flex-col w-full bg-transparent p-0 gap-1 h-auto">
+                      {canViewFinancials && (
+                        <TabsTrigger
+                          value="parcelas"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        >
+                          <Wallet className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Parcelas</span>
+                        </TabsTrigger>
+                      )}
+                      <TabsTrigger
+                        value="dados-pessoais"
+                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                      >
+                        <User className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span>Dados Pessoais</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="responsaveis"
+                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                      >
+                        <Users className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span>Responsáveis</span>
+                      </TabsTrigger>
+                      {canManageContracts && (
+                        <TabsTrigger
+                          value="contrato"
+                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        >
+                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>Contrato</span>
+                        </TabsTrigger>
+                      )}
+                      <TabsTrigger
+                        value="ausencias"
+                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                      >
+                        <CalendarClock className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span>Ausências</span>
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
-                </Suspense>
+                </div>
 
-                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                  <CarteirinhaObservacoes {...observacoesProps} />
-                </Suspense>
-              </TabsContent>
-
-              <TabsContent value="responsaveis" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-                  <CarteirinhaResponsaveis
-                    passageiro={passageiro}
-                    onEditClick={handleEditClick}
-                    onRefresh={() => {
-                      refetchPassageiro();
-                    }}
-                  />
-                </Suspense>
-              </TabsContent>
-
-              <TabsContent value="contrato" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                  <CarteirinhaContrato
-                    passageiro={passageiro}
-                    contratosAtivos={infoProps.contratosAtivos}
-                    onContractAction={infoProps.onContractAction}
-                    onDeleteContrato={handleDeleteContrato}
-                    onEnviarWhatsApp={infoProps.onEnviarWhatsApp}
-                    onEditClick={handleEditClick}
-                  />
-                </Suspense>
-              </TabsContent>
-
-              <TabsContent value="ausencias" className="mt-5 outline-none space-y-5 transform-gpu will-change-transform">
-                <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
-                  <CarteirinhaAusencias passageiro={passageiro} />
-                </Suspense>
-              </TabsContent>
+                <div className="col-span-8 space-y-6">
+                  {renderTabContents()}
+                </div>
+              </div>
             </Tabs>
-          </div>
+          )}
         </div>
       </PullToRefreshWrapper>
+
+      {shouldShowTutorial && (
+        <VideoCommerce
+          screenName="carteirinha"
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          requireScrollOnMobile={false}
+          storageKey={STORAGE_KEYS.GUIDE_CARTEIRINHA_DISMISSED}
+        />
+      )}
     </>
   );
 }

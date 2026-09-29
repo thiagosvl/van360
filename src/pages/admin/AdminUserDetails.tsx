@@ -1,17 +1,28 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
+import { toast } from "@/utils/notifications/toast";
 import {
   useAdminUserDetails,
   useUpdateUserAdmin,
   useUpdateSubscriptionAdmin,
   useResetPasswordAdmin,
   useAdminUserLogs,
+  useAdminUserNotifications,
   useDeleteUserAdmin,
+  useRemoveUserReferralAdmin,
+  useAdminImpersonateUser,
+  useDeleteInvoiceAdmin,
+  useAdminUserContracts,
+  useAdminUserPassageiros,
+  useAdminUserPrePassageiros,
+  useAdminUserVeiculos,
+  useAdminUserEscolas,
+  useAdminUserReferral,
 } from "@/hooks/api/adminHooks";
-import { AdminUserLogItem } from "@/services/api/admin.api";
 import {
   ArrowLeft,
+  Bell,
   Save,
   Loader2,
   User,
@@ -22,6 +33,7 @@ import {
   Key,
   Check,
   Eye,
+  ExternalLink,
   Terminal,
   ChevronLeft,
   ChevronRight,
@@ -42,18 +54,27 @@ import {
   PenTool,
   FileText,
   CheckCircle2,
+  UserCheck,
+  UserPlus,
+  Edit2,
+  Smartphone,
+  Sparkles,
 } from "lucide-react";
 import { AdminUserPassengersTab } from "@/components/features/admin/user-details/AdminUserPassengersTab";
 import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/AdminUserVehiclesTab";
 import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/AdminUserSchoolsTab";
 import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { AdminUserReferralTab } from "@/components/features/admin/user-details/AdminUserReferralTab";
+import { AdminUserQuickSwitcher } from "@/components/features/admin/user-details/AdminUserQuickSwitcher";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
+import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
+import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { formatarChavePix } from "@/utils/formatters/pix";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,13 +85,12 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo, AdminUserTab, AdminUserSubTab, DriverContractConfigStatus,
-  ContractMultaTipo
+  ContractMultaTipo, IndicacaoStatus, CanalAquisicao
 } from "@/types/enums";
 
 const ADMIN_USER_TABS = Object.values(AdminUserTab);
 const ADMIN_USER_SUBTABS = Object.values(AdminUserSubTab);
 import { cpfCnpjMask as cpfMask, phoneMask, moneyMask, cpfCnpjMask } from "@/utils/masks";
-import { toast } from "sonner";
 import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS } from "@/components/ui/SubscriptionStatusBadge";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { ROUTES } from "@/constants/routes";
@@ -90,11 +110,17 @@ import {
 import { PhoneInput } from "@/components/forms";
 import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
-import { toPersistenceString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
+import { toPersistenceString, getNowBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
-import { CanalAquisicaoLabels } from "@/utils/acquisition-channel.utils";
+import { CanalAquisicaoLabels, resolveOrigemAtribuicao } from "@/utils/acquisition-channel.utils";
+import { AcquisitionBadge } from "@/components/ui/AcquisitionBadge";
 import { DispositivoCadastroLabels } from "@/utils/dispositivo-cadastro.utils";
+import { Banner } from "@/components/ui/Banner";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { openBrowserLink } from "@/utils/browser";
+import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = Object.entries(SUBSCRIPTION_STATUS_DETAILS).map(([value, detail]) => ({
   value,
@@ -110,6 +136,7 @@ const userSchema = z.object({
   telefone: phoneSchema,
   email: emailSchema,
   ativo: z.boolean(),
+  cobranca_aviso_previo_whatsapp_ativo: z.boolean().optional(),
   data_nascimento: z.string().optional().refine((val) => {
     if (!val) return true;
     const regex = /^\d{2}\/\d{2}\/\d{4}$/;
@@ -146,9 +173,12 @@ export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openAdminDispatchNotificationDialog, openAdminDriverCobrancaDemoDialog, openAdminConfigureReferralDialog, openImageFullscreen, setPageTitle } = useLayout();
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
+  const deleteInvoiceMutation = useDeleteInvoiceAdmin(id);
+  const removeReferralMutation = useRemoveUserReferralAdmin();
+  const impersonateUser = useAdminImpersonateUser();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
 
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
@@ -160,29 +190,85 @@ export default function AdminUserDetails() {
   const sub = data?.assinatura;
   const updateUser = useUpdateUserAdmin();
 
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ADMIN_USER_TABS.includes(tabParam as AdminUserTab)) return tabParam as AdminUserTab;
+    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return AdminUserTab.CADASTROS;
+    return AdminUserTab.GERAL;
+  }, [searchParams]);
+
+  const activeSubTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    const subTabParam = searchParams.get("subtab");
+    if (subTabParam && ADMIN_USER_SUBTABS.includes(subTabParam as AdminUserSubTab)) return subTabParam as AdminUserSubTab;
+    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return tabParam as AdminUserSubTab;
+    return AdminUserSubTab.PASSAGEIROS;
+  }, [searchParams]);
+
+  const isCadastros = activeTab === AdminUserTab.CADASTROS;
+  const isPassageirosTab = isCadastros && activeSubTab === AdminUserSubTab.PASSAGEIROS;
+  const isSolicitacoesTab = isCadastros && activeSubTab === AdminUserSubTab.SOLICITACOES;
+  const isVeiculosTab = isCadastros && activeSubTab === AdminUserSubTab.VEICULOS;
+  const isEscolasTab = isCadastros && activeSubTab === AdminUserSubTab.ESCOLAS;
+  const isContratosTab = isCadastros && activeSubTab === AdminUserSubTab.CONTRATOS;
+  const isIndicacoesTab = isCadastros && activeSubTab === AdminUserSubTab.INDICACOES;
+
+  const { data: passageirosLazy } = useAdminUserPassageiros(id!, {
+    enabled: isPassageirosTab || isContratosTab,
+  });
+
+  const { data: prePassageirosLazy } = useAdminUserPrePassageiros(id!, {
+    enabled: isSolicitacoesTab,
+  });
+
+  const { data: veiculosLazy } = useAdminUserVeiculos(id!, {
+    enabled: isVeiculosTab,
+  });
+
+  const { data: escolasLazy } = useAdminUserEscolas(id!, {
+    enabled: isEscolasTab,
+  });
+
+  const { data: contratosLazy } = useAdminUserContracts(id!, {
+    enabled: isContratosTab,
+  });
+
+  const { data: referralLazy } = useAdminUserReferral(id!, {
+    enabled: isIndicacoesTab,
+  });
+
+  const passageirosList = passageirosLazy || data?.passageiros || [];
+  const prePassageirosList = prePassageirosLazy || data?.prePassageiros || [];
+  const veiculosList = veiculosLazy || data?.veiculos || [];
+  const escolasList = escolasLazy || data?.escolas || [];
+  const contratosList = contratosLazy || data?.contratos || [];
+  const referralSummaryData = referralLazy?.referralSummary || data?.referralSummary;
+  const referredUsersList = referralLazy?.referredUsers || data?.referredUsers || [];
+  const indicadorData = data?.indicador || referralLazy?.indicador;
+
   const passageirosComContratoSet = useMemo(() => {
     const set = new Set<string>();
-    if (data?.contratos) {
-      for (const c of data.contratos) {
-        if (c.passageiro_id) {
-          set.add(c.passageiro_id);
-        }
+    for (const c of contratosList) {
+      if (c.passageiro_id) {
+        set.add(c.passageiro_id);
       }
     }
     return set;
-  }, [data?.contratos]);
+  }, [contratosList]);
 
   const passageirosSemContrato = useMemo(() => {
-    const totalPassageiros = data?.kpis?.passageirosCount ?? data?.passageiros?.length ?? 0;
-    if (!data?.passageiros || data.passageiros.length === 0) {
-      const totalContratos = data?.kpis?.contratosCount ?? data?.contratos?.length ?? 0;
+    const totalPassageiros = data?.kpis?.passageirosCount ?? passageirosList.length ?? 0;
+    if (passageirosList.length === 0) {
+      const totalContratos = data?.kpis?.contratosCount ?? contratosList.length ?? 0;
       return Math.max(0, totalPassageiros - totalContratos);
     }
-    return data.passageiros.filter((p) => !passageirosComContratoSet.has(p.id)).length;
-  }, [data?.passageiros, data?.kpis?.passageirosCount, data?.kpis?.contratosCount, data?.contratos?.length, passageirosComContratoSet]);
+    return passageirosList.filter((p) => !passageirosComContratoSet.has(p.id)).length;
+  }, [data?.kpis?.passageirosCount, data?.kpis?.contratosCount, passageirosList, contratosList, passageirosComContratoSet]);
 
   const handleOpenMinutaPreview = async () => {
     if (!data?.user) return;
+    setIsPreviewPdfOpen(true);
+    setPreviewPdfUrl(null);
     try {
       const config = data.user.config_contrato as Record<string, any> | null;
       const result = await previewContrato.mutateAsync({
@@ -195,8 +281,8 @@ export default function AdminUserDetails() {
         assinaturaCondutorUrl: data.user.assinatura_digital_url,
       });
       setPreviewPdfUrl(result.url);
-      setIsPreviewPdfOpen(true);
     } catch (error) {
+      setIsPreviewPdfOpen(false);
       console.error("Erro ao gerar prévia da minuta", error);
     }
   };
@@ -216,20 +302,7 @@ export default function AdminUserDetails() {
     setPageTitle("Detalhes do Usuário");
   }, [setPageTitle]);
 
-  const activeTab = useMemo(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam && ADMIN_USER_TABS.includes(tabParam as AdminUserTab)) return tabParam as AdminUserTab;
-    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return AdminUserTab.CADASTROS;
-    return AdminUserTab.GERAL;
-  }, [searchParams]);
 
-  const activeSubTab = useMemo(() => {
-    const tabParam = searchParams.get("tab");
-    const subTabParam = searchParams.get("subtab");
-    if (subTabParam && ADMIN_USER_SUBTABS.includes(subTabParam as AdminUserSubTab)) return subTabParam as AdminUserSubTab;
-    if (tabParam && ADMIN_USER_SUBTABS.includes(tabParam as AdminUserSubTab)) return tabParam as AdminUserSubTab;
-    return AdminUserSubTab.PASSAGEIROS;
-  }, [searchParams]);
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -281,6 +354,29 @@ export default function AdminUserDetails() {
     entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
   });
 
+  const [notifPage, setNotifPage] = useState(1);
+  const [notifLimitStr, setNotifLimitStr] = useState("25");
+  const [notifFilters, setNotifFilters] = useState<NotificationFiltersState>({
+    categoria: NotificationCategoryEnum.TODOS,
+    canal: NOTIFICATION_FILTER_ALL,
+    status: NOTIFICATION_FILTER_ALL,
+    search: "",
+  });
+
+  const { data: notifData, isFetching: isFetchingNotif, refetch: refetchNotif } = useAdminUserNotifications(id!, {
+    page: notifPage,
+    limit: parseInt(notifLimitStr),
+    categoria: notifFilters.categoria === NotificationCategoryEnum.TODOS ? undefined : notifFilters.categoria,
+    canal: notifFilters.canal === NOTIFICATION_FILTER_ALL ? undefined : notifFilters.canal,
+    status: notifFilters.status === NOTIFICATION_FILTER_ALL ? undefined : notifFilters.status,
+    search: notifFilters.search.trim() || undefined,
+  });
+
+  const handleNotifFiltersChange = (newFilters: NotificationFiltersState) => {
+    setNotifFilters(newFilters);
+    setNotifPage(1);
+  };
+
   const userForm = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -291,6 +387,7 @@ export default function AdminUserDetails() {
       cpfcnpj: "",
       ativo: true,
       data_nascimento: "",
+      cobranca_aviso_previo_whatsapp_ativo: false,
     },
   });
 
@@ -331,6 +428,7 @@ export default function AdminUserDetails() {
         cpfcnpj: cpfMask(u.cpfcnpj || ""),
         ativo: u.ativo ?? true,
         data_nascimento: formatBirth(),
+        cobranca_aviso_previo_whatsapp_ativo: data?.configuracoes?.cobranca_aviso_previo_whatsapp_ativo ?? false,
       });
     }
     if (data?.assinatura) {
@@ -347,7 +445,7 @@ export default function AdminUserDetails() {
         data_fim_promocao: toDateInputValue(s.data_fim_promocao),
       });
     }
-  }, [data]);
+  }, [data, userForm]);
 
   const handleSaveUser = (formData: UserFormData) => {
     if (!id) return;
@@ -368,6 +466,7 @@ export default function AdminUserDetails() {
         cpfcnpj: cleanCpf,
         ativo: formData.ativo,
         data_nascimento: formData.data_nascimento || null,
+        cobranca_aviso_previo_whatsapp_ativo: formData.cobranca_aviso_previo_whatsapp_ativo,
       },
     });
   };
@@ -419,6 +518,28 @@ export default function AdminUserDetails() {
     }));
   };
 
+  const handleDispatchNotification = () => {
+    if (!data?.user) return;
+    openAdminDispatchNotificationDialog({
+      userId: data.user.id,
+      userName: data.user.nome,
+      userPhone: data.user.telefone,
+      userEmail: data.user.email,
+    });
+  };
+
+  const handleDispatchDriverCobrancaDemo = () => {
+    if (!data?.user) return;
+    openAdminDriverCobrancaDemoDialog({
+      userId: data.user.id,
+      userName: data.user.nome,
+      userPhone: data.user.telefone,
+      userApelido: data.user.apelido || undefined,
+      userChavePix: data.user.chave_pix || undefined,
+      userTipoChavePix: data.user.chave_pix_tipo || undefined,
+    });
+  };
+
   const handleDeleteUser = () => {
     if (!id || !data?.user) return;
     openConfirmationDialog({
@@ -436,6 +557,36 @@ export default function AdminUserDetails() {
         }
       },
     });
+  };
+
+  const handleDeleteInvoice = (fatura: NonNullable<typeof data>["faturas"][number]) => {
+    openConfirmationDialog({
+      title: "Excluir Fatura",
+      description: `Deseja realmente excluir permanentemente a fatura de ${moneyMask(fatura.valor)} com vencimento em ${formatDate(fatura.data_vencimento)}? Esta ação é irreversível.`,
+      confirmText: "Sim, Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteInvoiceMutation.mutateAsync(fatura.id);
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error("Falha ao excluir fatura", error);
+        }
+      },
+    });
+  };
+
+  const handleCopyImpersonateLink = async () => {
+    if (!id) return;
+    try {
+      const res = await impersonateUser.mutateAsync(id);
+      if (res?.impersonateUrl) {
+        await navigator.clipboard.writeText(res.impersonateUrl);
+        toast.success("Link de acesso copiado! Abra em uma janela anônima.");
+      }
+    } catch {
+      toast.error("Erro ao gerar link de acesso.");
+    }
   };
 
   const handleSaveSub = () => {
@@ -542,6 +693,20 @@ export default function AdminUserDetails() {
 
   return (
     <div className="space-y-6 text-left">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
+          className="rounded-xl border-slate-800 bg-[#131b2e] hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold h-10 px-3.5 gap-2 self-start shadow-sm"
+        >
+          <ArrowLeft className="h-4 w-4 text-slate-400" />
+          <span>Voltar para motoristas</span>
+        </Button>
+
+        <AdminUserQuickSwitcher currentUserId={data.user.id} />
+      </div>
+
       {/* HEADER DE TOPO STITCH DESIGN */}
       <div className="p-5 md:p-6 bg-gradient-to-r from-slate-900 via-[#131b2e] to-slate-900 border border-slate-800/80 rounded-[2rem] shadow-2xl space-y-4 relative">
         {/* BOTÃO COPIAR ID NO CANTO SUPERIOR DIREITO (APENAS MOBILE) */}
@@ -556,8 +721,30 @@ export default function AdminUserDetails() {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start md:items-center gap-4 min-w-0 pr-10 md:pr-0">
-            <div className="h-14 w-14 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-black text-xl shrink-0 shadow-inner">
-              {data.user.nome.charAt(0).toUpperCase()}
+            <div
+              role={data.user.logo_url ? "button" : undefined}
+              tabIndex={data.user.logo_url ? 0 : undefined}
+              onClick={
+                data.user.logo_url
+                  ? () => openImageFullscreen({ imageUrl: data.user.logo_url!, alt: data.user.nome })
+                  : undefined
+              }
+              className={cn(
+                "h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 shadow-inner overflow-hidden",
+                data.user.logo_url
+                  ? "bg-white border border-white/20 p-0.5 cursor-pointer"
+                  : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+              )}
+            >
+              {data.user.logo_url ? (
+                <img
+                  src={data.user.logo_url}
+                  alt={data.user.nome}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                data.user.nome.charAt(0).toUpperCase()
+              )}
             </div>
 
             <div className="space-y-1.5 min-w-0 flex-1">
@@ -590,17 +777,79 @@ export default function AdminUserDetails() {
                     dataVencimento={data.assinatura.data_vencimento}
                   />
                 )}
+                {data.dispositivos && (
+                  data.dispositivos.total > 0 ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      title={`${data.dispositivos.total} ${data.dispositivos.total === 1 ? "aparelho conectado ao app" : "aparelhos conectados ao app"}`}
+                    >
+                      <Smartphone className="h-3.5 w-3.5" />
+                      <span>{data.dispositivos.total} {data.dispositivos.total === 1 ? "app conectado" : "apps conectados"}</span>
+                    </span>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60"
+                      title="Nenhum dispositivo móvel com push ativo"
+                    >
+                      <Smartphone className="h-3.5 w-3.5 text-slate-500" />
+                      <span>Sem app</span>
+                    </span>
+                  )
+                )}
+                {data.ultimo_acesso && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    title={`Último acesso registrado em ${formatDateTime(data.ultimo_acesso.data_hora)} via ${DispositivoCadastroLabels[data.ultimo_acesso.dispositivo] || data.ultimo_acesso.dispositivo}`}
+                  >
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>
+                      Último acesso: {formatDateTime(data.ultimo_acesso.data_hora)} ({DispositivoCadastroLabels[data.ultimo_acesso.dispositivo] || data.ultimo_acesso.dispositivo})
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          {/* BOTÕES DE AÇÃO (RESETAR SENHA & EXCLUIR) */}
-          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 grid grid-cols-2 md:flex items-center gap-2.5 w-full md:w-auto">
+          {/* BOTÕES DE AÇÃO (TESTAR NOTIFICAÇÃO & RESETAR SENHA & EXCLUIR) */}
+          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <Button
+              type="button"
+              size="sm"
+              disabled={impersonateUser.isPending}
+              onClick={handleCopyImpersonateLink}
+              className="flex-1 md:flex-none rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25 hover:border-sky-500/70 hover:text-sky-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            >
+              {impersonateUser.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
+              ) : (
+                <ExternalLink className="h-4 w-4 text-sky-400" />
+              )}
+              <span>Link de Acesso</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleDispatchNotification}
+              className="flex-1 md:flex-none rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/25 hover:border-indigo-500/70 hover:text-indigo-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            >
+              <Bell className="h-4 w-4 text-indigo-400" />
+              <span>Testar Notificação</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleDispatchDriverCobrancaDemo}
+              className="flex-1 md:flex-none rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25 hover:border-emerald-500/70 hover:text-emerald-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              <span>Cobrança Teste</span>
+            </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleResetPassword}
-              className="w-full md:w-auto rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="flex-1 md:flex-none rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
               <Key className="h-4 w-4 text-amber-400" />
               <span>Resetar Senha</span>
@@ -609,7 +858,7 @@ export default function AdminUserDetails() {
               type="button"
               size="sm"
               onClick={handleDeleteUser}
-              className="w-full md:w-auto rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="flex-1 md:flex-none rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
               <Trash2 className="h-4 w-4 text-rose-400" />
               <span>Excluir</span>
@@ -663,11 +912,17 @@ export default function AdminUserDetails() {
                   <span>Cadastros do Motorista</span>
                 </span>
               </SelectItem>
+              <SelectItem value="notificacoes" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                <span className="flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-indigo-400" />
+                  <span>Notificações</span>
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* SELETOR DESKTOP (BARRA DE 5 ABAS PRINCIPAIS ≥ 768px) */}
+        {/* SELETOR DESKTOP (BARRA DE 6 ABAS PRINCIPAIS ≥ 768px) */}
         <div className="hidden md:block bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-[1.25rem] shadow-xl mb-6">
           <TabsList className="flex w-full min-h-[48px] bg-transparent p-0 gap-1.5 mt-0">
             <TabsTrigger
@@ -709,6 +964,14 @@ export default function AdminUserDetails() {
               <FolderKanban className="h-4 w-4 text-purple-300 shrink-0" />
               <span>Cadastros do Motorista</span>
             </TabsTrigger>
+
+            <TabsTrigger
+              value="notificacoes"
+              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+            >
+              <Bell className="h-4 w-4 text-indigo-300 shrink-0" />
+              <span>Notificações</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -716,7 +979,7 @@ export default function AdminUserDetails() {
         <TabsContent value="geral" className="space-y-6 m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <AdminKpiCard
-              title="PASSAGEIROS"
+              title="ALUNOS"
               value={data.kpis?.passageirosCount ?? 0}
               subtext={`${data.kpis?.solicitacoesPendentesCount ?? 0} ${(data.kpis?.solicitacoesPendentesCount ?? 0) === 1 ? "solicitação pendente" : "solicitações pendentes"}`}
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
@@ -748,7 +1011,7 @@ export default function AdminUserDetails() {
             <AdminKpiCard
               title="CONTRATOS"
               value={data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
-              subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "passageiro sem contrato" : "passageiros sem contrato"}`}
+              subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "aluno sem contrato" : "alunos sem contrato"}`}
               cardBorder="border-sky-500/40 shadow-sky-500/10"
               iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
               icon={<FileText className="h-5 w-5" />}
@@ -907,8 +1170,36 @@ export default function AdminUserDetails() {
                       Canal de Aquisição
                     </span>
                     <span className="font-medium text-slate-300 block">
-                      {data.user.canal_aquisicao ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao : "—"}
+                      {data.user.canal_aquisicao
+                        ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao
+                        : indicadorData
+                          ? CanalAquisicaoLabels[CanalAquisicao.INDICACAO]
+                          : "—"}
                     </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Indicado por
+                    </span>
+                    {indicadorData ? (
+                      <Link
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${indicadorData.id}`}
+                        className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline text-left block"
+                      >
+                        {indicadorData.nome}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleTabChange("dados");
+                        }}
+                        className="font-medium text-slate-400 hover:text-slate-200 text-left block"
+                      >
+                        Cadastro Direto / Orgânico
+                      </button>
+                    )}
                   </div>
 
                   <div>
@@ -920,39 +1211,81 @@ export default function AdminUserDetails() {
                     </span>
                   </div>
 
-                  {data.user.metadados_cadastro && (data.user.metadados_cadastro.utm || data.user.metadados_cadastro.referrer) && (
-                    <div>
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                        Origem / Atribuição (UTMs)
-                      </span>
-                      <span className="font-mono text-xs text-slate-300 block">
-                        {data.user.metadados_cadastro.utm?.source ? (
-                          <>
-                            <span className="text-blue-400 font-bold">{data.user.metadados_cadastro.utm.source}</span>
-                            {data.user.metadados_cadastro.utm.medium && (
-                              <span className="text-slate-400"> / {data.user.metadados_cadastro.utm.medium}</span>
-                            )}
-                            {data.user.metadados_cadastro.utm.campaign && (
-                              <span className="text-slate-500"> ({data.user.metadados_cadastro.utm.campaign})</span>
-                            )}
-                          </>
-                        ) : data.user.metadados_cadastro.referrer ? (
-                          <span className="text-slate-400 truncate max-w-[200px] block" title={data.user.metadados_cadastro.referrer}>
-                            {data.user.metadados_cadastro.referrer}
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Dispositivos Conectados (App / Push)
+                    </span>
+                    {data.dispositivos && data.dispositivos.total > 0 ? (
+                      <div className="space-y-1 mt-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <Smartphone className="h-3 w-3" />
+                            {data.dispositivos.total} {data.dispositivos.total === 1 ? "aparelho conectado" : "aparelhos conectados"}
                           </span>
-                        ) : (
-                          "—"
-                        )}
+                        </div>
+                        <div className="space-y-0.5">
+                          {data.dispositivos.itens.map((disp) => (
+                            <span key={disp.id} className="text-[11px] text-slate-400 block font-mono">
+                              <span className="capitalize font-semibold text-slate-300">{disp.plataforma}</span>
+                              {disp.atualizado_em && (
+                                <span className="text-slate-500"> • Visto em {formatDateTime(disp.atualizado_em)}</span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60">
+                          <Smartphone className="h-3 w-3 text-slate-500" />
+                          Nenhum aparelho conectado
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                      Últimos Acessos por Dispositivo
+                    </span>
+                    {data.ultimo_acesso && data.ultimo_acesso.por_dispositivo && data.ultimo_acesso.por_dispositivo.length > 0 ? (
+                      <div className="space-y-1 mt-1">
+                        {data.ultimo_acesso.por_dispositivo.map((item) => (
+                          <span key={item.dispositivo} className="text-[11px] text-slate-400 block font-mono">
+                            <span className="font-semibold text-slate-300">
+                              {DispositivoCadastroLabels[item.dispositivo] || item.dispositivo}
+                            </span>
+                            <span className="text-slate-500"> • Visto em {formatDateTime(item.data_hora)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500 block mt-1">
+                        Nenhum acesso registrado
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">
+                      Origem / Atribuição (UTMs)
+                    </span>
+                    <AcquisitionBadge
+                      origem={resolveOrigemAtribuicao(
+                        data.user.metadados_cadastro as Record<string, unknown> | null,
+                        data.user.dispositivo_cadastro,
+                        data.user.canal_aquisicao
+                      )}
+                      showDetail
+                    />
+                  </div>
 
                   <div>
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
                       Data de Cadastro
                     </span>
                     <span className="font-medium text-slate-300 block">
-                      {formatDate(data.user.created_at)}
+                      {formatDateTime(data.user.created_at)}
                     </span>
                   </div>
                 </div>
@@ -1161,12 +1494,12 @@ export default function AdminUserDetails() {
                                   render={({ field }) => (
                                     <FormItem className="space-y-2">
                                       <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        Apelido / Nome Fantasia
+                                        Nome do Transporte / Apelido
                                       </FormLabel>
                                       <FormControl>
                                         <Input
                                           {...field}
-                                          placeholder="Apelido ou nome fantasia"
+                                          placeholder="Ex.: Tio Thiago"
                                           className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
                                         />
                                       </FormControl>
@@ -1264,6 +1597,36 @@ export default function AdminUserDetails() {
                                             onCheckedChange={field.onChange}
                                           />
                                           <ActiveStatusBadge active={field.value} />
+                                        </div>
+                                      </div>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* SEÇÃO 4: RECURSOS ESPECIAIS & PERMISSÕES */}
+                            <div className="pt-5 border-t border-slate-800/80">
+                              <FormField
+                                control={userForm.control}
+                                name="cobranca_aviso_previo_whatsapp_ativo"
+                                render={({ field }) => (
+                                  <FormItem className="w-full">
+                                    <FormControl>
+                                      <div className="flex items-start justify-between gap-4">
+                                        <div className="space-y-0.5">
+                                          <Label className="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+                                            WhatsApp no Lembrete Prévio
+                                          </Label>
+                                          <p className="text-[11px] text-slate-400">
+                                            Permite enviar lembretes com antecedência via WhatsApp para os responsáveis deste motorista.
+                                          </p>
+                                        </div>
+                                        <div className="pt-0.5 shrink-0">
+                                          <Switch
+                                            checked={field.value ?? false}
+                                            onCheckedChange={field.onChange}
+                                          />
                                         </div>
                                       </div>
                                     </FormControl>
@@ -1640,6 +2003,170 @@ export default function AdminUserDetails() {
                 </CardContent>
               )}
             </Card>
+
+            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 xl:col-span-2">
+              <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-emerald-400" />
+                      Origem da Indicação
+                    </CardTitle>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Informações sobre a indicação que trouxe {data.user.nome} para a plataforma.
+                    </p>
+                  </div>
+
+                  {indicadorData ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          openAdminConfigureReferralDialog({
+                            userId: data.user.id,
+                            userName: data.user.nome,
+                            currentIndicadorId: indicadorData?.id,
+                            currentIndicadorNome: indicadorData?.nome,
+                          })
+                        }
+                        className="h-9 px-3 rounded-xl border-slate-700 bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold gap-1.5"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        Alterar Indicador
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          openConfirmationDialog({
+                            title: "Desvincular Indicador",
+                            description: `Tem certeza que deseja remover o vínculo de indicação de ${data.user.nome}?`,
+                            confirmText: "Sim, Desvincular",
+                            cancelText: "Cancelar",
+                            variant: "destructive",
+                            onConfirm: async () => {
+                              await removeReferralMutation.mutateAsync(data.user.id);
+                            },
+                          })
+                        }
+                        disabled={removeReferralMutation.isPending}
+                        className="h-9 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold gap-1.5"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Desvincular
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        openAdminConfigureReferralDialog({
+                          userId: data.user.id,
+                          userName: data.user.nome,
+                        })
+                      }
+                      className="h-9 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Atribuir Indicador
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {indicadorData ? (
+                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/10 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/10 pb-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                          Motorista Indicador
+                        </span>
+                        <Link
+                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${indicadorData.id}`}
+                          className="text-base font-bold text-white hover:text-blue-400 hover:underline transition-colors block"
+                        >
+                          {indicadorData.nome}
+                        </Link>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {indicadorData.status === IndicacaoStatus.PENDING && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <Clock className="h-3.5 w-3.5" />
+                            Em Teste (Aguardando 1ª Mensalidade)
+                          </span>
+                        )}
+                        {indicadorData.status === IndicacaoStatus.COMPLETED && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Convertido (Bônus Concedido)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                          WhatsApp / Telefone
+                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="font-mono font-medium text-slate-200">
+                            {phoneMask(indicadorData.telefone) || "—"}
+                          </span>
+                          {indicadorData.telefone && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const cleanPhone = indicadorData?.telefone?.replace(/\D/g, "") || "";
+                                if (cleanPhone) {
+                                  openBrowserLink(buildWhatsAppUrl(cleanPhone, `Olá ${indicadorData!.nome}!`));
+                                }
+                              }}
+                              className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                              title="Abrir no WhatsApp"
+                            >
+                              <WhatsAppIcon className="h-4 w-4 fill-current" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                          E-mail
+                        </span>
+                        <span className="font-medium text-slate-200 truncate block mt-1">
+                          {indicadorData.email || "—"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                          Data do Vínculo
+                        </span>
+                        <span className="font-medium text-slate-300 block mt-1">
+                          {indicadorData.created_at ? formatSafeBrazilianDate(indicadorData.created_at) : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Banner
+                      variant="neutral"
+                      title="Nenhum indicador vinculado"
+                      description="Este motorista realizou o cadastro diretamente na plataforma, sem link ou telefone de indicação."
+                    />
+                    <p className="text-xs text-slate-400">
+                      Caso ele informe que foi indicado por outro motorista, clique no botão &quot;Atribuir Indicador&quot; para pesquisar e vincular.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
@@ -1663,13 +2190,14 @@ export default function AdminUserDetails() {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-slate-800">
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Data</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Criação</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
                           <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Status</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1678,7 +2206,7 @@ export default function AdminUserDetails() {
                           .map((f) => (
                             <tr key={f.id} className="border-b border-slate-800/60 hover:bg-slate-800/50 transition-colors">
                               <td className="py-4 text-xs font-semibold text-slate-200">
-                                {formatDate(f.created_at)}
+                                {formatDateTime(f.created_at)}
                               </td>
                               <td className="py-4 text-xs text-slate-400 font-medium">
                                 {f.planos?.nome || "—"}
@@ -1693,10 +2221,23 @@ export default function AdminUserDetails() {
                                 {formatDate(f.data_vencimento)}
                               </td>
                               <td className="py-4 text-xs text-slate-400">
-                                {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                                {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
+                              </td>
+                              <td className="py-4 text-center">
+                                <InvoiceStatusBadge status={f.status} />
                               </td>
                               <td className="py-4 text-right">
-                                <InvoiceStatusBadge status={f.status} />
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  title="Excluir fatura"
+                                  disabled={deleteInvoiceMutation.isPending}
+                                  onClick={() => handleDeleteInvoice(f)}
+                                  className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </td>
                             </tr>
                           ))}
@@ -1711,9 +2252,22 @@ export default function AdminUserDetails() {
                         <div key={f.id} className="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/60 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                              {formatDate(f.created_at)}
+                              Criada em {formatDateTime(f.created_at)}
                             </span>
-                            <InvoiceStatusBadge status={f.status} />
+                            <div className="flex items-center gap-1.5">
+                              <InvoiceStatusBadge status={f.status} />
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                title="Excluir fatura"
+                                disabled={deleteInvoiceMutation.isPending}
+                                onClick={() => handleDeleteInvoice(f)}
+                                className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
 
                           <div className="flex items-center justify-between">
@@ -1736,7 +2290,7 @@ export default function AdminUserDetails() {
                             <div className="text-right">
                               <span className="font-semibold text-slate-400 block uppercase tracking-wider">Pagamento</span>
                               <span className="font-bold text-slate-200">
-                                {f.data_pagamento ? formatDate(f.data_pagamento) : "—"}
+                                {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
                               </span>
                             </div>
                           </div>
@@ -1904,7 +2458,7 @@ export default function AdminUserDetails() {
                     }`}
                 >
                   <Users className={`h-4 w-4 shrink-0 ${activeSubTab === "passageiros" ? "text-white" : "text-emerald-400"}`} />
-                  <span className="flex-1">Passageiros</span>
+                  <span className="flex-1">Alunos</span>
                   {data.kpis?.passageirosCount !== undefined && (
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "passageiros" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
                       }`}>
@@ -2009,33 +2563,120 @@ export default function AdminUserDetails() {
             {/* CONTEÚDO DO MÓDULO SELECIONADO */}
             <div className="flex-1 w-full min-w-0">
               {activeSubTab === "passageiros" && (
-                <AdminUserPassengersTab passageiros={data.passageiros || []} />
+                <AdminUserPassengersTab
+                  passageiros={passageirosList}
+                  userId={id}
+                  motoristaNome={data?.user?.nome || data?.user?.apelido}
+                />
               )}
               {activeSubTab === "solicitacoes" && (
                 <AdminUserPendingRequestsTab
-                  solicitacoes={data.prePassageiros || []}
+                  solicitacoes={prePassageirosList}
                   userId={data.user.id}
                 />
               )}
               {activeSubTab === "veiculos" && (
-                <AdminUserVehiclesTab veiculos={data.veiculos || []} />
+                <AdminUserVehiclesTab veiculos={veiculosList} />
               )}
               {activeSubTab === "escolas" && (
-                <AdminUserSchoolsTab escolas={data.escolas || []} />
+                <AdminUserSchoolsTab escolas={escolasList} />
               )}
               {activeSubTab === "contratos" && (
                 <AdminUserContractsTab
                   user={data.user}
                   kpis={data.kpis}
-                  passageiros={data.passageiros || []}
-                  contratos={data.contratos || []}
+                  passageiros={passageirosList}
+                  contratos={contratosList}
                 />
               )}
               {activeSubTab === "indicacoes" && (
-                <AdminUserReferralTab user={data.user} referralSummary={data.referralSummary} />
+                <AdminUserReferralTab
+                  user={data.user}
+                  referralSummary={referralSummaryData}
+                  referredUsers={referredUsersList}
+                />
               )}
             </div>
           </div>
+        </TabsContent>
+
+        {/* ABA 6: NOTIFICAÇÕES DO MOTORISTA */}
+        <TabsContent value="notificacoes" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                  <Bell className="h-4 w-4 text-indigo-400" />
+                  Histórico de Notificações
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => { setNotifPage(1); refetchNotif(); }}
+                    disabled={isFetchingNotif}
+                    className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingNotif ? "animate-spin" : ""}`} />
+                    <span className="hidden sm:inline">Atualizar</span>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <NotificationLogsList
+                notifications={notifData?.data || []}
+                isLoading={isFetchingNotif}
+                filters={notifFilters}
+                onFiltersChange={handleNotifFiltersChange}
+              />
+
+              {notifData && notifData.total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
+                  <p className="text-xs font-semibold text-slate-400">
+                    Página {notifData.page} de {Math.max(1, Math.ceil(notifData.total / notifData.limit))} ({notifData.total} notificações)
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                      <Select value={notifLimitStr} onValueChange={(val) => { setNotifLimitStr(val); setNotifPage(1); }}>
+                        <SelectTrigger className="h-8 rounded-xl bg-slate-800/60 border-slate-700/80 text-xs text-slate-100 focus-visible:ring-0 w-[70px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="250">250</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={notifPage <= 1}
+                        onClick={() => setNotifPage((p) => p - 1)}
+                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={notifPage >= Math.ceil(notifData.total / notifData.limit)}
+                        onClick={() => setNotifPage((p) => p + 1)}
+                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
@@ -2101,7 +2742,8 @@ export default function AdminUserDetails() {
       {/* DIÁLOGO DE PRÉVIA DA MINUTA DO CONTRATO */}
       <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
-        onClose={() => setIsPreviewPdfOpen(false)}
+        isLoading={previewContrato.isPending}
+        onClose={() => safeCloseDialog(() => setIsPreviewPdfOpen(false))}
         pdfUrl={previewPdfUrl}
         title={`Minuta do Contrato — ${data.user.nome}`}
         fileName={`minuta_contrato_${data.user.nome.toLowerCase().replace(/[^a-z0-9]/g, "_")}.pdf`}
@@ -2121,11 +2763,11 @@ export default function AdminUserDetails() {
             onClose={() => setIsSignatureModalOpen(false)}
           />
           <AdminBaseDialog.Body>
-            <div className="p-6 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center">
+            <div className="p-6 bg-white rounded-2xl border border-slate-700 flex items-center justify-center">
               <img
                 src={data.user.assinatura_digital_url}
                 alt="Assinatura Digital"
-                className="max-h-48 object-contain filter invert opacity-90"
+                className="max-h-48 object-contain"
               />
             </div>
           </AdminBaseDialog.Body>

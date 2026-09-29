@@ -1,14 +1,12 @@
-import { useAnalyticsInjector } from "@/hooks/business/useAnalyticsInjector";
 import { Button } from "@/components/ui/button";
-import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InitialLoading } from "@/components/auth/InitialLoading";
-import { useAssinarContratoViewModel } from "@/hooks";
+import { useAssinarContratoViewModel, safeCloseDialog } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
+import { getDriverDisplayName } from "@/utils/formatters";
 import {
   CheckCircle2,
-  Download,
   Loader2,
   PenTool,
   AlertCircle,
@@ -27,7 +25,6 @@ import "react-pdf/dist/Page/TextLayer.css";
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function AssinarContrato() {
-  useAnalyticsInjector({ clarity: true, force: true });
   const { token } = useParams<{ token: string }>();
 
   const {
@@ -68,18 +65,19 @@ export default function AssinarContrato() {
     );
   }
 
+  const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, unknown>;
+
+  const condutorInfo = contrato.usuario || {
+    apelido: (dadosContrato.apelidoCondutor as string | null | undefined) || null,
+    nome: (dadosContrato.nomeCondutor as string | null | undefined) || null,
+    cpfcnpj: (dadosContrato.cpfCnpjCondutor as string | null | undefined) || null,
+  };
+  const nomeCondutorExibicao = getDriverDisplayName(condutorInfo);
+
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="fixed top-0 left-0 right-0 h-20 bg-[#1a3a5c] flex items-center justify-center z-50 shadow-lg">
-          <img
-            src="/assets/logo-van360.webp"
-            alt="Van360"
-            className="h-10 w-auto filter brightness-0 invert opacity-90"
-          />
-        </div>
-
-        <Card className="w-full max-w-lg border-0 shadow-2xl bg-white rounded-[2.5rem] overflow-hidden mt-12">
+        <Card className="w-full max-w-lg border-0 shadow-2xl bg-white rounded-[2.5rem] overflow-hidden">
           <CardHeader className="text-center pb-2 pt-12 px-10">
             <div className="mx-auto bg-emerald-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-8">
               <CheckCircle2 className="h-10 w-10 text-emerald-500" />
@@ -107,22 +105,30 @@ export default function AssinarContrato() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
-      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shadow-lg shrink-0 overflow-hidden">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
+      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 shadow-lg shrink-0 relative">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+          <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
           </div>
-          <div>
-            <h3 className="font-headline font-black text-[11px] sm:text-xs text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">Contrato de Transporte</h3>
-            <p className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Assinatura Digital</p>
+          <div className="min-w-0">
+            <h3 className="font-headline font-black text-xs sm:text-sm text-white uppercase tracking-tight leading-none mb-1 truncate">
+              Contrato de Transporte
+            </h3>
+            {nomeCondutorExibicao && (
+              <p className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider leading-none truncate">
+                {nomeCondutorExibicao}
+              </p>
+            )}
           </div>
         </div>
 
-        <img
-          src="/assets/logo-van360.webp"
-          alt="Van360"
-          className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-90 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
-        />
+        <div className="shrink-0 flex items-center sm:absolute sm:left-1/2 sm:-translate-x-1/2 pointer-events-none">
+          <img
+            src="/assets/logo-van360.webp"
+            alt="Van360"
+            className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90"
+          />
+        </div>
       </header>
 
       <main className="flex-1 overflow-auto bg-slate-100 pb-32 scroll-smooth block touch-auto">
@@ -155,36 +161,27 @@ export default function AssinarContrato() {
         </div>
       </main>
 
-      {/* Botões Flutuantes Estilo SmartVan */}
-      <div className="fixed bottom-6 left-0 right-0 px-5 sm:px-10 z-50 pointer-events-none w-full">
-        <div className="flex items-center justify-between w-full pointer-events-auto gap-4">
-          <Button
-            onClick={() => openBrowserLink(contrato.minuta_url)}
-            className="bg-emerald-600/90 hover:bg-emerald-700 text-white h-11 sm:h-13 sm:py-8 px-5 sm:px-8 rounded-full shadow-2xl flex items-center gap-2 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0"
-          >
-            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Baixar </span>PDF
-          </Button>
-
+      <div className="fixed bottom-6 left-0 right-0 px-4 sm:px-6 z-50 pointer-events-none w-full flex justify-center">
+        <div className="pointer-events-auto flex justify-center">
           <Button
             onClick={() => setModalAberto(true)}
             disabled={contrato.status !== ContratoStatus.PENDENTE}
             className={cn(
-              "h-11 sm:h-13 px-8 sm:px-12 sm:py-8 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 font-headline font-black text-[9px] sm:text-xs uppercase tracking-widest transition-all active:scale-95 border-0",
+              "h-14 sm:h-16 px-8 sm:px-10 rounded-full shadow-2xl flex items-center gap-2.5 sm:gap-3 font-headline font-black text-sm sm:text-base uppercase tracking-wider transition-all active:scale-95 border-0",
               contrato.status === ContratoStatus.PENDENTE
-                ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white"
+                ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white shadow-[#1a3a5c]/30"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
             )}
           >
-            <PenTool className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            Assinar <span className="hidden sm:inline">Documento</span>
+            <PenTool className="h-4 w-4 sm:h-5 sm:w-5" />
+            Assinar contrato
           </Button>
         </div>
       </div>
 
       <SignatureDialog
         isOpen={modalAberto}
-        onClose={() => setModalAberto(false)}
+        onClose={() => safeCloseDialog(() => setModalAberto(false))}
         sigCanvas={sigCanvas}
         onAssinar={handleAssinar}
         isSigning={isSigning}

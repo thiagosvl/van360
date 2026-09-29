@@ -95,7 +95,7 @@ export function AdminUserContractsTab({
         <AdminKpiCard
           title="CONTRATOS EMITIDOS"
           value={`${totalContratos}/${totalPassageiros}`}
-          subtext={`${pctEmitidos}% dos passageiros`}
+          subtext={`${pctEmitidos}% dos alunos`}
           cardBorder="border-sky-500/40 shadow-sky-500/10"
           iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
           icon={<FileText className="h-5 w-5" />}
@@ -142,7 +142,7 @@ export function AdminUserContractsTab({
               <div className="relative w-full md:w-80">
                 <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
                 <Input
-                  placeholder="Buscar por passageiro..."
+                  placeholder="Buscar por aluno..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 pr-9 h-10 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
@@ -169,7 +169,7 @@ export function AdminUserContractsTab({
                 description={
                   search
                     ? "Nenhum contrato corresponde à busca informada."
-                    : "O motorista ainda não possui contratos emitidos para os passageiros."
+                    : "O motorista ainda não possui contratos emitidos para os alunos."
                 }
               />
             </div>
@@ -179,7 +179,7 @@ export function AdminUserContractsTab({
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-800/80 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                      <th className="py-3.5 px-6">Passageiro</th>
+                      <th className="py-3.5 px-6">Aluno</th>
                       <th className="py-3.5 px-4">Responsável</th>
                       <th className="py-3.5 px-4">Status</th>
                       <th className="py-3.5 px-6 text-right">Ação</th>
@@ -227,7 +227,7 @@ export function AdminUserContractsTab({
                               contrato.status === ContratoStatus.ASSINADO ? (
                                 contrato.provider === ContratoProvider.IMPORTADO ? (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                                    <CheckCircle2 className="h-3 w-3" /> IMPORTADO
+                                    <CheckCircle2 className="h-3 w-3" /> ASSINADO (IMPORTADO)
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
@@ -295,7 +295,7 @@ export function AdminUserContractsTab({
                           contrato.status === ContratoStatus.ASSINADO ? (
                             contrato.provider === ContratoProvider.IMPORTADO ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 shrink-0">
-                                <CheckCircle2 className="h-3 w-3" /> IMPORTADO
+                                <CheckCircle2 className="h-3 w-3" /> ASSINADO (IMPORTADO)
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">

@@ -33,27 +33,27 @@ export class AppErrorBoundary extends Component<Props, State> {
             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Ops! Algo deu errado
             </h1>
-            
+
             <p className="text-gray-500 mb-6">
               Desculpe, encontramos um erro inesperado. Tente recarregar a página para continuar.
             </p>
 
             <div className="bg-gray-50 p-3 rounded-lg text-left mb-6 overflow-hidden">
-               <p className="text-xs text-gray-400 font-mono truncate">
-                 {this.state.error?.message}
-               </p>
+              <p className="text-xs text-gray-400 font-mono truncate">
+                {this.state.error?.message}
+              </p>
             </div>
 
-            <Button 
+            <Button
               className="w-full gap-2"
               onClick={() => window.location.reload()}
             >
               <RotateCcw className="w-4 h-4" />
-              Recarregar Aplicação
+              Tentar Novamente
             </Button>
           </div>
         </div>

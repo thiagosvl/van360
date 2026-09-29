@@ -6,11 +6,13 @@ import {
   IdCard,
   Route,
   User,
+  Users,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { pagesItems } from "@/utils/domain/pages/pagesUtils";
+import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
   const { pageTitle } = useLayout();
@@ -18,9 +20,16 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const navigate = useNavigate();
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
+  const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
 
-  let currentPage: any = pagesItems.find(item => item.href === location.pathname);
-  if (!currentPage && location.pathname.startsWith("/passageiros/")) {
+  let currentPage: PageItem | undefined = pagesItems.find(item => item.href === location.pathname);
+  if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH) {
+    currentPage = {
+      title: "Atualização Rápida",
+      href: location.pathname,
+      icon: Users,
+    };
+  } else if (!currentPage && location.pathname.startsWith(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}/`)) {
     currentPage = {
       title: "Carteirinha",
       href: location.pathname,
@@ -38,6 +47,16 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const displayTitle = currentPage?.title || pageTitle;
   const isAccountActive = location.pathname === ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
 
+  const handleLogoClick = () => {
+    if (isSubscriptionBlocked) {
+      if (location.pathname !== ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION) {
+        navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+      }
+      return;
+    }
+    navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+  };
+
   return (
     <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-[calc(4rem+var(--safe-area-top))] sm:h-[calc(5rem+var(--safe-area-top))] pt-[var(--safe-area-top)] transition-all">
       <div className="flex h-full items-center justify-between px-4 sm:px-8 relative">
@@ -47,7 +66,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               src="/assets/logo-van360.webp"
               alt="Van360"
               className="h-8 sm:h-9 w-auto cursor-pointer transition-opacity hover:opacity-80"
-              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
+              onClick={handleLogoClick}
             />
           </div>
 
@@ -95,12 +114,6 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             >
               {isLoadingProfile ? (
                 <Skeleton className="h-full w-full rounded-full" />
-              ) : profile?.foto_url ? (
-                <img
-                  src={profile.foto_url}
-                  alt={profile?.nome || "Conta"}
-                  className="h-full w-full object-cover rounded-full"
-                />
               ) : (
                 <User
                   className={cn(

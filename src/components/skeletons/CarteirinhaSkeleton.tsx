@@ -173,15 +173,24 @@ export function CarteirinhaSkeleton() {
     </div>
   );
 
+  const renderVerticalTabsSkeleton = () => (
+    <div className="bg-slate-200/50 p-2 rounded-[2rem] space-y-1 w-full">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="h-11 w-full rounded-2xl bg-white/40 flex items-center px-4 gap-3">
+          <Skeleton className="h-4 w-4 rounded-md" />
+          <Skeleton className="h-4 w-24 rounded-md" />
+        </div>
+      ))}
+    </div>
+  );
+
   if (isMobile) {
     return (
       <div className="space-y-5 w-full">
-        {/* Header Fixo */}
         <div className="px-1 pt-1">
           {renderTopCard()}
         </div>
 
-        {/* Abas */}
         <div className="w-full pt-2 space-y-4">
           <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
             <div className="grid grid-cols-2 gap-1 min-h-[40px]">
@@ -202,20 +211,14 @@ export function CarteirinhaSkeleton() {
     );
   }
 
-  // Desktop view
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-      {/* Lado Esquerdo */}
-      <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-        <div className="space-y-6">
-          {renderTopCard()}
-          {renderDadosPessoais()}
-        </div>
-        {renderObservacoes()}
+    <div className="w-full grid grid-cols-12 gap-8 items-start">
+      <div className="col-span-4 space-y-6">
+        {renderTopCard()}
+        {renderVerticalTabsSkeleton()}
       </div>
 
-      {/* Lado Direito */}
-      <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+      <div className="col-span-8 space-y-6">
         {renderCobrancas()}
       </div>
     </div>

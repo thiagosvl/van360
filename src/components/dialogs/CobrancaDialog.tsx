@@ -16,6 +16,7 @@ interface CobrancaDialogProps {
   ano?: number;
   lockFoiPago?: boolean;
   lockMesAno?: boolean;
+  availableMonths?: number[];
   onCobrancaAdded?: () => void;
 }
 
@@ -23,17 +24,21 @@ export default function CobrancaDialog({
   isOpen,
   onClose,
   passageiroId,
+  passageiroNome,
+  passageiroResponsavelNome,
   valorCobranca,
   diaVencimento,
   mes,
   ano,
   lockFoiPago,
   lockMesAno,
+  availableMonths,
   onCobrancaAdded,
 }: CobrancaDialogProps) {
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
     mode: "create",
     passageiroId,
+    passageiroNome,
     diaVencimento,
     valor: valorCobranca,
     mes,
@@ -45,7 +50,7 @@ export default function CobrancaDialog({
     },
   });
 
-  const dialogTitle = lockFoiPago ? "Registrar Pagamento" : "Registrar Parcela Retroativa";
+  const dialogTitle = lockFoiPago ? "Registrar Pagamento" : "Registrar Parcela";
   const dialogIcon = lockFoiPago ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <PlusCircle className="w-5 h-5" />;
 
   return (
@@ -62,6 +67,7 @@ export default function CobrancaDialog({
               hideButtons={true}
               lockFoiPago={lockFoiPago}
               lockMesAno={lockMesAno}
+              availableMonths={availableMonths}
             />
           </form>
         </Form>

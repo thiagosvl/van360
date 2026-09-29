@@ -1,5 +1,5 @@
 import React from "react";
-import { School, Trash2, ArrowUp, ArrowDown, AlertTriangle, Plus, Home, ListOrdered } from "lucide-react";
+import { School, Trash2, ArrowUp, ArrowDown, Info, Plus, Home, ListOrdered } from "lucide-react";
 import { RouteNodeType, RouteSentido } from "@/types/route";
 import { Passageiro } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
@@ -63,12 +63,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
       <div className="absolute left-[-26px] top-1/2 -bottom-6 w-[2.5px] bg-slate-200/70 z-0" />
       {/* Círculo do Timeline contendo o ícone da escola ou o número exato da parada */}
       <span
-        className={cn(
-          "absolute left-[-39px] top-1/2 -translate-y-[calc(50%+8px)] h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 shadow-sm z-10 transition-colors",
-          hasError
-            ? "bg-rose-500 border-rose-500 shadow-md shadow-rose-200"
-            : "bg-[#1a3a5c] border-white"
-        )}
+        className="absolute left-[-39px] top-1/2 -translate-y-[calc(50%+8px)] h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 border-white bg-[#1a3a5c] shadow-sm z-10"
       >
         {isEscola ? <School className="w-4 h-4" /> : displayLabel}
       </span>
@@ -88,6 +83,11 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                     <span className="font-bold text-sm text-[#1a3a5c] leading-snug block break-words">
                       {item.nome}
                     </span>
+                    {nodeError && (
+                      <span title={nodeError} className="inline-flex shrink-0">
+                        <Info className="w-3.5 h-3.5 text-blue-500" />
+                      </span>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -107,7 +107,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                     <div className="mt-1.5 w-full space-y-1.5 text-left">
                       {totalAlunos === 0 ? (
                         <p className="text-[11px] text-slate-400 font-medium italic">
-                          Nenhum passageiro vinculado nesta parada
+                          Nenhum aluno vinculado nesta parada
                         </p>
                       ) : (
                         <>
@@ -138,9 +138,16 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                 {/* Nome + Subtítulo + Lixeira */}
                 <div className="flex items-start justify-between gap-2 w-full">
                   <div className="flex-1 min-w-0 pr-1">
-                    <span className="font-bold text-sm text-[#1a3a5c] break-words leading-snug block">
-                      {formatShortName(item.nome, true)}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-sm text-[#1a3a5c] break-words leading-snug">
+                        {formatShortName(item.nome, true)}
+                      </span>
+                      {nodeError && (
+                        <span title={nodeError} className="inline-flex shrink-0">
+                          <Info className="w-3.5 h-3.5 text-blue-500" />
+                        </span>
+                      )}
+                    </div>
                     {(item.passageiro?.escola?.nome || item.detalhe) && (
                       <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1">
                         <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -152,7 +159,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5">
                       <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="break-words">
-                        {formatarEnderecoParcialRota(item.passageiro) || "Endereço não informado"}
+                        {formatarEnderecoParcialRota(item.passageiro) || "Sem endereço cadastrado"}
                       </span>
                     </div>
                   </div>
@@ -233,14 +240,6 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
             </button>
           </div>
         </div>
-
-        {/* Alerta de Erro Contextual Embutido */}
-        {nodeError && (
-          <div className="w-full bg-rose-50 border-t border-rose-200/80 p-2.5 px-3.5 flex items-center gap-2.5 text-xs text-rose-900 font-medium text-left animate-in fade-in duration-200">
-            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-            <span>{nodeError}</span>
-          </div>
-        )}
       </div>
 
       {/* Nó Intermediário da Linha do Tempo entre Cards */}

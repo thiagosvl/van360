@@ -1,4 +1,4 @@
-import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
+import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
@@ -42,6 +42,9 @@ export const cobrancaApi = {
     desfazerPagamento: (cobrancaId: string) =>
         apiClient.post(`${endpointBase}/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
 
+    restaurarCobranca: (cobrancaId: string) =>
+        apiClient.post(`${endpointBase}/${cobrancaId}/restaurar`).then(res => res.data),
+
     registrarPagamentoManual: (cobrancaId: string, data: RegistrarPagamentoManualDTO) => {
         const payload = {
             ...data,
@@ -52,6 +55,16 @@ export const cobrancaApi = {
             .then(res => res.data);
     },
 
+    complementarPagamentoManual: (cobrancaId: string, data: ComplementarPagamentoManualDTO) => {
+        const payload = {
+            ...data,
+            valor_adicional: typeof data.valor_adicional === 'string' ? moneyToNumber(data.valor_adicional) : data.valor_adicional,
+        };
+        return apiClient
+            .post(`${endpointBase}/${cobrancaId}/complementar-pagamento-manual`, payload)
+            .then(res => res.data);
+    },
+
 
 
     toggleNotificacoes: (passageiroId: string, novoStatus: boolean) =>
@@ -59,4 +72,8 @@ export const cobrancaApi = {
             .patch(`${endpointBase}/${passageiroId}/toggle-notificacoes`, { novoStatus })
             .then(res => res.data),
 
+    obterReciboAnual: (passageiroId: string, ano: number) =>
+        apiClient
+            .get(`${endpointBase}/passageiro/${passageiroId}/recibo-anual`, { params: { ano } })
+            .then(res => res.data),
 };

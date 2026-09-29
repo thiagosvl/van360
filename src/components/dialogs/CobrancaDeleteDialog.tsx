@@ -1,13 +1,13 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
-import { AlertCircle, Pencil, Trash2 } from "lucide-react";
+import { Ban, Pencil } from "lucide-react";
 import { useState } from "react";
 
 export interface CobrancaDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void | Promise<void>;
-  onEdit: () => void;
+  onEdit?: () => void;
   isLoading?: boolean;
 }
 
@@ -36,44 +36,57 @@ export default function CobrancaDeleteDialog({
   };
 
   const handleEdit = () => {
-    onOpenChange(false);
-    onEdit();
+    if (onEdit) {
+      onOpenChange(false);
+      onEdit();
+    }
   };
 
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Header
-        title="Excluir parcela"
-        icon={<Trash2 className="w-5 h-5 opacity-80" />}
+        title="Cancelar parcela"
+        icon={<Ban className="w-5 h-5 opacity-80" />}
         onClose={() => onOpenChange(false)}
       />
       <BaseDialog.Body>
         <div className="space-y-6">
           <p className="text-slate-500 text-sm font-medium leading-relaxed">
-            Esta ação é irreversível. Tem certeza que deseja excluir esta parcela?
+            Tem certeza que deseja cancelar esta parcela? Ela ficará marcada como cancelada na carteirinha e não será cobrada.
           </p>
 
-          <Banner
-            variant="info"
-            title="Nao precisa excluir!"
-            description={
-              <>
-                Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário excluir. Basta usar o botão <strong>Editar</strong> abaixo.
-              </>
-            }
-          />
+          {onEdit && (
+            <Banner
+              variant="info"
+              title="Não precisa cancelar!"
+              description={
+                <>
+                  Se você deseja corrigir apenas o <strong>valor</strong> ou a <strong>data</strong> de vencimento, não é necessário cancelar. Basta usar o botão <strong>Editar</strong> abaixo.
+                </>
+              }
+            />
+          )}
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
+        {onEdit ? (
+          <BaseDialog.Action
+            label="Editar"
+            variant="outline"
+            icon={<Pencil className="w-4 h-4" />}
+            disabled={showLoading}
+            onClick={handleEdit}
+          />
+        ) : (
+          <BaseDialog.Action
+            label="Voltar"
+            variant="secondary"
+            disabled={showLoading}
+            onClick={() => onOpenChange(false)}
+          />
+        )}
         <BaseDialog.Action
-          label="Editar"
-          variant="outline"
-          icon={<Pencil className="w-4 h-4" />}
-          disabled={showLoading}
-          onClick={handleEdit}
-        />
-        <BaseDialog.Action
-          label={showLoading ? "Excluindo" : "Excluir"}
+          label={showLoading ? "Cancelando..." : "Cancelar Parcela"}
           variant="primary"
           isLoading={showLoading}
           onClick={handleConfirm}

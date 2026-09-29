@@ -3,16 +3,16 @@ import { SubscriptionInvoiceStatus, CheckoutPaymentMethod } from "@/types/enums"
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "@/constants/paymentMethods";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { parseLocalDate, formatLocalDate } from "@/utils/dateUtils";
+import { formatMonthYearAbbr } from "@/utils/formatters/date";
 import { Copy, CopyCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Capacitor } from "@capacitor/core";
 
 interface SubscriptionInvoiceCardProps {
   invoice: SubscriptionInvoice;
   copiedPixId?: string | null;
   onCopyPix?: (pixCode: string, invoiceId: string) => void;
   onRetryPayment?: (invoice: SubscriptionInvoice) => void;
+  isExpired?: boolean;
   className?: string;
 }
 
@@ -21,6 +21,7 @@ export function SubscriptionInvoiceCard({
   copiedPixId,
   onCopyPix,
   onRetryPayment,
+  isExpired,
   className,
 }: SubscriptionInvoiceCardProps) {
   const planName = invoice.planos?.nome || invoice.assinaturas?.planos?.nome || "Assinatura";
@@ -29,14 +30,6 @@ export function SubscriptionInvoiceCard({
   const showActions =
     invoice.status === SubscriptionInvoiceStatus.FAILED ||
     invoice.status === SubscriptionInvoiceStatus.PENDING;
-
-  const getDueDateLabel = () => {
-    if (invoice.status === SubscriptionInvoiceStatus.PAID) return "Válido até:";
-    if (invoice.status === SubscriptionInvoiceStatus.PENDING) return "Vence em:";
-    return "Venceu em:";
-  };
-
-  const isNative = Capacitor.isNativePlatform();
 
   return (
     <div
@@ -62,7 +55,7 @@ export function SubscriptionInvoiceCard({
             </span>
             <span>•</span>
             <span>
-              Vencimento: {invoice.data_vencimento ? formatLocalDate(parseLocalDate(invoice.data_vencimento)) : "N/D"}
+              {`${formatMonthYearAbbr(invoice.data_vencimento || invoice.created_at)}`}
             </span>
           </div>
         </div>
@@ -81,11 +74,11 @@ export function SubscriptionInvoiceCard({
 
       {showActions && (
         <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
-          {!isNative && invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
+          {invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
-                className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 bg-primary px-4 py-3 rounded-xl border border-primary-400/40 transition-all duration-300 active:scale-95"
+                className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 bg-primary px-4 py-3 rounded-xl border border-primary-400/40 transition-all duration-300 active:scale-95 cursor-pointer"
                 onClick={() => onCopyPix?.(invoice.pix_copy_paste!, invoice.id)}
               >
                 {isCopied ? (
@@ -96,25 +89,25 @@ export function SubscriptionInvoiceCard({
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    Copiar código PIX
+                    Copiar código Pix
                   </>
                 )}
               </button>
               <button
                 type="button"
-                className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 bg-primary/5 px-4 py-3 rounded-xl border border-primary/10 transition-all active:scale-95"
+                className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 bg-primary/5 px-4 py-3 rounded-xl border border-primary/10 transition-all active:scale-95 cursor-pointer"
                 onClick={() => onRetryPayment?.(invoice)}
               >
-                Tentar Novamente
+                Trocar forma de pagamento
               </button>
             </div>
           ) : (
             <button
               type="button"
-              className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center"
+              className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center cursor-pointer"
               onClick={() => onRetryPayment?.(invoice)}
             >
-              {invoice.status === SubscriptionInvoiceStatus.PENDING ? "Pagar Fatura" : "Tentar Novamente"}
+              Pagar Fatura
             </button>
           )}
         </div>

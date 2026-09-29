@@ -13,7 +13,6 @@ export function useCobrancasByPassageiro(
     queryKey: ["cobrancas-by-passageiro", passageiroId, ano],
     enabled: (options?.enabled ?? true) && Boolean(passageiroId),
     placeholderData: keepPreviousData,
-    refetchOnMount: "always",
     queryFn: async () => {
       if (!passageiroId) return [];
       const data = await cobrancaApi.listCobrancasByPassageiro(passageiroId, ano);

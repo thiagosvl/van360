@@ -2,11 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, School, UserMinus, RotateCcw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
+import { RouteNodeType, RouteStopStatus, RouteSentido, RouteExecutionPassenger } from "@/types/route";
 import { formatShortName } from "@/utils/formatters";
 
 interface RouteCompletedStopItemProps {
-  parada: any;
+  parada: RouteExecutionPassenger | any;
   showTopLine: boolean;
   showBottomLine: boolean;
   onDesfazer?: () => void;
@@ -78,7 +78,7 @@ export function RouteCompletedStopItem({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {isAusente && onDesfazer ? (
+          {onDesfazer ? (
             <Button
               type="button"
               variant="outline"
@@ -88,13 +88,18 @@ export function RouteCompletedStopItem({
                 e.stopPropagation();
                 onDesfazer();
               }}
-              className="h-7.5 px-2.5 py-1 text-[11px] font-bold border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-1.5 shrink-0 active:scale-95 shadow-2xs"
-              title="Desfazer registro de ausência"
+              className={cn(
+                "h-7.5 px-2.5 py-1 text-[11px] font-bold bg-white rounded-lg flex items-center gap-1.5 shrink-0 active:scale-95 shadow-2xs",
+                isAusente
+                  ? "border border-rose-200 text-rose-600 hover:bg-rose-50"
+                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              )}
+              title={isAusente ? "Desfazer registro de ausência" : "Desfazer conclusão da parada"}
             >
               {isDesfazendo ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0 text-rose-500" />
+                <Loader2 className={cn("w-3.5 h-3.5 animate-spin shrink-0", isAusente ? "text-rose-500" : "text-slate-500")} />
               ) : (
-                <RotateCcw className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                <RotateCcw className={cn("w-3.5 h-3.5 shrink-0", isAusente ? "text-rose-500" : "text-slate-500")} />
               )}
               <span>Desfazer</span>
             </Button>

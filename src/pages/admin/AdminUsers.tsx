@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminUsers, useAdminStats } from "@/hooks/api/adminHooks";
-import { SubscriptionStatus } from "@/types/enums";
+import { SubscriptionStatus, SUBSCRIPTION_VITALICIO_FILTER, UserType } from "@/types/enums";
 import {
   Search,
   ChevronLeft,
@@ -17,6 +17,7 @@ import {
   Infinity as InfinityIcon,
   XCircle,
   CalendarOff,
+  Calendar,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,10 @@ import { SubscriptionStatusBadge, SUBSCRIPTION_STATUS_DETAILS, ExtendedSubscript
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { ROUTES } from "@/constants/routes";
+import { useDebounce } from "@/hooks/ui/useDebounce";
+import { cn } from "@/lib/utils";
+import { resolveOrigemAtribuicao } from "@/utils/acquisition-channel.utils";
+import { AcquisitionBadge } from "@/components/ui/AcquisitionBadge";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todos" },
@@ -39,13 +44,15 @@ const STATUS_FILTERS = [
 
 export default function AdminUsers() {
   const navigate = useNavigate();
-  const { openAdminCreateUserDialog, setPageTitle } = useLayout();
+  const { openAdminCreateUserDialog, setPageTitle, openImageFullscreen } = useLayout();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search.trim(), 400);
 
   const { data: stats } = useAdminStats();
   const { data, isLoading } = useAdminUsers({
@@ -53,6 +60,9 @@ export default function AdminUsers() {
     limit,
     search: debouncedSearch || undefined,
     status: statusFilter || undefined,
+    tipo: UserType.MOTORISTA,
+    data_inicio: dataInicio ? `${dataInicio}T00:00:00` : undefined,
+    data_fim: dataFim ? `${dataFim}T23:59:59` : undefined,
   });
 
   useEffect(() => {
@@ -64,20 +74,29 @@ export default function AdminUsers() {
   const totalPages = Math.ceil(total / limit);
 
   const kpiCards = useMemo(() => {
+    const isTotalSelected = statusFilter === "";
+
     const totalCard = {
       key: "total",
       title: "TOTAL DE MOTORISTAS",
       value: stats?.totalMotoristas ?? total,
       subtext: "Cadastrados",
-      cardBorder: "border-blue-500/40 shadow-blue-500/10",
+      cardBorder: isTotalSelected
+        ? "border-blue-500 shadow-blue-500/20 ring-2 ring-blue-500/80"
+        : "border-blue-500/40 shadow-blue-500/10",
       iconBg: "bg-blue-500/10 text-blue-400 border-blue-500/20",
       icon: <Bus className="h-5 w-5" />,
+      isSelected: isTotalSelected,
+      onClick: () => {
+        setStatusFilter("");
+        setPage(1);
+      },
     };
 
     const statusItems: Array<{ status: ExtendedSubscriptionStatus; val: number | undefined; icon: React.ReactNode }> = [
       { status: SubscriptionStatus.ACTIVE, val: stats?.assinaturas?.active, icon: <ShieldCheck className="h-5 w-5" /> },
       { status: SubscriptionStatus.TRIAL, val: stats?.assinaturas?.trial, icon: <Clock className="h-5 w-5" /> },
-      { status: "VITALICIO", val: stats?.assinaturas?.vitalicio, icon: <InfinityIcon className="h-5 w-5" /> },
+      { status: SUBSCRIPTION_VITALICIO_FILTER, val: stats?.assinaturas?.vitalicio, icon: <InfinityIcon className="h-5 w-5" /> },
       { status: SubscriptionStatus.PAST_DUE, val: stats?.assinaturas?.past_due, icon: <AlertTriangle className="h-5 w-5" /> },
       { status: SubscriptionStatus.EXPIRED, val: stats?.assinaturas?.expired, icon: <CalendarOff className="h-5 w-5" /> },
       { status: SubscriptionStatus.CANCELED, val: stats?.assinaturas?.canceled, icon: <XCircle className="h-5 w-5" /> },
@@ -85,30 +104,43 @@ export default function AdminUsers() {
 
     const statusCards = statusItems.map((item) => {
       const detail = SUBSCRIPTION_STATUS_DETAILS[item.status];
+      const isSelected = statusFilter === item.status;
       return {
         key: item.status,
         title: detail.pluralLabel.toUpperCase(),
         value: item.val ?? 0,
         subtext: detail.subtext,
-        cardBorder: detail.cardBorder,
+        cardBorder: isSelected
+          ? cn(detail.cardBorder, "ring-2 ring-offset-2 ring-offset-[#0b101b] ring-blue-500 scale-[1.02]")
+          : detail.cardBorder,
         iconBg: detail.iconBg,
         icon: item.icon,
+        isSelected,
+        onClick: () => {
+          setStatusFilter(item.status);
+          setPage(1);
+        },
       };
     });
 
     return [totalCard, ...statusCards];
-  }, [stats, total]);
+  }, [stats, total, statusFilter]);
 
   return (
     <div className="space-y-8 text-left">
-      {/* 1. KPIS SUPERIORES PADRONIZADOS DO DASHBOARD (7 CARDS) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
         {kpiCards.map((card) => (
-          <AdminKpiCard key={card.key} {...card} />
+          <AdminKpiCard
+            key={card.key}
+            {...card}
+            className={cn(
+              "cursor-pointer transition-all duration-200",
+              card.isSelected && "bg-[#17223b]"
+            )}
+          />
         ))}
       </div>
 
-      {/* BARRA DE AÇÃO SUPERIOR */}
       <div className="flex items-center justify-between gap-4">
         <span className="text-xs font-semibold text-slate-400">
           Listando {users.length} de {total} motorista{total !== 1 ? "s" : ""}
@@ -122,7 +154,6 @@ export default function AdminUsers() {
         </Button>
       </div>
 
-      {/* TABELA E FILTROS */}
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardContent className="p-6 space-y-6">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
@@ -160,6 +191,48 @@ export default function AdminUsers() {
             </div>
           </div>
 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 text-xs">
+            <div className="flex items-center gap-2 text-slate-400">
+              <Calendar className="h-4 w-4 text-blue-400 shrink-0" />
+              <span className="font-bold">Cadastrados entre:</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => {
+                  setDataInicio(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+              />
+              <span className="text-slate-500 font-bold">até</span>
+              <Input
+                type="date"
+                value={dataFim}
+                onChange={(e) => {
+                  setDataFim(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+              />
+              {(dataInicio || dataFim) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDataInicio("");
+                    setDataFim("");
+                    setPage(1);
+                  }}
+                  className="h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
+                >
+                  Limpar Datas
+                </Button>
+              )}
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -183,6 +256,7 @@ export default function AdminUsers() {
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Nome</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden md:table-cell">Telefone</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden lg:table-cell">Cadastro</th>
+                      <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden xl:table-cell">Origem</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                       <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
@@ -199,13 +273,33 @@ export default function AdminUsers() {
                           onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${user.id}`)}
                         >
                           <td className="py-4">
-                            <div>
-                              <p className="text-sm font-bold text-slate-100 truncate max-w-[200px]">
-                                {user.nome}
-                              </p>
-                              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                                {user.apelido || "—"}
-                              </p>
+                            <div className="flex items-center gap-3">
+                              {user.logo_url?.trim() && (
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openImageFullscreen({ imageUrl: user.logo_url!, alt: user.nome });
+                                  }}
+                                  className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                                >
+                                  <img
+                                    src={user.logo_url}
+                                    alt={user.nome}
+                                    className="h-full w-full object-contain"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-100 truncate max-w-[200px]">
+                                  {user.nome}
+                                </p>
+                                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                                  {user.apelido || "—"}
+                                </p>
+                              </div>
                             </div>
                           </td>
                           <td className="py-4 hidden md:table-cell">
@@ -217,6 +311,15 @@ export default function AdminUsers() {
                             <span className="text-xs text-slate-400 block">
                               {new Date(user.created_at).toLocaleDateString("pt-BR")}
                             </span>
+                          </td>
+                          <td className="py-4 hidden xl:table-cell">
+                            <AcquisitionBadge
+                              origem={resolveOrigemAtribuicao(
+                                user.metadados_cadastro as Record<string, unknown> | null,
+                                user.dispositivo_cadastro,
+                                user.canal_aquisicao
+                              )}
+                            />
                           </td>
                           <td className="py-4">
                             <span className="text-xs font-bold text-slate-200">
@@ -259,15 +362,35 @@ export default function AdminUsers() {
                       className="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-3 text-left cursor-pointer hover:bg-slate-800/80 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-100 line-clamp-1">
-                            {user.nome}
-                          </h3>
-                          {user.apelido && (
-                            <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                              {user.apelido}
-                            </p>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {user.logo_url?.trim() && (
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openImageFullscreen({ imageUrl: user.logo_url!, alt: user.nome });
+                              }}
+                              className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                            >
+                              <img
+                                src={user.logo_url}
+                                alt={user.nome}
+                                className="h-full w-full object-contain"
+                                loading="lazy"
+                              />
+                            </div>
                           )}
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-bold text-slate-100 line-clamp-1">
+                              {user.nome}
+                            </h3>
+                            {user.apelido && (
+                              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                                {user.apelido}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <SubscriptionStatusBadge status={sub?.status} dataVencimento={sub?.data_vencimento} />
                       </div>
@@ -281,6 +404,17 @@ export default function AdminUsers() {
                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Cadastro</span>
                           <span className="font-semibold text-slate-200">{dateFormatted}</span>
                         </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Origem</span>
+                        <AcquisitionBadge
+                          origem={resolveOrigemAtribuicao(
+                            user.metadados_cadastro as Record<string, unknown> | null,
+                            user.dispositivo_cadastro,
+                            user.canal_aquisicao
+                          )}
+                        />
                       </div>
 
                       <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-4">
@@ -339,13 +473,4 @@ export default function AdminUsers() {
       </Card>
     </div>
   );
-}
-
-function useDebounce(value: string, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
 }

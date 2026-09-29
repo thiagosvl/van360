@@ -30,7 +30,7 @@ export function PassageiroFormEndereco({ isExternal = false }: PassageiroFormEnd
                 <FormControl>
                   <StitchField icon={FileText} label="Observações Adicionais" error={!!fieldState.error}>
                     <Textarea
-                      placeholder="Digite observações importantes sobre o passageiro..."
+                      placeholder="Digite observações importantes sobre o aluno..."
                       className="min-h-[70px] p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none resize-none placeholder:text-slate-400 placeholder:font-normal w-full"
                       {...field}
                       value={field.value || ""}
@@ -44,7 +44,7 @@ export function PassageiroFormEndereco({ isExternal = false }: PassageiroFormEnd
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Digite observações importantes sobre o passageiro..."
+                      placeholder="Digite observações importantes sobre o aluno..."
                       className="min-h-[120px] rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 resize-none text-base"
                       {...field}
                     />

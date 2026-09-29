@@ -77,7 +77,7 @@ interface GastoFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   gastoToEdit?: Gasto | null;
-  veiculos: { id: string; placa: string }[];
+  veiculos: { id: string; placa: string; modelo?: string | null }[];
   usuarioId?: string;
   onSuccess?: () => void;
 }

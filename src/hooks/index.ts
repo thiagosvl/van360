@@ -22,11 +22,14 @@ export { useRelatoriosViewModel } from "./ui/useRelatoriosViewModel";
 export { useContratosViewModel } from "./ui/useContratosViewModel";
 export { useAssinarContratoViewModel } from "./ui/useAssinarContratoViewModel";
 export { usePassageiroFormViewModel } from "./ui/usePassageiroFormViewModel";
+export { useRevisarSolicitacaoViewModel } from "./ui/useRevisarSolicitacaoViewModel";
 export { usePassageiroFormDadosCadastraisViewModel } from "./ui/usePassageiroFormDadosCadastraisViewModel";
 export { useConfigurarRotaViewModel } from "./ui/useConfigurarRotaViewModel";
 export { useRotasViewModel } from "./ui/useRotasViewModel";
 export { useConfirmDialog } from "./ui/useConfirmDialog";
 export { useToast } from "./ui/useToast";
+export { useDebounce } from "./ui/useDebounce";
+export { useTutorialsConfig } from "./ui/useTutorialsConfig";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";
@@ -37,6 +40,7 @@ export { useBuscarResponsavel } from "./api/useBuscarResponsavel";
 export { useCobranca } from "./api/useCobranca";
 export { useCobrancas } from "./api/useCobrancas";
 export { useCobrancasByPassageiro } from "./api/useCobrancasByPassageiro";
+export { useReciboAnual } from "./api/useReciboAnual";
 export { useEscolas } from "./api/useEscolas";
 export { useEscolasWithFilters } from "./api/useEscolasWithFilters";
 export { useGastos } from "./api/useGastos";
@@ -57,7 +61,7 @@ export {
 // API hooks (mutations)
 export {
     useCreateCobranca, useDeleteCobranca,
-    useDesfazerPagamento, useRegistrarPagamentoManual, useToggleNotificacoesCobranca, useUpdateCobranca
+    useDesfazerPagamento, useRegistrarPagamentoManual, useComplementarPagamentoManual, useRestaurarCobranca, useToggleNotificacoesCobranca, useUpdateCobranca
 } from "./api/useCobrancaMutations";
 export {
     useContratos, useContratosKPIs, useCreateContrato, useDeleteContrato, usePreviewContrato, useSubstituirContrato
@@ -71,7 +75,8 @@ export {
 } from "./api/useGastoMutations";
 export {
     useCreatePassageiro, useDeletePassageiro, useFinalizePreCadastro, useToggleAtivoPassageiro, useUpdatePassageiro,
-    useCreateResponsavelAdicional, useUpdateResponsavelAdicional, useDeleteResponsavelAdicional, useSetPrincipalResponsavel
+    useCreateResponsavelAdicional, useUpdateResponsavelAdicional, useDeleteResponsavelAdicional, useSetPrincipalResponsavel,
+    useToggleNotificacoesRotaResponsavel
 } from "./api/usePassageiroMutations";
 export {
     useCreatePrePassageiro,

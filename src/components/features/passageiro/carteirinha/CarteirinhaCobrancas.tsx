@@ -14,7 +14,7 @@ import {
   getMesNome,
 } from "@/utils/formatters";
 import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
-import { buildCobrancaWhatsAppUrl } from "@/utils/evolution";
+import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { AnimatePresence, motion } from "framer-motion";
@@ -26,20 +26,26 @@ import {
   Info,
   Plus,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { UnifiedEmptyState } from "@/components/empty";
 import { forwardRef } from "react";
 import { getNowBR } from "@/utils/dateUtils";
-import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString } from "@/utils/domain";
+import { getAvailableRetroactiveMonths, isPassageiroIncompleto, shouldGeneratePassengerProjection, getSafeDueDateString, parseMonthYearFromDateString } from "@/utils/domain";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
+import { useReciboAnualElegibilidade } from "@/hooks/business/useReciboAnualElegibilidade";
+import { useReciboAnual } from "@/hooks/api/useReciboAnual";
+import { CarteirinhaReciboAnualCard } from "./CarteirinhaReciboAnualCard";
+import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
   yearFilter: string;
   mostrarTodasCobrancas: boolean;
-  onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean) => void;
+  onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean, availableMonths?: number[]) => void;
   onEditCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
   onExcluirCobranca: (cobranca: Cobranca) => void;
@@ -47,11 +53,13 @@ interface CarteirinhaCobrancasProps {
   onDesfazerPagamento: (cobrancaId: string) => void;
   onToggleClick: (statusAtual: boolean) => void;
   onVerRecibo: (url: string, cobranca: Cobranca) => void;
+  onActionSuccess?: () => void;
   limiteCobrancasMobile?: number;
 }
 
-import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
-import { useMemo } from "react";
+import { Banner } from "@/components/ui/Banner";
+import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
+import { useCallback, useMemo } from "react";
 
 export const CarteirinhaCobrancas = ({
   cobrancas,
@@ -63,6 +71,7 @@ export const CarteirinhaCobrancas = ({
   onExcluirCobranca,
   onDesfazerPagamento,
   onVerRecibo,
+  onActionSuccess,
 }: CarteirinhaCobrancasProps) => {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
@@ -71,6 +80,35 @@ export const CarteirinhaCobrancas = ({
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const selectedYear = Number(yearFilter) || currentYear;
+
+  const { openAnnualReceiptDialog, openPassageiroFormDialog, openPassageiroFinanceiroDialog } = useLayout();
+  const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
+    passageiro,
+    selectedYear,
+    cobrancas,
+  });
+
+  const {
+    data: reciboAnual,
+    isLoading: isPendingReciboAnual,
+    isFetching: isFetchingReciboAnual,
+  } = useReciboAnual(
+    passageiro?.id,
+    selectedYear,
+    { enabled: elegibilidadeReciboAnual.isElegivel }
+  );
+
+  const isCarregandoReciboAnual = isPendingReciboAnual || isFetchingReciboAnual;
+
+  const handleVerReciboAnual = useCallback(() => {
+    if (!reciboAnual?.recibo_url) return;
+    openAnnualReceiptDialog({
+      receiptUrl: reciboAnual.recibo_url,
+      ano: selectedYear,
+      alunoNome: passageiro?.nome || "Aluno",
+      passageiroId: passageiro?.id,
+    });
+  }, [openAnnualReceiptDialog, reciboAnual?.recibo_url, selectedYear, passageiro?.nome, passageiro?.id]);
 
   const displayCobrancas = useMemo(() => {
     const list = [...cobrancas];
@@ -104,10 +142,46 @@ export const CarteirinhaCobrancas = ({
             valor: Number(passageiro.valor_cobranca),
             status: CobrancaStatus.PENDENTE,
             data_vencimento: dataVenc,
-            origem: CobrancaOrigem.AUTOMATICA,
             isProjection: true,
             passageiro,
+            ano_letivo: passageiro.ano_letivo || selectedYear,
           });
+        }
+      }
+    }
+
+    if (passageiro.data_fim_cobranca) {
+      const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
+      if (fim && fim.year > selectedYear) {
+        for (let y = selectedYear + 1; y <= fim.year; y++) {
+          const maxM = y === fim.year ? fim.month : 12;
+          const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
+          for (let m = 1; m <= maxM; m++) {
+            if (!dbMonthsFuture.has(m)) {
+              const canGenerate = shouldGeneratePassengerProjection({
+                passageiro,
+                driverCreatedAt: profile?.created_at,
+                targetMonth: m,
+                targetYear: y,
+              });
+
+              if (canGenerate) {
+                const dataVenc = getSafeDueDateString(passageiro.dia_vencimento, m, y);
+                list.push({
+                  id: `proj_pass_${passageiro.id}_${m}_${y}`,
+                  passageiro_id: passageiro.id!,
+                  mes: m,
+                  ano: y,
+                  valor: Number(passageiro.valor_cobranca),
+                  status: CobrancaStatus.PENDENTE,
+                  data_vencimento: dataVenc,
+                  isProjection: true,
+                  passageiro,
+                  ano_letivo: passageiro.ano_letivo || selectedYear,
+                });
+              }
+            }
+          }
         }
       }
     }
@@ -132,20 +206,111 @@ export const CarteirinhaCobrancas = ({
   const isIncomplete = isPassageiroIncompleto(passageiro);
 
 
+  const emptyStateInfo = useMemo(() => {
+    if (passageiro.isento) {
+      return {
+        icon: ShieldCheck,
+        title: "Aluno Isento",
+        description: "Este aluno foi marcado como isento e não possui parcelas.",
+      };
+    }
+
+    if (selectedYear < currentYear) {
+      return {
+        icon: History,
+        title: `Nenhuma parcela em ${selectedYear}`,
+        description: `Não foram encontradas cobranças registradas para este aluno no ano de ${selectedYear}.`,
+      };
+    }
+
+    const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
+    const inicio = parseMonthYearFromDateString(
+      passageiro.data_inicio_cobranca || passageiro.created_at || profile?.created_at
+    );
+
+    const isEncerrado = fim && (fim.year < selectedYear || (fim.year === selectedYear && fim.month < currentMonth));
+
+    if (isEncerrado) {
+      const mesFimNome = getMesNome(fim.month);
+      const mesInicioNome = inicio ? getMesNome(inicio.month) : null;
+
+      if (hasRetroactiveMonths) {
+        return {
+          icon: History,
+          title: `Cobrança finalizada em ${mesFimNome}`,
+          description: mesInicioNome
+            ? `A cobrança deste aluno foi configurada de ${mesInicioNome} até ${mesFimNome}. Para lançar os meses anteriores, use o botão "+ Registrar Parcela" acima.`
+            : `A cobrança deste aluno terminou em ${mesFimNome}. Para lançar os meses anteriores, use o botão "+ Registrar Parcela" acima.`,
+        };
+      }
+
+      return {
+        icon: History,
+        title: `Cobrança finalizada em ${mesFimNome}`,
+        description: `A cobrança deste aluno terminou em ${mesFimNome}. Se ele continuar na van, basta editar os dados do aluno e alterar o mês final.`,
+      };
+    }
+
+    const isFuturo = inicio && (inicio.year > selectedYear || (inicio.year === selectedYear && inicio.month > currentMonth));
+
+    if (isFuturo) {
+      const mesInicioNome = getMesNome(inicio.month);
+      return {
+        icon: History,
+        title: `Cobrança inicia em ${mesInicioNome}`,
+        description: `As parcelas deste aluno começarão a ser geradas automaticamente a partir de ${mesInicioNome}.`,
+      };
+    }
+
+    return {
+      icon: History,
+      title: "Nenhuma parcela ativa",
+      description: "Não há parcelas pendentes para o período selecionado.",
+    };
+  }, [
+    passageiro.isento,
+    passageiro.data_fim_cobranca,
+    passageiro.data_inicio_cobranca,
+    passageiro.created_at,
+    profile?.created_at,
+    selectedYear,
+    currentYear,
+    currentMonth,
+    hasRetroactiveMonths,
+  ]);
+
   const resumo = useMemo(() => {
     return displayCobrancas.reduce(
       (acc, c) => {
+        if (c.status === CobrancaStatus.CANCELADA) {
+          return acc;
+        }
+
         const isPago = c.status === CobrancaStatus.PAGO;
-        const atrasado = !isPago && checkCobrancaEmAtraso(c.data_vencimento);
+        const valorTotal = Number(c.valor || 0);
+        const valorPago = isPago ? Number(c.valor_pago ?? c.valor ?? 0) : 0;
+        const isParcial = isPago && valorPago < valorTotal;
+        const atrasado = checkCobrancaEmAtraso(c.data_vencimento);
 
         if (isPago) {
-          acc.pago += Number(c.valor);
-          acc.qtdPago++;
+          acc.pago += valorPago;
+          if (isParcial) {
+            const saldoRestante = valorTotal - valorPago;
+            if (atrasado) {
+              acc.atrasado += saldoRestante;
+              acc.qtdAtrasado++;
+            } else {
+              acc.pendente += saldoRestante;
+              acc.qtdPendente++;
+            }
+          } else {
+            acc.qtdPago++;
+          }
         } else if (atrasado) {
-          acc.atrasado += Number(c.valor);
+          acc.atrasado += valorTotal;
           acc.qtdAtrasado++;
         } else {
-          acc.pendente += Number(c.valor);
+          acc.pendente += valorTotal;
           acc.qtdPendente++;
         }
         return acc;
@@ -156,42 +321,60 @@ export const CarteirinhaCobrancas = ({
 
   return (
     <div className="space-y-4">
+      {elegibilidadeReciboAnual.isElegivel && (
+        <CarteirinhaReciboAnualCard
+          ano={selectedYear}
+          totalPago={elegibilidadeReciboAnual.totalPago}
+          quantidadeMeses={elegibilidadeReciboAnual.totalMesesPagos}
+          reciboUrl={reciboAnual?.recibo_url}
+          isLoading={isCarregandoReciboAnual}
+          onVisualizar={handleVerReciboAnual}
+        />
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
-            {displayCobrancas.length} {displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}
+            {`${displayCobrancas.length} ${displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}`}
           </span>
         </div>
 
         {hasRetroactiveMonths && (
           <Button
             type="button"
-            onClick={() => onOpenCobrancaDialog()}
+            onClick={() => onOpenCobrancaDialog(undefined, undefined, undefined, undefined, availableRetroMonths)}
             className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold text-xs h-8 px-3 rounded-lg shadow-sm transition-all active:scale-95 shrink-0"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
-            <span>Registrar Retroativa</span>
+            <span>Registrar Parcela</span>
           </Button>
         )}
       </div>
 
       {!passageiro.isento && isIncomplete && (
-        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60 text-amber-900 text-[11px] leading-tight">
-          <Info className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-          <span>Conclua o cadastro para que as parcelas exibam corretamente o valor e o dia de vencimento.</span>
-        </div>
+        <Banner
+          variant="info"
+          title="Configurar parcelas"
+          description="Esta lista é uma prévia do ano. Preencha o valor e o vencimento para exibir corretamente e ativar as cobranças."
+          action={{
+            label: "Configurar parcelas",
+            onClick: () =>
+              openPassageiroFinanceiroDialog({
+                passageiro,
+                onSuccess: onActionSuccess,
+              }),
+            className: "h-9 px-4 text-xs font-semibold shrink-0",
+          }}
+          className="p-3 sm:p-3.5 mb-4"
+        />
       )}
 
       <div className="space-y-3">
         {displayCobrancas.length === 0 ? (
           <UnifiedEmptyState
-            icon={passageiro.isento ? ShieldCheck : History}
-            title={passageiro.isento ? "Passageiro Isento de Parcelas" : "Sem parcelas configuradas"}
-            description={
-              passageiro.isento
-                ? "Este passageiro foi cadastrado com isenção de parcelas. Nenhuma cobrança ou parcela é gerada automaticamente."
-                : "Defina o valor da parcela nas informações do passageiro para ativar a geração automática."
-            }
+            icon={emptyStateInfo.icon}
+            title={emptyStateInfo.title}
+            description={emptyStateInfo.description}
           />
         ) : (
           <AnimatePresence mode="popLayout">
@@ -200,6 +383,7 @@ export const CarteirinhaCobrancas = ({
                 key={cobranca.id}
                 cobranca={cobranca}
                 passageiro={passageiro}
+                selectedYear={selectedYear}
                 index={idx}
                 chavePix={profile?.chave_pix}
                 tipoChavePix={profile?.tipo_chave_pix}
@@ -209,6 +393,7 @@ export const CarteirinhaCobrancas = ({
                 onExcluirCobranca={onExcluirCobranca}
                 onDesfazerPagamento={onDesfazerPagamento}
                 onVerRecibo={onVerRecibo}
+                onActionSuccess={onActionSuccess}
               />
             ))}
           </AnimatePresence>
@@ -255,6 +440,7 @@ const CobrancaItemPassageiro = forwardRef<
   {
     cobranca: Cobranca;
     passageiro: Passageiro;
+    selectedYear?: number;
     index: number;
     chavePix?: string | null;
     tipoChavePix?: string | null;
@@ -264,10 +450,12 @@ const CobrancaItemPassageiro = forwardRef<
     onExcluirCobranca: (c: Cobranca) => void;
     onDesfazerPagamento: (id: string) => void;
     onVerRecibo: (url: string, cobranca: Cobranca) => void;
+    onActionSuccess?: () => void;
   }
 >(({
   cobranca,
   passageiro,
+  selectedYear,
   index,
   chavePix,
   tipoChavePix,
@@ -277,21 +465,31 @@ const CobrancaItemPassageiro = forwardRef<
   onExcluirCobranca,
   onDesfazerPagamento,
   onVerRecibo,
+  onActionSuccess,
 }, ref) => {
+  const {
+    openPassageiroFinanceiroDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+  } = useLayout();
   const isIncomplete = isPassageiroIncompleto(passageiro);
-  const isPaid = cobranca.status === CobrancaStatus.PAGO;
-  const isAtrasado = !isPaid && !isIncomplete && checkCobrancaEmAtraso(cobranca.data_vencimento);
+  const isCancelada = cobranca.status === CobrancaStatus.CANCELADA;
+  const isPaid = !isCancelada && cobranca.status === CobrancaStatus.PAGO;
+  const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
+  const isAtrasado = !isCancelada && !isPaid && !isIncomplete && checkCobrancaEmAtraso(cobranca.data_vencimento);
   const valorExibicao = getCobrancaValorExibicao(cobranca);
 
-  const statusColor = isPaid
-    ? "bg-emerald-50 text-emerald-600"
-    : isAtrasado
-      ? "bg-red-50 text-red-600"
-      : "bg-amber-50 text-amber-600";
+  const statusColor = isCancelada
+    ? "bg-slate-100 text-slate-600"
+    : isPaid
+      ? "bg-emerald-50 text-emerald-600"
+      : isAtrasado
+        ? "bg-red-50 text-red-600"
+        : "bg-amber-50 text-amber-600";
 
   const respPrincipal = passageiro.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
-  const onEnviarCobranca = telefoneResponsavel && !cobranca.isProjection
+  const onEnviarCobranca = !isCancelada && telefoneResponsavel && !cobranca.isProjection
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
       nomeResponsavel: formatNomeResponsavelCompletoExibicao(respPrincipal?.nome),
@@ -304,19 +502,49 @@ const CobrancaItemPassageiro = forwardRef<
     }))
     : undefined;
 
+  const handleIncompleteClick = () => {
+    openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess });
+  };
+
+  const handleIncompletePaymentClick = () => {
+    openConfirmationDialog({
+      title: "Valor da parcela não configurado",
+      description:
+        "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+      confirmText: "Configurar agora",
+      cancelText: "Fazer depois",
+      onConfirm: () => {
+        safeCloseDialog(closeConfirmationDialog);
+        setTimeout(() => {
+          openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess });
+        }, 100);
+      },
+    });
+  };
+
   const actions = useCobrancaActions({
-    cobranca,
+    cobranca: {
+      ...cobranca,
+      passageiro: cobranca.passageiro || passageiro,
+    },
     onVerCobranca: () => { },
     onVerCarteirinha: undefined,
-    onEditarCobranca: cobranca.isProjection ? undefined : () => onEditCobranca(cobranca),
+    onEditarCobranca: isCancelada
+      ? undefined
+      : cobranca.isProjection && isIncomplete
+        ? handleIncompleteClick
+        : () => onEditCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
-      ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
-      : () => onRegistrarPagamento(cobranca),
-    onExcluirCobranca: cobranca.isProjection ? undefined : () => onExcluirCobranca(cobranca),
-    onDesfazerPagamento: cobranca.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined),
-    onVerRecibo: cobranca.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
-    onEnviarCobranca: cobranca.isProjection ? undefined : onEnviarCobranca,
+      ? (isIncomplete ? handleIncompletePaymentClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
+      : isCancelada
+        ? undefined
+        : () => onRegistrarPagamento(cobranca),
+    onExcluirCobranca: isCancelada ? undefined : () => onExcluirCobranca(cobranca),
+    onDesfazerPagamento: cobranca.isProjection || isCancelada ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined),
+    onVerRecibo: cobranca.isProjection || isCancelada ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
+    onEnviarCobranca: cobranca.isProjection || isCancelada ? undefined : onEnviarCobranca,
     showHistory: cobranca.isProjection ? false : true,
+    onActionSuccess,
   });
 
   const renderHeader = () => (
@@ -334,12 +562,13 @@ const CobrancaItemPassageiro = forwardRef<
     >
       <MobileActionItem
         actions={actions}
-        onClickItem={undefined}
+        onClickItem={cobranca.isProjection && isIncomplete ? handleIncompletePaymentClick : undefined}
         className="bg-transparent"
         renderHeader={renderHeader}
         hideTriggerOnDesktop
       >
         <div
+          onClick={cobranca.isProjection && isIncomplete ? handleIncompletePaymentClick : undefined}
           className={cn(
             "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50 relative",
             cobranca.isProjection && "cursor-pointer"
@@ -347,28 +576,38 @@ const CobrancaItemPassageiro = forwardRef<
         >
           <div className={cn(
             "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
-            isPaid ? "bg-emerald-500" :
-              isAtrasado ? "bg-red-500" :
-                "bg-amber-500"
+            isCancelada ? "bg-slate-400" :
+              isPaid ? "bg-emerald-500" :
+                isAtrasado ? "bg-red-500" :
+                  "bg-amber-500"
           )}>
-            {isPaid ? <CheckCircle2 className="h-4 w-4 text-white" /> :
-              isAtrasado ? <AlertCircle className="h-4 w-4 text-white" /> :
-                <Clock className="h-4 w-4 text-white" />}
+            {isCancelada ? <Clock className="h-4 w-4 text-white" /> :
+              isPaid ? <CheckCircle2 className="h-4 w-4 text-white" /> :
+                isAtrasado ? <AlertCircle className="h-4 w-4 text-white" /> :
+                  <Clock className="h-4 w-4 text-white" />}
           </div>
 
           <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
-            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-              {getMesNome(cobranca.mes)}
-            </p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                {getMesNome(cobranca.mes)}
+                {cobranca.ano && cobranca.ano !== (selectedYear || passageiro.ano_letivo) ? `/${cobranca.ano}` : ""}
+              </p>
+              {cobranca.observacao?.trim() && (
+                <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+              )}
+            </div>
             <div className="flex items-center gap-2 mt-0.5">
               <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">
-                {isPaid
-                  ? (cobranca.tipo_pagamento ? getPaymentMethodLabel(cobranca.tipo_pagamento) : `Venc. ${formatDateToBR(cobranca.data_vencimento)}`)
-                  : isIncomplete
-                    ? "Venc. dia --"
-                    : isAtrasado
-                      ? formatDiasAtraso(cobranca.data_vencimento)
-                      : `Venc. ${formatDateToBR(cobranca.data_vencimento)}`}
+                {isCancelada
+                  ? `Venc. ${formatDateToBR(cobranca.data_vencimento)}`
+                  : isPaid
+                    ? (cobranca.tipo_pagamento ? getPaymentMethodLabel(cobranca.tipo_pagamento) : `Venc. ${formatDateToBR(cobranca.data_vencimento)}`)
+                    : isIncomplete
+                      ? "Venc. dia --"
+                      : isAtrasado
+                        ? formatDiasAtraso(cobranca.data_vencimento)
+                        : `Venc. ${formatDateToBR(cobranca.data_vencimento)}`}
               </p>
             </div>
           </div>
@@ -383,28 +622,41 @@ const CobrancaItemPassageiro = forwardRef<
                   })
                   : "R$ --"}
               </p>
-              <StatusBadge
-                status={cobranca.status}
-                dataVencimento={isIncomplete ? undefined : cobranca.data_vencimento}
-                className={cn(
-                  "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                  statusColor
-                )}
-              />
+              {isParcial ? (
+                <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
+                  Parcial
+                </span>
+              ) : (
+                <StatusBadge
+                  status={cobranca.status}
+                  dataVencimento={isIncomplete || isCancelada ? undefined : cobranca.data_vencimento}
+                  className={cn(
+                    "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                    statusColor
+                  )}
+                />
+              )}
             </div>
 
             <div className="hidden sm:flex items-center ml-1" onClick={(e) => e.stopPropagation()}>
               <CobrancaActionsMenu
                 cobranca={cobranca}
                 onVerCarteirinha={undefined}
-                onEditarCobranca={cobranca.isProjection ? undefined : () => onEditCobranca(cobranca)}
+                onEditarCobranca={isCancelada
+                  ? undefined
+                  : cobranca.isProjection && isIncomplete
+                    ? handleIncompleteClick
+                    : () => onEditCobranca(cobranca)}
                 onRegistrarPagamento={cobranca.isProjection
-                  ? () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true)
-                  : () => onRegistrarPagamento(cobranca)}
-                onExcluirCobranca={cobranca.isProjection ? undefined : () => onExcluirCobranca(cobranca)}
-                onDesfazerPagamento={cobranca.isProjection ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined)}
-                onVerRecibo={cobranca.isProjection ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined)}
-                onEnviarCobranca={cobranca.isProjection ? undefined : onEnviarCobranca}
+                  ? (isIncomplete ? handleIncompletePaymentClick : () => onOpenCobrancaDialog?.(cobranca.mes, cobranca.ano, true, true))
+                  : isCancelada
+                    ? undefined
+                    : () => onRegistrarPagamento(cobranca)}
+                onExcluirCobranca={isCancelada ? undefined : () => onExcluirCobranca(cobranca)}
+                onDesfazerPagamento={cobranca.isProjection || isCancelada ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined)}
+                onVerRecibo={cobranca.isProjection || isCancelada ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined)}
+                onEnviarCobranca={cobranca.isProjection || isCancelada ? undefined : onEnviarCobranca}
+                onActionSuccess={onActionSuccess}
               />
             </div>
           </div>

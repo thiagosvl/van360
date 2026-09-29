@@ -21,12 +21,13 @@ export interface ResponsavelCobrancaItem {
   mes: number;
   ano: number;
   valor: number;
+  valor_pago?: number | null;
+  tipo_pagamento?: string | null;
   status: string;
   data_vencimento: string;
   recibo_url?: string | null;
   desativar_lembretes?: boolean;
   isProjection?: boolean;
-  origem?: string;
 }
 
 export interface ResponsavelAusenciaItem {
@@ -76,6 +77,8 @@ export interface ResponsavelAdicionalItem {
   referencia?: string | null;
   complemento?: string | null;
   pin_acesso?: string | null;
+  tipo?: string | null;
+  notificacoes_rota_habilitadas?: boolean;
 }
 
 export interface ResponsavelRotaItem {
@@ -94,6 +97,8 @@ export interface ResponsavelCarteirinhaData {
   data_nascimento?: string | null;
   data_inicio_transporte?: string | null;
   data_fim_transporte?: string | null;
+  horario_entrada?: string | null;
+  horario_saida?: string | null;
   valor_cobranca?: number | null;
   dia_vencimento?: number | null;
   data_inicio_cobranca?: string | null;
@@ -102,6 +107,7 @@ export interface ResponsavelCarteirinhaData {
   periodo?: string | null;
   modalidade?: string | null;
   turma?: string | null;
+  sala?: string | null;
   nome_professor?: string | null;
   logradouro?: string | null;
   numero?: string | null;
@@ -127,4 +133,14 @@ export interface ResponsavelCarteirinhaData {
   responsaveis?: ResponsavelAdicionalItem[];
   rotas?: ResponsavelRotaItem[];
   responsavel_logado_id?: string | null;
+  recibos_anuais?: ResponsavelReciboAnualItem[];
+}
+
+export interface ResponsavelReciboAnualItem {
+  id: string;
+  ano: number;
+  recibo_url: string;
+  total_pago: number;
+  quantidade_meses: number;
+  created_at: string;
 }

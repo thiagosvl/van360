@@ -2,8 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adminUserApi,
   type ListUsersParams,
+  type ListAcquisitionStatsParams,
+  type ListUsersLatestActivityParams,
+  type ListUsersDailyPulseParams,
   type UpdateUserPayload,
   type UpdateSubscriptionPayload,
+  type DispatchDriverNotificationPayload,
 } from "@/services/api/admin/admin-user.api";
 import { toast } from "@/utils/notifications/toast";
 
@@ -17,20 +21,73 @@ export function useAdminStats() {
   return useQuery({
     queryKey: KEYS.stats,
     queryFn: adminUserApi.getStats,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useAdminUsers(params?: ListUsersParams) {
+export function useAdminAcquisitionStats(params?: ListAcquisitionStatsParams) {
+  return useQuery({
+    queryKey: ["admin", "stats", "acquisition", params],
+    queryFn: () => adminUserApi.getAcquisitionStats(params),
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUsersLatestActivity(params?: ListUsersLatestActivityParams, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", "latest-activity", params],
+    queryFn: () => adminUserApi.getUsersLatestActivity(params),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
+
+export function useAdminUsersRadarStats(subscriptionStatus: string = "active_trial", options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", "radar-stats", subscriptionStatus],
+    queryFn: () => adminUserApi.getUsersRadarStats(subscriptionStatus),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
+
+export function useAdminUsersDailyPulse(params?: ListUsersDailyPulseParams, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", "daily-pulse", params],
+    queryFn: () => adminUserApi.getUsersDailyPulse(params),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
+
+export function useAdminUsersDailyPulseStats(date?: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", "daily-pulse-stats", date],
+    queryFn: () => adminUserApi.getUsersDailyPulseStats(date),
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
+
+export function useAdminUsers(params?: ListUsersParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: KEYS.users(params),
     queryFn: () => adminUserApi.getUsers(params),
-    staleTime: 0,
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
+    enabled: options?.enabled,
   });
 }
 
@@ -39,7 +96,67 @@ export function useAdminUserDetails(id: string) {
     queryKey: KEYS.userDetails(id),
     queryFn: () => adminUserApi.getUserDetails(id),
     enabled: !!id,
-    staleTime: 0,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserContracts(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "contracts"],
+    queryFn: () => adminUserApi.getUserContratos(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserPassageiros(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "passageiros"],
+    queryFn: () => adminUserApi.getUserPassageiros(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserPrePassageiros(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "pre-passageiros"],
+    queryFn: () => adminUserApi.getUserPrePassageiros(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserVeiculos(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "veiculos"],
+    queryFn: () => adminUserApi.getUserVeiculos(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserEscolas(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "escolas"],
+    queryFn: () => adminUserApi.getUserEscolas(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminUserReferral(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "referral"],
+    queryFn: () => adminUserApi.getUserReferral(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -124,3 +241,160 @@ export function useDeleteUserAdmin() {
     },
   });
 }
+
+export function useDispatchDriverNotificationAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: DispatchDriverNotificationPayload }) =>
+      adminUserApi.dispatchNotification(id, data),
+    onSuccess: (res, variables) => {
+      const isSuccess = res.success !== false;
+      const message = (res as { message?: string }).message || "Notificação disparada com sucesso!";
+      if (isSuccess) {
+        toast.success(message);
+      } else {
+        toast.warning(message);
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "users", variables.id, "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao disparar notificação.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useDispatchPassengerCobrancaAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      passengerId,
+      cobrancaId,
+      force,
+    }: {
+      passengerId: string;
+      cobrancaId?: string;
+      force?: boolean;
+    }) => adminUserApi.dispatchPassengerCobranca(passengerId, { cobrancaId, force }),
+    onSuccess: (res, variables) => {
+      const isSuccess = res.success !== false;
+      const message = res.message || "Lembrete de cobrança enviado com sucesso!";
+      if (isSuccess) {
+        toast.success(message);
+      } else {
+        toast.warning(message);
+      }
+      if (userId) {
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "passageiros"] });
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "notifications"] });
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "passengers", variables.passengerId, "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao disparar lembrete de cobrança.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useDispatchDriverCobrancaDemoAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (driverId: string) => adminUserApi.dispatchDriverCobrancaDemo(driverId),
+    onSuccess: (res) => {
+      const isSuccess = res.success !== false;
+      const message = res.message || "Demonstração de cobrança enviada com sucesso ao WhatsApp!";
+      if (isSuccess) {
+        toast.success(message);
+      } else {
+        toast.warning(message);
+      }
+      if (userId) {
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "notifications"] });
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "notifications"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao disparar demonstração de cobrança.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useSetUserReferralAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, indicadorId }: { id: string; indicadorId: string }) =>
+      adminUserApi.setReferral(id, indicadorId),
+    onSuccess: (_, variables) => {
+      toast.success("Indicação atribuída com sucesso!");
+      qc.invalidateQueries({ queryKey: ["admin", "users", variables.id] });
+      qc.invalidateQueries({ queryKey: ["admin", "referrals"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao atribuir indicação.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useRemoveUserReferralAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminUserApi.removeReferral(id),
+    onSuccess: (_, id) => {
+      toast.success("Vínculo de indicação removido com sucesso!");
+      qc.invalidateQueries({ queryKey: ["admin", "users", id] });
+      qc.invalidateQueries({ queryKey: ["admin", "referrals"] });
+      qc.invalidateQueries({ queryKey: ["admin", "logs"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao remover indicação.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useAdminImpersonateUser() {
+  return useMutation({
+    mutationFn: (id: string) => adminUserApi.impersonateUser(id),
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao gerar link de acesso.";
+      toast.error(msg);
+    },
+  });
+}
+
+export function useDeleteInvoiceAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId: string) => adminUserApi.deleteInvoice(invoiceId),
+    onSuccess: async () => {
+      toast.success("Fatura excluída com sucesso.");
+
+      if (userId) {
+        await qc.invalidateQueries({ queryKey: KEYS.userDetails(userId) });
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "logs"] });
+      }
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao excluir fatura.";
+      toast.error(msg);
+    },
+  });
+}
+
+
+

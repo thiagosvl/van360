@@ -25,7 +25,7 @@ const CONFIG_DEFS: ConfigFieldDef[] = [
   {
     chave: ConfigKey.PASSAGEIRO_DIAS_AVISO_VENCIMENTO,
     label: "Dias Aviso Vencimento",
-    descricao: "Antecedência (dias) para aviso de vencimento ao passageiro.",
+    descricao: "Antecedência (dias) para aviso de vencimento ao aluno.",
     tipo: "number",
     sufixo: "dias",
     grupo: "Notificações",

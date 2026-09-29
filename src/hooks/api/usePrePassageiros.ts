@@ -31,6 +31,8 @@ export function usePrePassageiros(
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
     placeholderData: keepPreviousData,
     queryFn: async () => {
       if (!filters.usuarioId) return [];

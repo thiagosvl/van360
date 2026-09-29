@@ -1,11 +1,13 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile, useSession } from "@/hooks";
-import { useSubscriptionStatus, useSubscriptionPlans } from "@/hooks/api/useSubscription";
+import { useSubscriptionPlans } from "@/hooks/api/useSubscription";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { getNowBR, differenceInCalendarDaysBR } from "@/utils/dateUtils";
+import { getNowBR } from "@/utils/dateUtils";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 import { isMotoristaTitular } from "@/utils/userUtils";
 
@@ -20,6 +22,7 @@ export function useDashboardViewModel() {
     openGastoFormDialog,
     openFirstChargeDialog,
     openSaaSCheckoutDialog,
+    openOnboardingSuccessDialog,
   } = useLayout();
 
   const { loading: isSessionLoading } = useSession();
@@ -31,7 +34,12 @@ export function useDashboardViewModel() {
 
   const isGestor = isMotoristaTitular(profile);
 
-  const { subscription } = useSubscriptionStatus(isGestor ? profile?.id : undefined);
+  const {
+    subscription,
+    isPastDue,
+    isTrial,
+    trialDaysLeft,
+  } = useSubscriptionAccess(isGestor ? profile?.id : undefined);
   const { plans } = useSubscriptionPlans({ enabled: isGestor });
 
   const financeiro = useMemo(() => ({
@@ -65,16 +73,6 @@ export function useDashboardViewModel() {
     };
   }, [contadores]);
 
-  const subscriptionView = useMemo(() => {
-    if (!subscription) return undefined;
-
-    const trialDaysLeft = subscription.trial_ends_at
-      ? Math.max(0, differenceInCalendarDaysBR(subscription.trial_ends_at, getNowBR()))
-      : undefined;
-
-    return { ...subscription, trialDaysLeft };
-  }, [subscription]);
-
   const dateContext = useMemo(() => {
     const now = getNowBR();
     const options: Intl.DateTimeFormatOptions = {
@@ -101,25 +99,54 @@ export function useDashboardViewModel() {
   };
 
   const handleOpenPassageiroDialog = useCallback(() => {
-    const isFirstPassageiro = onboarding.showOnboarding || ((contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageiros ?? 0) === 0);
+    let createdCountInSession = 0;
+    const isFirstPassageiro = (contadores?.passageirosAtivos ?? 0) === 0 && (contadores?.passageiros ?? 0) === 0;
+
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
-      onSuccess: (passageiro) => {
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-        if (passageiro && !isFirstPassageiro) {
-          const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
-          if (!passageiro.isento || hasContractConfig) {
-            openFirstChargeDialog({ passageiro });
-          } else {
-            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-          }
-        } else if (passageiro && isFirstPassageiro) {
+      onSuccess: (passageiro, keepOpen) => {
+        if (!passageiro) {
+          return;
+        }
+
+        createdCountInSession += 1;
+
+        if (keepOpen) {
+          return;
+        }
+
+        if (isFirstPassageiro && createdCountInSession === 1) {
+          openOnboardingSuccessDialog({
+            passageiroNome: passageiro.nome,
+            onNavigateToPassageiro: () => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+            },
+          });
+          return;
+        }
+
+        const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
+        const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+        const now = getNowBR();
+        const hasPayment = hasFinancialInfo && shouldGeneratePassengerProjection({
+          passageiro,
+          targetMonth: now.getMonth() + 1,
+          targetYear: now.getFullYear(),
+        });
+
+        if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
+          openFirstChargeDialog({
+            passageiro,
+            onSuccess: (p) => {
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", (p || passageiro).id));
+            },
+          });
+        } else {
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }
       },
     });
-  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, queryClient, onboarding.showOnboarding, contadores, navigate]);
+  }, [openQuickStartPassageiroDialog, openFirstChargeDialog, openOnboardingSuccessDialog, contadores, navigate, profile?.config_contrato?.usar_contratos]);
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({
@@ -147,7 +174,10 @@ export function useDashboardViewModel() {
 
   return {
     profile,
-    subscription: subscriptionView,
+    subscription,
+    isPastDue,
+    isTrial,
+    trialDaysLeft,
     plans,
     isLoading: isSessionLoading || isProfileLoading,
     financeiro,

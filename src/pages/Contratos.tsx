@@ -6,14 +6,18 @@ import { ContratosList } from "@/components/features/contrato/ContratosList";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
 import { Banner } from "@/components/ui/Banner";
 
-import { useContratosViewModel } from "@/hooks";
+import { useContratosViewModel, safeCloseDialog } from "@/hooks";
 import { ContratoTab } from "@/types/enums";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks";
+import { STORAGE_KEYS } from "@/constants";
 
 const Contratos = () => {
   const { can } = usePermissions();
   const canManage = can("contratos.gerenciar");
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("contratos");
 
   const {
     activeTab,
@@ -24,6 +28,7 @@ const Contratos = () => {
     kpis,
     contratos,
     isLoading,
+    isDownloading,
     isContratoAtivo,
     isContratoConfigurado,
     handleRefresh,
@@ -58,6 +63,7 @@ const Contratos = () => {
               activeTab={activeTab}
               countPendentes={kpis?.pendentes}
               countSemContrato={kpis?.semContrato}
+              countAssinados={kpis?.assinados}
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
               onImportarContrato={() => handleOpenImportarContrato()}
@@ -73,7 +79,7 @@ const Contratos = () => {
               <Banner
                 variant="info"
                 title="Ative seus contratos digitais"
-                description="Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus passageiros."
+                description="Configure sua assinatura e defina os valores de multa e juros para começar a gerar contratos para seus alunos."
                 action={{
                   label: "Ativar Uso de Contratos",
                   onClick: handleOpenContractSetup,
@@ -87,7 +93,7 @@ const Contratos = () => {
               <Banner
                 variant="neutral"
                 title="Uso de Contratos Desativado"
-                description="Reative para voltar a gerar contratos para os passageiros."
+                description="Reative para voltar a gerar contratos para os alunos."
                 action={{
                   label: "Reativar Contratos",
                   onClick: () => handleToggleContracts(true),
@@ -99,23 +105,21 @@ const Contratos = () => {
 
             <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                {activeTab === ContratoTab.PENDENTES ? "Assinaturas Pendentes" : "Sem Contrato"}
+                {activeTab === ContratoTab.PENDENTES
+                  ? "Assinaturas Pendentes"
+                  : activeTab === ContratoTab.ASSINADOS
+                    ? "Contratos Assinados"
+                    : "Sem Contrato"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
+                {contratos.length}{" "}
+                {busca
+                  ? (contratos.length === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+                  : activeTab === ContratoTab.SEM_CONTRATO
+                    ? (contratos.length === 1 ? "ALUNO" : "ALUNOS")
+                    : (contratos.length === 1 ? "CONTRATO" : "CONTRATOS")}
               </span>
             </div>
-
-            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none transform-gpu will-change-transform">
-              <ContratosList
-                data={contratos}
-                isLoading={isLoading}
-                activeTab={ContratoTab.PENDENTES}
-                busca={debouncedSearch}
-                isDesativado={!isContratoAtivo}
-                {...actions}
-              />
-            </TabsContent>
 
             <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none transform-gpu will-change-transform">
               <ContratosList
@@ -124,6 +128,31 @@ const Contratos = () => {
                 activeTab={ContratoTab.SEM_CONTRATO}
                 busca={debouncedSearch}
                 isDesativado={!isContratoAtivo}
+                isDownloading={isDownloading}
+                {...actions}
+              />
+            </TabsContent>
+
+            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none transform-gpu will-change-transform">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.PENDENTES}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                isDownloading={isDownloading}
+                {...actions}
+              />
+            </TabsContent>
+
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none transform-gpu will-change-transform">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.ASSINADOS}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                isDownloading={isDownloading}
                 {...actions}
               />
             </TabsContent>
@@ -133,10 +162,25 @@ const Contratos = () => {
 
       <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
-        onClose={() => setIsPreviewPdfOpen(false)}
+        isLoading={isPreviewLoading}
+        onClose={() => safeCloseDialog(() => setIsPreviewPdfOpen(false))}
         pdfUrl={pdfUrl}
         title="Prévia do Contrato"
       />
+
+      {shouldShowTutorial && (
+        <VideoCommerce
+          screenName="contratos"
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          ctaText={tutorialConfig.ctaText}
+          onCtaClick={handleOpenContractSetup}
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          requireScrollOnMobile={false}
+          storageKey={STORAGE_KEYS.GUIDE_CONTRATOS_DISMISSED}
+        />
+      )}
     </>
   );
 };

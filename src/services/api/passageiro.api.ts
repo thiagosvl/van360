@@ -1,4 +1,4 @@
-import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
+import { AniversariantesResponse, Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { moneyToNumber } from "@/utils/masks";
 import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
@@ -11,6 +11,19 @@ export interface ListPassageirosResponse {
   page?: number;
   limit?: number;
   totalPages?: number;
+}
+
+export interface PassageiroBatchUpdateItem {
+  id: string;
+  escola_id?: string | null;
+  veiculo_id?: string | null;
+  turma?: string | null;
+  sala?: string | null;
+  nome_professor?: string | null;
+  periodo?: string | null;
+  valor_cobranca?: number | null;
+  dia_vencimento?: number | null;
+  ativo?: boolean;
 }
 
 export const passageiroApi = {
@@ -92,7 +105,7 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  getAniversariantes: (mes: number): Promise<Passageiro[]> =>
+  getAniversariantes: (mes: number): Promise<AniversariantesResponse> =>
     apiClient
       .get(`${endpointBase}/aniversariantes`, { params: { mes } })
       .then(res => res.data),
@@ -119,5 +132,21 @@ export const passageiroApi = {
   setPrincipalResponsavel: (passageiroId: string, responsavelId: string): Promise<void> =>
     apiClient
       .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/set-principal`)
+      .then(res => res.data),
+
+  toggleNotificacoesRota: (
+    passageiroId: string,
+    responsavelId: string,
+    status?: boolean
+  ): Promise<{ notificacoes_rota_habilitadas: boolean }> =>
+    apiClient
+      .patch(`${endpointBase}/${passageiroId}/responsaveis/${responsavelId}/toggle-notificacoes-rota`, {
+        status,
+      })
+      .then(res => res.data),
+
+  updateBatch: (passageiros: PassageiroBatchUpdateItem[]): Promise<{ success: boolean; updatedCount: number }> =>
+    apiClient
+      .put(`${endpointBase}/batch`, { passageiros })
       .then(res => res.data),
 };

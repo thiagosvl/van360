@@ -33,8 +33,14 @@ export interface PrePassageiro {
     parentesco_responsavel?: string;
     data_inicio_transporte?: string;
     turma?: string;
+    sala?: string | null;
     nome_professor?: string;
     data_fim_transporte?: string;
+    horario_entrada?: string | null;
+    horario_saida?: string | null;
     data_inicio_cobranca?: string;
     data_fim_cobranca?: string;
+    dispositivo_cadastro?: string | null;
+    metadados_cadastro?: Record<string, unknown> | null;
+    ano_letivo?: number;
 }

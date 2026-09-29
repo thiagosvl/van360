@@ -1,7 +1,7 @@
 import { ListPassageirosResponse, passageiroApi } from "@/services/api/passageiro.api";
 import { FilterDefaults } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 export interface UsePassageirosFilters {
@@ -52,6 +52,7 @@ export function usePassageiros(
   const query = useQuery({
     queryKey: ["passageiros", safeFilters.usuarioId, filterKey],
     enabled: (options?.enabled ?? true) && Boolean(safeFilters.usuarioId),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,

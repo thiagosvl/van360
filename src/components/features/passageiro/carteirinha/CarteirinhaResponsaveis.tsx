@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail } from "lucide-react";
+import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +10,7 @@ import { phoneMask, cpfMask } from "@/utils/masks";
 import { openBrowserLink } from "@/utils/browser";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useSetPrincipalResponsavel, useDeleteResponsavelAdicional } from "@/hooks";
+import { useSetPrincipalResponsavel, useDeleteResponsavelAdicional, useToggleNotificacoesRotaResponsavel } from "@/hooks";
 import {
   useResetPinResponsavelMutation,
   useSetPrincipalResponsavelResponsavelMutation,
@@ -21,8 +21,8 @@ import { toast } from "sonner";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { TipoResponsavel } from "@/types/enums";
 import { UnifiedEmptyState } from "@/components/empty";
-import { STORAGE_KEYS, BASE_DOMAIN } from "@/constants";
-import { PLAY_STORE_URL } from "@/utils/detectPlatform";
+import { STORAGE_KEYS } from "@/constants";
+import { buildResponsavelAppInviteUrl } from "@/utils/whatsappTemplates";
 
 export interface CarteirinhaResponsaveisProps {
   passageiro: Passageiro;
@@ -32,6 +32,7 @@ export interface CarteirinhaResponsaveisProps {
   hideAddress?: boolean;
   hideWhatsappButton?: boolean;
   hideEditButton?: boolean;
+  hideNotificacoesRota?: boolean;
   isResponsavelPortal?: boolean;
   onRefresh?: () => void;
 }
@@ -44,6 +45,7 @@ export const CarteirinhaResponsaveis = ({
   hideAddress = false,
   hideWhatsappButton = false,
   hideEditButton = false,
+  hideNotificacoesRota = false,
   isResponsavelPortal = false,
   onRefresh,
 }: CarteirinhaResponsaveisProps) => {
@@ -51,6 +53,7 @@ export const CarteirinhaResponsaveis = ({
   const canManage = canManageOverride !== undefined ? canManageOverride : can("passageiros.gerenciar");
   const setPrincipal = useSetPrincipalResponsavel();
   const deleteResponsavel = useDeleteResponsavelAdicional();
+  const toggleNotificacoesRota = useToggleNotificacoesRotaResponsavel();
   const setPrincipalPortal = useSetPrincipalResponsavelResponsavelMutation();
   const deleteResponsavelPortal = useDeleteResponsavelResponsavelMutation();
   const resetPin = useResetPinResponsavelMutation();
@@ -88,6 +91,7 @@ export const CarteirinhaResponsaveis = ({
         complemento: passageiro.responsavel_principal.complemento || null,
         pin_acesso: passageiro.responsavel_principal.pin_acesso,
         tipo: TipoResponsavel.PRINCIPAL,
+        notificacoes_rota_habilitadas: passageiro.responsavel_principal.notificacoes_rota_habilitadas !== false,
       };
       list.push(principalObj);
       if (principalObj.id) seenIds.add(principalObj.id);
@@ -103,6 +107,9 @@ export const CarteirinhaResponsaveis = ({
           if (!principalObj.pin_acesso && r.pin_acesso) principalObj.pin_acesso = r.pin_acesso;
           if (!principalObj.logradouro && r.logradouro) principalObj.logradouro = r.logradouro;
           if (!principalObj.parentesco && r.parentesco) principalObj.parentesco = r.parentesco;
+          if (r.notificacoes_rota_habilitadas !== undefined) {
+            principalObj.notificacoes_rota_habilitadas = r.notificacoes_rota_habilitadas !== false;
+          }
         }
         continue;
       }
@@ -115,6 +122,7 @@ export const CarteirinhaResponsaveis = ({
         ...r,
         id: rId || r.id,
         tipo: r.tipo || (list.length === 0 ? TipoResponsavel.PRINCIPAL : TipoResponsavel.ADICIONAL),
+        notificacoes_rota_habilitadas: r.notificacoes_rota_habilitadas !== false,
       });
     }
 
@@ -203,7 +211,7 @@ export const CarteirinhaResponsaveis = ({
             <UnifiedEmptyState
               icon={Users}
               title="Nenhum responsável cadastrado"
-              description="Complete o cadastro do passageiro ou clique em Adicionar para cadastrar o responsável principal."
+              description="Complete o cadastro do aluno ou clique em Adicionar para cadastrar o responsável principal."
               className="my-1 border-slate-200/80 bg-slate-50/50"
             />
           );
@@ -217,7 +225,7 @@ export const CarteirinhaResponsaveis = ({
         );
 
         const canEditCurrent = isResponsavelPortal ? isOwnProfile : (canManage && !hideEditButton);
-        const canShowDropdown = !isResponsavelPortal && !isPrincipalTab && canManage;
+        const canShowDropdown = !isResponsavelPortal && canManage;
 
         const respAddress = currentResp.logradouro
           ? formatarEnderecoCompleto(currentResp)
@@ -252,7 +260,30 @@ export const CarteirinhaResponsaveis = ({
                   responsavelId: targetResponsavelId,
                 });
               }
-              if (onRefresh) onRefresh();
+            },
+          });
+        };
+
+        const handleToggleNotificacoesRota = () => {
+          const targetRespId = currentResp.responsavel_id || currentResp.id;
+          if (!targetRespId || !passageiro.id) return;
+          const isAtivo = currentResp.notificacoes_rota_habilitadas !== false;
+
+          openConfirmationDialog({
+            title: isAtivo ? "Desativar notificações de rota?" : "Ativar notificações de rota?",
+            description: isAtivo
+              ? `Deseja desativar o envio de notificações de rota para ${formatFirstName(currentResp.nome)}? Ele(a) deixará de receber avisos de embarque, desembarque e van a caminho.`
+              : `Deseja ativar o envio de notificações de rota para ${formatFirstName(currentResp.nome)}? Ele(a) passará a receber avisos de embarque, desembarque e van a caminho.`,
+            confirmText: isAtivo ? "Desativar" : "Ativar",
+            cancelText: "Cancelar",
+            variant: isAtivo ? "destructive" : "default",
+            onConfirm: async () => {
+              await toggleNotificacoesRota.mutateAsync({
+                passageiroId: passageiro.id!,
+                responsavelId: targetRespId,
+                status: !isAtivo,
+              });
+              closeConfirmationDialog();
             },
           });
         };
@@ -281,7 +312,6 @@ export const CarteirinhaResponsaveis = ({
                   passageiroId: passageiro.id!,
                 });
               }
-              if (onRefresh) onRefresh();
               closeConfirmationDialog();
             },
           });
@@ -342,13 +372,30 @@ export const CarteirinhaResponsaveis = ({
                           <MoreVertical className="h-3.5 w-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
-                        <DropdownMenuItem onClick={handleSetPrincipal} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
-                          <Check className="h-4 w-4 text-emerald-500" /> Definir como Principal
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
-                          <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
-                        </DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="w-60 rounded-xl border-gray-100 shadow-xl p-1">
+                        {!isPrincipalTab && (
+                          <DropdownMenuItem onClick={handleSetPrincipal} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
+                            <Check className="h-4 w-4 text-slate-500" /> Definir como Principal
+                          </DropdownMenuItem>
+                        )}
+                        {!hideNotificacoesRota && (
+                          <DropdownMenuItem onClick={handleToggleNotificacoesRota} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700">
+                            {currentResp.notificacoes_rota_habilitadas !== false ? (
+                              <>
+                                <BellOff className="h-4 w-4 text-slate-500" /> Desativar Notificações de Rota
+                              </>
+                            ) : (
+                              <>
+                                <Bell className="h-4 w-4 text-slate-500" /> Ativar Notificações de Rota
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        )}
+                        {!isPrincipalTab && (
+                          <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600">
+                            <Trash2 className="h-4 w-4 text-red-500" /> Excluir Responsável
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
@@ -389,7 +436,7 @@ export const CarteirinhaResponsaveis = ({
                       const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
                       openBrowserLink(`https://wa.me/${formattedPhone}`);
                     }}
-                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20b858] text-white shadow-xs shrink-0 border-none flex items-center justify-center transition-all cursor-pointer"
+                    className="h-7 w-7 rounded-full bg-[#25D366] hover:bg-[#20b858] text-white shadow-xs shrink-0 border-none flex md:hidden items-center justify-center transition-all cursor-pointer"
                     title="Abrir no WhatsApp"
                   >
                     <WhatsAppIcon className="w-3.5 h-3.5" />
@@ -457,6 +504,27 @@ export const CarteirinhaResponsaveis = ({
                 </div>
               )}
 
+              {/* Linha de Notificações de Rota */}
+              {!hideNotificacoesRota && (
+                <div className="pt-2.5 border-t border-slate-200/50 flex items-center justify-between gap-2 min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Bell className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                    <span className="text-xs font-normal text-slate-500">Notificações de Rota</span>
+                  </div>
+                  {currentResp.notificacoes_rota_habilitadas !== false ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Ativas
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200/60">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                      Inativas
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Linha 6: Acesso ao App */}
               {!hideAppAccess && (
                 <div className="pt-2.5 border-t border-slate-200/50 space-y-2 min-w-0">
@@ -481,16 +549,12 @@ export const CarteirinhaResponsaveis = ({
                         <DropdownMenuContent align="end" className="w-60 rounded-xl border-gray-100 shadow-xl p-1">
                           <DropdownMenuItem
                             onClick={() => {
-                              const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
-                              const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
-                              const respNome = formatFirstName(currentResp.nome);
-                              const passNome = formatFirstName(passageiro.nome);
-                              const appAndroidLink = PLAY_STORE_URL;
-                              const webLoginLink = `${BASE_DOMAIN}/login`;
-
-                              const mensagem = `Olá, ${respNome}! Você foi convidado(a) para acompanhar a rotina escolar de *${passNome}* pelo aplicativo *Van360*!\n\n📲 *Baixe o app para Android:* ${appAndroidLink}\n🌐 *Ou acesse pelo navegador:* ${webLoginLink}`;
-
-                              openBrowserLink(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(mensagem)}`);
+                              const url = buildResponsavelAppInviteUrl({
+                                telefoneResponsavel: currentResp.telefone || "",
+                                nomeResponsavel: currentResp.nome,
+                                nomePassageiro: passageiro.nome,
+                              });
+                              openBrowserLink(url);
                             }}
                             className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
                           >
