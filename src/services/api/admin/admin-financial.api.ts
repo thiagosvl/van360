@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { CheckoutPaymentMethod } from "@/types/enums";
+import { CheckoutPaymentMethod, SubscriptionStatus } from "@/types/enums";
 
 export interface ProjecaoMesValor {
   total: number;
@@ -69,6 +69,7 @@ export interface ProximaRenovacaoItem {
   dataLiquidacaoPrevista: string | null;
   valor: number;
   isVitalicio: boolean;
+  statusAssinatura?: SubscriptionStatus;
 }
 
 export interface SafraTrialItem {
