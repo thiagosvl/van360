@@ -11,6 +11,7 @@ import AdminPassengerNotificationsDialog from "@/components/dialogs/AdminPasseng
 import AdminPassengerSendCobrancaDialog from "@/components/dialogs/AdminPassengerSendCobrancaDialog";
 import AdminDriverCobrancaDemoDialog from "@/components/dialogs/AdminDriverCobrancaDemoDialog";
 import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
+import AdminUserActivityHistoryDialog from "@/components/dialogs/AdminUserActivityHistoryDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
@@ -70,6 +71,7 @@ import {
   OpenAdminDriverCobrancaDemoDialogProps,
   OpenAdminVencimentoDetalhesDialogProps,
   OpenAdminConfigureReferralDialogProps,
+  OpenAdminUserActivityHistoryDialogProps,
   OpenAdminConfirmBroadcastDialogProps,
   OpenImageFullscreenProps,
   OpenVideoStoriesDialogProps,
@@ -364,6 +366,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [adminConfigureReferralDialogState, setAdminConfigureReferralDialogState] = useState<{
     open: boolean;
     props?: OpenAdminConfigureReferralDialogProps;
+  }>({ open: false });
+  const [adminUserActivityHistoryDialogState, setAdminUserActivityHistoryDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminUserActivityHistoryDialogProps;
   }>({ open: false });
   const [adminConfirmBroadcastDialogState, setAdminConfirmBroadcastDialogState] = useState<{
     open: boolean;
@@ -663,6 +669,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminConfigureReferralDialogState({ open: true, props });
   };
 
+  const openAdminUserActivityHistoryDialog = (props: OpenAdminUserActivityHistoryDialogProps) => {
+    setAdminUserActivityHistoryDialogState({ open: true, props });
+  };
+
   const openAdminConfirmBroadcastDialog = (props: OpenAdminConfirmBroadcastDialogProps) => {
     setAdminConfirmBroadcastDialogState({ open: true, props });
   };
@@ -769,6 +779,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminDriverCobrancaDemoDialog,
         openAdminVencimentoDetalhesDialog,
         openAdminConfigureReferralDialog,
+        openAdminUserActivityHistoryDialog,
         openAdminConfirmBroadcastDialog,
         closeAdminConfirmBroadcastDialog,
         openImageFullscreen,
@@ -1437,6 +1448,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           dia={adminVencimentoDetalhesDialogState.props.dia}
           mes={adminVencimentoDetalhesDialogState.props.mes}
           ano={adminVencimentoDetalhesDialogState.props.ano}
+        />
+      )}
+
+      {adminUserActivityHistoryDialogState.open && adminUserActivityHistoryDialogState.props && (
+        <AdminUserActivityHistoryDialog
+          open={true}
+          onClose={() => safeCloseDialog(() => setAdminUserActivityHistoryDialogState({ open: false }))}
+          userId={adminUserActivityHistoryDialogState.props.userId}
+          userName={adminUserActivityHistoryDialogState.props.userName}
+          userPhone={adminUserActivityHistoryDialogState.props.userPhone}
+          dataInicio={adminUserActivityHistoryDialogState.props.dataInicio}
+          dataFim={adminUserActivityHistoryDialogState.props.dataFim}
         />
       )}
 

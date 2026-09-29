@@ -35,3 +35,29 @@ export function useAdminLogs(
     placeholderData: (previousData) => previousData,
   });
 }
+
+export function useAdminLogsByUser(
+  params?: {
+    page?: number;
+    limit?: number;
+    dataInicio?: string;
+    dataFim?: string;
+    acao?: string;
+    entidade?: string;
+    search_cpf?: string;
+  },
+  options?: {
+    enabled?: boolean;
+    refetchOnWindowFocus?: boolean | "always";
+  }
+) {
+  return useQuery({
+    queryKey: ["admin", "logs", "by-user", params],
+    queryFn: () => adminLogApi.getLogsByUser(params),
+    enabled: options?.enabled ?? true,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: options?.refetchOnWindowFocus ?? "always",
+    placeholderData: (previousData) => previousData,
+  });
+}

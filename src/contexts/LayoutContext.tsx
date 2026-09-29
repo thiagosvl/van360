@@ -264,6 +264,14 @@ export interface OpenAdminConfigureReferralDialogProps {
   onSuccess?: () => void;
 }
 
+export interface OpenAdminUserActivityHistoryDialogProps {
+  userId: string;
+  userName: string;
+  userPhone?: string | null;
+  dataInicio?: string;
+  dataFim?: string;
+}
+
 export interface VideoStoryItem {
   url: string;
   title?: string;
@@ -372,6 +380,7 @@ export interface LayoutContextType {
   openAdminDriverCobrancaDemoDialog: (props: OpenAdminDriverCobrancaDemoDialogProps) => void;
   openAdminVencimentoDetalhesDialog: (props: OpenAdminVencimentoDetalhesDialogProps) => void;
   openAdminConfigureReferralDialog: (props: OpenAdminConfigureReferralDialogProps) => void;
+  openAdminUserActivityHistoryDialog: (props: OpenAdminUserActivityHistoryDialogProps) => void;
   openAdminConfirmBroadcastDialog: (props: OpenAdminConfirmBroadcastDialogProps) => void;
   closeAdminConfirmBroadcastDialog: () => void;
   openImageFullscreen: (props: OpenImageFullscreenProps) => void;
