@@ -1,12 +1,12 @@
-import { 
-    useBuscarResponsavel, 
-    useCreatePassageiro, 
-    useEscolasWithFilters, 
-    useFinalizePreCadastro, 
-    usePassageiro,
-    usePassageiroForm, 
-    useUpdatePassageiro, 
-    useVeiculosWithFilters 
+import {
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useEscolasWithFilters,
+  useFinalizePreCadastro,
+  usePassageiro,
+  usePassageiroForm,
+  useUpdatePassageiro,
+  useVeiculosWithFilters
 } from "@/hooks";
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -46,7 +46,7 @@ export function usePassageiroFormViewModel({
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
   const { mutateAsync: lookupResponsavel, isPending: isSearchingResponsavel } = useBuscarResponsavel();
-  
+
   const searchedTermsSet = useRef<Set<string>>(new Set());
   const isFillingMockRef = useRef<boolean>(false);
   const prevAnoLetivoRef = useRef<string | null>(null);
@@ -296,6 +296,10 @@ export function usePassageiroFormViewModel({
       ? convertDateBrToISO(purePayload.data_inicio_transporte)
       : null;
 
+    purePayload.data_fim_transporte = typeof purePayload.data_fim_transporte === "string" && purePayload.data_fim_transporte
+      ? convertDateBrToISO(purePayload.data_fim_transporte)
+      : null;
+
     purePayload.horario_entrada = typeof purePayload.horario_entrada === "string" && purePayload.horario_entrada.trim()
       ? purePayload.horario_entrada.trim()
       : null;
@@ -421,8 +425,8 @@ export function usePassageiroFormViewModel({
         }
 
         onSuccess(responseData, {
-           formData: purePayload,
-           hasCriticalContractChanges
+          formData: purePayload,
+          hasCriticalContractChanges
         });
         onClose();
       },
