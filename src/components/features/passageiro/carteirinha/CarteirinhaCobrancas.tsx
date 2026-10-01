@@ -354,10 +354,10 @@ export const CarteirinhaCobrancas = ({
       {!passageiro.isento && isIncomplete && (
         <Banner
           variant="info"
-          title="Configurar parcelas"
-          description="Esta lista é uma prévia do ano. Preencha o valor e o vencimento para exibir corretamente e ativar as cobranças."
+          title="Ajuste as parcelas do aluno"
+          description="Esta lista é uma prévia do ano e você pode ajustar. Preencha o valor e o vencimento para exibir corretamente e ativar as cobranças."
           action={{
-            label: "Configurar parcelas",
+            label: "Ajustar parcelas",
             onClick: () =>
               openPassageiroFinanceiroDialog({
                 passageiro,

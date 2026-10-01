@@ -725,6 +725,9 @@ export const adminUserApi = {
   deleteInvoice: (id: string) =>
     apiClient.delete<{ success: boolean; message: string }>(`${BASE}/invoices/${id}`).then(r => r.data),
 
+  confirmInvoicePayment: (id: string) =>
+    apiClient.post<{ success: boolean; message: string }>(`${BASE}/invoices/${id}/confirm-payment`).then(r => r.data),
+
   dispatchPassengerCobranca: (passengerId: string, payload?: { cobrancaId?: string; force?: boolean }) =>
     apiClient.post<{
       success: boolean;

@@ -343,7 +343,7 @@ export function NotificationLogsList({
         <div className="space-y-3 bg-slate-900/50 p-3 sm:p-4 rounded-2xl border border-slate-800/80">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* TABS DE CATEGORIAS */}
-            <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0 -mx-1 px-1 touch-pan-x">
               {NOTIFICATION_CATEGORY_TABS.map((tab) => {
                 const isActive = activeFilters.categoria === tab.key;
                 return (
@@ -385,45 +385,47 @@ export function NotificationLogsList({
           </div>
 
           {/* FILTROS SECUNDÁRIOS: CANAL, STATUS E LIMPAR */}
-          <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-800/60">
-            <div className="w-40 sm:w-44">
-              <Select
-                value={activeFilters.canal}
-                onValueChange={(val) => updateFilters({ canal: val })}
-              >
-                <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
-                  <SelectValue placeholder="Canal" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
-                  <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Canais</SelectItem>
-                  <SelectItem value={NotificationChannelEnum.WABA}>WhatsApp (WABA)</SelectItem>
-                  <SelectItem value={NotificationChannelEnum.EVOLUTION}>WhatsApp (Evolution)</SelectItem>
-                  <SelectItem value={NotificationChannelEnum.FIREBASE}>Push App</SelectItem>
-                  <SelectItem value={NotificationChannelEnum.RESEND}>E-mail</SelectItem>
-                  <SelectItem value={NotificationChannelEnum.SMS}>SMS</SelectItem>
-                  <SelectItem value={NotificationChannelEnum.TELEGRAM}>Telegram</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-slate-800/60">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              <div className="w-full sm:w-44">
+                <Select
+                  value={activeFilters.canal}
+                  onValueChange={(val) => updateFilters({ canal: val })}
+                >
+                  <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
+                    <SelectValue placeholder="Canal" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
+                    <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Canais</SelectItem>
+                    <SelectItem value={NotificationChannelEnum.WABA}>WhatsApp (WABA)</SelectItem>
+                    <SelectItem value={NotificationChannelEnum.EVOLUTION}>WhatsApp (Evolution)</SelectItem>
+                    <SelectItem value={NotificationChannelEnum.FIREBASE}>Push App</SelectItem>
+                    <SelectItem value={NotificationChannelEnum.RESEND}>E-mail</SelectItem>
+                    <SelectItem value={NotificationChannelEnum.SMS}>SMS</SelectItem>
+                    <SelectItem value={NotificationChannelEnum.TELEGRAM}>Telegram</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="w-40 sm:w-44">
-              <Select
-                value={activeFilters.status}
-                onValueChange={(val) => updateFilters({ status: val })}
-              >
-                <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
-                  <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Status</SelectItem>
-                  <SelectItem value={NotificationStatusEnum.SENT}>Entregue</SelectItem>
-                  <SelectItem value={NotificationStatusEnum.FAILED}>Falhou</SelectItem>
-                  <SelectItem value={NotificationStatusEnum.PENDING}>Na Fila</SelectItem>
-                  <SelectItem value={NotificationStatusEnum.PROCESSING}>Enviando</SelectItem>
-                  <SelectItem value={NotificationStatusEnum.RETRY_PENDING}>Nova Tentativa</SelectItem>
-                  <SelectItem value={NotificationStatusEnum.CANCELLED}>Cancelado</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="w-full sm:w-44">
+                <Select
+                  value={activeFilters.status}
+                  onValueChange={(val) => updateFilters({ status: val })}
+                >
+                  <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
+                    <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Status</SelectItem>
+                    <SelectItem value={NotificationStatusEnum.SENT}>Entregue</SelectItem>
+                    <SelectItem value={NotificationStatusEnum.FAILED}>Falhou</SelectItem>
+                    <SelectItem value={NotificationStatusEnum.PENDING}>Na Fila</SelectItem>
+                    <SelectItem value={NotificationStatusEnum.PROCESSING}>Enviando</SelectItem>
+                    <SelectItem value={NotificationStatusEnum.RETRY_PENDING}>Nova Tentativa</SelectItem>
+                    <SelectItem value={NotificationStatusEnum.CANCELLED}>Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {hasActiveFilters && (
@@ -432,7 +434,7 @@ export function NotificationLogsList({
                 variant="ghost"
                 size="sm"
                 onClick={handleResetFilters}
-                className="h-8 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 px-2.5 flex items-center gap-1.5 ml-auto sm:ml-0"
+                className="h-8 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 px-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto"
               >
                 <FilterX className="h-3.5 w-3.5 text-rose-400" />
                 <span>Limpar Filtros</span>
@@ -661,12 +663,12 @@ export function NotificationLogsList({
             return (
               <div
                 key={item.id}
-                className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-lg space-y-3 text-left"
+                className="p-3.5 sm:p-4 bg-slate-900/90 rounded-2xl border border-slate-800/90 shadow-lg space-y-3 text-left"
               >
-                <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-start justify-between gap-2.5 border-b border-slate-800/80 pb-3">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     {enableSelection && (
-                      <div className="pt-0.5">
+                      <div className="pt-0.5 shrink-0">
                         <Checkbox
                           checked={selectedIds.has(item.id)}
                           onCheckedChange={(checked) => {
@@ -679,20 +681,22 @@ export function NotificationLogsList({
                         />
                       </div>
                     )}
-                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center border shrink-0 ${meta.iconBg}`}>
-                      <Icon className={`h-5 w-5 ${meta.iconColor}`} />
+                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center border shrink-0 ${meta.iconBg}`}>
+                      <Icon className={`h-4 w-4 ${meta.iconColor}`} />
                     </div>
-                    <div>
-                      <h4 className="text-xs font-headline font-bold text-slate-100 leading-tight">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-headline font-bold text-slate-100 leading-tight truncate">
                         {meta.title}
                       </h4>
-                      <p className="text-[10px] font-mono text-slate-500 uppercase mt-0.5">
+                      <p className="text-[10px] font-mono text-slate-500 uppercase mt-0.5 truncate">
                         {item.evento}
                       </p>
                     </div>
                   </div>
 
-                  {renderStatusBadge(item.status)}
+                  <div className="shrink-0">
+                    {renderStatusBadge(item.status)}
+                  </div>
                 </div>
 
                 {(nomeAluno || valorCobranca !== undefined) && (
@@ -763,7 +767,8 @@ export function NotificationLogsList({
                     onClick={() => setSelectedNotification(item)}
                   >
                     <Eye className="h-3.5 w-3.5 text-blue-400" />
-                    <span>Inspecionar Detalhes Técnicos</span>
+                    <span className="sm:hidden">Inspecionar</span>
+                    <span className="hidden sm:inline">Inspecionar Detalhes Técnicos</span>
                   </Button>
                 </div>
               </div>

@@ -16,9 +16,9 @@ interface SmartAppBannerProps {
 export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => {
   if (isNativeApp()) return null;
 
-  const { isEligibleAndroid, isEligibleIos, isEligibleDesktop } = getAppPlatformEligibility();
+  const { isEligibleAndroid, isEligibleIos, hasEligibleApp } = getAppPlatformEligibility();
 
-  if (!isEligibleAndroid && !isEligibleIos && !isEligibleDesktop) {
+  if (!hasEligibleApp) {
     return null;
   }
 
@@ -39,7 +39,7 @@ export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => 
         </p>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-          {(isEligibleAndroid || isEligibleDesktop) && (
+          {isEligibleAndroid && (
             <a
               href={PLAY_STORE_URL}
               target="_blank"
@@ -55,7 +55,7 @@ export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => 
             </a>
           )}
 
-          {(isEligibleIos || isEligibleDesktop) && (
+          {isEligibleIos && (
             <a
               href={APP_STORE_URL}
               target="_blank"

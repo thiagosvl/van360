@@ -104,20 +104,21 @@ export default function PrePassageiros({
         if (onFinalizeNewPrePassageiro) onFinalizeNewPrePassageiro();
         if (!passageiro) return;
 
-        if (isFirstPassageiro) {
-          openOnboardingSuccessDialog({
-            passageiroNome: passageiro.nome,
-            onNavigateToPassageiro: () => {
-              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-            },
-          });
-          return;
-        }
-
         openFirstChargeDialog({
           passageiro,
+          isFirstPassageiro,
           onSuccess: (p) => {
             const finalPassageiro = p || passageiro;
+            if (isFirstPassageiro) {
+              openOnboardingSuccessDialog({
+                passageiroNome: finalPassageiro.nome,
+                onNavigateToPassageiro: () => {
+                  navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", finalPassageiro.id));
+                },
+              });
+              return;
+            }
+
             openConfirmationDialog({
               title: "Aluno cadastrado com sucesso!",
               description: `${finalPassageiro.nome} agora faz parte dos seus alunos ativos. O que você deseja fazer agora?`,

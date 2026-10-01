@@ -37,7 +37,11 @@ export function ImportarContratoDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
-  const initialPassageiroId = passageiroId || passageiro?.id || "";
+  const rawPass = (passageiro && "passageiro" in passageiro && (passageiro as any).passageiro)
+    ? (passageiro as any).passageiro as Passageiro
+    : passageiro;
+
+  const initialPassageiroId = passageiroId || rawPass?.id || "";
   const [selectedPassageiroId, setSelectedPassageiroId] = useState<string>(initialPassageiroId);
   const [searchPassageiro, setSearchPassageiro] = useState("");
   const debouncedSearch = useDebounce(searchPassageiro, 300);
@@ -48,10 +52,10 @@ export function ImportarContratoDialog({
   const isFixedPassageiro = Boolean(initialPassageiroId);
 
   const { data: fetchedFixedPassageiro, isLoading: isLoadingFixed } = usePassageiro(initialPassageiroId, {
-    enabled: isFixedPassageiro && isOpen && !passageiro,
+    enabled: isFixedPassageiro && isOpen && (!rawPass || !rawPass.nome),
   });
 
-  const fixedPassageiro = passageiro || fetchedFixedPassageiro;
+  const fixedPassageiro = (rawPass?.nome ? rawPass : undefined) || fetchedFixedPassageiro;
 
   const { data: passageirosResponse, isLoading: isLoadingPassageiros } = usePassageiros(
     { usuarioId: user?.id || "", status: "true", limit: 500 },
@@ -91,12 +95,12 @@ export function ImportarContratoDialog({
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedPassageiroId(passageiroId || passageiro?.id || "");
+      setSelectedPassageiroId(passageiroId || rawPass?.id || "");
       setSearchPassageiro("");
       setSelectedFile(null);
       setBase64Content(null);
     }
-  }, [isOpen, passageiroId, passageiro?.id]);
+  }, [isOpen, passageiroId, rawPass?.id]);
 
   useEffect(() => {
     if (selectedPassageiroId && !isFixedPassageiro) {
@@ -213,11 +217,6 @@ export function ImportarContratoDialog({
       />
 
       <BaseDialog.Body className="space-y-5 py-2">
-        <Banner
-          variant="info"
-          description="Anexe o contrato já assinado em papel ou PDF para arquivar na carteirinha do aluno."
-          className="mb-1"
-        />
 
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
@@ -232,12 +231,14 @@ export function ImportarContratoDialog({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-[#1a3a5c] truncate">
-                    {isLoadingFixed ? "Carregando..." : formatShortName(currentSelectedPassageiro?.nome, true)}
+                    {isLoadingFixed && !currentSelectedPassageiro?.nome
+                      ? "Carregando aluno..."
+                      : (currentSelectedPassageiro?.nome ? formatShortName(currentSelectedPassageiro.nome, true) : "Aluno selecionado")}
                   </p>
                   <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
                     {currentSelectedPassageiro?.responsavel_principal?.nome
-                      ? formatFirstName(currentSelectedPassageiro.responsavel_principal.nome)
-                      : "Aluno selecionado"}
+                      ? `${formatFirstName(currentSelectedPassageiro.responsavel_principal.nome)}`
+                      : (currentSelectedPassageiro?.nome ? "Sem responsável informado" : "Identificando aluno...")}
                   </p>
                 </div>
               </div>
@@ -365,9 +366,6 @@ export function ImportarContratoDialog({
                   </p>
                   <p className="text-xs text-slate-400 font-medium mt-0.5">
                     Apenas documento assinado em formato PDF (máximo 10MB)
-                  </p>
-                  <p className="text-[11px] text-slate-400 font-medium mt-1">
-                    Dica: Se tirou fotos das folhas de papel, salve-as como PDF no celular antes de anexar.
                   </p>
                 </div>
               </div>

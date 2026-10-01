@@ -207,20 +207,22 @@ export default function AdminNotificationsHistory() {
           </p>
         </div>
 
-        <TabsList className="bg-slate-900/90 border border-slate-800 p-1 rounded-2xl h-11">
+        <TabsList className="bg-slate-900/90 border border-slate-800 p-1 rounded-2xl h-11 w-full sm:w-auto flex">
           <TabsTrigger
             value="historico"
-            className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-2"
+            className="flex-1 sm:flex-initial justify-center rounded-xl px-3 sm:px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-1.5 sm:gap-2"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span>Histórico e Reprocessamento</span>
+            <span className="sm:hidden">Histórico</span>
+            <span className="hidden sm:inline">Histórico e Reprocessamento</span>
           </TabsTrigger>
           <TabsTrigger
             value="broadcast"
-            className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-2"
+            className="flex-1 sm:flex-initial justify-center rounded-xl px-3 sm:px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-1.5 sm:gap-2"
           >
             <Send className="h-3.5 w-3.5" />
-            <span>Disparar Notificações</span>
+            <span className="sm:hidden">Enviar</span>
+            <span className="hidden sm:inline">Disparar Notificações</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -231,7 +233,8 @@ export default function AdminNotificationsHistory() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
                 <Bell className="h-4 w-4 text-indigo-400" />
-                <span>Histórico de Notificações</span>
+                <span className="sm:hidden">Histórico</span>
+                <span className="hidden sm:inline">Histórico de Notificações</span>
               </CardTitle>
               <div className="flex items-center gap-2">
               <Button
@@ -348,7 +351,7 @@ export default function AdminNotificationsHistory() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-6 px-6 pb-2 mb-2 md:grid md:grid-cols-2 lg:grid-cols-5 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
             <AdminKpiCard
               title="TOTAL DE NOTIFICAÇÕES"
               value={kpis?.total ?? (isFetching ? "..." : 0)}
@@ -356,6 +359,7 @@ export default function AdminNotificationsHistory() {
               cardBorder="border-blue-500/40 shadow-blue-500/10"
               iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
               icon={<Bell className="h-5 w-5" />}
+              className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               onClick={() =>
                 handleBaseFiltersChange({
                   ...filters,
@@ -379,6 +383,7 @@ export default function AdminNotificationsHistory() {
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<CheckCircle2 className="h-5 w-5" />}
+              className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
 
             <AdminKpiCard
@@ -396,6 +401,7 @@ export default function AdminNotificationsHistory() {
                   : "bg-slate-800 text-slate-400 border-slate-700"
               }
               icon={<AlertTriangle className="h-5 w-5" />}
+              className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               onClick={() => handleBaseFiltersChange({ ...filters, status: "FAILED" })}
             />
 
@@ -410,6 +416,7 @@ export default function AdminNotificationsHistory() {
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<MessageSquare className="h-5 w-5" />}
+              className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               onClick={() => handleBaseFiltersChange({ ...filters, canal: "WABA" })}
             />
 
@@ -424,15 +431,16 @@ export default function AdminNotificationsHistory() {
               cardBorder="border-purple-500/40 shadow-purple-500/10"
               iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
               icon={<DollarSign className="h-5 w-5" />}
+              className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
           </div>
 
           {kpis && kpis.total > 0 && (
-            <div className="bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <div className="bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">
                 Distribuição por Canal no Período:
               </span>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 -mx-1 px-1 touch-pan-x">
                 {kpis.canais.waba > 0 && (
                   <button
                     type="button"

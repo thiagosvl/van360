@@ -39,6 +39,54 @@ export function useCreateEscola() {
   });
 }
 
+interface EscolasCacheData {
+  list: Escola[];
+  total: number;
+  ativas: number;
+}
+
+export function useCreateEscolasBatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ usuarioId, nomes }: { usuarioId: string; nomes: string[] }) =>
+      escolaApi.createEscolasBatch(usuarioId, nomes),
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Erro ao cadastrar escolas em lote"));
+    },
+    onSuccess: (novasEscolas: Escola[]) => {
+      queryClient.setQueriesData<EscolasCacheData>({ queryKey: ["escolas"] }, (old) => {
+        if (!old) return old;
+        if (old.list) {
+          return {
+            ...old,
+            list: [...novasEscolas, ...old.list],
+            total: old.total + novasEscolas.length,
+            ativas: old.ativas + novasEscolas.filter((e) => e.ativo).length,
+          };
+        }
+        return old;
+      });
+
+      queryClient.setQueriesData<Escola[]>({ queryKey: ["escolas-form"] }, (old) => {
+        if (!old || !Array.isArray(old)) return novasEscolas;
+        return [...old, ...novasEscolas];
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+
+      const count = novasEscolas.length;
+      toast.success(
+        count === 1
+          ? "Escola cadastrada com sucesso!"
+          : `${count} escolas cadastradas com sucesso!`
+      );
+    },
+  });
+}
+
 export function useUpdateEscola() {
   const queryClient = useQueryClient();
 

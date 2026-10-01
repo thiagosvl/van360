@@ -31,6 +31,7 @@ import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { AdminDailyPulseDriverCard } from "./AdminDailyPulseDriverCard";
 import { getNowBR, toPersistenceString, addDays } from "@/utils/dateUtils";
+import { cn } from "@/lib/utils";
 
 interface AdminRadarDailyPulseTabProps {
   isActive: boolean;
@@ -155,7 +156,7 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
       </div>
 
       <div className="space-y-4">
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 md:grid md:grid-cols-4 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
           <AdminKpiCard
             title="ACESSOS ÚNICOS NO DIA"
             value={isLoadingStats ? "..." : (stats?.totalAcessosUnicos ?? 0)}
@@ -168,7 +169,7 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
               setSubscriptionStatus("all");
               setPage(1);
             }}
-            className={tipoUsuario === "all" && subscriptionStatus === "all" ? "ring-2 ring-blue-500" : ""}
+            className={cn("w-[190px] sm:w-[210px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", tipoUsuario === "all" && subscriptionStatus === "all" ? "ring-2 ring-blue-500" : "")}
           />
 
           <AdminKpiCard
@@ -183,7 +184,7 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
               setSubscriptionStatus("all");
               setPage(1);
             }}
-            className={tipoUsuario === "recorrente" ? "ring-2 ring-sky-500" : ""}
+            className={cn("w-[190px] sm:w-[210px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", tipoUsuario === "recorrente" ? "ring-2 ring-sky-500" : "")}
           />
 
           <AdminKpiCard
@@ -198,7 +199,7 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
               setSubscriptionStatus("all");
               setPage(1);
             }}
-            className={tipoUsuario === "novo" ? "ring-2 ring-emerald-500" : ""}
+            className={cn("w-[190px] sm:w-[210px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", tipoUsuario === "novo" ? "ring-2 ring-emerald-500" : "")}
           />
 
           <AdminKpiCard
@@ -208,6 +209,7 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
             cardBorder="border-purple-500/40 shadow-purple-500/10"
             iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
             icon={<Zap className="h-5 w-5" />}
+            className="w-[190px] sm:w-[210px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
           />
         </div>
 
@@ -218,18 +220,19 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="flex items-stretch gap-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-3 px-3 pb-1 md:grid md:grid-cols-4 md:overflow-visible md:mx-0 md:px-0 md:pb-0 touch-pan-x">
             <button
               type="button"
               onClick={() => {
                 setSubscriptionStatus(prev => prev === "ACTIVE" ? "all" : "ACTIVE");
                 setPage(1);
               }}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
+              className={cn(
+                "w-[140px] shrink-0 md:w-auto md:shrink p-2.5 rounded-xl border text-left transition-all",
                 subscriptionStatus === "ACTIVE"
                   ? "bg-emerald-500/20 border-emerald-500/50 ring-2 ring-emerald-500"
                   : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700"
-              }`}
+              )}
             >
               <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Assinantes Pagantes</div>
               <div className="text-lg font-black text-white">{stats?.totalAtivos ?? 0}</div>
@@ -241,11 +244,12 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
                 setSubscriptionStatus(prev => prev === "TRIAL" ? "all" : "TRIAL");
                 setPage(1);
               }}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
+              className={cn(
+                "w-[140px] shrink-0 md:w-auto md:shrink p-2.5 rounded-xl border text-left transition-all",
                 subscriptionStatus === "TRIAL"
                   ? "bg-sky-500/20 border-sky-500/50 ring-2 ring-sky-500"
                   : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700"
-              }`}
+              )}
             >
               <div className="text-[10px] font-bold uppercase tracking-wider text-sky-400">Em Trial (Testes)</div>
               <div className="text-lg font-black text-white">{stats?.totalTrial ?? 0}</div>
@@ -257,11 +261,12 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
                 setSubscriptionStatus(prev => prev === "VITALICIO" ? "all" : "VITALICIO");
                 setPage(1);
               }}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
+              className={cn(
+                "w-[140px] shrink-0 md:w-auto md:shrink p-2.5 rounded-xl border text-left transition-all",
                 subscriptionStatus === "VITALICIO"
                   ? "bg-amber-500/20 border-amber-500/50 ring-2 ring-amber-500"
                   : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700"
-              }`}
+              )}
             >
               <div className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Vitalícios</div>
               <div className="text-lg font-black text-white">{stats?.totalVitalicios ?? 0}</div>
@@ -273,11 +278,12 @@ export function AdminRadarDailyPulseTab({ isActive }: AdminRadarDailyPulseTabPro
                 setSubscriptionStatus(prev => prev === "EXPIRED_PAST_DUE" ? "all" : "EXPIRED_PAST_DUE");
                 setPage(1);
               }}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
+              className={cn(
+                "w-[140px] shrink-0 md:w-auto md:shrink p-2.5 rounded-xl border text-left transition-all",
                 subscriptionStatus === "EXPIRED_PAST_DUE"
                   ? "bg-rose-500/20 border-rose-500/50 ring-2 ring-rose-500"
                   : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700"
-              }`}
+              )}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Vencidos / Expirados</span>

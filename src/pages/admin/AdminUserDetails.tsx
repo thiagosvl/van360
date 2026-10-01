@@ -13,6 +13,7 @@ import {
   useRemoveUserReferralAdmin,
   useAdminImpersonateUser,
   useDeleteInvoiceAdmin,
+  useConfirmInvoicePaymentAdmin,
   useAdminUserContracts,
   useAdminUserPassageiros,
   useAdminUserPrePassageiros,
@@ -76,6 +77,7 @@ import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
+import { APP_AVAILABILITY } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,7 +86,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  SubscriptionStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo, AdminUserTab, AdminUserSubTab, DriverContractConfigStatus,
+  SubscriptionStatus, SubscriptionInvoiceStatus, CheckoutPaymentMethod, AtividadeAcao, AtividadeEntidadeTipo, AdminUserTab, AdminUserSubTab, DriverContractConfigStatus,
   ContractMultaTipo, IndicacaoStatus, CanalAquisicao
 } from "@/types/enums";
 
@@ -177,6 +179,7 @@ export default function AdminUserDetails() {
   const resetPassword = useResetPasswordAdmin();
   const deleteUser = useDeleteUserAdmin();
   const deleteInvoiceMutation = useDeleteInvoiceAdmin(id);
+  const confirmPaymentMutation = useConfirmInvoicePaymentAdmin(id);
   const removeReferralMutation = useRemoveUserReferralAdmin();
   const impersonateUser = useAdminImpersonateUser();
   const [resetPasswordData, setResetPasswordData] = useState<{ open: boolean; senha: string } | null>(null);
@@ -576,6 +579,23 @@ export default function AdminUserDetails() {
     });
   };
 
+  const handleConfirmPayment = (fatura: NonNullable<typeof data>["faturas"][number]) => {
+    openConfirmationDialog({
+      title: "Registrar Pagamento Manual",
+      description: `Deseja realmente confirmar e registrar o pagamento da fatura no valor de ${moneyMask(fatura.valor)}? Esta ação dará baixa na cobrança, renovará a assinatura do motorista e estenderá a validade do plano ${fatura.planos?.nome || ""}.`,
+      confirmText: "Sim, Confirmar Pagamento",
+      variant: "default",
+      onConfirm: async () => {
+        try {
+          await confirmPaymentMutation.mutateAsync(fatura.id);
+          safeCloseDialog(closeConfirmationDialog);
+        } catch (error) {
+          console.error("Falha ao registrar pagamento da fatura", error);
+        }
+      },
+    });
+  };
+
   const handleCopyImpersonateLink = async () => {
     if (!id) return;
     try {
@@ -726,7 +746,7 @@ export default function AdminUserDetails() {
               tabIndex={data.user.logo_url ? 0 : undefined}
               onClick={
                 data.user.logo_url
-                  ? () => openImageFullscreen({ imageUrl: data.user.logo_url!, alt: data.user.nome })
+                  ? () => openImageFullscreen({ imageUrl: data.user.logo_url!, alt: data.user.apelido || data.user.nome })
                   : undefined
               }
               className={cn(
@@ -739,21 +759,26 @@ export default function AdminUserDetails() {
               {data.user.logo_url ? (
                 <img
                   src={data.user.logo_url}
-                  alt={data.user.nome}
+                  alt={data.user.apelido || data.user.nome}
                   className="h-full w-full object-contain"
                 />
               ) : (
-                data.user.nome.charAt(0).toUpperCase()
+                (data.user.apelido || data.user.nome).charAt(0).toUpperCase()
               )}
             </div>
 
             <div className="space-y-1.5 min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-lg sm:text-xl lg:text-2xl font-headline font-black text-white leading-tight break-words">
-                  {data.user.nome}
+                  {data.user.apelido || data.user.nome}
                 </h1>
 
-                {/* BOTÃO COPIAR ID AO LADO DO NOME (APENAS DESKTOP) */}
+                {data.user.apelido && (
+                  <span className="text-sm font-semibold text-slate-400 break-words">
+                    ({data.user.nome})
+                  </span>
+                )}
+
                 <button
                   type="button"
                   onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
@@ -762,12 +787,6 @@ export default function AdminUserDetails() {
                 >
                   <Copy className="h-4 w-4 text-blue-400" />
                 </button>
-
-                {data.user.apelido && (
-                  <span className="text-xs font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/60 shrink-0">
-                    "{data.user.apelido}"
-                  </span>
-                )}
               </div>
 
               <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
@@ -811,14 +830,13 @@ export default function AdminUserDetails() {
             </div>
           </div>
 
-          {/* BOTÕES DE AÇÃO (TESTAR NOTIFICAÇÃO & RESETAR SENHA & EXCLUIR) */}
-          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 grid grid-cols-2 gap-2 w-full md:flex md:flex-wrap md:items-center md:gap-2.5 md:w-auto">
             <Button
               type="button"
               size="sm"
               disabled={impersonateUser.isPending}
               onClick={handleCopyImpersonateLink}
-              className="flex-1 md:flex-none rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25 hover:border-sky-500/70 hover:text-sky-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-2 md:col-auto rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25 hover:border-sky-500/70 hover:text-sky-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
               {impersonateUser.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
@@ -831,37 +849,37 @@ export default function AdminUserDetails() {
               type="button"
               size="sm"
               onClick={handleDispatchNotification}
-              className="flex-1 md:flex-none rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/25 hover:border-indigo-500/70 hover:text-indigo-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/25 hover:border-indigo-500/70 hover:text-indigo-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
-              <Bell className="h-4 w-4 text-indigo-400" />
-              <span>Testar Notificação</span>
+              <Bell className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+              <span className="truncate">Testar Notificação</span>
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleDispatchDriverCobrancaDemo}
-              className="flex-1 md:flex-none rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25 hover:border-emerald-500/70 hover:text-emerald-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25 hover:border-emerald-500/70 hover:text-emerald-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
-              <Sparkles className="h-4 w-4 text-emerald-400" />
-              <span>Cobrança Teste</span>
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span className="truncate">Cobrança Teste</span>
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleResetPassword}
-              className="flex-1 md:flex-none rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
-              <Key className="h-4 w-4 text-amber-400" />
-              <span>Resetar Senha</span>
+              <Key className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">Resetar Senha</span>
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleDeleteUser}
-              className="flex-1 md:flex-none rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
             >
-              <Trash2 className="h-4 w-4 text-rose-400" />
-              <span>Excluir</span>
+              <Trash2 className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+              <span className="truncate">Excluir</span>
             </Button>
           </div>
         </div>
@@ -2227,17 +2245,32 @@ export default function AdminUserDetails() {
                                 <InvoiceStatusBadge status={f.status} />
                               </td>
                               <td className="py-4 text-right">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  title="Excluir fatura"
-                                  disabled={deleteInvoiceMutation.isPending}
-                                  onClick={() => handleDeleteInvoice(f)}
-                                  className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex items-center justify-end gap-1">
+                                  {f.status !== SubscriptionInvoiceStatus.PAID && (
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      title="Registrar pagamento (Dar baixa)"
+                                      disabled={confirmPaymentMutation.isPending || deleteInvoiceMutation.isPending}
+                                      onClick={() => handleConfirmPayment(f)}
+                                      className="h-8 w-8 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                    >
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    title="Excluir fatura"
+                                    disabled={deleteInvoiceMutation.isPending || confirmPaymentMutation.isPending}
+                                    onClick={() => handleDeleteInvoice(f)}
+                                    className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -2256,12 +2289,25 @@ export default function AdminUserDetails() {
                             </span>
                             <div className="flex items-center gap-1.5">
                               <InvoiceStatusBadge status={f.status} />
+                              {f.status !== SubscriptionInvoiceStatus.PAID && (
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  title="Registrar pagamento (Dar baixa)"
+                                  disabled={confirmPaymentMutation.isPending || deleteInvoiceMutation.isPending}
+                                  onClick={() => handleConfirmPayment(f)}
+                                  className="h-7 w-7 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
                               <Button
                                 type="button"
                                 size="icon"
                                 variant="ghost"
                                 title="Excluir fatura"
-                                disabled={deleteInvoiceMutation.isPending}
+                                disabled={deleteInvoiceMutation.isPending || confirmPaymentMutation.isPending}
                                 onClick={() => handleDeleteInvoice(f)}
                                 className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
                               >
@@ -2566,7 +2612,7 @@ export default function AdminUserDetails() {
                 <AdminUserPassengersTab
                   passageiros={passageirosList}
                   userId={id}
-                  motoristaNome={data?.user?.nome || data?.user?.apelido}
+                  motoristaNome={data?.user?.apelido || data?.user?.nome}
                 />
               )}
               {activeSubTab === "solicitacoes" && (
@@ -2730,7 +2776,10 @@ export default function AdminUserDetails() {
                 } else {
                   maskedCpf = `${cleanedCpf.slice(0, 2)}.${cleanedCpf.slice(2, 3)}**.***/****-${cleanedCpf.slice(12, 14)}`;
                 }
-                const text = `*Nova Senha Provisória - Van360!* 🔐\n\nOlá *${data.user.nome}*,\nSua senha foi redefinida pelo administrador do sistema.\n\n*Novos dados de acesso:*\n👤 Documento: ${maskedCpf}\n🔑 Senha temporária: ${resetPasswordData.senha}\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 ${import.meta.env.VITE_PUBLIC_APP_DOMAIN}/login`;
+                const storeText = APP_AVAILABILITY.ios
+                  ? "Google Play Store / Apple App Store"
+                  : "Google Play Store";
+                const text = `*Nova Senha Provisória - Van360!* 🔐\n\nOlá *${data.user.nome}*,\nSua senha foi redefinida pelo administrador do sistema.\n\n*Novos dados de acesso:*\n👤 Documento: ${maskedCpf}\n🔑 Senha temporária: ${resetPasswordData.senha}\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na ${storeText} ou acessar diretamente pelo navegador no link abaixo:\n🔗 ${import.meta.env.VITE_PUBLIC_APP_DOMAIN}/login`;
                 await navigator.clipboard.writeText(text);
                 toast.success("Dados de acesso copiados!");
               }}

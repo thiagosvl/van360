@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Radio,
@@ -12,12 +12,16 @@ import {
   Loader2,
   RotateCcw,
   Zap,
+  CalendarClock,
 } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
+import { cn } from "@/lib/utils";
 import {
   useAdminUsersLatestActivity,
   useAdminUsersRadarStats,
 } from "@/hooks/api/adminHooks";
+import { useAdminTrialsPipeline } from "@/hooks/api/admin/useAdminFinancialHooks";
+import { AdminTrialsPipelineTable } from "@/components/features/admin/financial/AdminTrialsPipelineTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +44,7 @@ export default function AdminUsersRadar() {
   const { setPageTitle } = useLayout();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<"daily_pulse" | "health_radar">("daily_pulse");
+  const [activeTab, setActiveTab] = useState<"daily_pulse" | "health_radar" | "trials_pipeline">("daily_pulse");
 
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -55,6 +59,15 @@ export default function AdminUsersRadar() {
   }, [setPageTitle]);
 
   const isHealthRadarActive = activeTab === "health_radar";
+  const isTrialsPipelineActive = activeTab === "trials_pipeline";
+
+  const {
+    data: trialsPipelineData,
+    isLoading: isLoadingTrialsPipeline,
+    refetch: refetchTrialsPipeline,
+  } = useAdminTrialsPipeline({
+    enabled: isTrialsPipelineActive,
+  });
 
   const { data: trialStats, isLoading: isLoadingTrialStats } = useAdminUsersRadarStats("TRIAL", {
     enabled: isHealthRadarActive,
@@ -98,31 +111,36 @@ export default function AdminUsersRadar() {
 
   return (
     <div className="space-y-6 text-left">
-      <Banner
-        variant="info"
-        title="Monitoramento Contínuo de Engajamento"
-        description="Acompanhe a atividade em tempo real de hoje ou analise a saúde operacional e faixas de inatividade dos motoristas cadastrados."
-      />
 
       <Tabs
         value={activeTab}
-        onValueChange={(val) => setActiveTab(val as "daily_pulse" | "health_radar")}
+        onValueChange={(val) => setActiveTab(val as "daily_pulse" | "health_radar" | "trials_pipeline")}
         className="w-full space-y-6"
       >
-        <TabsList className="grid grid-cols-2 max-w-md h-11 p-1 bg-slate-900 border border-slate-800 rounded-2xl">
+        <TabsList className="grid grid-cols-3 w-full sm:max-w-lg h-11 p-1 bg-slate-900 border border-slate-800 rounded-2xl">
           <TabsTrigger
             value="daily_pulse"
-            className="flex items-center gap-2 rounded-xl text-xs font-bold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl text-xs font-bold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all px-1 sm:px-3"
           >
-            <Zap className="h-4 w-4" />
-            <span>Acessos do Dia</span>
+            <Zap className="h-4 w-4 shrink-0" />
+            <span className="sm:hidden">Acessos</span>
+            <span className="hidden sm:inline">Acessos do Dia</span>
           </TabsTrigger>
           <TabsTrigger
             value="health_radar"
-            className="flex items-center gap-2 rounded-xl text-xs font-bold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl text-xs font-bold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all px-1 sm:px-3"
           >
-            <Radio className="h-4 w-4" />
-            <span>Saúde da Base</span>
+            <Radio className="h-4 w-4 shrink-0" />
+            <span className="sm:hidden">Saúde</span>
+            <span className="hidden sm:inline">Saúde da Base</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="trials_pipeline"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl text-xs font-bold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all px-1 sm:px-3"
+          >
+            <CalendarClock className="h-4 w-4 shrink-0" />
+            <span className="sm:hidden">Vencim.</span>
+            <span className="hidden sm:inline">Vencim. Trials</span>
           </TabsTrigger>
         </TabsList>
 
@@ -142,7 +160,7 @@ export default function AdminUsersRadar() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 md:grid md:grid-cols-5 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
                 <AdminKpiCard
                   title="TOTAL EM TRIAL"
                   value={isLoadingTrialStats ? "..." : (trialStats?.totalMotoristas ?? 0)}
@@ -155,7 +173,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("all");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "TRIAL" && healthStatus === "all" ? "ring-2 ring-sky-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "TRIAL" && healthStatus === "all" ? "ring-2 ring-sky-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -170,7 +188,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("active");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "TRIAL" && healthStatus === "active" ? "ring-2 ring-emerald-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "TRIAL" && healthStatus === "active" ? "ring-2 ring-emerald-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -185,7 +203,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("alert");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "TRIAL" && healthStatus === "alert" ? "ring-2 ring-amber-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "TRIAL" && healthStatus === "alert" ? "ring-2 ring-amber-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -200,7 +218,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("risk");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "TRIAL" && healthStatus === "risk" ? "ring-2 ring-rose-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "TRIAL" && healthStatus === "risk" ? "ring-2 ring-rose-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -215,7 +233,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("inactive");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "TRIAL" && healthStatus === "inactive" ? "ring-2 ring-slate-400" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "TRIAL" && healthStatus === "inactive" ? "ring-2 ring-slate-400" : "")}
                 />
               </div>
             </div>
@@ -230,7 +248,7 @@ export default function AdminUsersRadar() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 md:grid md:grid-cols-5 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
                 <AdminKpiCard
                   title="TOTAL ASSINANTES"
                   value={isLoadingActiveStats ? "..." : (activeStats?.totalMotoristas ?? 0)}
@@ -243,7 +261,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("all");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "ACTIVE" && healthStatus === "all" ? "ring-2 ring-emerald-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "ACTIVE" && healthStatus === "all" ? "ring-2 ring-emerald-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -258,7 +276,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("active");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "ACTIVE" && healthStatus === "active" ? "ring-2 ring-emerald-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "ACTIVE" && healthStatus === "active" ? "ring-2 ring-emerald-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -273,7 +291,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("alert");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "ACTIVE" && healthStatus === "alert" ? "ring-2 ring-amber-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "ACTIVE" && healthStatus === "alert" ? "ring-2 ring-amber-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -288,7 +306,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("risk");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "ACTIVE" && healthStatus === "risk" ? "ring-2 ring-rose-500" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "ACTIVE" && healthStatus === "risk" ? "ring-2 ring-rose-500" : "")}
                 />
 
                 <AdminKpiCard
@@ -303,7 +321,7 @@ export default function AdminUsersRadar() {
                     setHealthStatus("inactive");
                     setPage(1);
                   }}
-                  className={subscriptionStatus === "ACTIVE" && healthStatus === "inactive" ? "ring-2 ring-slate-400" : ""}
+                  className={cn("w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between", subscriptionStatus === "ACTIVE" && healthStatus === "inactive" ? "ring-2 ring-slate-400" : "")}
                 />
               </div>
             </div>
@@ -321,11 +339,10 @@ export default function AdminUsersRadar() {
                     type="button"
                     size="sm"
                     onClick={() => setIsMobileFiltersOpen((prev) => !prev)}
-                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
-                      isMobileFiltersOpen
-                        ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                        : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white"
-                    }`}
+                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
+                      ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
+                      : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white"
+                      }`}
                   >
                     <Filter className="h-3.5 w-3.5" />
                     <span>Filtros</span>
@@ -525,6 +542,14 @@ export default function AdminUsersRadar() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="trials_pipeline" className="m-0 focus-visible:ring-0">
+          <AdminTrialsPipelineTable
+            trials={trialsPipelineData?.trials || []}
+            isLoading={isLoadingTrialsPipeline}
+            onRefresh={refetchTrialsPipeline}
+          />
         </TabsContent>
       </Tabs>
     </div>

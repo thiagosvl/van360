@@ -17,11 +17,14 @@ export const escolaSchema = z
     cidade: z.string().optional(),
     estado: z.string().optional(),
     cep: cepSchema.or(z.literal("")).optional(),
+    informarEndereco: z.boolean().optional(),
     referencia: z.string().optional(),
     complemento: z.string().optional(),
     ativo: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
+    if (!data.informarEndereco) return;
+
     const validation = validateEnderecoFields(
       data.cep || "",
       data.logradouro,

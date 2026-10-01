@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Filter, RefreshCw, ChevronLeft, ChevronRight, Users, Activity, Sparkles, ShieldCheck, RotateCcw, UserPlus } from "lucide-react";
+import { Filter, RefreshCw, ChevronLeft, ChevronRight, Users, Activity } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAdminLogs, useAdminLogsByUser, useAdminRealtimeLogs } from "@/hooks/api/adminHooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { getNowBR, toPersistenceString, addDays } from "@/utils/dateUtils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { ActivityUserGroupList } from "@/components/features/admin/ActivityUserGroupList";
+import { ActivityMetricsSummary } from "@/components/features/admin/ActivityMetricsSummary";
 import { AdminActivityInspectDialog } from "@/components/dialogs/AdminActivityInspectDialog";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import type { AdminUserGroupLogItem, AdminUserLogItem } from "@/services/api/admin/admin-log.api";
@@ -19,7 +20,7 @@ import type { AdminUserGroupLogItem, AdminUserLogItem } from "@/services/api/adm
 export default function AdminActivityHistory() {
   const { setPageTitle, openAdminUserActivityHistoryDialog } = useLayout();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"by_user" | "feed">("by_user");
+  const [activeTab, setActiveTab] = useState<"feed" | "by_user">("feed");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [inspectLog, setInspectLog] = useState<AdminUserLogItem | null>(null);
 
@@ -34,10 +35,9 @@ export default function AdminActivityHistory() {
   const [usersLimit, setUsersLimit] = useState("20");
 
   const today = toPersistenceString(getNowBR());
-  const yesterday = toPersistenceString(addDays(getNowBR(), -1));
 
   const [logsFilter, setLogsFilter] = useState({
-    dataInicio: yesterday,
+    dataInicio: today,
     dataFim: today,
     acao: "all",
     entidade: "all",
@@ -84,12 +84,11 @@ export default function AdminActivityHistory() {
       search_cpf: logsFilter.search_cpf || undefined,
     },
     {
-      enabled: activeTab === "by_user",
       refetchOnWindowFocus: "always",
     }
   );
 
-  const isFetching = activeTab === "by_user" ? isFetchingUsers : isFetchingLogs;
+  const isFetching = isFetchingUsers || isFetchingLogs;
 
   const handleRefresh = () => {
     if (activeTab === "by_user") {
@@ -123,19 +122,14 @@ export default function AdminActivityHistory() {
     <div className="space-y-6">
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
         <CardHeader className="pb-3 border-b border-slate-800/80 bg-slate-900/40">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight">
-                Histórico de Atividades
-              </CardTitle>
-
+          <div className="flex items-center justify-between gap-4">
+            <div>
               {isCurrentPageFirst && (
                 <div
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-colors ${
-                    isConnected
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-colors ${isConnected
                       ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                       : "bg-slate-800/60 border-slate-700/60 text-slate-400"
-                  }`}
+                    }`}
                   title={isConnected ? "Conectado em tempo real" : "Conectando ao tempo real..."}
                 >
                   <span className="relative flex h-2 w-2">
@@ -143,9 +137,8 @@ export default function AdminActivityHistory() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     )}
                     <span
-                      className={`relative inline-flex rounded-full h-2 w-2 ${
-                        isConnected ? "bg-emerald-500" : "bg-slate-500"
-                      }`}
+                      className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? "bg-emerald-500" : "bg-slate-500"
+                        }`}
                     />
                   </span>
                   <span>{isConnected ? "Ao Vivo" : "Sincronizando"}</span>
@@ -158,11 +151,10 @@ export default function AdminActivityHistory() {
                 type="button"
                 size="sm"
                 onClick={() => setIsMobileFiltersOpen((p) => !p)}
-                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
-                  isMobileFiltersOpen
+                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
                     ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
                     : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
-                }`}
+                  }`}
               >
                 <Filter className="h-3.5 w-3.5" />
               </Button>
@@ -180,44 +172,50 @@ export default function AdminActivityHistory() {
           </div>
 
           <div className="flex items-center gap-2 pt-3">
-            <div className="flex items-center p-1 rounded-xl bg-slate-950/70 border border-slate-800/90">
+            <div className="flex items-center p-1 rounded-xl bg-slate-950/70 border border-slate-800/90 w-full sm:w-auto">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setActiveTab("by_user")}
-                className={`h-7 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  activeTab === "by_user"
+                onClick={() => setActiveTab("feed")}
+                className={`flex-1 sm:flex-initial justify-center h-7 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "feed"
                     ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
                     : "text-slate-400 hover:text-white hover:bg-slate-900"
-                }`}
+                  }`}
               >
-                <Users className="h-3.5 w-3.5" />
-                <span>Por Usuário</span>
+                <Activity className="h-3.5 w-3.5" />
+                <span>Feed Global</span>
               </Button>
 
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setActiveTab("feed")}
-                className={`h-7 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  activeTab === "feed"
+                onClick={() => setActiveTab("by_user")}
+                className={`flex-1 sm:flex-initial justify-center h-7 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "by_user"
                     ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
                     : "text-slate-400 hover:text-white hover:bg-slate-900"
-                }`}
+                  }`}
               >
-                <Activity className="h-3.5 w-3.5" />
-                <span>Feed Global</span>
+                <Users className="h-3.5 w-3.5" />
+                <span>Por Usuário</span>
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          <ActivityMetricsSummary
+            total={usersData?.total}
+            total_novos={usersData?.total_novos}
+            total_recorrentes={usersData?.total_recorrentes}
+            total_trial={usersData?.total_trial}
+            total_ativos={usersData?.total_ativos}
+            total_vitalicios={usersData?.total_vitalicios}
+          />
+
           <div
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 ${
-              !isMobileFiltersOpen ? "hidden md:grid" : ""
-            }`}
+            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 ${!isMobileFiltersOpen ? "hidden md:grid" : ""
+              }`}
           >
             <div className="space-y-1.5 text-left">
               <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</Label>
@@ -289,65 +287,6 @@ export default function AdminActivityHistory() {
 
           {activeTab === "by_user" ? (
             <>
-              {usersData && usersData.total > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-4">
-                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 text-left space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
-                      <Users className="h-3.5 w-3.5 text-blue-400" />
-                      <span>Usuários Ativos</span>
-                    </div>
-                    <div className="text-xl font-headline font-black text-white">
-                      {usersData.total}
-                    </div>
-                    <p className="text-[10px] text-slate-500 font-medium">No período filtrado</p>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-left space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
-                      <UserPlus className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>Novos Cadastros</span>
-                    </div>
-                    <div className="text-xl font-headline font-black text-emerald-200">
-                      {usersData.total_novos ?? 0}
-                    </div>
-                    <p className="text-[10px] text-emerald-400/70 font-medium">Criaram conta no período</p>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 text-left space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
-                      <RotateCcw className="h-3.5 w-3.5 text-purple-400" />
-                      <span>Recorrentes</span>
-                    </div>
-                    <div className="text-xl font-headline font-black text-white">
-                      {usersData.total_recorrentes ?? 0}
-                    </div>
-                    <p className="text-[10px] text-slate-500 font-medium">Não assinantes cadastrados antes</p>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-sky-950/20 border border-sky-500/30 text-left space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400">
-                      <Sparkles className="h-3.5 w-3.5 text-sky-400" />
-                      <span>Em Trial</span>
-                    </div>
-                    <div className="text-xl font-headline font-black text-sky-200">
-                      {usersData.total_trial ?? 0}
-                    </div>
-                    <p className="text-[10px] text-sky-400/70 font-medium">Foco de conversão</p>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-left space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>Assinantes</span>
-                    </div>
-                    <div className="text-xl font-headline font-black text-emerald-200">
-                      {usersData.total_ativos ?? 0}
-                    </div>
-                    <p className="text-[10px] text-emerald-400/70 font-medium">Assinatura ativa</p>
-                  </div>
-                </div>
-              )}
-
               <ActivityUserGroupList
                 userGroups={usersData?.data || []}
                 isLoading={isLoadingUsers && !usersData}

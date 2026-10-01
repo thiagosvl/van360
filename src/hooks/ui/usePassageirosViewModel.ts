@@ -344,16 +344,6 @@ export function usePassageirosViewModel() {
           return;
         }
 
-        if (isFirstPassageiro && createdCountInSession === 1) {
-          openOnboardingSuccessDialog({
-            passageiroNome: passageiro.nome,
-            onNavigateToPassageiro: () => {
-              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
-            },
-          });
-          return;
-        }
-
         const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
         const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
         const now = getNowBR();
@@ -366,11 +356,31 @@ export function usePassageirosViewModel() {
         if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
           openFirstChargeDialog({
             passageiro,
+            isFirstPassageiro: isFirstPassageiro && createdCountInSession === 1,
             onSuccess: (p) => {
-              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", (p || passageiro).id));
+              const finalPassageiro = p || passageiro;
+              if (isFirstPassageiro && createdCountInSession === 1) {
+                openOnboardingSuccessDialog({
+                  passageiroNome: finalPassageiro.nome,
+                  onNavigateToPassageiro: () => {
+                    navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", finalPassageiro.id));
+                  },
+                });
+                return;
+              }
+              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", finalPassageiro.id));
             },
           });
         } else {
+          if (isFirstPassageiro && createdCountInSession === 1) {
+            openOnboardingSuccessDialog({
+              passageiroNome: passageiro.nome,
+              onNavigateToPassageiro: () => {
+                navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+              },
+            });
+            return;
+          }
           navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
         }
       },

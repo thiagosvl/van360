@@ -17,6 +17,7 @@ import {
   Trash2,
   RefreshCw,
   ArrowRight,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -211,12 +212,15 @@ export default function AdminReferrals() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 lg:grid lg:grid-cols-5 lg:overflow-visible lg:mx-0 lg:px-0 lg:pb-0 lg:mb-0 touch-pan-x">
         {kpiCards.map((kpi) => (
           <div
             key={kpi.key}
             onClick={kpi.onClick}
-            className={cn(kpi.onClick && "cursor-pointer transition-transform hover:scale-[1.02]")}
+            className={cn(
+              "w-[185px] sm:w-[200px] shrink-0 lg:w-auto lg:shrink flex flex-col",
+              kpi.onClick && "cursor-pointer transition-transform hover:scale-[1.02]"
+            )}
           >
             <AdminKpiCard
               title={kpi.title}
@@ -225,6 +229,7 @@ export default function AdminReferrals() {
               cardBorder={kpi.cardBorder}
               iconBg={kpi.iconBg}
               icon={kpi.icon}
+              className="h-full flex flex-col justify-between"
             />
           </div>
         ))}
@@ -242,8 +247,17 @@ export default function AdminReferrals() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
+                className="pl-11 pr-10 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-3 text-slate-500 hover:text-white p-0.5 rounded-lg"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -273,7 +287,7 @@ export default function AdminReferrals() {
               <Calendar className="h-4 w-4 text-purple-400 shrink-0" />
               <span className="font-bold">Indicados entre:</span>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
               <Input
                 type="date"
                 value={dataInicio}
@@ -281,9 +295,8 @@ export default function AdminReferrals() {
                   setDataInicio(e.target.value);
                   setPage(1);
                 }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36"
               />
-              <span className="text-slate-500 font-bold">até</span>
               <Input
                 type="date"
                 value={dataFim}
@@ -291,7 +304,7 @@ export default function AdminReferrals() {
                   setDataFim(e.target.value);
                   setPage(1);
                 }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36"
               />
               {(dataInicio || dataFim) && (
                 <Button
@@ -302,7 +315,7 @@ export default function AdminReferrals() {
                     setDataFim("");
                     setPage(1);
                   }}
-                  className="h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
+                  className="col-span-2 sm:col-span-1 h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
                 >
                   Limpar Datas
                 </Button>

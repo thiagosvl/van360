@@ -28,8 +28,8 @@ export const contratoApi = {
     return data;
   },
 
-  substituirContrato: async (contratoId: string) => {
-    const { data } = await apiClient.post(`/contratos/${contratoId}/substituir`);
+  substituirContrato: async (contratoId: string, options?: { notificarResponsavel?: boolean }) => {
+    const { data } = await apiClient.post(`/contratos/${contratoId}/substituir`, options || {});
     return data;
   },
 

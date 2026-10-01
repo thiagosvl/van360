@@ -27,6 +27,7 @@ export function useEscolasViewModel() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openEscolaFormDialog,
+    openCadastrarEscolasDialog,
   } = useLayout();
 
   const { user, loading: isSessionLoading } = useSession();
@@ -87,13 +88,13 @@ export function useEscolasViewModel() {
   useEffect(() => {
     const openModal = searchParams.get("openModal");
     if (openModal === "true") {
-      openEscolaFormDialog({
+      openCadastrarEscolasDialog({
         onSuccess: () => {
           navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
         },
       });
     }
-  }, [searchParams, openEscolaFormDialog, navigate]);
+  }, [searchParams, openCadastrarEscolasDialog, navigate]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -190,8 +191,8 @@ export function useEscolasViewModel() {
   );
 
   const handleRegister = useCallback(() => {
-    openEscolaFormDialog({ allowBatchCreation: true });
-  }, [openEscolaFormDialog]);
+    openCadastrarEscolasDialog();
+  }, [openCadastrarEscolasDialog]);
 
   return {
     profile,
@@ -211,6 +212,7 @@ export function useEscolasViewModel() {
     handleToggleAtivo,
     handleRegister,
     openEscolaFormDialog,
+    openCadastrarEscolasDialog,
     refetch,
     navigate,
     hasActiveFilters: selectedStatus !== FilterDefaults.TODOS || !!searchTerm,

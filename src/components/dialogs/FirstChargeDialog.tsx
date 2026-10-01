@@ -1,4 +1,6 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -43,6 +45,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
     setPaymentMethod,
     wantsContract,
     setWantsContract,
+    notificarResponsavel,
+    setNotificarResponsavel,
     handleBack,
     handleNext,
     isLoading,
@@ -62,8 +66,11 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
 
   const primaryButtonText = () => {
     if (step === "CONTRACT_CHECK") {
-      if (!showPaymentStep) return wantsContract ? "Gerar e Enviar" : "Concluir";
-      return wantsContract ? "Gerar e Enviar" : "Próximo";
+      if (!showPaymentStep) {
+        if (!wantsContract) return "Concluir";
+        return notificarResponsavel ? "Gerar e Enviar" : "Apenas Gerar Contrato";
+      }
+      return "Próximo";
     }
     if (step === "PAYMENT_STATUS") {
       return paymentStatus === CobrancaStatus.PAGO ? "Próximo" : "Confirmar";
@@ -100,37 +107,37 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
       />
       <BaseDialog.Body>
         {step === "CONTRACT_CHECK" && (
-          <div className="space-y-5">
-            <div className="py-2">
+          <div className="space-y-4">
+            <div className="py-1">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-slate-700">
                   Gerar contrato?
                 </h2>
                 <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                  Gostaria de gerar o contrato para{" "}
-                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong> e já enviá-lo automaticamente para o responsável?
+                  Gostaria de gerar o contrato digital para{" "}
+                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
                 </p>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {[
                 {
                   value: true,
                   label: "Sim, gerar o contrato",
-                  sublabel: "O responsável receberá por WhatsApp",
+                  sublabel: "O documento ficará disponível no sistema",
                   icon: <CheckCircle2 className="w-6 h-6" />,
-                  activeColor: "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200",
-                  iconActive: "bg-emerald-500 text-white shadow-lg shadow-emerald-200",
-                  textActive: "text-emerald-900",
-                  radioActive: "border-emerald-500 bg-emerald-500",
+                  activeColor: "border-[#1a3a5c] bg-blue-50/40 shadow-xs ring-1 ring-blue-200",
+                  iconActive: "bg-[#1a3a5c] text-white shadow-xs shadow-blue-900/10",
+                  textActive: "text-[#1a3a5c]",
+                  radioActive: "border-[#1a3a5c] bg-[#1a3a5c]",
                 },
                 {
                   value: false,
                   label: "Não gerar o contrato",
-                  sublabel: "Você poderá gerar depois",
+                  sublabel: "Você poderá gerar depois pela carteirinha",
                   icon: <AlertCircle className="w-6 h-6" />,
-                  activeColor: "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200",
-                  iconActive: "bg-slate-400 text-white shadow-lg shadow-slate-200",
+                  activeColor: "border-slate-400 bg-slate-50 shadow-xs ring-1 ring-slate-200",
+                  iconActive: "bg-slate-400 text-white shadow-xs shadow-slate-200",
                   textActive: "text-slate-900",
                   radioActive: "border-slate-400 bg-slate-400",
                 },
@@ -142,11 +149,11 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                     type="button"
                     onClick={() => setWantsContract(value)}
                     className={cn(
-                      "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
-                      isActive ? activeColor : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
+                      "w-full p-3.5 rounded-2xl border transition-all flex items-center gap-3.5 active:scale-[0.98] group",
+                      isActive ? activeColor : "border-slate-100 bg-white hover:border-slate-200 shadow-xs"
                     )}
                   >
-                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", isActive ? iconActive : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>
+                    <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", isActive ? iconActive : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>
                       {icon}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
@@ -160,6 +167,49 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                 );
               })}
             </div>
+
+            {wantsContract && (
+              <div className="pt-1 space-y-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setNotificarResponsavel(!notificarResponsavel)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setNotificarResponsavel(!notificarResponsavel);
+                    }
+                  }}
+                  className="flex items-start gap-3 p-3 rounded-2xl border border-slate-200/80 bg-white hover:bg-slate-50/80 transition-colors cursor-pointer select-none"
+                >
+                  <Checkbox
+                    checked={notificarResponsavel}
+                    onCheckedChange={(val) => setNotificarResponsavel(!!val)}
+                    className="mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-semibold text-slate-800 leading-tight block">
+                      Enviar link de assinatura para o responsável no WhatsApp agora
+                    </span>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      O responsável receberá a mensagem com o link para assinar digitalmente.
+                    </p>
+                  </div>
+                </div>
+
+                {notificarResponsavel ? (
+                  <Banner
+                    variant="warning"
+                    description="O WhatsApp será enviado automaticamente para o responsável ao gerar o contrato."
+                  />
+                ) : (
+                  <Banner
+                    variant="info"
+                    description="O contrato ficará salvo na carteirinha do aluno para você enviar quando desejar."
+                  />
+                )}
+              </div>
+            )}
           </div>
         )}
 

@@ -80,6 +80,10 @@ export interface OpenEscolaFormProps {
   allowBatchCreation?: boolean;
 }
 
+export interface OpenCadastrarEscolasProps {
+  onSuccess?: (primeiraEscola: Escola, todasEscolas: Escola[]) => void;
+}
+
 export interface OpenVeiculoFormProps {
   onSuccess?: (veiculo: Veiculo, keepOpen?: boolean) => void;
   editingVeiculo?: Veiculo | null;
@@ -165,6 +169,17 @@ export interface OpenFirstChargeDialogProps {
 export interface OpenContractSetupDialogProps {
   forceOpen?: boolean;
   onSuccess?: (usarContratos?: boolean) => void;
+}
+
+export interface OpenConfirmarGerarContratoDialogProps {
+  passageiro: Passageiro;
+  valorMensal?: number;
+  diaVencimento?: number;
+  dataInicio?: string;
+  dataFim?: string;
+  isSubstituicao?: boolean;
+  contratoIdParaSubstituir?: string;
+  onSuccess?: () => void;
 }
 
 export interface OpenGerarContratoValidadorDialogProps {
@@ -344,6 +359,8 @@ export interface LayoutContextType {
   openDefinirResponsavelPrincipalDialog: (props: OpenDefinirResponsavelPrincipalProps) => void;
   closeDefinirResponsavelPrincipalDialog: () => void;
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
+  openCadastrarEscolasDialog: (props?: OpenCadastrarEscolasProps) => void;
+  closeCadastrarEscolasDialog: () => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
   openRevisarSolicitacaoDialog: (props: OpenRevisarSolicitacaoProps) => void;
@@ -389,6 +406,8 @@ export interface LayoutContextType {
   isFirstChargeDialogOpen: boolean;
 
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
+  openConfirmarGerarContratoDialog: (props: OpenConfirmarGerarContratoDialogProps) => void;
+  closeConfirmarGerarContratoDialog: () => void;
   openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;
   openImportarContratoDialog: (props?: OpenImportarContratoDialogProps) => void;
 

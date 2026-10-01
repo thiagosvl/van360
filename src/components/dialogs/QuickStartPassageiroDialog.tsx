@@ -342,7 +342,7 @@ export function QuickStartPassageiroDialog({
                                 setNewEscola(escola);
                                 form.setValue("escola_id", escola.id, { shouldValidate: true });
                               }
-                            }
+                            },
                           });
                         } else {
                           field.onChange(val);
