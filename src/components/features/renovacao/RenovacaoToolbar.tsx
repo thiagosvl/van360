@@ -7,6 +7,7 @@ import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { Escola } from "@/types/escola";
 import { Button } from "@/components/ui/button";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface RenovacaoToolbarProps {
   searchTerm: string;
@@ -18,9 +19,12 @@ interface RenovacaoToolbarProps {
   escolas: Escola[];
   onOpenAjustesLote?: () => void;
   onOpenReajusteLote?: () => void;
+  onNotificarLote?: () => void;
+  isNotificandoLote?: boolean;
   statusFilter?: string;
   onStatusChange?: (value: string) => void;
   totalFiltrados?: number;
+  pendentesCount?: number;
 }
 
 export const RenovacaoToolbar = memo(function RenovacaoToolbar({
@@ -33,6 +37,9 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
   escolas,
   onOpenAjustesLote,
   onOpenReajusteLote,
+  onNotificarLote,
+  isNotificandoLote,
+  pendentesCount,
 }: RenovacaoToolbarProps) {
   const handleOpenLote = onOpenAjustesLote || onOpenReajusteLote;
   const isMobile = useIsMobile();
@@ -121,34 +128,76 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
   );
 
   return (
-    <DataTableToolbar
-      searchTerm={searchTerm}
-      onSearchChange={onSearchChange}
-      searchPlaceholder="Buscar por passageiro ou responsável..."
-      filterConfig={{
-        title: "Filtrar Passageiros",
-        description: "Refine sua busca para encontrar passageiros específicos.",
-        hasActiveFilters,
-        onClear: handleClearFilters,
-        onApply: handleApplyFilters,
-        onClearTemp: handleClearMobileFilters,
-        isOpen: isSheetOpen,
-        onOpenChange: setIsSheetOpen,
-      }}
-      filterChildren={filterChildren}
-      actions={
-        handleOpenLote ? (
+    <div className="space-y-2">
+      <DataTableToolbar
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        searchPlaceholder="Buscar por passageiro ou responsável..."
+        filterConfig={{
+          title: "Filtrar Passageiros",
+          description: "Refine sua busca para encontrar passageiros específicos.",
+          hasActiveFilters,
+          onClear: handleClearFilters,
+          onApply: handleApplyFilters,
+          onClearTemp: handleClearMobileFilters,
+          isOpen: isSheetOpen,
+          onOpenChange: setIsSheetOpen,
+        }}
+        filterChildren={filterChildren}
+        actions={
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            {handleOpenLote && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleOpenLote}
+                className="flex-1 md:flex-initial bg-white border-slate-200 text-[#1a3a5c] font-bold text-xs sm:text-sm gap-2 h-12 md:h-14 rounded-2xl px-3.5 sm:px-5 shadow-sm hover:bg-gray-50 shrink-0 active:scale-95 cursor-pointer"
+              >
+                <SlidersHorizontal className="h-4 w-4 text-slate-500 shrink-0" />
+                <span>Ajustes em Lote</span>
+              </Button>
+            )}
+
+            {onNotificarLote && (
+              <Button
+                type="button"
+                onClick={onNotificarLote}
+                disabled={isNotificandoLote}
+                className="hidden md:inline-flex bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm gap-2 h-14 rounded-2xl px-5 shadow-sm shrink-0 active:scale-95 cursor-pointer"
+              >
+                <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
+                <span>
+                  {isNotificandoLote
+                    ? "Enviando..."
+                    : pendentesCount !== undefined && pendentesCount > 0
+                    ? `Disparar WhatsApp (${pendentesCount})`
+                    : "Disparar WhatsApp"}
+                </span>
+              </Button>
+            )}
+          </div>
+        }
+      />
+
+      {onNotificarLote && (
+        <div className="block md:hidden">
           <Button
             type="button"
-            variant="outline"
-            onClick={handleOpenLote}
-            className="flex-1 md:flex-initial bg-white border-slate-100 text-[#1a3a5c] font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 h-12 md:h-14 rounded-2xl px-3.5 sm:px-5 shadow-sm hover:bg-gray-50 shrink-0 active:scale-95 cursor-pointer"
+            onClick={onNotificarLote}
+            disabled={isNotificandoLote}
+            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs min-[360px]:text-sm gap-2 h-12 rounded-2xl shadow-sm active:scale-[0.99] transition-all cursor-pointer"
           >
-            <SlidersHorizontal className="h-4 w-4 text-slate-500" />
-            <span>Ajustes em Lote</span>
+            <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
+            <span>
+              {isNotificandoLote
+                ? "Enviando notificações..."
+                : pendentesCount !== undefined && pendentesCount > 0
+                ? `Disparar WhatsApp de Renovação (${pendentesCount})`
+                : "Disparar WhatsApp de Renovação"}
+            </span>
           </Button>
-        ) : undefined
-      }
-    />
+        </div>
+      )}
+    </div>
   );
 });

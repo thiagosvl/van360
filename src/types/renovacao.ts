@@ -110,3 +110,124 @@ export interface UpdateRenovacaoPayload {
 export interface VirarAnoLetivoPayload {
   ano_destino: number;
 }
+
+export interface PublicRenovacaoConditionItem<T> {
+  atual: T;
+  novo: T;
+  alterado: boolean;
+}
+
+export interface PublicRenovacaoResponse {
+  token_publico: string;
+  status: RenovacaoStatus;
+  confirmado_em: string | null;
+  recusado_em: string | null;
+  ano_origem: number;
+  ano_destino: number;
+  motorista: {
+    id: string;
+    nome: string;
+    apelido?: string | null;
+    telefone?: string | null;
+    logo_url?: string | null;
+    usar_contratos: boolean;
+  };
+  passageiro: {
+    id: string;
+    nome: string;
+    data_nascimento?: string | null;
+    turma?: string | null;
+    sala?: string | null;
+    nome_professor?: string | null;
+    observacoes?: string | null;
+    foto_url?: string | null;
+  };
+  responsavel?: {
+    id?: string;
+    nome?: string | null;
+    telefone?: string | null;
+    cpf?: string | null;
+    email?: string | null;
+    parentesco?: string | null;
+    cep?: string | null;
+    logradouro?: string | null;
+    numero?: string | null;
+    bairro?: string | null;
+    cidade?: string | null;
+    estado?: string | null;
+    complemento?: string | null;
+    referencia?: string | null;
+  } | null;
+  observacoes_pais?: string | null;
+  condicoes: {
+    valor: PublicRenovacaoConditionItem<number>;
+    dia_vencimento: PublicRenovacaoConditionItem<number | null>;
+    escola: PublicRenovacaoConditionItem<string | null>;
+    periodo: PublicRenovacaoConditionItem<string | null>;
+    modalidade: PublicRenovacaoConditionItem<string | null>;
+    turma?: PublicRenovacaoConditionItem<string | null>;
+    nome_professor?: PublicRenovacaoConditionItem<string | null>;
+    data_inicio_transporte?: string | null;
+    data_fim_transporte?: string | null;
+    data_inicio_cobranca?: string | null;
+    data_fim_cobranca?: string | null;
+    qtd_parcelas?: number;
+  };
+  contrato?: {
+    id: string;
+    status: string;
+    token_acesso: string;
+  } | null;
+}
+
+export interface AtualizarDadosPublicosPayload {
+  responsavel?: {
+    nome?: string;
+    telefone?: string;
+    cpf?: string;
+    email?: string;
+    parentesco?: string;
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
+    complemento?: string;
+    referencia?: string;
+  };
+  passageiro?: {
+    turma?: string;
+    sala?: string;
+    nome_professor?: string;
+    observacoes?: string;
+  };
+}
+
+export interface ResponderRenovacaoPayload {
+  status: "confirmado" | "recusado";
+  observacoes_pais?: string | null;
+}
+
+export interface ResponderRenovacaoResponse {
+  status: "confirmado" | "recusado";
+  ano_destino: number;
+  contrato?: {
+    id: string;
+    token_acesso: string;
+    link_assinatura: string;
+  } | null;
+}
+
+export interface NotificarRenovacaoResponse {
+  success: boolean;
+  token_publico: string;
+  notificacao_enviada_em: string;
+}
+
+export interface NotificarLoteRenovacaoResponse {
+  total: number;
+  enviados: number;
+  falhas: number;
+}
+

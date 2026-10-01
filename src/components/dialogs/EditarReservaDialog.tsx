@@ -56,7 +56,6 @@ export function EditarReservaDialog({
 
   const isIsentoOriginal = Boolean(passageiro?.isento_atual);
 
-  // Financeiro
   const [novoValor, setNovoValor] = useState("");
   const [modoCalculo, setModoCalculo] = useState<"direto" | "fixo" | "percentual">("direto");
   const [valorIncremento, setValorIncremento] = useState("");
@@ -64,7 +63,6 @@ export function EditarReservaDialog({
   const [dataInicioCobranca, setDataInicioCobranca] = useState<string>(`01/02/${anoDestino}`);
   const [dataFimCobranca, setDataFimCobranca] = useState<string>(`01/12/${anoDestino}`);
 
-  // Transporte
   const [novaEscolaId, setNovaEscolaId] = useState("");
   const [novoPeriodo, setNovoPeriodo] = useState("");
   const [novaModalidade, setNovaModalidade] = useState("ida_volta");
@@ -158,7 +156,6 @@ export function EditarReservaDialog({
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
         <BaseDialog.Body className="p-4 sm:p-6 space-y-6 overflow-y-auto">
-          {/* Card Resumo do Aluno */}
           <div className="rounded-2xl bg-slate-50/70 p-4 border border-slate-200/70">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
               Passageiro
@@ -168,7 +165,6 @@ export function EditarReservaDialog({
             </span>
           </div>
 
-          {/* SEÇÃO 1: PARCELAS (FINANCEIRO) - Ocultada se o aluno já for isento de origem */}
           {!isIsentoOriginal && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c]">
@@ -178,7 +174,6 @@ export function EditarReservaDialog({
                 Parcelas
               </div>
 
-              {/* Comparativo de Parcelas */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="rounded-xl border border-slate-200 bg-white p-3">
                   <span className="text-xs text-slate-500 font-medium block">
@@ -199,7 +194,6 @@ export function EditarReservaDialog({
                 </div>
               </div>
 
-              {/* Switcher de Tipo de Ajuste */}
               <div className="space-y-2">
                 <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
                   Como deseja definir o valor?
@@ -253,7 +247,6 @@ export function EditarReservaDialog({
                 </div>
               </div>
 
-              {/* Campo de Entrada de Acréscimo ou Valor Direto */}
               {modoCalculo === "direto" ? (
                 <div className="space-y-1.5">
                   <Label className="text-slate-700 font-semibold ml-1 text-sm">
@@ -311,7 +304,6 @@ export function EditarReservaDialog({
                     />
                   </div>
 
-                  {/* Preview da Fórmula de Cálculo Baseada no Valor Original */}
                   {valorIncremento.trim() && (
                     <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-center text-xs text-slate-700">
                       {modoCalculo === "fixo" ? (
@@ -330,7 +322,6 @@ export function EditarReservaDialog({
                 </div>
               )}
 
-              {/* Dia do Vencimento */}
               <div className="space-y-1.5">
                 <Label className="text-slate-700 font-semibold ml-1 text-sm">
                   Dia do Vencimento <span className="text-red-600">*</span>
@@ -352,7 +343,6 @@ export function EditarReservaDialog({
                 </Select>
               </div>
 
-              {/* Início da Cobrança */}
               <div className="space-y-1.5">
                 <Label className="text-slate-700 font-semibold ml-1 text-sm">
                   Início da Cobrança
@@ -368,7 +358,6 @@ export function EditarReservaDialog({
                 </div>
               </div>
 
-              {/* Fim da Cobrança */}
               <div className="space-y-1.5">
                 <Label className="text-slate-700 font-semibold ml-1 text-sm">
                   Fim da Cobrança
@@ -386,7 +375,6 @@ export function EditarReservaDialog({
             </div>
           )}
 
-          {/* SEÇÃO 2: TRANSPORTE */}
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c]">
               <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
@@ -395,7 +383,6 @@ export function EditarReservaDialog({
               Transporte
             </div>
 
-            {/* Escola */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Escola <span className="text-red-600">*</span>
@@ -417,7 +404,6 @@ export function EditarReservaDialog({
               </Select>
             </div>
 
-            {/* Período */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Período <span className="text-red-600">*</span>
@@ -439,7 +425,6 @@ export function EditarReservaDialog({
               </Select>
             </div>
 
-            {/* Modalidade */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Modalidade <span className="text-red-600">*</span>
@@ -461,7 +446,6 @@ export function EditarReservaDialog({
               </Select>
             </div>
 
-            {/* Veículo */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Veículo
@@ -483,7 +467,6 @@ export function EditarReservaDialog({
               </Select>
             </div>
 
-            {/* Turma */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Turma
@@ -499,7 +482,6 @@ export function EditarReservaDialog({
               </div>
             </div>
 
-            {/* Nome do Professor */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Nome do Professor
@@ -515,7 +497,6 @@ export function EditarReservaDialog({
               </div>
             </div>
 
-            {/* Início do Transporte */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Início do Transporte
@@ -531,7 +512,6 @@ export function EditarReservaDialog({
               </div>
             </div>
 
-            {/* Fim do Transporte */}
             <div className="space-y-1.5">
               <Label className="text-slate-700 font-semibold ml-1 text-sm">
                 Fim do Transporte

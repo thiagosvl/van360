@@ -46,7 +46,6 @@ export function ReajusteLoteDialog({
 
   const [acaoSelecionada, setAcaoSelecionada] = useState<AcaoLote>("mensalidade");
 
-  // Reajuste de Parcela
   const [tipoReajuste, setTipoReajuste] = useState<RenovacaoReajusteTipo>(
     RenovacaoReajusteTipo.FIXO
   );
@@ -79,11 +78,9 @@ export function ReajusteLoteDialog({
     return null;
   }, [valorInput, tipoReajuste]);
 
-  // Ajuste de Transporte
   const [dataInicioTransporte, setDataInicioTransporte] = useState(`03/02/${anoDestino}`);
   const [dataFimTransporte, setDataFimTransporte] = useState(`15/12/${anoDestino}`);
 
-  // Ajuste de Cobrança
   const [dataInicioCobranca, setDataInicioCobranca] = useState(`10/01/${anoDestino}`);
   const [dataFimCobranca, setDataFimCobranca] = useState(`10/12/${anoDestino}`);
 
@@ -190,7 +187,6 @@ export function ReajusteLoteDialog({
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
         <BaseDialog.Body className="p-4 sm:p-6 space-y-4 overflow-y-auto">
-          {/* 1. PARA QUEM VOCÊ QUER APLICAR? (PRIMEIRO PASSO) */}
           <div className="space-y-1.5">
             <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
               Para quem você quer aplicar? <span className="text-red-600">*</span>
@@ -252,7 +248,6 @@ export function ReajusteLoteDialog({
             </Popover>
           </div>
 
-          {/* 2. O QUE VOCÊ DESEJA AJUSTAR EM LOTE? */}
           <div className="space-y-1.5 pt-2 border-t border-slate-100">
             <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
               O que você deseja ajustar em lote? <span className="text-red-600">*</span>
@@ -303,7 +298,6 @@ export function ReajusteLoteDialog({
             </div>
           </div>
 
-          {/* 3. CONFIGURAÇÃO DA AÇÃO SELECIONADA */}
           {acaoSelecionada === "mensalidade" && (
             <div className="space-y-3 pt-1.5 border-t border-slate-100">
               <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
@@ -397,7 +391,6 @@ export function ReajusteLoteDialog({
                   />
                 </div>
 
-                {/* Resumo explicativo do cálculo dinâmico para Lote */}
                 {exemploCalculo && (
                   <p className="text-[11px] sm:text-xs text-slate-500 pt-0.5 leading-relaxed">
                     {exemploCalculo}
@@ -479,7 +472,6 @@ export function ReajusteLoteDialog({
             </div>
           )}
 
-          {/* 4. O QUE VAI ACONTECER? (NO FINAL) */}
           <div className="rounded-2xl bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 p-3.5 space-y-1">
             <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider block">
               O que vai acontecer?

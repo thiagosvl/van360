@@ -9,3 +9,5 @@ export function formatarTelefone(telefone: string): string {
   return `(${ddd}) ${parte1}-${parte2}`;
 }
 
+export const formatPhone = formatarTelefone;
+

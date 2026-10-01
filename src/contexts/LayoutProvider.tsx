@@ -53,6 +53,10 @@ import { WhatsAppShowcaseDialog } from "@/components/dialogs/WhatsAppShowcaseDia
 import { ShowcaseTransporteEscolarDialog } from "@/components/dialogs/ShowcaseTransporteEscolarDialog";
 import { OnboardingSuccessDialog } from "@/components/dialogs/OnboardingSuccessDialog";
 import { ImageFullscreenDialog } from "@/components/dialogs/ImageFullscreenDialog";
+import { ReajusteLoteDialog } from "@/components/dialogs/ReajusteLoteDialog";
+import { EditarReservaDialog } from "@/components/dialogs/EditarReservaDialog";
+import { ConfirmarViradaAnoDialog } from "@/components/dialogs/ConfirmarViradaAnoDialog";
+import { ConfirmarDisparoWabaDialog } from "@/components/dialogs/ConfirmarDisparoWabaDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -83,6 +87,10 @@ import {
   OpenReciboPreviewDialogProps,
   OpenWhatsAppShowcaseDialogProps,
   OpenOnboardingSuccessDialogProps,
+  OpenReajusteLoteDialogProps,
+  OpenEditarReservaDialogProps,
+  OpenConfirmarViradaAnoDialogProps,
+  OpenConfirmarDisparoWabaDialogProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { Loader2 } from "lucide-react";
@@ -347,6 +355,34 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [importarContratoDialogState, setImportarContratoDialogState] = useState<{
     open: boolean;
     props?: OpenImportarContratoDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [reajusteLoteDialogState, setReajusteLoteDialogState] = useState<{
+    open: boolean;
+    props?: OpenReajusteLoteDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [editarReservaDialogState, setEditarReservaDialogState] = useState<{
+    open: boolean;
+    props?: OpenEditarReservaDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [confirmarViradaAnoDialogState, setConfirmarViradaAnoDialogState] = useState<{
+    open: boolean;
+    props?: OpenConfirmarViradaAnoDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [confirmarDisparoWabaDialogState, setConfirmarDisparoWabaDialogState] = useState<{
+    open: boolean;
+    props?: OpenConfirmarDisparoWabaDialogProps;
   }>({
     open: false,
   });
@@ -772,6 +808,38 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setShowcaseTransporteEscolarOpen(true);
   };
 
+  const openReajusteLoteDialog = (props: OpenReajusteLoteDialogProps) => {
+    setReajusteLoteDialogState({ open: true, props });
+  };
+
+  const closeReajusteLoteDialog = () => {
+    safeCloseDialog(() => setReajusteLoteDialogState({ open: false }));
+  };
+
+  const openEditarReservaDialog = (props: OpenEditarReservaDialogProps) => {
+    setEditarReservaDialogState({ open: true, props });
+  };
+
+  const closeEditarReservaDialog = () => {
+    safeCloseDialog(() => setEditarReservaDialogState({ open: false }));
+  };
+
+  const openConfirmarViradaAnoDialog = (props: OpenConfirmarViradaAnoDialogProps) => {
+    setConfirmarViradaAnoDialogState({ open: true, props });
+  };
+
+  const closeConfirmarViradaAnoDialog = () => {
+    safeCloseDialog(() => setConfirmarViradaAnoDialogState({ open: false }));
+  };
+
+  const openConfirmarDisparoWabaDialog = (props: OpenConfirmarDisparoWabaDialogProps) => {
+    setConfirmarDisparoWabaDialogState({ open: true, props });
+  };
+
+  const closeConfirmarDisparoWabaDialog = () => {
+    safeCloseDialog(() => setConfirmarDisparoWabaDialogState({ open: false }));
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -831,8 +899,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeConfirmarGerarContratoDialog,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
-        openVideoStoriesDialog,
+         openVideoStoriesDialog,
         closeVideoStoriesDialog,
+        openReajusteLoteDialog,
+        closeReajusteLoteDialog,
+        openEditarReservaDialog,
+        closeEditarReservaDialog,
+        openConfirmarViradaAnoDialog,
+        closeConfirmarViradaAnoDialog,
+        openConfirmarDisparoWabaDialog,
+        closeConfirmarDisparoWabaDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -1612,6 +1688,45 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             }
           }}
           {...videoStoriesDialogState.props}
+        />
+      )}
+
+      {reajusteLoteDialogState.open && reajusteLoteDialogState.props && (
+        <ReajusteLoteDialog
+          isOpen={true}
+          onClose={closeReajusteLoteDialog}
+          anoDestino={reajusteLoteDialogState.props.anoDestino}
+        />
+      )}
+
+      {editarReservaDialogState.open && editarReservaDialogState.props && (
+        <EditarReservaDialog
+          isOpen={true}
+          onClose={closeEditarReservaDialog}
+          passageiro={editarReservaDialogState.props.passageiro}
+          anoDestino={editarReservaDialogState.props.anoDestino}
+          onSuccess={editarReservaDialogState.props.onSuccess}
+        />
+      )}
+
+      {confirmarViradaAnoDialogState.open && confirmarViradaAnoDialogState.props && (
+        <ConfirmarViradaAnoDialog
+          isOpen={true}
+          onClose={closeConfirmarViradaAnoDialog}
+          anoDestino={confirmarViradaAnoDialogState.props.anoDestino}
+          kpis={confirmarViradaAnoDialogState.props.kpis}
+          onSuccess={confirmarViradaAnoDialogState.props.onSuccess}
+          onRevisarPendentes={confirmarViradaAnoDialogState.props.onRevisarPendentes}
+        />
+      )}
+
+      {confirmarDisparoWabaDialogState.open && confirmarDisparoWabaDialogState.props && (
+        <ConfirmarDisparoWabaDialog
+          isOpen={true}
+          onClose={closeConfirmarDisparoWabaDialog}
+          passageiros={confirmarDisparoWabaDialogState.props.passageiros}
+          anoDestino={confirmarDisparoWabaDialogState.props.anoDestino}
+          onSuccess={confirmarDisparoWabaDialogState.props.onSuccess}
         />
       )}
 

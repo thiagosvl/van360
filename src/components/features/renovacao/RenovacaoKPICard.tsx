@@ -1,21 +1,22 @@
-import { ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Rocket } from "lucide-react";
 import { RenovacaoKPIs } from "@/types/renovacao";
 import { formatCurrency } from "@/utils/formatters";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface RenovacaoKPICardProps {
   kpis: RenovacaoKPIs;
   anoDestino: number;
+  onOpenViradaAno?: () => void;
 }
 
-export function RenovacaoKPICard({ kpis }: RenovacaoKPICardProps) {
+export function RenovacaoKPICard({ kpis, anoDestino, onOpenViradaAno }: RenovacaoKPICardProps) {
   const isPositive = kpis.percentual_crescimento >= 0;
   const totalAlunos = kpis.contadores.total_ativos || 1;
   const percentualConfirmados = Math.round((kpis.contadores.confirmados / totalAlunos) * 100);
 
   return (
     <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100/80 flex flex-col gap-4">
-      {/* Linha Superior: Faturamento Projetado + Badge de Crescimento */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <span className="text-[13px] font-medium text-slate-500 block">
@@ -44,7 +45,6 @@ export function RenovacaoKPICard({ kpis }: RenovacaoKPICardProps) {
         )}
       </div>
 
-      {/* Barra de Progresso de Confirmações */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs text-slate-600">
           <span className="flex items-center gap-1.5 font-medium truncate">
@@ -62,12 +62,25 @@ export function RenovacaoKPICard({ kpis }: RenovacaoKPICardProps) {
         </div>
       </div>
 
-      {/* Linha Inferior com Faturamento Atual */}
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 gap-2">
-        <span className="truncate font-medium">Faturamento Atual:</span>
-        <span className="font-semibold text-slate-700 shrink-0">
-          {formatCurrency(kpis.faturamento_atual)}/mês
-        </span>
+      <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-slate-500">
+          <span className="font-medium">Faturamento Atual:</span>
+          <span className="font-semibold text-slate-700">
+            {formatCurrency(kpis.faturamento_atual)}/mês
+          </span>
+        </div>
+
+        {onOpenViradaAno && (
+          <Button
+            type="button"
+            onClick={onOpenViradaAno}
+            disabled={kpis.contadores.confirmados === 0}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl bg-gradient-to-r from-[#142e4a] to-[#1a3a5c] hover:from-[#0d1e30] hover:to-[#142e4a] text-white font-bold text-xs shadow-sm gap-2 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Rocket className="w-3.5 h-3.5 text-amber-400" />
+            <span>Iniciar Ano Letivo {anoDestino}</span>
+          </Button>
+        )}
       </div>
     </div>
   );

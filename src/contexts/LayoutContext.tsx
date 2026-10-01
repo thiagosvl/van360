@@ -9,6 +9,7 @@ import { Veiculo } from "@/types/veiculo";
 import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
+import type { RenovacaoPassageiroItem, RenovacaoKPIs } from "@/types/renovacao";
 import {
   createContext,
   useContext,
@@ -195,6 +196,29 @@ export interface OpenGerarContratoValidadorDialogProps {
 export interface OpenImportarContratoDialogProps {
   passageiroId?: string;
   passageiro?: Passageiro;
+  onSuccess?: () => void;
+}
+
+export interface OpenReajusteLoteDialogProps {
+  anoDestino: number;
+}
+
+export interface OpenEditarReservaDialogProps {
+  passageiro: RenovacaoPassageiroItem | null;
+  anoDestino: number;
+  onSuccess?: () => void;
+}
+
+export interface OpenConfirmarViradaAnoDialogProps {
+  anoDestino: number;
+  kpis: RenovacaoKPIs;
+  onSuccess?: () => void;
+  onRevisarPendentes?: () => void;
+}
+
+export interface OpenConfirmarDisparoWabaDialogProps {
+  passageiros: RenovacaoPassageiroItem[];
+  anoDestino: number;
   onSuccess?: () => void;
 }
 
@@ -413,6 +437,15 @@ export interface LayoutContextType {
 
   openVideoStoriesDialog: (props: OpenVideoStoriesDialogProps) => void;
   closeVideoStoriesDialog: () => void;
+
+  openReajusteLoteDialog: (props: OpenReajusteLoteDialogProps) => void;
+  closeReajusteLoteDialog: () => void;
+  openEditarReservaDialog: (props: OpenEditarReservaDialogProps) => void;
+  closeEditarReservaDialog: () => void;
+  openConfirmarViradaAnoDialog: (props: OpenConfirmarViradaAnoDialogProps) => void;
+  closeConfirmarViradaAnoDialog: () => void;
+  openConfirmarDisparoWabaDialog: (props: OpenConfirmarDisparoWabaDialogProps) => void;
+  closeConfirmarDisparoWabaDialog: () => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

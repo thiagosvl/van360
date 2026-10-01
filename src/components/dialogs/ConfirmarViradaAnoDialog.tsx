@@ -1,6 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, Rocket, CheckCircle2, ListFilter } from "lucide-react";
+import { Banner } from "@/components/ui/Banner";
 import { useVirarAnoLetivo } from "@/hooks/api/useRenovacoes";
 import { RenovacaoKPIs } from "@/types/renovacao";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -20,7 +19,6 @@ export function ConfirmarViradaAnoDialog({
   anoDestino,
   kpis,
   onSuccess,
-  onRevisarPendentes,
 }: ConfirmarViradaAnoDialogProps) {
   const virarAnoMutation = useVirarAnoLetivo();
   const { contadores } = kpis;
@@ -32,11 +30,6 @@ export function ConfirmarViradaAnoDialog({
     });
     onSuccess?.();
     safeCloseDialog(onClose);
-  };
-
-  const handleRevisar = () => {
-    safeCloseDialog(onClose);
-    onRevisarPendentes?.();
   };
 
   return (
@@ -52,34 +45,20 @@ export function ConfirmarViradaAnoDialog({
       />
 
       <BaseDialog.Body className="space-y-4 pb-5">
-        {/* Aviso de Validação dos Pendentes */}
         {hasPendentes ? (
-          <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold text-amber-950">
-                Você ainda possui {contadores.pendentes} passageiro(s) pendente(s)
-              </span>
-              <p className="text-amber-800">
-                Os alunos pendentes <strong>não serão promovidos</strong> para {anoDestino} e continuarão com o ano base atual até que sejam confirmados ou desligados.
-              </p>
-            </div>
-          </div>
+          <Banner
+            variant="warning"
+            title={`Você ainda possui ${contadores.pendentes} passageiro(s) pendente(s)`}
+            description={`Os alunos pendentes não serão promovidos para ${anoDestino} até que sejam confirmados ou desligados.`}
+          />
         ) : (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900 leading-relaxed flex items-start gap-2.5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold text-emerald-950">
-                Tudo pronto para a virada de ano!
-              </span>
-              <p className="text-emerald-800 mt-0.5">
-                Todas as vagas foram respondidas. Os passageiros confirmados serão ativados para o ano letivo de {anoDestino}.
-              </p>
-            </div>
-          </div>
+          <Banner
+            variant="success"
+            title="Tudo pronto para a virada de ano!"
+            description={`Todas as vagas foram respondidas. Os passageiros confirmados serão ativados para o ano letivo de ${anoDestino}.`}
+          />
         )}
 
-        {/* Resumo dos Contadores */}
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl bg-emerald-50/80 border border-emerald-200/80 p-2.5">
             <div className="text-lg font-extrabold text-emerald-700">
