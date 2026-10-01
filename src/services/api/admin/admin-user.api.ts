@@ -778,6 +778,7 @@ export interface ReferralUserSummary {
   logo_url?: string | null;
   assinatura_status?: string | null;
   assinatura_data_vencimento?: string | null;
+  assinatura_trial_ends_at?: string | null;
 }
 
 export interface ReferralItem {
