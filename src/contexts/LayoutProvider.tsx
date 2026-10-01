@@ -11,9 +11,11 @@ import AdminPassengerNotificationsDialog from "@/components/dialogs/AdminPasseng
 import AdminPassengerSendCobrancaDialog from "@/components/dialogs/AdminPassengerSendCobrancaDialog";
 import AdminDriverCobrancaDemoDialog from "@/components/dialogs/AdminDriverCobrancaDemoDialog";
 import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
+import AdminUserActivityHistoryDialog from "@/components/dialogs/AdminUserActivityHistoryDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+import CadastrarEscolasDialog from "@/components/dialogs/CadastrarEscolasDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import GerenciarCategoriasDialog from "@/components/dialogs/GerenciarCategoriasDialog";
@@ -39,6 +41,7 @@ import { PassageiroTransporteDialog } from "@/components/dialogs/PassageiroTrans
 import { RegistrarAusenciaDialog } from "@/components/dialogs/RegistrarAusenciaDialog";
 import { RevisarSolicitacaoDialog } from "@/components/dialogs/RevisarSolicitacaoDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
+import { ConfirmarGerarContratoDialog } from "@/components/dialogs/ConfirmarGerarContratoDialog";
 import { ImportarContratoDialog } from "@/components/dialogs/ImportarContratoDialog";
 import { DefinirResponsavelPrincipalDialog } from "@/components/dialogs/DefinirResponsavelPrincipalDialog";
 import { AdminConfigureReferralDialog } from "@/components/dialogs/AdminConfigureReferralDialog";
@@ -60,6 +63,7 @@ import {
   OpenPassageiroEscolaProps,
   OpenPassageiroTransporteProps,
   OpenRegistrarAusenciaProps,
+  OpenConfirmarGerarContratoDialogProps,
   OpenGerarContratoValidadorDialogProps,
   OpenImportarContratoDialogProps,
   OpenResponsavelFormProps,
@@ -70,6 +74,7 @@ import {
   OpenAdminDriverCobrancaDemoDialogProps,
   OpenAdminVencimentoDetalhesDialogProps,
   OpenAdminConfigureReferralDialogProps,
+  OpenAdminUserActivityHistoryDialogProps,
   OpenAdminConfirmBroadcastDialogProps,
   OpenImageFullscreenProps,
   OpenVideoStoriesDialogProps,
@@ -99,6 +104,7 @@ import {
   OpenConfirmationDialogProps,
   OpenContractSetupDialogProps,
   OpenEscolaFormProps,
+  OpenCadastrarEscolasProps,
   OpenFirstChargeDialogProps,
   OpenGastoFormProps,
   OpenManualPaymentDialogProps,
@@ -133,6 +139,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [escolaFormDialogState, setEscolaFormDialogState] = useState<{
     open: boolean;
     props?: OpenEscolaFormProps;
+  }>({
+    open: false,
+  });
+
+  const [cadastrarEscolasDialogState, setCadastrarEscolasDialogState] = useState<{
+    open: boolean;
+    props?: OpenCadastrarEscolasProps;
   }>({
     open: false,
   });
@@ -317,6 +330,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [confirmarGerarContratoDialogState, setConfirmarGerarContratoDialogState] = useState<{
+    open: boolean;
+    props?: OpenConfirmarGerarContratoDialogProps;
+  }>({
+    open: false,
+  });
+
   const [gerarContratoValidadorDialogState, setGerarContratoValidadorDialogState] = useState<{
     open: boolean;
     props?: OpenGerarContratoValidadorDialogProps;
@@ -364,6 +384,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [adminConfigureReferralDialogState, setAdminConfigureReferralDialogState] = useState<{
     open: boolean;
     props?: OpenAdminConfigureReferralDialogProps;
+  }>({ open: false });
+  const [adminUserActivityHistoryDialogState, setAdminUserActivityHistoryDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdminUserActivityHistoryDialogProps;
   }>({ open: false });
   const [adminConfirmBroadcastDialogState, setAdminConfirmBroadcastDialogState] = useState<{
     open: boolean;
@@ -439,6 +463,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       open: true,
       props,
     });
+  };
+
+  const openCadastrarEscolasDialog = (props?: OpenCadastrarEscolasProps) => {
+    setCadastrarEscolasDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeCadastrarEscolasDialog = () => {
+    safeCloseDialog(() =>
+      setCadastrarEscolasDialogState((prev) => ({ ...prev, open: false }))
+    );
   };
 
   const openRouteFormDialog = (props: OpenRouteFormProps) => {
@@ -663,6 +700,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setAdminConfigureReferralDialogState({ open: true, props });
   };
 
+  const openAdminUserActivityHistoryDialog = (props: OpenAdminUserActivityHistoryDialogProps) => {
+    setAdminUserActivityHistoryDialogState({ open: true, props });
+  };
+
   const openAdminConfirmBroadcastDialog = (props: OpenAdminConfirmBroadcastDialogProps) => {
     setAdminConfirmBroadcastDialogState({ open: true, props });
   };
@@ -677,6 +718,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const closeImageFullscreen = () => {
     safeCloseDialog(() => setImageFullscreenDialogState({ open: false }));
+  };
+
+  const openConfirmarGerarContratoDialog = (props: OpenConfirmarGerarContratoDialogProps) => {
+    setConfirmarGerarContratoDialogState({ open: true, props });
+  };
+
+  const closeConfirmarGerarContratoDialog = () => {
+    safeCloseDialog(() => {
+      setConfirmarGerarContratoDialogState((prev) => ({ ...prev, open: false }));
+    });
   };
 
   const openGerarContratoValidadorDialog = (props: OpenGerarContratoValidadorDialogProps) => {
@@ -733,6 +784,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openDefinirResponsavelPrincipalDialog,
         closeDefinirResponsavelPrincipalDialog,
         openEscolaFormDialog,
+        openCadastrarEscolasDialog,
+        closeCadastrarEscolasDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
         openRevisarSolicitacaoDialog,
@@ -769,10 +822,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAdminDriverCobrancaDemoDialog,
         openAdminVencimentoDetalhesDialog,
         openAdminConfigureReferralDialog,
+        openAdminUserActivityHistoryDialog,
         openAdminConfirmBroadcastDialog,
         closeAdminConfirmBroadcastDialog,
         openImageFullscreen,
         closeImageFullscreen,
+        openConfirmarGerarContratoDialog,
+        closeConfirmarGerarContratoDialog,
         openGerarContratoValidadorDialog,
         openImportarContratoDialog,
         openVideoStoriesDialog,
@@ -880,6 +936,24 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           editingEscola={escolaFormDialogState.props?.editingEscola}
           profile={profile}
           allowBatchCreation={escolaFormDialogState.props?.allowBatchCreation}
+        />
+      )}
+
+      {cadastrarEscolasDialogState.open && (
+        <CadastrarEscolasDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setCadastrarEscolasDialogState((prev) => ({ ...prev, open: false }))
+            )
+          }
+          onSuccess={(primeiraEscola, todasEscolas) => {
+            safeCloseDialog(() =>
+              setCadastrarEscolasDialogState((prev) => ({ ...prev, open: false }))
+            );
+            cadastrarEscolasDialogState.props?.onSuccess?.(primeiraEscola, todasEscolas);
+          }}
+          profile={profile}
         />
       )}
 
@@ -1440,6 +1514,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {adminUserActivityHistoryDialogState.open && adminUserActivityHistoryDialogState.props && (
+        <AdminUserActivityHistoryDialog
+          open={true}
+          onClose={() => safeCloseDialog(() => setAdminUserActivityHistoryDialogState({ open: false }))}
+          userId={adminUserActivityHistoryDialogState.props.userId}
+          userName={adminUserActivityHistoryDialogState.props.userName}
+          userPhone={adminUserActivityHistoryDialogState.props.userPhone}
+          dataInicio={adminUserActivityHistoryDialogState.props.dataInicio}
+          dataFim={adminUserActivityHistoryDialogState.props.dataFim}
+        />
+      )}
+
       {adminConfigureReferralDialogState.open && adminConfigureReferralDialogState.props && (
         <AdminConfigureReferralDialog
           isOpen={true}
@@ -1473,6 +1559,25 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={closeImageFullscreen}
           imageUrl={imageFullscreenDialogState.props.imageUrl}
           alt={imageFullscreenDialogState.props.alt}
+        />
+      )}
+
+      {confirmarGerarContratoDialogState.open && confirmarGerarContratoDialogState.props && (
+        <ConfirmarGerarContratoDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeConfirmarGerarContratoDialog();
+            }
+          }}
+          passageiro={confirmarGerarContratoDialogState.props.passageiro}
+          valorMensal={confirmarGerarContratoDialogState.props.valorMensal}
+          diaVencimento={confirmarGerarContratoDialogState.props.diaVencimento}
+          dataInicio={confirmarGerarContratoDialogState.props.dataInicio}
+          dataFim={confirmarGerarContratoDialogState.props.dataFim}
+          isSubstituicao={confirmarGerarContratoDialogState.props.isSubstituicao}
+          contratoIdParaSubstituir={confirmarGerarContratoDialogState.props.contratoIdParaSubstituir}
+          onSuccess={confirmarGerarContratoDialogState.props.onSuccess}
         />
       )}
 

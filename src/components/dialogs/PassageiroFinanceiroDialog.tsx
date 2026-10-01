@@ -35,7 +35,11 @@ import {
   COBRANCA_BANNER_MESSAGES,
   getDefaultAnoLetivo,
 } from "@/utils/domain";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 import { useUpdatePassageiro } from "@/hooks/api/usePassageiroMutations";
+import { useCobrancasByPassageiro } from "@/hooks/api/useCobrancasByPassageiro";
+import { useLayout } from "@/contexts/LayoutContext";
+import { CobrancaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { safeCloseDialog } from "@/hooks";
 
@@ -48,7 +52,7 @@ const passageiroFinanceiroSchema = z
     ano_inicio_cobranca: z.string().optional(),
     mes_fim_cobranca: z.string().optional(),
     ano_fim_cobranca: z.string().optional(),
-    enviar_notificacoes: z.boolean().default(false),
+    cadastrar_responsavel: z.boolean().default(false),
     nome_responsavel: z.string().optional(),
     telefone_responsavel: z.string().optional(),
   })
@@ -83,7 +87,7 @@ const passageiroFinanceiroSchema = z
           path: ["mes_fim_cobranca"],
         });
       }
-      if (data.enviar_notificacoes) {
+      if (data.cadastrar_responsavel) {
         if (!data.nome_responsavel || data.nome_responsavel.trim().length < 2) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -133,12 +137,17 @@ export function PassageiroFinanceiroDialog({
   onSuccess,
 }: PassageiroFinanceiroDialogProps) {
   const updatePassageiro = useUpdatePassageiro();
+  const { openFirstChargeDialog } = useLayout();
 
   const now = getNowBR();
   const currentYear = now.getFullYear();
   const defaultAnoLetivo = passageiro?.ano_letivo ? passageiro.ano_letivo.toString() : getDefaultAnoLetivo();
   const currentMonthStr = useMemo(() => (getNowBR().getMonth() + 1).toString(), []);
   const responsavelFieldsRef = useRef<HTMLDivElement>(null);
+
+  const { data: cobrancasData } = useCobrancasByPassageiro(passageiro?.id, currentYear.toString(), {
+    enabled: isOpen && Boolean(passageiro?.id),
+  });
 
   const form = useForm<PassageiroFinanceiroFormData>({
     resolver: zodResolver(passageiroFinanceiroSchema),
@@ -150,7 +159,7 @@ export function PassageiroFinanceiroDialog({
       ano_inicio_cobranca: defaultAnoLetivo,
       mes_fim_cobranca: "12",
       ano_fim_cobranca: defaultAnoLetivo,
-      enviar_notificacoes: false,
+      cadastrar_responsavel: false,
       nome_responsavel: "",
       telefone_responsavel: "",
     },
@@ -164,7 +173,6 @@ export function PassageiroFinanceiroDialog({
       const fimAno = getYearFromDate(passageiro.data_fim_cobranca);
       const resp = passageiro.responsavel_principal;
       const temTelefoneResp = Boolean(resp?.telefone);
-      const enviarNotif = passageiro.enviar_notificacoes !== false && temTelefoneResp;
 
       form.reset({
         isento: !!passageiro.isento,
@@ -174,7 +182,7 @@ export function PassageiroFinanceiroDialog({
         ano_inicio_cobranca: inicioAno || defaultAnoLetivo,
         mes_fim_cobranca: fimMes || "12",
         ano_fim_cobranca: fimAno || defaultAnoLetivo,
-        enviar_notificacoes: enviarNotif,
+        cadastrar_responsavel: temTelefoneResp,
         nome_responsavel: resp?.nome || "",
         telefone_responsavel: resp?.telefone ? phoneMask(resp.telefone) : "",
       });
@@ -200,20 +208,22 @@ export function PassageiroFinanceiroDialog({
     const anoIni = data.ano_inicio_cobranca || defaultAnoLetivo;
     const anoTerm = data.ano_fim_cobranca || anoIni;
 
+    const valorFinal = data.isento ? null : (data.valor_cobranca ? parseCurrencyToNumber(data.valor_cobranca) : null);
+    const diaFinal = data.isento ? null : (data.dia_vencimento ? Number(data.dia_vencimento) : null);
+
     const payload: Record<string, unknown> = {
       isento: data.isento,
-      valor_cobranca: data.isento ? null : (data.valor_cobranca ? parseCurrencyToNumber(data.valor_cobranca) : null),
-      dia_vencimento: data.isento ? null : (data.dia_vencimento ? Number(data.dia_vencimento) : null),
+      valor_cobranca: valorFinal,
+      dia_vencimento: diaFinal,
       data_inicio_cobranca: data.isento || !data.mes_inicio_cobranca
         ? null
         : `${anoIni}-${String(data.mes_inicio_cobranca).padStart(2, "0")}-01`,
       data_fim_cobranca: data.isento || !data.mes_fim_cobranca
         ? null
         : `${anoTerm}-${String(data.mes_fim_cobranca).padStart(2, "0")}-01`,
-      enviar_notificacoes: data.isento ? false : data.enviar_notificacoes,
     };
 
-    if (!data.isento && data.enviar_notificacoes && data.telefone_responsavel) {
+    if (!data.isento && data.cadastrar_responsavel && data.telefone_responsavel) {
       payload.responsavel_principal = {
         nome: data.nome_responsavel?.trim(),
         telefone: data.telefone_responsavel.replace(/\D/g, ""),
@@ -221,15 +231,46 @@ export function PassageiroFinanceiroDialog({
     }
 
     try {
-      await updatePassageiro.mutateAsync({
+      const response = await updatePassageiro.mutateAsync({
         id: passageiro.id,
         data: payload,
         showToast: false,
       });
 
+      const updatedPassageiro = {
+        ...passageiro,
+        ...(response && typeof response === "object" ? response : {}),
+        ...payload,
+        id: passageiro.id,
+        valor_cobranca: valorFinal ?? undefined,
+        dia_vencimento: diaFinal ?? undefined,
+        isento: data.isento,
+      } as Passageiro;
+
       toast.success("Parcelas configuradas com sucesso!");
-      onSuccess?.();
       handleClose();
+
+      const currentMonth = now.getMonth() + 1;
+      const hasCurrentMonthRealCharge = (cobrancasData || []).some(
+        (c) => c.mes === currentMonth && c.ano === currentYear && c.status !== CobrancaStatus.CANCELADA
+      );
+
+      const isEligibleForFirstCharge = !data.isento && !!valorFinal && valorFinal > 0 && !!diaFinal && shouldGeneratePassengerProjection({
+        passageiro: updatedPassageiro,
+        targetMonth: currentMonth,
+        targetYear: currentYear,
+      });
+
+      if (isEligibleForFirstCharge && !hasCurrentMonthRealCharge) {
+        openFirstChargeDialog({
+          passageiro: updatedPassageiro,
+          onSuccess: () => {
+            onSuccess?.();
+          },
+        });
+      } else {
+        onSuccess?.();
+      }
     } catch {
       toast.error("Erro ao salvar as parcelas do aluno.");
     }
@@ -238,7 +279,7 @@ export function PassageiroFinanceiroDialog({
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
       <BaseDialog.Header
-        title="Configurar Parcelas"
+        title="Ajustar Parcelas"
         icon={<DollarSign className="w-5 h-5 text-[#1a3a5c]" />}
         onClose={handleClose}
       />
@@ -501,15 +542,15 @@ export function PassageiroFinanceiroDialog({
 
                 <FormField
                   control={form.control}
-                  name="enviar_notificacoes"
+                  name="cadastrar_responsavel"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs">
                       <div className="space-y-0.5 pr-4">
                         <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
-                          Cobranças automáticas no WhatsApp
+                          Cadastrar Responsável
                         </FormLabel>
                         <div className="text-xs text-slate-500 font-normal leading-relaxed">
-                          Enviaremos lembretes de cobrança diretamente no WhatsApp do responsável.
+                          Necessário para o envio automático das cobranças no WhatsApp.
                         </div>
                       </div>
                       <FormControl>
@@ -526,14 +567,14 @@ export function PassageiroFinanceiroDialog({
                               }, 100);
                             }
                           }}
-                          aria-label="Ativar cobranças automáticas no WhatsApp"
+                          aria-label="Cadastrar responsável para cobranças automáticas"
                         />
                       </FormControl>
                     </FormItem>
                   )}
                 />
 
-                {form.watch("enviar_notificacoes") && (
+                {form.watch("cadastrar_responsavel") && (
                   <div
                     ref={responsavelFieldsRef}
                     className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3 animate-in fade-in duration-200"
@@ -551,7 +592,7 @@ export function PassageiroFinanceiroDialog({
                               <User className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
                               <Input
                                 {...field}
-                                placeholder="Nome completo do responsável"
+                                placeholder="Nome completo"
                                 className={cn(
                                   "pl-10 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
                                   fieldState.error && "border-red-500"
@@ -591,12 +632,6 @@ export function PassageiroFinanceiroDialog({
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-
-                    <Banner
-                      variant="info"
-                      description="Se você não tiver essas informações agora, não se preocupe: você pode desativar essa opção e cadastrar o responsável depois."
-                      className="mt-1 p-2.5 sm:p-3 text-xs"
                     />
                   </div>
                 )}

@@ -330,7 +330,7 @@ const Home = () => {
 
             {!isSubConta && <SmartAppBanner />}
 
-            {!isSubConta && !onboarding.showOnboarding && contadores.passageirosSolicitacoes === 0 && contadores.passageirosAtivos < 10 && !isDismissedQuickReg && (
+            {!isSubConta && !onboarding.showOnboarding && !isDismissedQuickReg && (
               <section className="px-1">
                 <QuickRegistrationLink
                   profile={profile}

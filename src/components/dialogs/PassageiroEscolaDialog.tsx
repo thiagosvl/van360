@@ -109,6 +109,7 @@ export function PassageiroEscolaDialog({
 
   const handleAddNewSchool = () => {
     openEscolaFormDialog({
+      allowBatchCreation: false,
       onSuccess: (escolaCriada: Escola) => {
         if (escolaCriada?.id) {
           setNewEscola(escolaCriada);

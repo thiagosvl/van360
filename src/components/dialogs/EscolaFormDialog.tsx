@@ -11,12 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import {
   useCreateEscola,
@@ -34,7 +29,7 @@ import { validateEnderecoFields } from "@/utils/validators";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, MapPin, Wand2 } from "lucide-react";
+import { Building2, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -58,9 +53,6 @@ export default function EscolaFormDialog({
   profile: profileProp,
   allowBatchCreation = false,
 }: EscolaFormDialogProps) {
-  const [openAccordionItems, setOpenAccordionItems] = useState([
-    "dados-escola",
-  ]);
   const [keepOpen, setKeepOpen] = useState(false);
   const { user } = useSession();
   const { profile: profileFromHook } = useProfile(
@@ -77,6 +69,7 @@ export default function EscolaFormDialog({
     resolver: zodResolver(escolaSchema),
     defaultValues: {
       nome: editingEscola?.nome || "",
+      informarEndereco: Boolean(editingEscola?.logradouro || editingEscola?.cep),
       logradouro: editingEscola?.logradouro || "",
       numero: editingEscola?.numero || "",
       bairro: editingEscola?.bairro || "",
@@ -89,21 +82,15 @@ export default function EscolaFormDialog({
     },
   });
 
-  const cep = form.watch("cep");
-  const logradouro = form.watch("logradouro");
-  const numero = form.watch("numero");
-
-  useEffect(() => {
-    if (isOpen) {
-      form.trigger(["cep", "logradouro", "numero"]);
-    }
-  }, [cep, logradouro, numero, isOpen, form]);
+  const informarEndereco = form.watch("informarEndereco") ?? false;
 
   useEffect(() => {
     if (isOpen) {
       if (editingEscola) {
+        const hasEndereco = Boolean(editingEscola.logradouro || editingEscola.cep);
         form.reset({
           nome: editingEscola.nome,
+          informarEndereco: hasEndereco,
           logradouro: editingEscola.logradouro || "",
           numero: editingEscola.numero || "",
           bairro: editingEscola.bairro || "",
@@ -114,15 +101,11 @@ export default function EscolaFormDialog({
           complemento: editingEscola.complemento || "",
           ativo: editingEscola.ativo,
         });
-        if (editingEscola.logradouro || editingEscola.cep) {
-          setOpenAccordionItems(["dados-escola", "endereco"]);
-        } else {
-          setOpenAccordionItems(["dados-escola"]);
-        }
       } else {
         if (!keepOpen) {
           form.reset({
             nome: "",
+            informarEndereco: false,
             logradouro: "",
             numero: "",
             bairro: "",
@@ -133,23 +116,46 @@ export default function EscolaFormDialog({
             complemento: "",
             ativo: true,
           });
-          setOpenAccordionItems(["dados-escola"]);
         }
       }
     } else {
       setKeepOpen(false);
     }
-  }, [isOpen, editingEscola, form]);
+  }, [isOpen, editingEscola]);
 
   const onFormError = () => {
     toast.error("validacao.formularioComErros");
-    setOpenAccordionItems(["dados-escola", "endereco"]);
+  };
+
+  const handleToggleInformarEndereco = (checked: boolean) => {
+    form.setValue("informarEndereco", checked, { shouldValidate: true });
+    if (!checked) {
+      form.setValue("logradouro", "");
+      form.setValue("numero", "");
+      form.setValue("bairro", "");
+      form.setValue("cidade", "");
+      form.setValue("estado", "");
+      form.setValue("cep", "");
+      form.setValue("referencia", "");
+      form.setValue("complemento", "");
+      form.clearErrors([
+        "logradouro",
+        "numero",
+        "bairro",
+        "cidade",
+        "estado",
+        "cep",
+        "referencia",
+        "complemento",
+      ]);
+    }
   };
 
   const handleFillMock = () => {
     const mockData = mockGenerator.escola();
     form.reset({
       nome: mockData.nome,
+      informarEndereco: true,
       logradouro: mockData.logradouro,
       numero: mockData.numero,
       bairro: mockData.bairro,
@@ -160,14 +166,22 @@ export default function EscolaFormDialog({
       complemento: mockData.complemento || "",
       ativo: mockData.ativo ?? true,
     });
-    setOpenAccordionItems(["dados-escola", "endereco"]);
   };
 
   const handleSubmit = async (data: EscolaFormData) => {
     if (!profile?.id) return;
 
     const payload = { ...data };
-    if (payload.cep) {
+    if (!informarEndereco) {
+      payload.logradouro = "";
+      payload.numero = "";
+      payload.bairro = "";
+      payload.cidade = "";
+      payload.estado = "";
+      payload.cep = "";
+      payload.referencia = "";
+      payload.complemento = "";
+    } else if (payload.cep) {
       payload.cep = payload.cep.replace(/\D/g, "");
     }
 
@@ -193,6 +207,7 @@ export default function EscolaFormDialog({
             if (keepOpen) {
               form.reset({
                 nome: "",
+                informarEndereco: false,
                 logradouro: "",
                 numero: "",
                 bairro: "",
@@ -254,7 +269,12 @@ export default function EscolaFormDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={() => !isSaving && safeCloseDialog(onClose)} lockClose={isSaving} maxWidth="2xl">
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isSaving && safeCloseDialog(onClose)}
+      lockClose={isSaving}
+      maxWidth="2xl"
+    >
       <BaseDialog.Header
         title={editingEscola ? "Editar Escola" : "Nova Escola"}
         onClose={() => safeCloseDialog(onClose)}
@@ -286,18 +306,22 @@ export default function EscolaFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome / Apelido da Escola <span className="text-red-600">*</span>
+                      Nome da Escola <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
                         <Input
                           {...field}
+                          placeholder="Ex.: Santa Maria"
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
+                    <p className="text-xs text-slate-500 mt-1.5 ml-1">
+                      Use o nome como você costuma chamar no dia a dia. Não precisa ser o nome oficial.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -326,33 +350,34 @@ export default function EscolaFormDialog({
               )}
             </div>
 
-            <Accordion
-              type="multiple"
-              value={openAccordionItems}
-              onValueChange={setOpenAccordionItems}
-              className="w-full"
-            >
-              <AccordionItem value="endereco" className="border-none pt-4">
-                <AccordionTrigger className="hover:no-underline px-4 py-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 hover:bg-slate-100/50 hover:border-slate-300 transition-all data-[state=open]:border-solid data-[state=open]:border-slate-100 data-[state=open]:bg-white data-[state=open]:shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-500 shadow-sm border border-slate-100">
-                      <MapPin className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col items-start justify-center">
-                      <span className="font-semibold text-slate-700 text-[15px] leading-tight">
-                        Adicionar Endereço
-                      </span>
-                      <span className="font-medium text-slate-400 text-[12px] mt-0.5">
-                        Opcional
-                      </span>
-                    </div>
+            <div className="pt-2">
+              <div
+                className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs cursor-pointer select-none"
+                onClick={() => !isSaving && handleToggleInformarEndereco(!informarEndereco)}
+              >
+                <div className="space-y-0.5 pr-4">
+                  <span className="text-slate-800 font-bold text-sm block">
+                    Informar endereço
+                  </span>
+                  <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                    É opcional o preenchimento do endereço
                   </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-1 pt-6 pb-2">
+                </div>
+                <Switch
+                  checked={informarEndereco}
+                  onCheckedChange={handleToggleInformarEndereco}
+                  disabled={isSaving}
+                  aria-label="Informar endereço da escola"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+
+              {informarEndereco && (
+                <div className="mt-4 pt-1 space-y-4 animate-in fade-in-50 duration-200">
                   <FormEnderecoFields />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                </div>
+              )}
+            </div>
 
             {allowBatchCreation && !editingEscola && (
               <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">

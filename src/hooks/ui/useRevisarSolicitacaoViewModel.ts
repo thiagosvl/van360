@@ -211,6 +211,7 @@ export function useRevisarSolicitacaoViewModel({
 
   const handleAddNewSchool = useCallback(() => {
     openEscolaFormDialog({
+      allowBatchCreation: false,
       onSuccess: (escolaCriada: Escola) => {
         if (escolaCriada?.id) {
           form.setValue("escola_id", escolaCriada.id, { shouldValidate: true });

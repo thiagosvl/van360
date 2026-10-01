@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { CheckoutPaymentMethod } from "@/types/enums";
+import { CheckoutPaymentMethod, SubscriptionStatus } from "@/types/enums";
 
 export interface ProjecaoMesValor {
   total: number;
@@ -69,6 +69,7 @@ export interface ProximaRenovacaoItem {
   dataLiquidacaoPrevista: string | null;
   valor: number;
   isVitalicio: boolean;
+  statusAssinatura?: SubscriptionStatus;
 }
 
 export interface SafraTrialItem {
@@ -131,6 +132,31 @@ export interface AdminDemographicsStatsResponse {
   distribuicaoEstados: AdminEstadoDemographics[];
 }
 
+export interface TrialPipelineItem {
+  assinaturaId: string;
+  usuarioId: string;
+  nome: string;
+  apelido: string | null;
+  trialEndsAt: string;
+  diasRestantes: number;
+  diasAcessados: number;
+  totalAcoes: number;
+  alunos: number;
+  escolas: number;
+  veiculos: number;
+  rotas: number;
+  contratos: number;
+  solicitacoes: number;
+  indicadoPor: string | null;
+  valorMensal: number;
+  valorAnual: number;
+}
+
+export interface TrialsPipelineResponse {
+  trials: TrialPipelineItem[];
+  total: number;
+}
+
 export const adminFinancialApi = {
   async getFinancialStats(): Promise<AdminFinancialStatsResponse> {
     const { data } = await apiClient.get<AdminFinancialStatsResponse>("/admin/stats/financial");
@@ -139,6 +165,11 @@ export const adminFinancialApi = {
 
   async getDemographicsStats(): Promise<AdminDemographicsStatsResponse> {
     const { data } = await apiClient.get<AdminDemographicsStatsResponse>("/admin/stats/demographics");
+    return data;
+  },
+
+  async getTrialsPipeline(): Promise<TrialsPipelineResponse> {
+    const { data } = await apiClient.get<TrialsPipelineResponse>("/admin/financial/trials-pipeline");
     return data;
   }
 };

@@ -37,7 +37,7 @@ export const QuickStartCard = ({
       {
         id: 1,
         done: veiculosCount > 0,
-        label: "Cadastrar um Veículo",
+        label: "Cadastrar Veículo",
         description: "Adicione seu primeiro veículo para começar a gestão.",
         onAction: onOpenVeiculoDialog,
         icon: Bus,
@@ -46,7 +46,7 @@ export const QuickStartCard = ({
       {
         id: 2,
         done: escolasCount > 0,
-        label: "Cadastrar uma Escola",
+        label: "Cadastrar Escola",
         description: "Adicione a primeira escola para organizar suas rotas.",
         onAction: onOpenEscolaDialog,
         icon: School,
@@ -56,7 +56,7 @@ export const QuickStartCard = ({
         id: 3,
         done: passageirosCount > 0,
         label: "Cadastrar Primeiro Aluno",
-        description: "Adicione seu primeiro aluno para ver o app funcionando.",
+        description: "Informe apenas o nome do aluno e já veja o app funcionando.",
         onAction: onOpenPassageiroDialog,
         icon: User,
         buttonText: "Adicionar aluno",
@@ -164,7 +164,7 @@ export const QuickStartCard = ({
                       <p className="text-[13px] text-slate-500 mb-4 leading-relaxed">
                         {step.description}
                       </p>
-                      
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

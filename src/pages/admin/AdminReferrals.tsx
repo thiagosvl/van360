@@ -17,6 +17,7 @@ import {
   Trash2,
   RefreshCw,
   ArrowRight,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,13 +35,104 @@ import { phoneMask } from "@/utils/masks";
 import { formatSafeBrazilianDate } from "@/utils/dateUtils";
 import { openBrowserLink } from "@/utils/browser";
 import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { SubscriptionUtils } from "@/utils/subscription.utils";
+import type { ReferralItem } from "@/services/api/admin/admin-user.api";
 import { cn } from "@/lib/utils";
 
 const STATUS_FILTERS = [
   { value: "", label: "Todas as Indicações" },
-  { value: IndicacaoStatus.PENDING, label: "Em Teste (Trial)" },
+  { value: IndicacaoStatus.PENDING, label: "Pendentes (Não Assinantes)" },
   { value: IndicacaoStatus.COMPLETED, label: "Convertidas (Assinantes)" },
 ];
+
+interface ReferralDisplayInfo {
+  badgeLabel: string;
+  badgeClass: string;
+  icon: typeof Clock;
+  subtext: string;
+}
+
+function getReferralDisplayInfo(item: ReferralItem): ReferralDisplayInfo {
+  const isCompleted = item.status === IndicacaoStatus.COMPLETED;
+  if (isCompleted) {
+    return {
+      badgeLabel: "Convertido",
+      badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      icon: CheckCircle2,
+      subtext: "+30 dias concedidos",
+    };
+  }
+
+  const subStatus = item.indicado?.assinatura_status;
+  const trialEndsAt = item.indicado?.assinatura_trial_ends_at;
+
+  const isExpiredOrCanceled =
+    subStatus === SubscriptionStatus.EXPIRED ||
+    subStatus === SubscriptionStatus.CANCELED;
+
+  if (isExpiredOrCanceled) {
+    return {
+      badgeLabel: "Ainda não assinou",
+      badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      icon: Clock,
+      subtext: subStatus === SubscriptionStatus.CANCELED ? "Assinatura cancelada" : "Teste expirado",
+    };
+  }
+
+  if (subStatus === SubscriptionStatus.ACTIVE) {
+    return {
+      badgeLabel: "Assinante Ativo",
+      badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      icon: CheckCircle2,
+      subtext: "Assinatura ativa",
+    };
+  }
+
+  const daysLeft = SubscriptionUtils.calculateTrialDaysLeft(trialEndsAt);
+
+  if (daysLeft !== null) {
+    if (daysLeft <= 0 && trialEndsAt && new Date(trialEndsAt).getTime() < Date.now()) {
+      return {
+        badgeLabel: "Ainda não assinou",
+        badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        icon: Clock,
+        subtext: "Teste expirado",
+      };
+    }
+
+    if (daysLeft === 0) {
+      return {
+        badgeLabel: "Em Teste (Trial)",
+        badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+        icon: Clock,
+        subtext: "Último dia de teste",
+      };
+    }
+
+    if (daysLeft === 1) {
+      return {
+        badgeLabel: "Em Teste (Trial)",
+        badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+        icon: Clock,
+        subtext: "1 dia restante de teste",
+      };
+    }
+
+    return {
+      badgeLabel: "Em Teste (Trial)",
+      badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+      icon: Clock,
+      subtext: `${daysLeft} dias restantes de teste`,
+    };
+  }
+
+  return {
+    badgeLabel: "Em Teste (Trial)",
+    badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+    icon: Clock,
+    subtext: "Aguardando 1º pagamento",
+  };
+}
 
 export default function AdminReferrals() {
   const navigate = useNavigate();
@@ -110,7 +202,7 @@ export default function AdminReferrals() {
       },
       {
         key: "pending",
-        title: "EM TESTE (TRIAL)",
+        title: "EM TESTE / NÃO ASSINANTES",
         value: stats.pendentes,
         subtext: "Aguardando 1ª mensalidade",
         cardBorder: isPendingSelected
@@ -211,12 +303,15 @@ export default function AdminReferrals() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 lg:grid lg:grid-cols-5 lg:overflow-visible lg:mx-0 lg:px-0 lg:pb-0 lg:mb-0 touch-pan-x">
         {kpiCards.map((kpi) => (
           <div
             key={kpi.key}
             onClick={kpi.onClick}
-            className={cn(kpi.onClick && "cursor-pointer transition-transform hover:scale-[1.02]")}
+            className={cn(
+              "w-[185px] sm:w-[200px] shrink-0 lg:w-auto lg:shrink flex flex-col",
+              kpi.onClick && "cursor-pointer transition-transform hover:scale-[1.02]"
+            )}
           >
             <AdminKpiCard
               title={kpi.title}
@@ -225,6 +320,7 @@ export default function AdminReferrals() {
               cardBorder={kpi.cardBorder}
               iconBg={kpi.iconBg}
               icon={kpi.icon}
+              className="h-full flex flex-col justify-between"
             />
           </div>
         ))}
@@ -242,8 +338,17 @@ export default function AdminReferrals() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
+                className="pl-11 pr-10 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-3 text-slate-500 hover:text-white p-0.5 rounded-lg"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -273,7 +378,7 @@ export default function AdminReferrals() {
               <Calendar className="h-4 w-4 text-purple-400 shrink-0" />
               <span className="font-bold">Indicados entre:</span>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
               <Input
                 type="date"
                 value={dataInicio}
@@ -281,9 +386,8 @@ export default function AdminReferrals() {
                   setDataInicio(e.target.value);
                   setPage(1);
                 }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36"
               />
-              <span className="text-slate-500 font-bold">até</span>
               <Input
                 type="date"
                 value={dataFim}
@@ -291,7 +395,7 @@ export default function AdminReferrals() {
                   setDataFim(e.target.value);
                   setPage(1);
                 }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
+                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36"
               />
               {(dataInicio || dataFim) && (
                 <Button
@@ -302,7 +406,7 @@ export default function AdminReferrals() {
                     setDataFim("");
                     setPage(1);
                   }}
-                  className="h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
+                  className="col-span-2 sm:col-span-1 h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
                 >
                   Limpar Datas
                 </Button>
@@ -485,27 +589,26 @@ export default function AdminReferrals() {
                           </td>
 
                           <td className="py-4">
-                            {isCompleted ? (
-                              <div className="space-y-0.5">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                  <CheckCircle2 className="h-3.5 w-3.5" />
-                                  <span>Convertido</span>
-                                </span>
-                                <span className="block text-[10px] text-emerald-300/80 font-medium">
-                                  +30 dias concedidos
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="space-y-0.5">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                  <Clock className="h-3.5 w-3.5" />
-                                  <span>Em Teste (Trial)</span>
-                                </span>
-                                <span className="block text-[10px] text-slate-400 font-medium">
-                                  Aguardando 1º pagamento
-                                </span>
-                              </div>
-                            )}
+                            {(() => {
+                              const statusInfo = getReferralDisplayInfo(item);
+                              const StatusIcon = statusInfo.icon;
+                              return (
+                                <div className="space-y-0.5">
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border",
+                                      statusInfo.badgeClass
+                                    )}
+                                  >
+                                    <StatusIcon className="h-3.5 w-3.5" />
+                                    <span>{statusInfo.badgeLabel}</span>
+                                  </span>
+                                  <span className="block text-[10px] text-slate-400 font-medium">
+                                    {statusInfo.subtext}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </td>
 
                           <td className="py-4 text-right">
@@ -582,17 +685,26 @@ export default function AdminReferrals() {
                         </div>
 
                         <div>
-                          {isCompleted ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              <CheckCircle2 className="h-3 w-3" />
-                              <span>Convertido</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                              <Clock className="h-3 w-3" />
-                              <span>Em Teste</span>
-                            </span>
-                          )}
+                          {(() => {
+                            const statusInfo = getReferralDisplayInfo(item);
+                            const StatusIcon = statusInfo.icon;
+                            return (
+                              <div className="flex flex-col items-end">
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border",
+                                    statusInfo.badgeClass
+                                  )}
+                                >
+                                  <StatusIcon className="h-3 w-3" />
+                                  <span>{statusInfo.badgeLabel}</span>
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                  {statusInfo.subtext}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
 

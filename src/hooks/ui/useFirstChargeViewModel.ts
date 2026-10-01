@@ -46,6 +46,7 @@ export function useFirstChargeViewModel({
   const [paymentStatus, setPaymentStatus] = useState<CobrancaStatus | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [wantsContract, setWantsContract] = useState<boolean>(showContractStep);
+  const [notificarResponsavel, setNotificarResponsavel] = useState<boolean>(true);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
 
   const [customValue] = useState<string>(
@@ -140,8 +141,14 @@ export function useFirstChargeViewModel({
       if (wantsContract) {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
-          onSuccess: async (id, _bypassed) => {
-            await createContrato.mutateAsync({ passageiroId: id });
+          initialPassageiro: passageiro,
+          onSuccess: async (id, _bypassed, updatedValues) => {
+            await createContrato.mutateAsync({
+              passageiroId: id,
+              valorMensal: updatedValues?.valorMensal,
+              diaVencimento: updatedValues?.diaVencimento,
+              notificarResponsavel: notificarResponsavel === true,
+            });
           }
         });
       }
@@ -165,7 +172,7 @@ export function useFirstChargeViewModel({
     } finally {
       setIsGeneratingContract(false);
     }
-  }, [passageiro, isFirstPassageiro, wantsContract, submitCobranca, openGerarContratoValidadorDialog, openOnboardingSuccessDialog, createContrato, onClose, navigate, onSuccess]);
+  }, [passageiro, isFirstPassageiro, wantsContract, notificarResponsavel, submitCobranca, openGerarContratoValidadorDialog, openOnboardingSuccessDialog, createContrato, onClose, navigate, onSuccess]);
 
   const handleNext = useCallback(async () => {
     if (step === "CONTRACT_CHECK") {
@@ -206,6 +213,8 @@ export function useFirstChargeViewModel({
     setPaymentMethod,
     wantsContract,
     setWantsContract,
+    notificarResponsavel,
+    setNotificarResponsavel,
     handleBack,
     handleNext,
     isLoading: createCobranca.isPending || isGeneratingContract,

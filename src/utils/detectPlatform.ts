@@ -84,3 +84,23 @@ export const APP_AVAILABILITY = {
   android: true,
   ios: false,
 } as const;
+
+export function getAppPlatformEligibility() {
+  const platform = detectPlatform();
+
+  const isAndroidPlatform = platform === "android-web" || platform === "android";
+  const isIosPlatform = platform === "ios-web" || platform === "ios";
+  const isDesktopPlatform = platform === "desktop";
+
+  const showAndroid = (isAndroidPlatform || isDesktopPlatform) && APP_AVAILABILITY.android;
+  const showIos = (isIosPlatform || isDesktopPlatform) && APP_AVAILABILITY.ios;
+  const hasEligibleApp = showAndroid || showIos;
+
+  return {
+    platform,
+    isEligibleAndroid: showAndroid,
+    isEligibleIos: showIos,
+    isEligibleDesktop: isDesktopPlatform,
+    hasEligibleApp,
+  };
+}

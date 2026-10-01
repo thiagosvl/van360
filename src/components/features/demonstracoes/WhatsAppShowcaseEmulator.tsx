@@ -295,12 +295,27 @@ export function WhatsAppShowcaseEmulator({
     setActiveTab(TABS[nextIndex].id);
   };
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
-    if (!tabsListRef.current) return;
-    const activeEl = tabsListRef.current.querySelector<HTMLElement>(`[data-tab-id="${activeTab}"]`);
-    if (activeEl && typeof activeEl.scrollIntoView === "function") {
-      activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
+
+    const container = tabsListRef.current;
+    if (!container) return;
+
+    const activeEl = container.querySelector<HTMLElement>(`[data-tab-id="${activeTab}"]`);
+    if (!activeEl) return;
+
+    const containerWidth = container.clientWidth;
+    const targetLeft = activeEl.offsetLeft - (containerWidth / 2) + (activeEl.clientWidth / 2);
+
+    container.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior: "smooth",
+    });
   }, [activeTab]);
 
   const handleTouchStart = (e: React.TouchEvent) => {

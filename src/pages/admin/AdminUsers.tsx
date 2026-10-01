@@ -18,6 +18,7 @@ import {
   XCircle,
   CalendarOff,
   Calendar,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -127,14 +128,14 @@ export default function AdminUsers() {
   }, [stats, total, statusFilter]);
 
   return (
-    <div className="space-y-8 text-left">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+    <div className="space-y-6 sm:space-y-8 text-left">
+      <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
         {kpiCards.map((card) => (
           <AdminKpiCard
             key={card.key}
             {...card}
             className={cn(
-              "cursor-pointer transition-all duration-200",
+              "w-[170px] sm:w-[190px] shrink-0 md:w-auto md:shrink flex flex-col justify-between cursor-pointer transition-all duration-200",
               card.isSelected && "bg-[#17223b]"
             )}
           />
@@ -155,10 +156,10 @@ export default function AdminUsers() {
       </div>
 
       <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardContent className="p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
               <Input
                 placeholder="Buscar por nome, telefone ou ID..."
                 value={search}
@@ -166,11 +167,23 @@ export default function AdminUsers() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="pl-10 pr-9 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setPage(1);
+                  }}
+                  className="absolute right-3 top-3 p-1 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 -mx-1 px-1 touch-pan-x">
               {STATUS_FILTERS.map((f) => (
                 <Button
                   key={f.value}
@@ -180,8 +193,8 @@ export default function AdminUsers() {
                     setStatusFilter(f.value);
                     setPage(1);
                   }}
-                  className={`rounded-xl text-xs font-bold whitespace-nowrap ${statusFilter === f.value
-                    ? "bg-blue-600 text-white border-blue-600"
+                  className={`rounded-xl text-xs font-bold whitespace-nowrap h-8 px-3 transition-all ${statusFilter === f.value
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/30"
                     : "border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800"
                     }`}
                 >
@@ -191,31 +204,39 @@ export default function AdminUsers() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 text-xs">
-            <div className="flex items-center gap-2 text-slate-400">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+            <div className="flex items-center gap-2 text-slate-400 text-xs">
               <Calendar className="h-4 w-4 text-blue-400 shrink-0" />
-              <span className="font-bold">Cadastrados entre:</span>
+              <span className="font-bold uppercase tracking-wider text-[11px]">Cadastrados entre</span>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Input
-                type="date"
-                value={dataInicio}
-                onChange={(e) => {
-                  setDataInicio(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
-              />
-              <span className="text-slate-500 font-bold">até</span>
-              <Input
-                type="date"
-                value={dataFim}
-                onChange={(e) => {
-                  setDataFim(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-36"
-              />
+
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+              <div className="space-y-1">
+                <span className="text-[10px] font-semibold text-slate-500 block sm:hidden">De:</span>
+                <Input
+                  type="date"
+                  value={dataInicio}
+                  onChange={(e) => {
+                    setDataInicio(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-slate-900/90 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36 focus-visible:ring-0"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-semibold text-slate-500 block sm:hidden">Até:</span>
+                <Input
+                  type="date"
+                  value={dataFim}
+                  onChange={(e) => {
+                    setDataFim(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-slate-900/90 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36 focus-visible:ring-0"
+                />
+              </div>
+
               {(dataInicio || dataFim) && (
                 <Button
                   variant="ghost"
@@ -225,7 +246,7 @@ export default function AdminUsers() {
                     setDataFim("");
                     setPage(1);
                   }}
-                  className="h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
+                  className="col-span-2 sm:col-span-1 h-8 sm:h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
                 >
                   Limpar Datas
                 </Button>

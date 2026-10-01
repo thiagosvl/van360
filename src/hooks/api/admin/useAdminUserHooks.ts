@@ -396,5 +396,28 @@ export function useDeleteInvoiceAdmin(userId?: string) {
   });
 }
 
+export function useConfirmInvoicePaymentAdmin(userId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId: string) => adminUserApi.confirmInvoicePayment(invoiceId),
+    onSuccess: async () => {
+      toast.success("Pagamento confirmado e assinatura ativada com sucesso!");
+
+      if (userId) {
+        await qc.invalidateQueries({ queryKey: KEYS.userDetails(userId) });
+        qc.invalidateQueries({ queryKey: ["admin", "users", userId, "logs"] });
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg = apiError?.response?.data?.error || apiError?.response?.data?.message || "Erro ao confirmar pagamento da fatura.";
+      toast.error(msg);
+    },
+  });
+}
+
 
 

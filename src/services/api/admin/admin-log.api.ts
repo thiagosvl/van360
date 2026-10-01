@@ -26,6 +26,34 @@ export interface AdminUserLogsResponse {
   limit: number;
 }
 
+export interface AdminUserGroupLogItem {
+  usuario_id: string;
+  usuario_nome: string | null;
+  usuario_apelido: string | null;
+  usuario_telefone: string | null;
+  usuario_email: string | null;
+  usuario_logo_url?: string | null;
+  assinatura_status?: string;
+  tipo_usuario?: string;
+  cadastrado_em?: string | null;
+  total_atividades: number;
+  primeira_atividade_em: string | null;
+  ultima_atividade_em: string | null;
+  ultimas_atividades: AdminUserLogItem[];
+}
+
+export interface AdminLogsByUserResponse {
+  data: AdminUserGroupLogItem[];
+  total: number;
+  total_novos?: number;
+  total_trial?: number;
+  total_ativos?: number;
+  total_vitalicios?: number;
+  total_recorrentes?: number;
+  page: number;
+  limit: number;
+}
+
 const BASE = "/admin";
 
 export const adminLogApi = {
@@ -34,4 +62,7 @@ export const adminLogApi = {
 
   getLogs: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) =>
     apiClient.get<AdminUserLogsResponse>(`${BASE}/logs`, { params }).then(r => r.data),
+
+  getLogsByUser: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) =>
+    apiClient.get<AdminLogsByUserResponse>(`${BASE}/logs/by-user`, { params }).then(r => r.data),
 };

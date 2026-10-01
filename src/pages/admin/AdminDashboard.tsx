@@ -6,6 +6,7 @@ import {
   useAdminLogs,
   useAdminUsersRadarStats,
   useAdminFinancialStats,
+  useAdminTrialsPipeline,
   useAdminDemographicsStats,
   useAdminRealtimeLogs,
 } from "@/hooks/api/adminHooks";
@@ -15,6 +16,7 @@ import { AdminTrialCohortChart } from "@/components/features/admin/financial/Adm
 import { AdminDailyMaturityScatter } from "@/components/features/admin/financial/AdminDailyMaturityScatter";
 import { AdminPaymentMethodBreakdown } from "@/components/features/admin/financial/AdminPaymentMethodBreakdown";
 import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financial/AdminUpcomingRenewalsTable";
+import { AdminTrialsPipelineTable } from "@/components/features/admin/financial/AdminTrialsPipelineTable";
 import { AdminAgeDemographicsChart } from "@/components/features/admin/users/AdminAgeDemographicsChart";
 import { AdminUserGrowthFunnel } from "@/components/features/admin/users/AdminUserGrowthFunnel";
 import { AdminGeographicSection } from "@/components/features/admin/users/AdminGeographicSection";
@@ -103,8 +105,14 @@ function CustomAcquisitionTooltip({ active, payload }: CustomAcquisitionTooltipP
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "geral";
+
   const { data: stats, isLoading, refetch: refetchStats, isFetching: isFetchingStats } = useAdminStats();
   const { data: financialData, isLoading: isLoadingFinancial, refetch: refetchFinancial, isFetching: isFetchingFinancial } = useAdminFinancialStats();
+  const { data: trialsPipelineData, isLoading: isLoadingTrialsPipeline, refetch: refetchTrialsPipeline, isFetching: isFetchingTrialsPipeline } = useAdminTrialsPipeline({
+    enabled: activeTab === "financeiro",
+  });
   const { data: demographicsData, isLoading: isLoadingDemographics, refetch: refetchDemographics } = useAdminDemographicsStats();
   const { setPageTitle } = useLayout();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
@@ -157,9 +165,6 @@ export default function AdminDashboard() {
       .filter((item) => item.quantidade > 0)
       .sort((a, b) => b.quantidade - a.quantidade);
   }, [stats?.dispositivosCadastro]);
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "geral";
 
   const { isConnected: isRealtimeConnected } = useAdminRealtimeLogs();
 
@@ -278,9 +283,10 @@ export default function AdminDashboard() {
             onClick={() => {
               refetchStats();
               refetchFinancial();
+              refetchTrialsPipeline();
               refetchDemographics();
             }}
-            disabled={isFetchingStats || isFetchingFinancial}
+            disabled={isFetchingStats || isFetchingFinancial || isFetchingTrialsPipeline}
             title="Atualizar dados do dashboard"
             className="h-16 w-14 border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white rounded-[1.25rem] shadow-xl shrink-0"
           >
@@ -356,7 +362,7 @@ export default function AdminDashboard() {
         {/* ABA 1: VISÃO GERAL */}
         <TabsContent value="geral" className="space-y-6 m-0 outline-none">
           {/* 1. TOP MAIN KPIS */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
             <AdminKpiCard
               title="TOTAL DE MOTORISTAS"
               value={stats.totalMotoristas}
@@ -364,6 +370,7 @@ export default function AdminDashboard() {
               cardBorder="border-blue-500/40 shadow-blue-500/10"
               iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
               icon={<Bus className="h-5 w-5" />}
+              className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
 
             <AdminKpiCard
@@ -372,6 +379,7 @@ export default function AdminDashboard() {
               cardBorder="border-emerald-500/40 shadow-emerald-500/10"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<Users className="h-5 w-5" />}
+              className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
 
             <AdminKpiCard
@@ -381,6 +389,7 @@ export default function AdminDashboard() {
               cardBorder="border-amber-500/40 shadow-amber-500/10"
               iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
               icon={<DollarSign className="h-5 w-5" />}
+              className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
 
             <AdminKpiCard
@@ -390,6 +399,7 @@ export default function AdminDashboard() {
               cardBorder="border-purple-500/40 shadow-purple-500/10"
               iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
               icon={<FileText className="h-5 w-5" />}
+              className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
           </div>
 
@@ -554,7 +564,7 @@ export default function AdminDashboard() {
                         className="w-full h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 pt-0"
                       >
                         <Radio className="h-3.5 w-3.5 animate-pulse" />
-                        <span>Ver Todos os Motoristas no Radar Completo</span>
+                        <span>Ver Todos os Motoristas</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     </>
@@ -815,7 +825,7 @@ export default function AdminDashboard() {
 
         <TabsContent value="contratos" className="space-y-6 m-0 outline-none">
           <div className="space-y-3">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
               <AdminKpiCard
                 title="MOTORISTAS QUE CONFIGURARAM"
                 value={`${motoristasConfigurados}/${stats.totalMotoristas || 0}`}
@@ -823,6 +833,7 @@ export default function AdminDashboard() {
                 cardBorder="border-sky-500/40 shadow-sky-500/10"
                 iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
                 icon={<ShieldCheck className="h-5 w-5" />}
+                className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               />
 
               <AdminKpiCard
@@ -832,6 +843,7 @@ export default function AdminDashboard() {
                 cardBorder="border-purple-500/40 shadow-purple-500/10"
                 iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
                 icon={<CheckCircle2 className="h-5 w-5" />}
+                className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               />
 
               <AdminKpiCard
@@ -841,6 +853,7 @@ export default function AdminDashboard() {
                 cardBorder="border-blue-500/40 shadow-blue-500/10"
                 iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
                 icon={<FileText className="h-5 w-5" />}
+                className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               />
 
               <AdminKpiCard
@@ -850,6 +863,7 @@ export default function AdminDashboard() {
                 cardBorder="border-emerald-500/40 shadow-emerald-500/10"
                 iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                 icon={<CheckCircle2 className="h-5 w-5" />}
+                className="w-[200px] sm:w-[220px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               />
             </div>
           </div>
@@ -884,6 +898,12 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
+
+              <AdminTrialsPipelineTable
+                trials={trialsPipelineData?.trials || []}
+                isLoading={isLoadingTrialsPipeline || isFetchingTrialsPipeline}
+                onRefresh={refetchTrialsPipeline}
+              />
 
               <AdminUpcomingRenewalsTable renewals={financialData.proximasRenovacoes} />
             </>

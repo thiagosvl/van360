@@ -1,13 +1,12 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import {
-  detectPlatform,
+  getAppPlatformEligibility,
   isNativeApp,
   PLAY_STORE_URL,
   PLAY_STORE_BADGE_URL,
   APP_STORE_URL,
   APP_STORE_BADGE_URL,
-  APP_AVAILABILITY,
 } from "@/utils/detectPlatform";
 
 interface SmartAppBannerProps {
@@ -17,12 +16,9 @@ interface SmartAppBannerProps {
 export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => {
   if (isNativeApp()) return null;
 
-  const platform = detectPlatform();
-  const isEligibleAndroid = platform === "android-web" && APP_AVAILABILITY.android;
-  const isEligibleIos = platform === "ios-web" && APP_AVAILABILITY.ios;
-  const isEligibleDesktop = platform === "desktop" && APP_AVAILABILITY.android && APP_AVAILABILITY.ios;
+  const { isEligibleAndroid, isEligibleIos, hasEligibleApp } = getAppPlatformEligibility();
 
-  if (!isEligibleAndroid && !isEligibleIos && !isEligibleDesktop) {
+  if (!hasEligibleApp) {
     return null;
   }
 
@@ -43,7 +39,7 @@ export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => 
         </p>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-          {(isEligibleAndroid || isEligibleDesktop) && (
+          {isEligibleAndroid && (
             <a
               href={PLAY_STORE_URL}
               target="_blank"
@@ -59,7 +55,7 @@ export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => 
             </a>
           )}
 
-          {(isEligibleIos || isEligibleDesktop) && (
+          {isEligibleIos && (
             <a
               href={APP_STORE_URL}
               target="_blank"

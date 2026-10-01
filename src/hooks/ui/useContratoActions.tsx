@@ -30,7 +30,7 @@ interface UseContratoActionsProps {
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;
   onDownload?: (item: ContratoListItem) => void;
   onExcluir?: (id: string) => void;
-  onSubstituir?: (id: string) => void;
+  onSubstituir?: (id: string, item?: ContratoListItem) => void;
   onGerarContrato?: (passageiroId: string, item?: ContratoListItem) => void;
   onCompletarCadastro?: (passageiroId: string, item?: ContratoListItem) => void;
   onImportarContrato?: (passageiroId: string, passageiro?: Passageiro | ContratoListItem) => void;
@@ -108,8 +108,8 @@ export function useContratoActions({
         label: 'Importar Contrato Assinado',
         icon: <UploadCloud className="h-4 w-4" />,
         onClick: () => {
-          const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
-          const passData = (tipo === 'passageiro' ? item : item.passageiro) ?? undefined;
+          const passId = item.passageiro?.id || (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
+          const passData = item.passageiro || (tipo === 'passageiro' ? (item as unknown as Passageiro) : undefined);
           onImportarContrato(passId, passData);
         },
         swipeColor: 'bg-slate-700',
@@ -179,7 +179,7 @@ export function useContratoActions({
       list.push({
         label: 'Substituir Contrato',
         icon: <RefreshCcw className="h-4 w-4" />,
-        onClick: () => onSubstituir?.(item.id),
+        onClick: () => onSubstituir?.(item.id, item),
         disabled: !onSubstituir || isFeatureDisabled,
         swipeColor: 'bg-orange-600',
         hasSeparatorAfter: true

@@ -16,6 +16,15 @@ export const escolaApi = {
       .then(res => res.data);
   },
 
+  createEscolasBatch: (usuarioId: string, nomes: string[]): Promise<Escola[]> => {
+    return apiClient
+      .post(`${endpointBase}/batch`, {
+        usuario_id: usuarioId,
+        nomes,
+      })
+      .then(res => res.data);
+  },
+
   listEscolas: (usuarioId: string, filtros?: Record<string, any>): Promise<(Escola & { passageiros_ativos_count?: number })[]> =>
     apiClient
       .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })

@@ -62,6 +62,7 @@ import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
 import { obterUrlDocumentoContrato, isPassageiroIncompleto } from "@/utils/domain";
+import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 const currentYear = getNowBR().getFullYear().toString();
 
@@ -87,7 +88,9 @@ export default function PassageiroCarteirinha() {
     openManualPaymentDialog,
     openReceiptDialog,
     openGerarContratoValidadorDialog,
+    openConfirmarGerarContratoDialog,
     openPassageiroFinanceiroDialog,
+    openFirstChargeDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -266,61 +269,86 @@ export default function PassageiroCarteirinha() {
     }
   }, [passageiro, setPageTitle]);
   const handlePassageiroFormSuccess = useCallback((data?: Passageiro | { passageiro?: Passageiro; id?: string }, meta?: { hasCriticalContractChanges?: boolean }) => {
+    const rawData: Partial<Passageiro> = data
+      ? ("passageiro" in data && data.passageiro ? data.passageiro : data)
+      : {};
+    const updatedPassageiro: Passageiro = {
+      ...passageiro,
+      ...rawData,
+      status_contrato: rawData.status_contrato ?? passageiro?.status_contrato,
+      contrato_id: rawData.contrato_id ?? passageiro?.contrato_id,
+    } as Passageiro;
+
+    const valorFinal = Number(updatedPassageiro.valor_cobranca || 0);
+    const diaFinal = Number(updatedPassageiro.dia_vencimento || 0);
+    const isIsento = !!updatedPassageiro.isento;
+
+    const now = getNowBR();
+    const currMonth = now.getMonth() + 1;
+    const currYear = now.getFullYear();
+
+    const hasCurrentMonthRealCharge = cobrancas.some(
+      (c) => c.mes === currMonth && c.ano === currYear && c.status !== CobrancaStatus.CANCELADA
+    );
+
+    const isEligibleForFirstCharge = !isIsento && valorFinal > 0 && diaFinal > 0 && shouldGeneratePassengerProjection({
+      passageiro: updatedPassageiro,
+      targetMonth: currMonth,
+      targetYear: currYear,
+    });
+
+    if (isEligibleForFirstCharge && !hasCurrentMonthRealCharge) {
+      setTimeout(() => {
+        openFirstChargeDialog({
+          passageiro: updatedPassageiro,
+        });
+      }, 300);
+      return;
+    }
+
     const hasChanges = meta?.hasCriticalContractChanges === true;
     const usarContratos = !!profile?.config_contrato?.usar_contratos;
 
     if (hasChanges && usarContratos) {
-      const rawData: Partial<Passageiro> = data
-        ? ("passageiro" in data && data.passageiro ? data.passageiro : data)
-        : {};
-      const updatedPassageiro: Passageiro = {
-        ...passageiro,
-        ...rawData,
-        status_contrato: rawData.status_contrato ?? passageiro?.status_contrato,
-        contrato_id: rawData.contrato_id ?? passageiro?.contrato_id,
-      } as Passageiro;
-
       setTimeout(() => {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
           updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
-        const firstName = formatFirstName(updatedPassageiro.nome);
+        const hasNomeResp = !!(updatedPassageiro.responsavel_principal?.nome);
+        const hasCpf = !!(updatedPassageiro.responsavel_principal?.cpf);
+        const hasInicio = !!(updatedPassageiro.data_inicio_transporte);
+        const hasFim = !!(updatedPassageiro.data_fim_transporte);
 
-        openConfirmationDialog({
-          title: hasActiveContract ? "Substituir contrato?" : "Gerar contrato?",
-          description: hasActiveContract
-            ? `Você alterou dados importantes do aluno. Deseja gerar um novo contrato com as informações atualizadas? O responsável receberá um link para assiná-lo.`
-            : `Deseja gerar um contrato para ${firstName}? O responsável receberá um link para assiná-lo.`,
-          confirmText: hasActiveContract ? "Substituir" : "Gerar",
-          cancelText: hasActiveContract ? "Manter atual" : "Não gerar",
-          onConfirm: async () => {
-            safeCloseDialog(closeConfirmationDialog);
-            setTimeout(() => {
-              openGerarContratoValidadorDialog({
-                passageiroId: updatedPassageiro.id!,
-                onSuccess: async (id, _bypassed, updatedValues) => {
-                  const valorMensal = updatedValues?.valorMensal ?? (updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined);
-                  const diaVencimento = updatedValues?.diaVencimento ?? (updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined);
+        if (hasNomeResp && hasCpf && hasInicio && hasFim) {
+          openConfirmarGerarContratoDialog({
+            passageiro: updatedPassageiro,
+            valorMensal: updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined,
+            diaVencimento: updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined,
+            isSubstituicao: hasActiveContract,
+            contratoIdParaSubstituir: updatedPassageiro.contrato_id || undefined,
+          });
+          return;
+        }
 
-                  try {
-                    if (updatedPassageiro.contrato_id) {
-                      await substituirContrato.mutateAsync(updatedPassageiro.contrato_id);
-                    } else {
-                      await createContrato.mutateAsync({
-                        passageiroId: id,
-                        valorMensal,
-                        diaVencimento,
-                      });
-                    }
-                  } catch { }
-                },
-              });
-            }, 100);
+        openGerarContratoValidadorDialog({
+          passageiroId: updatedPassageiro.id!,
+          initialPassageiro: updatedPassageiro,
+          onSuccess: (_id, _bypassed, updatedValues) => {
+            const valorMensal = updatedValues?.valorMensal ?? (updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined);
+            const diaVencimento = updatedValues?.diaVencimento ?? (updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined);
+
+            openConfirmarGerarContratoDialog({
+              passageiro: updatedPassageiro,
+              valorMensal,
+              diaVencimento,
+              isSubstituicao: hasActiveContract,
+              contratoIdParaSubstituir: updatedPassageiro.contrato_id || undefined,
+            });
           },
         });
       }, 300);
     }
-  }, [passageiro, openConfirmationDialog, closeConfirmationDialog, openGerarContratoValidadorDialog, substituirContrato, createContrato, profile?.config_contrato?.usar_contratos]);
+  }, [passageiro, cobrancas, openFirstChargeDialog, openGerarContratoValidadorDialog, openConfirmarGerarContratoDialog, profile?.config_contrato?.usar_contratos]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -724,37 +752,34 @@ export default function PassageiroCarteirinha() {
           openBrowserLink(urlContrato);
         }
       } else {
+        const hasNomeResp = !!(passageiro.responsavel_principal?.nome);
+        const hasCpf = !!(passageiro.responsavel_principal?.cpf);
+        const hasInicio = !!(passageiro.data_inicio_transporte);
+        const hasFim = !!(passageiro.data_fim_transporte);
+
+        if (hasNomeResp && hasCpf && hasInicio && hasFim) {
+          openConfirmarGerarContratoDialog({
+            passageiro,
+            valorMensal: passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined,
+            diaVencimento: passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined,
+            isSubstituicao: false,
+          });
+          return;
+        }
+
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
-          onSuccess: (id, bypassed, updatedValues) => {
+          initialPassageiro: passageiro,
+          onSuccess: (_id, _bypassed, updatedValues) => {
             const valorMensal = updatedValues?.valorMensal ?? (passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined);
             const diaVencimento = updatedValues?.diaVencimento ?? (passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined);
 
-            if (bypassed) {
-              openConfirmationDialog({
-                title: "Gerar contrato?",
-                description: `Deseja gerar o contrato para ${formatFirstName(passageiro.nome)}? O responsável receberá o link para assinatura.`,
-                confirmText: "Gerar",
-                onConfirm: async () => {
-                  try {
-                    await createContrato.mutateAsync({
-                      passageiroId: id,
-                      valorMensal,
-                      diaVencimento,
-                    });
-                    safeCloseDialog(closeConfirmationDialog);
-                  } catch (error) {
-                    safeCloseDialog(closeConfirmationDialog);
-                  }
-                },
-              });
-            } else {
-              createContrato.mutateAsync({
-                passageiroId: id,
-                valorMensal,
-                diaVencimento,
-              });
-            }
+            openConfirmarGerarContratoDialog({
+              passageiro,
+              valorMensal,
+              diaVencimento,
+              isSubstituicao: false,
+            });
           },
         });
       }

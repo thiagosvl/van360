@@ -19,7 +19,7 @@ interface ActivityLogsListProps {
   highlightFirst?: boolean;
 }
 
-function getActionBadgeStyle(acao: string) {
+export function getActionBadgeStyle(acao: string) {
   const normalized = acao.toUpperCase();
   if (normalized.includes("LOGIN") || normalized.includes("SESSAO")) {
     return "bg-sky-500/15 text-sky-400 border-sky-500/30";

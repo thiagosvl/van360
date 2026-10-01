@@ -108,8 +108,13 @@ export function useSubstituirContrato() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (contratoId: string) => {
-      return await contratoApi.substituirContrato(contratoId);
+    mutationFn: async (payload: string | { contratoId: string; notificarResponsavel?: boolean }) => {
+      if (typeof payload === "string") {
+        return await contratoApi.substituirContrato(payload);
+      }
+      return await contratoApi.substituirContrato(payload.contratoId, {
+        notificarResponsavel: payload.notificarResponsavel,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contratos"] });

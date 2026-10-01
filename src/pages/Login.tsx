@@ -16,7 +16,6 @@ import {
   Eye,
   EyeOff,
   Lock,
-  Smartphone,
   User,
   Users,
   Wand2,
@@ -43,7 +42,9 @@ import { UserType } from "@/types/enums";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
-  detectPlatform,
+  APP_STORE_BADGE_URL,
+  APP_STORE_URL,
+  getAppPlatformEligibility,
   isDevEnv,
   isNativeApp,
   PLAY_STORE_BADGE_URL,
@@ -57,47 +58,51 @@ import { ResponsavelLoginForm } from "@/components/features/auth/ResponsavelLogi
 type AuthProfile = "motorista" | "responsavel" | null;
 
 function LoginPlatformSuggestion() {
-  const platform = detectPlatform();
-
   if (isNativeApp()) return null;
 
-  if (platform === "android-web" || platform === "desktop") {
-    return (
-      <div className="mt-6 pt-5 border-t border-slate-200/80 flex flex-col items-center">
-        <p className="max-[320px]:text-[11px] text-xs font-medium text-slate-500 mb-2 text-center">
-          Para uma melhor experiência, baixe o app:
-        </p>
-        <a
-          href={PLAY_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
-          aria-label="Baixar Van360 na Play Store"
-        >
-          <img
-            src={PLAY_STORE_BADGE_URL}
-            alt="Disponível no Google Play"
-            className="h-10 sm:h-12 w-auto object-contain"
-          />
-        </a>
-      </div>
-    );
-  }
+  const { isEligibleAndroid, isEligibleIos, hasEligibleApp } = getAppPlatformEligibility();
 
-  if (platform === "ios-web") {
-    return (
-      <div className="mt-6 pt-5 border-t border-slate-200/80 text-center flex flex-col items-center">
-        <p className="text-[13px] text-[#1a3a5c] font-bold mb-1 flex items-center justify-center gap-1.5">
-          <Smartphone className="w-4 h-4" /> Funciona no iPhone
-        </p>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Acesse perfeitamente pelo navegador enquanto o app é preparado.
-        </p>
-      </div>
-    );
-  }
+  if (!hasEligibleApp) return null;
 
-  return null;
+  return (
+    <div className="mt-6 pt-5 border-t border-slate-200/80 flex flex-col items-center">
+      <p className="max-[320px]:text-[11px] text-xs font-medium text-slate-500 mb-2 text-center">
+        Para uma melhor experiência, baixe o app:
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {isEligibleAndroid && (
+          <a
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
+            aria-label="Baixar Van360 na Play Store"
+          >
+            <img
+              src={PLAY_STORE_BADGE_URL}
+              alt="Disponível no Google Play"
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
+          </a>
+        )}
+        {isEligibleIos && (
+          <a
+            href={APP_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
+            aria-label="Baixar Van360 na App Store"
+          >
+            <img
+              src={APP_STORE_BADGE_URL}
+              alt="Baixar na App Store"
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
+          </a>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function Login() {

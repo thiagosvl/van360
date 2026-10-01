@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/ui/useDebounce";
 import { useAdminUsers } from "@/hooks/api/adminHooks";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
-import { phoneMask } from "@/utils/masks";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
 import { cn } from "@/lib/utils";
@@ -133,6 +132,8 @@ export function AdminUserQuickSwitcher({ currentUserId, className }: AdminUserQu
                 {users.map((user) => {
                   const isCurrent = user.id === currentUserId;
                   const subscription = Array.isArray(user.assinaturas) ? user.assinaturas[0] : null;
+                  const hasApelido = Boolean(user.apelido?.trim());
+                  const displayName = hasApelido ? user.apelido! : user.nome;
 
                   return (
                     <button
@@ -149,37 +150,39 @@ export function AdminUserQuickSwitcher({ currentUserId, className }: AdminUserQu
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-black text-xs flex items-center justify-center shrink-0">
-                          {user.nome.charAt(0).toUpperCase()}
-                        </div>
+                        {user.logo_url?.trim() ? (
+                          <div className="h-8 w-8 rounded-lg bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                            <img
+                              src={user.logo_url}
+                              alt={displayName}
+                              className="h-full w-full object-contain"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-black text-xs flex items-center justify-center shrink-0">
+                            {displayName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
 
                         <div className="min-w-0 flex-1 space-y-0.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
+                          <div className="flex items-center gap-1.5 min-w-0">
                             <span className="font-bold text-xs text-slate-200 truncate">
-                              {user.nome}
+                              {displayName}
                             </span>
-                            {user.apelido && (
-                              <span className="text-[11px] text-slate-400 truncate">
-                                ({user.apelido})
-                              </span>
-                            )}
                             {isCurrent && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/20 px-1.5 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/20 px-1.5 py-0.5 rounded shrink-0">
                                 <Check className="h-2.5 w-2.5" />
                                 Atual
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
-                            {user.telefone && (
-                              <span>{phoneMask(user.telefone)}</span>
-                            )}
-                            {user.telefone && user.email && <span>•</span>}
-                            {user.email && (
-                              <span className="truncate">{user.email}</span>
-                            )}
-                          </div>
+                          {hasApelido && (
+                            <p className="text-[11px] text-slate-400 truncate">
+                              {user.nome}
+                            </p>
+                          )}
                         </div>
                       </div>
 

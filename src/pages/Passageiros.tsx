@@ -19,10 +19,12 @@ import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useSession } from "@/hooks/business/useSession";
 import { useTutorialsConfig } from "@/hooks";
 import { STORAGE_KEYS } from "@/constants";
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 
 export default function Passageiros() {
   const { user } = useSession();
   const { isSubConta, can } = usePermissions();
+  const { isTrial } = useSubscriptionAccess();
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("alunos");
 
   const [isDismissedAlunos, setIsDismissedAlunos] = useState(() => {
@@ -134,20 +136,18 @@ export default function Passageiros() {
                 <div className="space-y-6">
                   {can("passageiros.gerenciar") && (
                     isMainTab ? (
-                      countPassageiros < 10 && !isDismissedAlunos && (
+                      (isTrial || !isDismissedAlunos) && (
                         <QuickRegistrationLink
                           profile={profile}
                           pendingCount={countPrePassageiros}
-                          onDismiss={handleDismissAlunos}
+                          onDismiss={isTrial ? undefined : handleDismissAlunos}
                         />
                       )
                     ) : (
-                      prePassageiros.length === 0 && (
-                        <QuickRegistrationLink
-                          profile={profile}
-                          pendingCount={countPrePassageiros}
-                        />
-                      )
+                      <QuickRegistrationLink
+                        profile={profile}
+                        pendingCount={countPrePassageiros}
+                      />
                     )
                   )}
 
@@ -243,13 +243,6 @@ export default function Passageiros() {
                       countPassageiros={countPassageiros}
                       isLoading={isPrePassageirosListLoading}
                     />
-                    {can("passageiros.gerenciar") && prePassageiros.length > 0 && (
-                      <QuickRegistrationLink
-                        profile={profile}
-                        pendingCount={countPrePassageiros}
-                        className="mb-0"
-                      />
-                    )}
                   </div>
                 )}
               </TabsContent>

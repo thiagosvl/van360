@@ -6,7 +6,7 @@ import {
   User, Mail, Calendar, Key, RefreshCw, Copy, Check, Eye, EyeOff, Wand2
 } from "lucide-react";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
-import { isDevEnv } from "@/utils/detectPlatform";
+import { isDevEnv, APP_AVAILABILITY } from "@/utils/detectPlatform";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from "@/components/ui/form";
@@ -86,7 +86,10 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
     } else {
       maskedCpf = `${cleanedCpf.slice(0, 2)}.${cleanedCpf.slice(2, 3)}**.***/****-${cleanedCpf.slice(12, 14)}`;
     }
-    const text = `*Seu acesso ao Van360!* 🚀\n\nOlá *${successData.nome}*, sua conta de motorista foi cadastrada no aplicativo.\n\n*Seus dados de acesso:*\n👤 Documento: ${maskedCpf}\n🔑 Senha temporária: ${successData.senha} (Recomendamos alterá-la no app)\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na Google Play Store / Apple App Store ou acessar diretamente pelo navegador no link abaixo:\n🔗 ${import.meta.env.VITE_PUBLIC_APP_DOMAIN}/login`;
+    const storeText = APP_AVAILABILITY.ios
+      ? "Google Play Store / Apple App Store"
+      : "Google Play Store";
+    const text = `*Seu acesso ao Van360!* 🚀\n\nOlá *${successData.nome}*, sua conta de motorista foi cadastrada no aplicativo.\n\n*Seus dados de acesso:*\n👤 Documento: ${maskedCpf}\n🔑 Senha temporária: ${successData.senha} (Recomendamos alterá-la no app)\n\n*Como acessar?*\nVocê pode entrar baixando nosso aplicativo *Van360* na ${storeText} ou acessar diretamente pelo navegador no link abaixo:\n🔗 ${import.meta.env.VITE_PUBLIC_APP_DOMAIN}/login`;
 
     try {
       await navigator.clipboard.writeText(text);

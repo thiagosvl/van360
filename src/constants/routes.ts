@@ -24,6 +24,7 @@ export const ROUTES = {
       DASHBOARD: "/admin/dashboard",
       USERS: "/admin/usuarios",
       USER_DETAILS: "/admin/usuarios/:id",
+      INVOICES: "/admin/faturas",
       SETTINGS: "/admin/configuracoes",
       CALCULATOR: "/admin/calculadora",
       LOGIN_ATTEMPTS: "/admin/tentativas-login",

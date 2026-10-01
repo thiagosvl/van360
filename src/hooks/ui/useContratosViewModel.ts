@@ -58,6 +58,7 @@ export function useContratosViewModel() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openContractSetupDialog,
+    openConfirmarGerarContratoDialog,
     openGerarContratoValidadorDialog,
     openImportarContratoDialog,
     openPassageiroFormDialog,
@@ -275,18 +276,22 @@ export function useContratosViewModel() {
     openBrowserLink(url);
   }, [isMobile, openBrowserLink]);
 
-  const handleSubstituir = useCallback((id: string) => {
-    openConfirmationDialog({
-      title: "Substituir contrato?",
-      description: "O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do aluno. O responsável receberá o link para assinatura. Deseja continuar?",
-      confirmText: "Substituir",
-      cancelText: "Manter atual",
-      onConfirm: async () => {
-        await substituirMutation.mutateAsync(id);
-        safeCloseDialog(closeConfirmationDialog);
-      }
+  const handleSubstituir = useCallback((id: string, item?: ContratoListItem) => {
+    const rawPassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
+    const passageiroResolvido = rawPassageiro || ({
+      id: item?.passageiro_id || "",
+      nome: item?.nome || "Aluno",
+      responsavel_principal: item?.responsavel_principal,
+      valor_cobranca: item?.valor_parcela || item?.valor_cobranca,
+      dia_vencimento: item?.dados_contrato?.diaVencimento as number,
+    } as Passageiro);
+
+    openConfirmarGerarContratoDialog({
+      passageiro: passageiroResolvido,
+      isSubstituicao: true,
+      contratoIdParaSubstituir: id,
     });
-  }, [openConfirmationDialog, substituirMutation, closeConfirmationDialog]);
+  }, [openConfirmarGerarContratoDialog]);
 
   const handleGerarContrato = useCallback((passageiroId: string, item?: ContratoListItem) => {
     const rawPassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
@@ -301,19 +306,11 @@ export function useContratosViewModel() {
     const hasFim = !!(rawPassageiro?.data_fim_transporte);
 
     if (rawPassageiro && hasNomeResp && hasCpf && hasInicio && hasFim) {
-      const firstName = rawPassageiro.nome?.trim().split(" ")[0] || "o aluno";
-      openConfirmationDialog({
-        title: "Gerar Contrato?",
-        description: `Deseja gerar o contrato para ${firstName}? O responsável receberá o link para assinatura.`,
-        confirmText: "Gerar",
-        onConfirm: async () => {
-          await createMutation.mutateAsync({
-            passageiroId,
-            valorMensal: Number(rawPassageiro.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
-            diaVencimento: Number(rawPassageiro.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
-          });
-          safeCloseDialog(closeConfirmationDialog);
-        }
+      openConfirmarGerarContratoDialog({
+        passageiro: rawPassageiro,
+        valorMensal: Number(rawPassageiro.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
+        diaVencimento: Number(rawPassageiro.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
+        isSubstituicao: false,
       });
       return;
     }
@@ -321,44 +318,38 @@ export function useContratosViewModel() {
     openGerarContratoValidadorDialog({
       passageiroId,
       initialPassageiro: rawPassageiro,
-      onSuccess: (id, bypassed, updatedValues) => {
+      onSuccess: (_id, _bypassed, updatedValues) => {
         const valorMensal = updatedValues?.valorMensal ?? (Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined);
         const diaVencimento = updatedValues?.diaVencimento ?? (Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined);
 
-        if (bypassed) {
-          const firstName = rawPassageiro?.nome?.trim().split(" ")[0] || "o aluno";
-          openConfirmationDialog({
-            title: "Gerar Contrato?",
-            description: `Deseja gerar o contrato para ${firstName}? O responsável receberá o link para assinatura.`,
-            confirmText: "Gerar",
-            onConfirm: async () => {
-              await createMutation.mutateAsync({
-                passageiroId: id,
-                valorMensal,
-                diaVencimento,
-              });
-              safeCloseDialog(closeConfirmationDialog);
-            }
-          });
-        } else {
-          createMutation.mutateAsync({
-            passageiroId: id,
-            valorMensal,
-            diaVencimento,
-          });
-        }
+        const passageiroResolvido = rawPassageiro || ({
+          id: passageiroId,
+          nome: item?.nome || "Aluno",
+          responsavel_principal: item?.responsavel_principal,
+        } as Passageiro);
+
+        openConfirmarGerarContratoDialog({
+          passageiro: passageiroResolvido,
+          valorMensal,
+          diaVencimento,
+          isSubstituicao: false,
+        });
       }
     });
-  }, [openGerarContratoValidadorDialog, openConfirmationDialog, createMutation, closeConfirmationDialog, queryClient]);
+  }, [openGerarContratoValidadorDialog, openConfirmarGerarContratoDialog, queryClient]);
 
   const handleCompletarCadastro = useCallback((passageiroId: string, item?: ContratoListItem) => {
     handleGerarContrato(passageiroId, item);
   }, [handleGerarContrato]);
 
   const handleOpenImportarContrato = useCallback((passageiroId?: string, passageiro?: Passageiro | ContratoListItem) => {
+    const rawPass = (passageiro && "passageiro" in passageiro && passageiro.passageiro)
+      ? passageiro.passageiro
+      : passageiro;
+
     openImportarContratoDialog({
       passageiroId,
-      passageiro: passageiro as unknown as Passageiro,
+      passageiro: rawPass as unknown as Passageiro,
     });
   }, [openImportarContratoDialog]);
 

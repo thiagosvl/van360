@@ -23,7 +23,6 @@ export default function Escolas() {
     handleDeleteClick,
     handleToggleAtivo,
     handleRegister,
-    openEscolaFormDialog,
     refetch,
     navigate,
     hasActiveFilters,
@@ -91,9 +90,7 @@ export default function Escolas() {
                 : can("escolas.gerenciar")
                   ? {
                     label: "Cadastrar Escola",
-                    onClick: () => {
-                      openEscolaFormDialog();
-                    },
+                    onClick: handleRegister,
                   }
                   : undefined
             }

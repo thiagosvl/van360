@@ -51,6 +51,12 @@ export interface CreateContratoDTO {
   dataInicio?: string;
   dataFim?: string;
   modalidade?: string;
+  notificarResponsavel?: boolean;
+}
+
+export interface ReplaceContratoDTO {
+  contratoId: string;
+  notificarResponsavel?: boolean;
 }
 
 export interface ImportContratoDTO {
