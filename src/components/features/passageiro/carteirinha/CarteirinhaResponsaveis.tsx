@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, MessageSquare, FileText, Info, UserCheck, Users, Copy, KeyRound, Smartphone, Mail, Bell, BellOff } from "lucide-react";
+import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, UserCheck, Users, Copy, KeyRound, Smartphone, Mail, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Search, RefreshCw, Loader2 } from "lucide-react";
+import { Calendar, Search, RefreshCw, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { formatDateBR } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,8 @@ interface AdminTrialsPipelineTableProps {
 }
 
 type PeriodFilter = "todos" | "1a2" | "3a5" | "6a10" | "mais10";
+type SortField = "diasAcessados" | "totalAcoes";
+type SortDirection = "asc" | "desc";
 
 function formatCurrency(val: number) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -24,6 +26,24 @@ function formatCurrency(val: number) {
 export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: AdminTrialsPipelineTableProps) {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("todos");
   const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  const handleSortToggle = (field: SortField) => {
+    if (sortField !== field) {
+      setSortField(field);
+      setSortDirection("desc");
+      return;
+    }
+
+    if (sortDirection === "desc") {
+      setSortDirection("asc");
+      return;
+    }
+
+    setSortField(null);
+    setSortDirection("desc");
+  };
 
   const counts = useMemo(() => {
     return {
@@ -38,7 +58,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
   const filteredTrials = useMemo(() => {
     const cleanSearch = search.trim().toLowerCase();
 
-    return trials.filter((t) => {
+    const filtered = trials.filter((t) => {
       if (periodFilter === "1a2" && t.diasRestantes > 2) return false;
       if (periodFilter === "3a5" && (t.diasRestantes < 3 || t.diasRestantes > 5)) return false;
       if (periodFilter === "6a10" && (t.diasRestantes < 6 || t.diasRestantes > 10)) return false;
@@ -50,7 +70,22 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
       const nome = (t.nome || "").toLowerCase();
       return apelido.includes(cleanSearch) || nome.includes(cleanSearch);
     });
-  }, [trials, periodFilter, search]);
+
+    if (!sortField) {
+      return filtered;
+    }
+
+    return [...filtered].sort((a, b) => {
+      const valA = a[sortField];
+      const valB = b[sortField];
+
+      if (valA !== valB) {
+        return sortDirection === "asc" ? valA - valB : valB - valA;
+      }
+
+      return a.diasRestantes - b.diasRestantes;
+    });
+  }, [trials, periodFilter, search, sortField, sortDirection]);
 
   return (
     <Card className="border border-slate-800/80 bg-[#131b2e] rounded-3xl shadow-xl overflow-hidden text-left">
@@ -187,8 +222,48 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                 <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider bg-slate-900/30">
                   <th className="py-3 px-4">Motorista</th>
                   <th className="py-3 px-3">Vencimento</th>
-                  <th className="py-3 px-3 text-center">Dias Acessados</th>
-                  <th className="py-3 px-3">Ações</th>
+                  <th className="py-3 px-3 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle("diasAcessados")}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-1.5 hover:text-white transition-colors cursor-pointer select-none",
+                        sortField === "diasAcessados" && "text-blue-400 font-black"
+                      )}
+                    >
+                      <span>Dias Acessados</span>
+                      {sortField === "diasAcessados" ? (
+                        sortDirection === "desc" ? (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        ) : (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 opacity-60 shrink-0" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="py-3 px-3">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle("totalAcoes")}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer select-none",
+                        sortField === "totalAcoes" && "text-blue-400 font-black"
+                      )}
+                    >
+                      <span>Ações</span>
+                      {sortField === "totalAcoes" ? (
+                        sortDirection === "desc" ? (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        ) : (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 opacity-60 shrink-0" />
+                      )}
+                    </button>
+                  </th>
                   <th className="py-3 px-3">Indicação</th>
                   <th className="py-3 px-4 text-right">Plano Cadastro</th>
                 </tr>

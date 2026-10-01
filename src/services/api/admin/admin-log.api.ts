@@ -16,6 +16,7 @@ export interface AdminUserLogItem {
     telefone: string;
     email?: string;
     apelido?: string | null;
+    logo_url?: string | null;
   };
 }
 
