@@ -55,6 +55,7 @@ const AtualizacaoRapidaPassageiros = lazyLoad(() => import("./pages/AtualizacaoR
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
 const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
 const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
+const PublicRenovacaoPage = lazyLoad(() => import("./pages/PublicRenovacaoPage"));
 const AssinarRedirect = () => {
   const { token } = useParams<{ token: string }>();
   return <Navigate to={ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", token || "")} replace />;
@@ -394,6 +395,11 @@ const App = () => {
                     <Route
                       path={ROUTES.PUBLIC.SIGN_CONTRACT_DUPLICATE}
                       element={<AssinarRedirect />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.CONFIRM_RENEWAL}
+                      element={<PublicRenovacaoPage />}
                     />
 
                     <Route
