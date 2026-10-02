@@ -26,6 +26,7 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { RenovacaoSkeleton } from "@/components/skeletons/RenovacaoSkeleton";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "sonner";
 
 export default function Renovacoes() {
@@ -45,6 +46,8 @@ export default function Renovacoes() {
     openConfirmarViradaAnoDialog,
     openConfirmarDisparoWabaDialog,
     openResponsavelFormDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
   } = useLayout();
 
   const {
@@ -94,6 +97,66 @@ export default function Renovacoes() {
       onSuccess: () => {
         refetch();
         toast.success(`Responsável de ${item.nome} atualizado com sucesso!`);
+      },
+    });
+  };
+
+  const handleConfirmarLoteComConfirmacao = () => {
+    const count = selectedIds.size;
+    if (count === 0) return;
+
+    openConfirmationDialog({
+      title: `Confirmar vaga de ${count} ${count === 1 ? "aluno" : "alunos"}?`,
+      description: `As vagas selecionadas serão marcadas como confirmadas para o ano letivo de ${anoDestino}.`,
+      confirmText: "Sim, Confirmar",
+      cancelText: "Cancelar",
+      variant: "success",
+      onConfirm: async () => {
+        safeCloseDialog(closeConfirmationDialog);
+        await handleConfirmarLote();
+      },
+      onCancel: () => {
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
+
+  const handleRegistrarSaidaLoteComConfirmacao = () => {
+    const count = selectedIds.size;
+    if (count === 0) return;
+
+    openConfirmationDialog({
+      title: `Registrar saída de ${count} ${count === 1 ? "aluno" : "alunos"}?`,
+      description: `Tem certeza que deseja registrar a saída de ${count} ${count === 1 ? "aluno" : "alunos"} para o ano letivo de ${anoDestino}? As vagas não serão renovadas.`,
+      confirmText: "Sim, Registrar Saída",
+      cancelText: "Voltar",
+      variant: "destructive",
+      onConfirm: async () => {
+        safeCloseDialog(closeConfirmationDialog);
+        await handleRegistrarSaidaLote();
+      },
+      onCancel: () => {
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
+
+  const handleRegistrarSaidaComConfirmacao = (passageiroId: string) => {
+    const p = passageiros.find((item) => item.passageiro_id === passageiroId);
+    const nomeAluno = p?.nome || "o aluno";
+
+    openConfirmationDialog({
+      title: `Registrar saída de ${nomeAluno}?`,
+      description: `Tem certeza que deseja marcar a vaga de ${nomeAluno} como não renovada para o ano letivo de ${anoDestino}?`,
+      confirmText: "Sim, Registrar Saída",
+      cancelText: "Voltar",
+      variant: "destructive",
+      onConfirm: async () => {
+        safeCloseDialog(closeConfirmationDialog);
+        await handleRegistrarSaida(passageiroId);
+      },
+      onCancel: () => {
+        safeCloseDialog(closeConfirmationDialog);
       },
     });
   };
@@ -317,7 +380,7 @@ export default function Renovacoes() {
                         isSelected={selectedIds.has(p.passageiro_id)}
                         onToggleSelect={toggleSelect}
                         onConfirmarManual={handleConfirmarManual}
-                        onRegistrarSaida={handleRegistrarSaida}
+                        onRegistrarSaida={handleRegistrarSaidaComConfirmacao}
                         onReativar={handleReativar}
                         onOpenEditarReserva={(item) =>
                           openEditarReservaDialog({
@@ -375,8 +438,8 @@ export default function Renovacoes() {
             selectedCount={selectedIds.size}
             onClearSelection={clearSelection}
             onDispararWhatsApp={handleOpenDisparoWhatsApp}
-            onConfirmarLote={handleConfirmarLote}
-            onSaidaLote={handleRegistrarSaidaLote}
+            onConfirmarLote={handleConfirmarLoteComConfirmacao}
+            onSaidaLote={handleRegistrarSaidaLoteComConfirmacao}
             onOpenReajuste={() => openReajusteLoteDialog({ anoDestino })}
             isProcessing={isUpdating}
           />
