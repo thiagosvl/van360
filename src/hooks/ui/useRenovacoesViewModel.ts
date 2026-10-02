@@ -158,13 +158,12 @@ export function useRenovacoesViewModel() {
       });
       toast.success(`${ids.length} vaga(s) confirmada(s) com sucesso!`);
       clearSelection();
-      await refetch();
     } catch {
       toast.error("Ocorreu um erro ao confirmar as vagas em lote.");
     } finally {
       setIsBatchUpdating(false);
     }
-  }, [selectedIds, isBatchUpdating, anoDestino, atualizarStatusLoteMutation, clearSelection, refetch]);
+  }, [selectedIds, isBatchUpdating, anoDestino, atualizarStatusLoteMutation, clearSelection]);
 
   const handleRegistrarSaidaLote = useCallback(async () => {
     if (selectedIds.size === 0 || isBatchUpdating) return;
@@ -179,13 +178,12 @@ export function useRenovacoesViewModel() {
       });
       toast.success(`${ids.length} saída(s) registrada(s) com sucesso!`);
       clearSelection();
-      await refetch();
     } catch {
       toast.error("Ocorreu um erro ao registrar as saídas em lote.");
     } finally {
       setIsBatchUpdating(false);
     }
-  }, [selectedIds, isBatchUpdating, anoDestino, atualizarStatusLoteMutation, clearSelection, refetch]);
+  }, [selectedIds, isBatchUpdating, anoDestino, atualizarStatusLoteMutation, clearSelection]);
 
   const handleUpdateValorInline = useCallback(
     async (passageiroId: string, novoValor: number) => {
@@ -196,9 +194,8 @@ export function useRenovacoesViewModel() {
           novo_valor_cobranca: novoValor,
         },
       });
-      await refetch();
     },
-    [anoDestino, updateRenovacaoMutation, refetch]
+    [anoDestino, updateRenovacaoMutation]
   );
 
   return {
