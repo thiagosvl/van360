@@ -9,6 +9,7 @@ import { phoneMask } from "@/utils/masks";
 import { formatActivityDescription } from "@/utils/formatters/name";
 import { getActionBadgeStyle } from "@/components/features/admin/ActivityLogsList";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { useLayout } from "@/contexts/LayoutContext";
 
 interface AdminActivityInspectDialogProps {
   log: AdminUserLogItem | null;
@@ -16,6 +17,7 @@ interface AdminActivityInspectDialogProps {
 }
 
 export function AdminActivityInspectDialog({ log, onClose }: AdminActivityInspectDialogProps) {
+  const { openImageFullscreen } = useLayout();
   if (!log) return null;
 
   const handleClose = () => {
@@ -57,33 +59,56 @@ export function AdminActivityInspectDialog({ log, onClose }: AdminActivityInspec
             </div>
           </div>
 
-          <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+          <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Usuário / Autor</p>
             {log.usuarios ? (
-              <>
-                <p className="text-sm font-bold text-white uppercase">
-                  {log.usuario_id || log.usuarios?.id ? (
-                    <Link
-                      to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
-                      className="hover:text-blue-400 hover:underline transition-colors"
-                      onClick={onClose}
-                    >
-                      {log.usuarios.apelido || log.usuarios.nome}
-                    </Link>
-                  ) : (
-                    log.usuarios.apelido || log.usuarios.nome
+              <div className="flex items-center gap-3">
+                {log.usuarios.logo_url?.trim() && (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openImageFullscreen({
+                        imageUrl: log.usuarios!.logo_url!,
+                        alt: log.usuarios?.nome || "Logo",
+                      });
+                    }}
+                    className="h-12 w-12 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                    title="Visualizar logo"
+                  >
+                    <img
+                      src={log.usuarios.logo_url}
+                      alt={log.usuarios.nome}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                )}
+                <div className="space-y-0.5 min-w-0 flex-1">
+                  <p className="text-sm font-bold text-white uppercase">
+                    {log.usuario_id || log.usuarios?.id ? (
+                      <Link
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${log.usuario_id || log.usuarios?.id}`}
+                        className="hover:text-blue-400 hover:underline transition-colors"
+                        onClick={onClose}
+                      >
+                        {log.usuarios.apelido || log.usuarios.nome}
+                      </Link>
+                    ) : (
+                      log.usuarios.apelido || log.usuarios.nome
+                    )}
+                  </p>
+                  {log.usuarios.apelido && log.usuarios.nome && (
+                    <p className="text-xs text-slate-400">Nome: {log.usuarios.nome}</p>
                   )}
-                </p>
-                {log.usuarios.apelido && log.usuarios.nome && (
-                  <p className="text-xs text-slate-400">Nome: {log.usuarios.nome}</p>
-                )}
-                {log.usuarios.email && (
-                  <p className="text-xs font-semibold text-slate-400">{log.usuarios.email}</p>
-                )}
-                {log.usuarios.telefone && (
-                  <p className="text-xs font-mono text-slate-400">{phoneMask(log.usuarios.telefone)}</p>
-                )}
-              </>
+                  {log.usuarios.email && (
+                    <p className="text-xs font-semibold text-slate-400">{log.usuarios.email}</p>
+                  )}
+                  {log.usuarios.telefone && (
+                    <p className="text-xs font-mono text-slate-400">{phoneMask(log.usuarios.telefone)}</p>
+                  )}
+                </div>
+              </div>
             ) : (
               <p className="text-xs text-slate-400 uppercase font-semibold">Sistema</p>
             )}

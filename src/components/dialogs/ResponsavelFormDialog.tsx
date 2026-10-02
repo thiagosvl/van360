@@ -3,6 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Form,
   FormControl,
@@ -25,7 +26,7 @@ import { ParentescoResponsavel, TipoResponsavel } from "@/types/enums";
 import { PassageiroResponsavel } from "@/types/passageiro";
 import { parentescos } from "@/utils/formatters";
 import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
-import { isValidCEPFormat, isValidCPF } from "@/utils/validators";
+import { isValidCEPFormat, isValidCPF, validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Contact, Hash, MapPin, User, Wand2, MessageSquare, FileText, Mail, Bell } from "lucide-react";
 import { useEffect, useRef, useCallback } from "react";
@@ -48,49 +49,75 @@ import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { STORAGE_KEYS } from "@/constants";
 import { getErrorMessage } from "@/utils/errorHandler";
 
-const responsavelSchema = z.object({
-  nome: z.string().min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
-  telefone: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => !val || val.replace(/\D/g, "").length >= 10, {
-      message: "Telefone inválido",
-    }),
-  cpf: z
-    .string()
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .refine((val) => !val || isValidCPF(val), {
-      message: "CPF inválido",
-    }),
-  email: z
-    .string()
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .refine((val) => !val || z.string().email().safeParse(val).success, {
-      message: "E-mail inválido",
-    }),
-  parentesco: z.nativeEnum(ParentescoResponsavel, { errorMap: () => ({ message: "Campo obrigatório" }) }),
-  logradouro: z.string().optional().nullable().or(z.literal("")),
-  numero: z.string().optional().nullable().or(z.literal("")),
-  bairro: z.string().optional().nullable().or(z.literal("")),
-  cidade: z.string().optional().nullable().or(z.literal("")),
-  estado: z.string().optional().nullable().or(z.literal("")),
-  cep: z
-    .string()
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .refine((val) => !val || isValidCEPFormat(val), {
-      message: "Formato inválido (00000-000)",
-    }),
-  referencia: z.string().optional().nullable().or(z.literal("")),
-  complemento: z.string().optional().nullable().or(z.literal("")),
-  tornar_principal: z.boolean().optional().default(false),
-  notificacoes_rota_habilitadas: z.boolean().optional().default(true),
-});
+const responsavelSchema = z
+  .object({
+    nome: z.string().min(1, "Campo obrigatório").min(2, "Deve ter pelo menos 2 caracteres"),
+    telefone: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .refine((val) => !val || val.replace(/\D/g, "").length >= 10, {
+        message: "Telefone inválido",
+      }),
+    cpf: z
+      .string()
+      .optional()
+      .nullable()
+      .or(z.literal(""))
+      .refine((val) => !val || isValidCPF(val), {
+        message: "CPF inválido",
+      }),
+    email: z
+      .string()
+      .optional()
+      .nullable()
+      .or(z.literal(""))
+      .refine((val) => !val || z.string().email().safeParse(val).success, {
+        message: "E-mail inválido",
+      }),
+    parentesco: z.nativeEnum(ParentescoResponsavel, { errorMap: () => ({ message: "Campo obrigatório" }) }),
+    informarEndereco: z.boolean().optional().default(false),
+    logradouro: z.string().optional().nullable().or(z.literal("")),
+    numero: z.string().optional().nullable().or(z.literal("")),
+    bairro: z.string().optional().nullable().or(z.literal("")),
+    cidade: z.string().optional().nullable().or(z.literal("")),
+    estado: z.string().optional().nullable().or(z.literal("")),
+    cep: z.string().optional().nullable().or(z.literal("")),
+    referencia: z.string().optional().nullable().or(z.literal("")),
+    complemento: z.string().optional().nullable().or(z.literal("")),
+    tornar_principal: z.boolean().optional().default(false),
+    notificacoes_rota_habilitadas: z.boolean().optional().default(true),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.informarEndereco) return;
+
+    const validation = validateEnderecoFields(
+      data.cep || "",
+      data.logradouro,
+      data.numero,
+    );
+
+    if (validation.errors.cep) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.cep,
+        path: ["cep"],
+      });
+    }
+    if (validation.errors.logradouro) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.logradouro,
+        path: ["logradouro"],
+      });
+    }
+    if (validation.errors.numero) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.numero,
+        path: ["numero"],
+      });
+    }
+  });
 
 type ResponsavelFormData = z.infer<typeof responsavelSchema>;
 
@@ -158,6 +185,7 @@ export default function ResponsavelFormDialog({
       cpf: mockGenerator.cpf(),
       email: mockGenerator.email("thiago"),
       parentesco: randomParentesco,
+      informarEndereco: true,
       cep: cepMask(mockAddress.cep),
       logradouro: mockAddress.logradouro,
       numero: mockAddress.numero,
@@ -179,6 +207,7 @@ export default function ResponsavelFormDialog({
       cpf: "",
       email: "",
       parentesco: "" as ParentescoResponsavel,
+      informarEndereco: Boolean(editingResponsavel?.logradouro || editingResponsavel?.cep),
       logradouro: "",
       numero: "",
       bairro: "",
@@ -191,6 +220,36 @@ export default function ResponsavelFormDialog({
       notificacoes_rota_habilitadas: true,
     },
   });
+
+  const informarEndereco = form.watch("informarEndereco") ?? false;
+
+  const handleToggleInformarEndereco = (checked: boolean) => {
+    form.setValue("informarEndereco", checked, { shouldValidate: true });
+    if (!checked) {
+      form.setValue("logradouro", "");
+      form.setValue("numero", "");
+      form.setValue("bairro", "");
+      form.setValue("cidade", "");
+      form.setValue("estado", "");
+      form.setValue("cep", "");
+      form.setValue("referencia", "");
+      form.setValue("complemento", "");
+      form.clearErrors([
+        "logradouro",
+        "numero",
+        "bairro",
+        "cidade",
+        "estado",
+        "cep",
+        "referencia",
+        "complemento",
+      ]);
+    } else if (!editingResponsavel) {
+      if (alunoBairro && !form.getValues("bairro")) form.setValue("bairro", alunoBairro);
+      if (alunoCidade && !form.getValues("cidade")) form.setValue("cidade", alunoCidade);
+      if (alunoEstado && !form.getValues("estado")) form.setValue("estado", alunoEstado);
+    }
+  };
 
   const { mutateAsync: lookupResponsavel } = useBuscarResponsavel();
 
@@ -237,6 +296,9 @@ export default function ResponsavelFormDialog({
         if (responsavel.parentesco) {
           form.setValue("parentesco", responsavel.parentesco as ParentescoResponsavel, { shouldValidate: true });
         }
+        if (responsavel.logradouro || responsavel.cep) {
+          form.setValue("informarEndereco", true, { shouldValidate: true });
+        }
         if (responsavel.logradouro) form.setValue("logradouro", responsavel.logradouro);
         if (responsavel.numero) form.setValue("numero", responsavel.numero);
         if (responsavel.bairro) form.setValue("bairro", responsavel.bairro);
@@ -263,12 +325,14 @@ export default function ResponsavelFormDialog({
   useEffect(() => {
     if (isOpen) {
       if (editingResponsavel) {
+        const hasEndereco = Boolean(editingResponsavel.logradouro || editingResponsavel.cep);
         form.reset({
           nome: editingResponsavel.nome,
           telefone: phoneMask(editingResponsavel.telefone),
           cpf: cpfMask(editingResponsavel.cpf),
           email: editingResponsavel.email || "",
           parentesco: editingResponsavel.parentesco,
+          informarEndereco: hasEndereco,
           logradouro: editingResponsavel.logradouro || "",
           numero: editingResponsavel.numero || "",
           bairro: editingResponsavel.bairro || "",
@@ -287,11 +351,12 @@ export default function ResponsavelFormDialog({
           cpf: "",
           email: "",
           parentesco: "" as ParentescoResponsavel,
+          informarEndereco: false,
           logradouro: "",
           numero: "",
-          bairro: alunoBairro,
-          cidade: alunoCidade,
-          estado: alunoEstado,
+          bairro: "",
+          cidade: "",
+          estado: "",
           cep: "",
           referencia: "",
           complemento: "",
@@ -300,21 +365,7 @@ export default function ResponsavelFormDialog({
         });
       }
     }
-  }, [isOpen, editingResponsavel, form, alunoBairro, alunoCidade, alunoEstado]);
-
-  useEffect(() => {
-    if (isOpen && !editingResponsavel) {
-      if (alunoBairro && !form.getValues("bairro")) {
-        form.setValue("bairro", alunoBairro);
-      }
-      if (alunoCidade && !form.getValues("cidade")) {
-        form.setValue("cidade", alunoCidade);
-      }
-      if (alunoEstado && !form.getValues("estado")) {
-        form.setValue("estado", alunoEstado);
-      }
-    }
-  }, [isOpen, editingResponsavel, alunoBairro, alunoCidade, alunoEstado, form]);
+  }, [isOpen, editingResponsavel, form]);
 
   const cpfValue = form.watch("cpf");
   const telefoneValue = form.watch("telefone");
@@ -351,14 +402,14 @@ export default function ResponsavelFormDialog({
       cpf: data.cpf && String(data.cpf).replace(/\D/g, "") ? String(data.cpf).replace(/\D/g, "") : null,
       email: data.email || null,
       parentesco: data.parentesco as ParentescoResponsavel,
-      logradouro: data.logradouro || null,
-      numero: data.numero || null,
-      bairro: data.bairro || null,
-      cidade: data.cidade || null,
-      estado: data.estado || null,
-      cep: data.cep ? String(data.cep).replace(/\D/g, "") : null,
-      referencia: data.referencia || null,
-      complemento: data.complemento || null,
+      logradouro: data.informarEndereco && data.logradouro ? data.logradouro : null,
+      numero: data.informarEndereco && data.numero ? data.numero : null,
+      bairro: data.informarEndereco && data.bairro ? data.bairro : null,
+      cidade: data.informarEndereco && data.cidade ? data.cidade : null,
+      estado: data.informarEndereco && data.estado ? data.estado : null,
+      cep: data.informarEndereco && data.cep ? String(data.cep).replace(/\D/g, "") : null,
+      referencia: data.informarEndereco && data.referencia ? data.referencia : null,
+      complemento: data.informarEndereco && data.complemento ? data.complemento : null,
       tornar_principal: isAlreadyPrincipal ? undefined : data.tornar_principal,
       notificacoes_rota_habilitadas: data.notificacoes_rota_habilitadas ?? true,
     };
@@ -585,45 +636,35 @@ export default function ResponsavelFormDialog({
               />
             </div>
 
-            <hr className="border-slate-100" />
-
-            <section className="space-y-3">
-              <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                  <MapPin className="w-4.5 h-4.5" />
+            <div className="pt-2">
+              <div
+                className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs cursor-pointer select-none"
+                onClick={() => !isSubmitting && handleToggleInformarEndereco(!informarEndereco)}
+              >
+                <div className="space-y-0.5 pr-4">
+                  <span className="text-slate-800 font-bold text-sm block">
+                    Informar endereço
+                  </span>
+                  <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                    É opcional o preenchimento do endereço
+                  </div>
                 </div>
-                Endereço <span className="font-normal text-xs text-slate-500">(Opcional)</span>
+                <Switch
+                  checked={informarEndereco}
+                  onCheckedChange={handleToggleInformarEndereco}
+                  disabled={isSubmitting}
+                  aria-label="Informar endereço do responsável"
+                  onClick={(e) => e.stopPropagation()}
+                />
               </div>
-              <FormEnderecoFields required={false} />
-            </section>
 
-            {!isResponsavelPortal && (
-              <FormField
-                control={form.control}
-                name="notificacoes_rota_habilitadas"
-                render={({ field }) => (
-                  <FormItem className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
-                    <Checkbox
-                      id="notificacoes_rota_habilitadas"
-                      checked={field.value !== false}
-                      onCheckedChange={field.onChange}
-                      className="h-5 w-5 mt-0.5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
-                    />
-                    <div className="flex-1">
-                      <FormLabel
-                        htmlFor="notificacoes_rota_habilitadas"
-                        className="cursor-pointer font-semibold text-slate-700 m-0 text-sm block"
-                      >
-                        Receber notificações de rota
-                      </FormLabel>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Avisos de embarque, desembarque e van a caminho.
-                      </p>
-                    </div>
-                  </FormItem>
-                )}
-              />
-            )}
+              {informarEndereco && (
+                <div className="mt-4 pt-1 space-y-4 animate-in fade-in-50 duration-200">
+                  <FormEnderecoFields required={false} />
+                </div>
+              )}
+            </div>
+
 
             {!isAlreadyPrincipal && !isResponsavelPortal && (
               <FormField
@@ -640,7 +681,7 @@ export default function ResponsavelFormDialog({
                       />
                       <FormLabel
                         htmlFor="tornar_principal"
-                        className="flex-1 cursor-pointer font-semibold text-slate-700 m-0 text-sm"
+                        className="flex-1 cursor-pointer font-base text-slate-700 m-0 text-sm"
                       >
                         Definir como responsável principal
                       </FormLabel>

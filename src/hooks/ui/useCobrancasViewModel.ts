@@ -84,10 +84,19 @@ export function useCobrancasViewModel() {
     return () => clearTimeout(handler);
   }, [buscaAReceber, buscaRecebidos, activeTab]);
 
+  const [pageAReceber, setPageAReceber] = useState(1);
+  const [pageRecebidas, setPageRecebidas] = useState(1);
+  const [limit, setLimit] = useState(50);
+
   useEffect(() => {
     setBuscaAReceber("");
     setBuscaRecebidos("");
   }, [mesFilter, anoFilter]);
+
+  useEffect(() => {
+    setPageAReceber(1);
+    setPageRecebidas(1);
+  }, [debouncedSearchTerm, mesFilter, anoFilter]);
 
   const now = getNowBR();
   const currentYear = now.getFullYear();
@@ -190,6 +199,19 @@ export function useCobrancasViewModel() {
 
     return sorted;
   }, [cobrancasData, debouncedSearchTerm]);
+
+  const totalPagesAReceber = Math.max(1, Math.ceil(cobrancasAReceber.length / limit));
+  const totalPagesRecebidas = Math.max(1, Math.ceil(cobrancasRecebidas.length / limit));
+
+  const paginatedCobrancasAReceber = useMemo(() => {
+    const start = (pageAReceber - 1) * limit;
+    return cobrancasAReceber.slice(start, start + limit);
+  }, [cobrancasAReceber, pageAReceber, limit]);
+
+  const paginatedCobrancasRecebidas = useMemo(() => {
+    const start = (pageRecebidas - 1) * limit;
+    return cobrancasRecebidas.slice(start, start + limit);
+  }, [cobrancasRecebidas, pageRecebidas, limit]);
 
   const isInitialLoading = isCobrancasLoading || isProfileLoading || !cobrancasData;
 
@@ -323,6 +345,16 @@ export function useCobrancasViewModel() {
     setBuscaRecebidos,
     cobrancasAReceber,
     cobrancasRecebidas,
+    paginatedCobrancasAReceber,
+    paginatedCobrancasRecebidas,
+    pageAReceber,
+    setPageAReceber,
+    pageRecebidas,
+    setPageRecebidas,
+    limit,
+    setLimit,
+    totalPagesAReceber,
+    totalPagesRecebidas,
     isInitialLoading,
     isFutureMonth,
     isPastMonth,
