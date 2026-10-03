@@ -20,7 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { CalendarDays, DollarSign, Phone, User } from "lucide-react";
+import { CalendarDays, DollarSign, Phone, User, Sparkles } from "lucide-react";
 import { monthOptions, getNowBR } from "@/utils/dateUtils";
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -42,6 +42,9 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { CobrancaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { safeCloseDialog } from "@/hooks";
+import { useSession } from "@/hooks/business/useSession";
+import { useProfile } from "@/hooks/business/useProfile";
+import { isUserInBaaSWhitelist } from "@/utils/featureFlagUtils";
 
 const passageiroFinanceiroSchema = z
   .object({
@@ -52,6 +55,8 @@ const passageiroFinanceiroSchema = z
     ano_inicio_cobranca: z.string().optional(),
     mes_fim_cobranca: z.string().optional(),
     ano_fim_cobranca: z.string().optional(),
+    cobranca_automatica_ativa: z.string().optional(),
+    repassar_taxa_pai: z.string().optional(),
     cadastrar_responsavel: z.boolean().default(false),
     nome_responsavel: z.string().optional(),
     telefone_responsavel: z.string().optional(),
@@ -138,6 +143,13 @@ export function PassageiroFinanceiroDialog({
 }: PassageiroFinanceiroDialogProps) {
   const updatePassageiro = useUpdatePassageiro();
   const { openFirstChargeDialog } = useLayout();
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
+
+  const isWhitelisted = isUserInBaaSWhitelist({
+    email: user?.email,
+    telefone: profile?.telefone,
+  });
 
   const now = getNowBR();
   const currentYear = now.getFullYear();
@@ -162,6 +174,8 @@ export function PassageiroFinanceiroDialog({
       cadastrar_responsavel: false,
       nome_responsavel: "",
       telefone_responsavel: "",
+      cobranca_automatica_ativa: "HERDAR",
+      repassar_taxa_pai: "HERDAR",
     },
   });
 
@@ -174,6 +188,18 @@ export function PassageiroFinanceiroDialog({
       const resp = passageiro.responsavel_principal;
       const temTelefoneResp = Boolean(resp?.telefone);
 
+      const cobrancaAutoVal = passageiro.cobranca_automatica_ativa === true
+        ? "ATIVO"
+        : passageiro.cobranca_automatica_ativa === false
+          ? "DESATIVADO"
+          : "HERDAR";
+
+      const repassarTaxaVal = passageiro.repassar_taxa_pai === true
+        ? "REPASSAR"
+        : passageiro.repassar_taxa_pai === false
+          ? "ABSORVER"
+          : "HERDAR";
+
       form.reset({
         isento: !!passageiro.isento,
         valor_cobranca: passageiro.valor_cobranca ? moneyMask(passageiro.valor_cobranca) : "",
@@ -185,6 +211,8 @@ export function PassageiroFinanceiroDialog({
         cadastrar_responsavel: temTelefoneResp,
         nome_responsavel: resp?.nome || "",
         telefone_responsavel: resp?.telefone ? phoneMask(resp.telefone) : "",
+        cobranca_automatica_ativa: cobrancaAutoVal,
+        repassar_taxa_pai: repassarTaxaVal,
       });
     }
   }, [isOpen, passageiro, defaultAnoLetivo, form, currentMonthStr]);
@@ -221,6 +249,20 @@ export function PassageiroFinanceiroDialog({
       data_fim_cobranca: data.isento || !data.mes_fim_cobranca
         ? null
         : `${anoTerm}-${String(data.mes_fim_cobranca).padStart(2, "0")}-01`,
+      cobranca_automatica_ativa: isWhitelisted
+        ? (data.cobranca_automatica_ativa === "ATIVO"
+          ? true
+          : data.cobranca_automatica_ativa === "DESATIVADO"
+            ? false
+            : null)
+        : null,
+      repassar_taxa_pai: isWhitelisted
+        ? (data.repassar_taxa_pai === "REPASSAR"
+          ? true
+          : data.repassar_taxa_pai === "ABSORVER"
+            ? false
+            : null)
+        : null,
     };
 
     if (!data.isento && data.cadastrar_responsavel && data.telefone_responsavel) {
@@ -538,6 +580,75 @@ export function PassageiroFinanceiroDialog({
                     description={COBRANCA_BANNER_MESSAGES.RETROATIVA}
                     className="mt-2 w-full"
                   />
+                )}
+
+                {isWhitelisted && (
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 space-y-3">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                        Cobrança Automática Pix
+                      </span>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="cobranca_automatica_ativa"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-semibold text-xs ml-1">
+                            Recebimento e Baixa Automática
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || "HERDAR"}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 text-sm">
+                                <SelectValue placeholder="Padrão da Van" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="HERDAR">Padrão da Van (conforme configurado)</SelectItem>
+                              <SelectItem value="ATIVO">Ativado para este aluno</SelectItem>
+                              <SelectItem value="DESATIVADO">Desativado para este aluno</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("cobranca_automatica_ativa") !== "DESATIVADO" && (
+                      <FormField
+                        control={form.control}
+                        name="repassar_taxa_pai"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-semibold text-xs ml-1">
+                              Taxa de Serviço da Cobrança
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || "HERDAR"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 text-sm">
+                                  <SelectValue placeholder="Padrão da Van" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="HERDAR">Padrão da Van (conforme configurado)</SelectItem>
+                                <SelectItem value="REPASSAR">Repassar ao responsável (com acréscimo)</SelectItem>
+                                <SelectItem value="ABSORVER">Absorver taxa (descontar do valor da parcela)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
                 )}
 
                 <FormField

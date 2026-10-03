@@ -32,6 +32,7 @@ export const ROUTES = {
       USERS_RADAR: "/admin/radar",
       REFERRALS: "/admin/indicacoes",
       NOTIFICATIONS: "/admin/notificacoes",
+      REPASSES: "/admin/repasses",
       EVOLUTION_INSTANCES: "/admin/evolution",
       BLOG: "/admin/blog",
     },

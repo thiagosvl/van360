@@ -8,6 +8,7 @@ import {
   Calendar,
   MessageSquare
 } from "lucide-react";
+import { Banner } from "@/components/ui/Banner";
 
 interface CobrancaSummaryProps {
   cobranca: Cobranca;
@@ -21,15 +22,19 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
   const isParcial = isPago && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPago && !isCancelada && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
-  const statusLabel = isCancelada
-    ? "Cancelada"
-    : isParcial
-      ? "Parcial"
-      : isPago
-        ? "Pago"
-        : isAtrasado
-          ? "Em Atraso"
-          : "Pendente";
+  const isRepasseEmProcessamento = !isPago && !isCancelada && !!cobranca.repasse_em_processamento;
+
+  const statusLabel = isRepasseEmProcessamento
+    ? "Repasse em Processamento"
+    : isCancelada
+      ? "Cancelada"
+      : isParcial
+        ? "Parcial"
+        : isPago
+          ? "Pago"
+          : isAtrasado
+            ? "Em Atraso"
+            : "Pendente";
 
   const mesAbreviado = cobranca.mes ? getMesAbreviado(cobranca.mes) : "--";
   const anoFormatado = cobranca.ano ? String(cobranca.ano).slice(-2) : "--";
@@ -43,11 +48,12 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
 
         <div className={cn(
           "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
-          isCancelada ? "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400" :
-            isParcial ? "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300" :
-              isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
-                isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
-                  "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
+          isRepasseEmProcessamento ? "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 animate-pulse" :
+            isCancelada ? "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400" :
+              isParcial ? "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300" :
+                isPago ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
+                  isAtrasado ? "bg-red-100/60 text-red-600 dark:bg-red-950/30" :
+                    "bg-amber-50 text-amber-600 dark:bg-amber-950/30"
         )}>
           {statusLabel}
         </div>
@@ -105,6 +111,15 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
             </p>
           </div>
         </div>
+      )}
+
+      {isRepasseEmProcessamento && (
+        <Banner
+          variant="info"
+          title="Repasse em andamento"
+          description="Pagamento recebido. O repasse está sendo enviado para sua conta bancária via Pix."
+          className="mt-3"
+        />
       )}
     </div>
   );

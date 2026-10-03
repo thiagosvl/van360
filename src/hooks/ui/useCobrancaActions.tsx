@@ -470,20 +470,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (!isPago && onPagarPix) {
-      actions.push({
-        label: "Pagar via Pix",
-        icon: <QrCode className="h-4 w-4" />,
-        onClick: () => {
-          document.body.click();
-          setTimeout(() => onPagarPix(), 10);
-        },
-        disabled: isActionLoading,
-        swipeColor: "bg-emerald-600",
-        hasSeparatorAfter: true,
-      });
-    }
-
     if (onVerCarteirinha) {
       actions.push({
         label: "Ver Carteirinha",

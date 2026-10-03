@@ -379,6 +379,7 @@ export enum AdminUserTab {
   GERAL = "geral",
   DADOS = "dados",
   COBRANCAS = "cobrancas",
+  REPASSES = "repasses",
   LOGS = "logs",
   CADASTROS = "cadastros",
   NOTIFICACOES = "notificacoes",
@@ -524,4 +525,34 @@ export enum NotificationEventEnum {
   ADMIN_ASSINATURA_FALHA_PAGAMENTO = "ADMIN_ASSINATURA_FALHA_PAGAMENTO",
   ADMIN_SISTEMA_ALERTA = "ADMIN_SISTEMA_ALERTA",
 }
+
+export enum ModalidadeCobrancaEnum {
+  MANUAL = "MANUAL",
+  SPLIT_SUBCONTA = "SPLIT_SUBCONTA",
+  BAAS_CONTA_PROPRIA = "BAAS_CONTA_PROPRIA",
+}
+
+export enum BaasStatusEnum {
+  NAO_INICIADO = "NAO_INICIADO",
+  PENDENTE_DOCUMENTACAO = "PENDENTE_DOCUMENTACAO",
+  EM_ANALISE = "EM_ANALISE",
+  APROVADO = "APROVADO",
+  REJEITADO = "REJEITADO",
+  BLOQUEADO = "BLOQUEADO",
+}
+
+export enum StatusRepasseEnum {
+  PENDENTE = "PENDENTE",
+  PROCESSANDO = "PROCESSANDO",
+  SUCESSO = "SUCESSO",
+  FALHA = "FALHA",
+  CANCELADO = "CANCELADO",
+}
+
+export enum ProvedorPagamentoEnum {
+  WOOVI = "WOOVI",
+  ASAAS = "ASAAS",
+  EFIPAY = "EFIPAY",
+}
+
 

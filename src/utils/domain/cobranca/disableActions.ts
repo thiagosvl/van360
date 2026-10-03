@@ -6,7 +6,7 @@ export const seForPago = (cobranca: Cobranca): boolean => {
 };
 
 export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA;
+  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA || !!cobranca.repasse_em_processamento;
 };
 
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {

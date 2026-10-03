@@ -96,6 +96,7 @@ const AdminNotificationsHistory = lazyLoad(() => import("./pages/admin/AdminNoti
 const AdminEvolutionInstances = lazyLoad(() => import("./pages/admin/AdminEvolutionInstances"));
 const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 const AdminReferrals = lazyLoad(() => import("./pages/admin/AdminReferrals"));
+const AdminRepasses = lazyLoad(() => import("./pages/admin/AdminRepasses"));
 
 interface PendingOtaUpdate {
   id: string;
@@ -438,6 +439,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.ADMIN.USERS_RADAR} element={<AdminUsersRadar />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.REFERRALS} element={<AdminReferrals />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.NOTIFICATIONS} element={<AdminNotificationsHistory />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.REPASSES} element={<AdminRepasses />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
                     </Route>

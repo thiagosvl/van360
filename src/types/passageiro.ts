@@ -74,6 +74,8 @@ export interface Passageiro {
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
   ano_letivo?: number;
+  cobranca_automatica_ativa?: boolean | null;
+  repassar_taxa_pai?: boolean | null;
   responsaveis?: PassageiroResponsavel[];
   responsavel_logado_id?: string | null;
 }
