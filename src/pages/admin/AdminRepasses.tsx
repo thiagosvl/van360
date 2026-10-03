@@ -32,12 +32,14 @@ import {
   useAdminRetryRepasse,
   ADMIN_REPASSE_KEYS,
 } from "@/hooks/api/admin/useAdminRepasseHooks";
+import { useAdminRealtimeRepasses } from "@/hooks/api/admin/useAdminRealtimeRepasses";
 import { RepasseLogsList } from "@/components/features/admin/RepasseLogsList";
 import { RepasseFiltersState } from "@/types/admin-repasse";
 
 export default function AdminRepasses() {
   const { setPageTitle } = useLayout();
   const queryClient = useQueryClient();
+  const { isConnected } = useAdminRealtimeRepasses();
 
   useEffect(() => {
     setPageTitle("Repasses Pix");
@@ -107,16 +109,37 @@ export default function AdminRepasses() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          <div
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-colors ${
+              isConnected
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                : "bg-slate-800/60 border-slate-700/60 text-slate-400"
+            }`}
+            title={isConnected ? "Conectado em tempo real via WebSocket" : "Sincronizando com o servidor..."}
+          >
+            <span className="relative flex h-2 w-2">
+              {isConnected && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              )}
+              <span
+                className={`relative inline-flex rounded-full h-2 w-2 ${
+                  isConnected ? "bg-emerald-500" : "bg-slate-500"
+                }`}
+              />
+            </span>
+            <span>{isConnected ? "Ao Vivo" : "Sincronizando"}</span>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
             onClick={handleRefresh}
             disabled={repassesQuery.isFetching || kpisQuery.isFetching}
-            className="h-10 px-4 bg-slate-900 border-slate-700 text-slate-200 text-xs rounded-xl hover:text-white gap-2 shadow-sm"
+            className="h-9 px-3.5 bg-slate-900 border-slate-700 text-slate-200 text-xs rounded-xl hover:text-white gap-2 shadow-sm"
           >
             <RefreshCw
-              className={`h-4 w-4 ${repassesQuery.isFetching || kpisQuery.isFetching ? "animate-spin" : ""}`}
+              className={`h-3.5 w-3.5 ${repassesQuery.isFetching || kpisQuery.isFetching ? "animate-spin" : ""}`}
             />
             <span>Atualizar</span>
           </Button>
