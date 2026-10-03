@@ -21,6 +21,7 @@ import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
 import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
+import { isNativeIos } from "@/utils/detectPlatform";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -129,14 +130,16 @@ export const Conta = memo(function Conta() {
           <Lock className="w-10 h-10 text-slate-400 mx-auto" />
           <h2 className="text-lg font-bold text-slate-800">Acesso Suspenso</h2>
           <p className="text-sm text-slate-600 max-w-md mx-auto">
-            Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van.
+            {isNativeIos()
+              ? "Esta funcionalidade exige que sua conta esteja ativa. Entre em contato com nosso suporte para mais informações."
+              : "Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van."}
           </p>
           <button
             type="button"
             onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
             className="px-6 py-2.5 rounded-xl bg-[#1a3a5c] text-white text-sm font-bold shadow-xs hover:bg-[#152e4a] cursor-pointer"
           >
-            Ver Assinatura
+            {isNativeIos() ? "Verificar Acesso" : "Ver Assinatura"}
           </button>
         </div>
       );
@@ -247,7 +250,7 @@ export const Conta = memo(function Conta() {
             </button>
 
             {/* Opção 3: Assinatura do App (Gestor) */}
-            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && (
+            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && !isNativeIos() && (
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}

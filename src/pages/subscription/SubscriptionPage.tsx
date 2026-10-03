@@ -11,6 +11,8 @@ import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEar
 import { SubscriptionHeroCard } from "@/components/features/subscription/SubscriptionHeroCard";
 import { SubscriptionPlansShowcase } from "@/components/features/subscription/SubscriptionPlansShowcase";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { IOSSubscriptionView } from "@/components/features/subscription/IOSSubscriptionView";
+import { isNativeIos } from "@/utils/detectPlatform";
 import { copyToClipboard } from "@/utils/browser";
 import {
   Clock,
@@ -59,6 +61,8 @@ export default function SubscriptionPage() {
     isActive,
     trialDaysLeft,
   } = useSubscriptionAccess(user?.id);
+
+  const isSalesMode = isTrial || isExpired || isCanceled || !subscription;
 
   const {
     plans,
@@ -122,8 +126,8 @@ export default function SubscriptionPage() {
   };
 
   useEffect(() => {
-    setPageTitle("Assinatura do App");
-  }, [setPageTitle]);
+    setPageTitle(isNativeIos() ? (isSalesMode ? "Acesso ao Aplicativo" : "Sua Assinatura") : "Assinatura do App");
+  }, [setPageTitle, isSalesMode]);
 
   useEffect(() => {
     if (searchParams.get("open_checkout") === "true" && plans && plans.length > 0) {
@@ -202,7 +206,15 @@ export default function SubscriptionPage() {
     );
   }
 
-  const isSalesMode = isTrial || isExpired || isCanceled || !subscription;
+  if (isNativeIos()) {
+    return (
+      <PullToRefreshWrapper onRefresh={handleRefresh}>
+        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+          <IOSSubscriptionView isSalesMode={isSalesMode} />
+        </div>
+      </PullToRefreshWrapper>
+    );
+  }
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>

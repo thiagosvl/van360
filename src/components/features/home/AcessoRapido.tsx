@@ -15,6 +15,7 @@ import {
 import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/config/permissions";
+import { isNativeIos } from "@/utils/detectPlatform";
 
 interface AcessoRapidoProps {
   onCadastrarPassageiro: () => void;
@@ -138,7 +139,7 @@ export const AcessoRapido = ({
         label: "Assinatura do App",
         icon: Rocket,
         to: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
-        show: can(PERMISSIONS.ASSINATURA_GERENCIAR),
+        show: can(PERMISSIONS.ASSINATURA_GERENCIAR) && !isNativeIos(),
       },
     ].filter((item) => item.show);
   };

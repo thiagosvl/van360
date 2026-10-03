@@ -7,6 +7,7 @@ import {
 } from "@/utils/domain/pages/pagesUtils";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { ROUTES } from "@/constants/routes";
+import { isNativeIos } from "@/utils/detectPlatform";
 
 const DEFAULT_CUSTOMIZABLE_SLOTS: [string, string, string] = [
   ROUTES.PRIVATE.MOTORISTA.PASSENGERS,
@@ -86,6 +87,7 @@ export function useBottomNavPreferences(userId?: string) {
   const availableItems = useMemo(() => {
     return pagesItems.filter((item) => {
       if (item.href === ROUTES.PRIVATE.MOTORISTA.HOME) return false;
+      if (isNativeIos() && item.href === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION) return false;
       if (!item.permission) return true;
       return can(item.permission);
     });
