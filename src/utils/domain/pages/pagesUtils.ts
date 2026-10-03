@@ -2,6 +2,7 @@ import { ComponentType } from "react";
 import { LucideProps, Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
+import { isNativeIos } from "@/utils/detectPlatform";
 
 export interface PageItem {
   title: string;
@@ -77,7 +78,7 @@ const pagesItems: PageItem[] = [
     permission: "aniversarios.visualizar",
   },
   {
-    title: "Assinatura do App",
+    title: isNativeIos() ? "Acesso ao Aplicativo" : "Assinatura do App",
     href: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
     icon: Rocket,
     permission: "assinatura.gerenciar",
