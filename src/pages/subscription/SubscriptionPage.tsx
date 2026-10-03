@@ -126,7 +126,7 @@ export default function SubscriptionPage() {
   };
 
   useEffect(() => {
-    setPageTitle(isNativeIos() ? (isSalesMode ? "Acesso ao Aplicativo" : "Sua Assinatura") : "Assinatura do App");
+    setPageTitle(isNativeIos() ? (isSalesMode ? "Acesso" : "Sua Assinatura") : "Assinatura do App");
   }, [setPageTitle, isSalesMode]);
 
   useEffect(() => {

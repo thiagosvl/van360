@@ -78,7 +78,7 @@ const pagesItems: PageItem[] = [
     permission: "aniversarios.visualizar",
   },
   {
-    title: isNativeIos() ? "Acesso ao Aplicativo" : "Assinatura do App",
+    title: isNativeIos() ? "Acesso" : "Assinatura do App",
     href: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
     icon: Rocket,
     permission: "assinatura.gerenciar",

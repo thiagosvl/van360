@@ -27,7 +27,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   if (currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION && isNativeIos()) {
     currentPage = {
       ...currentPage,
-      title: pageTitle || "Acesso ao Aplicativo",
+      title: pageTitle || "Acesso",
     };
   }
   if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH) {
@@ -52,7 +52,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   }
 
   const displayTitle = location.pathname === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION && isNativeIos()
-    ? (pageTitle || "Acesso ao Aplicativo")
+    ? (pageTitle || "Acesso")
     : (currentPage?.title || pageTitle);
   const isAccountActive = location.pathname === ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
 

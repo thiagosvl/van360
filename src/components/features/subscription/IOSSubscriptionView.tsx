@@ -15,10 +15,10 @@ export function IOSSubscriptionView({ isSalesMode }: IOSSubscriptionViewProps) {
 
         <div className="space-y-2">
           <h1 className="text-xl sm:text-2xl font-bold font-headline text-slate-800">
-            Acesso ao Aplicativo
+            Acesso Expirado
           </h1>
           <p className="text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-            O período de acesso desta conta não está ativo no momento. Para regularizar seu acesso e continuar utilizando o Van360 em sua frota, fale com nosso suporte ou acesse seu painel pelo computador.
+            Seu período de acesso terminou. Fale com nosso suporte para reativar o aplicativo e continuar sua operação.
           </p>
         </div>
 
@@ -26,8 +26,8 @@ export function IOSSubscriptionView({ isSalesMode }: IOSSubscriptionViewProps) {
           <WhatsAppSupportButton
             size="lg"
             title="Falar com o Suporte"
-            subtitle="Tire suas dúvidas ou regularize seu acesso"
-            message="Olá! Minha conta no Van360 está inativa e gostaria de regularizar meu acesso."
+            subtitle="Toque para reativar seu acesso"
+            message="Olá! Meu acesso ao Van360 expirou e gostaria de reativar."
           />
         </div>
       </div>
