@@ -29,6 +29,7 @@ export const STORAGE_KEYS = {
   DISMISS_DEMONSTRACOES_HOME: "van360:dismiss:demonstracoes-home",
   REFERRAL_CODE: "van360_referral_code",
   JUST_REGISTERED: "van360_just_registered",
+  MOCK_PLATFORM: "van360:mock_platform",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */

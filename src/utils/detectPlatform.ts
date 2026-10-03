@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { DispositivoCadastro } from "@/types/enums";
+import { STORAGE_KEYS } from "@/constants";
 
 export type PlatformType =
   | "android"      // app nativo Android (Capacitor)
@@ -57,6 +58,15 @@ export function isNativeApp(): boolean {
 }
 
 export function isNativeIos(): boolean {
+  if (typeof window !== "undefined") {
+    const searchMock = new URLSearchParams(window.location.search).get("mockPlatform");
+    if (searchMock === "ios") return true;
+    if (searchMock === "web" || searchMock === "android") return false;
+
+    const storageMock = window.localStorage.getItem(STORAGE_KEYS.MOCK_PLATFORM);
+    if (storageMock === "ios") return true;
+    if (storageMock === "web" || storageMock === "android") return false;
+  }
   return Capacitor.getPlatform() === "ios";
 }
 
