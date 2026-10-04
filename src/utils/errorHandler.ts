@@ -31,9 +31,33 @@ export function getErrorMessage(
     return null;
   };
 
-  // Tenta extrair mensagem de erro da resposta da API (Axios)
   const axiosError = error as any;
-  
+
+  if (axiosError?.userMessage && typeof axiosError.userMessage === "string") {
+    return axiosError.userMessage;
+  }
+
+  const isTimeout =
+    axiosError?.code === "ECONNABORTED" ||
+    axiosError?.response?.status === 504 ||
+    (typeof axiosError?.message === "string" && /(timeout|timed\s*out)/i.test(axiosError.message)) ||
+    (error instanceof Error && /(timeout|timed\s*out)/i.test(error.message));
+
+  if (isTimeout) {
+    return "A conexão demorou para responder. Verifique sua internet e tente novamente.";
+  }
+
+  const isNetworkError =
+    axiosError?.code === "ERR_NETWORK" ||
+    axiosError?.code === "ENOTFOUND" ||
+    axiosError?.code === "ECONNREFUSED" ||
+    (typeof axiosError?.message === "string" && /(network\s*error|failed to fetch)/i.test(axiosError.message)) ||
+    (error instanceof Error && /(network\s*error|failed to fetch)/i.test(error.message));
+
+  if (isNetworkError) {
+    return "Sem conexão com a internet. Verifique sua rede e tente novamente.";
+  }
+
   const errFromDataError = formatMsg(axiosError?.response?.data?.error);
   if (errFromDataError) return errFromDataError;
 
