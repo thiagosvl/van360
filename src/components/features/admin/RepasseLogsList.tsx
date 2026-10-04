@@ -444,7 +444,7 @@ export function RepasseLogsList({
                 </div>
               </div>
 
-              {selectedRepasse.ultimo_erro && (
+              {selectedRepasse.status_repasse === "FALHA" && selectedRepasse.ultimo_erro && (
                 <div className="space-y-1.5 bg-rose-500/10 border border-rose-500/30 p-3 rounded-xl">
                   <span className="text-[11px] font-bold text-rose-400 flex items-center gap-1.5">
                     <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
@@ -454,6 +454,18 @@ export function RepasseLogsList({
                   <div className="text-[10px] text-rose-400/80 pt-1">
                     Tentativas executadas: {selectedRepasse.tentativas} de 5
                   </div>
+                </div>
+              )}
+
+              {selectedRepasse.status_repasse === "SUCESSO" && selectedRepasse.tentativas > 1 && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl text-emerald-300 text-[11px] flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    Liquidado com sucesso após compensação do saldo na instituição
+                  </span>
+                  <span className="font-semibold text-emerald-400 font-mono text-[10px] shrink-0 ml-2">
+                    {selectedRepasse.tentativas} tentativas
+                  </span>
                 </div>
               )}
 
