@@ -10,11 +10,15 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
 };
 
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA;
+  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA || !!cobranca.repasse_em_processamento;
 };
 
 export const disableEditarCobranca = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA;
+  return seForPago(cobranca) || cobranca.status === CobrancaStatus.CANCELADA || !!cobranca.repasse_em_processamento;
+};
+
+export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
+  return !seForPago(cobranca) || cobranca.pagamento_manual !== true || !!cobranca.repasse_em_processamento;
 };
 
 export const canSendNotification = (cobranca: Cobranca): boolean => {

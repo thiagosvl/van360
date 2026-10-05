@@ -622,7 +622,11 @@ const CobrancaItemPassageiro = forwardRef<
                   })
                   : "R$ --"}
               </p>
-              {isParcial ? (
+              {cobranca.repasse_em_processamento ? (
+                <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-blue-200 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-blue-50 text-blue-700 animate-pulse">
+                  Processando
+                </span>
+              ) : isParcial ? (
                 <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
                   Parcial
                 </span>

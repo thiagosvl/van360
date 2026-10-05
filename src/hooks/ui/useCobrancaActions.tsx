@@ -13,6 +13,7 @@ import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import { useActivityTracker } from "@/hooks/business/useActivityTracker";
 import {
+  disableDesfazerPagamento,
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
@@ -322,7 +323,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     }
 
     const isPago = seForPago(cobranca);
-    const isParcial = isPago && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
+    const isParcial = isPago && cobranca.pagamento_manual === true && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
     const actions: ActionItem[] = [];
 
     if (isParcial) {
@@ -346,7 +347,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
             },
           });
         },
-        disabled: isActionLoading,
+        disabled: isActionLoading || !!cobranca.repasse_em_processamento,
         swipeColor: "bg-emerald-500",
         hasSeparatorAfter: true,
       });
@@ -401,7 +402,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       }
     }
 
-    if (isPago) {
+    if (isPago && cobranca.pagamento_manual === true) {
       actions.push({
         label: "Desfazer Pagamento",
         icon: <RotateCcw className="h-4 w-4" />,
@@ -412,7 +413,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
             handleDesfazerPagamento();
           }
         },
-        disabled: isActionLoading,
+        disabled: disableDesfazerPagamento(cobranca) || isActionLoading,
         swipeColor: "bg-amber-500",
         isLoading: isDesfazendoPagamento,
         hasSeparatorAfter: true,
