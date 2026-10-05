@@ -2,6 +2,7 @@
 export { useGastosCalculations } from "./business/useGastosCalculations";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
+export { useBiometricLock } from "./business/useBiometricLock";
 
 // UI hooks
 export { useCobrancaActions } from "./ui/useCobrancaActions";

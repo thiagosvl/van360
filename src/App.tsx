@@ -25,8 +25,10 @@ import { BrowserRouter, Navigate, Route, Routes, Outlet, useParams, useLocation 
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
+import { AppLockController } from "@/components/layout/AppLockController";
 
 import { LayoutProvider } from "@/contexts/LayoutProvider";
+import { AppLockProvider } from "@/contexts/AppLockProvider";
 import { useAttribution } from "@/hooks/business/useAttribution";
 
 const PushNotificationController = () => {
@@ -335,12 +337,14 @@ const App = () => {
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ResponsavelAuthProvider>
-            <LayoutProvider>
-              <AppErrorBoundary>
-                <BackButtonController />
-                <PushNotificationController />
-                <AttributionController />
-                <ScrollToTop />
+            <AppLockProvider>
+              <LayoutProvider>
+                <AppErrorBoundary>
+                  <AppLockController />
+                  <BackButtonController />
+                  <PushNotificationController />
+                  <AttributionController />
+                  <ScrollToTop />
                 <Suspense fallback={<InitialLoading />}>
                   <Routes>
                     <Route
@@ -509,8 +513,9 @@ const App = () => {
                 </Suspense>
               </AppErrorBoundary>
             </LayoutProvider>
-          </ResponsavelAuthProvider>
-        </BrowserRouter>
+          </AppLockProvider>
+        </ResponsavelAuthProvider>
+      </BrowserRouter>
 
         {updating && (
           <div className="fixed inset-0 z-[9999]">

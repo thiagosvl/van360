@@ -1,5 +1,6 @@
-import React from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ArrowDownToLine, AlertTriangle } from "lucide-react";
 import { PLAY_STORE_MARKET_URL, PLAY_STORE_URL } from "@/utils/detectPlatform";
 
@@ -31,18 +32,34 @@ export function NativeUpdateDialog({
     }
   };
 
+  const handleClose = () => {
+    if (onClose) {
+      safeCloseDialog(onClose);
+    }
+  };
+
   return (
-    <BaseDialog open={isOpen} onOpenChange={() => {}} lockClose={true} maxWidth="md">
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isMandatory) {
+          handleClose();
+        }
+      }}
+      lockClose={isMandatory}
+      maxWidth="md"
+    >
       <BaseDialog.Header
         title={displayTitle}
         icon={
           isMandatory ? (
             <AlertTriangle className="w-5 h-5 text-amber-600" />
           ) : (
-            <ArrowDownToLine className="w-5 h-5 text-emerald-600" />
+            <ArrowDownToLine className="w-5 h-5 text-[#1a3a5c]" />
           )
         }
-        hideCloseButton={true}
+        hideCloseButton={isMandatory}
+        onClose={!isMandatory ? handleClose : undefined}
       />
 
       <BaseDialog.Body className="space-y-4 pt-4">
@@ -56,9 +73,11 @@ export function NativeUpdateDialog({
         </div>
 
         {isMandatory && (
-          <p className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-center">
-            Para garantir a segurança e o correto funcionamento dos dados, é necessário atualizar o aplicativo para continuar.
-          </p>
+          <Banner
+            variant="warning"
+            title="Atualização necessária"
+            description="Para garantir a segurança e o correto funcionamento dos dados, é necessário atualizar o aplicativo para continuar."
+          />
         )}
       </BaseDialog.Body>
 
@@ -67,14 +86,13 @@ export function NativeUpdateDialog({
           <BaseDialog.Action
             label="Mais tarde"
             variant="outline"
-            onClick={onClose}
+            onClick={handleClose}
           />
         )}
 
         <BaseDialog.Action
           label="Atualizar"
           variant="primary"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
           onClick={handleOpenStore}
         />
       </BaseDialog.Footer>

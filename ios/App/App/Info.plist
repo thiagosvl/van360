@@ -63,6 +63,8 @@
 	<string>O Van360 precisa de acesso à sua fototeca para permitir o upload de imagens de documentos e logotipo.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>O Van360 precisa de permissão para salvar comprovantes e recibos de pagamento em suas fotos.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>O Van360 utiliza o Face ID para proteger seus dados e confirmar sua identidade com segurança.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>whatsapp</string>

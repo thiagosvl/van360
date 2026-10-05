@@ -882,6 +882,7 @@ export default function AdminDashboard() {
 
               <AdminRevenueProjectionChart
                 data={financialData.projecao12Meses}
+                historico={financialData.historicoReceitaMensal}
                 diasRetencaoCartao={financialData.diasRetencaoCartao}
               />
 

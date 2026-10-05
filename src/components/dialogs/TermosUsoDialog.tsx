@@ -2,6 +2,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { FileText } from "lucide-react";
 import React from "react";
 import { TermsOfUseContent } from "@/components/legal/TermsOfUseContent";
+import { safeCloseDialog } from "@/hooks";
 
 interface TermosUsoDialogProps {
   open: boolean;
@@ -9,12 +10,14 @@ interface TermosUsoDialogProps {
 }
 
 export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
+  const handleClose = () => safeCloseDialog(() => onOpenChange(false));
+
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Header
         title="Termos de Uso"
         icon={<FileText className="w-5 h-5" />}
-        onClose={() => onOpenChange(false)}
+        onClose={handleClose}
       />
       <BaseDialog.Body>
         <TermsOfUseContent />
@@ -22,7 +25,7 @@ export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
       <BaseDialog.Footer>
         <BaseDialog.Action
           label="Fechar"
-          onClick={() => onOpenChange(false)}
+          onClick={handleClose}
           variant="primary"
         />
       </BaseDialog.Footer>

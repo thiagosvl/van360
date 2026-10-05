@@ -427,6 +427,8 @@ export interface LayoutContextType {
   openReferAndEarnDialog: () => void;
   openExcluirContaDialog: () => void;
   closeExcluirContaDialog: () => void;
+  openTermosUsoDialog: () => void;
+  openPoliticaPrivacidadeDialog: () => void;
 
   // Mobile Menu
   isMobileMenuOpen: boolean;

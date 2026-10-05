@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Search, RefreshCw, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Calendar, Search, RefreshCw, Loader2, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { formatDateBR } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
@@ -28,8 +28,16 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
+  const handlePeriodFilterChange = (filter: PeriodFilter) => {
+    setPeriodFilter(filter);
+    setPage(1);
+  };
 
   const handleSortToggle = (field: SortField) => {
+    setPage(1);
     if (sortField !== field) {
       setSortField(field);
       setSortDirection("desc");
@@ -87,6 +95,14 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
     });
   }, [trials, periodFilter, search, sortField, sortDirection]);
 
+  const total = filteredTrials.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const paginatedTrials = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredTrials.slice(start, start + pageSize);
+  }, [filteredTrials, page, pageSize]);
+
   return (
     <Card className="border border-slate-800/80 bg-[#131b2e] rounded-3xl shadow-xl overflow-hidden text-left">
       <CardHeader className="p-4 sm:p-5 border-b border-slate-800/80 bg-slate-900/40 space-y-4">
@@ -111,7 +127,10 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                 type="text"
                 placeholder="Buscar por apelido ou nome..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 className="bg-slate-950/90 border-slate-800 text-xs text-white placeholder-slate-500 pl-8 rounded-xl h-9"
               />
               <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-3" />
@@ -135,7 +154,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
         <div className="flex items-stretch gap-2.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 sm:grid sm:grid-cols-5 sm:overflow-visible sm:mx-0 sm:px-0 sm:pb-0 touch-pan-x pt-1">
           <button
             type="button"
-            onClick={() => setPeriodFilter("todos")}
+            onClick={() => handlePeriodFilterChange("todos")}
             className={cn(
               "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
               periodFilter === "todos"
@@ -149,7 +168,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
           <button
             type="button"
-            onClick={() => setPeriodFilter("1a2")}
+            onClick={() => handlePeriodFilterChange("1a2")}
             className={cn(
               "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
               periodFilter === "1a2"
@@ -163,7 +182,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
           <button
             type="button"
-            onClick={() => setPeriodFilter("3a5")}
+            onClick={() => handlePeriodFilterChange("3a5")}
             className={cn(
               "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
               periodFilter === "3a5"
@@ -177,7 +196,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
           <button
             type="button"
-            onClick={() => setPeriodFilter("6a10")}
+            onClick={() => handlePeriodFilterChange("6a10")}
             className={cn(
               "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
               periodFilter === "6a10"
@@ -191,7 +210,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
           <button
             type="button"
-            onClick={() => setPeriodFilter("mais10")}
+            onClick={() => handlePeriodFilterChange("mais10")}
             className={cn(
               "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
               periodFilter === "mais10"
@@ -269,7 +288,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-medium">
-                {filteredTrials.map((item) => {
+                {paginatedTrials.map((item) => {
                   const dias = item.diasRestantes;
                   const dataFormatada = formatDateBR(item.trialEndsAt);
                   const apelidoExibicao = item.apelido?.trim() || item.nome;
@@ -369,6 +388,44 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                 })}
               </tbody>
             </table>
+
+            <div className="p-3 sm:p-4 border-t border-slate-800/80 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <span className="text-slate-400 font-medium">
+                Listando <strong className="text-white">{total > 0 ? (page - 1) * pageSize + 1 : 0}</strong> a{" "}
+                <strong className="text-white">{Math.min(page * pageSize, total)}</strong> de{" "}
+                <strong className="text-white">{total}</strong> {total === 1 ? "trial" : "trials"}
+              </span>
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400 text-xs mr-2 font-medium">
+                    Página {page} de {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="h-8 w-8 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                    title="Página anterior"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className="h-8 w-8 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                    title="Próxima página"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </CardContent>

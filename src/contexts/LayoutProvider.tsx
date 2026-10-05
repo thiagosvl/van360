@@ -22,6 +22,8 @@ import GerenciarCategoriasDialog from "@/components/dialogs/GerenciarCategoriasD
 import AcquisitionChannelDialog from "@/components/dialogs/AcquisitionChannelDialog";
 import ReferAndEarnDialog from "@/components/dialogs/ReferAndEarnDialog";
 import PersonalizarMenuDialog from "@/components/dialogs/PersonalizarMenuDialog";
+import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
+import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import ComplementarPagamentoDialog from "@/components/dialogs/ComplementarPagamentoDialog";
@@ -357,6 +359,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
   const [personalizarMenuDialogOpen, setPersonalizarMenuDialogOpen] = useState(false);
   const [excluirContaDialogOpen, setExcluirContaDialogOpen] = useState(false);
+  const [termosUsoDialogOpen, setTermosUsoDialogOpen] = useState(false);
+  const [politicaPrivacidadeDialogOpen, setPoliticaPrivacidadeDialogOpen] = useState(false);
   const [adminCreateUserDialogState, setAdminCreateUserDialogState] = useState<{
     open: boolean;
     onSuccess?: (userId: string) => void;
@@ -850,6 +854,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closePersonalizarMenuDialog: () => safeCloseDialog(() => setPersonalizarMenuDialogOpen(false)),
         openExcluirContaDialog: () => setExcluirContaDialogOpen(true),
         closeExcluirContaDialog: () => safeCloseDialog(() => setExcluirContaDialogOpen(false)),
+        openTermosUsoDialog: () => setTermosUsoDialogOpen(true),
+        openPoliticaPrivacidadeDialog: () => setPoliticaPrivacidadeDialogOpen(true),
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         isGlobalLoading,
@@ -1402,6 +1408,32 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               safeCloseDialog(() => setExcluirContaDialogOpen(false));
             } else {
               setExcluirContaDialogOpen(true);
+            }
+          }}
+        />
+      )}
+
+      {termosUsoDialogOpen && (
+        <TermosUsoDialog
+          open={termosUsoDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => setTermosUsoDialogOpen(false));
+            } else {
+              setTermosUsoDialogOpen(true);
+            }
+          }}
+        />
+      )}
+
+      {politicaPrivacidadeDialogOpen && (
+        <PoliticaPrivacidadeDialog
+          open={politicaPrivacidadeDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => setPoliticaPrivacidadeDialogOpen(false));
+            } else {
+              setPoliticaPrivacidadeDialogOpen(true);
             }
           }}
         />
