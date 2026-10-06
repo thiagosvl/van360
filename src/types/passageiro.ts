@@ -74,7 +74,6 @@ export interface Passageiro {
   horario_saida?: string | null;
   data_inicio_cobranca?: string;
   data_fim_cobranca?: string;
-  ano_letivo?: number;
   cobranca_automatica_ativa?: boolean | null;
   repassar_taxa_pai?: boolean | null;
   responsaveis?: PassageiroResponsavel[];
