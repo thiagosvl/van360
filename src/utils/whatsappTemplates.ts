@@ -228,3 +228,36 @@ export function buildReciboWhatsAppUrl(params: ReciboWhatsAppParams): string {
   const mensagem = buildReciboWhatsAppMessage(params);
   return buildWhatsAppUrl(params.telefoneResponsavel, mensagem);
 }
+
+export interface RenovacaoWhatsAppParams {
+  telefoneResponsavel?: string | null;
+  nomeResponsavel?: string | null;
+  nomePassageiro: string;
+  anoDestino: number;
+  link: string;
+}
+
+export function buildRenovacaoWhatsAppMessage(params: RenovacaoWhatsAppParams): string {
+  const primeiroNomeResp = params.nomeResponsavel ? formatFirstName(params.nomeResponsavel) : "";
+  const nomeAluno = formatShortName(params.nomePassageiro, true);
+  const saudacao = primeiroNomeResp ? `Olá, ${primeiroNomeResp}! Tudo bem? 🚐🎒` : "Olá! Tudo bem? 🚐🎒";
+
+  return [
+    saudacao,
+    "",
+    `Estamos organizando o planejamento do transporte escolar de *${nomeAluno}* para o ano letivo de *${params.anoDestino}*.`,
+    "",
+    "Para garantir a vaga e conferir os detalhes para o próximo ano, por favor acesse o link abaixo e confirme a sua resposta:",
+    "",
+    "📲 *Acesse o link de renovação:*",
+    params.link,
+    "",
+    "Se tiver qualquer dúvida ou precisar de algum ajuste, estou à disposição!",
+  ].join("\n");
+}
+
+export function buildRenovacaoWhatsAppUrl(params: RenovacaoWhatsAppParams): string {
+  const mensagem = buildRenovacaoWhatsAppMessage(params);
+  return buildWhatsAppUrl(params.telefoneResponsavel, mensagem);
+}
+

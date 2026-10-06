@@ -102,6 +102,13 @@ export default function PublicRenovacaoPage() {
   const isConfirmed = status === "confirmado";
   const isRecused = status === "recusado";
   const activeContractToken = contractData?.token_acesso || contrato?.token_acesso;
+  const temCondicoesAlteradas = Boolean(
+    condicoes?.valor?.alterado ||
+    condicoes?.dia_vencimento?.alterado ||
+    condicoes?.escola?.alterado ||
+    condicoes?.periodo?.alterado ||
+    condicoes?.modalidade?.alterado
+  );
 
   const motoristaWhatsappUrl = motorista.telefone
     ? `https://wa.me/55${motorista.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(
@@ -233,6 +240,14 @@ export default function PublicRenovacaoPage() {
             )}
           </div>
         </div>
+
+        {temCondicoesAlteradas && !isConfirmed && !isRecused && (
+          <Banner
+            variant="warning"
+            title="Condições Atualizadas"
+            description={`Os valores ou detalhes para ${ano_destino} foram atualizados. Por favor, confira as condições abaixo e confirme a sua resposta.`}
+          />
+        )}
 
         <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-sm space-y-3.5">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">

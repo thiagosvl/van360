@@ -21,6 +21,7 @@ export const renovacaoKeys = {
   all: ["renovacoes"] as const,
   lists: () => [...renovacaoKeys.all, "list"] as const,
   list: (params: ListRenovacoesParams) => [...renovacaoKeys.lists(), params] as const,
+  contratoConfig: (ano: number) => [...renovacaoKeys.all, "contrato-config", ano] as const,
   public: (token: string) => [...renovacaoKeys.all, "public", token] as const,
 };
 
@@ -249,3 +250,62 @@ export function useNotificarLoteRenovacao() {
   });
 }
 
+export interface RenovacaoContratoConfigResponse {
+  ano: number;
+  customizado_para_ano: boolean;
+  usar_contratos: boolean;
+  multa_atraso: { valor: number; tipo: any } | null;
+  juros_atraso: { valor: number; tipo: any } | null;
+  multa_rescisao: { valor: number; tipo: any } | null;
+  secoes: any[] | null;
+  clausulas: string[] | null;
+  tem_assinatura_digital: boolean;
+  logo_url: string | null;
+}
+
+export interface SalvarRenovacaoContratoConfigPayload {
+  ano: number;
+  usar_contratos: boolean;
+  multa_atraso?: { valor: number; tipo: any } | null;
+  juros_atraso?: { valor: number; tipo: any } | null;
+  multa_rescisao?: { valor: number; tipo: any } | null;
+  secoes?: any[] | null;
+  clausulas?: string[] | null;
+}
+
+export function useRenovacaoContratoConfig(ano: number) {
+  return useQuery({
+    queryKey: renovacaoKeys.contratoConfig(ano),
+    queryFn: async () => {
+      const response = await apiClient.get<RenovacaoContratoConfigResponse>("/renovacoes/config-contrato", {
+        params: { ano },
+      });
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useSalvarRenovacaoContratoConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: SalvarRenovacaoContratoConfigPayload) => {
+      const response = await apiClient.put<RenovacaoContratoConfigResponse>(
+        "/renovacoes/config-contrato",
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: async (_, variables) => {
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.contratoConfig(variables.ano) });
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      toast.success("Configurações do contrato para o ano letivo atualizadas com sucesso!");
+    },
+    onError: (error: AxiosError<{ error?: string; message?: string }>) => {
+      toast.error("Erro ao salvar configuração de contrato", {
+        description: error.response?.data?.error || "Verifique os dados e tente novamente.",
+      });
+    },
+  });
+}

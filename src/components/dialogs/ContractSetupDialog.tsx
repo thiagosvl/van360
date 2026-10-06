@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ContractSection, DEFAULT_SECOES_CONTRATO } from "@/constants/defaults";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
+import { useRenovacaoContratoConfig, useSalvarRenovacaoContratoConfig } from "@/hooks/api/useRenovacoes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
@@ -40,6 +41,7 @@ interface ContractSetupDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (usarContratos?: boolean) => void;
+  ano?: number;
 }
 
 enum SetupStep {
@@ -79,9 +81,11 @@ function toSectionUI(secao: ContractSection, sIdx: number): ContractSectionUI {
   };
 }
 
-export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: ContractSetupDialogProps) {
+export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }: ContractSetupDialogProps) {
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { profile, refreshProfile } = useProfile();
+  const { data: configAnoData, isLoading: isLoadingConfigAno } = useRenovacaoContratoConfig(ano);
+  const salvarConfigAnoMutation = useSalvarRenovacaoContratoConfig();
   const [step, setStep] = useState<SetupStep>(SetupStep.FEES);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
@@ -174,16 +178,22 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       return;
     }
     if (isOpen && profile && !initializedRef.current) {
+      if (ano && isLoadingConfigAno) {
+        return;
+      }
+
+      const activeConfig = (ano && configAnoData) ? configAnoData : profile.config_contrato;
+
       let loadedSecoes: ContractSectionUI[] = [];
-      if (profile.config_contrato?.secoes && profile.config_contrato.secoes.length > 0) {
-        loadedSecoes = profile.config_contrato.secoes.map((s, idx) => toSectionUI(s, idx));
-      } else if (profile.config_contrato?.clausulas && profile.config_contrato.clausulas.length > 0) {
+      if (activeConfig?.secoes && activeConfig.secoes.length > 0) {
+        loadedSecoes = activeConfig.secoes.map((s, idx) => toSectionUI(s, idx));
+      } else if (activeConfig?.clausulas && activeConfig.clausulas.length > 0) {
         loadedSecoes = [
           toSectionUI(
             {
               id: "secao-prestacao",
               titulo: "DA PRESTAÇÃO DO SERVIÇO",
-              clausulas: profile.config_contrato.clausulas,
+              clausulas: activeConfig.clausulas,
             },
             0
           ),
@@ -194,15 +204,15 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       setSecoes(loadedSecoes);
       setExpandedSectionId(null);
 
-      const isDefault = !profile.config_contrato?.usar_contratos;
-      if (profile.config_contrato?.multa_atraso) {
-        setMultaAtraso(isDefault ? { ...profile.config_contrato.multa_atraso, tipo: ContractMultaTipo.FIXO } : profile.config_contrato.multa_atraso);
+      const isDefault = !activeConfig?.usar_contratos;
+      if (activeConfig?.multa_atraso) {
+        setMultaAtraso(isDefault ? { ...activeConfig.multa_atraso, tipo: ContractMultaTipo.FIXO } : activeConfig.multa_atraso);
       }
-      if (profile.config_contrato?.juros_atraso) {
-        setJurosAtraso(isDefault ? { ...profile.config_contrato.juros_atraso, tipo: ContractMultaTipo.PERCENTUAL } : profile.config_contrato.juros_atraso);
+      if (activeConfig?.juros_atraso) {
+        setJurosAtraso(isDefault ? { ...activeConfig.juros_atraso, tipo: ContractMultaTipo.PERCENTUAL } : activeConfig.juros_atraso);
       }
-      if (profile.config_contrato?.multa_rescisao) {
-        setMultaRescisao(profile.config_contrato.multa_rescisao);
+      if (activeConfig?.multa_rescisao) {
+        setMultaRescisao(activeConfig.multa_rescisao);
       } else {
         setMultaRescisao({ valor: 0, tipo: ContractMultaTipo.FIXO });
       }
@@ -215,7 +225,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
 
       initializedRef.current = true;
     }
-  }, [isOpen, profile, signatureTemp]);
+  }, [isOpen, profile, signatureTemp, ano, configAnoData, isLoadingConfigAno]);
 
   const hasDrawing = sigPad.current ? !sigPad.current.isEmpty() : false;
   const hasSignature = signatureTemp === null
@@ -557,21 +567,37 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         return;
       }
 
-      await usuarioApi.atualizarUsuario(profile.id, {
-        assinatura_digital_url: signatureUrl,
-        logo_url: logoTemp !== null ? logoTemp : profile.logo_url,
-        config_contrato: {
+      if (ano) {
+        await usuarioApi.atualizarUsuario(profile.id, {
+          assinatura_digital_url: signatureUrl,
+          logo_url: logoTemp !== null ? logoTemp : profile.logo_url,
+        });
+        await salvarConfigAnoMutation.mutateAsync({
+          ano,
           usar_contratos: true,
           multa_atraso: multaAtraso,
           juros_atraso: jurosAtraso,
           multa_rescisao: multaRescisao,
           secoes: cleanSecoesDTO,
           clausulas: flatClausulas,
-        },
-      });
+        });
+      } else {
+        await usuarioApi.atualizarUsuario(profile.id, {
+          assinatura_digital_url: signatureUrl,
+          logo_url: logoTemp !== null ? logoTemp : profile.logo_url,
+          config_contrato: {
+            usar_contratos: true,
+            multa_atraso: multaAtraso,
+            juros_atraso: jurosAtraso,
+            multa_rescisao: multaRescisao,
+            secoes: cleanSecoesDTO,
+            clausulas: flatClausulas,
+          },
+        });
+      }
       await refreshProfile();
       if (onSuccess) onSuccess(true);
-      onClose();
+      safeCloseDialog(onClose);
       toast.success("Configurações salvas com sucesso!");
     } catch (err) {
       toast.error("erro.salvar");
@@ -966,7 +992,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
     <>
       <BaseDialog
         open={isOpen}
-        onOpenChange={(open) => { if (!open) onClose(); }}
+        onOpenChange={(open) => { if (!open) safeCloseDialog(onClose); }}
         maxWidth="lg"
       >
         <BaseDialog.Header
@@ -976,9 +1002,16 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           currentStep={step + 1}
           totalSteps={4}
           hideCloseButton={false}
-          onClose={onClose}
+          onClose={() => safeCloseDialog(onClose)}
         />
         <BaseDialog.Body containerRef={bodyRef} className="min-h-[300px]">
+          {ano && (
+            <Banner
+              variant="info"
+              description={`Configurando modelo de contrato para o Ano Letivo ${ano}.`}
+              className="mb-4"
+            />
+          )}
           {hasConfiguredBefore && (
             <div className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar scrollbar-none pb-2 mb-4 shrink-0">
               {SETUP_STEPS.map((s) => {

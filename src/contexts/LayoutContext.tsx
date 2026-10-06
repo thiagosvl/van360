@@ -169,6 +169,7 @@ export interface OpenFirstChargeDialogProps {
 
 export interface OpenContractSetupDialogProps {
   forceOpen?: boolean;
+  ano?: number;
   onSuccess?: (usarContratos?: boolean) => void;
 }
 

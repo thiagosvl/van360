@@ -29,7 +29,12 @@ export function ConfirmarDisparoWabaDialog({
   const notificarMutation = useNotificarLoteRenovacao();
   const [isSending, setIsSending] = useState(false);
 
-  const aptos = passageiros.filter((p) => Boolean(p.responsavel_principal?.telefone));
+  const aptos = passageiros.filter(
+    (p) => Boolean(p.responsavel_principal?.telefone) && !p.notificacao_enviada_em
+  );
+  const jaNotificados = passageiros.filter(
+    (p) => Boolean(p.responsavel_principal?.telefone) && Boolean(p.notificacao_enviada_em)
+  );
   const semTelefone = passageiros.filter((p) => !p.responsavel_principal?.telefone);
 
   const handleConfirm = async () => {
@@ -100,6 +105,14 @@ export function ConfirmarDisparoWabaDialog({
             variant="warning"
             title={`${semTelefone.length} aluno(s) sem telefone cadastrado`}
             description="Esses alunos serão ignorados no envio. Você pode atualizar o contato na carteirinha do aluno."
+          />
+        )}
+
+        {jaNotificados.length > 0 && (
+          <Banner
+            variant="info"
+            title={`${jaNotificados.length} aluno(s) já notificado(s) anteriormente`}
+            description="Para evitar cobrança de envio em duplicidade, esses alunos foram desconsiderados do disparo em lote. Você pode reenviar manualmente pelo WhatsApp individualmente no card de cada um."
           />
         )}
 

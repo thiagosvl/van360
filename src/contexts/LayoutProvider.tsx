@@ -1358,6 +1358,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={() => safeCloseDialog(() => setContractSetupDialogState({ open: false }))}
           onSuccess={contractSetupDialogState.props?.onSuccess}
+          ano={contractSetupDialogState.props?.ano}
         />
       )}
 

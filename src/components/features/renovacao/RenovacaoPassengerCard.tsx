@@ -15,9 +15,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
-import { formatCurrency, formatShortName } from "@/utils/formatters";
+import { formatCurrency, formatDateToBR, formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { buildRenovacaoWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { openBrowserLink } from "@/utils/browser";
 import { useNotificarPassageiroRenovacao } from "@/hooks/api/useRenovacoes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -71,6 +73,19 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
     } catch {
       toast.error(`Falha ao enviar WhatsApp para ${shortName}.`);
     }
+  };
+
+  const handleReenviarWhatsAppManual = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/renovacao/${item.token_publico}`;
+    const url = buildRenovacaoWhatsAppUrl({
+      telefoneResponsavel: item.responsavel_principal?.telefone,
+      nomeResponsavel: item.responsavel_principal?.nome,
+      nomePassageiro: item.nome,
+      anoDestino,
+      link,
+    });
+    openBrowserLink(url);
   };
 
   const handleSetConfirmado = async (e: React.MouseEvent) => {
@@ -182,11 +197,11 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {item.notificacao_enviada_em ? (
             <span
-              title="Notificação de renovação enviada"
+              title={`Notificação de renovação enviada em ${formatDateToBR(item.notificacao_enviada_em)}`}
               className="hidden min-[480px]:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60"
             >
               <WhatsAppIcon className="w-2.5 h-2.5 fill-current text-emerald-600" />
-              <span>Notificado</span>
+              <span>Enviado ({formatDateToBR(item.notificacao_enviada_em)})</span>
             </span>
           ) : (
             <span
@@ -295,27 +310,34 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {item.responsavel_principal?.telefone ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleDispararWaba}
-                disabled={isSendingWaba}
-                className="w-full rounded-xl border-slate-300 bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 text-xs font-bold h-9 gap-1.5 shadow-2xs cursor-pointer"
-              >
-                {isSendingWaba ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-                ) : (
+              item.notificacao_enviada_em ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReenviarWhatsAppManual}
+                  className="w-full rounded-xl border-slate-300 bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 text-xs font-bold h-9 gap-1.5 shadow-2xs cursor-pointer"
+                >
                   <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-600" />
-                )}
-                <span>
-                  {isSendingWaba
-                    ? "Enviando..."
-                    : item.notificacao_enviada_em
-                    ? "Reenviar WhatsApp"
-                    : "Enviar WhatsApp"}
-                </span>
-              </Button>
+                  <span>Reenviar pelo WhatsApp</span>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDispararWaba}
+                  disabled={isSendingWaba}
+                  className="w-full rounded-xl border-slate-300 bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 text-xs font-bold h-9 gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  {isSendingWaba ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                  ) : (
+                    <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-600" />
+                  )}
+                  <span>{isSendingWaba ? "Enviando..." : "Enviar WhatsApp"}</span>
+                </Button>
+              )
             ) : (
               <Button
                 type="button"

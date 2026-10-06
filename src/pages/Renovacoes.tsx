@@ -3,6 +3,7 @@ import { useRenovacoesViewModel } from "@/hooks/ui/useRenovacoesViewModel";
 import { useEscolasWithFilters, useProfile } from "@/hooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { RenovacaoKPICard } from "@/components/features/renovacao/RenovacaoKPICard";
+import { RenovacaoContratoConfigCard } from "@/components/features/renovacao/RenovacaoContratoConfigCard";
 import {
   RenovacaoStatusPills,
   ALL_STATUS_FILTER,
@@ -229,6 +230,8 @@ export default function Renovacoes() {
           anoDestino={anoDestino}
           onOpenViradaAno={handleOpenVirada}
         />
+
+        <RenovacaoContratoConfigCard anoDestino={anoDestino} />
 
         <div className="space-y-2.5">
           <RenovacaoStatusPills
