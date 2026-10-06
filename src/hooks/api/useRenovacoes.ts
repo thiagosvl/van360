@@ -208,7 +208,6 @@ export function useNotificarPassageiroRenovacao() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
-      toast.success("Notificação enviada pelo WhatsApp com sucesso!");
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao enviar notificação WhatsApp", {
@@ -238,9 +237,8 @@ export function useNotificarLoteRenovacao() {
       );
       return response.data;
     },
-    onSuccess: async (data) => {
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
-      toast.success(`Disparo em lote concluído! ${data.enviados} mensagens enviadas.`);
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao disparar notificações em lote", {
@@ -300,7 +298,6 @@ export function useSalvarRenovacaoContratoConfig() {
     onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({ queryKey: renovacaoKeys.contratoConfig(variables.ano) });
       await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
-      toast.success("Configurações do contrato para o ano letivo atualizadas com sucesso!");
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao salvar configuração de contrato", {
