@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import { FormEnderecoFields } from "@/components/forms/FormEnderecoFields";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAtualizarDadosPublicosRenovacao } from "@/hooks/api/useRenovacoes";
-import { cepService } from "@/services/cepService";
 import { phoneMask, cpfMask, cepMask } from "@/utils/masks";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "sonner";
@@ -23,7 +25,6 @@ import {
   GraduationCap,
   HeartPulse,
   Save,
-  Search,
 } from "lucide-react";
 import { PublicRenovacaoResponse } from "@/types/renovacao";
 
@@ -35,6 +36,17 @@ interface EditarDadosPublicosRenovacaoDialogProps {
   passageiro: PublicRenovacaoResponse["passageiro"];
   condicoes: PublicRenovacaoResponse["condicoes"];
   onSuccess?: () => void;
+}
+
+interface EnderecoFormValues {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  referencia: string;
 }
 
 export function EditarDadosPublicosRenovacaoDialog({
@@ -54,21 +66,23 @@ export function EditarDadosPublicosRenovacaoDialog({
   const [emailResp, setEmailResp] = useState("");
   const [parentescoResp, setParentescoResp] = useState("");
 
-  const [cep, setCep] = useState("");
-  const [logradouro, setLogradouro] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [estado, setEstado] = useState("");
-  const [referencia, setReferencia] = useState("");
+  const enderecoForm = useForm<EnderecoFormValues>({
+    defaultValues: {
+      cep: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      referencia: "",
+    },
+  });
 
   const [turma, setTurma] = useState("");
   const [sala, setSala] = useState("");
   const [nomeProfessor, setNomeProfessor] = useState("");
   const [observacoes, setObservacoes] = useState("");
-
-  const [buscandoCep, setBuscandoCep] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -78,47 +92,27 @@ export function EditarDadosPublicosRenovacaoDialog({
       setEmailResp(responsavel?.email || "");
       setParentescoResp(responsavel?.parentesco || "Mãe");
 
-      setCep(cepMask(responsavel?.cep || ""));
-      setLogradouro(responsavel?.logradouro || "");
-      setNumero(responsavel?.numero || "");
-      setComplemento(responsavel?.complemento || "");
-      setBairro(responsavel?.bairro || "");
-      setCidade(responsavel?.cidade || "");
-      setEstado(responsavel?.estado || "");
-      setReferencia(responsavel?.referencia || "");
+      enderecoForm.reset({
+        cep: cepMask(responsavel?.cep || ""),
+        logradouro: responsavel?.logradouro || "",
+        numero: responsavel?.numero || "",
+        complemento: responsavel?.complemento || "",
+        bairro: responsavel?.bairro || "",
+        cidade: responsavel?.cidade || "",
+        estado: responsavel?.estado || "",
+        referencia: responsavel?.referencia || "",
+      });
 
       setTurma(condicoes.turma?.novo || passageiro.turma || "");
       setSala(passageiro.sala || "");
       setNomeProfessor(condicoes.nome_professor?.novo || passageiro.nome_professor || "");
       setObservacoes(passageiro.observacoes || "");
     }
-  }, [isOpen, responsavel, passageiro, condicoes]);
-
-  const handleCepChange = async (valor: string) => {
-    const masked = cepMask(valor);
-    setCep(masked);
-
-    const clean = masked.replace(/\D/g, "");
-    if (clean.length === 8) {
-      setBuscandoCep(true);
-      try {
-        const endereco = await cepService.buscarEndereco(clean);
-        if (endereco) {
-          setLogradouro(endereco.logradouro);
-          setBairro(endereco.bairro);
-          setCidade(endereco.cidade);
-          setEstado(endereco.estado);
-        }
-      } catch {
-        // silencioso
-      } finally {
-        setBuscandoCep(false);
-      }
-    }
-  };
+  }, [isOpen, responsavel, passageiro, condicoes, enderecoForm]);
 
   const handleSalvar = async () => {
     try {
+      const endValues = enderecoForm.getValues();
       await salvarDados({
         responsavel: {
           nome: nomeResp.trim() || undefined,
@@ -126,14 +120,14 @@ export function EditarDadosPublicosRenovacaoDialog({
           cpf: cpfResp.replace(/\D/g, "") || undefined,
           email: emailResp.trim() || undefined,
           parentesco: parentescoResp.trim() || undefined,
-          cep: cep.replace(/\D/g, "") || undefined,
-          logradouro: logradouro.trim() || undefined,
-          numero: numero.trim() || undefined,
-          complemento: complemento.trim() || undefined,
-          bairro: bairro.trim() || undefined,
-          cidade: cidade.trim() || undefined,
-          estado: estado.trim() || undefined,
-          referencia: referencia.trim() || undefined,
+          cep: endValues.cep ? endValues.cep.replace(/\D/g, "") : undefined,
+          logradouro: endValues.logradouro ? endValues.logradouro.trim() : undefined,
+          numero: endValues.numero ? endValues.numero.trim() : undefined,
+          complemento: endValues.complemento ? endValues.complemento.trim() : undefined,
+          bairro: endValues.bairro ? endValues.bairro.trim() : undefined,
+          cidade: endValues.cidade ? endValues.cidade.trim() : undefined,
+          estado: endValues.estado ? endValues.estado.trim() : undefined,
+          referencia: endValues.referencia ? endValues.referencia.trim() : undefined,
         },
         passageiro: {
           turma: turma.trim() || undefined,
@@ -252,95 +246,9 @@ export function EditarDadosPublicosRenovacaoDialog({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">CEP</Label>
-              <div className="relative">
-                <Input
-                  value={cep}
-                  onChange={(e) => handleCepChange(e.target.value)}
-                  placeholder="00000-000"
-                  className="h-9 text-xs pr-8"
-                />
-                {buscandoCep ? (
-                  <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin absolute right-2.5 top-3" />
-                ) : (
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-3" />
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1 sm:col-span-2">
-              <Label className="text-xs font-medium text-slate-600">Rua / Logradouro</Label>
-              <Input
-                value={logradouro}
-                onChange={(e) => setLogradouro(e.target.value)}
-                placeholder="Ex: Rua das Flores"
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Número</Label>
-              <Input
-                value={numero}
-                onChange={(e) => setNumero(e.target.value)}
-                placeholder="Ex: 123"
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1 sm:col-span-2">
-              <Label className="text-xs font-medium text-slate-600">Complemento</Label>
-              <Input
-                value={complemento}
-                onChange={(e) => setComplemento(e.target.value)}
-                placeholder="Apto, Bloco, Casa 2..."
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Bairro</Label>
-              <Input
-                value={bairro}
-                onChange={(e) => setBairro(e.target.value)}
-                placeholder="Bairro"
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Cidade</Label>
-              <Input
-                value={cidade}
-                onChange={(e) => setCidade(e.target.value)}
-                placeholder="Cidade"
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Estado (UF)</Label>
-              <Input
-                value={estado}
-                onChange={(e) => setEstado(e.target.value.toUpperCase())}
-                placeholder="SP"
-                maxLength={2}
-                className="h-9 text-xs uppercase"
-              />
-            </div>
-
-            <div className="space-y-1 sm:col-span-3">
-              <Label className="text-xs font-medium text-slate-600">Ponto de Referência</Label>
-              <Input
-                value={referencia}
-                onChange={(e) => setReferencia(e.target.value)}
-                placeholder="Próximo à padaria, em frente à praça..."
-                className="h-9 text-xs"
-              />
-            </div>
-          </div>
+          <Form {...enderecoForm}>
+            <FormEnderecoFields isExternal={true} />
+          </Form>
         </div>
 
         <div className="space-y-3.5">
