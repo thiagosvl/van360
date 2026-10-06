@@ -34,7 +34,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "sonner";
-import { isSamePerson } from "@/utils/person";
 import {
   useCreateResponsavelAdicional,
   useUpdateResponsavelAdicional,
@@ -272,15 +271,7 @@ export default function ResponsavelFormDialog({
         }
 
         const currentName = form.getValues("nome");
-        if (currentName && !isSamePerson(currentName, responsavel.nome)) {
-          form.setError("telefone", {
-            type: "manual",
-            message: "Este telefone já está cadastrado para outro responsável",
-          });
-          return;
-        }
-
-        if (responsavel.nome) {
+        if (!currentName && responsavel.nome) {
           form.setValue("nome", responsavel.nome, { shouldValidate: true });
         }
         if (responsavel.telefone) {
@@ -456,10 +447,10 @@ export default function ResponsavelFormDialog({
       console.error("Erro ao processar responsável:", error);
       const msg = getErrorMessage(error);
       const status = (error as any)?.response?.status;
-      if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("outro responsável") || status === 409)) {
+      if (msg && (msg.toLowerCase().includes("telefone") || status === 409)) {
         form.setError("telefone", {
           type: "manual",
-          message: msg.toLowerCase().includes("outro responsável") ? "Este telefone já está cadastrado para outro responsável" : msg.replace(/ no sistema/gi, ""),
+          message: msg.replace(/ no sistema/gi, ""),
         });
       } else if (msg && msg.toLowerCase().includes("cpf")) {
         form.setError("cpf", {

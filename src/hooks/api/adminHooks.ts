@@ -10,3 +10,5 @@ export * from "./admin/useAdminVencimentosHooks";
 export * from "./admin/useAdminFinancialHooks";
 export * from "./admin/useAdminRealtimeLogs";
 export * from "./admin/useAdminReferrals";
+export * from "./admin/useAdminRepasseHooks";
+export * from "./admin/useAdminRealtimeRepasses";

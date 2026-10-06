@@ -29,6 +29,10 @@ export const STORAGE_KEYS = {
   DISMISS_DEMONSTRACOES_HOME: "van360:dismiss:demonstracoes-home",
   REFERRAL_CODE: "van360_referral_code",
   JUST_REGISTERED: "van360_just_registered",
+  MOCK_PLATFORM: "van360:mock_platform",
+  BIOMETRIC_LOCK_ENABLED: "van360:biometric_lock_enabled",
+  BIOMETRIC_LOCK_GRACE_PERIOD: "van360:biometric_lock_grace_period",
+  BIOMETRIC_LOCK_LAST_BACKGROUND: "van360:biometric_lock_last_background",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */
@@ -40,3 +44,4 @@ export const BUCKET_LOGOS = "logos" as const;
 
 export * from "./navigation";
 export * from "./tutorials";
+export * from "./appLock";

@@ -6,7 +6,6 @@ import {
   useAdminLogs,
   useAdminUsersRadarStats,
   useAdminFinancialStats,
-  useAdminTrialsPipeline,
   useAdminDemographicsStats,
   useAdminRealtimeLogs,
 } from "@/hooks/api/adminHooks";
@@ -16,7 +15,6 @@ import { AdminTrialCohortChart } from "@/components/features/admin/financial/Adm
 import { AdminDailyMaturityScatter } from "@/components/features/admin/financial/AdminDailyMaturityScatter";
 import { AdminPaymentMethodBreakdown } from "@/components/features/admin/financial/AdminPaymentMethodBreakdown";
 import { AdminUpcomingRenewalsTable } from "@/components/features/admin/financial/AdminUpcomingRenewalsTable";
-import { AdminTrialsPipelineTable } from "@/components/features/admin/financial/AdminTrialsPipelineTable";
 import { AdminAgeDemographicsChart } from "@/components/features/admin/users/AdminAgeDemographicsChart";
 import { AdminUserGrowthFunnel } from "@/components/features/admin/users/AdminUserGrowthFunnel";
 import { AdminGeographicSection } from "@/components/features/admin/users/AdminGeographicSection";
@@ -110,9 +108,6 @@ export default function AdminDashboard() {
 
   const { data: stats, isLoading, refetch: refetchStats, isFetching: isFetchingStats } = useAdminStats();
   const { data: financialData, isLoading: isLoadingFinancial, refetch: refetchFinancial, isFetching: isFetchingFinancial } = useAdminFinancialStats();
-  const { data: trialsPipelineData, isLoading: isLoadingTrialsPipeline, refetch: refetchTrialsPipeline, isFetching: isFetchingTrialsPipeline } = useAdminTrialsPipeline({
-    enabled: activeTab === "financeiro",
-  });
   const { data: demographicsData, isLoading: isLoadingDemographics, refetch: refetchDemographics } = useAdminDemographicsStats();
   const { setPageTitle } = useLayout();
   // const { data: instances, isLoading: isLoadingInstances } = useAdminEvolutionInstances();
@@ -283,10 +278,9 @@ export default function AdminDashboard() {
             onClick={() => {
               refetchStats();
               refetchFinancial();
-              refetchTrialsPipeline();
               refetchDemographics();
             }}
-            disabled={isFetchingStats || isFetchingFinancial || isFetchingTrialsPipeline}
+            disabled={isFetchingStats || isFetchingFinancial}
             title="Atualizar dados do dashboard"
             className="h-16 w-14 border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white rounded-[1.25rem] shadow-xl shrink-0"
           >
@@ -882,6 +876,7 @@ export default function AdminDashboard() {
 
               <AdminRevenueProjectionChart
                 data={financialData.projecao12Meses}
+                historico={financialData.historicoReceitaMensal}
                 diasRetencaoCartao={financialData.diasRetencaoCartao}
               />
 
@@ -898,12 +893,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
-              <AdminTrialsPipelineTable
-                trials={trialsPipelineData?.trials || []}
-                isLoading={isLoadingTrialsPipeline || isFetchingTrialsPipeline}
-                onRefresh={refetchTrialsPipeline}
-              />
 
               <AdminUpcomingRenewalsTable renewals={financialData.proximasRenovacoes} />
             </>

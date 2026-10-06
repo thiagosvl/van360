@@ -21,6 +21,8 @@ export interface AdminFinancialKpis {
   totalMensais: number;
   totalAnuais: number;
   totalVitalicios: number;
+  receitaRecorrenteMensalFixa: number;
+  receitaContratadaAnual: number;
   previsaoFechamentoMes: number;
 }
 
@@ -82,6 +84,13 @@ export interface SafraTrialItem {
   taxaConversao: number;
 }
 
+export interface HistoricoReceitaMensalItem {
+  chaveMes: string;
+  labelMes: string;
+  valor: number;
+  quantidadeFaturas: number;
+}
+
 export interface AdminFinancialStatsResponse {
   kpis: AdminFinancialKpis;
   projecao12Meses: Projecao12MesesItem[];
@@ -89,6 +98,7 @@ export interface AdminFinancialStatsResponse {
   meiosPagamento: MeiosPagamentoBreakdown;
   proximasRenovacoes: ProximaRenovacaoItem[];
   safrasTrials: SafraTrialItem[];
+  historicoReceitaMensal: HistoricoReceitaMensalItem[];
   diasRetencaoCartao: number;
 }
 
@@ -137,6 +147,7 @@ export interface TrialPipelineItem {
   usuarioId: string;
   nome: string;
   apelido: string | null;
+  telefone: string | null;
   trialEndsAt: string;
   diasRestantes: number;
   diasAcessados: number;
@@ -150,6 +161,7 @@ export interface TrialPipelineItem {
   indicadoPor: string | null;
   valorMensal: number;
   valorAnual: number;
+  status: string | null;
 }
 
 export interface TrialsPipelineResponse {

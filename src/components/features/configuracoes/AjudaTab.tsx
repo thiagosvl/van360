@@ -54,7 +54,7 @@ const FAQS_DATA: FaqItemData[] = [
     category: "passageiros",
     question: "Como registrar que o aluno vai faltar (ausência)?",
     answer:
-      "Você pode registrar uma ausência abrindo a carteirinha do aluno ou diretamente na lista de paradas da Rota. Selecione o dia da falta e o sistema ajustará a rota daquele dia automaticamente, sem enviar notificações desnecessárias aos pais.",
+      "Você pode registrar uma ausência abrindo a carteirinha do aluno ou diretamente na lista de paradas da Rota. Selecione o dia da falta e o app ajustará a rota daquele dia automaticamente, sem enviar notificações desnecessárias aos pais.",
   },
 
   // Cobranças & Parcelas
@@ -70,7 +70,7 @@ const FAQS_DATA: FaqItemData[] = [
     category: "cobrancas",
     question: "Como funcionam os lembretes automáticos de parcelas para os pais?",
     answer:
-      "O Van360 envia mensagens educadas de cobrança antes da data de vencimento, no dia do vencimento e em caso de atraso (caso estejam ativadas em Conta > Notificações aos Pais). A sua chave Pix cadastrada é enviada junto na mensagem para facilitar o pagamento. Assim que você registra a baixa da parcela no sistema, os lembretes seguintes são cancelados automaticamente.",
+      "O app envia mensagens educadas de cobrança antes da data de vencimento, no dia do vencimento e em caso de atraso (caso estejam ativadas em Conta > Notificações aos Pais). A sua chave Pix cadastrada é enviada junto na mensagem para facilitar o pagamento. Assim que você registra a baixa da parcela no app, os lembretes seguintes são cancelados automaticamente.",
   },
   {
     id: "configurar-pix",
@@ -86,7 +86,7 @@ const FAQS_DATA: FaqItemData[] = [
     category: "rotas",
     question: "Como criar e organizar a ordem das paradas da rota?",
     answer:
-      "Na aba Rotas, clique em 'Configurar Rota'. O sistema permite definir o sentido (Ida para a escola ou Volta para casa), selecionar as escolas e os alunos. Você pode arrastar as paradas para ajustar a ordem exata do seu itinerário.",
+      "Na aba Rotas, clique em 'Configurar Rota'. O app permite definir o sentido (Ida para a escola ou Volta para casa), selecionar as escolas e os alunos. Você pode arrastar as paradas para ajustar a ordem exata do seu itinerário.",
   },
   {
     id: "iniciar-viagem",

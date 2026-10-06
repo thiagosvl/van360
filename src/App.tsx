@@ -25,8 +25,10 @@ import { BrowserRouter, Navigate, Route, Routes, Outlet, useParams, useLocation 
 
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
+import { AppLockController } from "@/components/layout/AppLockController";
 
 import { LayoutProvider } from "@/contexts/LayoutProvider";
+import { AppLockProvider } from "@/contexts/AppLockProvider";
 import { useAttribution } from "@/hooks/business/useAttribution";
 
 const PushNotificationController = () => {
@@ -98,6 +100,7 @@ const AdminNotificationsHistory = lazyLoad(() => import("./pages/admin/AdminNoti
 const AdminEvolutionInstances = lazyLoad(() => import("./pages/admin/AdminEvolutionInstances"));
 const AdminBlogPage = lazyLoad(() => import("./pages/admin/AdminBlogPage"));
 const AdminReferrals = lazyLoad(() => import("./pages/admin/AdminReferrals"));
+const AdminRepasses = lazyLoad(() => import("./pages/admin/AdminRepasses"));
 
 interface PendingOtaUpdate {
   id: string;
@@ -336,12 +339,14 @@ const App = () => {
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ResponsavelAuthProvider>
-            <LayoutProvider>
-              <AppErrorBoundary>
-                <BackButtonController />
-                <PushNotificationController />
-                <AttributionController />
-                <ScrollToTop />
+            <AppLockProvider>
+              <LayoutProvider>
+                <AppErrorBoundary>
+                  <AppLockController />
+                  <BackButtonController />
+                  <PushNotificationController />
+                  <AttributionController />
+                  <ScrollToTop />
                 <Suspense fallback={<InitialLoading />}>
                   <Routes>
                     <Route
@@ -445,6 +450,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.ADMIN.USERS_RADAR} element={<AdminUsersRadar />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.REFERRALS} element={<AdminReferrals />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.NOTIFICATIONS} element={<AdminNotificationsHistory />} />
+                      <Route path={ROUTES.PRIVATE.ADMIN.REPASSES} element={<AdminRepasses />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.EVOLUTION_INSTANCES} element={<AdminEvolutionInstances />} />
                       <Route path={ROUTES.PRIVATE.ADMIN.BLOG} element={<AdminBlogPage />} />
                     </Route>
@@ -515,8 +521,9 @@ const App = () => {
                 </Suspense>
               </AppErrorBoundary>
             </LayoutProvider>
-          </ResponsavelAuthProvider>
-        </BrowserRouter>
+          </AppLockProvider>
+        </ResponsavelAuthProvider>
+      </BrowserRouter>
 
         {updating && (
           <div className="fixed inset-0 z-[9999]">

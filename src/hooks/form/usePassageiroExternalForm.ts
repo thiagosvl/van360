@@ -240,14 +240,11 @@ export function usePassageiroExternalForm() {
 
       if (
         errorMsg.toLowerCase().includes("telefone") ||
-        errorMsg.toLowerCase().includes("outro responsável") ||
         error.response?.status === 409
       ) {
         form.setError("telefone_responsavel", {
           type: "manual",
-          message: errorMsg.toLowerCase().includes("outro responsável")
-            ? "Este telefone já está cadastrado para outro responsável"
-            : errorMsg.replace(/ no sistema/gi, ""),
+          message: errorMsg.replace(/ no sistema/gi, ""),
         });
         setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
       } else if (errorMsg.toLowerCase().includes("cpf")) {

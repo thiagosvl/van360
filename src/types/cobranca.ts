@@ -21,4 +21,12 @@ export interface Cobranca {
   isProjection?: boolean;
   ano_letivo?: number;
   observacao?: string | null;
+  provedor?: string | null;
+  provedor_cobranca_id?: string | null;
+  pix_copia_cola?: string | null;
+  pix_qrcode_url?: string | null;
+  pix_expiracao?: string | null;
+  valor_taxa_plataforma?: number | null;
+  taxa_repassada_ao_pai?: boolean | null;
+  repasse_em_processamento?: boolean | null;
 }

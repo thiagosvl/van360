@@ -36,9 +36,13 @@ export const getInitials = (name?: string) => {
   return name.trim().charAt(0).toUpperCase();
 };
 
-export const formatNomeResponsavelExibicao = (nome?: string | null, shortName: boolean = true) => {
+export const formatNomeResponsavelExibicao = (
+  nome?: string | null,
+  formato: "primeiro_nome" | "completo" | boolean = "primeiro_nome"
+) => {
   if (!nome) return "Responsável não informado";
-  return shortName ? formatFirstName(nome) : nome;
+  const isShort = typeof formato === "boolean" ? formato : formato === "primeiro_nome";
+  return isShort ? formatFirstName(nome) : nome;
 };
 
 export const formatNomeResponsavelCompletoExibicao = (nome?: string | null) => {

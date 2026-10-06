@@ -18,10 +18,20 @@ interface ConfigFieldDef {
   descricao: string;
   tipo: "number" | "boolean" | "text" | "textarea";
   sufixo?: string;
+  step?: string;
   grupo: string;
 }
 
 const CONFIG_DEFS: ConfigFieldDef[] = [
+  {
+    chave: ConfigKey.TAXA_COBRANCA_AUTOMATICA_PADRAO,
+    label: "Taxa Padrão Cobrança Automática (Pix BaaS)",
+    descricao: "Valor padrão em reais retido pela plataforma por cobrança Pix emitida/paga (usado quando o motorista não possui taxa personalizada).",
+    tipo: "number",
+    step: "0.01",
+    sufixo: "R$",
+    grupo: "Financeiro",
+  },
   {
     chave: ConfigKey.PASSAGEIRO_DIAS_AVISO_VENCIMENTO,
     label: "Dias Aviso Vencimento",
@@ -327,6 +337,7 @@ export default function AdminSettings() {
           <div className="relative flex-1">
             <Input
               type={def.tipo === "number" ? "number" : "text"}
+              step={def.step || (def.tipo === "number" ? "1" : undefined)}
               value={currentVal}
               onChange={(e) => handleChange(def.chave, e.target.value)}
               className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 pr-14"

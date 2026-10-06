@@ -22,12 +22,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
-import { safeCloseDialog } from "@/hooks";
+import { safeCloseDialog, useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import { Cobranca } from "@/types/cobranca";
 import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
 import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, CreditCard, User, Wallet } from "lucide-react";
@@ -67,6 +68,8 @@ export default function ManualPaymentDialog({
     onPaymentRecorded,
   });
 
+  const { formatoNomeResponsavel } = useAppPreferences();
+
   return (
     <BaseDialog open={isOpen} onOpenChange={onClose}>
       <BaseDialog.Header title="Registrar Pagamento" icon={<Wallet className="w-5 h-5" />} onClose={onClose} />
@@ -97,7 +100,7 @@ export default function ManualPaymentDialog({
                 </p>
                 {responsavelNome && (
                   <p className="text-[11px] text-slate-500 font-medium leading-tight truncate mt-0.5">
-                    {formatFirstName(responsavelNome)}
+                    {formatNomeResponsavelExibicao(responsavelNome, formatoNomeResponsavel)}
                   </p>
                 )}
               </div>

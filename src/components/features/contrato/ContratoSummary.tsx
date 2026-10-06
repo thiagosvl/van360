@@ -3,6 +3,7 @@ import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import { formatCurrency, formatMonthYearToBR, formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
+import { useAppPreferences } from "@/hooks";
 import { AlertCircle, Calendar } from "lucide-react";
 
 import { ContratoListItem } from "@/types/contract";
@@ -13,10 +14,11 @@ interface ContratoSummaryProps {
 }
 
 export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
+  const { formatoNomeResponsavel } = useAppPreferences();
   const nomePassageiro = item.passageiro?.nome || item.nome;
   const respObj = item.passageiro?.responsavel_principal || item.responsavel_principal;
   const isMissingResponsible = isResponsavelIncompleto(respObj?.nome, respObj?.telefone);
-  const nomeResponsavel = formatNomeResponsavelExibicao(respObj?.nome, true);
+  const nomeResponsavel = formatNomeResponsavelExibicao(respObj?.nome, formatoNomeResponsavel);
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
   const isPendente = status === ContratoStatus.PENDENTE;
@@ -72,7 +74,10 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
       </div>
 
       {nomeResponsavel ? (
-        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
+        <p className={cn(
+          "text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-snug w-full min-w-0",
+          formatoNomeResponsavel === "completo" ? "truncate" : "line-clamp-2 break-words"
+        )}>
           {nomeResponsavel}
         </p>
       ) : isMissingResponsible ? (

@@ -361,11 +361,10 @@ export default function AdminReferrals() {
                     setStatusFilter(f.value);
                     setPage(1);
                   }}
-                  className={`rounded-xl text-xs font-bold whitespace-nowrap ${
-                    statusFilter === f.value
+                  className={`rounded-xl text-xs font-bold whitespace-nowrap ${statusFilter === f.value
                       ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-600/20"
                       : "border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800"
-                  }`}
+                    }`}
                 >
                   {f.label}
                 </Button>
@@ -426,7 +425,7 @@ export default function AdminReferrals() {
               description={
                 search || statusFilter !== "" || dataInicio || dataFim
                   ? "Nenhum registro corresponde aos filtros ou busca selecionados."
-                  : "Ainda não há indicações registradas no sistema."
+                  : "Ainda não há indicações registradas no app."
               }
             />
           ) : (

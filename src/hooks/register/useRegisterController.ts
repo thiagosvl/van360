@@ -217,7 +217,7 @@ export function useRegisterController() {
       if (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("uso")) {
         setDuplicateError({
           field: "generic",
-          message: "Este cadastro já existe no sistema.",
+          message: "Este cadastro já existe no app.",
         });
         toast.error("validacao.formularioComErros");
         return;

@@ -31,7 +31,7 @@ async function getAccessToken() {
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 45000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -55,8 +55,9 @@ apiClient.interceptors.response.use(
     const responseData = error.response?.data;
     const errorCode = responseData?.code;
 
-    // Erros de rede (timeout, offline, etc)
     if (!error.response) {
+      const message = handleApiError(error);
+      (error as AxiosError & { userMessage?: string }).userMessage = message;
       return Promise.reject(error);
     }
 

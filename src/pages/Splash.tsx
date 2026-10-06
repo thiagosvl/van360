@@ -225,10 +225,10 @@ export default function Splash() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
-                      Criar conta grátis
+                      Criar conta
                     </span>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
-                      Cadastrar minha van em 1 minuto
+                      Cadastrar minha van
                     </p>
                   </div>
                 </div>

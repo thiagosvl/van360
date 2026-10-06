@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus, ContratoTab } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
+import { useAppPreferences } from "@/hooks";
 import { Clock, Download, Eye, FileCheck2, FileSignature, FileText, FileX2, Loader2, User, Users } from "lucide-react";
 import { memo } from "react";
 import { ContratoListItem } from "@/types/contract";
@@ -112,6 +113,8 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onVisualizarFinal,
   });
 
+  const { formatoNomeResponsavel } = useAppPreferences();
+
   const isSemContrato = item.tipo === "passageiro";
   const isImportado = item?.provider === ContratoProvider.IMPORTADO;
   const status = item.status as ContratoStatus | null;
@@ -147,8 +150,11 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
             )}
           </div>
           <div className="flex flex-col min-w-0 mt-0.5">
-            <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
-              {formatNomeResponsavelExibicao(responsavelExibicao, true)}
+            <p className={cn(
+              "text-[10px] text-gray-500 font-medium leading-snug opacity-60",
+              formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-2"
+            )}>
+              {formatNomeResponsavelExibicao(responsavelExibicao, formatoNomeResponsavel)}
             </p>
           </div>
         </div>
@@ -169,6 +175,8 @@ export const ContratosList = memo(function ContratosList({
   isDownloading,
   ...actions
 }: ContratosListProps) {
+  const { formatoNomeResponsavel } = useAppPreferences();
+
   const getEmptyState = () => {
     if (busca) {
       return (
@@ -288,8 +296,11 @@ export const ContratosList = memo(function ContratosList({
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
-                          {formatNomeResponsavelExibicao(nomeResponsavel, true)}
+                        <p className={cn(
+                          "text-[10px] text-gray-400 font-medium tracking-wider flex items-center gap-1.5",
+                          formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
+                        )}>
+                          {formatNomeResponsavelExibicao(nomeResponsavel, formatoNomeResponsavel)}
                         </p>
                       </div>
                     </div>

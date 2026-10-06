@@ -17,10 +17,15 @@ import { MinhasNotificacoesTab } from "@/components/features/configuracoes/Minha
 import { RastreamentoTab } from "@/components/features/configuracoes/RastreamentoTab";
 import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
+import { PreferenciasTab } from "@/components/features/configuracoes/PreferenciasTab";
 import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
+import { SegurancaBiometriaTab } from "@/components/features/configuracoes/SegurancaBiometriaTab";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
 import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
+import { isNativeIos } from "@/utils/detectPlatform";
+import { Capacitor } from "@capacitor/core";
+import { App as CapacitorApp } from "@capacitor/app";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -28,12 +33,16 @@ import {
   Bell,
   ChevronRight,
   CreditCard,
+  FileText,
+  Fingerprint,
   HelpCircle,
   Loader2,
   Lock,
   LogOut,
   Radio,
   Rocket,
+  ShieldCheck,
+  SlidersHorizontal,
   Smartphone,
   User as UserIcon,
 } from "lucide-react";
@@ -51,10 +60,23 @@ export const Conta = memo(function Conta() {
   const {
     openAlterarSenhaDialog,
     openConfirmationDialog,
+    openTermosUsoDialog,
+    openPoliticaPrivacidadeDialog,
     setIsGlobalLoading,
   } = useLayout();
 
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>("1.0.6");
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      void CapacitorApp.getInfo().then((info) => {
+        if (info.version) {
+          setAppVersion(info.version);
+        }
+      });
+    }
+  }, []);
 
   const displayName = profile?.apelido || formatShortName(profile?.nome, true);
 
@@ -129,14 +151,16 @@ export const Conta = memo(function Conta() {
           <Lock className="w-10 h-10 text-slate-400 mx-auto" />
           <h2 className="text-lg font-bold text-slate-800">Acesso Suspenso</h2>
           <p className="text-sm text-slate-600 max-w-md mx-auto">
-            Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van.
+            {isNativeIos()
+              ? "Esta funcionalidade exige que sua conta esteja ativa. Entre em contato com nosso suporte para mais informações."
+              : "Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van."}
           </p>
           <button
             type="button"
             onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
             className="px-6 py-2.5 rounded-xl bg-[#1a3a5c] text-white text-sm font-bold shadow-xs hover:bg-[#152e4a] cursor-pointer"
           >
-            Ver Assinatura
+            {isNativeIos() ? "Verificar Acesso" : "Ver Assinatura"}
           </button>
         </div>
       );
@@ -159,6 +183,12 @@ export const Conta = memo(function Conta() {
     }
     if (tabParam === "ajuda") {
       return <AjudaTab />;
+    }
+    if (tabParam === "seguranca") {
+      return <SegurancaBiometriaTab />;
+    }
+    if (tabParam === "preferencias") {
+      return <PreferenciasTab />;
     }
 
     return (
@@ -224,7 +254,39 @@ export const Conta = memo(function Conta() {
               <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 2: Alterar Senha */}
+            {/* Opção 2: Assinatura do App (Gestor) */}
+            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && !isNativeIos() && (
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
+                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                    <Rocket className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                      Assinatura do App
+                    </h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Gerencie seu plano, pagamentos e benefícios Van360
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Grupo: Segurança */}
+        <div className="space-y-2">
+          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+            Segurança
+          </h2>
+          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+            {/* Opção 1: Alterar Senha */}
             <button
               type="button"
               onClick={openAlterarSenhaDialog}
@@ -246,23 +308,25 @@ export const Conta = memo(function Conta() {
               <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 3: Assinatura do App (Gestor) */}
-            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && (
+            {/* Opção 2: Bloqueio de Tela (Nativo) */}
+            {Capacitor.isNativePlatform() && (
               <button
                 type="button"
-                onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
+                onClick={() => handleSelectTab("seguranca")}
                 className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
-                    <Rocket className="w-5 h-5" />
+                    <Fingerprint className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                      Assinatura do App
+                      Bloqueio de Tela
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      Gerencie seu plano, pagamentos e benefícios Van360
+                      {isNativeIos()
+                        ? "Proteja o app com Face ID, Touch ID ou código"
+                        : "Proteja o app com digital ou senha do aparelho"}
                     </p>
                   </div>
                 </div>
@@ -441,6 +505,87 @@ export const Conta = memo(function Conta() {
           </div>
         )}
 
+        {/* Grupo: Preferências do app */}
+        <div className="space-y-2">
+          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+            Preferências do app
+          </h2>
+          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleSelectTab("preferencias")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <SlidersHorizontal className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Preferências do Aplicativo
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Exibição de nomes, formato de listagens e ajustes gerais do app
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+          </div>
+        </div>
+
+        {/* Grupo: Informações legais */}
+        <div className="space-y-2">
+          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+            Informações legais
+          </h2>
+          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+            {/* Opção 1: Termos de Uso */}
+            <button
+              type="button"
+              onClick={openTermosUsoDialog}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Termos de Uso
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Condições gerais de contratação e utilização do serviço
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+
+            {/* Opção 2: Política de Privacidade */}
+            <button
+              type="button"
+              onClick={openPoliticaPrivacidadeDialog}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Política de Privacidade
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Como tratamos e protegemos seus dados pessoais segundo a LGPD
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+          </div>
+        </div>
+
         {/* Grupo 4: Suporte e sessão */}
         <div className="space-y-2">
           <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
@@ -497,6 +642,17 @@ export const Conta = memo(function Conta() {
             </button>
           </div>
         </div>
+
+        <div className="text-center pt-2 pb-4 space-y-1">
+          <p className="text-xs font-medium text-slate-400">
+            Van360 • Todos os direitos reservados
+          </p>
+          {appVersion && (
+            <p className="text-[11px] font-medium text-slate-400">
+              Versão {appVersion}
+            </p>
+          )}
+        </div>
       </div>
     );
   };
@@ -511,6 +667,8 @@ export const Conta = memo(function Conta() {
       "perfil",
       "pagamentos",
       "ajuda",
+      "seguranca",
+      "preferencias",
     ].includes(tabParam)
   );
 

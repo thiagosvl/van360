@@ -62,4 +62,8 @@ export interface Usuario {
     secoes?: ContractSection[];
     clausulas?: string[];
   };
+
+  configuracoes?: {
+    formato_nome_responsavel?: "primeiro_nome" | "completo";
+  };
 }

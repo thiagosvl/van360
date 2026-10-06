@@ -33,6 +33,7 @@ import { usePrivacy } from "@/contexts/PrivacyContext";
 import { isMotoristaTitular } from "@/utils/userUtils";
 import { useEffect, useState } from "react";
 import { Banner } from "@/components/ui/Banner";
+import { isNativeIos } from "@/utils/detectPlatform";
 
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
@@ -206,7 +207,7 @@ const Home = () => {
               </div>
             )}
 
-            {!isSubConta && isPastDue && (
+            {!isSubConta && !isNativeIos() && isPastDue && (
               <PastDueBanner
                 onRegularize={() => {
                   if (plans && plans.length > 0) {
@@ -356,7 +357,7 @@ const Home = () => {
             onRegistrarGasto={handleOpenGastoDialog}
           />
 
-          {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
+          {!isSubConta && !isNativeIos() && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
             <section className="px-1">
               <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
                 Assinatura do Van360
@@ -372,7 +373,7 @@ const Home = () => {
           <AniversariantesWidget />
 
           {/* Indique e Ganhe Banner */}
-          {!isSubConta && (
+          {!isSubConta && !isNativeIos() && (
             <section className="px-1">
               <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
                 Indique e Ganhe

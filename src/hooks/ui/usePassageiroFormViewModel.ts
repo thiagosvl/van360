@@ -21,7 +21,6 @@ import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
 import { getErrorMessage } from "@/utils/errorHandler";
-import { isSamePerson } from "@/utils/person";
 
 interface UsePassageiroFormViewModelProps {
   isOpen: boolean;
@@ -118,15 +117,7 @@ export function usePassageiroFormViewModel({
         }
 
         const currentName = form.getValues("responsavel_principal.nome");
-        if (currentName && !isSamePerson(currentName, responsavel.nome)) {
-          form.setError("responsavel_principal.telefone", {
-            type: "manual",
-            message: "Este telefone já está cadastrado para outro responsável",
-          });
-          return;
-        }
-
-        if (responsavel.nome) {
+        if (!currentName && responsavel.nome) {
           form.setValue("responsavel_principal.nome", responsavel.nome, { shouldValidate: true });
         }
         if (responsavel.telefone) {
@@ -436,7 +427,7 @@ export function usePassageiroFormViewModel({
         if (msg && (msg.toLowerCase().includes("telefone") || msg.toLowerCase().includes("responsável") || status === 409)) {
           form.setError("responsavel_principal.telefone", {
             type: "manual",
-            message: msg.toLowerCase().includes("outro responsável") ? "Este telefone já está cadastrado para outro responsável" : msg.replace(/ no sistema/gi, ""),
+            message: msg.replace(/ no sistema/gi, ""),
           });
           setOpenAccordionItems((prev) => Array.from(new Set([...prev, "responsavel"])));
         } else if (msg && msg.toLowerCase().includes("cpf")) {

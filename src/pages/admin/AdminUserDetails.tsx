@@ -23,6 +23,7 @@ import {
 } from "@/hooks/api/adminHooks";
 import {
   ArrowLeft,
+  ArrowUpRight,
   Bell,
   Save,
   Loader2,
@@ -69,6 +70,10 @@ import { AdminUserReferralTab } from "@/components/features/admin/user-details/A
 import { AdminUserQuickSwitcher } from "@/components/features/admin/user-details/AdminUserQuickSwitcher";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
+import { AdminUserFinancialConfigCard } from "@/components/features/admin/user-details/AdminUserFinancialConfigCard";
+import { RepasseLogsList } from "@/components/features/admin/RepasseLogsList";
+import { useAdminRepasses, useAdminRetryRepasse } from "@/hooks/api/admin/useAdminRepasseHooks";
+import { RepasseFiltersState } from "@/types/admin-repasse";
 import { NotificationCategoryEnum } from "@/utils/formatters/notificationEvents";
 import { ActiveStatusBadge } from "@/components/ui/ActiveStatusBadge";
 import { formatarChavePix } from "@/utils/formatters/pix";
@@ -378,6 +383,29 @@ export default function AdminUserDetails() {
   const handleNotifFiltersChange = (newFilters: NotificationFiltersState) => {
     setNotifFilters(newFilters);
     setNotifPage(1);
+  };
+
+  const [repassePage, setRepassePage] = useState(1);
+  const [repasseFilters, setRepasseFilters] = useState<RepasseFiltersState>({
+    status: "TODOS",
+    search: "",
+    dataInicio: "",
+    dataFim: "",
+  });
+
+  const { data: repasseData, isLoading: isFetchingRepasses } = useAdminRepasses({
+    motorista_id: id,
+    page: repassePage,
+    limit: 20,
+    status: repasseFilters.status,
+    search: repasseFilters.search.trim() || undefined,
+  });
+
+  const retryRepasseMutation = useAdminRetryRepasse();
+
+  const handleRepasseFiltersChange = (newFilters: RepasseFiltersState) => {
+    setRepasseFilters(newFilters);
+    setRepassePage(1);
   };
 
   const userForm = useForm<UserFormData>({
@@ -918,6 +946,12 @@ export default function AdminUserDetails() {
                   <span>Cobranças</span>
                 </span>
               </SelectItem>
+              <SelectItem value="repasses" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+                <span className="flex items-center gap-2">
+                  <ArrowUpRight className="h-4 w-4 text-emerald-400" />
+                  <span>Repasses Pix</span>
+                </span>
+              </SelectItem>
               <SelectItem value="logs" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
                 <span className="flex items-center gap-2">
                   <Terminal className="h-4 w-4 text-slate-400" />
@@ -965,6 +999,14 @@ export default function AdminUserDetails() {
             >
               <CreditCard className="h-4 w-4 text-amber-300 shrink-0" />
               <span>Cobranças</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="repasses"
+              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+            >
+              <ArrowUpRight className="h-4 w-4 text-emerald-300 shrink-0" />
+              <span>Repasses</span>
             </TabsTrigger>
 
             <TabsTrigger
@@ -2185,6 +2227,13 @@ export default function AdminUserDetails() {
                 )}
               </CardContent>
             </Card>
+
+            <AdminUserFinancialConfigCard
+              userId={id!}
+              initialConfig={(data as any).configuracao_financeira}
+              userEmail={data?.user?.email}
+              userPhone={data?.user?.telefone}
+            />
           </div>
         </TabsContent>
 
@@ -2345,6 +2394,28 @@ export default function AdminUserDetails() {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="repasses" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
+          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+                <ArrowUpRight className="h-4 w-4 text-emerald-400" />
+                Repasses Pix do Motorista
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <RepasseLogsList
+                repasses={repasseData?.data || []}
+                isLoading={isFetchingRepasses}
+                filters={repasseFilters}
+                onFiltersChange={handleRepasseFiltersChange}
+                hideDriverColumn={true}
+                onRetry={(repasseId) => retryRepasseMutation.mutate(repasseId)}
+                isRetryingId={retryRepasseMutation.isPending ? (retryRepasseMutation.variables as string) : null}
+              />
             </CardContent>
           </Card>
         </TabsContent>

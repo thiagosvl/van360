@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/api/client";
+import { Usuario } from "@/types/usuario";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ export interface ConfiguracoesUsuario {
   notificar_conclusao_parada: boolean;
   rastreamento_ativo: boolean;
   rastreamento_modo: "completo" | "apenas_proximo";
+  formato_nome_responsavel?: "primeiro_nome" | "completo";
   chave_pix: string | null;
   tipo_chave_pix: string | null;
 }
@@ -40,6 +42,7 @@ export type UpdateConfiguracoesInput = Partial<
     | "notificar_conclusao_parada"
     | "rastreamento_ativo"
     | "rastreamento_modo"
+    | "formato_nome_responsavel"
   >
 >;
 
@@ -73,16 +76,31 @@ export function useConfiguracoes() {
         });
       }
 
+      if (newConfig.formato_nome_responsavel) {
+        queryClient.setQueriesData({ queryKey: ["profile"] }, (oldProfile: Usuario | undefined) => {
+          if (!oldProfile) return oldProfile;
+          return {
+            ...oldProfile,
+            configuracoes: {
+              ...(oldProfile.configuracoes || {}),
+              formato_nome_responsavel: newConfig.formato_nome_responsavel,
+            },
+          };
+        });
+      }
+
       return { previousConfig };
     },
     onError: (_err, _newConfig, context) => {
       if (context?.previousConfig) {
         queryClient.setQueryData(CONFIGURACOES_QUERY_KEY, context.previousConfig);
       }
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.error("Não foi possível salvar a alteração. Tente novamente.");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: CONFIGURACOES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 

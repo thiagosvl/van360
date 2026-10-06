@@ -8,6 +8,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
+import { isNativeIos } from "@/utils/detectPlatform";
 import { toast } from "sonner";
 
 interface AppSidebarProps {
@@ -29,6 +30,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
     ? pagesItems.filter((item) => !activeBottomHrefs.includes(item.href))
     : pagesItems
   ).filter((item) => {
+    if (isNativeIos() && item.href === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION) return false;
     if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
     if (!item.permission) return true;
     return can(item.permission);
@@ -50,7 +52,11 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
               onClick={(e) => {
                 if (isItemBlocked) {
                   e.preventDefault();
-                  toast.warning("Acesso suspenso. Contrate um plano para reativar suas funcionalidades.");
+                  toast.warning(
+                    isNativeIos()
+                      ? "Acesso suspenso. Entre em contato com o suporte para reativar seu acesso."
+                      : "Acesso suspenso. Contrate um plano para reativar suas funcionalidades."
+                  );
                   return;
                 }
                 onLinkClick?.();
@@ -94,7 +100,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
           );
         })}
 
-        {isGestor && !isSubscriptionBlocked && (
+        {isGestor && !isSubscriptionBlocked && !isNativeIos() && (
           <button
             type="button"
             onClick={() => {

@@ -13,6 +13,7 @@ import {
   Bell,
   Radio,
   Receipt,
+  ArrowUpRight,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { isDevEnv } from "@/utils/detectPlatform";
@@ -32,6 +33,11 @@ const adminNavItems = [
     title: "Faturas",
     href: ROUTES.PRIVATE.ADMIN.INVOICES,
     icon: Receipt,
+  },
+  {
+    title: "Repasses Pix",
+    href: ROUTES.PRIVATE.ADMIN.REPASSES,
+    icon: ArrowUpRight,
   },
   {
     title: "Histórico de Atividades",
