@@ -95,17 +95,35 @@ export function EditarReservaDialog({
       const veiculoId = passageiro.novo_veiculo_id || passageiro.veiculo_id_atual || (veiculosList[0]?.id ?? "");
       setNovoVeiculoId(veiculoId);
 
-      const dtInicioTransp = passageiro.nova_data_inicio_transporte || passageiro.data_inicio_transporte_atual;
-      setDataInicioTransporte(dtInicioTransp ? formatDateToBR(dtInicioTransp) : `01/02/${anoDestino}`);
+      const projectDate = (dateVal: string | null | undefined, fallback: string) => {
+        if (!dateVal) return fallback;
+        const br = formatDateToBR(dateVal);
+        const parts = br.split("/");
+        if (parts.length === 3) {
+          return `${parts[0]}/${parts[1]}/${anoDestino}`;
+        }
+        return fallback;
+      };
 
-      const dtFimTransp = passageiro.nova_data_fim_transporte || passageiro.data_fim_transporte_atual;
-      setDataFimTransporte(dtFimTransp ? formatDateToBR(dtFimTransp) : `15/12/${anoDestino}`);
+      const dtInicioTransp = passageiro.nova_data_inicio_transporte
+        ? formatDateToBR(passageiro.nova_data_inicio_transporte)
+        : projectDate(passageiro.data_inicio_transporte_atual, `01/02/${anoDestino}`);
+      setDataInicioTransporte(dtInicioTransp);
 
-      const dtInicioCobr = passageiro.nova_data_inicio_cobranca || passageiro.data_inicio_cobranca_atual;
-      setDataInicioCobranca(dtInicioCobr ? formatDateToBR(dtInicioCobr) : `01/02/${anoDestino}`);
+      const dtFimTransp = passageiro.nova_data_fim_transporte
+        ? formatDateToBR(passageiro.nova_data_fim_transporte)
+        : projectDate(passageiro.data_fim_transporte_atual, `15/12/${anoDestino}`);
+      setDataFimTransporte(dtFimTransp);
 
-      const dtFimCobr = passageiro.nova_data_fim_cobranca || passageiro.data_fim_cobranca_atual;
-      setDataFimCobranca(dtFimCobr ? formatDateToBR(dtFimCobr) : `01/12/${anoDestino}`);
+      const dtInicioCobr = passageiro.nova_data_inicio_cobranca
+        ? formatDateToBR(passageiro.nova_data_inicio_cobranca)
+        : projectDate(passageiro.data_inicio_cobranca_atual, `01/02/${anoDestino}`);
+      setDataInicioCobranca(dtInicioCobr);
+
+      const dtFimCobr = passageiro.nova_data_fim_cobranca
+        ? formatDateToBR(passageiro.nova_data_fim_cobranca)
+        : projectDate(passageiro.data_fim_cobranca_atual, `01/12/${anoDestino}`);
+      setDataFimCobranca(dtFimCobr);
     }
   }, [passageiro, escolasList, veiculosList, anoDestino]);
 
