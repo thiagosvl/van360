@@ -21,11 +21,13 @@ import { useSession } from "@/hooks/business/useSession";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { useMotoristaFinanceiroForm, MotoristaFinanceiroFormData } from "@/hooks/form/useMotoristaFinanceiroForm";
 import { TipoChavePix } from "@/types/pix";
+import { pixKeySchema } from "@/schemas/pix";
 import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { formatCurrency } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { Loader2, Save, Trash2, Sparkles, ArrowRightLeft, Receipt } from "lucide-react";
 import { isUserInBaaSWhitelist } from "@/utils/featureFlagUtils";
+import { useLayout } from "@/contexts/LayoutContext";
 import React, { useEffect, useState, useRef } from "react";
 
 export interface PixConfiguracaoFormProps {
@@ -44,6 +46,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
   const { user } = useSession();
   const { profile, refreshProfile } = useProfile(user?.id);
   const { financeiro, updateFinanceiro, isUpdating } = useMotoristaFinanceiroApi();
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const isWhitelisted = isUserInBaaSWhitelist({
     email: user?.email,
@@ -85,17 +88,25 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
       let chave_pix = data.chave_pix?.trim() || null;
       let tipo_chave_pix = data.tipo_chave_pix || null;
 
-      if (!chave_pix) {
+      if (!chave_pix || !tipo_chave_pix) {
         chave_pix = null;
         tipo_chave_pix = null;
       }
 
+      const isChaveValida = Boolean(
+        tipo_chave_pix &&
+        chave_pix &&
+        pixKeySchema.safeParse({ tipo_chave_pix, chave_pix }).success
+      );
+
+      const ativacaoPermitida = Boolean(isWhitelisted && isChaveValida && data.cobranca_automatica_ativa);
+
       await updateFinanceiro({
-        cobranca_automatica_ativa: isWhitelisted ? data.cobranca_automatica_ativa : false,
-        enviar_recibo_automatico: isWhitelisted ? data.enviar_recibo_automatico : false,
+        cobranca_automatica_ativa: ativacaoPermitida,
+        enviar_recibo_automatico: ativacaoPermitida ? data.enviar_recibo_automatico : false,
         chave_pix_repasse: chave_pix,
         tipo_chave_pix: tipo_chave_pix,
-        repassar_taxa_pais_padrao: isWhitelisted ? data.repassar_taxa_pais_padrao : false,
+        repassar_taxa_pais_padrao: ativacaoPermitida ? data.repassar_taxa_pais_padrao : false,
       });
 
       toast.success("cadastro.sucesso.perfilAtualizado");
@@ -134,12 +145,38 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
     }
   };
 
+  const handleConfirmarRemoverPix = () => {
+    openConfirmationDialog({
+      title: "Remover chave Pix?",
+      description: "Ao remover sua chave Pix, o recebimento e a baixa automática serão desativados. Deseja realmente remover a chave Pix cadastrada?",
+      confirmText: "Remover Chave",
+      cancelText: "Cancelar",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await handleRemoverPix();
+        } finally {
+          closeConfirmationDialog();
+        }
+      },
+    });
+  };
+
   const onFormError = () => {
     toast.error("validacao.formularioComErros");
   };
 
   const taxaFormatada = formatCurrency(financeiro?.taxa_efetiva ?? 4.0);
-  const cobrancaAtivaWatch = form.watch("cobranca_automatica_ativa");
+  const chavePixWatch = form.watch("chave_pix");
+  const tipoChaveWatch = form.watch("tipo_chave_pix");
+  const isChavePixValida = Boolean(
+    tipoChaveWatch &&
+    chavePixWatch &&
+    chavePixWatch.trim().length > 0 &&
+    pixKeySchema.safeParse({ tipo_chave_pix: tipoChaveWatch, chave_pix: chavePixWatch }).success
+  );
+
+  const cobrancaAtivaWatch = Boolean(form.watch("cobranca_automatica_ativa") && isChavePixValida);
   const repassarTaxaWatch = form.watch("repassar_taxa_pais_padrao");
   const temChavePix = Boolean(financeiro?.chave_pix_repasse || profile?.chave_pix);
   const isBusy = form.formState.isSubmitting || isUpdating || isRemoving;
@@ -158,7 +195,14 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
                 </FormLabel>
                 <Select
                   onValueChange={(val) => {
-                    const selecionado = (val || null) as TipoChavePix | null;
+                    if (!val || val === "none") {
+                      field.onChange(null);
+                      form.setValue("chave_pix", "");
+                      form.setValue("cobranca_automatica_ativa", false);
+                      return;
+                    }
+
+                    const selecionado = val as TipoChavePix;
                     field.onChange(selecionado);
 
                     if (selecionado === originalTipoRef.current) {
@@ -197,7 +241,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
                       form.setValue("chave_pix", dadosCadastro);
                     }
                   }}
-                  value={field.value || undefined}
+                  value={field.value || "none"}
                 >
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200">
@@ -205,6 +249,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="none">Não utilizar</SelectItem>
                     <SelectItem value={TipoChavePix.CPF}>CPF</SelectItem>
                     <SelectItem value={TipoChavePix.CNPJ}>CNPJ</SelectItem>
                     <SelectItem value={TipoChavePix.EMAIL}>E-mail</SelectItem>
@@ -229,8 +274,9 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Digite sua chave Pix"
+                      placeholder={tipoChave ? "Digite sua chave Pix" : "Selecione o tipo de chave primeiro"}
                       {...field}
+                      disabled={!tipoChave || isBusy}
                       value={field.value || ""}
                       type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
                       inputMode={
@@ -270,22 +316,36 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
               control={form.control}
               name="cobranca_automatica_ativa"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between gap-3 space-y-0">
-                  <div className="space-y-1">
-                    <FormLabel className="text-slate-900 font-medium flex items-center gap-1.5 cursor-pointer">
-                      <Sparkles className="w-4 h-4 text-amber-500" />
-                      Recebimento e Baixa Automática Pix
-                    </FormLabel>
-                    <p className="text-xs text-slate-500">
-                      Identificação instantânea de pagamentos e repasse para sua chave Pix.
-                    </p>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <FormLabel className="text-slate-900 font-medium flex items-center gap-1.5 cursor-pointer">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        Recebimento e Baixa Automática Pix
+                      </FormLabel>
+                      <p className="text-xs text-slate-500">
+                        Identificação instantânea de pagamentos e repasse para sua chave Pix.
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={Boolean(field.value && isChavePixValida)}
+                        onCheckedChange={(checked) => {
+                          if (isChavePixValida) {
+                            field.onChange(checked);
+                          }
+                        }}
+                        disabled={!isChavePixValida || isBusy}
+                      />
+                    </FormControl>
                   </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+
+                  {!isChavePixValida && (
+                    <Banner
+                      variant="warning"
+                      description="Cadastre uma chave Pix válida acima para habilitar o recebimento e a baixa automática das parcelas."
                     />
-                  </FormControl>
+                  )}
                 </FormItem>
               )}
             />
@@ -357,7 +417,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
             {showDeleteButton && temChavePix && (
               <button
                 type="button"
-                onClick={handleRemoverPix}
+                onClick={handleConfirmarRemoverPix}
                 disabled={isBusy}
                 className="h-11 px-4 text-rose-600 hover:bg-rose-50 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               >

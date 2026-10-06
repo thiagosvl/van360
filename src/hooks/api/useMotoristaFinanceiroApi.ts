@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
-import { ModalidadeCobrancaEnum } from "@/types/enums";
+import { ModalidadeCobrancaEnum, ContractMultaTipo } from "@/types/enums";
 
 export type MotoristaConfiguracaoFinanceira = Tables<"motorista_configuracoes_financeiras"> & {
   taxa_efetiva: number;
@@ -17,6 +17,14 @@ export type UpdateMotoristaFinanceiroPayload = {
   repassar_taxa_pais_padrao?: boolean;
   taxa_personalizada?: number | null;
   modalidade_cobranca?: ModalidadeCobrancaEnum;
+  cobrar_multa_atraso?: boolean;
+  multa_atraso_tipo?: ContractMultaTipo | null;
+  multa_atraso_valor?: number | null;
+  cobrar_juros_atraso?: boolean;
+  juros_atraso_tipo?: ContractMultaTipo | null;
+  juros_atraso_valor?: number | null;
+  dias_carencia_atraso?: number;
+  dias_validade_apos_vencimento?: number;
 };
 
 const MOTORISTA_FINANCEIRO_QUERY_KEY = ["motorista-financeiro"];
