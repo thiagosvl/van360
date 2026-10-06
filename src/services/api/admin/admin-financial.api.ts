@@ -147,6 +147,7 @@ export interface TrialPipelineItem {
   usuarioId: string;
   nome: string;
   apelido: string | null;
+  telefone: string | null;
   trialEndsAt: string;
   diasRestantes: number;
   diasAcessados: number;
@@ -160,6 +161,7 @@ export interface TrialPipelineItem {
   indicadoPor: string | null;
   valorMensal: number;
   valorAnual: number;
+  status: string | null;
 }
 
 export interface TrialsPipelineResponse {
