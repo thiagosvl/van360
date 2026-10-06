@@ -468,7 +468,13 @@ export default function PublicRenovacaoPage() {
           />
         )}
 
-        {isConfirmed ? (
+        {data.concluido ? (
+          <Banner
+            variant="neutral"
+            title="Ciclo de Renovação Concluído"
+            description={`As renovações para o ano letivo de ${ano_destino} foram finalizadas pelo motorista. Entre em contato diretamente pelo WhatsApp para verificar vagas remanescentes.`}
+          />
+        ) : isConfirmed ? (
           <div className="space-y-3">
             <Banner
               variant="success"
@@ -501,13 +507,59 @@ export default function PublicRenovacaoPage() {
                 </Button>
               </div>
             )}
+
+            {!confirmRecusaOpen ? (
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setConfirmRecusaOpen(true)}
+                  className="text-xs font-semibold text-slate-400 hover:text-red-600 transition-colors underline underline-offset-4"
+                >
+                  Deseja mudar de ideia? Informar que não vai renovar
+                </button>
+              </div>
+            ) : (
+              <Banner
+                variant="warning"
+                title={`Alterar resposta e não renovar para ${ano_destino}?`}
+                description="A vaga confirmada anteriormente será liberada e o motorista será avisado."
+                action={{
+                  label: "Confirmar Saída",
+                  onClick: handleRecusar,
+                  disabled: isResponding,
+                  className: "bg-red-600 hover:bg-red-700",
+                }}
+              >
+                <div className="pt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setConfirmRecusaOpen(false)}
+                    className="h-8 text-xs font-semibold rounded-lg"
+                  >
+                    Voltar
+                  </Button>
+                </div>
+              </Banner>
+            )}
           </div>
         ) : isRecused ? (
-          <Banner
-            variant="neutral"
-            title="Vaga Não Renovada"
-            description={`Você informou que não utilizará o transporte em ${ano_destino}. A vaga de ${passageiro.nome} foi liberada.`}
-          />
+          <div className="space-y-3">
+            <Banner
+              variant="neutral"
+              title="Vaga Não Renovada"
+              description={`Você informou que não utilizará o transporte em ${ano_destino}. A vaga de ${passageiro.nome} foi liberada.`}
+            />
+
+            <Button
+              onClick={handleConfirmar}
+              disabled={isResponding}
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold h-11 rounded-xl text-sm shadow-sm gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Mudei de ideia: Garantir vaga para {ano_destino}
+            </Button>
+          </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
             <div className="space-y-1.5">

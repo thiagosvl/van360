@@ -122,6 +122,7 @@ export interface PublicRenovacaoResponse {
   status: RenovacaoStatus;
   confirmado_em: string | null;
   recusado_em: string | null;
+  concluido?: boolean;
   ano_origem: number;
   ano_destino: number;
   motorista: {
