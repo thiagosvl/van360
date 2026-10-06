@@ -107,6 +107,13 @@ const Contratos = () => {
               />
             )}
 
+            {anoLetivo !== new Date().getFullYear() && (
+              <Banner
+                variant="info"
+                description={`Visualizando contratos gerados para o Ano Letivo ${anoLetivo}.`}
+              />
+            )}
+
             <div className="flex items-center justify-between px-1 mt-2">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
                 {activeTab === ContratoTab.PENDENTES
