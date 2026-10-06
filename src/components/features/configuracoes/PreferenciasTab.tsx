@@ -83,9 +83,6 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
                     Apenas Primeiro Nome
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600">
-                  Padrão
-                </span>
               </div>
 
               <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
