@@ -20,6 +20,7 @@ import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   safeCloseDialog,
+  useAppPreferences,
   useDeletePrePassageiro,
   usePrePassageiros,
 } from "@/hooks";
@@ -27,6 +28,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { cn } from "@/lib/utils";
 import {
   formatarTelefone,
   formatRelativeTime,
@@ -73,6 +75,7 @@ export default function PrePassageiros({
   } = useLayout();
 
   const { profile } = useProfile();
+  const { formatoNomeResponsavel } = useAppPreferences();
   const { data: resumo } = useUsuarioResumo(profile?.id);
 
   const totalPassageiros = countPassageirosProp ?? (resumo?.contadores?.passageiros?.ativos ?? resumo?.contadores?.passageiros?.total ?? 0);
@@ -258,8 +261,11 @@ export default function PrePassageiros({
                               {formatShortName(prePassageiro.nome, true)}
                             </p>
                           </div>
-                          <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                            {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
+                          <p className={cn(
+                            "text-[10px] text-gray-400 font-medium tracking-wider",
+                            formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
+                          )}>
+                            {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel)}
                           </p>
                         </div>
                       </div>
@@ -353,8 +359,11 @@ export default function PrePassageiros({
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                           {formatShortName(prePassageiro.nome, true)}
                         </p>
-                        <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
+                        <p className={cn(
+                          "text-[10px] text-gray-400 font-medium tracking-wider",
+                          formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
+                        )}>
+                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel)}
                         </p>
                       </div>
                     </div>
@@ -374,8 +383,11 @@ export default function PrePassageiros({
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel)}
+                        <p className={cn(
+                          "text-[10px] text-gray-500 font-medium opacity-60",
+                          formatoNomeResponsavel === "completo" ? "truncate" : "truncate"
+                        )}>
+                          {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel)}
                         </p>
                       </div>
                     </div>

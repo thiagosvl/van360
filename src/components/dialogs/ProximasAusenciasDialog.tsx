@@ -12,6 +12,7 @@ import { useProximasAusencias, useRoutes, useBuscarAlunos, useRegistrarAusenciaM
 import { routeApi } from "@/services/api/route.api";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { parseLocalDate, getShortWeekDayBR, getNowBR, toPersistenceString } from "@/utils/dateUtils";
 import { formatShortName, getInitials, formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { toast } from "@/utils/notifications/toast";
@@ -86,6 +87,7 @@ export function ProximasAusenciasDialog({
 
   const { user } = useSession();
   const { donoContaId } = useProfile(user?.id);
+  const { formatoNomeResponsavel } = useAppPreferences();
   const usuarioId = donoContaId || user?.id || "";
 
   const queryClient = useQueryClient();
@@ -327,7 +329,7 @@ export function ProximasAusenciasDialog({
   }, [parsedItems]);
 
   const renderAlunoCard = (aluno: AlunoAusenciaNode) => {
-    const respName = aluno.responsavelNome ? formatNomeResponsavelExibicao(aluno.responsavelNome) : null;
+    const respName = aluno.responsavelNome ? formatNomeResponsavelExibicao(aluno.responsavelNome, formatoNomeResponsavel) : null;
 
     return (
       <div
@@ -501,7 +503,7 @@ export function ProximasAusenciasDialog({
                       ) : (
                         alunosEncontrados.map((aluno) => {
                           const isSelected = aluno.id === formPassageiroId;
-                          const respName = aluno.responsavel_nome ? formatNomeResponsavelExibicao(aluno.responsavel_nome) : null;
+                          const respName = aluno.responsavel_nome ? formatNomeResponsavelExibicao(aluno.responsavel_nome, formatoNomeResponsavel) : null;
 
                           return (
                             <button

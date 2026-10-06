@@ -118,12 +118,12 @@ const showcaseFaqs: ShowcaseFaq[] = [
   {
     question: "Meus dados continuam salvos se a assinatura vencer?",
     answer:
-      "Sim. Todo o seu histórico de alunos, rotas, contratos e parcelas permanece guardado com total segurança no sistema para quando você reativar seu acesso.",
+      "Sim. Todo o seu histórico de alunos, rotas, contratos e parcelas permanece guardado com total segurança no app para quando você reativar seu acesso.",
   },
   {
     question: "Como funcionam os lembretes de cobrança no WhatsApp?",
     answer:
-      "O sistema automatiza o envio de avisos de cobrança aos responsáveis com a sua própria chave Pix configurada no app e o valor da parcela, reduzindo a inadimplência sem cobrança manual desgastante.",
+      "O app automatiza o envio de avisos de cobrança aos responsáveis com a sua própria chave Pix configurada no app e o valor da parcela, reduzindo a inadimplência sem cobrança manual desgastante.",
   },
 ];
 

@@ -631,7 +631,7 @@ export default function MinhaEquipe() {
             <Banner
               variant="warning"
               title="Aviso importante"
-              description="Todos os lançamentos históricos de gastos e execuções de rotas realizados por este usuário serão transferidos para a sua conta principal e mantidos no sistema."
+              description="Todos os lançamentos históricos de gastos e execuções de rotas realizados por este usuário serão transferidos para a sua conta principal e mantidos no app."
             />
           </div>
         </BaseDialog.Body>

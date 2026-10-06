@@ -85,3 +85,5 @@ export {
 export {
     useGastoCategorias, useCreateGastoCategoria, useUpdateGastoCategoria, useDeleteGastoCategoria
 } from "./api/useGastoCategorias";
+
+export { useAppPreferences } from "./business/useAppPreferences";

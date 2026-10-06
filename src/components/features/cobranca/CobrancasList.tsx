@@ -17,7 +17,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
-import { safeCloseDialog } from "@/hooks";
+import { safeCloseDialog, useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
@@ -126,8 +126,9 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
+  const { formatoNomeResponsavel } = useAppPreferences();
   const shortName = formatShortName(cobranca?.passageiro?.nome, true);
-  const firstNomeResponsavel = formatNomeResponsavelExibicao(respPrincipal?.nome);
+  const firstNomeResponsavel = formatNomeResponsavelExibicao(respPrincipal?.nome, formatoNomeResponsavel);
 
   const statusColor = isPaid
     ? "bg-emerald-50 text-emerald-600"
@@ -168,7 +169,10 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
             )}
           </div>
           <div className="flex flex-col min-w-0 mt-0.5">
-            <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-60 break-words line-clamp-2">
+            <p className={cn(
+              "text-[10px] text-gray-500 font-medium leading-snug opacity-60",
+              formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-2"
+            )}>
               {firstNomeResponsavel}
             </p>
           </div>
@@ -222,6 +226,7 @@ export function CobrancasList({
 }: CobrancasListProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { formatoNomeResponsavel } = useAppPreferences();
   const {
     openCobrancaFormDialog,
     openConfirmationDialog,
@@ -352,8 +357,11 @@ export function CobrancasList({
                   <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
                 )}
               </div>
-              <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                {formatNomeResponsavelExibicao(cobranca?.passageiro?.responsavel_principal?.nome)}
+              <p className={cn(
+                "text-[10px] text-gray-400 font-medium tracking-wider",
+                formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
+              )}>
+                {formatNomeResponsavelExibicao(cobranca?.passageiro?.responsavel_principal?.nome, formatoNomeResponsavel)}
               </p>
             </div>
           </div>

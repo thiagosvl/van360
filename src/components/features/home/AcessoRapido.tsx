@@ -157,7 +157,7 @@ export const AcessoRapido = ({
           Acesso Rápido
         </h2>
         <p className="text-[12px] sm:text-[13px] text-slate-400 mt-0.5">
-          Ações mais comuns e navegação do sistema.
+          Ações mais comuns e navegação no app.
         </p>
       </div>
 
@@ -189,8 +189,8 @@ export const AcessoRapido = ({
             );
 
             const itemClassName = `flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group cursor-pointer border-r border-b border-slate-100 ${item.isAction
-                ? "bg-[#f4f8fd] hover:bg-[#eaf2fc] active:bg-[#dfeaf8]"
-                : "bg-white hover:bg-slate-50/80 active:bg-slate-100"
+              ? "bg-[#f4f8fd] hover:bg-[#eaf2fc] active:bg-[#dfeaf8]"
+              : "bg-white hover:bg-slate-50/80 active:bg-slate-100"
               }`;
 
             if (item.to) {

@@ -17,6 +17,7 @@ import { MinhasNotificacoesTab } from "@/components/features/configuracoes/Minha
 import { RastreamentoTab } from "@/components/features/configuracoes/RastreamentoTab";
 import { PerfilTab } from "@/components/features/configuracoes/PerfilTab";
 import { PagamentosTab } from "@/components/features/configuracoes/PagamentosTab";
+import { PreferenciasTab } from "@/components/features/configuracoes/PreferenciasTab";
 import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
 import { SegurancaBiometriaTab } from "@/components/features/configuracoes/SegurancaBiometriaTab";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
@@ -41,6 +42,7 @@ import {
   Radio,
   Rocket,
   ShieldCheck,
+  SlidersHorizontal,
   Smartphone,
   User as UserIcon,
 } from "lucide-react";
@@ -184,6 +186,9 @@ export const Conta = memo(function Conta() {
     }
     if (tabParam === "seguranca") {
       return <SegurancaBiometriaTab />;
+    }
+    if (tabParam === "preferencias") {
+      return <PreferenciasTab />;
     }
 
     return (
@@ -500,6 +505,35 @@ export const Conta = memo(function Conta() {
           </div>
         )}
 
+        {/* Grupo: Preferências do app */}
+        <div className="space-y-2">
+          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+            Preferências do app
+          </h2>
+          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleSelectTab("preferencias")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <SlidersHorizontal className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    Preferências do Aplicativo
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Exibição de nomes, formato de listagens e ajustes gerais do app
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+          </div>
+        </div>
+
         {/* Grupo: Informações legais */}
         <div className="space-y-2">
           <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
@@ -634,6 +668,7 @@ export const Conta = memo(function Conta() {
       "pagamentos",
       "ajuda",
       "seguranca",
+      "preferencias",
     ].includes(tabParam)
   );
 

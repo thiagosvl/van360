@@ -73,7 +73,7 @@ export default function PersonalizarMenuDialog({ isOpen, onClose }: Personalizar
   const handleReset = () => {
     setSlots([defaultSlots[0], defaultSlots[1], defaultSlots[2]]);
     resetToDefault();
-    toast.info("Atalhos restaurados para o padrão do sistema.");
+    toast.info("Atalhos restaurados para o padrão do app.");
   };
 
   const handleSave = () => {

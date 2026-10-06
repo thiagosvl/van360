@@ -20,6 +20,7 @@ import { ChevronRight, User } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useAppPreferences } from "@/hooks";
 
 interface PassageirosListProps {
   passageiros: Passageiro[];
@@ -38,7 +39,9 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   PassageirosListProps,
   "passageiros"
 >) {
+  const { formatoNomeResponsavel } = useAppPreferences();
   const shortName = formatShortName(passageiro?.nome, true);
+  const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome, formatoNomeResponsavel);
   const schoolName = passageiro.escola?.nome;
 
   return (
@@ -71,11 +74,19 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           {shortName}
         </p>
         <div className="flex flex-col gap-0.5 mt-0.5 min-w-0">
-          <p className="text-[10px] text-gray-500 font-medium opacity-60">
-            {schoolName}
+          <p className={cn(
+            "text-[10px] text-gray-500 font-medium opacity-60 leading-snug",
+            formatoNomeResponsavel === "completo" ? "truncate" : "truncate"
+          )}>
+            {respName}
           </p>
+          {schoolName && (
+            <p className="text-[10px] text-gray-400 font-medium opacity-60 truncate">
+              {schoolName}
+            </p>
+          )}
           {(passageiro.periodo || passageiro.turma || passageiro.sala) && (
-            <p className="text-[10px] text-gray-500 font-medium opacity-60 flex items-center gap-1">
+            <p className="text-[10px] text-gray-400 font-medium opacity-60 flex items-center gap-1">
               {passageiro.periodo && <span>{formatPeriodo(passageiro.periodo)}</span>}
               {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-gray-400 opacity-40">•</span>}
               {passageiro.turma && <span>{passageiro.turma}</span>}
@@ -98,6 +109,7 @@ export function PassageirosList({
   ...props
 }: PassageirosListProps) {
   const { can } = usePermissions();
+  const { formatoNomeResponsavel } = useAppPreferences();
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar");
 
   return (
@@ -143,7 +155,7 @@ export function PassageirosList({
           <TableBody>
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome, true);
-              const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome);
+              const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome, formatoNomeResponsavel);
 
               return (
                 <TableRow
@@ -176,7 +188,10 @@ export function PassageirosList({
                         <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                           {shortName}
                         </p>
-                        <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
+                        <p className={cn(
+                          "text-[10px] text-gray-400 font-medium tracking-wider flex items-center gap-1.5",
+                          formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
+                        )}>
                           {respName}
                         </p>
                       </div>

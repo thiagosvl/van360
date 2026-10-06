@@ -124,7 +124,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                 {
                   value: true,
                   label: "Sim, gerar o contrato",
-                  sublabel: "O documento ficará disponível no sistema",
+                  sublabel: "O documento ficará disponível no app",
                   icon: <CheckCircle2 className="w-6 h-6" />,
                   activeColor: "border-[#1a3a5c] bg-blue-50/40 shadow-xs ring-1 ring-blue-200",
                   iconActive: "bg-[#1a3a5c] text-white shadow-xs shadow-blue-900/10",
