@@ -175,9 +175,10 @@ export interface PublicRenovacaoResponse {
     qtd_parcelas?: number;
   };
   contrato?: {
-    id: string;
-    status: string;
-    token_acesso: string;
+    id?: string | null;
+    status?: string | null;
+    token_acesso?: string | null;
+    usar_contratos?: boolean;
   } | null;
 }
 
@@ -206,12 +207,12 @@ export interface AtualizarDadosPublicosPayload {
 }
 
 export interface ResponderRenovacaoPayload {
-  status: "confirmado" | "recusado";
+  status: "confirmado" | "recusado" | "pendente";
   observacoes_pais?: string | null;
 }
 
 export interface ResponderRenovacaoResponse {
-  status: "confirmado" | "recusado";
+  status: "confirmado" | "recusado" | "pendente";
   ano_destino: number;
   contrato?: {
     id: string;

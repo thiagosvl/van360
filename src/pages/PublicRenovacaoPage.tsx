@@ -5,7 +5,6 @@ import { formatCurrency } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { phoneMask } from "@/utils/masks";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Banner } from "@/components/ui/Banner";
 import { EditarDadosPublicosRenovacaoDialog } from "@/components/dialogs/EditarDadosPublicosRenovacaoDialog";
 import {
@@ -19,10 +18,8 @@ import {
   User,
   ShieldCheck,
   ArrowRight,
-  Phone,
   MapPin,
   Edit3,
-  MessageCircle,
   HeartPulse,
   GraduationCap,
 } from "lucide-react";
@@ -37,15 +34,18 @@ export default function PublicRenovacaoPage() {
 
   const [confirmRecusaOpen, setConfirmRecusaOpen] = useState(false);
   const [modalEdicaoOpen, setModalEdicaoOpen] = useState(false);
-  const [observacoesPais, setObservacoesPais] = useState("");
   const [contractData, setContractData] = useState<{ token_acesso: string; link_assinatura: string } | null>(null);
 
   const handleConfirmar = async () => {
     try {
       const response = await responder({
         status: "confirmado",
-        observacoes_pais: observacoesPais.trim() || undefined,
       });
+      if (response?.contrato?.token_acesso) {
+        toast.success("Renovação confirmada! Abrindo contrato para assinatura...");
+        navigate(`/assinar/${response.contrato.token_acesso}`);
+        return;
+      }
       if (response?.contrato) {
         setContractData({
           token_acesso: response.contrato.token_acesso,
@@ -63,13 +63,25 @@ export default function PublicRenovacaoPage() {
     try {
       await responder({
         status: "recusado",
-        observacoes_pais: observacoesPais.trim() || undefined,
       });
       setConfirmRecusaOpen(false);
       toast.info("Resposta registrada. A vaga não será renovada.");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Tente novamente ou fale com o motorista.";
       toast.error("Erro ao registrar resposta", { description: msg });
+    }
+  };
+
+  const handleReverter = async () => {
+    try {
+      await responder({
+        status: "pendente",
+      });
+      setConfirmRecusaOpen(false);
+      toast.info("Sua resposta foi desfeita. A proposta voltou para análise.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Tente novamente ou fale com o motorista.";
+      toast.error("Erro ao desfazer resposta", { description: msg });
     }
   };
 
@@ -102,6 +114,7 @@ export default function PublicRenovacaoPage() {
   const isConfirmed = status === "confirmado";
   const isRecused = status === "recusado";
   const activeContractToken = contractData?.token_acesso || contrato?.token_acesso;
+  const temContratoDigital = Boolean(contrato?.usar_contratos || activeContractToken);
   const temCondicoesAlteradas = Boolean(
     condicoes?.valor?.alterado ||
     condicoes?.dia_vencimento?.alterado ||
@@ -112,8 +125,8 @@ export default function PublicRenovacaoPage() {
 
   const motoristaWhatsappUrl = motorista.telefone
     ? `https://wa.me/55${motorista.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(
-        `Olá! Estou visualizando a proposta de renovação de ${passageiro.nome} para ${ano_destino} e gostaria de tirar uma dúvida sobre escola ou turno.`
-      )}`
+      `Olá! Estou visualizando a proposta de renovação de ${passageiro.nome} para ${ano_destino} e gostaria de tirar uma dúvida sobre escola ou turno.`
+    )}`
     : null;
 
   const enderecoFormatado = [
@@ -140,21 +153,9 @@ export default function PublicRenovacaoPage() {
           )}
 
           <div className="min-w-0 flex-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 block">
-              Transporte Escolar
-            </span>
             <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate leading-tight">
               {motorista.apelido || motorista.nome}
             </h1>
-            {motorista.telefone && (
-              <a
-                href={`tel:${motorista.telefone.replace(/\D/g, "")}`}
-                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-emerald-700 transition-colors mt-0.5"
-              >
-                <Phone className="w-3 h-3 text-slate-400" />
-                {phoneMask(motorista.telefone)}
-              </a>
-            )}
           </div>
         </div>
 
@@ -174,7 +175,7 @@ export default function PublicRenovacaoPage() {
                 </h2>
                 {responsavel?.nome && (
                   <p className="text-xs text-slate-500 truncate">
-                    {responsavel.parentesco || "Responsável"}: <span className="font-medium text-slate-700">{responsavel.nome}</span>
+                    Responsável: <span className="font-medium text-slate-700">{responsavel.nome}</span>
                   </p>
                 )}
               </div>
@@ -456,18 +457,6 @@ export default function PublicRenovacaoPage() {
           </div>
         </div>
 
-        {motoristaWhatsappUrl && !isConfirmed && !isRecused && (
-          <Banner
-            variant="info"
-            title="Precisa mudar de escola ou de turno?"
-            description="A escola e o turno afetam o trajeto e a disponibilidade de horário da van. Caso vá mudar de escola ou de período, converse previamente com o motorista pelo WhatsApp."
-            action={{
-              label: "Falar pelo WhatsApp",
-              onClick: () => window.open(motoristaWhatsappUrl, "_blank"),
-            }}
-          />
-        )}
-
         {data.concluido ? (
           <Banner
             variant="neutral"
@@ -481,13 +470,6 @@ export default function PublicRenovacaoPage() {
               title={`Vaga Confirmada para ${ano_destino}!`}
               description={`A vaga de ${passageiro.nome} está garantida para o ano letivo de ${ano_destino}. O motorista foi notificado.`}
             />
-
-            {data.observacoes_pais && (
-              <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200 text-xs space-y-1">
-                <span className="font-semibold text-slate-700 block">Seu recado enviado ao motorista:</span>
-                <p className="text-slate-600 italic">"{data.observacoes_pais}"</p>
-              </div>
-            )}
 
             {activeContractToken && (
               <div className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/80 space-y-3">
@@ -509,13 +491,22 @@ export default function PublicRenovacaoPage() {
             )}
 
             {!confirmRecusaOpen ? (
-              <div className="pt-2 text-center">
+              <div className="pt-2 flex flex-col items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleReverter}
+                  disabled={isResponding}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors underline underline-offset-4"
+                >
+                  Deseja mudar de ideia? Desfazer confirmação
+                </button>
                 <button
                   type="button"
                   onClick={() => setConfirmRecusaOpen(true)}
+                  disabled={isResponding}
                   className="text-xs font-semibold text-slate-400 hover:text-red-600 transition-colors underline underline-offset-4"
                 >
-                  Deseja mudar de ideia? Informar que não vai renovar
+                  Informar que não vai renovar
                 </button>
               </div>
             ) : (
@@ -557,31 +548,29 @@ export default function PublicRenovacaoPage() {
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold h-11 rounded-xl text-sm shadow-sm gap-2"
             >
               <CheckCircle2 className="w-4 h-4" />
-              Mudei de ideia: Garantir vaga para {ano_destino}
+              {temContratoDigital ? "Mudei de ideia: Garantir vaga e assinar" : `Mudei de ideia: Garantir vaga para ${ano_destino}`}
             </Button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={handleReverter}
+                disabled={isResponding}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors underline underline-offset-4"
+              >
+                Desfazer resposta e voltar para análise
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
-                Algum recado ou observação para o motorista? (opcional)
-              </label>
-              <Textarea
-                value={observacoesPais}
-                onChange={(e) => setObservacoesPais(e.target.value)}
-                placeholder="Ex: Mudaremos para o 4º andar em fevereiro, previsão de início das aulas dia 05..."
-                className="text-xs resize-none h-16"
-              />
-            </div>
-
             <Button
               onClick={handleConfirmar}
               disabled={isResponding}
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold h-12 rounded-xl text-sm sm:text-base shadow-sm gap-2"
             >
               <CheckCircle2 className="w-5 h-5" />
-              Confirmar Renovação para {ano_destino}
+              {temContratoDigital ? "Confirmar e Assinar Contrato" : `Confirmar Renovação para ${ano_destino}`}
             </Button>
 
             {!confirmRecusaOpen ? (
