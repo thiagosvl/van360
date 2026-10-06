@@ -11,6 +11,7 @@ export interface UsePassageirosFilters {
   veiculo?: string;
   status?: string;
   periodo?: string;
+  ano_letivo?: number;
   page?: number;
   limit?: number;
 }
@@ -33,6 +34,7 @@ function normalizeFilters(filters: UsePassageirosFilters = {}) {
         : undefined,
     periodo:
       filters?.periodo && filters.periodo !== FilterDefaults.TODOS ? filters.periodo : undefined,
+    ano_letivo: filters?.ano_letivo,
     page: filters?.page && filters.page > 0 ? filters.page : undefined,
     limit: filters?.limit && filters.limit > 0 ? filters.limit : undefined,
   };

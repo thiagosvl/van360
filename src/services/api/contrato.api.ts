@@ -8,8 +8,8 @@ export const contratoApi = {
     return data;
   },
 
-  getKPIs: async () => {
-    const { data } = await apiClient.get<{ pendentes: number; assinados: number; semContrato: number }>('/contratos/kpis');
+  getKPIs: async (params?: { ano?: number }) => {
+    const { data } = await apiClient.get<{ pendentes: number; assinados: number; semContrato: number }>('/contratos/kpis', { params });
     return data;
   },
 

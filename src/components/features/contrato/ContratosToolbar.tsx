@@ -18,6 +18,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ContratoTab } from "@/types/enums";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { Eye, Search, Settings, Loader2, FileText, CheckCircle2, PauseCircle, UploadCloud } from "lucide-react";
 import { memo, useState } from "react";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
@@ -29,6 +30,8 @@ interface ContratosToolbarProps {
   countPendentes?: number;
   countSemContrato?: number;
   countAssinados?: number;
+  anoLetivo?: number;
+  onChangeAnoLetivo?: (ano: number) => void;
   onOpenConfig: () => void;
   onOpenPreview: () => void;
   onImportarContrato?: () => void;
@@ -46,6 +49,8 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   countPendentes,
   countSemContrato,
   countAssinados,
+  anoLetivo,
+  onChangeAnoLetivo,
   onOpenConfig,
   onOpenPreview,
   onImportarContrato,
@@ -122,7 +127,15 @@ export const ContratosToolbar = memo(function ContratosToolbar({
           </TabsList>
         </div>
 
-        <div className="flex items-center gap-3 w-full xl:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
+          {anoLetivo && onChangeAnoLetivo && (
+            <AnoLetivoSelect
+              ano={anoLetivo}
+              onChangeAno={onChangeAnoLetivo}
+              className="shrink-0 h-12"
+            />
+          )}
+
           {/* Busca */}
           <div className="relative group flex-grow xl:w-80">
             <Search className={cn(

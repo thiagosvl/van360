@@ -60,6 +60,7 @@ export interface Passageiro {
   minuta_url?: string;
   contrato_final_url?: string;
   token_acesso?: string;
+  contrato_ano?: number | null;
 
   // Campos Tipados com Enums
   modalidade?: PassageiroModalidade;

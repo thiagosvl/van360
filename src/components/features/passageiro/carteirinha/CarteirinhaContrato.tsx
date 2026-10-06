@@ -60,8 +60,9 @@ export const CarteirinhaContrato = ({
   const getContratoConfig = (status?: ContratoStatus) => {
     if (status === ContratoStatus.ASSINADO) {
       const isImportado = passageiro.contrato_provider === ContratoProvider.IMPORTADO;
+      const sufixoAno = passageiro.contrato_ano ? ` (${passageiro.contrato_ano})` : "";
       return {
-        title: isImportado ? "Contrato Importado" : "Contrato Assinado",
+        title: (isImportado ? "Contrato Importado" : "Contrato Assinado") + sufixoAno,
         desc: isImportado
           ? "Documento assinado em papel/PDF anexado à carteirinha do aluno"
           : "Documento oficial assinado eletronicamente",
@@ -78,8 +79,9 @@ export const CarteirinhaContrato = ({
     }
 
     if (status === ContratoStatus.PENDENTE) {
+      const sufixoAno = passageiro.contrato_ano ? ` (${passageiro.contrato_ano})` : "";
       return {
-        title: "Assinatura Pendente",
+        title: "Assinatura Pendente" + sufixoAno,
         desc: "Aguardando assinatura do responsável",
         color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
         iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-xs",

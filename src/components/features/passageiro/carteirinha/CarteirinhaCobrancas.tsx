@@ -39,11 +39,13 @@ import { useReciboAnual } from "@/hooks/api/useReciboAnual";
 import { CarteirinhaReciboAnualCard } from "./CarteirinhaReciboAnualCard";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
   yearFilter: string;
+  onYearFilterChange?: (year: string) => void;
   mostrarTodasCobrancas: boolean;
   onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean, availableMonths?: number[]) => void;
   onEditCobranca: (cobranca: Cobranca) => void;
@@ -65,6 +67,7 @@ export const CarteirinhaCobrancas = ({
   cobrancas,
   passageiro,
   yearFilter,
+  onYearFilterChange,
   onOpenCobrancaDialog,
   onEditCobranca,
   onRegistrarPagamento,
@@ -333,8 +336,15 @@ export const CarteirinhaCobrancas = ({
       )}
 
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
+        <div className="flex items-center gap-3">
+          {onYearFilterChange && (
+            <AnoLetivoSelect
+              ano={selectedYear}
+              onChangeAno={(novoAno) => onYearFilterChange(novoAno.toString())}
+              label="Ano"
+            />
+          )}
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-1">
             {`${displayCobrancas.length} ${displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}`}
           </span>
         </div>

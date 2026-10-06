@@ -137,12 +137,30 @@ export function usePassageirosViewModel() {
     }
   }, [isSubConta, profile?.veiculo_id, searchParams, setSelectedVeiculo]);
 
+  const currentYear = new Date().getFullYear();
+  const [selectedAnoLetivo, setSelectedAnoLetivo] = useState<number>(() => {
+    const pAno = searchParams.get("ano");
+    return pAno ? Number(pAno) : currentYear;
+  });
+
+  const handleAnoLetivoChange = useCallback(
+    (novoAno: number) => {
+      setSelectedAnoLetivo(novoAno);
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("ano", String(novoAno));
+        return newParams;
+      });
+    },
+    [setSearchParams]
+  );
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearchTerm, selectedEscola, selectedVeiculo, selectedStatus, selectedPeriodo]);
+  }, [debouncedSearchTerm, selectedEscola, selectedVeiculo, selectedStatus, selectedPeriodo, selectedAnoLetivo]);
 
   const passageiroFilters = useMemo(
     () => ({
@@ -159,6 +177,7 @@ export function usePassageirosViewModel() {
           : selectedVeiculo,
       status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
       periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
+      ano_letivo: selectedAnoLetivo,
       page,
       limit,
     }),
@@ -170,6 +189,7 @@ export function usePassageirosViewModel() {
       selectedVeiculo,
       selectedStatus,
       selectedPeriodo,
+      selectedAnoLetivo,
       isSubConta,
       page,
       limit,
@@ -578,6 +598,8 @@ export function usePassageirosViewModel() {
     setSelectedVeiculo,
     selectedPeriodo,
     setSelectedPeriodo,
+    selectedAnoLetivo,
+    setSelectedAnoLetivo: handleAnoLetivoChange,
     escolas,
     veiculos,
     clearFilters,

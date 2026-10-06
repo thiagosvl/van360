@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
+import { Banner } from "@/components/ui/Banner";
 import { Users2, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
@@ -54,6 +56,8 @@ export default function Passageiros() {
     setSelectedVeiculo,
     selectedPeriodo,
     setSelectedPeriodo,
+    selectedAnoLetivo,
+    setSelectedAnoLetivo,
     escolas,
     veiculos,
     clearFilters,
@@ -109,31 +113,47 @@ export default function Passageiros() {
               onValueChange={handleTabChange}
               className="w-full space-y-6"
             >
-              <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
-                  <TabsTrigger
-                    value={PassageiroTab.ALUNOS}
-                    className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-                  >
-                    Alunos
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value={PassageiroTab.SOLICITACOES}
-                    className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-                  >
-                    Solicitações
-                    <span className={cn(
-                      "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                      activeTab === PassageiroTab.SOLICITACOES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                    )}>
-                      {countPrePassageiros || 0}
-                    </span>
-                  </TabsTrigger>
-                </TabsList>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-slate-200/50 p-1 rounded-[1.25rem] w-full sm:w-auto">
+                  <TabsList className="grid grid-cols-2 w-full sm:w-80 min-h-[40px] bg-transparent p-0 gap-1 mt-0">
+                    <TabsTrigger
+                      value={PassageiroTab.ALUNOS}
+                      className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                    >
+                      Alunos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value={PassageiroTab.SOLICITACOES}
+                      className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                    >
+                      Solicitações
+                      <span className={cn(
+                        "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                        activeTab === PassageiroTab.SOLICITACOES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                      )}>
+                        {countPrePassageiros || 0}
+                      </span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                {isMainTab && (
+                  <AnoLetivoSelect
+                    ano={selectedAnoLetivo}
+                    onChangeAno={setSelectedAnoLetivo}
+                    className="self-end sm:self-center"
+                  />
+                )}
               </div>
 
               <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
                 <div className="space-y-6">
+                  {isMainTab && selectedAnoLetivo !== new Date().getFullYear() && (
+                    <Banner
+                      variant="info"
+                      description={`Visualizando o Ano Letivo ${selectedAnoLetivo}. Alunos históricos e promovidos são preservados para consulta deste período.`}
+                    />
+                  )}
                   {can("passageiros.gerenciar") && (
                     isMainTab ? (
                       (isTrial || !isDismissedAlunos) && (

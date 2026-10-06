@@ -178,7 +178,8 @@ export default function PassageiroCarteirinha() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
-  const [yearFilter] = useState(currentYear);
+  const [yearFilter, setYearFilter] = useState(currentYear);
+  const hasSetInitialYear = useRef(false);
 
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
@@ -197,6 +198,13 @@ export default function PassageiroCarteirinha() {
   });
 
   const passageiro = passageiroData as Passageiro;
+
+  useEffect(() => {
+    if (passageiro?.ano_letivo && !hasSetInitialYear.current) {
+      hasSetInitialYear.current = true;
+      setYearFilter(passageiro.ano_letivo.toString());
+    }
+  }, [passageiro?.ano_letivo]);
 
   const {
     data: rotasPassageiro = [],
@@ -602,6 +610,7 @@ export default function PassageiroCarteirinha() {
     cobrancas,
     passageiro,
     yearFilter,
+    onYearFilterChange: setYearFilter,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
     onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean, availableMonths?: number[]) => {
@@ -613,7 +622,7 @@ export default function PassageiroCarteirinha() {
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),
         mes,
-        ano,
+        ano: ano ?? Number(yearFilter) ?? undefined,
         lockFoiPago,
         lockMesAno,
         availableMonths,

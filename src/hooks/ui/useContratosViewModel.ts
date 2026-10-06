@@ -110,14 +110,32 @@ export function useContratosViewModel() {
     return () => clearTimeout(handler);
   }, [busca]);
 
+  const currentYear = new Date().getFullYear();
+  const [anoLetivo, setAnoLetivo] = useState<number>(() => {
+    const pAno = searchParams.get("ano");
+    return pAno ? Number(pAno) : currentYear;
+  });
+
+  const handleChangeAnoLetivo = useCallback((novoAno: number) => {
+    setAnoLetivo(novoAno);
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("ano", String(novoAno));
+      return newParams;
+    });
+  }, [setSearchParams]);
+
   const contratosFilters = useMemo(
-    () => ({ tab: activeTab, search: debouncedSearch }),
-    [activeTab, debouncedSearch]
+    () => ({ tab: activeTab, search: debouncedSearch, ano: anoLetivo }),
+    [activeTab, debouncedSearch, anoLetivo]
   );
 
-  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
-    enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")),
-  });
+  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs(
+    anoLetivo,
+    {
+      enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")),
+    }
+  );
 
   const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
     contratosFilters,
@@ -518,6 +536,8 @@ export function useContratosViewModel() {
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,
+    anoLetivo,
+    handleChangeAnoLetivo,
     hasActiveFilters,
     setFilters,
     actions: {

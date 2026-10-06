@@ -41,6 +41,8 @@ const Contratos = () => {
     isPreviewPdfOpen,
     setIsPreviewPdfOpen,
     pdfUrl,
+    anoLetivo,
+    handleChangeAnoLetivo,
     actions,
   } = useContratosViewModel();
 
@@ -64,6 +66,8 @@ const Contratos = () => {
               countPendentes={kpis?.pendentes}
               countSemContrato={kpis?.semContrato}
               countAssinados={kpis?.assinados}
+              anoLetivo={anoLetivo}
+              onChangeAnoLetivo={handleChangeAnoLetivo}
               onOpenConfig={handleOpenContractSetup}
               onOpenPreview={handleOpenPreview}
               onImportarContrato={() => handleOpenImportarContrato()}

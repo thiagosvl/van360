@@ -34,11 +34,11 @@ export function useContratos(
   });
 }
 
-export function useContratosKPIs(options?: UseContratosOptions) {
+export function useContratosKPIs(ano?: number, options?: UseContratosOptions) {
   return useQuery({
-    queryKey: ["contratos", "kpis"],
+    queryKey: ["contratos", "kpis", ano],
     queryFn: async () => {
-      return await contratoApi.getKPIs();
+      return await contratoApi.getKPIs(ano ? { ano } : undefined);
     },
     enabled: options?.enabled !== false,
     staleTime: 3000,
