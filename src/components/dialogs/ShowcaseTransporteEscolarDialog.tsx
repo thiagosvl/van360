@@ -80,7 +80,7 @@ export function ShowcaseTransporteEscolarDialog({
             className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md shadow-emerald-500/20 border-none cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4 mr-1" />
-            <span>Criar conta</span>
+            <span>Criar conta grátis</span>
           </Button>
         </div>
       </div>

@@ -18,7 +18,7 @@ import { ROUTES } from "@/constants/routes";
 
 export default function Register() {
   useSEO({
-    title: "Criar conta | Van360",
+    title: "Criar conta grátis | Van360",
   });
 
   const {
@@ -81,7 +81,7 @@ export default function Register() {
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
-                  Crie sua conta
+                  Crie sua conta grátis
                 </h1>
                 <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4">
                   Leva menos de 1 minuto para organizar a sua van.
