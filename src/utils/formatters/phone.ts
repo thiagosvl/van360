@@ -9,3 +9,8 @@ export function formatarTelefone(telefone: string): string {
   return `(${ddd}) ${parte1}-${parte2}`;
 }
 
+export function formatarTelefoneExibicao(telefone?: string | null): string {
+  if (!telefone || !telefone.trim()) return "Telefone não informado";
+  return formatarTelefone(telefone);
+}
+

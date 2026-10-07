@@ -12,12 +12,12 @@ import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatarTelefone,
+  formatarTelefoneExibicao,
   formatShortName,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatPeriodo } from "@/utils/formatters/periodo";
-import { ChevronRight, Phone, User } from "lucide-react";
+import { ChevronRight, User } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -76,16 +76,12 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           {shortName}
         </p>
         <div className="flex flex-col gap-0.5 mt-0.5 min-w-0">
-          <p className={cn(
-            "text-[10px] text-gray-500 font-medium opacity-60 leading-snug",
-            formatoNomeResponsavel === "completo" ? "truncate" : "truncate"
-          )}>
+          <p className="text-[10px] text-gray-500 font-medium opacity-60 leading-snug truncate">
             {respName}
           </p>
-          {exibirTelefoneListaAlunos && respTelefone && (
-            <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-              <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-              <span>{formatarTelefone(respTelefone)}</span>
+          {exibirTelefoneListaAlunos && (
+            <p className="text-[10px] text-gray-500 font-medium opacity-60 leading-snug truncate">
+              {formatarTelefoneExibicao(respTelefone)}
             </p>
           )}
           {schoolName && (
@@ -197,15 +193,17 @@ export function PassageirosList({
                           {shortName}
                         </p>
                         <p className={cn(
-                          "text-[10px] text-gray-400 font-medium tracking-wider flex items-center gap-1.5",
-                          formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
+                          "text-[10px] text-gray-400 font-medium tracking-wider truncate",
+                          formatoNomeResponsavel === "completo" && "max-w-[200px]"
                         )}>
                           {respName}
                         </p>
-                        {exibirTelefoneListaAlunos && passageiro.responsavel_principal?.telefone && (
-                          <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                            <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                            <span>{formatarTelefone(passageiro.responsavel_principal.telefone)}</span>
+                        {exibirTelefoneListaAlunos && (
+                          <p className={cn(
+                            "text-[10px] text-gray-400 font-medium tracking-wider truncate",
+                            formatoNomeResponsavel === "completo" && "max-w-[200px]"
+                          )}>
+                            {formatarTelefoneExibicao(passageiro.responsavel_principal?.telefone)}
                           </p>
                         )}
                       </div>

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConfiguracoes } from "@/hooks";
-import { Check, Phone, SlidersHorizontal } from "lucide-react";
+import { Check, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -244,9 +244,8 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
                 <p className="text-[10px] text-gray-500 font-medium">
                   {formatoAtual === "completo" ? "Maria Oliveira da Silva" : "Maria"}
                 </p>
-                <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-                  <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  <span>(11) 98765-4321</span>
+                <p className="text-[10px] text-gray-500 font-medium">
+                  (11) 98765-4321
                 </p>
                 <p className="text-[10px] text-gray-400 font-medium opacity-60">
                   Colégio Teste Van360
