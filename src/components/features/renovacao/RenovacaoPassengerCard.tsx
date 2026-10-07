@@ -31,7 +31,7 @@ interface RenovacaoPassengerCardProps {
   onToggleSelect: (id: string) => void;
   onConfirmarManual: (passageiroId: string) => Promise<void> | void;
   onRegistrarSaida: (passageiroId: string, nome: string) => Promise<void> | void;
-  onReativar?: (passageiroId: string) => Promise<void> | void;
+  onReativar?: (passageiroId: string, nome: string) => Promise<void> | void;
   onOpenEditarReserva?: (passageiro: RenovacaoPassageiroItem) => void;
   isUpdating?: boolean;
 }
@@ -116,18 +116,10 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
     }
   };
 
-  const handleSetPendente = async (e: React.MouseEvent) => {
+  const handleSetPendente = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isPendente || loadingAction || !onReativar) return;
-    setLoadingAction("pendente");
-    try {
-      await onReativar(item.passageiro_id);
-      toast.success(`Reserva de ${shortName} redefinida para Pendente.`);
-    } catch {
-      toast.error("Erro ao redefinir status para pendente.");
-    } finally {
-      setLoadingAction(null);
-    }
+    onReativar(item.passageiro_id, shortName);
   };
 
   return (
@@ -176,6 +168,16 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
               {(isValorAlterado || isEscolaAlterada || isPeriodoAlterado) && (
                 <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-amber-50 text-amber-700 border border-amber-200/70 text-[10px] font-bold">
                   Condições Ajustadas
+                </span>
+              )}
+              {item.contrato_status === "assinado" && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-bold">
+                  Contrato Assinado
+                </span>
+              )}
+              {item.contrato_status === "pendente" && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-sky-50 text-sky-700 border border-sky-200/70 text-[10px] font-bold">
+                  Contrato Pendente
                 </span>
               )}
             </div>

@@ -66,6 +66,8 @@ export interface RenovacaoPassageiroItem {
   nova_data_fim_cobranca?: string | null;
   notificacao_enviada_em?: string | null;
   token_publico?: string | null;
+  contrato_id?: string | null;
+  contrato_status?: string | null;
 }
 
 export interface RenovacaoDashboardResponse {

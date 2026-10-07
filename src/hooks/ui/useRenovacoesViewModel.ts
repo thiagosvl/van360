@@ -185,6 +185,26 @@ export function useRenovacoesViewModel() {
     }
   }, [selectedIds, isBatchUpdating, anoDestino, atualizarStatusLoteMutation, clearSelection]);
 
+  const handleReativarLote = useCallback(async () => {
+    if (selectedIds.size === 0 || isBatchUpdating) return;
+    setIsBatchUpdating(true);
+
+    try {
+      const ids = Array.from(selectedIds);
+      await atualizarStatusLoteMutation.mutateAsync({
+        ano_destino: anoDestino,
+        passageiro_ids: ids,
+        status: RenovacaoStatus.PENDENTE,
+      });
+      toast.success(`${ids.length} aluno(s) redefinido(s) para Pendente!`);
+      clearSelection();
+    } catch {
+      toast.error("Ocorreu um erro ao redefinir status em lote.");
+    } finally {
+      setIsBatchUpdating(false);
+    }
+  }, [selectedIds, isBatchUpdating, anoDestino, atualizarStatusLoteMutation, clearSelection]);
+
   const handleUpdateValorInline = useCallback(
     async (passageiroId: string, novoValor: number) => {
       await updateRenovacaoMutation.mutateAsync({
@@ -229,6 +249,7 @@ export function useRenovacoesViewModel() {
     handleReativar,
     handleConfirmarLote,
     handleRegistrarSaidaLote,
+    handleReativarLote,
     handleUpdateValorInline,
     virarAnoMutation,
     reajusteLoteMutation,

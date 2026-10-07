@@ -6,6 +6,7 @@ import { formatDateToBR } from "@/utils/formatters/date";
 import { phoneMask } from "@/utils/masks";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { EditarDadosPublicosRenovacaoDialog } from "@/components/dialogs/EditarDadosPublicosRenovacaoDialog";
 import {
   CheckCircle2,
@@ -113,8 +114,11 @@ export default function PublicRenovacaoPage() {
   const { motorista, passageiro, responsavel, condicoes, status, ano_destino, contrato } = data;
   const isConfirmed = status === "confirmado";
   const isRecused = status === "recusado";
-  const activeContractToken = contractData?.token_acesso || contrato?.token_acesso;
-  const temContratoDigital = Boolean(contrato?.usar_contratos || activeContractToken);
+  const isContratoAssinado = Boolean(contrato?.status === "assinado");
+  const activeContractToken = isContratoAssinado
+    ? null
+    : (contractData?.token_acesso || (contrato?.status === "pendente" ? contrato?.token_acesso : null));
+  const temContratoDigital = Boolean(contrato?.usar_contratos || activeContractToken || isContratoAssinado);
   const temCondicoesAlteradas = Boolean(
     condicoes?.valor?.alterado ||
     condicoes?.dia_vencimento?.alterado ||
@@ -490,13 +494,33 @@ export default function PublicRenovacaoPage() {
               </div>
             )}
 
-            {!confirmRecusaOpen ? (
+            {isContratoAssinado ? (
+              <div className="space-y-3 pt-1">
+                <Banner
+                  variant="neutral"
+                  title="Contrato Digital Assinado"
+                  description={`O contrato para o ano letivo de ${ano_destino} já foi formalizado e assinado digitalmente. Para qualquer alteração, desistência ou rescisão, entre em contato diretamente com o motorista pelo WhatsApp.`}
+                />
+                {motoristaWhatsappUrl && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full h-11 rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold text-xs sm:text-sm gap-2"
+                  >
+                    <a href={motoristaWhatsappUrl} target="_blank" rel="noopener noreferrer">
+                      <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
+                      Falar com Motorista no WhatsApp
+                    </a>
+                  </Button>
+                )}
+              </div>
+            ) : !confirmRecusaOpen ? (
               <div className="pt-2 flex flex-col items-center gap-2.5">
                 <button
                   type="button"
                   onClick={handleReverter}
                   disabled={isResponding}
-                  className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors underline underline-offset-4"
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors underline underline-offset-4 cursor-pointer"
                 >
                   Deseja mudar de ideia? Desfazer confirmação
                 </button>
@@ -504,7 +528,7 @@ export default function PublicRenovacaoPage() {
                   type="button"
                   onClick={() => setConfirmRecusaOpen(true)}
                   disabled={isResponding}
-                  className="text-xs font-semibold text-slate-400 hover:text-red-600 transition-colors underline underline-offset-4"
+                  className="text-xs font-semibold text-slate-400 hover:text-red-600 transition-colors underline underline-offset-4 cursor-pointer"
                 >
                   Informar que não vai renovar
                 </button>

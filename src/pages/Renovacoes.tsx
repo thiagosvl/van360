@@ -78,6 +78,7 @@ export default function Renovacoes() {
     handleReativar,
     handleConfirmarLote,
     handleRegistrarSaidaLote,
+    handleReativarLote,
     isUpdating,
   } = useRenovacoesViewModel();
 
@@ -126,9 +127,27 @@ export default function Renovacoes() {
     const count = selectedIds.size;
     if (count === 0) return;
 
+    const selecionadosComContrato = passageiros.filter(
+      (p) => selectedIds.has(p.passageiro_id) && Boolean(p.contrato_status)
+    );
+    const countContratos = selecionadosComContrato.length;
+
     openConfirmationDialog({
       title: `Registrar saída de ${count} ${count === 1 ? "aluno" : "alunos"}?`,
-      description: `Tem certeza que deseja registrar a saída de ${count} ${count === 1 ? "aluno" : "alunos"} para o ano letivo de ${anoDestino}? As vagas não serão renovadas.`,
+      description: (
+        <div className="space-y-3">
+          <p>
+            Tem certeza que deseja registrar a saída de <strong>{count} {count === 1 ? "aluno" : "alunos"}</strong> para o ano letivo de <strong>{anoDestino}</strong>? As vagas não serão renovadas.
+          </p>
+          {countContratos > 0 && (
+            <Banner
+              variant="warning"
+              title="Cancelamento de Contratos Digitais"
+              description={`${countContratos} ${countContratos === 1 ? "do aluno selecionado possui" : "dos alunos selecionados possuem"} contrato digital (${anoDestino}) gerado ou assinado. Ao registrar a saída em lote, esses documentos serão cancelados.`}
+            />
+          )}
+        </div>
+      ),
       confirmText: "Sim, Registrar Saída",
       cancelText: "Voltar",
       variant: "destructive",
@@ -142,19 +161,107 @@ export default function Renovacoes() {
     });
   };
 
+  const handleReativarLoteComConfirmacao = () => {
+    const count = selectedIds.size;
+    if (count === 0) return;
+
+    const selecionadosComContrato = passageiros.filter(
+      (p) => selectedIds.has(p.passageiro_id) && Boolean(p.contrato_status)
+    );
+    const countContratos = selecionadosComContrato.length;
+
+    openConfirmationDialog({
+      title: `Redefinir ${count} ${count === 1 ? "aluno" : "alunos"} para Pendente?`,
+      description: (
+        <div className="space-y-3">
+          <p>
+            As vagas selecionadas voltarão para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
+          </p>
+          {countContratos > 0 && (
+            <Banner
+              variant="warning"
+              title="Cancelamento de Contratos Digitais"
+              description={`${countContratos} ${countContratos === 1 ? "do aluno selecionado possui" : "dos alunos selecionados possuem"} contrato digital (${anoDestino}) gerado ou assinado. Ao redefinir para pendente, esses documentos serão cancelados.`}
+            />
+          )}
+        </div>
+      ),
+      confirmText: "Sim, Redefinir para Pendente",
+      cancelText: "Voltar",
+      variant: "warning",
+      onConfirm: async () => {
+        safeCloseDialog(closeConfirmationDialog);
+        await handleReativarLote();
+      },
+      onCancel: () => {
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
+
   const handleRegistrarSaidaComConfirmacao = (passageiroId: string) => {
     const p = passageiros.find((item) => item.passageiro_id === passageiroId);
     const nomeAluno = p?.nome || "o aluno";
+    const temContrato = Boolean(p?.contrato_status);
+    const contratoAssinado = p?.contrato_status === "assinado";
 
     openConfirmationDialog({
       title: `Registrar saída de ${nomeAluno}?`,
-      description: `Tem certeza que deseja marcar a vaga de ${nomeAluno} como não renovada para o ano letivo de ${anoDestino}?`,
+      description: (
+        <div className="space-y-3">
+          <p>
+            Tem certeza que deseja marcar a vaga de <strong>{nomeAluno}</strong> como não renovada para o ano letivo de <strong>{anoDestino}</strong>?
+          </p>
+          {temContrato && (
+            <Banner
+              variant="warning"
+              title="Cancelamento de Contrato Digital"
+              description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao registrar a saída, esse documento será cancelado no sistema.`}
+            />
+          )}
+        </div>
+      ),
       confirmText: "Sim, Registrar Saída",
       cancelText: "Voltar",
       variant: "destructive",
       onConfirm: async () => {
         safeCloseDialog(closeConfirmationDialog);
         await handleRegistrarSaida(passageiroId);
+      },
+      onCancel: () => {
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
+
+  const handleReativarComConfirmacao = (passageiroId: string, nomeAlunoParam?: string) => {
+    const p = passageiros.find((item) => item.passageiro_id === passageiroId);
+    const nomeAluno = nomeAlunoParam || p?.nome || "o aluno";
+    const temContrato = Boolean(p?.contrato_status);
+    const contratoAssinado = p?.contrato_status === "assinado";
+
+    openConfirmationDialog({
+      title: `Redefinir ${nomeAluno} para Pendente?`,
+      description: (
+        <div className="space-y-3">
+          <p>
+            A vaga de <strong>{nomeAluno}</strong> voltará para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
+          </p>
+          {temContrato && (
+            <Banner
+              variant="warning"
+              title="Cancelamento de Contrato Digital"
+              description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao voltar para pendente, esse documento será cancelado e uma nova via precisará ser gerada caso a vaga seja confirmada novamente.`}
+            />
+          )}
+        </div>
+      ),
+      confirmText: "Sim, Redefinir para Pendente",
+      cancelText: "Voltar",
+      variant: "warning",
+      onConfirm: async () => {
+        safeCloseDialog(closeConfirmationDialog);
+        await handleReativar(passageiroId);
       },
       onCancel: () => {
         safeCloseDialog(closeConfirmationDialog);
@@ -384,7 +491,7 @@ export default function Renovacoes() {
                         onToggleSelect={toggleSelect}
                         onConfirmarManual={handleConfirmarManual}
                         onRegistrarSaida={handleRegistrarSaidaComConfirmacao}
-                        onReativar={handleReativar}
+                        onReativar={handleReativarComConfirmacao}
                         onOpenEditarReserva={(item) =>
                           openEditarReservaDialog({
                             passageiro: item,
@@ -443,6 +550,7 @@ export default function Renovacoes() {
             onDispararWhatsApp={handleOpenDisparoWhatsApp}
             onConfirmarLote={handleConfirmarLoteComConfirmacao}
             onSaidaLote={handleRegistrarSaidaLoteComConfirmacao}
+            onPendenteLote={handleReativarLoteComConfirmacao}
             onOpenReajuste={() => openReajusteLoteDialog({ anoDestino })}
             isProcessing={isUpdating}
           />

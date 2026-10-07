@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, X, Check, SlidersHorizontal, Loader2 } from "lucide-react";
+import { CheckSquare, X, Check, SlidersHorizontal, Loader2, Clock } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface RenovacaoStickyBarProps {
@@ -9,6 +9,7 @@ interface RenovacaoStickyBarProps {
   onDispararWhatsApp: () => void;
   onConfirmarLote: () => void;
   onSaidaLote: () => void;
+  onPendenteLote?: () => void;
   onOpenReajuste?: () => void;
   isProcessing?: boolean;
 }
@@ -19,6 +20,7 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
   onDispararWhatsApp,
   onConfirmarLote,
   onSaidaLote,
+  onPendenteLote,
   onOpenReajuste,
   isProcessing = false,
 }: RenovacaoStickyBarProps) {
@@ -74,6 +76,19 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
               <X className="w-3.5 h-3.5 text-rose-600 stroke-[2.5] shrink-0" />
               <span>Saída</span>
             </Button>
+            {onPendenteLote && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onPendenteLote}
+                disabled={isProcessing}
+                className="h-10 rounded-xl border-amber-200 text-amber-700 text-xs font-bold gap-1.5 shadow-2xs cursor-pointer active:scale-95"
+              >
+                <Clock className="w-3.5 h-3.5 text-amber-600 stroke-[2.5] shrink-0" />
+                <span>Pendente</span>
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
@@ -142,6 +157,21 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
               <X className="w-4 h-4 text-rose-600 stroke-[2.5] shrink-0" />
               <span>Saída</span>
             </Button>
+
+            {onPendenteLote && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onPendenteLote}
+                disabled={isProcessing}
+                className="h-10 px-3.5 rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50 text-xs sm:text-sm font-bold gap-1.5 shadow-2xs transition-all cursor-pointer"
+                title="Redefinir para pendente em lote"
+              >
+                <Clock className="w-4 h-4 text-amber-600 stroke-[2.5] shrink-0" />
+                <span>Pendente</span>
+              </Button>
+            )}
 
             <Button
               type="button"
