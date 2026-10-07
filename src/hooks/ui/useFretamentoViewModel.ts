@@ -1,26 +1,54 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import {
   useFretamentosListQuery,
   useFretamentoResumoQuery,
   useDeletarFretamentoMutation,
 } from "@/hooks/api/useFretamentosApi";
 import { useFretamentoCalculations } from "@/hooks/business/useFretamentoCalculations";
+import { useFilters } from "@/hooks/ui/useFilters";
 import type { FretamentoTipo, FretamentoStatus } from "@/services/api/fretamento.api";
 import { FilterDefaults } from "@/types/enums";
+import { getNowBR } from "@/utils/dateUtils";
 import { toast } from "sonner";
 
 export type FretamentoTipoFiltro = FretamentoTipo | FilterDefaults.TODOS;
 export type FretamentoStatusFiltro = FretamentoStatus | FilterDefaults.TODOS;
 
 export const useFretamentoViewModel = () => {
-  const currentDate = new Date();
-  const [mes, setMes] = useState<number>(currentDate.getMonth() + 1);
-  const [ano, setAno] = useState<number>(currentDate.getFullYear());
-  const [tipoFiltro, setTipoFiltro] = useState<FretamentoTipoFiltro>(FilterDefaults.TODOS);
-  const [statusFiltro, setStatusFiltro] = useState<FretamentoStatusFiltro>(FilterDefaults.TODOS);
-  const [veiculoFiltro, setVeiculoFiltro] = useState<string>(FilterDefaults.TODOS);
+  const {
+    searchTerm,
+    setSearchTerm,
+    debouncedSearchTerm,
+    selectedStatus: rawStatus,
+    setSelectedStatus,
+    selectedTipo: rawTipo,
+    setSelectedTipo,
+    selectedVeiculo: veiculoFiltro = FilterDefaults.TODOS,
+    setSelectedVeiculo,
+    selectedMes: mes = getNowBR().getMonth() + 1,
+    selectedAno: ano = getNowBR().getFullYear(),
+    setFilters,
+    clearFilters,
+    hasActiveFilters,
+  } = useFilters({
+    searchParam: "search",
+    tipoParam: "tipo",
+    statusParam: "status",
+    veiculoParam: "veiculo",
+    mesParam: "mes",
+    anoParam: "ano",
+  });
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const tipoFiltro = (rawTipo || FilterDefaults.TODOS) as FretamentoTipoFiltro;
+  const statusFiltro = (rawStatus || FilterDefaults.TODOS) as FretamentoStatusFiltro;
+
+  const setTipoFiltro = (val: FretamentoTipoFiltro) => setSelectedTipo?.(val);
+  const setStatusFiltro = (val: FretamentoStatusFiltro) => setSelectedStatus(val);
+  const setVeiculoFiltro = (val: string) => setSelectedVeiculo?.(val);
+
+  const setMes = (novoMes: number) => setFilters({ mes: novoMes });
+  const setAno = (novoAno: number) => setFilters({ ano: novoAno });
+  const setMesAno = (novoMes: number, novoAno: number) => setFilters({ mes: novoMes, ano: novoAno });
 
   const tipoParam = tipoFiltro === FilterDefaults.TODOS ? undefined : tipoFiltro;
   const statusParam = statusFiltro === FilterDefaults.TODOS ? undefined : statusFiltro;
@@ -49,56 +77,40 @@ export const useFretamentoViewModel = () => {
       );
     }
 
-    if (searchTerm.trim()) {
-      const termo = searchTerm.trim().toLowerCase();
+    const effectiveSearch = (debouncedSearchTerm || searchTerm).trim().toLowerCase();
+    if (effectiveSearch) {
       result = result.filter((item) => {
-        const matchTitulo = item.titulo.toLowerCase().includes(termo);
-        const matchDestino = item.destino.toLowerCase().includes(termo);
-        const matchContratante = item.contratante_nome?.toLowerCase().includes(termo);
+        const matchTitulo = item.titulo.toLowerCase().includes(effectiveSearch);
+        const matchDestino = item.destino.toLowerCase().includes(effectiveSearch);
+        const matchContratante = item.contratante_nome?.toLowerCase().includes(effectiveSearch);
         return matchTitulo || matchDestino || matchContratante;
       });
     }
 
     return result;
-  }, [itensCalculados, veiculoFiltro, searchTerm]);
-
-  const hasActiveFilters = useMemo(() => {
-    return (
-      tipoFiltro !== FilterDefaults.TODOS ||
-      statusFiltro !== FilterDefaults.TODOS ||
-      veiculoFiltro !== FilterDefaults.TODOS ||
-      searchTerm.trim().length > 0
-    );
-  }, [tipoFiltro, statusFiltro, veiculoFiltro, searchTerm]);
-
-  const clearFilters = () => {
-    setTipoFiltro(FilterDefaults.TODOS);
-    setStatusFiltro(FilterDefaults.TODOS);
-    setVeiculoFiltro(FilterDefaults.TODOS);
-    setSearchTerm("");
-  };
+  }, [itensCalculados, veiculoFiltro, debouncedSearchTerm, searchTerm]);
 
   const onApplyFilters = (filters: { tipo: FretamentoTipoFiltro; status: FretamentoStatusFiltro; veiculo: string }) => {
-    setTipoFiltro(filters.tipo);
-    setStatusFiltro(filters.status);
-    setVeiculoFiltro(filters.veiculo);
+    setFilters({
+      tipo: filters.tipo,
+      status: filters.status,
+      veiculo: filters.veiculo,
+    });
   };
 
   const avancarMes = () => {
     if (mes === 12) {
-      setMes(1);
-      setAno((prev) => prev + 1);
+      setMesAno(1, ano + 1);
     } else {
-      setMes((prev) => prev + 1);
+      setMes(mes + 1);
     }
   };
 
   const retrocederMes = () => {
     if (mes === 1) {
-      setMes(12);
-      setAno((prev) => prev - 1);
+      setMesAno(12, ano - 1);
     } else {
-      setMes((prev) => prev - 1);
+      setMes(mes - 1);
     }
   };
 
@@ -116,6 +128,7 @@ export const useFretamentoViewModel = () => {
     ano,
     setMes,
     setAno,
+    setMesAno,
     avancarMes,
     retrocederMes,
     searchTerm,

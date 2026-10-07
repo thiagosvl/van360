@@ -133,7 +133,7 @@ export default function PasseioDetalhes() {
   });
 
   return (
-    <div className="min-h-screen bg-surface max-w-5xl mx-auto space-y-6 pb-24 px-4 sm:px-6 pt-4">
+    <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"

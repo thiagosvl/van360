@@ -55,10 +55,7 @@ export default function Fretamentos() {
   const {
     mes,
     ano,
-    setMes,
-    setAno,
-    searchTerm,
-    setSearchTerm,
+    setMesAno,
     tipoFiltro,
     setTipoFiltro,
     statusFiltro,
@@ -138,58 +135,77 @@ export default function Fretamentos() {
 
   return (
     <PullToRefreshWrapper onRefresh={async () => { await refetchList(); }}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24 px-4 sm:px-6 pt-4">
+      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
         <DateNavigation
           mes={mes}
           ano={ano}
           onNavigate={(novoMes, novoAno) => {
-            setMes(novoMes);
-            setAno(novoAno);
+            setMesAno(novoMes, novoAno);
           }}
         />
 
-        <FinancialDashboardCard
-          labelTotal="Total Previsto"
-          labelRecebido="Já Recebido"
-          labelPendente="A Receber"
-          totalEsperado={totais.totalFaturado}
-          recebido={totais.totalRecebido}
-          pendente={totais.totalAReceber}
-          loading={isLoading}
-        />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="order-2 md:order-1 w-full md:w-auto md:min-w-[280px]">
+            <FinancialDashboardCard
+              labelTotal="Total Previsto"
+              labelRecebido="Já Recebido"
+              labelPendente="A Receber"
+              totalEsperado={totais.totalFaturado}
+              recebido={totais.totalRecebido}
+              pendente={totais.totalAReceber}
+              loading={isLoading}
+            />
+          </div>
 
-        <FretamentosToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          tipoFilter={tipoFiltro}
-          onTipoChange={setTipoFiltro}
-          statusFilter={statusFiltro}
-          onStatusChange={setStatusFiltro}
-          veiculoFilter={veiculoFiltro}
-          onVeiculoChange={setVeiculoFiltro}
-          onNovoRegistro={handleOpenNovoRegistro}
-          veiculos={veiculos}
-          hasActiveFilters={hasActiveFilters}
-          onClearFilters={clearFilters}
-          onApplyFilters={onApplyFilters}
-          disabled={isLoading}
-        />
+          <div className="order-1 md:order-2 w-full md:w-auto">
+            <FretamentosToolbar
+              tipoFilter={tipoFiltro}
+              onTipoChange={setTipoFiltro}
+              statusFilter={statusFiltro}
+              onStatusChange={setStatusFiltro}
+              veiculoFilter={veiculoFiltro}
+              onVeiculoChange={setVeiculoFiltro}
+              onNovoRegistro={handleOpenNovoRegistro}
+              veiculos={veiculos}
+              hasActiveFilters={hasActiveFilters}
+              onClearFilters={clearFilters}
+              onApplyFilters={onApplyFilters}
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+          </h2>
+          {(() => {
+            const sectionCount = itens.length;
+            const countLabel = hasActiveFilters
+              ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+              : (sectionCount === 1 ? "REGISTRADO" : "REGISTRADOS");
+            return sectionCount != null ? (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                {sectionCount} {countLabel}
+              </span>
+            ) : null;
+          })()}
+        </div>
 
         {itens.length === 0 && !isLoading && (
           <UnifiedEmptyState
             icon={Compass}
             title={
-              searchTerm || hasActiveFilters
+              hasActiveFilters
                 ? "Nenhum frete ou passeio encontrado"
                 : "Nenhum frete ou passeio registrado"
             }
             description={
-              searchTerm || hasActiveFilters
+              hasActiveFilters
                 ? "Não encontramos viagens com os filtros selecionados."
                 : "Cadastre suas viagens particulares, fretes fechados ou passeios escolares neste mês."
             }
             action={
-              searchTerm || hasActiveFilters
+              hasActiveFilters
                 ? {
                     label: "Limpar Filtros",
                     onClick: clearFilters,

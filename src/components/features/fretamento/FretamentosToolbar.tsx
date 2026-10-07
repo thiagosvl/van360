@@ -9,8 +9,6 @@ import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import type { FretamentoTipoFiltro, FretamentoStatusFiltro } from "@/hooks/ui/useFretamentoViewModel";
 
 interface FretamentosToolbarProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
   tipoFilter: FretamentoTipoFiltro;
   onTipoChange: (value: FretamentoTipoFiltro) => void;
   statusFilter: FretamentoStatusFiltro;
@@ -19,15 +17,13 @@ interface FretamentosToolbarProps {
   onVeiculoChange: (value: string) => void;
   onNovoRegistro: () => void;
   veiculos: Array<{ id: string; placa: string; modelo?: string | null }>;
-  hasActiveFilters: boolean;
-  onClearFilters: () => void;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
   onApplyFilters?: (filters: { tipo: FretamentoTipoFiltro; status: FretamentoStatusFiltro; veiculo: string }) => void;
   disabled?: boolean;
 }
 
 export const FretamentosToolbar = memo(function FretamentosToolbar({
-  searchTerm,
-  onSearchChange,
   tipoFilter,
   onTipoChange,
   statusFilter,
@@ -36,7 +32,7 @@ export const FretamentosToolbar = memo(function FretamentosToolbar({
   onVeiculoChange,
   onNovoRegistro,
   veiculos,
-  hasActiveFilters,
+  hasActiveFilters: hasActiveFiltersProp,
   onClearFilters,
   onApplyFilters,
   disabled,
@@ -80,6 +76,9 @@ export const FretamentosToolbar = memo(function FretamentosToolbar({
     });
   };
 
+  const hasActiveFilters = hasActiveFiltersProp !== undefined ? hasActiveFiltersProp :
+    (tipoFilter !== FilterDefaults.TODOS || statusFilter !== FilterDefaults.TODOS || veiculoFilter !== FilterDefaults.TODOS);
+
   const filterChildren = (
     <>
       <DataTableFilterSelect
@@ -97,8 +96,8 @@ export const FretamentosToolbar = memo(function FretamentosToolbar({
         icon={<Compass className="w-3.5 h-3.5 shrink-0" />}
         options={[
           { label: "Todos os Tipos", value: FilterDefaults.TODOS },
-          { label: "Fretamentos (Frete Fechado)", value: "fretamento" },
-          { label: "Passeios (Coletivo)", value: "passeio" },
+          { label: "Fretamentos", value: "fretamento" },
+          { label: "Passeios", value: "passeio" },
         ]}
       />
 
@@ -151,15 +150,12 @@ export const FretamentosToolbar = memo(function FretamentosToolbar({
 
   return (
     <DataTableToolbar
-      searchTerm={searchTerm}
-      onSearchChange={onSearchChange}
-      searchPlaceholder="Buscar por título, destino ou contratante..."
       disabled={disabled}
       filterConfig={{
         title: "Filtrar Fretamentos e Passeios",
-        description: "Filtre por tipo de serviço, status de confirmação ou veículo utilizado.",
+        description: "Refine sua busca para encontrar fretamentos ou passeios específicos.",
         hasActiveFilters,
-        onClear: onClearFilters,
+        onClear: onClearFilters || (() => {}),
         onApply: handleApplyFilters,
         onClearTemp: handleClearMobileFilters,
         isOpen: isSheetOpen,

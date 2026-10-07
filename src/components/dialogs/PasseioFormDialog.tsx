@@ -141,7 +141,7 @@ export function PasseioFormDialog({
                     <div className="relative">
                       <FileText className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
                       <Input
-                        placeholder="Ex: Cinema Mario Bros ou Excursão Zooparque"
+                        placeholder="Ex: Excursão Zooparque"
                         className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
                         aria-invalid={!!fieldState.error}
                         {...field}
@@ -166,7 +166,7 @@ export function PasseioFormDialog({
                       <div className="relative">
                         <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-emerald-600 opacity-80 z-10" />
                         <Input
-                          placeholder="Ex: Cinemark Shopping Center Norte"
+                          placeholder="Ex: Shopping Center Norte"
                           className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
                           aria-invalid={!!fieldState.error}
                           {...field}
