@@ -9,6 +9,9 @@ interface FinancialDashboardCardProps {
   atrasado?: number;
   loading?: boolean;
   showPrivacyToggle?: boolean;
+  labelTotal?: string;
+  labelRecebido?: string;
+  labelPendente?: string;
 }
 
 export function FinancialDashboardCard({
@@ -18,6 +21,9 @@ export function FinancialDashboardCard({
   atrasado,
   loading,
   showPrivacyToggle = true,
+  labelTotal = "Total Esperado",
+  labelRecebido = "Recebido",
+  labelPendente = "A receber",
 }: FinancialDashboardCardProps) {
   const { hideValues, toggleHideValues, formatPrivateCurrency } = usePrivacy();
 
@@ -70,7 +76,7 @@ export function FinancialDashboardCard({
       {/* Top Row: Total Esperado + Botão Olho */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-[13px] font-medium text-slate-600">Total Esperado</span>
+          <span className="text-[13px] font-medium text-slate-600">{labelTotal}</span>
           <div className="flex items-center gap-2">
             <span className="text-[15px] font-bold text-slate-800">{formatPrivateCurrency(totalEsperado)}</span>
             {showPrivacyToggle && (
@@ -97,7 +103,7 @@ export function FinancialDashboardCard({
         <div className="flex justify-between items-end">
           {/* Recebido */}
           <div className="flex flex-col">
-            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">Recebido</span>
+            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">{labelRecebido}</span>
             <span className={cn(getDynamicFontSize(recebido), "font-bold text-slate-800 tracking-tight leading-none")}>
               {formatPrivateCurrency(recebido)}
             </span>
@@ -105,7 +111,7 @@ export function FinancialDashboardCard({
 
           {/* Pendente */}
           <div className="flex flex-col items-end">
-            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">A receber</span>
+            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">{labelPendente}</span>
             <span className={cn(getDynamicFontSize(pendente), "font-bold text-slate-800 tracking-tight leading-none")}>
               {formatPrivateCurrency(pendente)}
             </span>

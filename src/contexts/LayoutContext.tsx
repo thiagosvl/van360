@@ -9,10 +9,36 @@ import { Veiculo } from "@/types/veiculo";
 import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
+import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
 import {
   createContext,
   useContext,
 } from "react";
+
+export interface OpenFretamentoFormProps {
+  editingItem?: FretamentoDetalhes | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenPasseioFormProps {
+  editingItem?: FretamentoDetalhes | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenNovoFretamentoOuPasseioProps {
+  onSelectFretamento: () => void;
+  onSelectPasseio: () => void;
+}
+
+export interface OpenRegistrarPagamentoFretamentoProps {
+  fretamento: FretamentoDetalhes;
+  onSuccess?: () => void;
+}
+
+export interface OpenAdicionarParticipantePasseioProps {
+  fretamento: FretamentoDetalhes;
+  onSuccess?: () => void;
+}
 
 export interface OpenConfirmationDialogProps {
   title: string;
@@ -377,6 +403,19 @@ export interface LayoutContextType {
   closeRegistrarAusenciaDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
+
+  // Fretamentos e Passeios
+  openFretamentoFormDialog: (props?: OpenFretamentoFormProps) => void;
+  closeFretamentoFormDialog: () => void;
+  openPasseioFormDialog: (props?: OpenPasseioFormProps) => void;
+  closePasseioFormDialog: () => void;
+  openNovoFretamentoOuPasseioDialog: (props?: OpenNovoFretamentoOuPasseioProps) => void;
+  closeNovoFretamentoOuPasseioDialog: () => void;
+  openRegistrarPagamentoFretamentoDialog: (props: OpenRegistrarPagamentoFretamentoProps) => void;
+  closeRegistrarPagamentoFretamentoDialog: () => void;
+  openAdicionarParticipantePasseioDialog: (props: OpenAdicionarParticipantePasseioProps) => void;
+  closeAdicionarParticipantePasseioDialog: () => void;
+
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;

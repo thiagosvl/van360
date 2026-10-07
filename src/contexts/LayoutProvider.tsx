@@ -24,6 +24,11 @@ import ReferAndEarnDialog from "@/components/dialogs/ReferAndEarnDialog";
 import PersonalizarMenuDialog from "@/components/dialogs/PersonalizarMenuDialog";
 import { TermosUsoDialog } from "@/components/dialogs/TermosUsoDialog";
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
+import { FretamentoFormDialog } from "@/components/dialogs/FretamentoFormDialog";
+import { PasseioFormDialog } from "@/components/dialogs/PasseioFormDialog";
+import { NovoFretamentoOuPasseioDialog } from "@/components/dialogs/NovoFretamentoOuPasseioDialog";
+import { RegistrarPagamentoFretamentoDialog } from "@/components/dialogs/RegistrarPagamentoFretamentoDialog";
+import { AdicionarParticipantePasseioDialog } from "@/components/dialogs/AdicionarParticipantePasseioDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import ComplementarPagamentoDialog from "@/components/dialogs/ComplementarPagamentoDialog";
@@ -85,12 +90,18 @@ import {
   OpenReciboPreviewDialogProps,
   OpenWhatsAppShowcaseDialogProps,
   OpenOnboardingSuccessDialogProps,
+  OpenFretamentoFormProps,
+  OpenPasseioFormProps,
+  OpenNovoFretamentoOuPasseioProps,
+  OpenRegistrarPagamentoFretamentoProps,
+  OpenAdicionarParticipantePasseioProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Capacitor } from "@capacitor/core";
+import { isNativeIos } from "@/utils/detectPlatform";
 import { openBrowserLink } from "@/utils/browser";
 import { BASE_DOMAIN } from "@/constants";
 import { ROUTES } from "@/constants/routes";
@@ -222,6 +233,42 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [gastoFormDialogState, setGastoFormDialogState] = useState<{
     open: boolean;
     props?: OpenGastoFormProps;
+  }>({
+    open: false,
+  });
+
+  // Fretamentos e Passeios Dialogs State
+  const [fretamentoFormDialogState, setFretamentoFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenFretamentoFormProps;
+  }>({
+    open: false,
+  });
+
+  const [passeioFormDialogState, setPasseioFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenPasseioFormProps;
+  }>({
+    open: false,
+  });
+
+  const [novoFretamentoOuPasseioDialogState, setNovoFretamentoOuPasseioDialogState] = useState<{
+    open: boolean;
+    props?: OpenNovoFretamentoOuPasseioProps;
+  }>({
+    open: false,
+  });
+
+  const [registrarPagamentoFretamentoDialogState, setRegistrarPagamentoFretamentoDialogState] = useState<{
+    open: boolean;
+    props?: OpenRegistrarPagamentoFretamentoProps;
+  }>({
+    open: false,
+  });
+
+  const [adicionarParticipantePasseioDialogState, setAdicionarParticipantePasseioDialogState] = useState<{
+    open: boolean;
+    props?: OpenAdicionarParticipantePasseioProps;
   }>({
     open: false,
   });
@@ -581,6 +628,41 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openFretamentoFormDialog = (props?: OpenFretamentoFormProps) => {
+    setFretamentoFormDialogState({ open: true, props });
+  };
+  const closeFretamentoFormDialog = () => {
+    safeCloseDialog(() => setFretamentoFormDialogState({ open: false }));
+  };
+
+  const openPasseioFormDialog = (props?: OpenPasseioFormProps) => {
+    setPasseioFormDialogState({ open: true, props });
+  };
+  const closePasseioFormDialog = () => {
+    safeCloseDialog(() => setPasseioFormDialogState({ open: false }));
+  };
+
+  const openNovoFretamentoOuPasseioDialog = (props?: OpenNovoFretamentoOuPasseioProps) => {
+    setNovoFretamentoOuPasseioDialogState({ open: true, props });
+  };
+  const closeNovoFretamentoOuPasseioDialog = () => {
+    safeCloseDialog(() => setNovoFretamentoOuPasseioDialogState({ open: false }));
+  };
+
+  const openRegistrarPagamentoFretamentoDialog = (props: OpenRegistrarPagamentoFretamentoProps) => {
+    setRegistrarPagamentoFretamentoDialogState({ open: true, props });
+  };
+  const closeRegistrarPagamentoFretamentoDialog = () => {
+    safeCloseDialog(() => setRegistrarPagamentoFretamentoDialogState({ open: false }));
+  };
+
+  const openAdicionarParticipantePasseioDialog = (props: OpenAdicionarParticipantePasseioProps) => {
+    setAdicionarParticipantePasseioDialogState({ open: true, props });
+  };
+  const closeAdicionarParticipantePasseioDialog = () => {
+    safeCloseDialog(() => setAdicionarParticipantePasseioDialogState({ open: false }));
+  };
+
   const openResponsavelFormDialog = (props: OpenResponsavelFormProps) => {
     setResponsavelFormDialogState({
       open: true,
@@ -660,6 +742,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const openSaaSCheckoutDialog = async (props: OpenSaaSCheckoutDialogProps) => {
+    if (isNativeIos()) {
+      navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
+      return;
+    }
     if (Capacitor.isNativePlatform()) {
       try {
         const { data } = await supabase.auth.getSession();
@@ -806,6 +892,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeRegistrarAusenciaDialog,
         openGastoFormDialog,
         openGerenciarCategoriasDialog,
+        openFretamentoFormDialog,
+        closeFretamentoFormDialog,
+        openPasseioFormDialog,
+        closePasseioFormDialog,
+        openNovoFretamentoOuPasseioDialog,
+        closeNovoFretamentoOuPasseioDialog,
+        openRegistrarPagamentoFretamentoDialog,
+        closeRegistrarPagamentoFretamentoDialog,
+        openAdicionarParticipantePasseioDialog,
+        closeAdicionarParticipantePasseioDialog,
         openResponsavelFormDialog,
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
@@ -1644,6 +1740,51 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             }
           }}
           {...videoStoriesDialogState.props}
+        />
+      )}
+
+      {fretamentoFormDialogState.open && (
+        <FretamentoFormDialog
+          isOpen={true}
+          onClose={closeFretamentoFormDialog}
+          editingItem={fretamentoFormDialogState.props?.editingItem}
+          onSuccess={fretamentoFormDialogState.props?.onSuccess}
+        />
+      )}
+
+      {passeioFormDialogState.open && (
+        <PasseioFormDialog
+          isOpen={true}
+          onClose={closePasseioFormDialog}
+          editingItem={passeioFormDialogState.props?.editingItem}
+          onSuccess={passeioFormDialogState.props?.onSuccess}
+        />
+      )}
+
+      {novoFretamentoOuPasseioDialogState.open && novoFretamentoOuPasseioDialogState.props && (
+        <NovoFretamentoOuPasseioDialog
+          isOpen={true}
+          onClose={closeNovoFretamentoOuPasseioDialog}
+          onSelectFretamento={novoFretamentoOuPasseioDialogState.props.onSelectFretamento}
+          onSelectPasseio={novoFretamentoOuPasseioDialogState.props.onSelectPasseio}
+        />
+      )}
+
+      {registrarPagamentoFretamentoDialogState.open && registrarPagamentoFretamentoDialogState.props && (
+        <RegistrarPagamentoFretamentoDialog
+          isOpen={true}
+          onClose={closeRegistrarPagamentoFretamentoDialog}
+          fretamento={registrarPagamentoFretamentoDialogState.props.fretamento}
+          onSuccess={registrarPagamentoFretamentoDialogState.props.onSuccess}
+        />
+      )}
+
+      {adicionarParticipantePasseioDialogState.open && adicionarParticipantePasseioDialogState.props && (
+        <AdicionarParticipantePasseioDialog
+          isOpen={true}
+          onClose={closeAdicionarParticipantePasseioDialog}
+          fretamento={adicionarParticipantePasseioDialogState.props.fretamento}
+          onSuccess={adicionarParticipantePasseioDialogState.props.onSuccess}
         />
       )}
 

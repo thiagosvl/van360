@@ -30,6 +30,7 @@ import { AppLockController } from "@/components/layout/AppLockController";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { AppLockProvider } from "@/contexts/AppLockProvider";
 import { useAttribution } from "@/hooks/business/useAttribution";
+import { IAPController } from "@/components/layout/IAPController";
 
 const PushNotificationController = () => {
   usePushNotifications();
@@ -70,6 +71,9 @@ const Escolas = lazyLoad(() => import("./pages/Escolas"));
 const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
 const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
+const Fretamentos = lazyLoad(() => import("./pages/Fretamentos"));
+const PasseioDetalhes = lazyLoad(() => import("./pages/PasseioDetalhes"));
+const PasseioInscricaoPublica = lazyLoad(() => import("./pages/PasseioInscricaoPublica"));
 const Conta = lazyLoad(() => import("./pages/Conta"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const Rotas = lazyLoad(() => import("./pages/Rotas"));
@@ -344,6 +348,7 @@ const App = () => {
                   <BackButtonController />
                   <PushNotificationController />
                   <AttributionController />
+                  <IAPController />
                   <ScrollToTop />
                 <Suspense fallback={<InitialLoading />}>
                   <Routes>
@@ -398,6 +403,11 @@ const App = () => {
                     <Route
                       path={ROUTES.PUBLIC.SIGN_CONTRACT_DUPLICATE}
                       element={<AssinarRedirect />}
+                    />
+
+                    <Route
+                      path={ROUTES.PUBLIC.PASSEIO_PUBLICO}
+                      element={<PasseioInscricaoPublica />}
                     />
 
                     <Route
@@ -478,6 +488,8 @@ const App = () => {
                         <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.CHARTERS} element={<Fretamentos />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.CHARTER_DETAILS} element={<PasseioDetalhes />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />

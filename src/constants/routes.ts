@@ -12,6 +12,7 @@ export const ROUTES = {
     SIGN_CONTRACT: "/assinar/:token",
     SIGN_CONTRACT_DUPLICATE: "/assinar/assinar/:token",
     CONFIRM_RENEWAL: "/renovacao/:token",
+    PASSEIO_PUBLICO: "/passeio/:slug",
   },
   PRIVATE: {
     RESPONSAVEL: {
@@ -46,6 +47,8 @@ export const ROUTES = {
       VEHICLES: "/veiculos",
       EXPENSES: "/gastos",
       REPORTS: "/relatorios",
+      CHARTERS: "/fretamentos-e-passeios",
+      CHARTER_DETAILS: "/fretamentos-e-passeios/:id",
       CONTRACTS: "/contratos",
       SUBSCRIPTION: "/assinatura",
       ROUTES: "/rotas",

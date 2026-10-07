@@ -86,7 +86,8 @@ apiClient.interceptors.response.use(
       originalRequest.url.includes('/auth/recuperacao') ||
       originalRequest.url.includes('/auth/login') ||
       originalRequest.url.includes('/auth/registro') ||
-      originalRequest.url.includes('/public/portal-responsavel/');
+      originalRequest.url.includes('/public/portal-responsavel/') ||
+      originalRequest.url.includes('/fretamentos/publico');
 
     if (error.response.status === 401 && !originalRequest._retry && !isPublicAuthRoute) {
       originalRequest._retry = true;

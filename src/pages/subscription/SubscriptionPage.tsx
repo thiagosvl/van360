@@ -33,6 +33,7 @@ import {
 import {
   SubscriptionInvoiceStatus,
   SubscriptionIdentifer,
+  CheckoutPaymentMethod,
 } from "@/types/enums";
 import { useLayout } from "@/hooks";
 import { toast } from "sonner";
@@ -41,6 +42,8 @@ import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { parseLocalDate } from "@/utils/dateUtils";
+import { isNativeIos } from "@/utils/detectPlatform";
+import { openBrowserLink } from "@/utils/browser";
 
 export default function SubscriptionPage() {
   const { can } = usePermissions();
@@ -87,6 +90,7 @@ export default function SubscriptionPage() {
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
   const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [showUpgradeShowcase, setShowUpgradeShowcase] = useState(false);
 
   const cancelSubscription = useCancelSubscription();
 
@@ -109,6 +113,16 @@ export default function SubscriptionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleSubscribe = (plan?: SaaSPlan | string, forcedPeriod?: SubscriptionIdentifer) => {
+    if (isNativeIos()) {
+      setShowUpgradeShowcase(true);
+      setTimeout(() => {
+        const showcaseEl = document.getElementById("subscription-plans-showcase");
+        if (showcaseEl) {
+          showcaseEl.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 50);
+      return;
+    }
     if (!plans) return;
     const initialPlanId = typeof plan === "string" ? plan : plan?.id;
     openSaaSCheckoutDialog({
@@ -141,6 +155,22 @@ export default function SubscriptionPage() {
   }
 
   const handleCancelSubscription = () => {
+    if (subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP) {
+      openConfirmationDialog({
+        title: "Assinatura Gerenciada pela Apple",
+        description:
+          "Sua assinatura foi contratada pela App Store. Para gerenciar ou cancelar a renovação automática, acesse os Ajustes do seu iPhone em seu ID Apple.",
+        confirmText: "Gerenciar na Apple",
+        cancelText: "Voltar",
+        variant: "default",
+        onConfirm: () => {
+          void openBrowserLink("https://apps.apple.com/account/subscriptions");
+          closeConfirmationDialog();
+        },
+      });
+      return;
+    }
+
     openConfirmationDialog({
       title: "Cancelar Assinatura",
       description: "Tem certeza que deseja cancelar sua assinatura? Você não receberá novas cobranças e seu acesso será suspenso. Seus dados continuarão salvos e você poderá reativar a qualquer momento.",
@@ -224,6 +254,23 @@ export default function SubscriptionPage() {
           </section>
         )}
 
+        {!isSalesMode && showUpgradeShowcase && (
+          <section className="max-w-lg mx-auto space-y-8 w-full px-1 sm:px-0 mb-8">
+            <SubscriptionPlansShowcase
+              plans={plans || []}
+              pricing={pricing}
+              isPromotionActive={isPromotionActive}
+              subscription={subscription}
+              referral={referral}
+              trialDaysLeft={trialDaysLeft}
+              isTrial={isTrial}
+              isExpired={isExpired}
+              isCanceled={isCanceled}
+              onSelectPlan={handleSubscribe}
+            />
+          </section>
+        )}
+
         {isSalesMode ? (
           <div className="max-w-lg mx-auto space-y-8 w-full px-1 sm:px-0">
             <SubscriptionPlansShowcase
@@ -238,6 +285,7 @@ export default function SubscriptionPage() {
               isCanceled={isCanceled}
               onSelectPlan={handleSubscribe}
               pendingInvoicesSlot={(() => {
+                if (isNativeIos()) return null;
                 const pendingInvoices = (invoices || [])
                   .filter((inv) => inv.status === SubscriptionInvoiceStatus.PENDING)
                   .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime());

@@ -19,6 +19,7 @@ export interface PaymentMethodOption {
 export const PAYMENT_METHOD_LABELS: Record<CheckoutPaymentMethod, string> = {
   [CheckoutPaymentMethod.PIX]: "Pix",
   [CheckoutPaymentMethod.CREDIT_CARD]: "Cartão",
+  [CheckoutPaymentMethod.APPLE_IAP]: "Apple Pay",
 };
 
 
