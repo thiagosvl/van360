@@ -67,7 +67,6 @@ import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/A
 import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/AdminUserSchoolsTab";
 import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { AdminUserReferralTab } from "@/components/features/admin/user-details/AdminUserReferralTab";
-import { AdminUserQuickSwitcher } from "@/components/features/admin/user-details/AdminUserQuickSwitcher";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
 import { AdminUserFinancialConfigCard } from "@/components/features/admin/user-details/AdminUserFinancialConfigCard";
@@ -741,7 +740,7 @@ export default function AdminUserDetails() {
 
   return (
     <div className="space-y-6 text-left">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-start">
         <Button
           variant="outline"
           size="sm"
@@ -751,8 +750,6 @@ export default function AdminUserDetails() {
           <ArrowLeft className="h-4 w-4 text-slate-400" />
           <span>Voltar para motoristas</span>
         </Button>
-
-        <AdminUserQuickSwitcher currentUserId={data.user.id} />
       </div>
 
       {/* HEADER DE TOPO STITCH DESIGN */}

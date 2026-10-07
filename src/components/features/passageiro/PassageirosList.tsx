@@ -12,11 +12,12 @@ import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
+  formatarTelefone,
   formatShortName,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatPeriodo } from "@/utils/formatters/periodo";
-import { ChevronRight, User } from "lucide-react";
+import { ChevronRight, Phone, User } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -39,9 +40,10 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   PassageirosListProps,
   "passageiros"
 >) {
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, exibirTelefoneListaAlunos } = useAppPreferences();
   const shortName = formatShortName(passageiro?.nome, true);
   const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome, formatoNomeResponsavel);
+  const respTelefone = passageiro?.responsavel_principal?.telefone;
   const schoolName = passageiro.escola?.nome;
 
   return (
@@ -80,6 +82,12 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           )}>
             {respName}
           </p>
+          {exibirTelefoneListaAlunos && respTelefone && (
+            <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+              <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+              <span>{formatarTelefone(respTelefone)}</span>
+            </p>
+          )}
           {schoolName && (
             <p className="text-[10px] text-gray-400 font-medium opacity-60 truncate">
               {schoolName}
@@ -109,7 +117,7 @@ export function PassageirosList({
   ...props
 }: PassageirosListProps) {
   const { can } = usePermissions();
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, exibirTelefoneListaAlunos } = useAppPreferences();
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar");
 
   return (
@@ -194,6 +202,12 @@ export function PassageirosList({
                         )}>
                           {respName}
                         </p>
+                        {exibirTelefoneListaAlunos && passageiro.responsavel_principal?.telefone && (
+                          <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                            <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                            <span>{formatarTelefone(passageiro.responsavel_principal.telefone)}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </TableCell>

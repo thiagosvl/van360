@@ -1,3 +1,4 @@
+import { useMatch } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Menu, LogOut, KeyRound } from "lucide-react";
 import {
@@ -13,6 +14,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { sessionManager } from "@/services/sessionManager";
 import { apiClient } from "@/services/api/client";
 import { ROUTES } from "@/constants/routes";
+import { AdminUserQuickSwitcher } from "@/components/features/admin/AdminUserQuickSwitcher";
 
 interface AdminNavbarProps {
   onMenuToggle?: () => void;
@@ -21,6 +23,8 @@ interface AdminNavbarProps {
 export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
   const { user } = useSession();
   const { pageTitle, openAlterarSenhaDialog } = useLayout();
+  const userDetailsMatch = useMatch(ROUTES.PRIVATE.ADMIN.USER_DETAILS);
+  const currentUserId = userDetailsMatch?.params.id;
 
   const handleLogout = async () => {
     try {
@@ -33,9 +37,8 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#0d1424]/80 backdrop-blur-xl border-b border-slate-800/80 transition-all duration-500 px-4 sm:px-6 pt-[calc(1rem+var(--safe-area-top))] pb-4 flex items-center justify-between">
-      {/* Page Title & Mobile Toggle */}
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 w-full bg-[#0d1424]/80 backdrop-blur-xl border-b border-slate-800/80 transition-all duration-500 px-4 sm:px-6 pt-[calc(1rem+var(--safe-area-top))] pb-4 flex items-center justify-between gap-3 sm:gap-6">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={onMenuToggle}
           className="lg:hidden p-2 rounded-xl hover:bg-slate-800 text-slate-300"
@@ -43,15 +46,17 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
           <Menu className="h-5 w-5" />
         </button>
         {pageTitle && (
-          <h1 className="text-base sm:text-base md:text-xl font-bold text-slate-100 tracking-tight truncate max-w-[200px] sm:max-w-none">
+          <h1 className="hidden sm:block text-base sm:text-base md:text-xl font-bold text-slate-100 tracking-tight truncate">
             {pageTitle}
           </h1>
         )}
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-3">
-        {/* User Profile */}
+      <div className="flex-1 min-w-0">
+        <AdminUserQuickSwitcher currentUserId={currentUserId} className="w-full" />
+      </div>
+
+      <div className="flex items-center gap-3 shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="rounded-2xl p-1 pr-3 gap-3 border border-transparent hover:bg-slate-800/80 hover:border-slate-700 data-[state=open]:bg-slate-800 transition-all">

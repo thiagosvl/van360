@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConfiguracoes } from "@/hooks";
-import { Check, SlidersHorizontal } from "lucide-react";
+import { Check, Phone, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -9,12 +9,25 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
   const { configuracoes, isLoading, updateConfiguracoes, isUpdating } = useConfiguracoes();
 
   const formatoAtual = configuracoes?.formato_nome_responsavel || "primeiro_nome";
+  const exibirTelefoneAtual = configuracoes?.exibir_telefone_lista_alunos ?? false;
 
   const handleSelectFormato = async (formato: "primeiro_nome" | "completo") => {
     if (formato === formatoAtual || isUpdating) return;
     try {
       await updateConfiguracoes({ formato_nome_responsavel: formato });
       toast.success("Preferência de exibição atualizada com sucesso!");
+    } catch { }
+  };
+
+  const handleToggleTelefone = async (novoValor: boolean) => {
+    if (novoValor === exibirTelefoneAtual || isUpdating) return;
+    try {
+      await updateConfiguracoes({ exibir_telefone_lista_alunos: novoValor });
+      toast.success(
+        novoValor
+          ? "Telefone ativado na lista de alunos!"
+          : "Telefone ocultado da lista de alunos!"
+      );
     } catch { }
   };
 
@@ -132,6 +145,111 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium truncate">
                   Maria Oliveira da Silva
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="pt-6 border-t border-slate-100 space-y-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">
+              Telefone do Responsável na Lista de Alunos
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Válido exclusivamente para a tela de Alunos. Escolha se o telefone de contato deve ser exibido na listagem.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+            <button
+              type="button"
+              onClick={() => handleToggleTelefone(false)}
+              disabled={isUpdating}
+              className={cn(
+                "p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-3",
+                !exibirTelefoneAtual
+                  ? "border-[#1a3a5c] bg-slate-50/60 ring-2 ring-[#1a3a5c]/10"
+                  : "border-slate-200 hover:border-slate-300 bg-white"
+              )}
+            >
+              <div className="flex items-start justify-between gap-2 w-full">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
+                      !exibirTelefoneAtual
+                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                        : "border-slate-300"
+                    )}
+                  >
+                    {!exibirTelefoneAtual && (
+                      <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-slate-800">
+                    Não Exibir na Lista
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
+                <p className="text-[11px] font-bold text-[#1a3a5c]">
+                  Joãozinho Silva
+                </p>
+                <p className="text-[10px] text-gray-500 font-medium">
+                  {formatoAtual === "completo" ? "Maria Oliveira da Silva" : "Maria"}
+                </p>
+                <p className="text-[10px] text-gray-400 font-medium opacity-60">
+                  Colégio Teste Van360
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleToggleTelefone(true)}
+              disabled={isUpdating}
+              className={cn(
+                "p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-3",
+                exibirTelefoneAtual
+                  ? "border-[#1a3a5c] bg-slate-50/60 ring-2 ring-[#1a3a5c]/10"
+                  : "border-slate-200 hover:border-slate-300 bg-white"
+              )}
+            >
+              <div className="flex items-start justify-between gap-2 w-full">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
+                      exibirTelefoneAtual
+                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                        : "border-slate-300"
+                    )}
+                  >
+                    {exibirTelefoneAtual && (
+                      <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-slate-800">
+                    Exibir na Lista de Alunos
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
+                <p className="text-[11px] font-bold text-[#1a3a5c]">
+                  Joãozinho Silva
+                </p>
+                <p className="text-[10px] text-gray-500 font-medium">
+                  {formatoAtual === "completo" ? "Maria Oliveira da Silva" : "Maria"}
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                  <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                  <span>(11) 98765-4321</span>
+                </p>
+                <p className="text-[10px] text-gray-400 font-medium opacity-60">
+                  Colégio Teste Van360
                 </p>
               </div>
             </button>
