@@ -13,7 +13,6 @@ import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
-import { isNativeIos } from "@/utils/detectPlatform";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
   const { pageTitle } = useLayout();
@@ -24,12 +23,6 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
 
   let currentPage: PageItem | undefined = pagesItems.find(item => item.href === location.pathname);
-  if (currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION && isNativeIos()) {
-    currentPage = {
-      ...currentPage,
-      title: pageTitle || "Acesso",
-    };
-  }
   if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH) {
     currentPage = {
       title: "Atualização Rápida",
@@ -51,9 +44,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
     };
   }
 
-  const displayTitle = location.pathname === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION && isNativeIos()
-    ? (pageTitle || "Acesso")
-    : (currentPage?.title || pageTitle);
+  const displayTitle = currentPage?.title || pageTitle;
   const isAccountActive = location.pathname === ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
 
   const handleLogoClick = () => {

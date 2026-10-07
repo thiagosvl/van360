@@ -151,16 +151,14 @@ export const Conta = memo(function Conta() {
           <Lock className="w-10 h-10 text-slate-400 mx-auto" />
           <h2 className="text-lg font-bold text-slate-800">Acesso Suspenso</h2>
           <p className="text-sm text-slate-600 max-w-md mx-auto">
-            {isNativeIos()
-              ? "Esta funcionalidade exige que sua conta esteja ativa. Entre em contato com nosso suporte para mais informações."
-              : "Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van."}
+            Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van.
           </p>
           <button
             type="button"
             onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
             className="px-6 py-2.5 rounded-xl bg-[#1a3a5c] text-white text-sm font-bold shadow-xs hover:bg-[#152e4a] cursor-pointer"
           >
-            {isNativeIos() ? "Verificar Acesso" : "Ver Assinatura"}
+            Ver Assinatura
           </button>
         </div>
       );
@@ -255,7 +253,7 @@ export const Conta = memo(function Conta() {
             </button>
 
             {/* Opção 2: Assinatura do App (Gestor) */}
-            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && !isNativeIos() && (
+            {can(PERMISSIONS.ASSINATURA_GERENCIAR) && (
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
